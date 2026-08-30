@@ -1,7 +1,7 @@
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnotePlugin,
-} from '@platejs/footnote';
+} from 'platejs/footnote';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

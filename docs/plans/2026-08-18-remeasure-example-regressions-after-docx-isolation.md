@@ -304,7 +304,7 @@ Needs your attention:
 | 1 | Generated registry blocks every current route measurement | Without a real host, startup/heap/huge cannot be called fixed | `apps/www/src/__registry__/index.tsx:2004` and Browser `:3100` | repair generated owner first, then replay |
 | 2 | DOCX bundle tax is genuinely removed | Five builds remove 84 heavy inputs and about 722.5 KB gzip | `.tmp/post-docx-example-performance/bundle-stability.json` | accept bundle fix |
 | 3 | Multiple-editors startup remains open | It never consumed EditorKit, so DOCX isolation cannot own its previous 1.67x regression | `apps/www/src/registry/examples/multiple-editors-demo.tsx` | rerun after host repair; expect separate owner |
-| 4 | Seven prior heap regressions remain independently open | Only list-classic among the eight consumes EditorKit | `.tmp/post-docx-example-performance/summary.json` | do not infer memory closure |
+| 4 | Seven prior heap regressions remain independently open | Only legacy-list-model among the eight consumes EditorKit | `.tmp/post-docx-example-performance/summary.json` | do not infer memory closure |
 | 5 | Huge-document performance remains unknown | Main mounts; candidate fails before huge code | Browser `:3200` versus `:3100` | fix host, then schema/interaction replay |
 
 Stopping checkpoints to unblock:
@@ -319,7 +319,7 @@ Findings:
 - Five alternating static Browser module-load runs support the same direction: median ready 362 -> 251 ms, script 224.5 -> 143.6 ms, task 233.4 -> 152.1 ms, and heap 26.31 -> 21.32 MB. This is supporting parse/eval evidence, not route proof.
 - The real candidate route host fails before target code because generated `src/__registry__/index.tsx` imports deleted files. Startup and fresh-tab heap regressions therefore cannot be remeasured honestly.
 - Six of seven prior startup regressions import EditorKit and plausibly benefit; `multiple-editors-demo` is independent and remains open.
-- Only `list-classic-demo` among the eight prior heap regressions imports EditorKit. The other seven memory rows remain open and were not fixed by this packet.
+- Only `list-demo` among the eight prior heap regressions imports EditorKit. The other seven memory rows remain open and were not fixed by this packet.
 - Fresh huge replay: exact main mounts two editors with no errors; candidate mounts zero because the generated registry fails first.
 
 Decisions and tradeoffs:

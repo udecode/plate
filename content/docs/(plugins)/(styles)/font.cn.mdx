@@ -44,10 +44,10 @@ docs:
 将 kit 添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 import { FontKit } from "@/components/editor/font";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...FontKit,
@@ -64,7 +64,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/basic-styles
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -77,10 +77,10 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from "@platejs/basic-styles/react";
-import { createPlateEditor } from "platejs/react";
+} from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     FontColorPlugin,
@@ -96,10 +96,10 @@ const editor = createPlateEditor({
 字体插件会注册字符串类型的文本标记，因此它们跟随选中文本，而不是块级目标列表。只有 UI 需要不同默认值时才配置渲染属性。
 
 ```tsx
-import { FontColorPlugin } from "@platejs/basic-styles/react";
-import { createPlateEditor } from "platejs/react";
+import { FontColorPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     FontColorPlugin.configure({

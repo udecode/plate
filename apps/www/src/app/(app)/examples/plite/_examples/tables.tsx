@@ -4,16 +4,16 @@ import {
   NodeApi,
   PointApi,
   RangeApi,
-} from '@platejs/plite';
+} from 'plitejs';
 import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
+  useEditor,
+} from 'plitejs/react';
 
+import { failInvariant } from '../../../../../lib/failInvariant';
 import type { CustomValue } from './custom-types.d';
 
 const initialValue: CustomValue = [
@@ -104,7 +104,7 @@ const initialValue: CustomValue = [
 ];
 
 const TablesExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [table()],
     initialValue,
   });

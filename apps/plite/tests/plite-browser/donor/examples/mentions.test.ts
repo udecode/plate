@@ -8,7 +8,7 @@ import {
   recordPliteBrowserRuntimeErrors,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const pliteCoverageErrors = new WeakMap<
   import('@playwright/test').Page,

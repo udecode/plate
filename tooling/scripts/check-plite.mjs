@@ -21,36 +21,16 @@ export const repoRoot = path.resolve(scriptRoot, '../..');
 
 const plitePackageDefinitions = Object.freeze([
   Object.freeze({
-    name: '@platejs/plite',
-    root: 'packages/plite',
+    name: 'plitejs',
+    root: 'packages/plitejs',
   }),
   Object.freeze({
-    name: '@platejs/plite-dom',
-    root: 'packages/plite-dom',
+    name: 'platejs',
+    root: 'packages/platejs',
   }),
   Object.freeze({
-    name: '@platejs/plite-history',
-    root: 'packages/plite-history',
-  }),
-  Object.freeze({
-    name: '@platejs/plite-hyperscript',
-    root: 'packages/plite-hyperscript',
-  }),
-  Object.freeze({
-    name: '@platejs/plite-react',
-    root: 'packages/plite-react',
-  }),
-  Object.freeze({
-    name: '@platejs/plite-layout',
-    root: 'packages/plite-layout',
-  }),
-  Object.freeze({
-    name: '@platejs/browser',
-    root: 'packages/browser',
-  }),
-  Object.freeze({
-    name: '@platejs/yjs',
-    root: 'packages/yjs',
+    name: '@platejs/test',
+    root: 'packages/test',
   }),
 ]);
 
@@ -81,54 +61,7 @@ export const plitePackages = Object.freeze(
   })
 );
 
-export const plateAdopterPackages = Object.freeze(
-  [
-    ['core', '@platejs/core'],
-    ['ai', '@platejs/ai'],
-    ['basic-nodes', '@platejs/basic-nodes'],
-    ['basic-styles', '@platejs/basic-styles'],
-    ['callout', '@platejs/callout'],
-    ['code-block', '@platejs/code-block'],
-    ['code-drawing', '@platejs/code-drawing'],
-    ['combobox', '@platejs/combobox'],
-    ['comment', '@platejs/comment'],
-    ['csv', '@platejs/csv'],
-    ['cursor', '@platejs/cursor'],
-    ['date', '@platejs/date'],
-    ['diff', '@platejs/diff'],
-    ['dnd', '@platejs/dnd'],
-    ['docx', '@platejs/docx'],
-    ['docx-export', '@platejs/docx-export'],
-    ['docx-import', '@platejs/docx-import'],
-    ['docx-paste', '@platejs/docx-paste'],
-    ['emoji', '@platejs/emoji'],
-    ['excalidraw', '@platejs/excalidraw'],
-    ['find-replace', '@platejs/find-replace'],
-    ['floating', '@platejs/floating'],
-    ['footnote', '@platejs/footnote'],
-    ['indent', '@platejs/indent'],
-    ['juice', '@platejs/juice'],
-    ['layout', '@platejs/layout'],
-    ['link', '@platejs/link'],
-    ['list', '@platejs/list'],
-    ['list-classic', '@platejs/list-classic'],
-    ['markdown', '@platejs/markdown'],
-    ['math', '@platejs/math'],
-    ['media', '@platejs/media'],
-    ['mention', '@platejs/mention'],
-    ['plate', 'platejs'],
-    ['resizable', '@platejs/resizable'],
-    ['slash-command', '@platejs/slash-command'],
-    ['suggestion', '@platejs/suggestion'],
-    ['tabbable', '@platejs/tabbable'],
-    ['table', '@platejs/table'],
-    ['tag', '@platejs/tag'],
-    ['test-utils', '@platejs/test-utils'],
-    ['toc', '@platejs/toc'],
-    ['toggle', '@platejs/toggle'],
-    ['utils', '@platejs/utils'],
-  ].map(([slug, name]) => Object.freeze({ name, root: `packages/${slug}` }))
-);
+export const plateAdopterPackages = Object.freeze([]);
 
 const packageByRoot = new Map(
   plitePackages.map((definition) => [definition.root, definition])
@@ -143,11 +76,7 @@ const adopterOrder = new Map(
   plateAdopterPackages.map((definition, index) => [definition.name, index])
 );
 const allPackageNames = plitePackages.map(({ name }) => name);
-const fixturePackageNames = Object.freeze([
-  '@platejs/plite',
-  '@platejs/plite-history',
-  '@platejs/plite-hyperscript',
-]);
+const fixturePackageNames = Object.freeze(['plitejs']);
 const globalInputs = new Set([
   '.npmrc',
   'bunfig.toml',
@@ -155,11 +84,16 @@ const globalInputs = new Set([
   'config/plite-source-test-setup.ts',
   'config/workspace-source-entries.mjs',
   'package.json',
-  'packages/core/bunfig.toml',
-  'packages/plate-scripts/run-with-pkg-dir.cjs',
+  'packages/platejs/bunfig.toml',
+  'tooling/scripts/run-with-pkg-dir.cjs',
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'postcss.config.mjs',
+  'tooling/entrypoints/entrypoint-dag.mjs',
+  'tooling/entrypoints/entrypoint-turbo.mjs',
+  'tooling/scripts/generate-entrypoint-turbo.mjs',
+  'tooling/scripts/run-entrypoint-package-task.mjs',
+  'tooling/scripts/run-entrypoint-task.mjs',
   'tooling/scripts/typecheck-package-source.mjs',
   'tsconfig.json',
   'turbo.json',
@@ -190,6 +124,8 @@ const proofContractInputs = new Set([
   'tooling/scripts/check-plite-release-artifacts.mjs',
   'tooling/scripts/check-plite-release-artifacts.test.mjs',
   'tooling/scripts/check-plite-release-artifacts.slow.test.mjs',
+  'tooling/scripts/entrypoint-turbo.slow.test.mjs',
+  'tooling/scripts/entrypoint-turbo.test.mjs',
   'tooling/scripts/plite-source-aliases.test.mjs',
   'tooling/scripts/plite-source-aliases.slow.test.mjs',
   'tooling/scripts/run-bounded-process.mjs',
@@ -224,6 +160,7 @@ const isRuntimePackageInput = (file, root) =>
     file === `${root}/package.json` ||
     file === `${root}/tsconfig.json` ||
     file === `${root}/tsconfig.build.json` ||
+    file === `${root}/turbo.json` ||
     file === `${root}/tsdown.config.mts` ||
     file === `${root}/tsdown.config.ts`);
 
@@ -332,31 +269,11 @@ export const createAffectedPlan = (changedFiles) => {
 
       if (isRuntimePackageInput(file, root)) {
         runtimeAffected.add(definition.name);
-        if (
-          definition.name !== '@platejs/browser' &&
-          definition.name !== '@platejs/yjs'
-        ) {
+        if (definition.name !== '@platejs/test') {
           adopterRuntimeImpact = true;
         }
         browserSmoke = true;
-        if (definition.name !== '@platejs/browser') appTypecheck = true;
-      }
-
-      continue;
-    }
-
-    if (isPathWithin(file, 'packages/core')) {
-      affectedAdopterTests.add('@platejs/core');
-      affectedAdopterTypechecks.add('@platejs/core');
-      relevant = true;
-
-      if (isRuntimePackageInput(file, 'packages/core')) {
-        for (const { name } of plateAdopterPackages) {
-          affectedAdopterTypechecks.add(name);
-        }
-        affected.add('@platejs/yjs');
-        appTypecheck = true;
-        browserSmoke = true;
+        if (definition.name !== '@platejs/test') appTypecheck = true;
       }
 
       continue;
@@ -369,13 +286,6 @@ export const createAffectedPlan = (changedFiles) => {
     if (adopterEntry) {
       affectedAdopterTests.add(adopterEntry[1].name);
       affectedAdopterTypechecks.add(adopterEntry[1].name);
-      relevant = true;
-      continue;
-    }
-
-    if (isPathWithin(file, 'packages/udecode')) {
-      appTypecheck = true;
-      browserSmoke = true;
       relevant = true;
       continue;
     }
@@ -471,6 +381,11 @@ export const getComparisonBase = (environment = process.env) =>
 
 const pnpmStep = (id, args) => Object.freeze({ args, command: 'pnpm', id });
 const DEV_WORKSPACE_CONCURRENCY = '8';
+const entrypointTurboPackageNames = new Set([
+  '@platejs/test',
+  'platejs',
+  'plitejs',
+]);
 
 const packageTypecheckStep = (packageNames) =>
   pnpmStep('typecheck', [
@@ -479,6 +394,33 @@ const packageTypecheckStep = (packageNames) =>
     'typecheck',
   ]);
 
+const entrypointTypecheckStep = (packageNames) =>
+  pnpmStep('entrypoint-typecheck', [
+    'turbo',
+    'run',
+    'typecheck',
+    ...packageNames.map((name) => `--filter=${name}`),
+    `--concurrency=${DEV_WORKSPACE_CONCURRENCY}`,
+  ]);
+
+const packageTypecheckSteps = (packageNames) => {
+  const entrypointPackages = packageNames.filter((name) =>
+    entrypointTurboPackageNames.has(name)
+  );
+  const regularPackages = packageNames.filter(
+    (name) => !entrypointTurboPackageNames.has(name)
+  );
+
+  return [
+    ...(entrypointPackages.length > 0
+      ? [entrypointTypecheckStep(entrypointPackages)]
+      : []),
+    ...(regularPackages.length > 0
+      ? [packageTypecheckStep(regularPackages)]
+      : []),
+  ];
+};
+
 const packageTestStep = (packageNames) =>
   pnpmStep('package-tests', [
     `--workspace-concurrency=${DEV_WORKSPACE_CONCURRENCY}`,
@@ -486,8 +428,30 @@ const packageTestStep = (packageNames) =>
     'test',
   ]);
 
-const browserCoreTestStep = () =>
-  pnpmStep('browser-core-tests', ['--filter', '@platejs/browser', 'test:core']);
+const entrypointTestStep = (packageNames) =>
+  pnpmStep('entrypoint-tests', [
+    'turbo',
+    'run',
+    'test',
+    ...packageNames.map((name) => `--filter=${name}`),
+    `--concurrency=${DEV_WORKSPACE_CONCURRENCY}`,
+  ]);
+
+const packageTestSteps = (packageNames) => {
+  const entrypointPackages = packageNames.filter((name) =>
+    entrypointTurboPackageNames.has(name)
+  );
+  const regularPackages = packageNames.filter(
+    (name) => !entrypointTurboPackageNames.has(name)
+  );
+
+  return [
+    ...(entrypointPackages.length > 0
+      ? [entrypointTestStep(entrypointPackages)]
+      : []),
+    ...(regularPackages.length > 0 ? [packageTestStep(regularPackages)] : []),
+  ];
+};
 
 export const createCheckSteps = (mode, affectedPlan) => {
   if (mode === 'strict' || mode === 'packages') {
@@ -510,18 +474,6 @@ export const createCheckSteps = (mode, affectedPlan) => {
     return Object.freeze(steps);
   }
 
-  if (mode === 'adopters') {
-    if (!affectedPlan) {
-      throw new Error('Adopter mode requires an affected plan.');
-    }
-
-    return Object.freeze(
-      affectedPlan.adopterPackageNames.length > 0
-        ? [packageTypecheckStep(affectedPlan.adopterPackageNames)]
-        : []
-    );
-  }
-
   if (mode !== 'dev') {
     throw new Error(`Unknown Plite check mode "${mode}".`);
   }
@@ -532,7 +484,7 @@ export const createCheckSteps = (mode, affectedPlan) => {
   const steps = [];
 
   if (affectedPlan.typecheckPackageNames.length > 0) {
-    steps.push(packageTypecheckStep(affectedPlan.typecheckPackageNames));
+    steps.push(...packageTypecheckSteps(affectedPlan.typecheckPackageNames));
   }
   if (affectedPlan.wwwTypecheck) {
     steps.push(
@@ -548,16 +500,7 @@ export const createCheckSteps = (mode, affectedPlan) => {
     );
   }
   if (affectedPlan.testPackageNames.length > 0) {
-    const packageNames = affectedPlan.testPackageNames.filter(
-      (name) => name !== '@platejs/browser'
-    );
-
-    if (packageNames.length > 0) {
-      steps.push(packageTestStep(packageNames));
-    }
-    if (packageNames.length !== affectedPlan.testPackageNames.length) {
-      steps.push(browserCoreTestStep());
-    }
+    steps.push(...packageTestSteps(affectedPlan.testPackageNames));
   }
   if (affectedPlan.contracts) {
     steps.push(pnpmStep('contracts', ['check:plite:contracts']));
@@ -647,12 +590,8 @@ const run = () => {
   let changedFiles;
   let affectedPlan;
 
-  if (mode === 'dev' || mode === 'adopters') {
-    changedFiles =
-      mode === 'adopters' &&
-      process.env.GITHUB_EVENT_NAME === 'workflow_dispatch'
-        ? ['packages/plite/src/index.ts']
-        : collectChangedFiles();
+  if (mode === 'dev') {
+    changedFiles = collectChangedFiles();
     affectedPlan =
       changedFiles === null
         ? createAffectedPlan([...globalInputs])

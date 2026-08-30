@@ -32,17 +32,17 @@ const Plugin${index} = defineBasePlugin('schemaTypeBudget${index}', {
       : 'const plugins = [';
 
   return `import {
-  createBaseEditor,
+  createEditor,
   defineBasePlugin,
   type AnyBasePlugin,
-} from '@platejs/core';
-import { schema } from '@platejs/plite';
+} from 'platejs';
+import { schema } from 'platejs';
 ${declarations}
 
 ${pluginsDeclaration}
   ${names},
 ] as const;
-const editor = createBaseEditor({
+const editor = createEditor({
   plugins,
   schema: { id: 'schema-typecheck-budget-${plugins}', version: 1 },
 });

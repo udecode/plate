@@ -313,7 +313,7 @@ because each descriptor contributes an independent law.
 | `comment` | primary mark `comment`; prefix `comment_*`; local `transientComment` persisted as `commentTransient` | 3 | mark literal; prefix semantic API; alias handle |
 | `suggestion` | primary mark `suggestion`; block/inline aliases to `suggestion`; element/text aliases to `suggestionData` and `suggestionTransient`; two `suggestion_*` prefixes | 9 | literal key is ambiguous; exact handles or semantic API only |
 | `table` | Cell `background`, `borders`, `colSpan`, `header`, `rowSpan`, `size`; Row `size`; Table `colSizes`, `marginLeft` | 9 | unique literals except dependency-graph collision on `size` |
-| `list-classic` | Todo `checked`; aggregate list `checked` | 2 | maintenance-only compile adoption; no proactive redesign |
+| `legacy-list-model` | Todo `checked`; aggregate list `checked` | 2 | maintenance-only compile adoption; no proactive redesign |
 | `code-block` | Code Block `lang`; Code Highlight primary mark | 2 | exact literals |
 | `link` | `target`, `url` | 2 | exact literals |
 | `date` | `date`, `rawDate` | 2 | exact literals |
@@ -362,8 +362,8 @@ and is intentionally outside plugin-local literal inference.
 | `indent/lib/BaseIndentPlugin.ts` | 3 | L: max correction; S: two atomic composites with caller-supplied props/unsets; replace `node[key]` with `node.indent` |
 | `layout/lib/BaseColumnPlugin.ts` | 4 | L: dependency-owned `width` |
 | `link/lib/BaseLinkPlugin.ts` | 3 | L: `url` and `target` |
-| `list-classic/lib/BaseListPlugin.ts` | 9 | L: four `checked` calls; X: five structural `type` calls; mechanical maintenance-only adoption |
-| `list-classic/react/useTodoListElement.ts` | 1 | X: editor-level targeted object update |
+| `legacy-list-model/lib/BaseListPlugin.ts` | 9 | L: four `checked` calls; X: five structural `type` calls; mechanical maintenance-only adoption |
+| `legacy-list-model/react/useTodoListElement.ts` | 1 | X: editor-level targeted object update |
 | `list/lib/BaseListPlugin.ts` | 30 | L: 24 single/array/known-union key calls; S: six atomic multi-property updates |
 | `list/react/useTodoListElement.ts` | 1 | X: editor-level targeted object update |
 | `media/lib/BaseMediaPlugin.ts` | 1 | S: atomic normalized `provider`/`sourceUrl`/`url` write |
@@ -382,7 +382,7 @@ editor-level object mutations and therefore stay outside the plugin-local map:
 | App owner | Count |
 | --- | ---: |
 | Plite examples: check-lists, code-highlighting, embeds, forced-layout, markdown-shortcuts, pagination, richtext, synced-blocks, Yjs collaboration, Yjs Hocuspocus | 21 |
-| Registry: `comment-kit`, `transforms-classic`, `transforms`, `block-discussion`, `code-drawing-node`, `comment`, `date-node` | 12 |
+| Registry: `comment-kit`, `transforms`, `transforms`, `block-discussion`, `code-drawing-node`, `comment`, `date-node` | 12 |
 | **Total** | **33** |
 
 The remaining 143 calls across 53 spec/test/slow files are proof fixtures.
@@ -427,7 +427,7 @@ Execution slices:
 | 2. Core shallow inference | `pluginSchemaModel.internal.ts`, `pluginRuntimeTypes.ts`, definition type tests | Derive duplicate-safe shallow property entries; carry them through compact runtime definitions; build local transaction wrappers for update/correction/command/spec contexts | Plite overload stable | Current plugin plus required dependencies infer exact keys/values without complete grammar or public ferry types | Core type contracts, declaration emit, Base/React parity, large EditorKit compile |
 | 3. Exact author handles | `createPluginContext.internal.ts`, `compilePlateModel.ts`, `resolvePlugins.ts` | Preserve `SchemaPropertyKey`; construct complete stable prepublication handles; reject prefix direct mutation | Slice 2 types stable | Captured handles equal published handles and aliases/collisions remain exact | context/compiler/resolve runtime tests plus prefix/alias negatives |
 | 4. Identity prerequisite | Core NodeId | Remove public `idKey`, canonicalize schema/runtime/docs/tests on `id`, delete the cast-backed dynamic schema | Core local map available | Node ID no longer changes storage identity at runtime | NodeId typecheck and focused normalization/insert tests; main-relative migration prose |
-| 5. First-party adoption | 27 production package owners above | Convert L calls, route H calls through exact handles/semantic owners, retain S/X calls, simplify mutation-only `.key` reads, mechanically repair List Classic only as required | Core/Plite source-first types green | All 114 calls match their classified final role; no casts or callback annotations | package typechecks/tests; fresh zero-parse-error AST classification |
+| 5. First-party adoption | 27 production package owners above | Convert L calls, route H calls through exact handles/semantic owners, retain S/X calls, simplify mutation-only `.key` reads, mechanically repair Legacy list model only as required | Core/Plite source-first types green | All 114 calls match their classified final role; no casts or callback annotations | package typechecks/tests; fresh zero-parse-error AST classification |
 | 6. Public teaching and doctrine | docs, source rules, Vision, existing changesets | Teach the four-role law, EN/CN parity, repair contradictory rules with `best-api repair`, run `pnpm install`, update existing release prose | Package adoption frozen | One current API is taught everywhere; no direct skill edit or duplicate changeset | docs/source parity, rule checks, skill regeneration diff, changeset checks |
 | 7. Closure | all changed owners | Focused-to-broad tests, large EditorKit depth proof, Browser routes, lint, applicable barrels, P2 autoreview, final audits | All prior slices frozen | Zero accepted P0/P1/P2 findings and no unclassified source call/declaration | commands and route matrix below |
 
@@ -617,7 +617,7 @@ Execution closure:
   exact author handles are identical before and after publication.
 - NodeId uses canonical `id`; `idKey` survives only in historical changelog
   prose. Basic Styles, AI, Suggestion, Footnote, Layout, Link, Table, Indent,
-  List, List Classic, Comment, and app consumers follow the four-way law.
+  List, Legacy list model, Comment, and app consumers follow the four-way law.
 - Generated EditorKit and www typechecks pass without TS2589. The generated
   schema JSON artifacts are verified by CLI/generator checks and intentionally
   excluded from autoreview's oversized-untracked-file bundle.

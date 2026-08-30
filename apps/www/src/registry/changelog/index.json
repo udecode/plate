@@ -2,6 +2,148 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-29-semantic-details",
+      "href": "/registry/changelog/2026-08-29-semantic-details.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use semantic Details blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-08-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "details",
+        "details-static",
+        "details-toolbar-button",
+        "details-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-28-canonical-editor-api-names",
+      "href": "/registry/changelog/2026-08-28-canonical-editor-api-names.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use canonical editor API names",
+      "change": {
+        "type": "source",
+        "date": "2026-08-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "dnd",
+        "inline-combobox",
+        "block-discussion",
+        "use-chat",
+        "ai",
+        "ai-menu",
+        "comment",
+        "select-editor",
+        "find-replace-demo",
+        "code-block",
+        "font-size-toolbar-button",
+        "math",
+        "media-preview-dialog",
+        "huge-document-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-28-consolidate-platejs-dependencies",
+      "href": "/registry/changelog/2026-08-28-consolidate-platejs-dependencies.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use platejs for registry editor dependencies",
+      "change": {
+        "type": "source",
+        "date": "2026-08-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox", "link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-28-inline-required-value-checks",
+      "href": "/registry/changelog/2026-08-28-inline-required-value-checks.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Inline required-value checks",
+      "change": {
+        "type": "source",
+        "date": "2026-08-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "expect-defined",
+        "dnd",
+        "inline-combobox",
+        "block-discussion",
+        "use-chat"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-28-rename-plate-editor",
+      "href": "/registry/changelog/2026-08-28-rename-plate-editor.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use PlateEditor for complete editor blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-08-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-ai", "editor-basic"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-27-self-contained-editor-utilities",
+      "href": "/registry/changelog/2026-08-27-self-contained-editor-utilities.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install editor utilities from Plate and copied source",
+      "change": {
+        "type": "source",
+        "date": "2026-08-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "column",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "link",
+        "media-preview-dialog",
+        "select-editor",
+        "use-on-click-outside"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-26-compose-node-selection-primitives",
       "href": "/registry/changelog/2026-08-26-compose-node-selection-primitives.json",
       "status": "draft",
@@ -141,16 +283,6 @@
         "table",
         "table-toolbar-button",
         "turn-into-toolbar-button",
-        "autoformat-classic",
-        "fixed-toolbar-classic",
-        "fixed-toolbar-classic-buttons",
-        "floating-toolbar-classic",
-        "floating-toolbar-classic-buttons",
-        "insert-toolbar-classic-button",
-        "list-classic",
-        "list-classic-toolbar-button",
-        "transforms-classic",
-        "turn-into-toolbar-classic-button",
         "fumadocs",
         "editor-basic",
         "ai",
@@ -158,7 +290,7 @@
         "link",
         "suggestion-style"
       ],
-      "entries": 6,
+      "entries": 5,
       "diagnostics": []
     },
     {
@@ -656,7 +788,6 @@
         "editor-plugins-static",
         "ai",
         "align",
-        "autoformat-classic",
         "autoformat",
         "basic-blocks",
         "basic-marks",
@@ -679,16 +810,13 @@
         "editor-plugins",
         "emoji",
         "exit-break",
-        "fixed-toolbar-classic",
         "fixed-toolbar",
         "floating-toolbar",
-        "floating-toolbar-classic",
         "footnote",
         "font",
         "indent",
         "line-height",
         "link",
-        "list-classic",
         "list",
         "markdown",
         "math",
@@ -715,17 +843,13 @@
         "block-discussion",
         "select-editor",
         "emoji-toolbar-button",
-        "fixed-toolbar-classic-buttons",
-        "floating-toolbar-classic-buttons",
         "history-toolbar-button",
         "list-toolbar-button",
         "indent-toolbar-button",
         "inline-combobox",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
         "line-height-toolbar-button",
         "link-toolbar-button",
-        "list-classic-toolbar-button",
         "mark-toolbar-button",
         "media-toolbar",
         "media-toolbar-button",
@@ -735,7 +859,6 @@
         "table-toolbar-button",
         "toggle-toolbar-button",
         "turn-into-toolbar-button",
-        "turn-into-toolbar-classic-button",
         "remote-cursor-overlay",
         "toolbar",
         "suggestion-toolbar-button",
@@ -810,8 +933,6 @@
         "inline-combobox",
         "link-toolbar-button",
         "link-toolbar",
-        "list-classic-node",
-        "list-classic-toolbar-button",
         "list-toolbar-button",
         "media-audio-node",
         "media-embed-node",
@@ -833,7 +954,6 @@
         "toolbar",
         "emoji-kit",
         "link-kit",
-        "list-classic-kit",
         "media-kit"
       ],
       "entries": 2,
@@ -938,7 +1058,6 @@
         "ai-kit",
         "ai-menu",
         "ai-node",
-        "autoformat-classic-kit",
         "autoformat-kit",
         "block-context-menu",
         "block-discussion",
@@ -969,7 +1088,6 @@
         "excalidraw-kit",
         "excalidraw-node",
         "export-toolbar-button",
-        "fixed-toolbar-classic-buttons",
         "floating-toolbar",
         "font-base-kit",
         "font-color-toolbar-button",
@@ -1011,9 +1129,7 @@
         "tag-node",
         "toc-node",
         "transforms",
-        "transforms-classic",
         "turn-into-toolbar-button",
-        "turn-into-toolbar-classic-button",
         "use-chat",
         "version-history-demo"
       ],
@@ -1075,7 +1191,6 @@
         "kbd-node",
         "link-node",
         "link-node-static",
-        "list-classic-node",
         "paragraph-node",
         "search-highlight-node",
         "suggestion-node",
@@ -1699,8 +1814,6 @@
         "editor-kit",
         "fixed-toolbar-kit",
         "floating-toolbar-kit",
-        "list-classic-kit",
-        "list-classic-demo",
         "playground-demo",
         "plate-to-html",
         "single-block-demo"
@@ -1752,7 +1865,7 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["transforms", "transforms-classic"],
+      "targets": ["transforms"],
       "entries": 1,
       "diagnostics": []
     },
@@ -1842,7 +1955,7 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["transforms", "transforms-classic", "editor-kit", "dnd-kit"],
+      "targets": ["transforms", "editor-kit", "dnd-kit"],
       "entries": 1,
       "diagnostics": []
     },
@@ -2146,10 +2259,8 @@
         "editor-base-kit",
         "markdown-kit",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
         "slash-node",
         "transforms",
-        "transforms-classic",
         "autoformat-kit"
       ],
       "entries": 7,
@@ -2722,7 +2833,6 @@
         "discussion-kit",
         "tabbable-kit",
         "transforms",
-        "transforms-classic",
         "markdown-joiner-transform",
         "block-discussion",
         "block-draggable",
@@ -2742,10 +2852,7 @@
         "heading-node",
         "inline-combobox",
         "insert-toolbar-button",
-        "insert-toolbar-classic-button",
         "link-toolbar",
-        "list-classic-node",
-        "list-classic-toolbar-button",
         "media-embed-node",
         "media-image-node",
         "media-placeholder-node",

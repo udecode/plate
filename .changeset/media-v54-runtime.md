@@ -1,5 +1,5 @@
 ---
-'@platejs/media': major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -14,7 +14,7 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Insert React upload placeholders with `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)`
 - Replace a React upload placeholder with `editor.plugin(PlaceholderPlugin).update.replaceMedia({ plugin, ...input }, options)`; the media descriptor or capability name selects the destination while its persisted schema type remains application-configurable
 - Manage upload records through `editor.plugin(PlaceholderPlugin).api` and read one with `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
-- Insert prompted image and embed URLs with `insertMediaUrl` from `@platejs/media/react`
+- Insert prompted image and embed URLs with `insertMediaUrl` from `platejs/react`
 - Remove the standalone `insertImage`, `insertMedia`, `insertMediaEmbed`, `insertPlaceholder`, and `getUploadingFile` helpers
 - Remove `fileSizeToBytes`, `getMediaType`, `groupFilesByType`, `matchFileType`, `validateFileItem`, and `validateFiles`
 - Pass image uploads to `uploadImage` as data URL strings

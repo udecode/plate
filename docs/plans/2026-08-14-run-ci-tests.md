@@ -212,7 +212,7 @@ Verification evidence:
 - `pnpm run reinstall` -> exit 0.
 - Post-reinstall `pnpm test:all` -> exit 1 with identical fast main counts: 2,872 pass / 43 fail / 34 errors.
 - Post-reinstall `pnpm test:slow` -> exit 1 with identical slow main counts: 1,421 pass / 54 fail / 12 errors.
-- Dominant failure families: missing `@platejs/list-classic` and `@platejs/table`; removed `FilePlugin`, `useEditorPlugin`, and `InlineEquationPlugin` exports; closed schemas rejecting `id`; stale MarkdownKit renderer/dependency expectations; table/list slow regressions.
+- Dominant failure families: missing `platejs` and `@platejs/table`; removed `FilePlugin`, `useEditorPlugin`, and `InlineEquationPlugin` exports; closed schemas rejecting `id`; stale MarkdownKit renderer/dependency expectations; table/list slow regressions.
 
 Final handoff contract:
 - PR line: N/A: no PR requested.

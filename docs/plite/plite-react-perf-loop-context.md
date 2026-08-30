@@ -33,7 +33,7 @@ Code reads are allowed across:
 - `/Users/zbeyens/git/plate-2/packages/plite/**`
 - `/Users/zbeyens/git/plate-2/packages/plite-dom/**`
 - `/Users/zbeyens/git/plate-2/packages/plite-react/**`
-- `/Users/zbeyens/git/plate-2/packages/browser/**`
+- `/Users/zbeyens/git/plate-2/packages/test/**`
 - `/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/plite/_examples/**`
 - `/Users/zbeyens/git/plate-2/apps/plite/tests/plite-browser/donor/examples/**`
 - `/Users/zbeyens/git/plate-2/benchmarks/plite/donor/**`
@@ -164,7 +164,7 @@ bun run bench:react:huge-document-overlays:local
 If `packages/plite/**` changes, also run:
 
 ```sh
-bun test ./packages/plite/test/snapshot-contract.ts --bail 1
+bun test ./packages/plitejs/test/snapshot-contract.ts --bail 1
 bun run bench:plite:6038:local
 bun run bench:core:normalization:compare:local
 bun run bench:core:observation:compare:local
@@ -174,9 +174,9 @@ bun run bench:core:huge-document:compare:local
 If `packages/plite-react/**` changes, also run:
 
 ```sh
-bun test ./packages/plite-react/test/large-doc-and-scroll.tsx --bail 1
-bun test ./packages/plite-react/test/provider-hooks-contract.tsx --bail 1
-bun test ./packages/plite-react/test/projections-and-selection-contract.tsx --bail 1
+bun test ./packages/plitejs/test/react/large-doc-and-scroll.tsx --bail 1
+bun test ./packages/plitejs/test/react/provider-hooks-contract.tsx --bail 1
+bun test ./packages/plitejs/test/react/projections-and-selection-contract.tsx --bail 1
 bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local

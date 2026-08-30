@@ -1,13 +1,15 @@
 'use client';
 
+import debounce from 'lodash/debounce.js';
+import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
 import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
-} from '@platejs/basic-styles/react';
-import { useComposedRef } from '@udecode/cn';
-import debounce from 'lodash/debounce.js';
-import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
-import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
+  type Editor,
+  useEditor,
+  useEditorSelector,
+  useComposedRef,
+} from 'platejs/react';
 import React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -80,9 +82,9 @@ function getNextRecentColors(
 }
 
 type ColorPlugin = typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
-type PluginPortalEditor = Pick<PlateEditor, 'plugin'>;
+type PluginPortalEditor = Pick<Editor, 'plugin'>;
 
-function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
+function setColor(editor: Editor, plugin: ColorPlugin, value: string) {
   switch (plugin.name) {
     case FontBackgroundColorPlugin.name: {
       editor.plugin(plugin).update.set(value);
@@ -95,7 +97,7 @@ function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
   }
 }
 
-function clearColor(editor: PlateEditor, plugin: ColorPlugin) {
+function clearColor(editor: Editor, plugin: ColorPlugin) {
   switch (plugin.name) {
     case FontBackgroundColorPlugin.name: {
       editor.plugin(plugin).update.clear();
@@ -118,7 +120,7 @@ function getColor(editor: PluginPortalEditor, plugin: ColorPlugin) {
     }
   }
 
-  return undefined;
+  throw new Error('Unsupported color plugin.');
 }
 
 export type ColorOption = {

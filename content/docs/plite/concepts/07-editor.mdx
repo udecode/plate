@@ -94,7 +94,7 @@ const unsubscribe = editor.subscribe((_snapshot, change) => {
 });
 ```
 
-Use subscriptions for app services that need to observe commits. Use React hooks from `@platejs/plite-react` for UI that renders editor state.
+Use subscriptions for app services that need to observe commits. Use React hooks from `plitejs/react` for UI that renders editor state.
 
 Full snapshots are runtime observer data. Use them for debug and test tooling
 that intentionally needs the whole document, selection, compiled path index,
@@ -172,7 +172,7 @@ and optional runtime services.
 Here's a small extension that adds a table namespace:
 
 ```javascript
-import { createEditor, defineExtension } from "@platejs/plite";
+import { createEditor, defineExtension } from "plitejs";
 
 const TablesExtension = defineExtension("tables", {
   read: ({ state }) => ({

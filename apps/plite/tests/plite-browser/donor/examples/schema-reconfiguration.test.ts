@@ -3,7 +3,7 @@ import {
   createPliteBrowserEditorHarness,
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test('publishes schema-only behavior atomically across primary, named, and projected roots', async ({
   page,

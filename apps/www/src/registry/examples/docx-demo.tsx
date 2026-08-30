@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
@@ -44,7 +44,7 @@ const DocxEditorKit = [
 ] as const;
 
 export default function DocxDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: DocxEditorKit,
     initialValue: deserializeDocxValue,
   });

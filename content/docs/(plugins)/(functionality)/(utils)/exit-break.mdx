@@ -26,10 +26,10 @@ The fastest way to add exit break functionality is with the `ExitBreakKit`, whic
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { ExitBreakKit } from '@/components/editor/exit-break';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...ExitBreakKit,
@@ -47,9 +47,9 @@ const editor = createPlateEditor({
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ExitBreakPlugin,
@@ -61,9 +61,9 @@ const editor = createPlateEditor({
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ExitBreakPlugin.configure({

@@ -250,7 +250,7 @@ Verification evidence:
   existing non-blocking React list-key warning.
 - Checker proof: focused suite passes 61/61. The full repo audit has no Code
   Block finding; it remains red on unrelated shared WIP in registry, docs,
-  Element ID, list-classic, media, Plite, suggestion, and Yjs.
+  Element ID, legacy-list-model, media, Plite, suggestion, and Yjs.
 - Export proof: Core and Code Block barrel generation passes. Emitted Base and
   React declarations contain the four direct descriptors and no stage/carrier
   symbol; their combined declaration size is 37,034 bytes.

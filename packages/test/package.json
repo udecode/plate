@@ -1,0 +1,128 @@
+{
+  "name": "@platejs/test",
+  "version": "54.0.0-beta.0",
+  "description": "Headless, React, browser, Playwright, and proof utilities for Plate editors.",
+  "keywords": [
+    "editor",
+    "platejs",
+    "playwright",
+    "react",
+    "testing"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/test"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js",
+      "default": "./dist/browser/index.js"
+    },
+    "./playwright": {
+      "types": "./dist/playwright/index.d.ts",
+      "import": "./dist/playwright/index.js",
+      "default": "./dist/playwright/index.js"
+    },
+    "./proof": {
+      "types": "./dist/proof/index.d.ts",
+      "import": "./dist/proof/index.js",
+      "default": "./dist/proof/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js",
+      "default": "./dist/react/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "brl": "echo 'No barrels to generate'",
+    "build": "tsdown --config tsdown.config.mts --log-level warn",
+    "clean": "rimraf dist lib",
+    "lint": "node ../../tooling/scripts/run-entrypoint-package-task.mjs @platejs/test lint",
+    "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
+    "lint:partition:browser": "node ../../tooling/scripts/run-entrypoint-task.mjs lint @platejs/test browser",
+    "lint:partition:playwright": "node ../../tooling/scripts/run-entrypoint-task.mjs lint @platejs/test playwright",
+    "lint:partition:proof": "node ../../tooling/scripts/run-entrypoint-task.mjs lint @platejs/test proof",
+    "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint @platejs/test react",
+    "lint:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint @platejs/test root",
+    "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs @platejs/test test",
+    "test:dom": "vitest run --config ./vitest.config.ts --project browser",
+    "test:node": "bun test --preload ../../config/plite-source-test-setup.ts test/node test/proof",
+    "test:partition:browser": "node ../../tooling/scripts/run-entrypoint-task.mjs test @platejs/test browser",
+    "test:partition:proof": "node ../../tooling/scripts/run-entrypoint-task.mjs test @platejs/test proof",
+    "test:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test @platejs/test react",
+    "test:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test @platejs/test root",
+    "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/proof/raw-mobile-proof.test.ts test/proof/scenario.test.ts",
+    "test:react": "bun test --preload ../../config/plite-source-test-setup.ts test/react",
+    "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts",
+    "typecheck": "node ../../tooling/scripts/run-entrypoint-package-task.mjs @platejs/test typecheck",
+    "typecheck:contracts": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-contracts @platejs/test root",
+    "typecheck:partition:browser": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test browser",
+    "typecheck:partition:playwright": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test playwright",
+    "typecheck:partition:proof": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test proof",
+    "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test react",
+    "typecheck:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test root"
+  },
+  "dependencies": {
+    "is-hotkey": "^0.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "16.3.0",
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.7",
+    "@vitest/browser-playwright": "^4.1.0",
+    "platejs": "workspace:^",
+    "playwright": "^1.58.2",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "^7.1.12",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.52.0",
+    "@testing-library/react": ">=16.0.0",
+    "platejs": ">=54.0.0-beta.1",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    },
+    "@testing-library/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  }
+}

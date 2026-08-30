@@ -77,7 +77,7 @@ const initialValue = saved
       children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     };
 
-const editor = usePliteEditor({
+const editor = useEditor({
   extensions: [documentTitle],
   initialValue,
 });
@@ -110,7 +110,7 @@ returns `{ kind: "derived", fingerprint }`; a named lineage returns
 deterministic check that the same ID/version still describes the same compiled
 semantics.
 
-`@platejs/plite-history` stores this identity in `History.toJSON(editor)` and
+`plitejs/history` stores this identity in `History.toJSON(editor)` and
 rejects mismatches in `History.fromJSON(editor, json)` before decoding any
 batch. Application document storage owns its own envelope and migration policy.
 
@@ -120,7 +120,7 @@ Use `defineStateField` for document metadata and settings that belong to the
 editor model.
 
 ```tsx
-import { defineStateField, valueCodecs } from "@platejs/plite";
+import { defineStateField, valueCodecs } from "plitejs";
 
 const documentTitle = defineStateField({
   key: "document.title",
@@ -144,7 +144,7 @@ editor.update((tx) => {
 In React, use `useStateFieldValue` and `useSetStateField` for UI controls.
 
 ```tsx
-import { useSetStateField, useStateFieldValue } from "@platejs/plite-react";
+import { useSetStateField, useStateFieldValue } from "plitejs/react";
 
 const title = useStateFieldValue(documentTitle);
 const setTitle = useSetStateField(documentTitle);
@@ -199,7 +199,7 @@ const commit = editor.read.lastCommit();
 ```
 
 Replay decoded shared effects through `tx.effects.emit(...)`. The field's
-`persist` codec also versions the generated transition effect; `@platejs/yjs`
+`persist` codec also versions the generated transition effect; `platejs/yjs`
 owns the registry and remote policy for Yjs documents.
 
 ```tsx

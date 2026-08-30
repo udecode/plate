@@ -1,28 +1,26 @@
 'use client';
 
+import { cloneDeep } from 'lodash';
+import { type PropertyJsonValue, type Value, property, schema } from 'platejs';
 import {
   type DiffIntent,
   type DiffUpdate,
   computeDiff,
   excludeDiffFragment,
-} from '@platejs/diff';
-import type { PropertyJsonValue } from '@platejs/plite';
-import { cloneDeep } from 'lodash';
-import { property, schema } from 'platejs';
-import type { Value } from 'platejs';
+} from 'platejs/diff';
 import {
-  type PlateElementProps,
-  type PlateLeafProps,
-  type PlateProps,
-  type PlateEditor,
-  createPlateEditor,
+  type Editor,
   Plate,
   PlateContent,
   PlateElement,
+  type PlateElementProps,
   PlateLeaf,
+  type PlateLeafProps,
+  type PlateProps,
+  createEditor,
   definePlatePlugin,
+  useCreateEditor,
   useElementSelected,
-  usePlateEditor,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -296,7 +294,7 @@ const diffPlugins = [
   DiffPlugin.configure({ component: DiffLeaf }),
 ];
 
-function VersionHistoryPlate<E extends PlateEditor>(
+function VersionHistoryPlate<E extends Editor>(
   props: Omit<PlateProps<E>, 'children'>
 ) {
   return (
@@ -313,7 +311,7 @@ type DiffProps = {
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: diffPlugins,
     });
 
@@ -327,7 +325,7 @@ function Diff({ current, previous }: DiffProps) {
     ) as Value;
   }, [previous, current]);
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: diffPlugins,
       initialValue: diffValue,
@@ -367,12 +365,12 @@ export default function VersionHistoryDemo() {
     setRevisions([...revisions, createVersionSnapshot(value)]);
   };
 
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: basePlugins,
     initialValue: createVersionSnapshot(initialValue),
   });
 
-  const editorRevision = usePlateEditor(
+  const editorRevision = useCreateEditor(
     {
       plugins: basePlugins,
       initialValue: selectedRevisionValue,

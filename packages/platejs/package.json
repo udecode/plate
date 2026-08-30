@@ -1,0 +1,801 @@
+{
+  "name": "platejs",
+  "version": "54.0.0-beta.1",
+  "description": "Plate – a framework for building rich text editors on the web",
+  "keywords": [
+    "contentEditable",
+    "editor",
+    "framework",
+    "html",
+    "plate",
+    "plugin",
+    "rich text",
+    "wysiwyg"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/platejs"
+  },
+  "files": [
+    "dist/**/*",
+    "math/**/*"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./math/katex.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "import": "./dist/ai/index.js",
+      "default": "./dist/ai/index.js"
+    },
+    "./ai/react": {
+      "types": "./dist/ai/react/index.d.ts",
+      "import": "./dist/ai/react/index.js",
+      "default": "./dist/ai/react/index.js"
+    },
+    "./callout": {
+      "types": "./dist/features/callout/index.d.ts",
+      "import": "./dist/features/callout/index.js",
+      "default": "./dist/features/callout/index.js"
+    },
+    "./callout/react": {
+      "types": "./dist/react/features/callout/index.d.ts",
+      "import": "./dist/react/features/callout/index.js",
+      "default": "./dist/react/features/callout/index.js"
+    },
+    "./code-drawing": {
+      "types": "./dist/code-drawing/index.d.ts",
+      "import": "./dist/code-drawing/index.js",
+      "default": "./dist/code-drawing/index.js"
+    },
+    "./code-drawing/react": {
+      "types": "./dist/code-drawing/react/index.d.ts",
+      "import": "./dist/code-drawing/react/index.js",
+      "default": "./dist/code-drawing/react/index.js"
+    },
+    "./combobox": {
+      "types": "./dist/features/combobox/index.d.ts",
+      "import": "./dist/features/combobox/index.js",
+      "default": "./dist/features/combobox/index.js"
+    },
+    "./comment": {
+      "types": "./dist/features/comment/index.d.ts",
+      "import": "./dist/features/comment/index.js",
+      "default": "./dist/features/comment/index.js"
+    },
+    "./comment/react": {
+      "types": "./dist/react/features/comment/index.d.ts",
+      "import": "./dist/react/features/comment/index.js",
+      "default": "./dist/react/features/comment/index.js"
+    },
+    "./csv": {
+      "types": "./dist/csv/index.d.ts",
+      "import": "./dist/csv/index.js",
+      "default": "./dist/csv/index.js"
+    },
+    "./cursor/react": {
+      "types": "./dist/react/features/cursor/index.d.ts",
+      "import": "./dist/react/features/cursor/index.js",
+      "default": "./dist/react/features/cursor/index.js"
+    },
+    "./date": {
+      "types": "./dist/features/date/index.d.ts",
+      "import": "./dist/features/date/index.js",
+      "default": "./dist/features/date/index.js"
+    },
+    "./date/react": {
+      "types": "./dist/react/features/date/index.d.ts",
+      "import": "./dist/react/features/date/index.js",
+      "default": "./dist/react/features/date/index.js"
+    },
+    "./diff": {
+      "types": "./dist/diff/index.d.ts",
+      "import": "./dist/diff/index.js",
+      "default": "./dist/diff/index.js"
+    },
+    "./dnd/react": {
+      "types": "./dist/dnd/react/index.d.ts",
+      "import": "./dist/dnd/react/index.js",
+      "default": "./dist/dnd/react/index.js"
+    },
+    "./docx": {
+      "types": "./dist/docx/index.d.ts",
+      "import": "./dist/docx/index.js",
+      "default": "./dist/docx/index.js"
+    },
+    "./dom": {
+      "types": "./dist/dom/index.d.ts",
+      "import": "./dist/dom/index.js",
+      "default": "./dist/dom/index.js"
+    },
+    "./emoji": {
+      "types": "./dist/emoji/index.d.ts",
+      "import": "./dist/emoji/index.js",
+      "default": "./dist/emoji/index.js"
+    },
+    "./emoji/react": {
+      "types": "./dist/emoji/react/index.d.ts",
+      "import": "./dist/emoji/react/index.js",
+      "default": "./dist/emoji/react/index.js"
+    },
+    "./excalidraw": {
+      "types": "./dist/excalidraw/index.d.ts",
+      "import": "./dist/excalidraw/index.js",
+      "default": "./dist/excalidraw/index.js"
+    },
+    "./excalidraw/react": {
+      "types": "./dist/excalidraw/react/index.d.ts",
+      "import": "./dist/excalidraw/react/index.js",
+      "default": "./dist/excalidraw/react/index.js"
+    },
+    "./floating/react": {
+      "types": "./dist/floating/react/index.d.ts",
+      "import": "./dist/floating/react/index.js",
+      "default": "./dist/floating/react/index.js"
+    },
+    "./find-replace": {
+      "types": "./dist/features/find-replace/index.d.ts",
+      "import": "./dist/features/find-replace/index.js",
+      "default": "./dist/features/find-replace/index.js"
+    },
+    "./footnote": {
+      "types": "./dist/features/footnote/index.d.ts",
+      "import": "./dist/features/footnote/index.js",
+      "default": "./dist/features/footnote/index.js"
+    },
+    "./footnote/react": {
+      "types": "./dist/react/features/footnote/index.d.ts",
+      "import": "./dist/react/features/footnote/index.js",
+      "default": "./dist/react/features/footnote/index.js"
+    },
+    "./history": {
+      "types": "./dist/history/index.d.ts",
+      "import": "./dist/history/index.js",
+      "default": "./dist/history/index.js"
+    },
+    "./hyperscript": {
+      "types": "./dist/hyperscript/index.d.ts",
+      "import": "./dist/hyperscript/index.js",
+      "default": "./dist/hyperscript/index.js"
+    },
+    "./juice": {
+      "types": "./dist/juice/index.d.ts",
+      "import": "./dist/juice/index.js",
+      "default": "./dist/juice/index.js"
+    },
+    "./layout": {
+      "types": "./dist/features/layout/index.d.ts",
+      "import": "./dist/features/layout/index.js",
+      "default": "./dist/features/layout/index.js"
+    },
+    "./layout/react": {
+      "types": "./dist/react/features/layout/index.d.ts",
+      "import": "./dist/react/features/layout/index.js",
+      "default": "./dist/react/features/layout/index.js"
+    },
+    "./markdown": {
+      "types": "./dist/markdown/index.d.ts",
+      "import": "./dist/markdown/index.js",
+      "default": "./dist/markdown/index.js"
+    },
+    "./media": {
+      "types": "./dist/features/media/index.d.ts",
+      "import": "./dist/features/media/index.js",
+      "default": "./dist/features/media/index.js"
+    },
+    "./media/react": {
+      "types": "./dist/react/features/media/index.d.ts",
+      "import": "./dist/react/features/media/index.js",
+      "default": "./dist/react/features/media/index.js"
+    },
+    "./mention": {
+      "types": "./dist/features/mention/index.d.ts",
+      "import": "./dist/features/mention/index.js",
+      "default": "./dist/features/mention/index.js"
+    },
+    "./mention/react": {
+      "types": "./dist/react/features/mention/index.d.ts",
+      "import": "./dist/react/features/mention/index.js",
+      "default": "./dist/react/features/mention/index.js"
+    },
+    "./math": {
+      "types": "./dist/math/index.d.ts",
+      "import": "./dist/math/index.js",
+      "default": "./dist/math/index.js"
+    },
+    "./math/react": {
+      "types": "./dist/math/react/index.d.ts",
+      "import": "./dist/math/react/index.js",
+      "default": "./dist/math/react/index.js"
+    },
+    "./migrations": {
+      "types": "./dist/migrations/index.d.ts",
+      "import": "./dist/migrations/index.js",
+      "default": "./dist/migrations/index.js"
+    },
+    "./page-layout": {
+      "types": "./dist/page-layout/index.d.ts",
+      "import": "./dist/page-layout/index.js",
+      "default": "./dist/page-layout/index.js"
+    },
+    "./page-layout/react": {
+      "types": "./dist/page-layout/react/index.d.ts",
+      "import": "./dist/page-layout/react/index.js",
+      "default": "./dist/page-layout/react/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js",
+      "default": "./dist/react/index.js"
+    },
+    "./resizable/react": {
+      "types": "./dist/react/features/resizable/index.d.ts",
+      "import": "./dist/react/features/resizable/index.js",
+      "default": "./dist/react/features/resizable/index.js"
+    },
+    "./slash-command": {
+      "types": "./dist/features/slash-command/index.d.ts",
+      "import": "./dist/features/slash-command/index.js",
+      "default": "./dist/features/slash-command/index.js"
+    },
+    "./slash-command/react": {
+      "types": "./dist/react/features/slash-command/index.d.ts",
+      "import": "./dist/react/features/slash-command/index.js",
+      "default": "./dist/react/features/slash-command/index.js"
+    },
+    "./static": {
+      "types": "./dist/static/index.d.ts",
+      "import": "./dist/static/index.js",
+      "default": "./dist/static/index.js"
+    },
+    "./suggestion": {
+      "types": "./dist/features/suggestion/index.d.ts",
+      "import": "./dist/features/suggestion/index.js",
+      "default": "./dist/features/suggestion/index.js"
+    },
+    "./suggestion/react": {
+      "types": "./dist/react/features/suggestion/index.d.ts",
+      "import": "./dist/react/features/suggestion/index.js",
+      "default": "./dist/react/features/suggestion/index.js"
+    },
+    "./table": {
+      "types": "./dist/features/table/index.d.ts",
+      "import": "./dist/features/table/index.js",
+      "default": "./dist/features/table/index.js"
+    },
+    "./table/react": {
+      "types": "./dist/react/features/table/index.d.ts",
+      "import": "./dist/react/features/table/index.js",
+      "default": "./dist/react/features/table/index.js"
+    },
+    "./tabbable": {
+      "types": "./dist/tabbable/index.d.ts",
+      "import": "./dist/tabbable/index.js",
+      "default": "./dist/tabbable/index.js"
+    },
+    "./tabbable/react": {
+      "types": "./dist/tabbable/react/index.d.ts",
+      "import": "./dist/tabbable/react/index.js",
+      "default": "./dist/tabbable/react/index.js"
+    },
+    "./tag": {
+      "types": "./dist/features/tag/index.d.ts",
+      "import": "./dist/features/tag/index.js",
+      "default": "./dist/features/tag/index.js"
+    },
+    "./tag/react": {
+      "types": "./dist/react/features/tag/index.d.ts",
+      "import": "./dist/react/features/tag/index.js",
+      "default": "./dist/react/features/tag/index.js"
+    },
+    "./toc": {
+      "types": "./dist/features/toc/index.d.ts",
+      "import": "./dist/features/toc/index.js",
+      "default": "./dist/features/toc/index.js"
+    },
+    "./toc/react": {
+      "types": "./dist/react/features/toc/index.d.ts",
+      "import": "./dist/react/features/toc/index.js",
+      "default": "./dist/react/features/toc/index.js"
+    },
+    "./details": {
+      "types": "./dist/features/details/index.d.ts",
+      "import": "./dist/features/details/index.js",
+      "default": "./dist/features/details/index.js"
+    },
+    "./details/react": {
+      "types": "./dist/react/features/details/index.d.ts",
+      "import": "./dist/react/features/details/index.js",
+      "default": "./dist/react/features/details/index.js"
+    },
+    "./yjs": {
+      "types": "./dist/yjs/index.d.ts",
+      "import": "./dist/yjs/index.js",
+      "default": "./dist/yjs/index.js"
+    },
+    "./yjs/react": {
+      "types": "./dist/yjs/react/index.d.ts",
+      "import": "./dist/yjs/react/index.js",
+      "default": "./dist/yjs/react/index.js"
+    },
+    "./math/katex.css": {
+      "types": "./math/katex.css.d.ts",
+      "default": "./math/katex.css"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "brl": "node ../../tooling/scripts/plate-pkg.cjs p:brl",
+    "build": "tsdown --config tsdown.config.mts --log-level warn && tsc --project tsconfig.build.json --pretty false && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist",
+    "build:watch": "node ../../tooling/scripts/plate-pkg.cjs p:build:watch",
+    "clean": "node ../../tooling/scripts/plate-pkg.cjs p:clean",
+    "lint": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs lint",
+    "lint:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs diff",
+    "lint:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs dom",
+    "lint:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs history",
+    "lint:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs hyperscript",
+    "lint:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs migrations",
+    "lint:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs page-layout",
+    "lint:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs page-layout/react",
+    "lint:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react",
+    "lint:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs root",
+    "lint:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs static",
+    "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
+    "lint:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai",
+    "lint:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai-react",
+    "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
+    "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
+    "lint:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing",
+    "lint:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing-react",
+    "lint:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox",
+    "lint:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comment",
+    "lint:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comment-react",
+    "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs core",
+    "lint:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs csv",
+    "lint:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs cursor-react",
+    "lint:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date",
+    "lint:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date-react",
+    "lint:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details",
+    "lint:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details-react",
+    "lint:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs dnd-react",
+    "lint:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx",
+    "lint:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji",
+    "lint:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji-react",
+    "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
+    "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
+    "lint:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find-replace",
+    "lint:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs floating-react",
+    "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
+    "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
+    "lint:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs juice",
+    "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout",
+    "lint:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout-react",
+    "lint:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs markdown",
+    "lint:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs math",
+    "lint:partition:math-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs math-react",
+    "lint:partition:media": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs media",
+    "lint:partition:media-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs media-react",
+    "lint:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs mention",
+    "lint:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs mention-react",
+    "lint:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs migrations",
+    "lint:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs proxies",
+    "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react",
+    "lint:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react-core",
+    "lint:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs resizable-react",
+    "lint:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs root",
+    "lint:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs slash-command",
+    "lint:partition:slash-command-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs slash-command-react",
+    "lint:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-nodes",
+    "lint:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-nodes-react",
+    "lint:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-styles",
+    "lint:partition:standard-basic-styles-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-basic-styles-react",
+    "lint:partition:standard-code-block": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-code-block",
+    "lint:partition:standard-code-block-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-code-block-react",
+    "lint:partition:standard-indent": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-indent",
+    "lint:partition:standard-indent-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-indent-react",
+    "lint:partition:standard-link": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-link",
+    "lint:partition:standard-link-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-link-react",
+    "lint:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-list",
+    "lint:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs standard-list-react",
+    "lint:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs static",
+    "lint:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs suggestion",
+    "lint:partition:suggestion-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs suggestion-react",
+    "lint:partition:tabbable": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tabbable",
+    "lint:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tabbable-react",
+    "lint:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs table",
+    "lint:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs table-react",
+    "lint:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tag",
+    "lint:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tag-react",
+    "lint:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc",
+    "lint:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc-react",
+    "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs",
+    "lint:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs-react",
+    "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs test",
+    "test:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs diff",
+    "test:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs dom",
+    "test:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs history",
+    "test:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs hyperscript",
+    "test:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
+    "test:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs page-layout",
+    "test:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs page-layout/react",
+    "test:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react",
+    "test:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs root",
+    "test:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
+    "test:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai",
+    "test:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai-react",
+    "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
+    "test:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-drawing",
+    "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
+    "test:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comment",
+    "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs core",
+    "test:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs csv",
+    "test:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs cursor-react",
+    "test:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs date",
+    "test:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details",
+    "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
+    "test:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs dnd-react",
+    "test:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx",
+    "test:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs emoji",
+    "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
+    "test:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find-replace",
+    "test:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs floating-react",
+    "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
+    "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",
+    "test:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs juice",
+    "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs layout",
+    "test:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs markdown",
+    "test:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs math",
+    "test:partition:media": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs media",
+    "test:partition:media-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs media-react",
+    "test:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention",
+    "test:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention-react",
+    "test:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
+    "test:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react-core",
+    "test:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs resizable-react",
+    "test:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs slash-command",
+    "test:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes",
+    "test:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes-react",
+    "test:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-styles",
+    "test:partition:standard-code-block": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-code-block",
+    "test:partition:standard-code-block-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-code-block-react",
+    "test:partition:standard-indent": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-indent",
+    "test:partition:standard-link": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-link",
+    "test:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list",
+    "test:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list-react",
+    "test:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
+    "test:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs suggestion",
+    "test:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tabbable-react",
+    "test:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table",
+    "test:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table-react",
+    "test:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag",
+    "test:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag-react",
+    "test:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs toc",
+    "test:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs yjs",
+    "test:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs yjs-react",
+    "test:watch": "node ../../tooling/scripts/plate-pkg.cjs p:test:watch",
+    "typecheck": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs typecheck",
+    "typecheck:contracts": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-contracts platejs core",
+    "typecheck:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs diff",
+    "typecheck:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs dom",
+    "typecheck:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs history",
+    "typecheck:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs hyperscript",
+    "typecheck:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs migrations",
+    "typecheck:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs page-layout",
+    "typecheck:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs page-layout/react",
+    "typecheck:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react",
+    "typecheck:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs root",
+    "typecheck:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs static",
+    "typecheck:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs ai",
+    "typecheck:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs ai-react",
+    "typecheck:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout",
+    "typecheck:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout-react",
+    "typecheck:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing",
+    "typecheck:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing-react",
+    "typecheck:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox",
+    "typecheck:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comment",
+    "typecheck:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comment-react",
+    "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs core",
+    "typecheck:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs csv",
+    "typecheck:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs cursor-react",
+    "typecheck:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date",
+    "typecheck:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date-react",
+    "typecheck:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details",
+    "typecheck:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details-react",
+    "typecheck:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs dnd-react",
+    "typecheck:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx",
+    "typecheck:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji",
+    "typecheck:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji-react",
+    "typecheck:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw",
+    "typecheck:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw-react",
+    "typecheck:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs find-replace",
+    "typecheck:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs floating-react",
+    "typecheck:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote",
+    "typecheck:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote-react",
+    "typecheck:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs juice",
+    "typecheck:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout",
+    "typecheck:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout-react",
+    "typecheck:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs markdown",
+    "typecheck:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs math",
+    "typecheck:partition:math-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs math-react",
+    "typecheck:partition:media": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs media",
+    "typecheck:partition:media-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs media-react",
+    "typecheck:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs mention",
+    "typecheck:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs mention-react",
+    "typecheck:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs migrations",
+    "typecheck:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs proxies",
+    "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react",
+    "typecheck:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react-core",
+    "typecheck:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs resizable-react",
+    "typecheck:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs root",
+    "typecheck:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs slash-command",
+    "typecheck:partition:slash-command-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs slash-command-react",
+    "typecheck:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-nodes",
+    "typecheck:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-nodes-react",
+    "typecheck:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-styles",
+    "typecheck:partition:standard-basic-styles-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-basic-styles-react",
+    "typecheck:partition:standard-code-block": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-code-block",
+    "typecheck:partition:standard-code-block-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-code-block-react",
+    "typecheck:partition:standard-indent": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-indent",
+    "typecheck:partition:standard-indent-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-indent-react",
+    "typecheck:partition:standard-link": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-link",
+    "typecheck:partition:standard-link-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-link-react",
+    "typecheck:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-list",
+    "typecheck:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs standard-list-react",
+    "typecheck:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs static",
+    "typecheck:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs suggestion",
+    "typecheck:partition:suggestion-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs suggestion-react",
+    "typecheck:partition:tabbable": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tabbable",
+    "typecheck:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tabbable-react",
+    "typecheck:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs table",
+    "typecheck:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs table-react",
+    "typecheck:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tag",
+    "typecheck:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tag-react",
+    "typecheck:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc",
+    "typecheck:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc-react",
+    "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs",
+    "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react"
+  },
+  "dependencies": {
+    "@types/is-hotkey": "0.1.10",
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
+    "clsx": "^2.1.1",
+    "dequal": "2.0.3",
+    "html-entities": "^2.6.0",
+    "is-hotkey": "^0.2.0",
+    "jotai": "~2.8.4",
+    "jotai-optics": "0.4.0",
+    "jotai-x": "2.3.4",
+    "lodash": "^4.17.23",
+    "mdast-util-math": "3.0.0",
+    "mdast-util-mdx": "3.0.0",
+    "mutative": "^1.1.0",
+    "nanoid": "^5.1.5",
+    "optics-ts": "2.4.1",
+    "plitejs": "workspace:*",
+    "unist-util-visit": "5.0.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@ai-sdk/react": "^3.0.0",
+    "@chenglou/pretext": "^0.0.7",
+    "@emoji-mart/data": "^1.2.0",
+    "@excalidraw/excalidraw": "0.18.0",
+    "@floating-ui/core": "^1.6.7",
+    "@floating-ui/react": "^0.26.23",
+    "@testing-library/react": "16.3.0",
+    "@types/katex": "0.16.7",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "24.12.0",
+    "@types/papaparse": "^5.3.16",
+    "@types/plantuml-encoder": "^1.4.2",
+    "@types/react": "19.2.7",
+    "@types/viz.js": "^2.1.5",
+    "ai": "^6.0.0",
+    "color-name": "^2.0.0",
+    "diff-match-patch-ts": "^0.6.0",
+    "fast-check": "^3.23.2",
+    "fastest-levenshtein": "1.0.16",
+    "flowchart.js": "^1.15.0",
+    "html-to-vdom": "^0.7.0",
+    "jszip": "^3.10.1",
+    "juice": "^11.0.1",
+    "katex": "0.16.22",
+    "lowlight": "^3.3.0",
+    "mammoth": "^1.9.0",
+    "marked": "^15.0.12",
+    "mermaid": "^11.6.1",
+    "mime-types": "^2.1.35",
+    "papaparse": "^5.5.3",
+    "plantuml-encoder": "^1.4.0",
+    "raf": "^3.4.1",
+    "react": "19.2.8",
+    "react-dnd": "16.0.1",
+    "react-dnd-html5-backend": "16.0.1",
+    "react-dom": "19.2.8",
+    "remark-emoji": "5.0.1",
+    "remark-gfm": "4.0.1",
+    "remark-math": "6.0.0",
+    "remark-mdx": "^3.1.0",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "tabbable": "^6.2.0",
+    "unified": "^11.0.5",
+    "validator": "^13.15.15",
+    "virtual-dom": "^2.1.1",
+    "viz.js": "^2.1.2",
+    "xmlbuilder2": "^3.1.1",
+    "yjs": "13.6.30"
+  },
+  "peerDependencies": {
+    "@ai-sdk/react": "^3.0.0",
+    "@chenglou/pretext": "^0.0.7",
+    "@emoji-mart/data": ">=1.2.0",
+    "@excalidraw/excalidraw": "0.18.0",
+    "@floating-ui/core": "^1.6.7",
+    "@floating-ui/react": "^0.26.23",
+    "@types/papaparse": "^5.3.16",
+    "ai": "^6.0.0",
+    "color-name": "^2.0.0",
+    "diff-match-patch-ts": "^0.6.0",
+    "fastest-levenshtein": "1.0.16",
+    "flowchart.js": "^1.15.0",
+    "html-to-vdom": "^0.7.0",
+    "jszip": "^3.10.1",
+    "juice": "^11.0.1",
+    "katex": "0.16.22",
+    "mammoth": "^1.9.0",
+    "marked": "^15.0.12",
+    "mermaid": "^11.6.1",
+    "mime-types": "^2.1.35",
+    "papaparse": "^5.5.3",
+    "plantuml-encoder": "^1.4.0",
+    "raf": "^3.4.1",
+    "react": ">=19.2.0",
+    "react-dnd": ">=14.0.0",
+    "react-dnd-html5-backend": ">=14.0.0",
+    "react-dom": ">=19.2.0",
+    "remark-mdx": "^3.1.0",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "tabbable": "^6.2.0",
+    "unified": "^11.0.5",
+    "validator": "^13.15.15",
+    "virtual-dom": "^2.1.1",
+    "viz.js": "^2.1.2",
+    "xmlbuilder2": "^3.1.1",
+    "yjs": ">=13.6.30"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/react": {
+      "optional": true
+    },
+    "@chenglou/pretext": {
+      "optional": true
+    },
+    "@emoji-mart/data": {
+      "optional": true
+    },
+    "@excalidraw/excalidraw": {
+      "optional": true
+    },
+    "@floating-ui/core": {
+      "optional": true
+    },
+    "@floating-ui/react": {
+      "optional": true
+    },
+    "@types/papaparse": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    },
+    "color-name": {
+      "optional": true
+    },
+    "diff-match-patch-ts": {
+      "optional": true
+    },
+    "fastest-levenshtein": {
+      "optional": true
+    },
+    "flowchart.js": {
+      "optional": true
+    },
+    "html-to-vdom": {
+      "optional": true
+    },
+    "jszip": {
+      "optional": true
+    },
+    "juice": {
+      "optional": true
+    },
+    "katex": {
+      "optional": true
+    },
+    "mammoth": {
+      "optional": true
+    },
+    "marked": {
+      "optional": true
+    },
+    "mime-types": {
+      "optional": true
+    },
+    "mermaid": {
+      "optional": true
+    },
+    "papaparse": {
+      "optional": true
+    },
+    "plantuml-encoder": {
+      "optional": true
+    },
+    "raf": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dnd": {
+      "optional": true
+    },
+    "react-dnd-html5-backend": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "remark-mdx": {
+      "optional": true
+    },
+    "remark-parse": {
+      "optional": true
+    },
+    "remark-stringify": {
+      "optional": true
+    },
+    "tabbable": {
+      "optional": true
+    },
+    "unified": {
+      "optional": true
+    },
+    "validator": {
+      "optional": true
+    },
+    "virtual-dom": {
+      "optional": true
+    },
+    "viz.js": {
+      "optional": true
+    },
+    "xmlbuilder2": {
+      "optional": true
+    },
+    "yjs": {
+      "optional": true
+    }
+  }
+}

@@ -3,7 +3,7 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-} from '@platejs/basic-styles';
+} from 'platejs';
 
 export const BaseFontKit = [
   BaseFontColorPlugin,

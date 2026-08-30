@@ -1,10 +1,10 @@
 'use client';
 
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import Link from 'next/link';
 import type { Value } from 'platejs';
 import {
-  createPlateEditor,
+  HeadingPlugin,
+  createEditor,
   ParagraphPlugin,
   Plate,
   PlateContent,
@@ -24,8 +24,8 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import type { Editor } from 'slate';
-import { createEditor as slateCreateEditor } from 'slate';
-import { Editable as SlateEditable, Slate, withReact } from 'slate-react';
+import { createEditor as createSlateEditor } from 'slate';
+import { Slate, Editable as SlateEditable, withReact } from 'slate-react';
 
 import { Button } from '@/components/ui/button';
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
@@ -276,7 +276,7 @@ function createHugeDocumentBenchmarkHref(config: Config) {
   return `/dev/editor-perf?${searchParams.toString()}` as const;
 }
 
-const createEditor = ({
+const createBenchmarkEditor = ({
   config,
   engine,
   initialValue,
@@ -286,7 +286,7 @@ const createEditor = ({
   initialValue: Value;
 }) => {
   if (engine === 'upstream-slate') {
-    const editor = withReact(slateCreateEditor());
+    const editor = withReact(createSlateEditor());
 
     editor.getChunkSize = (node) =>
       config.chunking && node === editor ? config.chunkSize : null;
@@ -294,7 +294,7 @@ const createEditor = ({
     return editor as Editor;
   }
 
-  return createPlateEditor({
+  return createEditor({
     initialValue: structuredClone(initialValue),
     plugins: [
       ParagraphPlugin.configure({ component: HugeDocumentPlateParagraph }),
@@ -432,7 +432,7 @@ function EnginePane({
   );
 
   const [editor] = useState(() =>
-    createEditor({
+    createBenchmarkEditor({
       config,
       engine,
       initialValue,

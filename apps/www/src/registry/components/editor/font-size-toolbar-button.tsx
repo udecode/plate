@@ -1,18 +1,17 @@
 'use client';
 
-import { toUnitLess } from '@platejs/basic-styles';
-import { FontSizePlugin } from '@platejs/basic-styles/react';
 import { Minus, Plus } from 'lucide-react';
-import { useEditor, useEditorSelector } from 'platejs/react';
+import { toUnitLess } from 'platejs';
+import { FontSizePlugin, useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
-  FloatingPopover as Popover,
-  FloatingPopoverContent as PopoverContent,
-  FloatingPopoverTrigger as PopoverTrigger,
+  FloatingPopover,
+  FloatingPopoverContent,
+  FloatingPopoverTrigger,
 } from '@/registry/components/editor/floating-popover';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
@@ -93,8 +92,8 @@ export function FontSizeToolbarButton() {
         <Minus />
       </ToolbarButton>
 
-      <Popover open={isFocused} modal={false}>
-        <PopoverTrigger>
+      <FloatingPopover open={isFocused} modal={false}>
+        <FloatingPopoverTrigger>
           <Input
             className={cn(
               'h-full w-10 shrink-0 border-none bg-transparent px-1 text-center hover:bg-muted focus-visible:ring-transparent'
@@ -120,8 +119,8 @@ export function FontSizeToolbarButton() {
             data-plate-focus="true"
             type="text"
           />
-        </PopoverTrigger>
-        <PopoverContent
+        </FloatingPopoverTrigger>
+        <FloatingPopoverContent
           className="w-10 px-px py-1"
           onInitialFocus={(e) => {
             e.preventDefault();
@@ -143,8 +142,8 @@ export function FontSizeToolbarButton() {
               {size}
             </Button>
           ))}
-        </PopoverContent>
-      </Popover>
+        </FloatingPopoverContent>
+      </FloatingPopover>
 
       <ToolbarButton
         onClick={() => {

@@ -1,0 +1,175 @@
+import type {
+  AnyEditor as Editor,
+  EditorNodesOptions,
+  NodeForTypeSelector,
+} from '../interfaces/editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  isElementReadOnly as editorIsElementReadOnly,
+  isVoid as editorIsVoid,
+  path as editorPath,
+} from '../interfaces/editor';
+import { LocationApi } from '../interfaces/location';
+import {
+  type Node,
+  NodeApi,
+  type NodeEntry,
+  type NodeTypeSelector,
+} from '../interfaces/node';
+import { type Path, PathApi } from '../interfaces/path';
+import { SelectionApi } from '../interfaces/selection';
+import { normalizeNodeMatch } from '../utils/node-match';
+
+export function nodes<T extends Node>(
+  editor: Editor,
+  options: EditorNodesOptions<Node> & {
+    match: (node: Node, path: Path) => node is T;
+    type?: undefined;
+  }
+): Generator<NodeEntry<T>, void, undefined>;
+export function nodes<const TType extends NodeTypeSelector>(
+  editor: Editor,
+  options: EditorNodesOptions<NodeForTypeSelector<TType>, TType> & {
+    type: TType;
+  }
+): Generator<NodeEntry<NodeForTypeSelector<TType>>, void, undefined>;
+export function nodes(
+  editor: Editor,
+  options?: EditorNodesOptions<Node>
+): Generator<NodeEntry, void, undefined>;
+export function* nodes<T extends Node>(
+  editor: Editor,
+  options: EditorNodesOptions<T> = {}
+): Generator<NodeEntry<T>, void, undefined> {
+  const {
+    at = editorGetSnapshot(editor).selection,
+    mode = 'all',
+    universal = false,
+    reverse = false,
+    voids = false,
+    pass,
+  } = options;
+  const match = normalizeNodeMatch(options.type, options.match) ?? (() => true);
+
+  if (!at) {
+    return;
+  }
+
+  if (SelectionApi.isNode(at)) {
+    const paths = reverse ? at.paths.toReversed() : at.paths;
+
+    if (options.match !== undefined || options.type !== undefined) {
+      for (const path of paths) {
+        yield* nodes(editor, {
+          ...options,
+          at: path,
+        } as EditorNodesOptions<Node>) as Generator<
+          NodeEntry<T>,
+          void,
+          undefined
+        >;
+      }
+      return;
+    }
+    const entries = paths.flatMap((path) => {
+      const node = NodeApi.getIf(editor, path);
+
+      return node && match(node, path)
+        ? ([[node, path]] as unknown as Array<NodeEntry<T>>)
+        : [];
+    });
+
+    if (universal && entries.length !== paths.length) return;
+    yield* entries;
+    return;
+  }
+
+  let from: Path;
+  let to: Path;
+
+  if (LocationApi.isSpan(at)) {
+    const [first, last] = at;
+    from = PathApi.isBefore(last, first) ? last : first;
+    to = PathApi.isBefore(last, first) ? first : last;
+  } else {
+    const first = editorPath(editor, at, { edge: 'start' });
+    const last = editorPath(editor, at, { edge: 'end' });
+    from = first;
+    to = last;
+  }
+
+  const nodeEntries = NodeApi.nodes(editor, {
+    from,
+    to,
+    pass: ([node, path]) => {
+      if (pass?.([node, path])) return true;
+      if (!NodeApi.isElement(node)) return false;
+      if (
+        !voids &&
+        (editorIsVoid(editor, node) || editorIsElementReadOnly(editor, node))
+      ) {
+        return true;
+      }
+
+      return false;
+    },
+  });
+
+  const matches: Array<NodeEntry<T>> = [];
+  const shouldBuffer = reverse || universal;
+  let hit: NodeEntry<T> | undefined;
+
+  for (const [node, path] of nodeEntries) {
+    const isLower = hit && PathApi.compare(path, hit[1]) === 0;
+
+    // In highest mode any node lower than the last hit is not a match.
+    if (mode === 'highest' && isLower) {
+      continue;
+    }
+
+    if (!match(node, path)) {
+      // If we've arrived at a leaf text node that is not lower than the last
+      // hit, then we've found a branch that doesn't include a match, which
+      // means the match is not universal.
+      if (universal && !isLower && NodeApi.isText(node)) {
+        return;
+      }
+      continue;
+    }
+
+    // If there's a match and it's lower than the last, update the hit.
+    if (mode === 'lowest' && isLower) {
+      hit = [node, path] as unknown as NodeEntry<T>;
+      continue;
+    }
+
+    // In lowest mode we emit the last hit, once it's guaranteed lowest.
+    const emit: NodeEntry<T> | undefined =
+      mode === 'lowest' ? hit : ([node, path] as unknown as NodeEntry<T>);
+
+    if (emit) {
+      if (shouldBuffer) {
+        matches.push(emit);
+      } else {
+        yield emit;
+      }
+    }
+
+    hit = [node, path] as unknown as NodeEntry<T>;
+  }
+
+  // Since lowest is always emitting one behind, catch up at the end.
+  if (mode === 'lowest' && hit) {
+    if (shouldBuffer) {
+      matches.push(hit);
+    } else {
+      yield hit;
+    }
+  }
+
+  // Universal defers to ensure that the match occurs in every branch, so we
+  // yield all of the matches after iterating.
+  if (shouldBuffer) {
+    yield* reverse ? matches.reverse() : matches;
+  }
+}

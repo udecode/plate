@@ -4,11 +4,8 @@
   "exclude": [],
   "compilerOptions": {
     "paths": {
-      "@platejs/core": ["../core/src/index.ts"],
-      "@platejs/core/internal": ["../core/src/internal/index.ts"],
-      "@platejs/core/react": ["../core/src/react/index.ts"],
-      "@platejs/plite": ["../plite/src/index.ts"],
-      "@platejs/plite/internal": ["../plite/src/internal/index.ts"]
+      "platejs": ["../platejs/src/index.tsx"],
+      "platejs/react": ["../platejs/src/react/index.tsx"]
     },
     "types": ["bun", "node"]
   }

@@ -1,4 +1,4 @@
-import type { BaseBlockquotePlugin } from '@platejs/basic-nodes';
+import type { BaseBlockquotePlugin } from 'platejs';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

@@ -32,8 +32,7 @@ Do not use for:
 
 **Forbidden:** `minor` changesets for:
 
-- `@platejs/slate`
-- `@platejs/core`
+- `plitejs`
 - `platejs`
 
 Use `patch` instead. `minor` on those explodes version bumps across dependents.
@@ -41,12 +40,12 @@ Use `patch` instead. `minor` on those explodes version bumps across dependents.
 ```yaml
 # Wrong
 ---
-"@platejs/core": minor
+"platejs": minor
 ---
 
 # Correct
 ---
-"@platejs/core": patch
+"platejs": patch
 ---
 ```
 
@@ -59,13 +58,13 @@ Never combine packages in one changeset.
 ```bash
 # Wrong
 ---
-"@platejs/core": patch
-"@platejs/utils": patch
+"platejs": patch
+"@platejs/cli": patch
 ---
 
 # Correct
-.changeset/core-fix-types.md
-.changeset/utils-add-helper.md
+.changeset/plate-fix-types.md
+.changeset/cli-add-command.md
 ```
 
 ### 3. Always relative to `main`, never last commit
@@ -146,10 +145,10 @@ Use code examples only when needed:
 
 ```tsx
 // Before
-import { LegacyPlugin } from '@platejs/example';
+import { LegacyPlugin } from 'platejs';
 
 // After
-import { ExamplePlugin } from '@platejs/example';
+import { ExamplePlugin } from 'platejs';
 ```
 
 Focus on user impact only. No implementation diary.
@@ -170,7 +169,7 @@ Simple:
 
 ```md
 ---
-"@platejs/utils": patch
+"platejs": patch
 ---
 
 Fix `isEmpty` not handling void elements correctly
@@ -180,17 +179,17 @@ API change:
 
 ````md
 ---
-"@platejs/core": patch
+"platejs": patch
 ---
 
 Rename `LegacyPlugin` to `ExamplePlugin`
 
 ```tsx
 // Before
-import { LegacyPlugin } from '@platejs/example';
+import { LegacyPlugin } from 'platejs';
 
 // After
-import { ExamplePlugin } from '@platejs/example';
+import { ExamplePlugin } from 'platejs';
 ```
 ````
 
@@ -198,7 +197,7 @@ Breaking change:
 
 ````md
 ---
-"@platejs/basic-nodes": major
+"platejs": major
 ---
 
 Remove `LegacyPlugin`; use `ExamplePlugin`
@@ -214,7 +213,7 @@ const plugins = [ExamplePlugin];
 
 Before shipping:
 
-- [ ] Used `minor` for `@platejs/slate`, `@platejs/core`, or `platejs`? Change to `patch`
+- [ ] Used `minor` for `plitejs` or `platejs`? Change to `patch`
 - [ ] Multiple packages in frontmatter? Split files
 - [ ] Describes the last commit, working tree, or branch-only API instead of the
       user-visible delta from `main`? Rewrite it

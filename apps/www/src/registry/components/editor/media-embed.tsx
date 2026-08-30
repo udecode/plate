@@ -5,9 +5,8 @@ import {
   parseTwitterUrl,
   parseVideoUrl,
   VIDEO_PROVIDERS,
-} from '@platejs/media';
-import { MediaEmbedPlugin } from '@platejs/media/react';
-import type { PlateElementProps } from 'platejs/react';
+} from 'platejs/media';
+import { MediaEmbedPlugin } from 'platejs/media/react';
 import {
   PlateElement,
   useEditor,
@@ -15,6 +14,7 @@ import {
   useEditorReadOnly,
   useElementSelected,
   usePath,
+  type PlateElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';

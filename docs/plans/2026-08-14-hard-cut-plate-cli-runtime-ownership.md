@@ -273,7 +273,7 @@ Decisions and tradeoffs:
 Review fixes:
 - Accepted: document-schema-preserving consumers now pass the authored
   `schema` with `plugins` (`plate-to-html`, code drawing, Excalidraw,
-  find/replace, and table-no-merge). Tabbable, playground, classic-list, and
+  find/replace, and table-no-merge). Tabbable, playground, legacy-list-model, and
   Copilot compositions intentionally change the schema and therefore do not
   claim the main application's lineage.
 - Accepted: raw editor inference carries a type-only application-policy marker

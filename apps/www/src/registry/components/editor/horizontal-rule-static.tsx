@@ -1,6 +1,5 @@
-import type { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
-import type { PliteElementProps } from 'platejs/static';
-import { PliteElement } from 'platejs/static';
+import type { BaseHorizontalRulePlugin } from 'platejs';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

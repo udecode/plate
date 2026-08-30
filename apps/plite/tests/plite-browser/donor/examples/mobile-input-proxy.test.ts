@@ -2,7 +2,7 @@ import { expect, type Locator, test } from '@playwright/test';
 import {
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const mobileProxyProjects = new Set(['mobile-webkit']);
 

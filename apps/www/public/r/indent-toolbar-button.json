@@ -4,7 +4,7 @@
   "title": "Indent Toolbar Buttons",
   "description": "Toolbar controls for block indentation.",
   "dependencies": [
-    "@platejs/indent"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json"
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/indent-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { IndentPlugin } from '@platejs/indent/react';\nimport { IndentIcon, OutdentIcon } from 'lucide-react';\nimport { useEditorPlugin } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function IndentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { update } = useEditorPlugin(IndentPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      tooltip=\"Indent\"\n      onClick={() => {\n        update.increase();\n      }}\n    >\n      <IndentIcon />\n    </ToolbarButton>\n  );\n}\n\nexport function OutdentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { update } = useEditorPlugin(IndentPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      tooltip=\"Outdent\"\n      onClick={() => {\n        update.decrease();\n      }}\n    >\n      <OutdentIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "content": "'use client';\n\nimport { IndentIcon, OutdentIcon } from 'lucide-react';\nimport { IndentPlugin, useEditorPlugin } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function IndentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { update } = useEditorPlugin(IndentPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      tooltip=\"Indent\"\n      onClick={() => {\n        update.increase();\n      }}\n    >\n      <IndentIcon />\n    </ToolbarButton>\n  );\n}\n\nexport function OutdentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { update } = useEditorPlugin(IndentPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      tooltip=\"Outdent\"\n      onClick={() => {\n        update.decrease();\n      }}\n    >\n      <OutdentIcon />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/indent-toolbar-button.tsx"
     }

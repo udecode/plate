@@ -1,6 +1,5 @@
 'use client';
 
-import { failInvariant } from '@platejs/plite/internal';
 import type { DialogProps } from '@radix-ui/react-dialog';
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
@@ -53,6 +52,8 @@ import type {
   SidebarNavItem,
 } from '@/types/nav';
 
+import { failInvariant } from '../lib/failInvariant';
+
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 const WHITESPACE_REGEX = /\s+/;
@@ -60,16 +61,15 @@ const DOC_SEARCH_DEBOUNCE_MS = 300;
 const MIN_DOC_SEARCH_LENGTH = 2;
 const commandMenuCopyableRegistryNames = new Set(
   `
-  ai align autoformat-classic autoformat basic-blocks
+  ai align autoformat basic-blocks
   basic-marks basic-nodes block-menu block-placeholder
   callout code-block code-drawing column
   comment copilot cursor-overlay date discussion dnd
   docx docx-export editor-static editor-plugins emoji exit-break
-  fixed-toolbar-classic fixed-toolbar floating-toolbar
-  floating-toolbar-classic footnote font indent
-  line-height link list-classic list markdown math
+  fixed-toolbar floating-toolbar footnote font indent
+  line-height link list markdown math
   media media-uploadthing mention slash suggestion
-  tabbable table toc toggle
+  tabbable table toc details
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
   basic-nodes-demo block-menu-demo node-selection-demo callout-demo
   code-block-demo code-drawing-demo collaboration-demo column-demo
@@ -77,16 +77,16 @@ const commandMenuCopyableRegistryNames = new Set(
   dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo
   exit-break-demo find-replace-demo floating-toolbar-demo font-demo
   footnote-demo huge-document-demo hundreds-editors-demo html-demo
-  indent-demo link-demo line-height-demo list-classic-demo list-demo
+  indent-demo link-demo line-height-demo list-demo
   markdown-demo media-demo mention-demo plugin-rules-demo preview-markdown-demo
   select-editor-demo single-block-demo slash-command-demo tabbable-demo
-  table-demo toc-demo toggle-demo version-history-demo
+  table-demo toc-demo details-demo version-history-demo
   ai ai-toolbar-button blockquote callout caption code-block
   code-drawing code column comment-node date editor
   math excalidraw fixed-toolbar floating-toolbar font-size-toolbar-button
-  heading highlight horizontal-rule kbd link list-classic
+  heading highlight horizontal-rule kbd link
   media-image media-toolbar mention paragraph slash
-  suggestion table toc toggle toolbar
+  suggestion table toc details toolbar
   `
     .trim()
     .split(/\s+/)

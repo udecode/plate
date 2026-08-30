@@ -25,7 +25,7 @@ Ship the smallest real closure that satisfies the lane instead of dragging it
 - `packages/autoformat/src/lib/rules/**`
 - `packages/autoformat/src/lib/__tests__/withAutoformat/**`
 - `apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx`
-- `apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx`
+- `apps/www/src/registry/components/editor/plugins/autoformat.tsx`
 - `apps/www/src/__tests__/package-integration/autoformat/**`
 - `content/(plugins)/(functionality)/autoformat.mdx`
 - lane-close docs if verification is good

@@ -14,12 +14,12 @@ import {
   Plate,
   PlateContent,
   PlateController,
-  useActiveEditor,
-  usePlateEditor,
+  useOptionalEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 function ActiveEditorLabel() {
-  const editor = useActiveEditor();
+  const editor = useOptionalEditor();
 
   if (!editor) return <p>没有活动编辑器。</p>;
 
@@ -27,7 +27,7 @@ function ActiveEditorLabel() {
 }
 
 export function EditorShell() {
-  const editor = usePlateEditor({ id: 'main' });
+  const editor = useCreateEditor({ id: 'main' });
 
   return (
     <PlateController>
@@ -40,7 +40,7 @@ export function EditorShell() {
 }
 ```
 
-`primary` 是 `Plate` prop，不属于 `createPlateEditor` 或 `usePlateEditor` options。
+`primary` 是 `Plate` prop，不属于 `createEditor` 或 `useCreateEditor` options。
 
 ## 活动编辑器查找
 
@@ -48,11 +48,11 @@ export function EditorShell() {
 | --- | --- |
 | `useEditor({ id: 'main' })` | 获取 `main` 的活动 editor；不存在时抛出错误。 |
 | `useEditor()` | 获取活动 editor，或第一个已挂载的 primary editor；不存在时抛出错误。 |
-| `useActiveEditor()` | 使用同样的查找规则，没有活动 editor 时返回 `null`。 |
+| `useOptionalEditor()` | 使用同样的查找规则，没有活动 editor 时返回 `null`。 |
 
 没有显式 ID 时，controller 依次查找 `activeId`、`primaryEditorIds`，然后得到“没有活动编辑器”。Plate 内部保留 inert editor 以维持 Hooks 调用结构，但 public code 永远不会得到它。
 
-可以在没有 editor 时渲染的 UI 使用 `useActiveEditor()`。必须拥有 editor 的 command 和组件使用 `useEditor()`，让缺失 provider 立即报错。
+可以在没有 editor 时渲染的 UI 使用 `useOptionalEditor()`。必须拥有 editor 的 command 和组件使用 `useEditor()`，让缺失 provider 立即报错。
 
 ## 注册
 

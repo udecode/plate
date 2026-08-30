@@ -40,10 +40,10 @@ The fastest way to add table of contents functionality is with the `TocKit`, whi
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TocKit } from '@/components/editor/toc';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...TocKit,
@@ -60,24 +60,22 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/basic-nodes @platejs/toc
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
 
-Include `TocPlugin` and `HnPlugin` in your Plate plugins array when creating the editor.
+Include `TocPlugin` and `HeadingPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { TocPlugin } from '@platejs/toc/react';
-import { HeadingPlugin,  HeadingPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     HeadingPlugin,
-    
-    
     TocPlugin,
   ],
 });
@@ -88,17 +86,15 @@ const editor = createPlateEditor({
 Configure the `TocPlugin` with custom component and scroll options.
 
 ```tsx
-import { TocPlugin } from '@platejs/toc/react';
-import { HeadingPlugin,  HeadingPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { TocPlugin } from 'platejs/toc/react';
+import { HeadingPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TocElement } from '@/components/editor/toc';
-import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { HeadingElement } from '@/components/editor/heading';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
-    HeadingPlugin.configure({ component: HeadingElement }),
-    HeadingPlugin.configure({ component: HeadingElement }),
     HeadingPlugin.configure({ component: HeadingElement }),
     TocPlugin.configure({
       component: TocElement,
@@ -184,7 +180,7 @@ Plugin for generating table of contents.
 Insert table of contents element.
 
 ```ts
-import { BaseTocPlugin } from '@platejs/toc';
+import { BaseTocPlugin } from 'platejs/toc';
 
 editor.plugin(BaseTocPlugin).update.insert();
 ```

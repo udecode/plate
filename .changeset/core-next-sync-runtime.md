@@ -1,5 +1,5 @@
 ---
-'@platejs/core': patch
+'platejs': patch
 ---
 
 - Delete selected block voids without merging following content into them
@@ -12,7 +12,7 @@
 - Declare plugin element behavior, marks, properties, and targeted content roots through plugin `schema` contributions compiled by Plite
 - Publish Plate schema installation and an empty primary-root default as one atomic extension migration
 - Author MIME-keyed product codecs through context-bound constructor `codecs: ({ defineCodecs }) => defineCodecs(...)` declarations; infer same-plugin APIs in that callback and compile them to schema-bound exact-slice Plite DOM codecs
-- Provide schema-inferred Markdown node codec contracts directly from `@platejs/core`, with one `defineCodecs` object for every format owned by a plugin
+- Provide schema-inferred Markdown node codec contracts directly from `platejs`, with one `defineCodecs` object for every format owned by a plugin
 - Derive element and text property-capability types with `ElementWith` and `TextWith`, including authored aliases, prefixes, defaults, and value domains
 - Treat Plate-owned custom MDX tag names as resolved schema identity while keeping fixed MDAST, HTML, and MDX syntax literal
 - Allow product-specific node codec declarations to target the owning plugin while preserving schema inference

@@ -1,0 +1,7 @@
+/** @jsx jsx */
+
+import { LocationApi, type Path } from 'plitejs';
+
+export const input: Path = [];
+export const test = (value: typeof input) => LocationApi.isRange(value);
+export const output = false;

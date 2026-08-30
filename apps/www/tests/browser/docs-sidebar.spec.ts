@@ -1,4 +1,4 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { type ConsoleMessage, expect, test } from '@playwright/test';
 
 test('docs-sidebar:collapsed-sections-use-compact-row-spacing', async ({

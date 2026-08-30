@@ -26,10 +26,10 @@ The fastest way to add the tabbable plugin is with `TabbableKit`. The kit keeps 
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TabbableKit } from '@/components/editor/tabbable';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...TabbableKit,
@@ -46,16 +46,16 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/tabbable
+npm install platejs @tanstack/react-virtual tabbable
 ```
 
 ### Add Plugin
 
 ```tsx
-import { TabbablePlugin } from '@platejs/tabbable/react';
-import { createPlateEditor } from 'platejs/react';
+import { TabbablePlugin } from 'platejs/tabbable/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     TabbablePlugin,
@@ -66,17 +66,16 @@ const editor = createPlateEditor({
 ### Configure Plugin
 
 ```tsx
-import { TabbablePlugin } from '@platejs/tabbable/react';
+import { TabbablePlugin } from 'platejs/tabbable/react';
 import { PLUGINS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     TabbablePlugin.configure(({ editor }) => {
-      const listItem = editor.plugin(PLUGINS.listItem);
       const codeBlock = editor.plugin(PLUGINS.codeBlock);
-      const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+      const blockedTypes = [codeBlock].flatMap((plugin) =>
         plugin.installed ? [plugin.schema.type] : []
       );
 
@@ -115,9 +114,8 @@ Use the `query` option to disable the Tabbable plugin when the `Tab` key should 
 
 ```tsx
 TabbablePlugin.configure(({ editor }) => {
-  const listItem = editor.plugin(PLUGINS.listItem);
   const codeBlock = editor.plugin(PLUGINS.codeBlock);
-  const blockedTypes = [listItem, codeBlock].flatMap((plugin) =>
+  const blockedTypes = [codeBlock].flatMap((plugin) =>
     plugin.installed ? [plugin.schema.type] : []
   );
 

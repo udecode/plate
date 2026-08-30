@@ -1,6 +1,5 @@
 'use client';
 
-import { TablePlugin } from '@platejs/table/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -14,6 +13,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useEditor, useEditorSelector, usePluginStore } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

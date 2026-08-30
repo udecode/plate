@@ -142,7 +142,7 @@ export const TriggerPlugin = defineBasePlugin('trigger', {
 ```
 
 For an independently reusable Plite descriptor, import
-`defineExtension` from `@platejs/plite` and list the descriptor in
+`defineExtension` from `platejs` and list the descriptor in
 `dependencies`.
 
 Plugin-specific and editor-wide host services share the root `api` channel;
@@ -155,7 +155,7 @@ Build the MIME-keyed map with the callback's `defineCodecs`. This is the one
 inline inference anchor for codec callbacks.
 
 ```ts title="records-plugin.ts" showLineNumbers
-import { ContentSlice } from '@platejs/plite';
+import { ContentSlice } from 'platejs';
 import { defineBasePlugin } from 'platejs';
 
 export const RecordsPlugin = defineBasePlugin('records', {
@@ -205,7 +205,7 @@ Use `.configure()` once, where an app or registry installs a plugin, to change
 fields already declared by the author.
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 export const AppLinkPlugin = LinkPlugin.configure({
   initialState: {
@@ -256,7 +256,7 @@ Plate descriptor or add Plate-only behavior. App consumers do not insert a
 conversion merely to set a component.
 
 ```tsx title="script-plugin.tsx" showLineNumbers
-import { BaseScriptPlugin } from '@platejs/basic-nodes';
+import { BaseScriptPlugin } from 'platejs';
 import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
 export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {

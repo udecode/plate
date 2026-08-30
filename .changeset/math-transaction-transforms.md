@@ -1,5 +1,5 @@
 ---
-'@platejs/math': major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -8,7 +8,7 @@ Copy `equation-node` for KaTeX rendering, popover input, and keyboard behavior. 
 
 Register block and inline equation properties in compiled schemas. The inline equation capability name and persisted element type are both `inlineEquation`.
 
-Import KaTeX styling explicitly from `@platejs/math/katex.css`; headless math imports have no stylesheet side effect.
+Import KaTeX styling explicitly from `platejs/math/katex.css`; headless math imports have no stylesheet side effect.
 
 Colocate both Base plugins, math rules, static KaTeX rendering, and React descriptors by equation family.
 

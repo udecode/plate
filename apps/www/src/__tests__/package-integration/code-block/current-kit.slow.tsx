@@ -1,14 +1,17 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
+import { jsxt } from '@platejs/test';
+import {
+  BaseParagraphPlugin,
+  createEditor as createProductEditor,
+} from 'platejs';
 
 import { CodeBlockKit } from '@/registry/components/editor/code-block';
 
 jsxt;
 
 const createEditor = (text: string, offset = text.length) =>
-  createBaseEditor({
+  createProductEditor({
     plugins: [BaseParagraphPlugin, ...CodeBlockKit],
     selection: {
       kind: 'text',

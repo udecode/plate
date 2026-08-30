@@ -27,7 +27,7 @@ apps
                     ├── example
                     └── ui
 packages
-└── core
+└── plate
 ```
 
 | 路径                      | 描述                      |
@@ -36,7 +36,7 @@ packages
 | `apps/www/src/app`        | 网站的 Next.js 应用程序。 |
 | `apps/www/src/components` | 网站的 React 组件。       |
 | `apps/www/src/registry`   | 组件的注册表。            |
-| `packages/core`           | `@platejs/core` 包。      |
+| `packages/platejs`        | `platejs` 包。            |
 
 ## 开发
 
@@ -70,10 +70,10 @@ pnpm build
 turbo --filter=www dev
 ```
 
-2. 构建 `@platejs/core` 包：
+2. 构建 `platejs` 包：
 
 ```
-turbo --filter=@platejs/core build
+turbo --filter=platejs build
 ```
 
 ## 文档

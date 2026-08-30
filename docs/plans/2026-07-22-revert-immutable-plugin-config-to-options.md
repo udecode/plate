@@ -41,7 +41,7 @@ Verification surface:
 - `node tooling/scripts/check-plate-schema-adoption.mjs` over 4,916 source and
   documentation files.
 - Source-first typechecks for 16 affected packages, `platejs`, and `www`.
-- Behavioral tests for Core, basic-nodes, link, list-classic, CSV, Markdown,
+- Behavioral tests for Core, basic-nodes, link, legacy-list-model, CSV, Markdown,
   and Yjs, followed by the broader `pnpm check:core` suite.
 - Docs contract audits, barrel generation, skill generation, lint, release
   artifact packing, and the autogoal completion checker.
@@ -136,7 +136,7 @@ Review matrix:
 | Path or API | Drift score | Verdict | Owner | Evidence | Next |
 |-------------|-------------|---------|-------|----------|------|
 | Core plugin `config` channel | 5 | cut | `packages/core` | Types, runtime lifecycle, host policy, and tests removed; Core gate green. | none |
-| Feature immutable values | 5 | move to options | owning packages | Heading, Link, List Classic, CSV, Markdown, NodeId, and related consumers typecheck/test. | none |
+| Feature immutable values | 5 | move to options | owning packages | Heading, Link, Legacy list model, CSV, Markdown, NodeId, and related consumers typecheck/test. | none |
 | `editor.configure` | 5 | cut | Core editor runtime | Exact source scan has no production match. | none |
 | Plite extension `config` | 0 | keep | `packages/plite` | Separate extension contract and docs; explicitly excluded by checker/doctrine. | none |
 | Generic `config` names | 0 | keep | local owners | 125 residual literals classified; none is the removed Plate field. | none |
@@ -219,7 +219,7 @@ Error attempts:
 |-------------------------|-------|----------------|------------|
 | Oversized broad `rg` output truncated | 1 | Narrow exact deleted symbols, then count/classify literal residuals | 125 residuals classified; zero unresolved |
 | TypeScript package AST helper exposed only version metadata | 1 | Use the repo Babel-based schema checker and source typechecks | 4,916-file audit passes |
-| Initial multi-package typecheck exposed List Classic nested schema inference loss | 1 | Restore inference at the owning plugin declaration | affected package graph passes |
+| Initial multi-package typecheck exposed Legacy list model nested schema inference loss | 1 | Restore inference at the owning plugin declaration | affected package graph passes |
 | `www` typecheck rejected `EditorKit[number]` as a plugin contract | 1 | Use `InferPlugins<typeof EditorKit>` in both kits | full `www` typecheck passes |
 | Schema checker unit fixture expected five removed Yjs lineage calls | 1 | Align the synthetic fixture with the two real reviewed calls | all checker tests pass |
 | `check:core` revealed formatter debt behind fail-fast packages | 3 | Run scoped `lint:fix` across all 16 affected packages | final `check:core` passes |
@@ -232,7 +232,7 @@ Verification evidence:
 - `pnpm turbo typecheck` for 16 affected packages — 39/39 tasks pass.
 - `pnpm turbo typecheck --filter=./packages/plate --filter=./apps/www` —
   58/58 tasks pass after the editor-kit inference repair.
-- `pnpm turbo test` for Core, basic-nodes, link, list-classic, CSV, Markdown,
+- `pnpm turbo test` for Core, basic-nodes, link, legacy-list-model, CSV, Markdown,
   and Yjs — 7/7 package tasks pass; Yjs reports 215/215 tests.
 - Four checker test files — 37/37 tests pass.
 - Plate schema adoption source audit — 4,916 files pass.

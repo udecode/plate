@@ -44,7 +44,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     keyed by editor when it must be associated with the editor across calls,
     not on the public editor object.
     Extending the root editor object is allowed only for core-owned contract
-    fields that are already part of the typed `BaseEditor` / `PlateEditor`
+    fields that are already part of the typed public `Editor`
     surface. Anything else caps the file below `100` until moved to the right
     owner or explicitly routed as a Plite/Plate API plan.
     If a concrete root-pollution field is in the active package/file scope, do
@@ -127,14 +127,14 @@ editor.read.selection.nodes()` is a regression: it
   boundary instead. Derive every public AST alias from the final descriptor.
   A reusable plugin factory constrained to
   a required element or mark schema must receive a required flat `schema.type`
-  or `schema.key`; if Core makes that handle optional, repair
+  or `schema.key`; if Plate foundation makes that handle optional, repair
   `PluginAuthorSchemaView` instead of asserting, guarding, or duplicating the
   identity locally.
 - Context-bound factories may use the exact installed-plugin editor only while
   authoring their callback. Their public factory and emitted value types must
   project to the smallest portable public contract. If declaration emit leaks
-  `InternalBaseEditorWithInstalledPlugins`, repair the Core factory return
-  boundary; do not annotate package exports with `BaseEditor<typeof Plugin>`,
+  `InternalBaseEditorWithInstalledPlugins`, repair the Plate foundation factory return
+  boundary; do not annotate package exports with `Editor<typeof Plugin>`,
   rebuild callback option types, cast the result, or export an internal editor
   carrier.
 - Treat TS7056 as an owning generic or declaration-boundary defect. The only
@@ -169,10 +169,10 @@ editor.read.selection.nodes()` is a regression: it
 - Public package roots expose author-facing contracts only. Keep `Any*`,
   `Internal*`, normalized/compiler types, accumulators, witnesses, and raw
   callback graphs private or under an explicit internal entrypoint. An
-  unparameterized editor exposes guaranteed Core capabilities only; package
+  unparameterized editor exposes guaranteed Plate foundation capabilities only; package
   consumers carry their concrete editor or descriptor generic instead of
-  manufacturing installed groups with `any`. Plite's public runtime type is
-  `Editor`; Plate keeps `BaseEditor` and `PlateEditor`.
+  manufacturing installed groups with `any`. Every editor entrypoint calls its
+  public runtime type `Editor`; package and entrypoint establish the layer.
 - Audit every public generic for a typed source. Installed descriptors own
   update capabilities and validated external data; command descriptors own
   command inputs; typed schema handles own property values. Hard-cut caller
@@ -187,8 +187,8 @@ editor.read.selection.nodes()` is a regression: it
   recursive exact ancestry.
 - `EditorExtensionTypeProvider` is the sole public value-sensitive capability
   bridge. Keep its higher-kinded encoding, normalized installed-capability
-  carrier, and transitive dependency expansion exclusively in
-  `@platejs/plite/internal`; never root-export or teach those internals, and
+  carrier, and transitive dependency expansion private inside `plitejs`; never
+  expose or teach those internals, and
   never recursively materialize the complete dependency ancestry.
   A static portal must prove literal-name uniqueness plus mutual capability
   assignability. Runtime portal access must still prove exact descriptor
@@ -196,7 +196,7 @@ editor.read.selection.nodes()` is a regression: it
   `EditorExtension<Definition>` to one public definition parameter, and derive
   official factory return types instead of reconstructing them with another
   public generic.
-- Core may use internal aliases to translate the contextually typed author
+- Plate foundation may use internal aliases to translate the contextually typed author
   source into the canonical lowered Plite definition. Do not export, document,
   or make users name that compiler split: public authoring remains one object
   call returning one exact descriptor.
@@ -385,7 +385,7 @@ editor.read.selection.nodes()` is a regression: it
 - Every surviving `.extend()` must name the earlier type it consumes or the
   external declaration it adapts. Keep the contribution inferred; when a real
   public contract needs an explicit generic, type the contribution object, not
-  callback parameters or the plugin export. If that loses inference, fix Core.
+  callback parameters or the plugin export. If that loses inference, fix Plate foundation.
 - Apply the creator's codec, flat-native-field, and active-transaction laws
   directly. In particular, keep independent codecs and native fields in the
   constructor, keep private implementation fragments lexical, read staged API
@@ -459,11 +459,12 @@ editor.read.selection.nodes()` is a regression: it
   call that plugin's scoped API or tx group; they do not justify a parallel raw
   helper. If it has one plugin owner, inline the algorithm and delete the
   helper.
-- Deleting a package helper must not copy its transform, query, navigation
+- Deleting a feature helper must not copy its transform, query, navigation
   controller, or cross-layer algorithm into app or registry JSX. Reuse the
-  owning scoped capability when one exists; otherwise keep or publish a flat
-  standalone package owner when the behavior crosses capability layers and
-  cannot honestly fit one plugin `api`, `read`, or `update` boundary.
+  owning scoped capability when one exists; otherwise keep a flat
+  `platejs/<feature>` entrypoint when the behavior crosses capability layers and
+  cannot honestly fit one plugin `api`, `read`, or `update` boundary. Editor
+  features never justify another package root.
 - Tests follow the same owner law as production and React code. Keep one
   colocated `<FooPlugin>.<family>.spec.tsx` for a plugin behavior family, even
   when that family exercises many API, update, query, transform, normalize, or
@@ -557,7 +558,7 @@ editor.read.selection.nodes()` is a regression: it
   use it to assert fixture setup, but production package code needs a concrete
   invariant-owner reason before asserting.
 - Transform-backed callbacks must receive and use the active transaction. If a
-  Plate/Core callback runs inside Plite transform middleware or another active
+  Plate foundation callback runs inside Plite transform middleware or another active
   transaction lane, its context should expose `tx` and mutations should go
   through that `tx`. Do not call `editor.update.*` from such callbacks. Inline
   single-owner behavior in the callback so `tx` stays lexically inferred.
@@ -611,7 +612,7 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
   `useElementSelector(FooPlugin, selector)`. A manual `DefinitionOf`, local
   node mirror, `Reflect.get`, or cast used only to recover descriptor-owned
-  fields is a Core typing bug, not acceptable consumer code.
+  fields is a Plate foundation typing bug, not acceptable consumer code.
 - Do not add local fixture-shape aliases in tests, such as
   `type EditorFixture = { children; selection }`, to hide weak hyperscript
   typing. If many tests need the same JSX/editor fixture shape, repair or
@@ -651,7 +652,7 @@ editor.update.selection.set(...) })` are bugs, not style issues.
 - Compare the current owner/name/role with `origin/main` before suggesting
   renames, deletions, or new owner topology. `origin/main` is behavior and
   ownership evidence, not a veto on the best current path or filename.
-- Do not rename established public Core plugins, options, names, or concepts
+- Do not rename established public Plate foundation plugins, options, names, or concepts
   unless the user explicitly asks for naming cleanup, full Plate v2 closure,
   or a public API redesign. Internal one-use helpers are governed by owner-first
   colocation, not public-name stability.

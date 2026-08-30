@@ -2,8 +2,6 @@ import { afterEach, expect, mock, spyOn } from 'bun:test';
 import { TextEncoder } from 'node:util';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import * as matchers from '@testing-library/jest-dom/matchers';
-import { cleanup } from '@testing-library/react';
 
 // Make mock and spyOn globally available to avoid needing to import from bun:test
 (globalThis as any).mock = mock;
@@ -123,6 +121,9 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
     },
   });
 }
+
+const matchers = await import('@testing-library/jest-dom/matchers');
+const { cleanup } = await import('@testing-library/react');
 
 // Extend Bun's expect with Testing Library matchers
 expect.extend(matchers);

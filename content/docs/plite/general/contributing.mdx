@@ -19,13 +19,13 @@ Plite work happens in the Plate repository. Treat issues and PRs as execution ha
 
 Good Plite contributions improve one of these surfaces:
 
-- editor runtime correctness in `@platejs/plite`;
-- DOM, clipboard, hotkey, or browser bridge behavior in `@platejs/plite-dom`;
-- React editor behavior in `@platejs/plite-react`;
-- history behavior in `@platejs/plite-history`;
-- Yjs adapter behavior in `@platejs/yjs`;
-- layout proof in `@platejs/plite-layout`;
-- browser proof in `@platejs/browser`;
+- editor runtime correctness in `plitejs`;
+- DOM, clipboard, hotkey, or browser bridge behavior in `plitejs/dom`;
+- React editor behavior in `plitejs/react`;
+- history behavior in `plitejs/history`;
+- Yjs adapter behavior in `platejs/yjs`;
+- layout proof in `plitejs/page-layout`;
+- browser proof in `@platejs/test`;
 - docs and examples under `content/docs/plite/**` and `/examples/plite/*`.
 
 Do not add compatibility aliases, wrapper APIs, or old Plite helper shims. If the current API is wrong, propose the better current API and prove it.
@@ -94,12 +94,12 @@ pnpm check:plite
 
 | Change                                                 | Start with                                                       |
 | ------------------------------------------------------ | ---------------------------------------------------------------- |
-| Core runtime, transforms, changes, nodes, locations    | `pnpm --filter @platejs/plite test`                              |
-| React editor behavior                                  | `pnpm --filter @platejs/plite-react test`                        |
-| History                                                | `pnpm --filter @platejs/plite-history test`                      |
-| DOM bridge or browser harness                          | `pnpm --filter @platejs/browser test`                            |
-| Yjs adapter                                            | `pnpm --filter @platejs/yjs test`                                |
-| Layout                                                 | `pnpm --filter @platejs/plite-layout test`                       |
+| Core runtime, transforms, changes, nodes, locations    | `pnpm --filter plitejs test`                              |
+| React editor behavior                                  | `pnpm --filter plitejs/react test`                        |
+| History                                                | `pnpm --filter plitejs/history test`                      |
+| DOM bridge or browser harness                          | `pnpm --filter @platejs/test test`                            |
+| Yjs adapter                                            | `pnpm --filter platejs/yjs test`                                |
+| Layout                                                 | `pnpm --filter plitejs/page-layout test`                       |
 | Docs source                                            | `pnpm --filter www check:docs`                                   |
 | Example browser behavior                               | `pnpm --filter plite test:plite-browser:chromium <file-or-grep>` |
 | Full browser matrix                                    | `pnpm check:plite:browser-matrix`                                |

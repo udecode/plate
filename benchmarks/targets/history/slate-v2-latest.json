@@ -272,7 +272,7 @@
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/normalization-contract.ts",
       "artifacts": [
         {
           "path": "tmp/slate-normalization-benchmark.json",
@@ -353,7 +353,7 @@
       "metric": "plite_resolved_token_cursor_worst_large_stress_median_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/resolved-token-cursor.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/resolved-token-cursor.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-resolved-token-cursor-benchmark.json",
@@ -527,7 +527,7 @@
       "metric": "plite_command_dispatch_worst_budget_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/command-spec.test.ts ./packages/plite/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-command-dispatch-benchmark.json",
@@ -571,7 +571,7 @@
       "metric": "plite_correction_worklist_max_touched_targets",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/normalization-contract.ts",
       "artifacts": [
         {
           "path": "tmp/plite-correction-worklist-benchmark.json",
@@ -593,7 +593,7 @@
       "metric": "plite_fit_content_document_width_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-content-contract.test.ts ./benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-content-contract.test.ts ./benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-fit-content-locality-benchmark.json",
@@ -615,7 +615,7 @@
       "metric": "plite_history_depth_median_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/history/history-branch-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-history-depth-benchmark.json",
@@ -637,7 +637,7 @@
       "metric": "plite_history_retained_memory_json_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite-history/test/history-branch-contract.spec.ts ./packages/plite-history/test/history-persistence-contract.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/history/history-branch-contract.spec.ts ./packages/plitejs/test/history/history-persistence-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/slate-history-retained-memory-benchmark.json",
@@ -659,7 +659,7 @@
       "metric": "plite_schema_architecture_compile_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/schema-target-model-oracle.test.ts ./packages/plite/test/schema-compiler-laws.test.ts ./packages/plite/test/schema-compiler.test.ts ./packages/plite/test/incremental-schema-validation.test.ts ./packages/plite-react/test/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-architecture-benchmark.json",
@@ -681,7 +681,7 @@
       "metric": "plite_schema_construction_max_changed_span",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/slice-fit-contract.test.ts ./benchmarks/editor/benchmarks/plite-schema-construction-benchmark.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-construction-benchmark.json",
@@ -703,7 +703,7 @@
       "metric": "plite_transaction_mixed_batch_p95_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/state-tx-public-api-contract.ts ./packages/plite/test/transaction-extension-contract.ts ./packages/plite/test/generic-update-policy-contract.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/state-tx-public-api-contract.ts ./packages/plitejs/test/transaction-extension-contract.ts ./packages/plitejs/test/generic-update-policy-contract.ts",
       "artifacts": [
         {
           "path": "tmp/plite-transaction-execution-benchmark.json",

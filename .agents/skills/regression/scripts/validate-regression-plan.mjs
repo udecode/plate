@@ -50,6 +50,8 @@ const E2E_TEST_COMMAND_PATTERN =
   /(?:tooling\/e2e\/|apps\/plite\/tests\/plite-browser\/|\bplaywright\b|\b(?:test:)?e2e\b|\btest:plite(?::|-)?browser(?:\b|:)|--project=)/i;
 const POINTER_INTERACTION_PATTERN =
   /\b(?:cursor|pointer|mouse|hover)\b|\b(?:resize|drag)\s+handle\b/i;
+const BROWSER_COMMAND_PATTERN =
+  /\b(?:command|keyboard|shortcut|text input|trigger|type|typing)\b/i;
 const POINTER_BOUNDARY_PATTERN =
   /\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b[\s\S]{0,100}\b(?:browser|editor|scrollport|window|boundary)\b|\b(?:browser|editor|scrollport|window|boundary)\b[\s\S]{0,100}\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b/i;
 const CONTINUOUS_POINTER_PATTERN =
@@ -60,6 +62,14 @@ const CARET_VISIBILITY_PATTERN =
   /\bcaret(?:-accessible)?\b|\binsertion point\b|\beditable\s+(?:blank\s+)?(?:line|row)\b|\btext cursor\b/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
+const isBrowserCommandCase = (selected) =>
+  BROWSER_COMMAND_PATTERN.test(
+    [
+      selected?.source_reference,
+      selected?.setup_action,
+      selected?.expected_outcome,
+    ].join(' ')
+  ) && /\b(?:browser|chrome)\b/i.test(selected?.exact_environment ?? '');
 const normalizeHeader = (value) =>
   value
     .toLowerCase()
@@ -736,6 +746,7 @@ export const validateRegressionPlan = (
     }
 
     const selected = cases.get(caseId);
+    const browserCommand = isBrowserCommandCase(selected);
     const pointerInteraction = POINTER_INTERACTION_PATTERN.test(
       [
         selected?.source_reference,
@@ -769,6 +780,22 @@ export const validateRegressionPlan = (
       )
     ) {
       errors.push(`${caseId} requires an applicable pointer-feedback oracle`);
+    }
+    if (
+      complete &&
+      browserCommand &&
+      !Array.from(rows?.values() ?? []).some(
+        (row) =>
+          row.observation?.toLowerCase() === 'dom-native' &&
+          row.applies?.toLowerCase() === 'yes' &&
+          /\b(?:browser|chrome)\b/i.test(row.proof_layer ?? '') &&
+          /\bruntime-owner:\s*pass\b/i.test(row.result ?? '') &&
+          /\bmutation-owner:\s*pass\b/i.test(row.result ?? '')
+      )
+    ) {
+      errors.push(
+        `${caseId} browser command disagreement requires a dom-native Browser oracle with runtime-owner: pass and mutation-owner: pass`
+      );
     }
 
     if (continuousBoundaryPointer) {
@@ -1048,6 +1075,25 @@ export const validateRegressionPlan = (
 
     for (const [caseId, failedCount] of failedCountByCase) {
       if (failedCount === 0) continue;
+
+      if (isBrowserCommandCase(cases.get(caseId))) {
+        const hasMountedOwnerProof = Array.from(
+          oracleByCase.get(caseId)?.values() ?? []
+        ).some(
+          (row) =>
+            row.observation?.toLowerCase() === 'dom-native' &&
+            row.applies?.toLowerCase() === 'yes' &&
+            /\b(?:browser|chrome)\b/i.test(row.proof_layer ?? '') &&
+            /\bruntime-owner:\s*pass\b/i.test(row.result ?? '') &&
+            /\bmutation-owner:\s*pass\b/i.test(row.result ?? '')
+        );
+
+        if (!hasMountedOwnerProof) {
+          errors.push(
+            `${caseId} failed browser command fix cannot resume without a dom-native Browser oracle with runtime-owner: pass and mutation-owner: pass`
+          );
+        }
+      }
 
       const evidenceRows = evidenceByCase.get(caseId) ?? [];
       const requiredRoles = new Set(

@@ -12,9 +12,7 @@ import { useSiteRegistryProvider, useSiteRegistryStyle } from './provider';
 type PopoverModule = typeof RadixPopover;
 
 function usePopoverModule(): PopoverModule {
-  return useSiteRegistryProvider() === 'base'
-    ? (BasePopover as PopoverModule)
-    : RadixPopover;
+  return useSiteRegistryProvider() === 'base' ? BasePopover : RadixPopover;
 }
 
 export function FloatingPopover(

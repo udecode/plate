@@ -212,13 +212,13 @@ test('rejects broad release proof when publish inputs differ from HEAD', () => {
   const dirty = validatePliteReleaseCheckout({
     declaredCommit: commit,
     headCommit: commit,
-    statusOutput: ' M packages/plite/src/index.ts\n?? forged-proof.json\n',
+    statusOutput: ' M packages/plitejs/src/index.ts\n?? forged-proof.json\n',
   });
 
   assert.equal(dirty.ok, false);
   assert.match(
     dirty.issues.join('\n'),
-    /tracked or untracked changes.*packages\/plite\/src\/index\.ts.*forged-proof\.json/s
+    /tracked or untracked changes.*packages\/plitejs\/src\/index\.ts.*forged-proof\.json/s
   );
 });
 

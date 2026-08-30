@@ -1,5 +1,4 @@
-import { BaseLineHeightPlugin } from '@platejs/basic-styles';
-import { PLUGINS } from 'platejs';
+import { BaseLineHeightPlugin, PLUGINS } from 'platejs';
 
 export const BaseLineHeightKit = [
   BaseLineHeightPlugin.configure({

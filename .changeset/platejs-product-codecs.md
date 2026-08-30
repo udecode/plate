@@ -10,7 +10,7 @@ Require React and React DOM 19.2 or newer.
 - Infer one exact plugin definition from each positional descriptor factory, `defineBasePlugin(name, definition)` or `definePlatePlugin(name, definition)`, use `DefinitionOf<typeof Plugin>` for descriptor contracts, and keep undeclared fields absent from the inferred plugin type
 - Keep object `initialState` beside store-dependent fields; stage factory `initialState` before those fields in a following `.extend()`
 - Export pure schema and plugin builders from `platejs`, React components and hooks from `platejs/react`, and `renderStaticHtml` from `platejs/static`
-- Initialize editors synchronously through `initialValue` or `({ editor }) => Value`, observe edits through `onCommit`, use strict `useEditor`, and use nullable `useActiveEditor`
+- Initialize editors synchronously through `initialValue` or `({ editor }) => Value`, observe edits through `onCommit`, use strict `useEditor`, and use nullable `useOptionalEditor`
 - Accept a primary-root value or complete `EditorDocumentValue`, emit the complete document through Plate `onValueChange`, and render typed interactive or static content-root slots
 - Defer initialization with `skipInitialization: true`, then publish the loaded document with one `editor.update.value.replace(...)` call; application migrations run before installed-plugin preparation and schema fitting
 - Delete `@platejs/autoformat`; declare input rules on the feature plugins that own the resulting behavior

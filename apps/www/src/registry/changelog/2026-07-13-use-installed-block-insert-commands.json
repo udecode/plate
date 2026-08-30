@@ -24,14 +24,6 @@
       "diagnostics": []
     },
     {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "editor-kit",
       "files": [],
       "definitionFiles": [],
@@ -63,7 +55,7 @@
       "summary": "Insert code blocks, drawings, Excalidraw canvases, tables, and dropped media through their installed commands with explicit relational or path placement.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["transforms", "transforms-classic", "editor-kit", "dnd-kit"],
+      "targets": ["transforms", "editor-kit", "dnd-kit"],
       "source": {
         "line": 14,
         "row": 1,

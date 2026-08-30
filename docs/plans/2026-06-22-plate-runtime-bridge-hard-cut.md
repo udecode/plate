@@ -504,9 +504,9 @@ Implementation notes:
     matches where the v2 API requires callable matchers;
   - preserved merge-table row/column invariants after row insertion by fixing
     cell-index recomputation for newly inserted cells.
-- List-classic packet:
-  - deleted classic-list `with*` runtime wrappers from production source and
-    moved behavior into `ListClassicExtension`;
+- legacy-list-model packet:
+  - deleted legacy-list-model `with*` runtime wrappers from production source and
+    moved behavior into `LegacyListModelExtension`;
   - kept runtime behavior tests on `createPlateRuntimeEditor` and kept pure
     query/input-rule specs on an explicit legacy fixture, so transform behavior
     is v2-proven without breaking pure helper rows;
@@ -516,7 +516,7 @@ Implementation notes:
   - fixed Plite normalizer restart semantics after explicit mutation, because
     forced normalization was walking stale paths after a list normalizer moved
     nodes;
-  - fixed classic-list delete-backward so "start of a descendant content node"
+  - fixed legacy-list-model delete-backward so "start of a descendant content node"
     no longer counts as "start of the list item";
   - fixed insert-fragment middleware to call `next()` once, extract text
     explicitly instead of casting elements to text, and normalize adjacent text
@@ -575,22 +575,22 @@ Error attempts:
 | Link package tests mixed built `createPlateEditor` with source `getCurrentRuntimeTransforms` | 1 | Use source `createPlateRuntimeEditor` for source runtime transform assertions. | Link runtime tests passed. |
 | Core runtime test was run in parallel with `@platejs/link build` and produced false missing-module errors | 1 | Run package build/test gates serially when tests consume package artifacts. | Sequential core runtime rerun passed: 952 pass, 0 fail. |
 | Code-block `runtimeCodeBlock` was first tied to the deleted `withCodeBlock` override path | 1 | Make `code_block` runtime behavior key-owned during plugin resolution, like blockquote/link/indent/toggle. | Code-block runtime tests passed, including break/delete/paste/tab/select-all behavior. |
-| List-classic package test initially hung in delete-backward after a dirty descendant-start check | 1 | Distinguish list-item start from descendant content start with explicit point equality. | Focused delete-backward spec and full package tests passed. |
-| List-classic insert-fragment used multiple `next()` calls inside one transform middleware | 1 | Use one `next()` call, delete expanded selection explicitly, extract text explicitly, and normalize after insertion. | Fragment tests passed: 18 pass, 0 fail. |
-| List-classic typecheck exposed runtime helper and `read` callback typing drift | 1 | Add explicit `EditorCoreStateView` annotations, typed private helpers, and runtime test-helper cast only in tests. | `pnpm turbo typecheck --filter=./packages/list-classic` passed. |
+| legacy-list-model package test initially hung in delete-backward after a dirty descendant-start check | 1 | Distinguish list-item start from descendant content start with explicit point equality. | Focused delete-backward spec and full package tests passed. |
+| legacy-list-model insert-fragment used multiple `next()` calls inside one transform middleware | 1 | Use one `next()` call, delete expanded selection explicitly, extract text explicitly, and normalize after insertion. | Fragment tests passed: 18 pass, 0 fail. |
+| legacy-list-model typecheck exposed runtime helper and `read` callback typing drift | 1 | Add explicit `EditorCoreStateView` annotations, typed private helpers, and runtime test-helper cast only in tests. | `pnpm turbo typecheck --filter=./packages/platejs/src/features/list` passed. |
 | AI direct `editor.api.*` migration first lost plugin API-group typing after removing `getPluginApi` | 1 | Add package-local structural editor types naming required plugin API groups, not a runtime lookup bridge. | `pnpm turbo typecheck --filter=./packages/ai` passed. |
 | AI tests still mocked `getPluginApi` / `editor.tf` after source moved to direct API/update paths | 1 | Repair fixtures to expose `api.blockSelection`, `api.cursorOverlay`, and neutral call spies. | `pnpm --filter @platejs/ai test` passed: 64 pass, 0 fail. |
 
 Verification evidence:
-- `/Users/zbeyens/git/plate-2`: `pnpm --filter @platejs/list-classic test`
+- `/Users/zbeyens/git/plate-2`: `pnpm --filter platejs test`
   passed: 105 pass, 0 fail.
-- `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/list-classic`
+- `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/platejs/src/features/list`
   passed.
-- `/Users/zbeyens/git/plate-2`: `pnpm --filter @platejs/list-classic brl`
+- `/Users/zbeyens/git/plate-2`: `pnpm --filter platejs brl`
   passed.
-- `/Users/zbeyens/git/plate-2`: `pnpm --filter @platejs/list-classic build`
+- `/Users/zbeyens/git/plate-2`: `pnpm --filter platejs build`
   passed.
-- `/Users/zbeyens/git/plate-2`: list-classic source/declaration audit for
+- `/Users/zbeyens/git/plate-2`: legacy-list-model source/declaration audit for
   `editor.tf`, `tf`, `api.findPath`, `getTransforms`, `extendTransforms`,
   `plugin.transforms`, and wrapper production file names returned no matches.
 - `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/plite`
@@ -766,11 +766,11 @@ Timeline:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Package hard-cut closeout after callout, basic-nodes, utils, core exact-symbol, dnd, selection, docx-io, resizable, tabbable, indent, tag, toggle, cursor, floating, toc, playwright, layout, media, link, code-block, list, list-classic, table, suggestion, markdown, csv, docx-io, and ai packets. |
+| Where am I? | Package hard-cut closeout after callout, basic-nodes, utils, core exact-symbol, dnd, selection, docx-io, resizable, tabbable, indent, tag, toggle, cursor, floating, toc, playwright, layout, media, link, code-block, list, legacy-list-model, table, suggestion, markdown, csv, docx-io, and ai packets. |
 | Where am I going? | Close this goal after the mechanical plan checker; next work is Plate app/registry runtime migration, not more package bridge sweep. |
 | What is the goal? | Hard-cut Plate transform bridge APIs. |
 | What have I learned? | Core still uses slate-legacy runtime transforms as a structural editor layer; callout proves the target command shape; basic-nodes/layout/indent/tag/toggle/link/code-block/list prove key-owned runtime behavior can replace package transform overrides; media proves insert-data behavior belongs to feature-owned input rules, not `overrideEditor` transform wrappers; utils proved path context has to be carried through inject/render surfaces before package `findPath` can die; dnd/cursor/floating/toc/playwright proved DOM runtime services need first-class v2 typing when packages legitimately need mounted editor roots; selection proved hidden transform interception should be cut rather than retyped; toggle/layout/media/link/code-block/list/table proved runtime package specs must avoid dist/source WeakMap split-brain; list proved wrapper deletion is not enough when the wrapper carried a data invariant, so the package transform must own that invariant explicitly; table proved path-owned substrate reads should use `NodeApi.get` instead of Plate API node reads when stable node ids matter. |
-| What have I done? | Created goal, filled checkpoint zero, cut callout helper alias and package `findPath`, proved callout, removed basic-nodes bridge usage, proved basic-nodes, cut utils helper overrides, moved single-block/single-line/trailing/normalize-types to v2 runtime behavior, removed exact target bridge symbols from core production source, migrated dnd production/tests to update/api/tx, migrated selection production/tests to explicit block-selection API/tx plus DOM/clipboard APIs, cleared docx-io/resizable/tabbable, cleared indent/tag/toggle, migrated cursor/floating/toc/playwright DOM/API usage, deleted layout `withColumn` in favor of v2 runtime column ownership, moved media image insert-data/file upload from transform overrides to input rules, migrated link runtime/input-rules/transforms away from `withLink`, deleted code-block `with*` transform wrappers while keeping break/delete/paste/tab/select-all behavior in key-owned runtime code, deleted list/list-classic transform wrappers while keeping list behavior plus numbering invariants in explicit package transforms, deleted table transform wrappers while preserving merge/paste/delete/mark behavior through direct tx/runtime extension tests, cleared AI/suggestion/markdown/csv/docx-io production/tests of stale API lookup/bridge usage, and removed stale `findPath` docs/registry leaks from touched current surfaces. |
+| What have I done? | Created goal, filled checkpoint zero, cut callout helper alias and package `findPath`, proved callout, removed basic-nodes bridge usage, proved basic-nodes, cut utils helper overrides, moved single-block/single-line/trailing/normalize-types to v2 runtime behavior, removed exact target bridge symbols from core production source, migrated dnd production/tests to update/api/tx, migrated selection production/tests to explicit block-selection API/tx plus DOM/clipboard APIs, cleared docx-io/resizable/tabbable, cleared indent/tag/toggle, migrated cursor/floating/toc/playwright DOM/API usage, deleted layout `withColumn` in favor of v2 runtime column ownership, moved media image insert-data/file upload from transform overrides to input rules, migrated link runtime/input-rules/transforms away from `withLink`, deleted code-block `with*` transform wrappers while keeping break/delete/paste/tab/select-all behavior in key-owned runtime code, deleted list/legacy-list-model transform wrappers while keeping list behavior plus numbering invariants in explicit package transforms, deleted table transform wrappers while preserving merge/paste/delete/mark behavior through direct tx/runtime extension tests, cleared AI/suggestion/markdown/csv/docx-io production/tests of stale API lookup/bridge usage, and removed stale `findPath` docs/registry leaks from touched current surfaces. |
 
 Open risks:
 - Full `apps/www` typecheck is still red from broader Plate app/registry legacy

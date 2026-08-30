@@ -38,10 +38,10 @@ docs:
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CodeBlockKit } from '@/components/editor/code-block';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...CodeBlockKit,
@@ -58,7 +58,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/code-block lowlight
+npm install platejs @tanstack/react-virtual lowlight
 ```
 
 ### 添加插件
@@ -66,10 +66,10 @@ npm install @platejs/code-block lowlight
 加入 `CodeBlockPlugin` 即可获得代码块编辑行为。它会把 `CodeLinePlugin` 作为必需依赖安装；需要 Lowlight 语法高亮时，再单独加入 `CodeHighlightPlugin`。
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin,
@@ -84,16 +84,16 @@ const editor = createPlateEditor({
 **包含所有语言的基础设置：**
 
 ```tsx
-import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
+import { CodeBlockRules } from 'platejs';
+import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from 'platejs/react';
 import { all, createLowlight } from 'lowlight';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
 
 // 创建包含所有语言的 lowlight 实例
 const lowlight = createLowlight(all);
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
@@ -130,7 +130,7 @@ lowlight.register('css', css);
 lowlight.register('js', js);
 lowlight.register('ts', ts);
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
@@ -161,10 +161,10 @@ const editor = createPlateEditor({
 需要纯文本代码块时，省略 `CodeHighlightPlugin`：
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [CodeBlockPlugin],
 });
 ```

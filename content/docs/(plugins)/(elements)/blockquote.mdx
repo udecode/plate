@@ -34,10 +34,10 @@ The fastest way to add the blockquote plugin is with the `BasicBlocksKit`, which
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...BasicBlocksKit,
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -62,10 +62,10 @@ npm install @platejs/basic-nodes
 Include `BlockquotePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { BlockquotePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     BlockquotePlugin,
@@ -79,11 +79,11 @@ Configure `BlockquotePlugin` with the component and shortcut used by your app.
 The `toggle` shortcut dispatches the plugin's structural toggle command.
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { BlockquotePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BlockquoteElement } from '@/components/editor/blockquote';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     BlockquotePlugin.configure({

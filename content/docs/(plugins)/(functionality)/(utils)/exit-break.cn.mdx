@@ -26,10 +26,10 @@ title: 退出块结构
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { ExitBreakKit } from '@/components/editor/exit-break';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...ExitBreakKit,
@@ -47,9 +47,9 @@ const editor = createPlateEditor({
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ExitBreakPlugin,
@@ -61,9 +61,9 @@ const editor = createPlateEditor({
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ExitBreakPlugin.configure({

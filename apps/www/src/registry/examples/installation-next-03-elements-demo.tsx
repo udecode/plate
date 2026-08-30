@@ -1,14 +1,15 @@
 'use client';
 
+import type { Value } from 'platejs';
 import {
   BlockquotePlugin,
   BoldPlugin,
   HeadingPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import type { Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+  Plate,
+  useCreateEditor,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { BlockquoteElement } from '@/registry/components/editor/blockquote';
@@ -44,7 +45,7 @@ const initialValue: Value = [
 ];
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,

@@ -4,8 +4,8 @@ import {
   DocxExportPlugin,
   DocxImportPlugin,
   DocxPastePlugin,
-} from '@platejs/docx';
-import { JuicePlugin } from '@platejs/juice';
+} from 'platejs/docx';
+import { JuicePlugin } from 'platejs/juice';
 
 export const DocxKit = [
   JuicePlugin,

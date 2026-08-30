@@ -1,5 +1,5 @@
 ---
-'@platejs/plite': major
+'plitejs': major
 ---
 
 - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
@@ -43,8 +43,8 @@
 - Declare mutually exclusive property groups in schema so toggles, canonicalization, history, and collaboration share one invariant
 - Resolve extension dependencies and conflicts by descriptor, install required dependencies transitively with reference-counted cleanup, and expose typed dependency APIs through `editor.extension(descriptor).api`
 - Apply a root transaction policy to one descriptor-owned update through `editor.extension(descriptor).update(policy).method()`
-- Let host layers project additional transaction-view capabilities through `@platejs/plite/internal` without expanding raw Plite's public transaction API
-- Keep root Plite dependency references shallow and non-generic as `{ name, enabled? }`. Plate plugin references carry the same sole `name` identity. Keep name-keyed capability/provider inference under `@platejs/plite/internal`, without recursively encoding exact dependency ancestry. Static portals prove name and capability equivalence; runtime portals prove exact installed descriptor identity.
+- Let host layers project additional transaction-view capabilities through private Plite internals without expanding raw Plite's public transaction API
+- Keep root Plite dependency references shallow and non-generic as `{ name, enabled? }`. Plate plugin references carry the same sole `name` identity. Keep name-keyed capability/provider inference private, without recursively encoding exact dependency ancestry. Static portals prove name and capability equivalence; runtime portals prove exact installed descriptor identity.
 - Add descriptor-owned typed extension contributions for package-specific contribution channels
 - Define package-owned contribution channels with `defineExtensionPoint(...)` and collect ordered values through `context.getContributions(...)`
 - Intercept core-owned pure reads through descriptor-based extension `read` middleware, with transaction-draft state, single delegation, and complete generator cleanup
@@ -52,7 +52,7 @@
 - Infer one exact definition from every `defineExtension(name, definition)` author object, carry that sole public definition generic through `EditorExtension<D>`, omit undeclared fields from the inferred descriptor, and expose `DefinitionOf<typeof Extension>` as the public definition extractor
 - Use `defineExtension(name, definition)` and `defineEditorSchema(name, definition)` as the only extension/schema descriptor factories. Descriptors are nominal, immutable values; installing the same descriptor twice is idempotent, while divergent same-name descriptors reject.
 - Return the public `Editor` directly from `createEditor()`. Create root-scoped views with `createEditorView(editor, options)` and add live capabilities with `editor.install(extension)`; layered editors retain their complete caller capabilities through root-scoped views, while raw Plite editors infer their installed extension tuple. No public runtime wrapper or live `.extend()` API exists.
-- Expose `EditorExtensionTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion under `@platejs/plite/internal`
+- Expose `EditorExtensionTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion private
 - Infer descriptor-owned element shapes with `ElementOf<typeof Plugin>`; remove the two-owner `SchemaElementOf` and `SchemaElementShapeOf` extractors
 - Keep immutable author inputs in the descriptor factory closure instead of an extension `config` channel
 - Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback
@@ -69,4 +69,4 @@
 - Compile deterministic closed-application overrides before relationships. Element type, content, groups, and property targets may change; ambiguous overrides reject instead of using source order.
 - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
 
-**Migration:** Replace `@platejs/slate` with `@platejs/plite` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `defineExtension(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(extension)`. Register state fields through a nominal extension's `stateFields` collection instead of passing field handles as extensions. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.
+**Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `defineExtension(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(extension)`. Register state fields through a nominal extension's `stateFields` collection instead of passing field handles as extensions. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.

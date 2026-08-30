@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { openExample } from '@platejs/browser/playwright';
+import { openExample } from '@platejs/test/playwright';
 
 test.describe('persistent annotation anchors example', () => {
   test('keeps the annotation anchor attached across fragment insert, text insert, and clear', async ({

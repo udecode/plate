@@ -57,6 +57,10 @@ globalThis.IntersectionObserver =
   IntersectionObserverMock as unknown as typeof IntersectionObserver;
 
 mock.module('platejs/react', () => ({
+  TocPlugin: {
+    configure: mock(() => ({ name: 'toc' })),
+    name: 'toc',
+  },
   PlateElement: PlateElementMock,
   NavigationFeedbackPlugin: {},
   useEditor: () => editor,
@@ -65,13 +69,6 @@ mock.module('platejs/react', () => ({
   useEditorSelector: useEditorSelectorMock,
   usePluginStore: (_plugin: unknown, key: string) =>
     key === 'isScroll' ? false : 0,
-}));
-
-mock.module('@platejs/toc/react', () => ({
-  TocPlugin: {
-    configure: mock(() => ({ name: 'toc' })),
-    name: 'toc',
-  },
 }));
 
 mock.module('@/components/ui/button', () => ({

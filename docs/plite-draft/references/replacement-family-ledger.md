@@ -101,7 +101,7 @@ Evidence:
 
 - current `rich-inline`
 - [slate-react test proof files](/Users/zbeyens/git/plite/packages/plite-react/test)
-- [history-contract.ts](/Users/zbeyens/git/plite/packages/plite-history/test/history-contract.ts)
+- [history-contract.ts](/Users/zbeyens/git/plite/packages/plitejs/test/history/history-contract.ts)
 - [rich-inline.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/rich-inline.test.ts)
 
 ### Inline Family

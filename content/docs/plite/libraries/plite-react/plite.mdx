@@ -29,12 +29,12 @@ type PliteBaseProps = {
 };
 
 type PliteProps =
-  | (PliteBaseProps & { editor: ReactEditor; root?: never })
+  | (PliteBaseProps & { editor: Editor; root?: never })
   | (PliteBaseProps & { editor?: never; root: string });
 
 type PliteCommitContext = {
   commit: EditorCommit;
-  editor: ReactEditor;
+  editor: Editor;
   snapshot: EditorSnapshot;
 };
 
@@ -57,11 +57,11 @@ context to another root.
 
 ### `editor`
 
-Pass the editor created with `usePliteEditor`.
+Pass the editor created with `useEditor`.
 
 ```tsx
 const MyEditor = () => {
-  const editor = usePliteEditor<CustomValue>({ initialValue });
+  const editor = useEditor<CustomValue>({ initialValue });
 
   return <Plite editor={editor}>...</Plite>;
 };
@@ -83,7 +83,7 @@ changes.
 Seed the editor with `initialValue` when the editor is created. `<Plite>` does
 not take an `initialValue` prop.
 
-Use `createReactEditor` when an editor must be created outside a React
+Use `createEditor` when an editor must be created outside a React
 component or inside a custom hook that owns the same one-shot lifetime.
 
 Use editor APIs for later document replacement. `initialValue` is not a

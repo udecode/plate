@@ -1,8 +1,8 @@
 'use client';
 
-import { isOrderedList, ListType } from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
+import { isOrderedList, ListType } from 'platejs';
 import {
+  ListPlugin,
   type RenderNodeWrapper,
   useEditor,
   useEditorReadOnly,

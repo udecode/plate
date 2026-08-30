@@ -3,10 +3,10 @@ title: "Plite DOM"
 description: "Use DOM, clipboard, hotkey, and coverage helpers outside React-owned rendering."
 ---
 
-`@platejs/plite-dom` is the DOM bridge for Plite editors. It owns DOM point/range
+`plitejs/dom` is the DOM bridge for Plite editors. It owns DOM point/range
 conversion, selection conversion, clipboard formatting, hotkey helpers,
 contenteditable helpers, and DOM coverage metadata used by framework runtimes.
-React apps normally use these APIs through `@platejs/plite-react`.
+React apps normally use these APIs through `plitejs/react`.
 
 ## Usage
 
@@ -17,11 +17,11 @@ editor.api.dom.focus();
 editor.api.dom.clipboard.insertTextData(dataTransfer);
 ```
 
-Use direct public imports from `@platejs/plite-dom` for framework integration
+Use direct public imports from `plitejs/dom` for framework integration
 code that needs DOM bridge helpers without React.
 
 ```ts
-import { DOMCoverage, Hotkeys, isDOMNode } from "@platejs/plite-dom";
+import { DOMCoverage, Hotkeys, isDOMNode } from "plitejs/dom";
 ```
 
 ## Public Utility Groups
@@ -35,6 +35,11 @@ resolution.
 `Hotkeys`, `isHotkey`, and `Key` cover keyboard matching and keyboard names.
 `TRIPLE_CLICK` is the click count Plite uses for block-level triple-click
 handling.
+
+Framework adapters can use `DOMEditor`, `getEditorDOMRoot`,
+`createCompiledHotkeyMatcher`, `isGeckoDOMHost`, and
+`usesAppleDOMHotkeys` for explicit host integration without importing private
+runtime modules.
 
 DOM utilities include shadow-aware traversal, active element/window/selection
 lookups, DOM type guards, DOM point normalization, plain-text paste detection,
@@ -57,8 +62,12 @@ import {
   isPlainTextOnlyPaste,
   isTrackedMutation,
   normalizeDOMPoint,
-} from "@platejs/plite-dom";
+} from "plitejs/dom";
 ```
+
+Plite node marker helpers include `getElements`, `getNodeDataAttributeKeys`,
+`keyToDataAttribute`, `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`,
+`isText`, and `isVoid`.
 
 Text-diff utilities include string diff normalization, merging, point/range
 projection, target-range calculation, and state verification:
@@ -72,7 +81,7 @@ import {
   normalizeStringDiff,
   targetRange,
   verifyDiffState,
-} from "@platejs/plite-dom";
+} from "plitejs/dom";
 ```
 
 `CAN_USE_DOM` guards SSR-only initialization. Mounted DOM adapters resolve
@@ -95,8 +104,8 @@ import {
   property,
   schema,
   target,
-} from "@platejs/plite";
-import { hostCodecs } from "@platejs/plite-dom";
+} from "plitejs";
+import { hostCodecs } from "plitejs/dom";
 import { decodeHtmlSlice, encodeHtmlSlice } from "./html-codec";
 
 const Bold = schema.textProperty("bold", property.boolean(), {
@@ -108,7 +117,7 @@ const DataAttribute = schema.elementProperty(
   { target: target.group("block") }
 );
 
-const editor = usePliteEditor({
+const editor = useEditor({
   extensions: [
     defineExtension("app-schema", {
       schema: { properties: [Bold, DataAttribute] },
@@ -199,7 +208,7 @@ React applications usually configure DOM coverage through
 
 The `/internal` package subpath is reserved for sibling Plite packages in this
 repo. Applications, extension libraries, and framework adapters outside this
-workspace should use the root `@platejs/plite-dom` export.
+workspace should use the root `plitejs/dom` export.
 
 ## Related Docs
 

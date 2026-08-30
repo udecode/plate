@@ -132,7 +132,7 @@ export const DraftPlugin = definePlatePlugin('draft', {
 通过名称修改按键：
 
 ```tsx title="plugins/basic-marks.tsx" showLineNumbers
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 import { Key } from 'platejs/react';
 
 export const AppBoldPlugin = BoldPlugin.configure({
@@ -147,7 +147,7 @@ export const AppBoldPlugin = BoldPlugin.configure({
 将快捷键设为 `null` 可删除它：
 
 ```tsx title="plugins/basic-marks.tsx" showLineNumbers
-import { ItalicPlugin } from '@platejs/basic-nodes/react';
+import { ItalicPlugin } from 'platejs/react';
 
 export const AppItalicPlugin = ItalicPlugin.configure({
   shortcuts: {
@@ -205,12 +205,12 @@ Plate 按快捷键优先级、插件应用顺序、声明顺序排列编译表�
 
 ## 编辑器级快捷键
 
-`createPlateEditor({ shortcuts })` 把快捷键附加到根插件。仅将它用于不属于任何功能插件的编辑器级命令。
+`createEditor({ shortcuts })` 把快捷键附加到根插件。仅将它用于不属于任何功能插件的编辑器级命令。
 
 ```tsx title="editor.ts" showLineNumbers
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   shortcuts: {
     reportWordCount: {
       keys: 'mod+shift+w',
@@ -247,7 +247,7 @@ type Shortcut = HotkeysOptions & {
   priority?: number;
   target?: 'api' | 'update';
   handler?: (ctx: {
-    editor: PlateEditor;
+    editor: Editor;
     event: KeyboardEvent;
     eventDetails: HotkeysEvent;
   }) => boolean | void;

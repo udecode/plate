@@ -1,8 +1,5 @@
 'use client';
 
-import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
-import { CommentPlugin } from '@platejs/comment/react';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -22,17 +19,20 @@ import {
   X,
 } from 'lucide-react';
 import { ElementApi, isHotkey, NodeApi } from 'platejs';
+import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import { CommentPlugin } from 'platejs/comment/react';
 import {
   useEditorPlugin,
   useEditorRuntimeState,
-  usePlateEditor,
+  useCreateEditor,
   useEditorSelector,
   useFocusedLast,
   useHotkeys,
   usePluginStore,
-  type PlateEditor,
+  type Editor,
   useEditor,
 } from 'platejs/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,7 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { EditorStatic } from './editor-static';
 
 export function AIChatEditor({ content }: { content: string }) {
-  const aiEditor = usePlateEditor({
+  const aiEditor = useCreateEditor({
     plugins: BaseEditorKit,
   });
   const { store } = useEditorPlugin(AIChatPlugin);
@@ -552,13 +552,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     filterItems?: boolean;
     items?: Array<{ label: string; value: string }>;
     shortcut?: string;
-    onSelect?: ({
-      editor,
-      input,
-    }: {
-      editor: PlateEditor;
-      input: string;
-    }) => void;
+    onSelect?: ({ editor, input }: { editor: Editor; input: string }) => void;
   }
 >;
 

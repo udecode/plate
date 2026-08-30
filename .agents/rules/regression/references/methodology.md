@@ -163,6 +163,20 @@ it, record `e2e-required: <specific lower-layer limitation>`. Existing E2E
 tests may run as affected-corpus evidence, but their existence does not justify
 creating or expanding E2E coverage for a unit-red case.
 
+For keyboard, text-input, trigger, or semantic-command regressions, a passing
+detached root-editor test cannot overrule a failing mounted Browser case. Treat
+the package result as a proxy until the exact mounted runtime owner executes
+the command. Before another product attempt, add or identify the smallest
+executable mounted-owner diagnostic. Completion requires an applicable
+`dom-native` Browser oracle whose result records `runtime-owner: pass`; editor
+identity inferred from setup code or a detached root editor does not count. The
+same result must record `mutation-owner: pass`: discovering a material command
+is still proxy proof until the exact route shows that semantic mutation, rather
+than direct DOM repair or native insertion, owned publication. After any failed
+fix, the plan cannot resume product work until that Browser oracle records both
+diagnostics, even while the behavior itself remains red. A constructed view
+that never mounts in the reporter route cannot satisfy this gate.
+
 Treat prior behavior, older releases, upstream Slate, and recordings as
 evidence. Current accepted product/editor law decides the oracle.
 
@@ -576,6 +590,14 @@ new cross-invariant failure attributable to the current attempt.
 A separate green from before the final shared-owner edit is stale. A receipt
 whose proof starts before the latest named input edit is invalid. A nonzero
 retry count cannot certify stability.
+
+Responsive geometry may intentionally settle through an animation frame,
+resize observer, or asynchronous renderer commit. The proof must poll a named
+final invariant within a bounded timeout before it captures final boxes. A
+single immediate bounding-box read after resize is invalid because it cannot
+distinguish a broken refresh from a correct refresh that has not committed.
+Capture the pre-convergence and converged geometry in the smallest diagnostic,
+then keep product bytes frozen until that classification is explicit.
 
 ## Corpus Work Without A Registry
 

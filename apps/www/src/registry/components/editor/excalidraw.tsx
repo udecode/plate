@@ -2,7 +2,7 @@
 
 import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { AppState, ExcalidrawProps } from '@excalidraw/excalidraw/types';
-import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
+import { ExcalidrawPlugin } from 'platejs/excalidraw/react';
 import {
   type PlateElementProps,
   PlateElement,

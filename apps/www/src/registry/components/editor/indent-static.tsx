@@ -1,5 +1,4 @@
-import { BaseIndentPlugin } from '@platejs/indent';
-import { PLUGINS } from 'platejs';
+import { BaseIndentPlugin, PLUGINS } from 'platejs';
 
 export const BaseIndentKit = [
   BaseIndentPlugin.configure({
@@ -11,7 +10,7 @@ export const BaseIndentKit = [
       PLUGINS.paragraph,
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
-      PLUGINS.toggle,
+      PLUGINS.details,
     ],
   }),
 ];

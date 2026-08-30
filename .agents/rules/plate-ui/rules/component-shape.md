@@ -130,8 +130,8 @@ export const MathKit = [
 ];
 ```
 
-Base/static files must not import `platejs/react`, `@platejs/core/react`, or
-any `@platejs/*/react` entrypoint. `BasePlugin.configure({ component })` is the
+Base/static files must not import `platejs/react` or any `platejs/*/react`
+entrypoint. `BasePlugin.configure({ component })` is the
 static binding path; `toPlatePlugin(BasePlugin)` belongs only in live React
 adapters.
 Bind Base/static descriptors to static renderer modules, never live/client

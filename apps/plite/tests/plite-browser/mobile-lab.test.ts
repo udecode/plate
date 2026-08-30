@@ -1,4 +1,4 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 test.describe('mobile input lab', () => {

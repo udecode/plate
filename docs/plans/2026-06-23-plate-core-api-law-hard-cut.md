@@ -107,7 +107,7 @@ Changed list:
 | Core plugins/tests | Migrated input rules, length, static, parser, fragment insertion, normalize initial value, override editor, Plite React extension, omit context, render props, and Plate slow tests off old transform/create APIs. |
 | Runtime defaults | Added base length extension in `withPlite`; runtime length reads plugin options through current API shape. |
 | Runtime split | Extracted parser, NodeId, and input-rule runtime feature owners from `createPlateRuntimeEditor.ts`. |
-| Package callers | Patched `code-block`, `selection`, `markdown`, `list-classic`, `ai`, `table`, and `utils` banned API callers. |
+| Package callers | Patched `code-block`, `selection`, `markdown`, `legacy-list-model`, `ai`, `table`, and `utils` banned API callers. |
 | List runtime proof | Migrated list input-rule/toggle-list proof to the Plite runtime; `toggleList` filters expanded selections to block element entries; runtime list normalization now honors `getSiblingListOptions`, nested siblings, heading boundaries, and page-wrapper sibling providers. |
 | Representative packages | `code-block` and `selection` proved with package tests; table and utils were proved earlier in the same lane. |
 
@@ -117,12 +117,12 @@ Proof:
 | `pnpm turbo typecheck --filter=./packages/core` | pass |
 | `pnpm --filter @platejs/core build` | pass |
 | focused core suite covering runtime/plugin/store/API rows | 190 pass, 0 fail |
-| `pnpm turbo typecheck --filter=./packages/core --filter=./packages/code-block --filter=./packages/list-classic --filter=./packages/markdown --filter=./packages/selection --filter=./packages/ai` | pass |
-| `pnpm --filter @platejs/core --filter @platejs/code-block --filter @platejs/list-classic --filter @platejs/markdown --filter @platejs/selection --filter @platejs/ai lint:fix` | pass |
-| `pnpm --filter @platejs/core --filter @platejs/code-block --filter @platejs/list-classic --filter @platejs/markdown --filter @platejs/selection --filter @platejs/ai build` | pass |
+| `pnpm turbo typecheck --filter=./packages/core --filter=./packages/code-block --filter=./packages/platejs/src/features/list --filter=./packages/markdown --filter=./packages/selection --filter=./packages/ai` | pass |
+| `pnpm --filter @platejs/core --filter @platejs/code-block --filter platejs --filter @platejs/markdown --filter @platejs/selection --filter @platejs/ai lint:fix` | pass |
+| `pnpm --filter @platejs/core --filter @platejs/code-block --filter platejs --filter @platejs/markdown --filter @platejs/selection --filter @platejs/ai build` | pass |
 | `pnpm --filter @platejs/code-block test` | 79 pass, 0 fail |
 | `pnpm --filter @platejs/selection test` | 102 pass, 0 fail |
-| grouped package tests for markdown/list-classic/ai | markdown 234 pass; list-classic 105 pass; ai 64 pass |
+| grouped package tests for markdown/legacy-list-model/ai | markdown 234 pass; legacy-list-model 105 pass; ai 64 pass |
 | `pnpm turbo typecheck --filter=./packages/table` | pass |
 | `pnpm --filter @platejs/table test` | 218 pass, 0 fail |
 | `pnpm --filter @platejs/table build` | pass |

@@ -59,7 +59,7 @@ Boundaries:
   `@platejs/cli` generated-artifact production and stale checking.
 - Non-goals: no Plite runtime or generated-provider redesign; no
   `usePlateEditor` lifecycle work; no
-  TypeScript performance claim; no `*-classic` work; no public tooling-subpath
+  TypeScript performance claim; no alternative variants work; no public tooling-subpath
   decision unless live evidence makes it necessary for this delivery contract.
 - Direct Plite boundary owners: N/A. The plan consumes existing generated
   node/value provider mechanics without changing editor substrate.

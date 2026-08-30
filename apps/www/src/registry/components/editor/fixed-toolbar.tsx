@@ -1,24 +1,6 @@
 'use client';
 
 import {
-  BoldPlugin,
-  CodePlugin,
-  HighlightPlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-} from '@platejs/basic-styles/react';
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
-} from '@platejs/media';
-import {
   BaselineIcon,
   BoldIcon,
   Code2Icon,
@@ -29,7 +11,24 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
 } from 'lucide-react';
-import { useEditorReadOnly, definePlatePlugin } from 'platejs/react';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from 'platejs/media';
+import {
+  BoldPlugin,
+  CodePlugin,
+  HighlightPlugin,
+  ItalicPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+  useEditorReadOnly,
+  definePlatePlugin,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -38,6 +37,7 @@ import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
+import { DetailsToolbarButton } from './details-toolbar-button';
 import { EmojiToolbarButton } from './emoji-toolbar-button';
 import {
   DEFAULT_COLORS,
@@ -62,7 +62,6 @@ import { MediaToolbarButton } from './media-toolbar-button';
 import { ModeToolbarButton } from './mode-toolbar-button';
 import { MoreToolbarButton } from './more-toolbar-button';
 import { TableToolbarButton } from './table-toolbar-button';
-import { ToggleToolbarButton } from './toggle-toolbar-button';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
 export function FixedToolbarButtons({
@@ -145,7 +144,7 @@ export function FixedToolbarButtons({
             <NumberedListToolbarButton />
             <BulletedListToolbarButton />
             <TodoListToolbarButton />
-            <ToggleToolbarButton />
+            <DetailsToolbarButton />
           </ToolbarGroup>
 
           <ToolbarGroup>

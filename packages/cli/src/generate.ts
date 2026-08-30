@@ -26,14 +26,14 @@ import {
 } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { build } from 'esbuild';
 import type {
   EditorSchemaContract,
   EditorSchemaContractContentProgram,
   SchemaPropertyKey,
-} from '@platejs/plite';
-import { failInvariant } from '@platejs/plite/internal';
-import { build } from 'esbuild';
+} from 'platejs';
 
+import { failInvariant } from './internal/failInvariant';
 import {
   artifactStateRoot,
   canonicalPath,
@@ -247,13 +247,13 @@ const bundleEditor = async (
     sourcemap: false,
     stdin: {
       contents: `import * as editorModule from 'plate:editor';
-import { createBaseEditor } from '@platejs/core';
+import { createEditor } from 'platejs';
 import {
+  createEditorSchemaContract,
+  getCompiledEditorSchema,
   getPlateRuntime,
   isNominalPluginDescriptor,
-} from '@platejs/core/internal';
-import { createEditorSchemaContract } from '@platejs/plite';
-import { getCompiledEditorSchema } from '@platejs/plite/internal';
+} from 'platejs';
 
 const entryLabel = ${JSON.stringify(`Plate editor entry "${entryPath}"`)};
 const exports = Object.entries(editorModule);
@@ -277,7 +277,7 @@ if (pluginCandidates.length !== 1) {
   );
 }
 const [pluginExportName, plugins] = pluginCandidates[0];
-const baseEditor = createBaseEditor({ plugins, skipInitialization: true });
+const baseEditor = createEditor({ plugins, skipInitialization: true });
 const baseRuntime = getPlateRuntime(baseEditor);
 const schemaFields = new Set(['id', 'overrides', 'properties', 'root', 'version']);
 const isRecord = (value) =>
@@ -309,7 +309,7 @@ const looksLikeApplicationSchema = (value) => {
 const schemaCandidates = exports
   .filter(([, value]) => looksLikeApplicationSchema(value))
   .map(([name, value]) => {
-    const candidateEditor = createBaseEditor({
+    const candidateEditor = createEditor({
       plugins,
       schema: value,
       skipInitialization: true,
@@ -745,7 +745,7 @@ const materializePropertyGroups = async (
           )
           .join('\n');
         const aliasSource = `type __PlatePlugins = (typeof EditorModule)[${JSON.stringify(pluginExportName)}];\n${aliases}\n${ownerAliases}\ntype __PlateText = InternalEditorDefinitionTextProperties<__PlatePlugins>;`;
-        const helper = `import type * as EditorModule from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from '@platejs/core/internal';\n${aliasSource}\n`;
+        const helper = `import type * as EditorModule from ${JSON.stringify(entryImport)};\nimport type { InternalEditorDefinitionElementProperties, InternalEditorDefinitionOwnedElementProperties, InternalEditorDefinitionTextProperties } from 'platejs';\n${aliasSource}\n`;
         const propertyNamesByAlias = new Map(
           groups.map((group) => [
             group.aliasName,
@@ -1214,7 +1214,7 @@ const renderGeneratedTypes = (
     'Text',
   ].join(', ');
 
-  return `${generatedHeader(entryPath)}\nimport type { ${coreTypeImports} } from 'platejs';\nimport type { PlateEditor } from 'platejs/react';\n\nimport type * as EditorModule from ${JSON.stringify(editorImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: ${renderExactReadonlyRecord(schemaPluginTypeFields, '  ')};\n  readonly properties: ${renderExactReadonlyRecord(schemaApplicationTypeFields, '  ')};\n}>;\nexport type Mutations = ${renderExactReadonlyRecord(mutationDeclarations)};\ntype Types = Readonly<{\n  element: EditorElement;\n  mutations: Mutations;\n  schema: Schema;\n  text: EditorText;\n  value: Value;\n}>;\n\nexport const schema = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nexport const fingerprint = ${JSON.stringify(schema.fingerprint)};\n\ntype EditorPlugins = (typeof EditorModule)[${JSON.stringify(pluginExportName)}] & GeneratedEditorTypeProvider<Types>;\n\nexport type Editor = PlateEditor<EditorPlugins>;\n`;
+  return `${generatedHeader(entryPath)}\nimport type { ${coreTypeImports} } from 'platejs';\nimport type { Editor as BaseEditor } from 'platejs/react';\n\nimport type * as EditorModule from ${JSON.stringify(editorImport)};\n\nexport interface EditorText extends Text {\n  readonly text: string;${textFields ? `\n${textFields}` : ''}\n}\n\n${elementDeclarations}\n\nexport type EditorElement = ${elementUnion};\nexport type Value = ${rootType};\nexport type Schema = Readonly<{\n  readonly plugins: ${renderExactReadonlyRecord(schemaPluginTypeFields, '  ')};\n  readonly properties: ${renderExactReadonlyRecord(schemaApplicationTypeFields, '  ')};\n}>;\nexport type Mutations = ${renderExactReadonlyRecord(mutationDeclarations)};\ntype Types = Readonly<{\n  element: EditorElement;\n  mutations: Mutations;\n  schema: Schema;\n  text: EditorText;\n  value: Value;\n}>;\n\nexport const schema = Object.freeze({\n  plugins: Object.freeze({${schemaPluginValueFields ? `\n${schemaPluginValueFields}\n  ` : ''}}),\n  properties: Object.freeze({${schemaApplicationValueFields ? `\n${schemaApplicationValueFields}\n  ` : ''}}),\n}) satisfies Schema;\n\nexport const fingerprint = ${JSON.stringify(schema.fingerprint)};\n\ntype EditorPlugins = (typeof EditorModule)[${JSON.stringify(pluginExportName)}] & GeneratedEditorTypeProvider<Types>;\n\nexport type Editor = BaseEditor<Value, readonly [], EditorPlugins>;\n`;
 };
 
 const outputPaths = (entryPath: string) => {

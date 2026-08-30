@@ -1,3 +1,4 @@
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import {
   defineExtension,
   editorCommands,
@@ -5,16 +6,15 @@ import {
   PointApi,
   RangeApi,
   type Element as PliteElement,
-} from '@platejs/plite';
+} from 'plitejs';
 import {
   Editable,
   type RenderElementProps,
   Plite,
-  useEditor,
+  useEditorContext,
   useEditorReadOnly,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import type { ChangeEvent } from 'react';
 
 import { cn } from '@/utils/cn';
@@ -113,7 +113,7 @@ const CheckListsEditor = ({
 }: {
   exampleCase: ChecklistExampleCase;
 }) => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [checklist()],
     initialValue: createInitialValue(exampleCase),
   });
@@ -203,7 +203,7 @@ const CheckListItemElement = ({
   element,
 }: RenderElementProps<CheckListItemType>) => {
   const { checked } = element;
-  const editor = useEditor();
+  const editor = useEditorContext();
   const readOnly = useEditorReadOnly();
   return (
     <div {...attributes} className="plite-check-lists-item">

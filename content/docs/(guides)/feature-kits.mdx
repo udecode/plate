@@ -25,14 +25,14 @@ your app, not package exports locked inside `node_modules`.
 Install the kit through the Plate registry, then import it from your app.
 
 ```tsx title="components/editor.tsx" showLineNumbers
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { BasicNodesKit } from '@/components/editor/basic-nodes';
 import { TableKit } from '@/components/editor/table';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function MyEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [...BasicNodesKit, ...TableKit],
   });
 
@@ -92,7 +92,7 @@ Because kits are copied into your app, the cleanest customization is usually to
 edit the installed kit file.
 
 ```tsx title="components/editor/my-basic.tsx"
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 import { ParagraphPlugin } from 'platejs/react';
 
 import { HeadingElement } from '@/components/editor/heading';

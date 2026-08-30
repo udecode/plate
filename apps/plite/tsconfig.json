@@ -13,8 +13,7 @@
     "../www/src/types/**/*.d.ts",
     "../www/src/app/(app)/examples/plite/**/*.ts",
     "../www/src/app/(app)/examples/plite/**/*.tsx",
-    "../../packages/*/src/**/*.d.ts",
-    "../../packages/udecode/*/src/**/*.d.ts"
+    "../../packages/*/src/**/*.d.ts"
   ],
   "exclude": ["node_modules", "tests"]
 }

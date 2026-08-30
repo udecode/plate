@@ -32,10 +32,10 @@ docs:
 将套件添加到插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...BasicMarksKit,
@@ -52,7 +52,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -60,10 +60,10 @@ npm install @platejs/basic-nodes
 在创建编辑器时将 `StrikethroughPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { StrikethroughPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     StrikethroughPlugin,
@@ -76,10 +76,10 @@ const editor = createPlateEditor({
 您可以自定义 `StrikethroughPlugin` 的键盘快捷键。
 
 ```tsx
-import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { StrikethroughPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     StrikethroughPlugin.configure({

@@ -198,7 +198,7 @@ What closed:
 - typing `[text](url` and closing with `)` converts to a structured inline link
   span in the current rich-mode kits
 - the runtime host is the shared `AutoformatPlugin` input-rule lane
-- link-owned URL validation and node construction stay in `@platejs/link`
+- link-owned URL validation and node construction stay in `platejs`
 - the shipped slice stays narrow and does not claim nested markdown-link
   grammar, titles, or broader source-entry expansion
 

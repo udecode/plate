@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test('external DOM corruption is repaired from the model without moving selection', async ({
   page,

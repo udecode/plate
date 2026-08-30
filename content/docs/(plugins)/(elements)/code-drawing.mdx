@@ -40,10 +40,10 @@ The fastest way to add code drawing functionality is with the `CodeDrawingKit`, 
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CodeDrawingKit } from '@/components/editor/code-drawing';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CodeDrawingKit,
@@ -60,7 +60,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/code-drawing
+npm install platejs @tanstack/react-virtual flowchart.js mermaid plantuml-encoder viz.js
 ```
 
 ### Add Plugin
@@ -68,10 +68,10 @@ npm install @platejs/code-drawing
 Include `CodeDrawingPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CodeDrawingPlugin,
@@ -84,11 +84,11 @@ const editor = createPlateEditor({
 Configure the code drawing plugin with custom components.
 
 ```tsx
-import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
+import { createEditor } from 'platejs/react';
 import { CodeDrawingElement } from '@/components/editor/code-drawing';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CodeDrawingPlugin.configure({ component: CodeDrawingElement }),

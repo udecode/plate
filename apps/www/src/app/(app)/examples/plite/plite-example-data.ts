@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/plite';
+import type { Value } from 'plitejs';
 
 export const pliteExampleIds = [
   'plaintext',

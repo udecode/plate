@@ -57,7 +57,7 @@ Constraints:
 - Do not add generic reads, aggregate-property mutation magic, `baseInsert`, a
   plugin overload on raw `nodes.*`, universal `unset`, missing-plugin schema
   fallbacks, explicit callback annotations, casts, or public subset types.
-- Do not touch templates manually, classic-list maintenance surfaces, device
+- Do not touch templates manually, legacy-list-model maintenance surfaces, device
   testing, unrelated source, or external systems. Do not commit or publish.
 
 Boundaries:
@@ -70,7 +70,7 @@ Boundaries:
   `apps/www/src/registry`, `content/docs`, `.agents/rules/best-api.mdc`, and
   `docs/vision/plate.md`.
 - Non-goals: redesigning semantic survivors, generic property CRUD, generic
-  selection reads, DOCX dependency changes, List Classic, unrelated colocation,
+  selection reads, DOCX dependency changes, Legacy list model, unrelated colocation,
   release or PR actions, real-device testing.
 - Direct Plite boundary owners: root `editor.update` policy/delegation semantics
   are consumed but not redesigned; Plate Core owns the scoped portal facade.

@@ -6,7 +6,7 @@ import {
   type EditorDocumentValue,
   type SchemaElement,
   type SchemaProperty,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 
 export const SCHEMA_ARCHITECTURE_CORPUS = Object.freeze({
   declaredGroups: 30,

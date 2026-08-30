@@ -253,7 +253,7 @@ apps/www/src/registry/components/editor/plugins/comment-kit.tsx:1
 apps/www/src/registry/components/editor/plugins/copilot-kit.tsx:1
 apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx:1
 apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx:2
-apps/www/src/registry/components/editor/transforms-classic.ts:1
+apps/www/src/registry/components/editor/transforms.ts:1
 apps/www/src/registry/components/editor/transforms.ts:1
 apps/www/src/registry/components/editor/use-chat.ts:1
 apps/www/src/registry/examples/huge-document-demo.tsx:27
@@ -289,7 +289,7 @@ apps/www/src/registry/ui/suggestion-node.tsx:1
 apps/www/src/registry/ui/table-node.tsx:1
 apps/www/src/registry/ui/toc-node-static.tsx:1
 apps/www/src/registry/ui/turn-into-toolbar-button.tsx:1
-apps/www/src/registry/ui/turn-into-toolbar-classic-button.tsx:1
+apps/www/src/registry/ui/turn-into-toolbar-button.tsx:1
 apps/www/tsconfig.json:18
 content/docs/(guides)/controlled.mdx:1
 content/docs/(guides)/editing-behavior.mdx:8

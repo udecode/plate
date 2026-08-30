@@ -629,26 +629,26 @@ packages/combobox/src/react/hooks/useComboboxInput.ts:147:        const history 
 packages/ai/src/react/ai-chat/utils/submitAIChat.ts:72:  const selection = blocks.length > 0 ? blocksRange : editor.selection;
 packages/ai/src/react/ai-chat/utils/submitAIChat.ts:97:  setOption('chatSelection', blocks.length > 0 ? null : editor.selection);
 packages/ai/src/react/ai-chat/utils/submitAIChat.ts:104:    children: editor.children,
-packages/list-classic/src/react/hooks/useListToolbarButton.ts:12:      !!editor.selection &&
+packages/platejs/src/features/list/src/react/hooks/useListToolbarButton.ts:12:      !!editor.selection &&
 packages/callout/src/lib/BaseCalloutPlugin.spec.ts:29:    expect(editor.children.at(-1)).toMatchObject({
 packages/callout/src/lib/BaseCalloutPlugin.spec.ts:47:    expect(editor.children.at(-1)).toMatchObject({
-packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:40:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:82:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteFragmentList.spec.tsx:126:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteFragmentList.spec.tsx:40:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteFragmentList.spec.tsx:82:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteFragmentList.spec.tsx:126:    expect(editor.children).toEqual(expected.children);
 packages/ai/src/react/copilot/withCopilot.ts:180:          editor.selection &&
 packages/ai/src/react/copilot/withCopilot.ts:182:            !RangeApi.equals(prevSelection, editor.selection)) &&
 packages/ai/src/react/copilot/withCopilot.ts:189:        prevSelection = editor.selection;
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:39:    const before = JSON.stringify(editor.children);
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:43:    expect(JSON.stringify(editor.children)).toBe(before);
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:58:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:89:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:130:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:162:      expect(editor.children).toMatchObject([
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:201:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:234:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:276:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:314:      expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/toggleList.spec.tsx:354:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:39:    const before = JSON.stringify(editor.children);
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:43:    expect(JSON.stringify(editor.children)).toBe(before);
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:58:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:89:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:130:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:162:      expect(editor.children).toMatchObject([
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:201:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:234:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:276:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:314:      expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/toggleList.spec.tsx:354:      expect(editor.children).toEqual(
 packages/table/src/react/onKeyDownTable.spec.tsx:60:    expect(editor.selection).toEqual({
 packages/table/src/react/onKeyDownTable.spec.tsx:89:    const initialSelection = editor.selection;
 packages/table/src/react/onKeyDownTable.spec.tsx:96:    expect(editor.selection).toEqual(initialSelection);
@@ -657,32 +657,32 @@ packages/table/src/react/onKeyDownTable.spec.tsx:159:    expect(editor.selection
 packages/table/src/react/onKeyDownTable.spec.tsx:191:    expect(editor.selection).toEqual({
 packages/table/src/react/onKeyDownTable.spec.tsx:229:    expect(editor.selection).toEqual({
 packages/link/src/react/transforms/submitFloatingLink.ts:12:  if (!editor.selection) return;
-packages/list-classic/src/lib/transforms/moveListItems.ts:29:    at = editor.selection ?? undefined,
-packages/list-classic/src/lib/withInsertFragmentList.spec.tsx:21:  expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/queries/isAcrossListItems.ts:9:  at: Range | null = editor.selection
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:45:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:79:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:119:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:175:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:232:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:281:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteForwardList.spec.tsx:342:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/BaseListInputRules.spec.tsx:33:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/BaseListInputRules.spec.tsx:75:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/BaseListInputRules.spec.tsx:142:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/BaseListInputRules.spec.tsx:190:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/transforms/moveListItems.ts:29:    at = editor.selection ?? undefined,
+packages/platejs/src/features/list/src/lib/withInsertFragmentList.spec.tsx:21:  expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/queries/isAcrossListItems.ts:9:  at: Range | null = editor.selection
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:45:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:79:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:119:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:175:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:232:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:281:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteForwardList.spec.tsx:342:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/BaseListInputRules.spec.tsx:33:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/BaseListInputRules.spec.tsx:75:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/BaseListInputRules.spec.tsx:142:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/BaseListInputRules.spec.tsx:190:    expect(editor.children).toEqual([
 packages/link/src/lib/transforms/wrapLink.spec.tsx:36:    expect(editor.children).toEqual(
 packages/ai/src/react/copilot/CopilotPlugin.tsx:141:      const selection = editor.selection;
 packages/ai/src/react/copilot/CopilotPlugin.tsx:175:      const selection = editor.selection;
 packages/link/src/lib/transforms/upsertLink.ts:68:  const at = editor.selection;
 packages/link/src/lib/transforms/upsertLink.ts:140:  const path = editor.selection?.focus.path;
-packages/list-classic/src/lib/queries/getListItemEntry.ts:16:  { at = editor.selection }: { at?: Location | null } = {}
-packages/list-classic/src/lib/transforms/toggleList.ts:29:      if (!editor.selection) {
-packages/list-classic/src/lib/transforms/toggleList.ts:51:                at: editor.selection,
-packages/list-classic/src/lib/transforms/toggleList.ts:99:        const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
-packages/list-classic/src/lib/transforms/toggleList.ts:115:              at: RangeApi.start(editor.selection),
-packages/list-classic/src/lib/transforms/toggleList.ts:122:              at: RangeApi.end(editor.selection),
-packages/list-classic/src/lib/transforms/toggleList.ts:136:                at: editor.selection,
+packages/platejs/src/features/list/src/lib/queries/getListItemEntry.ts:16:  { at = editor.selection }: { at?: Location | null } = {}
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:29:      if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:51:                at: editor.selection,
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:99:        const [startPoint, endPoint] = RangeApi.edges(editor.selection!);
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:115:              at: RangeApi.start(editor.selection),
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:122:              at: RangeApi.end(editor.selection),
+packages/platejs/src/features/list/src/lib/transforms/toggleList.ts:136:                at: editor.selection,
 packages/link/src/lib/transforms/unwrapLink.ts:19:    const at = options?.at ?? editor.selection ?? undefined;
 packages/link/src/lib/transforms/unwrapLink.ts:27:          at: editor.selection?.anchor,
 packages/link/src/lib/transforms/unwrapLink.ts:35:          at: editor.selection?.anchor,
@@ -693,40 +693,40 @@ packages/table/src/react/onKeyDownTable.ts:24:  const context = getTableMoveSele
 packages/table/src/react/onKeyDownTable.ts:114:          at: editor.selection!,
 packages/link/src/lib/LinkRules.ts:52:  !!editor.selection && RangeApi.isCollapsed(editor.selection);
 packages/link/src/lib/LinkRules.ts:60:      at: editor.selection ?? undefined,
-packages/list-classic/src/lib/transforms/moveListItemUp.ts:25:      ? editor.children.length
-packages/list-classic/src/lib/queries/getTodoListItemEntry.ts:17:  { at = editor.selection }: { at?: Location | null } = {}
+packages/platejs/src/features/list/src/lib/transforms/moveListItemUp.ts:25:      ? editor.children.length
+packages/platejs/src/features/list/src/lib/queries/getTodoListItemEntry.ts:17:  { at = editor.selection }: { at?: Location | null } = {}
 packages/link/src/lib/transforms/upsertLinkText.spec.tsx:43:    expect(editor.children).toEqual(
 packages/link/src/lib/transforms/upsertLinkText.spec.tsx:77:    expect(editor.children).toEqual(input.children);
 packages/link/src/lib/transforms/upsertLinkText.spec.tsx:98:    expect(editor.children).toEqual(input.children);
-packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:46:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:87:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withDeleteBackwardList.spec.tsx:148:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteBackwardList.spec.tsx:46:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteBackwardList.spec.tsx:87:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withDeleteBackwardList.spec.tsx:148:    expect(editor.children).toEqual(expected.children);
 packages/link/src/react/components/FloatingLink/useFloatingLinkEdit.ts:110:      editor.selection &&
-packages/list-classic/src/lib/withNormalizeList.spec.tsx:20:  expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/ListClassicExtension.ts:90:    state.points.start(editor.selection as Range)
-packages/list-classic/src/lib/ListClassicExtension.ts:304:    state.points.after(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:317:    at: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:415:      state.points.after(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:421:        anchor: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:634:          const listItemStart = editor.selection
-packages/list-classic/src/lib/ListClassicExtension.ts:638:            !!editor.selection &&
-packages/list-classic/src/lib/ListClassicExtension.ts:640:            RangeApi.isCollapsed(editor.selection) &&
-packages/list-classic/src/lib/ListClassicExtension.ts:641:            PointApi.equals(editor.selection.focus, listItemStart);
-packages/list-classic/src/lib/ListClassicExtension.ts:661:                state.points.before(editor.selection!.focus)
-packages/list-classic/src/lib/ListClassicExtension.ts:670:                  anchor: editor.selection!.anchor,
-packages/list-classic/src/lib/ListClassicExtension.ts:742:            state.points.end(editor.selection as Range)
-packages/list-classic/src/lib/ListClassicExtension.ts:831:        if (!editor.selection) return next();
-packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:56:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:96:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:139:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:188:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/unwrapList.spec.tsx:194:      editor.selection = null;
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:32:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:44:    expect(editor.selection).toEqual({
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:62:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:72:    expect(editor.selection).toEqual({
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:93:    expect(editor.children[0]).toMatchObject({
-packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts:99:    expect(editor.children[0]).toMatchObject({
+packages/platejs/src/features/list/src/lib/withNormalizeList.spec.tsx:20:  expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:90:    state.points.start(editor.selection as Range)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:304:    state.points.after(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:317:    at: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:415:      state.points.after(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:421:        anchor: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:634:          const listItemStart = editor.selection
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:638:            !!editor.selection &&
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:640:            RangeApi.isCollapsed(editor.selection) &&
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:641:            PointApi.equals(editor.selection.focus, listItemStart);
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:661:                state.points.before(editor.selection!.focus)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:670:                  anchor: editor.selection!.anchor,
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:742:            state.points.end(editor.selection as Range)
+packages/platejs/src/features/list/src/lib/LegacyListModelExtension.ts:831:        if (!editor.selection) return next();
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.spec.tsx:56:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.spec.tsx:96:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.spec.tsx:139:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.spec.tsx:188:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.spec.tsx:194:      editor.selection = null;
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:32:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:44:    expect(editor.selection).toEqual({
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:62:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:72:    expect(editor.selection).toEqual({
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:93:    expect(editor.children[0]).toMatchObject({
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts:99:    expect(editor.children[0]).toMatchObject({
 packages/link/src/lib/transforms/upsertLink.spec.tsx:57:        expect(editor.children).toEqual(output.children);
 packages/link/src/lib/transforms/upsertLink.spec.tsx:84:        expect(editor.children).toEqual(output.children);
 packages/link/src/lib/transforms/upsertLink.spec.tsx:111:        expect(editor.children).toEqual(output.children);
@@ -747,17 +747,17 @@ packages/link/src/lib/transforms/upsertLink.spec.tsx:533:      expect(editor.chi
 packages/link/src/lib/transforms/upsertLink.spec.tsx:547:      editor.selection = null;
 packages/link/src/lib/transforms/upsertLink.spec.tsx:550:      expect(editor.children).toEqual([
 packages/link/src/lib/transforms/upsertLink.spec.tsx:590:      expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:44:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:45:    expect(editor.selection).toEqual(expected.selection);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:70:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:71:    expect(editor.selection).toEqual(expected.selection);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:106:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:107:    expect(editor.selection).toEqual(expected.selection);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:133:    expect(editor.children).toEqual(expected.children);
-packages/list-classic/src/lib/withInsertBreakList.spec.tsx:134:    expect(editor.selection).toEqual(expected.selection);
-packages/list-classic/src/lib/transforms/moveListItemsToList.spec.tsx:69:  expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/normalizers/normalizeNestedList.spec.tsx:73:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/queries/getListRoot.ts:11:  at: Path | Point | Range | null = editor.selection
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:44:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:45:    expect(editor.selection).toEqual(expected.selection);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:70:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:71:    expect(editor.selection).toEqual(expected.selection);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:106:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:107:    expect(editor.selection).toEqual(expected.selection);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:133:    expect(editor.children).toEqual(expected.children);
+packages/platejs/src/features/list/src/lib/withInsertBreakList.spec.tsx:134:    expect(editor.selection).toEqual(expected.selection);
+packages/platejs/src/features/list/src/lib/transforms/moveListItemsToList.spec.tsx:69:  expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/normalizers/normalizeNestedList.spec.tsx:73:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/queries/getListRoot.ts:11:  at: Path | Point | Range | null = editor.selection
 packages/link/src/react/utils/triggerFloatingLinkInsert.ts:29:  const selection = editor.selection;
 packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:64:    expect(editor.children).toMatchObject(
 packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:149:    expect(editor.children).toMatchObject(
@@ -765,14 +765,14 @@ packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.inte
 packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:275:    expect(editor.children).toMatchObject(
 packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:335:    const table = editor.children[0] as any;
 packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.integration.spec.tsx:342:    expect(editor.children).toMatchObject(
-packages/list-classic/src/lib/normalizers/normalizeListItem.spec.tsx:45:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/removeListItem.spec.tsx:103:  expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/internal/editorQueries.ts:77:  at: Range | null = editor.selection
-packages/list-classic/src/lib/internal/editorQueries.ts:100:  !!editor.selection &&
-packages/list-classic/src/lib/internal/editorQueries.ts:103:      at: editor.selection!.focus,
-packages/list-classic/src/lib/internal/editorQueries.ts:107:    return !!block && state.points.isEnd(editor.selection!.focus, block[1]);
-packages/list-classic/src/lib/internal/editorQueries.ts:111:  !!editor.selection &&
-packages/list-classic/src/lib/internal/editorQueries.ts:114:      at: editor.selection!,
+packages/platejs/src/features/list/src/lib/normalizers/normalizeListItem.spec.tsx:45:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/removeListItem.spec.tsx:103:  expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:77:  at: Range | null = editor.selection
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:100:  !!editor.selection &&
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:103:      at: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:107:    return !!block && state.points.isEnd(editor.selection!.focus, block[1]);
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:111:  !!editor.selection &&
+packages/platejs/src/features/list/src/lib/internal/editorQueries.ts:114:      at: editor.selection!,
 packages/table/src/lib/transforms/insertTableColumn.spec.tsx:80:      expect(editor.children).toMatchObject(output.children);
 packages/table/src/lib/transforms/insertTableColumn.spec.tsx:81:      expect(editor.selection).toEqual(output.selection);
 packages/table/src/lib/transforms/insertTableColumn.spec.tsx:114:      expect(editor.children).toMatchObject(output.children);
@@ -790,22 +790,22 @@ packages/table/src/lib/transforms/insertTableColumn.spec.tsx:431:      expect(ed
 packages/table/src/lib/transforms/insertTableColumn.spec.tsx:482:      const table = editor.children[0] as Element;
 packages/link/src/react/utils/focusEditorAtSelection.ts:4:  if (editor.selection) {
 packages/link/src/react/utils/focusEditorAtSelection.ts:6:      tx.selection.set(editor.selection!);
-packages/list-classic/src/lib/transforms/insertListItem.ts:24:  if (!editor.selection) {
-packages/list-classic/src/lib/transforms/insertListItem.ts:59:        editor.selection!.focus,
-packages/list-classic/src/lib/transforms/insertListItem.ts:91:            anchor: editor.selection!.focus,
-packages/list-classic/src/lib/transforms/unwrapList.ts:27:    if (!at && editor.selection) {
-packages/list-classic/src/lib/transforms/unwrapList.ts:31:          editor.selection.anchor.path,
-packages/list-classic/src/lib/transforms/unwrapList.ts:32:          editor.selection.focus.path
-packages/list-classic/src/lib/BaseTodoListPlugin.ts:32:        if (!editor.selection) return next();
-packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:43:    expect(editor.children).toEqual([
-packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:97:    expect(editor.children).toEqual(input.children);
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:19:  if (!editor.selection) {
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:43:        editor.selection!.focus,
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:65:        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
-packages/list-classic/src/lib/transforms/insertTodoListItem.ts:68:            anchor: editor.selection!.focus,
-packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:85:    expect(editor.children).toEqual(output.children);
-packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:105:    expect(editor.children).toEqual(
-packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:195:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:24:  if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:59:        editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts:91:            anchor: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.ts:27:    if (!at && editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.ts:31:          editor.selection.anchor.path,
+packages/platejs/src/features/list/src/lib/transforms/unwrapList.ts:32:          editor.selection.focus.path
+packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts:32:        if (!editor.selection) return next();
+packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:43:    expect(editor.children).toEqual([
+packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.spec.tsx:97:    expect(editor.children).toEqual(input.children);
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:19:  if (!editor.selection) {
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:43:        editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:65:        isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
+packages/platejs/src/features/list/src/lib/transforms/insertTodoListItem.ts:68:            anchor: editor.selection!.focus,
+packages/platejs/src/features/list/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:85:    expect(editor.children).toEqual(output.children);
+packages/platejs/src/features/list/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:105:    expect(editor.children).toEqual(
+packages/platejs/src/features/list/src/lib/transforms/moveListItemSublistItemsToListItemSublist.spec.tsx:195:    expect(editor.children).toEqual(output.children);
 packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:56:      expect(editor.children).toMatchObject([
 packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:87:      expect(editor.children).toMatchObject([
 packages/table/src/lib/transforms/tableSelectionAndSizing.spec.tsx:128:      expect(editor.children).toMatchObject([

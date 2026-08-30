@@ -47,7 +47,7 @@ apps/www/src/registry/components/editor/floating-popover.tsx
 apps/www/src/registry/components/editor/font-color-toolbar-button.tsx
 apps/www/src/registry/components/editor/font-size-toolbar-button.tsx
 apps/www/src/registry/components/editor/footnote.tsx
-apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx
+apps/www/src/registry/components/editor/insert-toolbar-button.tsx
 apps/www/src/registry/components/editor/math.spec.tsx
 apps/www/src/registry/components/editor/math.tsx
 apps/www/src/registry/components/editor/media-toolbar.tsx
@@ -57,7 +57,7 @@ apps/www/src/registry/components/editor/table-toolbar-button.tsx
 apps/www/src/registry/components/editor/table.tsx
 apps/www/src/registry/components/editor/toolbar.tsx
 apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx
-apps/www/src/registry/components/editor/turn-into-toolbar-classic-button.tsx
+apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx
 apps/www/src/registry/registry-editor.ts
 apps/www/src/registry/registry-variants.ts
 apps/www/src/registry/registry.test.ts

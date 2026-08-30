@@ -493,7 +493,7 @@ Error attempts:
 | Diff scratch work normalized invalid adjacent text before comparison and stale refs escaped the draft | 1 | seed a canonical placeholder, replace inside the owning update, and resolve/recreate live refs before flattening | Diff 63/63 GREEN |
 | Footnote registry and navigation helpers opened ref-owning work outside the supplied transaction | 1 | thread the active tx through registry/query/navigation owners and allocate refs from `tx.refs` | Footnote 26/26 GREEN |
 | Layout insertion tests used an invalid one-column group and lost the requested inserted width | 1 | preserve requested width, proportionally rescale valid existing widths, and use canonical two-column fixtures | Layout 26/26 GREEN |
-| Table and List-classic fixtures asserted invalid pre-normalized trees | 1 | assert semantic canonical table shape and inject deliberate invalid list state only inside the owning transaction | Table 268/268 and List-classic 124/124 GREEN |
+| Table and legacy-list-model fixtures asserted invalid pre-normalized trees | 1 | assert semantic canonical table shape and inject deliberate invalid list state only inside the owning transaction | Table 268/268 and legacy-list-model 124/124 GREEN |
 | Plite full gate exposed nested-update contracts, frozen extension Proxy invariants, stale export snapshots, and normalized operation inversion | 1 | keep nested public updates rejected, guard extension values through an invariant-safe forwarding Proxy, refresh exact exports, and invert committed operations | focused lifecycle set 151/151 and Plite 1950/1950 GREEN |
 | Compile-only generic update policy contract executed intentional type errors at runtime | 1 | move its calls into an uninvoked typed assertion function | Plite typecheck/lint and 69-file runtime inventory GREEN |
 | NormalizeTypes normalizer read committed state and its failure fixture invoked canonical normalization twice | 1 | read through `tx.nodes` and assert the creation-time normalization failure once | Utils focused 3/3 and full gate GREEN |
@@ -627,7 +627,7 @@ Verification evidence:
   zero-result lifecycle metadata sweep pass.
 - GREEN: focused Plate package suites include AI 71/71, Basic Nodes 38/38,
   Code Block 89/89, Comment 11/11, Date 17/17, Diff 63/63, Footnote 26/26,
-  Indent 5/5, Layout 26/26, Link 68/68, List 115/115, List Classic 124/124,
+  Indent 5/5, Layout 26/26, Link 68/68, List 115/115, Legacy list model 124/124,
   Math 18/18, Media 93/93, Selection 111/111, Suggestion 102/102, Table
   268/268, Tag 5/5, and Toggle 13/13.
 - GREEN: `pnpm --filter www exec tsc --noEmit -p

@@ -1,3 +1,4 @@
+import isUrl from 'is-url';
 import {
   defineExtension,
   editorCommands,
@@ -5,20 +6,19 @@ import {
   NodeApi,
   RangeApi,
   schema,
-} from '@platejs/plite';
-import { clipboardHandler, isHotkey } from '@platejs/plite-dom';
-import { history } from '@platejs/plite-history';
-import * as PliteReact from '@platejs/plite-react';
+} from 'plitejs';
+import { clipboardHandler, isHotkey } from 'plitejs/dom';
+import { history } from 'plitejs/history';
+import * as PliteReact from 'plitejs/react';
 import {
   Editable,
   type RenderElementProps,
   type RenderTextProps,
   useEditor,
+  useEditorContext,
   useEditorSelector,
   useElementSelected,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import isUrl from 'is-url';
+} from 'plitejs/react';
 import type React from 'react';
 import { type PointerEvent, useMemo } from 'react';
 
@@ -35,7 +35,7 @@ import type {
 } from './custom-types.d';
 
 const InlinesExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), inline()],
     initialValue: [
       {
@@ -541,7 +541,7 @@ const InlineText = (props: RenderTextProps) => {
 };
 
 const AddLinkButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) => isLinkActive(innerEditor));
   return (
     <Button
@@ -562,7 +562,7 @@ const AddLinkButton = () => {
 };
 
 const RemoveLinkButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector((innerEditor2) =>
     isLinkActive(innerEditor2)
   );
@@ -583,7 +583,7 @@ const RemoveLinkButton = () => {
 };
 
 const ToggleEditableButtonButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   return (
     <Button
       active

@@ -1,5 +1,6 @@
-import { createPliteBrowserEditorHarness } from '@platejs/browser/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
+
+import { createPliteBrowserEditorHarness } from '../../packages/test/src/playwright';
 
 const recordRuntimeErrors = (page: Page) => {
   const errors: string[] = [];

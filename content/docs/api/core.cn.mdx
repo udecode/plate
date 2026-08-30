@@ -1,26 +1,26 @@
 ---
 title: Plate 核心
-description: \@platejs/core 的 API 参考文档。
+description: \platejs 的 API 参考文档。
 ---
 
 ## API
 
-### `createPlateEditor`
+### `createEditor`
 
-生成一个新的 `PlateEditor` 实例，使用一组插件及其配置进行初始化。
+生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。
 
-<API name="createPlateEditor">
-<APIOptions type="CreatePlateEditorOptions">
+<API name="createEditor">
+<APIOptions type="CreateEditorOptions">
   <APIItem name="id" type="any" optional>
     编辑器的唯一标识符。
   </APIItem>
   <APIItem name="editor" type="E" optional>
-    未应用 `withPlate` 的初始编辑器。
+    未应用 `createEditor` 的初始编辑器。
   </APIItem>
   <APIItem name="plugins" type="P[]" optional>
     编辑器插件数组。
   </APIItem>
-  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: PlateEditor }) => EditorValueInput)" optional>
+  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     同步初始文档、持久化的 `{ document, schema }` envelope 或主 root 数组。
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
@@ -83,7 +83,7 @@ description: \@platejs/core 的 API 参考文档。
   </APIItem>
 </APIOptions>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   应用了插件和配置的编辑器实例。
 </APIReturns>
 </API>
@@ -249,14 +249,14 @@ const result = migrateDocument(persisted, {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   编辑器引用。
 </APIReturns>
 </API>
 
-### `useActiveEditor`
+### `useOptionalEditor`
 
-没有活动 editor 是合法 UI state 时使用 `useActiveEditor({ id? })`。它返回与 `useEditor()` 相同的 editor value，没有匹配 editor 时返回 `null`。
+没有活动 editor 是合法 UI state 时使用 `useOptionalEditor({ id? })`。它返回与 `useEditor()` 相同的 editor value，没有匹配 editor 时返回 `null`。
 
 ### `useEditorSelector`
 
@@ -264,7 +264,7 @@ const result = migrateDocument(persisted, {
 
 <API name="useEditorSelector">
 <APIParameters>
-  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+  <APIItem name="selector" type="(editor: Editor<V>, prev?: T) => T">
     选择器函数。
   </APIItem>
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
@@ -297,7 +297,7 @@ const result = migrateDocument(persisted, {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   编辑器引用。
 </APIReturns>
 </API>
@@ -468,7 +468,7 @@ const state = usePluginStore(plugin, (state) => state);
 
 <API name="useEditorPluginStore">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
+  <APIItem name="editor" type="Editor">
     编辑器实例。
   </APIItem>
   <APIItem name="plugin" type="PlatePlugin">
@@ -533,9 +533,9 @@ const generic = useElement();
 
 ```ts
 import { ElementIdPlugin, schema, target } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
 });
 
@@ -553,7 +553,7 @@ const entry = id ? elementId.read.entry(id) : undefined;
 的元素生成并保留 ID。
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
   schema: {
     overrides: [

@@ -1,5 +1,0 @@
-# Resizable
-
-## License
-
-[MIT](../../LICENSE)

@@ -66,6 +66,7 @@ const receiptRow = ({
 };
 
 const oracleRows = ({
+  browserCommand = false,
   exactChrome = false,
   missingForbidden = false,
   missingPixelControls = false,
@@ -84,8 +85,20 @@ const oracleRows = ({
       positive: "the complete semantic plan passes",
       result: "pass: validator contract",
     },
+    ...(browserCommand
+      ? [
+          {
+            applies: "yes",
+            forbidden: "the detached root editor handles the command alone",
+            layer: "Browser mounted runtime diagnostic",
+            observation: "dom-native",
+            positive: "the mounted runtime owner handles the keyboard trigger",
+            result: "pass: mounted command dispatched",
+          },
+        ]
+      : []),
     ...[
-      "dom-native",
+      ...(browserCommand ? [] : ["dom-native"]),
       "pointer-feedback",
       "focus",
       "popup",
@@ -247,6 +260,7 @@ const failedFixRows = ({
 const fixture = ({
   anchorToInapplicableOracle = false,
   architectureVerdict = "patch",
+  browserCommand = false,
   exactChrome = false,
   failedCount = 0,
   failureKind = "reporter-contradiction",
@@ -298,15 +312,25 @@ Selected executable cases:
 | Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
 |---|---|---|---|---|---|---|---|---|---|---|
 | case-complete | ${
-    exactChrome ? "Blink compositor report" : "local workflow report"
-  } | validate one complete plan | semantic closure is accepted | ${
+    exactChrome
+      ? "Blink compositor report"
+      : browserCommand
+        ? "browser keyboard trigger report"
+        : "local workflow report"
+  } | ${
+    browserCommand ? "type @ in the mounted editor" : "validate one complete plan"
+  } | ${
+    browserCommand ? "the mounted command opens its input" : "semantic closure is accepted"
+  } | ${
     missingExpectedOutcomeAuthority
       ? "pending"
       : "accepted-product-law: Regression semantic closure contract"
   } | ${redTestEscalation} | ${
     exactChrome
       ? "exact-chrome: installed Chrome 140 on the proof host"
-      : "N/A: deterministic Node workflow"
+      : browserCommand
+        ? "browser: current-source Chromium route"
+        : "N/A: deterministic Node workflow"
   } | ${selectedTestCommand} | ${
     preImplementation ? "reproduced" : "completed"
   } | commit:${"1".repeat(40)} | Regression |
@@ -329,6 +353,7 @@ Reporter oracle matrix:
 | Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
 |---|---|---|---|---|---|---|---|---|
 ${oracleRows({
+  browserCommand,
   exactChrome,
   missingForbidden,
   missingPixelControls,
@@ -483,6 +508,54 @@ test("an exact unit RED rejects redundant E2E test escalation", () => {
   ).join("\n");
 
   assert.match(errors, /unit RED.*must not add a new E2E test/i);
+});
+
+test("a Browser command case requires mounted runtime and mutation ownership proof", () => {
+  const incompleteProof = fixture({ browserCommand: true });
+  const errors = validateRegressionPlan(incompleteProof, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    errors,
+    /requires a dom-native Browser oracle with runtime-owner: pass and mutation-owner: pass/
+  );
+
+  const mountedOwnerProof = incompleteProof.replace(
+    "pass: mounted command dispatched",
+    "pass: runtime-owner: pass; mutation-owner: pass; mounted command dispatched"
+  );
+
+  assert.doesNotMatch(
+    validateRegressionPlan(mountedOwnerProof, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /runtime-owner: pass and mutation-owner: pass/
+  );
+});
+
+test("a failed Browser command fix cannot resume before mounted mutation proof", () => {
+  const failedBrowserFix = fixture({ browserCommand: true, failedCount: 1 });
+  const errors = validateRegressionPlan(failedBrowserFix, {
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    errors,
+    /failed browser command fix cannot resume.*runtime-owner: pass and mutation-owner: pass/i
+  );
+
+  const mountedOwnerProof = failedBrowserFix.replace(
+    "pass: mounted command dispatched",
+    "pass: runtime-owner: pass; mutation-owner: pass; mounted command remains behavior-red"
+  );
+
+  assert.doesNotMatch(
+    validateRegressionPlan(mountedOwnerProof, { rootDir: root }).join("\n"),
+    /cannot resume.*runtime-owner: pass and mutation-owner: pass/i
+  );
 });
 
 test("E2E escalation requires a lower-layer reproduction limitation", () => {

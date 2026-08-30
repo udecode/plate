@@ -109,7 +109,7 @@ Surviving direct creator stages:
 - Comment update consumes constructor-owned API.
 - List override consumes resolved consumer `targetPluginNames`; its later update
   and extension stages consume earlier inferred capabilities.
-- List Classic update and extension consume earlier inferred capabilities.
+- Legacy list model update and extension consume earlier inferred capabilities.
 - Table’s ordered API/update/extension stages are genuinely dependent.
 - Copilot and Block Selection each require one shared lexical factory across
   several fields.

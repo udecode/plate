@@ -257,7 +257,7 @@ Proof references:
 - `docs/plite/final-api-hard-cuts-status.md`
 - `docs/plite/references/live-shape-register.md`
 - `docs/plite/replacement-gates-scoreboard.md`
-- `packages/plite-layout/test/page-layout-contract.test.ts`
+- `packages/plitejs/test/page-layout/page-layout-contract.test.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/pagination.tsx`
 - `apps/www/tests/plite-browser/donor/examples/pagination.test.ts`
 
@@ -265,8 +265,8 @@ Proof references:
 
 Affected:
 
-- `packages/plite/src/**`
-- `packages/plite/test/**`
+- `packages/plitejs/src/**`
+- `packages/plitejs/test/**`
 - `docs/plite/ledgers/slate-editor-api.md`
 - `docs/plans/2026-05-03-plite-core-editor-method-hard-cut-ralplan.md`
 
@@ -385,20 +385,20 @@ Proof references:
 - `docs/plans/2026-05-13-plite-void-kind-api-ralplan.md`
 - `docs/plans/2026-05-20-plite-non-node-editor-state-architecture-ralplan.md`
 - `.tmp/completion-checks/plite-insert-fragment-at-location-execution.md`
-- `packages/plite/test/public-element-void-kind-contract.ts`
-- `packages/plite/test/schema-contract.ts`
-- `packages/plite/test/clipboard-contract.ts`
-- `packages/plite/test/query-contract.ts`
-- `packages/plite/test/collab-history-runtime-contract.ts`
-- `packages/plite/test/commit-metadata-contract.ts`
-- `packages/plite/test/migration-backbone-contract.ts`
-- `packages/plite/src/editor/nodes.ts`
+- `packages/plitejs/test/public-element-void-kind-contract.ts`
+- `packages/plitejs/test/schema-contract.ts`
+- `packages/plitejs/test/clipboard-contract.ts`
+- `packages/plitejs/test/query-contract.ts`
+- `packages/plitejs/test/collab-history-runtime-contract.ts`
+- `packages/plitejs/test/commit-metadata-contract.ts`
+- `packages/plitejs/test/migration-backbone-contract.ts`
+- `packages/plitejs/src/editor/nodes.ts`
 - `.tmp/completion-checks/plite-editor-nodes-reverse-order-ralplan.md`
 - `.tmp/completion-checks/plite-core-structural-delete-normalization-execution.md`
 - `.tmp/completion-checks/plite-operation-extensibility-validation-execution.md`
 - `.tmp/completion-checks/plite-core-caret-movement-word-insert-break-execution.md`
-- `packages/plite/test/snapshot-contract.ts`
-- `packages/plite/test/transaction-contract.ts`
+- `packages/plitejs/test/snapshot-contract.ts`
+- `packages/plitejs/test/transaction-contract.ts`
 
 ## 4. Support Package Closure
 
@@ -430,8 +430,8 @@ Proof references:
 
 Affected:
 
-- `packages/plite-dom/src/**`
-- `packages/plite-dom/test/**`
+- `packages/plitejs/src/dom/**`
+- `packages/plitejs/test/dom/**`
 
 Accepted current shape:
 
@@ -465,11 +465,11 @@ Proof references:
 
 Affected:
 
-- `packages/plite/src/**`
-- `packages/plite-dom/src/plugin/dom-clipboard-runtime.ts`
-- `packages/plite-react/src/editable/clipboard-input-strategy.ts`
-- `packages/plite-dom/test/clipboard-boundary.ts`
-- `packages/plite/test/clipboard-contract.ts`
+- `packages/plitejs/src/**`
+- `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `packages/plitejs/src/react/editable/clipboard-input-strategy.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.ts`
+- `packages/plitejs/test/clipboard-contract.ts`
 
 Accepted current shape:
 
@@ -554,12 +554,12 @@ Proof references:
 
 - `docs/plans/2026-05-04-plite-clawsweeper-v2-clipboard-serialization-ralplan.md`
 - `tmp/slate-clipboard-large-payload-benchmark.json`
-- `packages/plite-dom/src/plugin/dom-clipboard-runtime.ts`
-- `packages/plite/src/transforms-text/insert-fragment.ts`
-- `packages/plite-dom/test/clipboard-boundary.ts`
-- `packages/plite/test/clipboard-contract.ts`
+- `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `packages/plitejs/src/transforms-text/insert-fragment.ts`
+- `packages/plitejs/test/dom/clipboard-boundary.ts`
+- `packages/plitejs/test/clipboard-contract.ts`
 - `.tmp/completion-checks/plite-multiblock-fragment-middle-insert-execution.md`
-- `packages/plite-react/src/editable/clipboard-input-strategy.ts`
+- `packages/plitejs/src/react/editable/clipboard-input-strategy.ts`
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-serialization-execution.md`
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-fragment-insertion-shape-execution.md`
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-inline-void-execution.md`
@@ -570,7 +570,7 @@ Proof references:
 
 Affected:
 
-- `packages/plite-react/src/**`
+- `packages/plitejs/src/react/**`
 - `apps/www/examples/**`
 - `Plate repo root/tests/integration/**`
 
@@ -607,22 +607,22 @@ Proof references:
 - `docs/plite/final-api-hard-cuts-status.md`
 - `docs/plite/absolute-architecture-release-claim.md`
 - `docs/plans/2026-05-08-plite-react-decorations-slate-issues-ralplan.md`
-- `packages/plite-react/test/generic-react-editor-contract.tsx`
-- `packages/plite-react/test/provider-hooks-contract.tsx`
-- `packages/plite-react/test/projections-and-selection-contract.tsx`
-- `packages/plite-react/test/app-owned-customization.tsx`
-- `packages/plite-react/test/surface-contract.tsx`
-- `packages/plite-react/test/keyboard-input-strategy-contract.test.ts`
-- `packages/plite-react/test/annotation-store-contract.test.tsx`
-- `packages/plite-react/test/widget-layer-contract.test.tsx`
+- `packages/plitejs/test/react/generic-react-editor-contract.tsx`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/react/projections-and-selection-contract.tsx`
+- `packages/plitejs/test/react/app-owned-customization.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
+- `packages/plitejs/test/react/keyboard-input-strategy-contract.test.ts`
+- `packages/plitejs/test/react/annotation-store-contract.test.tsx`
+- `packages/plitejs/test/react/widget-layer-contract.test.tsx`
 - `content/docs/plite/libraries/plite-react/editable.md`
 - `content/docs/plite/libraries/plite-react/hooks.md`
 - `content/docs/plite/libraries/plite-react/slate.md`
-- `packages/plite-react/test/editing-kernel-contract.ts`
-- `packages/plite-react/test/editing-epoch-kernel-contract.ts`
-- `packages/plite-react/test/selection-runtime-contract.test.ts`
-- `packages/plite-react/test/model-input-strategy-contract.test.ts`
-- `packages/plite-react/test/rendering-strategy-and-scroll.test.tsx`
+- `packages/plitejs/test/react/editing-kernel-contract.ts`
+- `packages/plitejs/test/react/editing-epoch-kernel-contract.ts`
+- `packages/plitejs/test/react/selection-runtime-contract.test.ts`
+- `packages/plitejs/test/react/model-input-strategy-contract.test.ts`
+- `packages/plitejs/test/react/rendering-strategy-and-scroll.test.tsx`
 - `apps/www/tests/plite-browser/donor/examples/richtext.test.ts`
 - `apps/www/tests/plite-browser/donor/examples/placeholder.test.ts`
 - `apps/www/tests/plite-browser/donor/examples/inlines.test.ts`
@@ -636,10 +636,10 @@ Proof references:
 
 Affected:
 
-- `packages/plite/src/create-editor.ts`
-- `packages/plite/src/core/public-state.ts`
-- `packages/plite-react/src/hooks/use-slate-editor.ts`
-- `packages/plite-react/src/components/slate.tsx`
+- `packages/plitejs/src/create-editor.ts`
+- `packages/plitejs/src/core/public-state.ts`
+- `packages/plitejs/src/react/hooks/use-slate-editor.ts`
+- `packages/plitejs/src/react/components/slate.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/**`
 - `docs/plans/2026-05-04-plite-react-editor-initialization-value-ralplan.md`
 
@@ -678,25 +678,25 @@ Proof references:
 
 - `docs/plans/2026-05-04-plite-react-editor-initialization-value-ralplan.md`
 - `docs/plite/ledgers/issue-coverage-matrix.md`
-- `packages/plite/test/state-tx-public-api-contract.ts`
-- `packages/plite-react/test/provider-hooks-contract.tsx`
-- `packages/plite-react/test/surface-contract.tsx`
-- `packages/plite-react/test/generic-react-editor-contract.tsx`
+- `packages/plitejs/test/state-tx-public-api-contract.ts`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
+- `packages/plitejs/test/react/generic-react-editor-contract.tsx`
 
 ## 6.2 React Editable Input Rule Ownership
 
 Affected:
 
-- `packages/plite/src/core/command-definition.ts`
-- `packages/plite/src/core/command-registry.ts`
-- `packages/plite/src/core/editor-commands.ts`
-- `packages/plite/src/core/editor-extension.ts`
-- `packages/plite/src/core/query-middleware.ts`
-- `packages/plite/src/interfaces/editor.ts`
-- `packages/plite-react/src/editable/mutation-controller.ts`
-- `packages/plite/test/command-spec.test.ts`
-- `packages/plite/test/extension-configuration.test.ts`
-- `packages/plite-react/test/mutation-command-dispatch-contract.test.ts`
+- `packages/plitejs/src/core/command-definition.ts`
+- `packages/plitejs/src/core/command-registry.ts`
+- `packages/plitejs/src/core/editor-commands.ts`
+- `packages/plitejs/src/core/editor-extension.ts`
+- `packages/plitejs/src/core/query-middleware.ts`
+- `packages/plitejs/src/interfaces/editor.ts`
+- `packages/plitejs/src/react/editable/mutation-controller.ts`
+- `packages/plitejs/test/command-spec.test.ts`
+- `packages/plitejs/test/extension-configuration.test.ts`
+- `packages/plitejs/test/react/mutation-command-dispatch-contract.test.ts`
 
 Current implemented shape:
 
@@ -750,22 +750,22 @@ Not claimed:
 
 Proof references:
 
-- `packages/plite/src/core/command-registry.ts`
-- `packages/plite/src/core/editor-commands.ts`
-- `packages/plite/src/core/editor-extension.ts`
-- `packages/plite/src/core/query-middleware.ts`
-- `packages/plite/src/interfaces/editor.ts`
-- `packages/plite/test/command-spec.test.ts`
-- `packages/plite/test/extension-configuration.test.ts`
-- `packages/plite/test/query-extension-contract.ts`
-- `packages/plite-react/test/mutation-command-dispatch-contract.test.ts`
-- `packages/plite/test/transaction-contract.ts`
-- `packages/plite/test/transforms-contract.ts`
-- `packages/plite/test/public-surface-contract.ts`
+- `packages/plitejs/src/core/command-registry.ts`
+- `packages/plitejs/src/core/editor-commands.ts`
+- `packages/plitejs/src/core/editor-extension.ts`
+- `packages/plitejs/src/core/query-middleware.ts`
+- `packages/plitejs/src/interfaces/editor.ts`
+- `packages/plitejs/test/command-spec.test.ts`
+- `packages/plitejs/test/extension-configuration.test.ts`
+- `packages/plitejs/test/query-extension-contract.ts`
+- `packages/plitejs/test/react/mutation-command-dispatch-contract.test.ts`
+- `packages/plitejs/test/transaction-contract.ts`
+- `packages/plitejs/test/transforms-contract.ts`
+- `packages/plitejs/test/public-surface-contract.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/forced-layout.tsx`
 - `benchmarks/plite/donor/core/compare/normalization.mjs`
-- `packages/plite-react/src/components/editable.tsx`
-- `packages/plite-react/src/editable/runtime-root-engine.ts`
+- `packages/plitejs/src/react/components/editable.tsx`
+- `packages/plitejs/src/react/editable/runtime-root-engine.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/check-lists.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/markdown-shortcuts.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx`
@@ -778,11 +778,11 @@ Proof references:
 
 Affected:
 
-- `packages/plite-react/src/components/editable.tsx`
-- `packages/plite-react/src/editable/editable-key-commands.ts`
-- `packages/plite-react/src/editable/keyboard-input-strategy.ts`
-- `packages/plite-react/src/editable/runtime-before-input-events.ts`
-- `packages/plite-react/src/editable/input-router.ts`
+- `packages/plitejs/src/react/components/editable.tsx`
+- `packages/plitejs/src/react/editable/editable-key-commands.ts`
+- `packages/plitejs/src/react/editable/keyboard-input-strategy.ts`
+- `packages/plitejs/src/react/editable/runtime-before-input-events.ts`
+- `packages/plitejs/src/react/editable/input-router.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/code-highlighting.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/iframe.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/images.tsx`
@@ -829,11 +829,11 @@ Not claimed:
 
 Proof references:
 
-- `packages/plite-react/test/editing-kernel-contract.ts`
-- `packages/plite-react/test/editable-behavior.tsx`
-- `packages/plite-react/test/input-router-contract.test.tsx`
-- `packages/plite-react/test/keyboard-input-strategy-contract.test.ts`
-- `packages/plite-react/test/surface-contract.tsx`
+- `packages/plitejs/test/react/editing-kernel-contract.ts`
+- `packages/plitejs/test/react/editable-behavior.tsx`
+- `packages/plitejs/test/react/input-router-contract.test.tsx`
+- `packages/plitejs/test/react/keyboard-input-strategy-contract.test.ts`
+- `packages/plitejs/test/react/surface-contract.tsx`
 - `apps/www/tests/plite-browser/donor/examples/hovering-toolbar.test.ts`
 - `docs/plite/ledgers/issue-coverage-matrix.md`
 - `docs/plans/2026-05-18-plite-table-transform-boundary-ralplan.md`
@@ -842,9 +842,9 @@ Proof references:
 
 Affected:
 
-- `packages/plite/src/interfaces/text.ts`
-- `packages/plite/src/index.ts`
-- `packages/plite/test/generic-value-contract.ts`
+- `packages/plitejs/src/interfaces/text.ts`
+- `packages/plitejs/src/index.ts`
+- `packages/plitejs/test/generic-value-contract.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/custom-types.d.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/mark-utils.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/richtext.tsx`
@@ -879,8 +879,8 @@ Not claimed:
 
 Proof references:
 
-- `packages/plite/src/interfaces/text.ts`
-- `packages/plite/test/generic-value-contract.ts`
+- `packages/plitejs/src/interfaces/text.ts`
+- `packages/plitejs/test/generic-value-contract.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/custom-types.d.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/mark-utils.ts`
 - `docs/plans/2026-05-16-plite-boolean-mark-key-type-helper-ralplan.md`
@@ -889,9 +889,9 @@ Proof references:
 
 Affected:
 
-- `packages/plite/src/interfaces/node.ts`
-- `packages/plite-react/src/hooks/use-slate-decoration-source.ts`
-- `packages/plite-react/src/decoration-source.ts`
+- `packages/plitejs/src/interfaces/node.ts`
+- `packages/plitejs/src/react/hooks/use-slate-decoration-source.ts`
+- `packages/plitejs/src/react/decoration-source.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/code-highlighting.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/search-highlighting.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/markdown-preview.tsx`
@@ -962,8 +962,8 @@ Current proof:
 
 Proof references:
 
-- `packages/plite-react/test/app-owned-customization.tsx`
-- `packages/plite-react/test/projections-and-selection-contract.tsx`
+- `packages/plitejs/test/react/app-owned-customization.tsx`
+- `packages/plitejs/test/react/projections-and-selection-contract.tsx`
 - `benchmarks/plite/donor/browser/react/huge-document-overlays.tsx`
 - `benchmarks/plite/donor/browser/react/rerender-breadth.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/code-highlighting.tsx`
@@ -979,13 +979,13 @@ Proof references:
 
 Affected:
 
-- `packages/plite-react/src/components/slate.tsx`
-- `packages/plite-react/src/hooks/use-slate-annotations.tsx`
-- `packages/plite-react/src/hooks/use-slate-annotation-store.tsx`
-- `packages/plite-react/src/hooks/use-slate-widget-store.tsx`
-- `packages/plite-react/test/annotation-store-contract.tsx`
-- `packages/plite-react/test/widget-layer-contract.tsx`
-- `packages/plite-react/test/surface-contract.tsx`
+- `packages/plitejs/src/react/components/slate.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-annotations.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-annotation-store.tsx`
+- `packages/plitejs/src/react/hooks/use-slate-widget-store.tsx`
+- `packages/plitejs/test/react/annotation-store-contract.tsx`
+- `packages/plitejs/test/react/widget-layer-contract.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
 - `content/docs/plite/libraries/plite-react/annotations.md`
 - `content/docs/plite/libraries/plite-react/hooks.md`
 - `apps/www/src/app/(app)/examples/plite/_examples/collaborative-comments.tsx`
@@ -1018,8 +1018,8 @@ Why it belongs in the PR:
 
 Proof references:
 
-- `packages/plite-react/test/annotation-store-contract.tsx`
-- `packages/plite-react/test/widget-layer-contract.tsx`
+- `packages/plitejs/test/react/annotation-store-contract.tsx`
+- `packages/plitejs/test/react/widget-layer-contract.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/collaborative-comments.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/review-comments.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx`
@@ -1029,9 +1029,9 @@ Proof references:
 
 Affected:
 
-- `packages/plite-react/src/editable/editable-renderers.ts`
-- `packages/plite-react/src/components/editable-text-blocks.tsx`
-- `packages/plite-react/src/index.ts`
+- `packages/plitejs/src/react/editable/editable-renderers.ts`
+- `packages/plitejs/src/react/components/editable-text-blocks.tsx`
+- `packages/plitejs/src/react/index.ts`
 - `content/docs/plite/concepts/09-rendering.md`
 - `content/docs/plite/libraries/plite-react/editable.md`
 - `content/docs/plite/walkthroughs/03-defining-custom-elements.md`
@@ -1057,24 +1057,24 @@ Not claimed:
 
 Proof references:
 
-- `packages/plite-react/test/surface-contract.test.tsx`
-- `packages/plite-react/src/editable/editable-renderers.ts`
-- `packages/plite-react/src/components/editable-text-blocks.tsx`
+- `packages/plitejs/test/react/surface-contract.test.tsx`
+- `packages/plitejs/src/react/editable/editable-renderers.ts`
+- `packages/plitejs/src/react/components/editable-text-blocks.tsx`
 - `docs/plans/2026-05-14-plite-example-memoization-hard-cut-ralplan.md`
 
 ## 6.5 Render Path Props
 
 Affected:
 
-- `packages/plite-dom/src/plugin/dom-editor.ts`
-- `packages/plite-dom/src/utils/weak-maps.ts`
-- `packages/plite-react/src/components/editable-text-blocks.tsx`
-- `packages/plite-react/src/hooks/use-element-path.ts`
-- `packages/plite-react/src/hooks/use-element-selected.ts`
-- `packages/plite-react/src/hooks/use-plite-node-ref.tsx`
-- `packages/plite-react/test/surface-contract.tsx`
-- `packages/plite-react/test/provider-hooks-contract.tsx`
-- `packages/plite-dom/test/bridge.ts`
+- `packages/plitejs/src/dom/plugin/dom-editor.ts`
+- `packages/plitejs/src/dom/utils/weak-maps.ts`
+- `packages/plitejs/src/react/components/editable-text-blocks.tsx`
+- `packages/plitejs/src/react/hooks/use-element-path.ts`
+- `packages/plitejs/src/react/hooks/use-element-selected.ts`
+- `packages/plitejs/src/react/hooks/use-plite-node-ref.tsx`
+- `packages/plitejs/test/react/surface-contract.tsx`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/dom/bridge.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/images.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/embeds.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/check-lists.tsx`
@@ -1112,10 +1112,10 @@ Why it belongs in the PR:
 
 Proof references:
 
-- `packages/plite-react/test/surface-contract.tsx`
-- `packages/plite-react/test/use-element-selected.test.tsx`
-- `packages/plite-react/test/provider-hooks-contract.tsx`
-- `packages/plite-dom/test/bridge.ts`
+- `packages/plitejs/test/react/surface-contract.tsx`
+- `packages/plitejs/test/react/use-element-selected.test.tsx`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/dom/bridge.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/images.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/embeds.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/check-lists.tsx`
@@ -1126,9 +1126,9 @@ Proof references:
 
 Affected:
 
-- `packages/plite-dom/src/plugin/dom-coverage.ts`
-- `packages/plite-dom/src/plugin/dom-clipboard-runtime.ts`
-- `packages/plite-react/src/dom-coverage-boundary.tsx`
+- `packages/plitejs/src/dom/plugin/dom-coverage.ts`
+- `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `packages/plitejs/src/react/dom-coverage-boundary.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/dom-coverage-boundaries.tsx`
 - `docs/plans/2026-05-02-plite-hidden-subtree-first-class-ralplan.md`
 
@@ -1167,7 +1167,7 @@ Proof references:
 
 Affected:
 
-- `packages/plite-react/src/rendering-strategy/**`
+- `packages/plitejs/src/react/rendering-strategy/**`
 - `apps/www/src/app/(app)/examples/plite/_examples/huge-document.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/rendering-strategy-runtime.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/rendering-strategy-virtualized.tsx`
@@ -1215,7 +1215,7 @@ Proof references:
 - `docs/plans/2026-05-03-plite-experimental-virtualized-rendering-boundary.md`
 - `docs/plans/2026-05-23-plite-large-document-performance-virtualization-ralplan.md`
 - `docs/plite/replacement-gates-scoreboard.md`
-- `packages/plite-react/test/surface-contract.test.tsx`
+- `packages/plitejs/test/react/surface-contract.test.tsx`
 - `apps/www/src/app/(app)/examples/plite/_examples/rendering-strategy-runtime.tsx`
 
 ## 9. Browser Regression And Example Proof

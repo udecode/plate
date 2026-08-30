@@ -1,8 +1,8 @@
-import { history } from '@platejs/plite-history';
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
+import { history } from 'plitejs/history';
+import { Editable, Plite, useEditor } from 'plitejs/react';
 
 const StylingExample = () => {
-  const editor1 = usePliteEditor({
+  const editor1 = useEditor({
     extensions: [history()],
     initialValue: [
       {
@@ -11,7 +11,7 @@ const StylingExample = () => {
       },
     ],
   });
-  const editor2 = usePliteEditor({
+  const editor2 = useEditor({
     extensions: [history()],
     initialValue: [
       {

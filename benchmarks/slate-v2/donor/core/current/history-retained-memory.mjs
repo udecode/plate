@@ -1,12 +1,12 @@
 import { Buffer } from 'node:buffer';
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '../../../../../packages/plite/src/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
+import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
   History,
   history,
-} from '../../../../../packages/plite-history/src/index.ts';
+} from '../../../../../packages/plitejs/src/history/index.ts';
 import {
   round,
   summarize,

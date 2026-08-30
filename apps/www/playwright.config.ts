@@ -1,7 +1,7 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
-const baseURL = explicitBaseURL ?? "http://localhost:3000";
+const baseURL = explicitBaseURL ?? 'http://localhost:3000';
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 export default defineConfig({
@@ -12,26 +12,26 @@ export default defineConfig({
   fullyParallel: false,
   projects: [
     {
-      name: "chromium",
+      name: 'chromium',
       use: {
-        ...devices["Desktop Chrome"],
+        ...devices['Desktop Chrome'],
         launchOptions: {
           ...(chromiumExecutablePath
             ? { executablePath: chromiumExecutablePath }
             : {}),
-          ignoreDefaultArgs: ["--hide-scrollbars"],
+          ignoreDefaultArgs: ['--hide-scrollbars'],
         },
       },
     },
   ],
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI ? 'github' : 'list',
   retries: 0,
-  testDir: "./tests/browser",
+  testDir: './tests/browser',
   timeout: 45_000,
   use: {
     baseURL,
-    screenshot: "only-on-failure",
-    trace: "off",
+    screenshot: 'only-on-failure',
+    trace: 'off',
     viewport: {
       height: 720,
       width: 1280,
@@ -40,7 +40,7 @@ export default defineConfig({
   webServer: explicitBaseURL
     ? undefined
     : {
-        command: "pnpm dev:plite",
+        command: 'pnpm dev:plite',
         reuseExistingServer: true,
         timeout: 300_000,
         url: baseURL,

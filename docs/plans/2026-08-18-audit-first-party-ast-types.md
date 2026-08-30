@@ -92,7 +92,7 @@ Boundaries:
 - Browser surface: N/A; persisted type/grammar audit, not visible behavior.
 - Tracker sync: N/A; no tracker source.
 - Non-goals: React/component props, internal compiler helper types, app-only
-  transient fields, classic-list maintenance, implementation, commit, push, PR.
+  transient fields, legacy-list-model maintenance, implementation, commit, push, PR.
 
 Output budget strategy:
 - Parse the generated JSON into counts and compact TSV-like rows; never print
@@ -239,7 +239,7 @@ Findings:
 - Optional modern first-party owners outside that app grammar: `codeDrawing`,
   `excalidraw`, and `tag`, with 5 direct property declarations.
 - Frozen v53 profile: all 60 identities classified; 27 legacy element mappings
-  reconciled. Six classic-list structural types are explicitly excluded by
+  reconciled. Six legacy-list-model structural types are explicitly excluded by
   maintenance policy.
 - The core Plate-native model is sound, but the generated `Value` mixes durable
   content with edit-only/transient nodes and flags. It is not a clean persisted
@@ -256,7 +256,7 @@ Coverage manifest:
 | Text marks and annotations | 21 generated text property declarations | keep semantic marks; cut transient decoration/workflow flags from persistence |
 | Cross-cutting block properties | list, indent, alignment, line height, AI/suggestion | list/alignment keep; add domain validators; split transient AI/suggestion state |
 | Optional modern owners | `codeDrawing`, `excalidraw`, `tag`; 5 properties | keep Excalidraw/Tag; flatten and rename Code Drawing |
-| Historical/classic | 60 v53 identities; 6 classic-list structural types excluded | migration coverage complete; classic outside new API investment |
+| Historical/classic | 60 v53 identities; 6 legacy-list-model structural types excluded | migration coverage complete; classic outside new API investment |
 
 Best API findings:
 | Priority | Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
@@ -308,7 +308,7 @@ Verification evidence:
 - Reconciled 35/35 modern element types and 101/101 direct property
   declarations into the coverage manifest.
 - Reconciled 60/60 frozen v53 identities and all 27 legacy element mappings;
-  six classic-list structural types remain explicitly outside new API
+  six legacy-list-model structural types remain explicitly outside new API
   investment.
 - Re-read each flagged schema, codec, normalizer, and consumer. Targeted scans
   confirmed transient/edit-only leakage, dead column `layout`, Media `name`
@@ -333,7 +333,7 @@ Final handoff contract:
 - PR / tracker: N/A; no commit, push, PR, or tracker mutation was requested.
 - Caveats: the generated schema is the canonical editor composition, not every
   possible plugin combination. Optional modern first-party owners were added
-  explicitly; third-party and classic-list maintenance contracts are excluded.
+  explicitly; third-party and legacy-list-model maintenance contracts are excluded.
 - Next owner: `best-api` repair, then `plate-plan` for the P0 compiler/profile
   boundary; feature package owners implement accepted P1/P2 rows afterward.
 

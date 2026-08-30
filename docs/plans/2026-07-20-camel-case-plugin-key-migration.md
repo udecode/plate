@@ -162,7 +162,7 @@ Exhaustive production inventory:
 
 | Current key | Target key | Plugin owner | Frozen `node.type` | Role | TDD observable |
 | --- | --- | --- | --- | --- | --- |
-| `action_item` | `listTodoClassic` | `BaseTodoListPlugin` in `packages/list-classic` | `NODES.listTodoClassic` = `action_item` | element + tx | `editor.update((tx) => tx.listTodoClassic.toggle())` and insert-break output retain `action_item` |
+| `action_item` | `listTodoClassic` | `BaseTodoListPlugin` in `packages/platejs/src/features/list` | `NODES.listTodoClassic` = `action_item` | element + tx | `editor.update((tx) => tx.listTodoClassic.toggle())` and insert-break output retain `action_item` |
 | `code_block` | `codeBlock` | `BaseCodeBlockPlugin` in `packages/code-block` | `NODES.codeBlock` = `code_block` | container element + tx + shortcuts | insert/toggle output retains `code_block`; tx/update namespace and shortcut IDs use `codeBlock` |
 | `code_drawing` | `codeDrawing` | `BaseCodeDrawingPlugin` in `packages/code-drawing` | `NODES.codeDrawing` = `code_drawing` | void element + tx | insert output retains `code_drawing`; tx/update namespace uses `codeDrawing` |
 | `code_line` | `codeLine` | `BaseCodeLinePlugin` in `packages/code-block` | `NODES.codeLine` = `code_line` | strict-sibling element | inserted/deserialized code-block children retain `code_line` |
@@ -196,7 +196,7 @@ Execution slices:
 | 2. Code Drawing | `packages/code-drawing`, registry/docs callers | RED observable insert contract; rename key, set `NODES.codeDrawing`, delete `CODE_DRAWING_KEY`, migrate tx/docs | Slice 1 proves the pattern | New namespace and old serialized output are green; public alias is gone | Code Drawing tests/typecheck + export audit |
 | 3. Code Block family | `packages/code-block`, Core shortcut/input-rule tests, AI/Markdown/List/Link callers, registry/docs | Migrate `codeBlock`, `codeLine`, `codeSyntax` together because their schema/rendering contracts are nested; preserve block/line JSON and syntax mark keys | Slices 1–2 green | Insert/toggle/tab/select/normalization/HTML/Markdown/decorations all use camel plugin identities and snake data | Code Block package tests/typecheck; dependent focused tests; shortcut assertion |
 | 4. Combobox identities | `packages/emoji`, `packages/mention`, `packages/slash-command`, Combobox/Suggestion callers and docs | Migrate `emojiInput`, `mentionInput`, `slashInput`, and behavior-only `slashCommand` one package at a time with RED→GREEN before the next | Common pattern green | Transient input JSON remains snake_case; nested plugin lookups are camelCase; no slash-command node fiction | Emoji, Mention, Slash Command, Combobox/Suggestion focused tests/typechecks |
-| 5. Structural nodes | `packages/layout`, `packages/list-classic`, Markdown/AI/List/registry callers | Migrate `columnGroup`, then `listTodoClassic`, preserving Markdown and insert-break/toggle output | Prior node slices green | `column_group` and `action_item` remain serialized values while keys/tx are camelCase | Layout/List Classic/Markdown focused tests and typechecks |
+| 5. Structural nodes | `packages/layout`, `packages/platejs/src/features/list`, Markdown/AI/List/registry callers | Migrate `columnGroup`, then `listTodoClassic`, preserving Markdown and insert-break/toggle output | Prior node slices green | `column_group` and `action_item` remain serialized values while keys/tx are camelCase | Layout/Legacy list model/Markdown focused tests and typechecks |
 | 6. Media and decoration leaf | `packages/media`, `packages/find-replace`, Markdown/registry/docs | Migrate `mediaEmbed`, then `searchHighlight`; prove parser/insertion output and decoration property | Prior node/mark patterns green | Stored media and decoration matching remain unchanged | Media/Find Replace tests/typechecks |
 | 7. Whole-repo semantic adoption | `packages/**`, `apps/www/src/**`, `content/docs/**` | Classify every remaining affected `KEYS` use as plugin identity, configured type, or static node data; update current docs and registry types/maps; never edit generated registry output | All feature slices green | No current code/docs caller confuses the two identities | Focused source audits, `www` typecheck, docs parity, lint |
 | 8. Closure | Core lane + browser demos | Add breaking changeset, run broad Core gate, then exercise affected standalone demos | Adoption audit clean | All checks pass; serialized fixture grep contains only intended old node values and no production plugin declaration retains an inventoried snake_case key | `pnpm check:core`; `pnpm --filter www typecheck`; Browser routes listed below |
@@ -238,7 +238,7 @@ Conditional evidence:
   `apps/www/src/registry` apply. Generated `apps/www/public/r/**` is
   CI-controlled and must not be edited. Browser closure covers
   `/blocks/code-block-demo`, `/blocks/code-drawing-demo`,
-  `/blocks/column-demo`, `/blocks/list-classic-demo`,
+  `/blocks/column-demo`, `/blocks/list-demo`,
   `/blocks/emoji-demo`, `/blocks/equation-demo`, `/blocks/media-demo`,
   `/blocks/mention-demo`, `/blocks/slash-command-demo`, and
   `/blocks/find-replace-demo`. A breaking changeset applies; release execution
@@ -326,7 +326,7 @@ Verification evidence:
 - Hard-cut proof: exact searches return zero old plugin declarations,
   `PluginConfig` identities, runtime namespaces, or `CODE_DRAWING_KEY`
   references in current package, registry, and content source.
-- Browser proof: Code Block, Code Drawing, Column, List Classic, Emoji,
+- Browser proof: Code Block, Code Drawing, Column, Legacy list model, Emoji,
   Equation, Media, Mention, Slash Command, and Find Replace standalone demos
   each mount one editable with no error dialog. Typing `editable` in Find
   Replace renders `.bg-yellow-100` decoration leaves with no crash.

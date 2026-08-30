@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import {
+  access,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -96,7 +105,7 @@ async function main() {
   const tarballsByPackageName = new Map();
 
   for (const [packageName, workspacePackage] of packagesToPrepare) {
-    const tarballPath = packWorkspacePackage(workspacePackage.directory);
+    const tarballPath = await packWorkspacePackage(workspacePackage.directory);
 
     tarballsByPackageName.set(packageName, tarballPath);
   }
@@ -139,19 +148,20 @@ function buildWorkspacePackages(workspacePackagesToBuild) {
 
 function getPackagesToPrepare({ baseRef, templateConfigs, workspacePackages }) {
   const packagesToPrepare = new Map();
-  const dependencyNames = new Set(
-    templateConfigs.flatMap(
-      (templateConfig) => templateConfig.localDependencies
-    )
-  );
 
   if (!baseRef) {
-    for (const dependencyName of dependencyNames) {
-      const workspacePackage = workspacePackages.get(dependencyName);
+    const relevantPackageNames = new Set(
+      templateConfigs.flatMap((templateConfig) => [
+        ...templateConfig.relevantPackageNames,
+      ])
+    );
+
+    for (const packageName of relevantPackageNames) {
+      const workspacePackage = workspacePackages.get(packageName);
 
       if (!workspacePackage) continue;
 
-      packagesToPrepare.set(dependencyName, workspacePackage);
+      packagesToPrepare.set(packageName, workspacePackage);
     }
 
     return packagesToPrepare;
@@ -214,10 +224,7 @@ function getLocalDependencies(packageJson, workspacePackages) {
 }
 
 async function getWorkspacePackages() {
-  const workspacePackageDirectories = [
-    path.join(repoRoot, 'packages'),
-    path.join(repoRoot, 'packages', 'udecode'),
-  ];
+  const workspacePackageDirectories = [path.join(repoRoot, 'packages')];
   const workspacePackagesByName = new Map();
 
   for (const workspacePackageDirectory of workspacePackageDirectories) {
@@ -363,7 +370,7 @@ function getAffectedRelevantPackageNames(
   return affectedPackageNames;
 }
 
-function packWorkspacePackage(packageDirectory) {
+async function packWorkspacePackage(packageDirectory) {
   const result = spawnSync(
     'pnpm',
     ['pack', '--pack-destination', localPackageOutputDir],
@@ -385,7 +392,31 @@ function packWorkspacePackage(packageDirectory) {
     process.exit(1);
   }
 
-  return tarballPath;
+  const contentAddressedPath = getContentAddressedTarballPath(
+    tarballPath,
+    await readFile(tarballPath)
+  );
+
+  try {
+    await access(contentAddressedPath);
+    await rm(tarballPath, { force: true });
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+
+    await rename(tarballPath, contentAddressedPath);
+  }
+
+  return contentAddressedPath;
+}
+
+function getContentAddressedTarballPath(tarballPath, contents) {
+  const digest = createHash('sha256')
+    .update(contents)
+    .digest('hex')
+    .slice(0, 12);
+  const basename = path.basename(tarballPath, '.tgz');
+
+  return path.join(path.dirname(tarballPath), `${basename}-${digest}.tgz`);
 }
 
 function getDependencyNames(packageJson) {
@@ -468,10 +499,14 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
     }
   }
 
-  return writeFile(
-    packageJsonPath,
-    `${JSON.stringify(packageJson, null, 2)}\n`
-  );
+  return Promise.all([
+    writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`),
+    rm(path.join(templateDir, 'bun.lock'), { force: true }),
+    rm(path.join(templateDir, 'node_modules'), {
+      force: true,
+      recursive: true,
+    }),
+  ]);
 }
 
 function toPosixPath(filePath) {
@@ -480,6 +515,7 @@ function toPosixPath(filePath) {
 
 export {
   getAffectedRelevantPackageNames,
+  getContentAddressedTarballPath,
   getPackagesToPrepare,
   getReachableWorkspacePackageNames,
   rewriteTemplatePackageJson,

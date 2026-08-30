@@ -37,10 +37,10 @@ docs:
 将 kit 添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 import { IndentKit } from "@/components/editor/indent";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...IndentKit,
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/indent
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -65,10 +65,10 @@ npm install @platejs/indent
 在创建编辑器时，将 `IndentPlugin` 包含在你的 Plate 插件数组中。
 
 ```tsx
-import { IndentPlugin } from "@platejs/indent/react";
-import { createPlateEditor } from "platejs/react";
+import { IndentPlugin } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin,
@@ -81,11 +81,11 @@ const editor = createPlateEditor({
 你可以配置 `IndentPlugin` 以针对特定元素并自定义缩进行为。
 
 ```tsx
-import { IndentPlugin } from "@platejs/indent/react";
+import { IndentPlugin } from "platejs/react";
 import { PLUGINS } from "platejs";
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({

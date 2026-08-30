@@ -73,7 +73,7 @@ const summaryDirectory = path.join(
   'test-results/plite-browser-runner'
 );
 const appBuildManifest = path.join(appRoot, 'out/.plite-proof-build.json');
-const browserOutputRoot = path.join(repoRoot, 'packages/browser/dist');
+const browserOutputRoot = path.join(repoRoot, 'packages/test/dist');
 const appOutputRoot = path.join(appRoot, 'out');
 const projectOutputDirectory = (project) =>
   path.join(appRoot, 'test-results/plite-browser', project);

@@ -1,7 +1,7 @@
 import {
   createPliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';

@@ -14,7 +14,7 @@ writes in `editor.update.<group>.<method>()` or `editor.update(...)`.
 Start by moving the bold and code-block logic into plain functions:
 
 ```tsx
-import { ElementApi, type Editor } from "@platejs/plite";
+import { ElementApi, type Editor } from "plitejs";
 
 const isBoldActive = (editor: Editor) => {
   return editor.read.marks()?.bold === true;
@@ -55,10 +55,10 @@ functions that receive an editor.
 Use `Editable onKeyDown` for keyboard shortcuts that belong to one editor UI:
 
 ```tsx
-import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+import { Editable, Plite, useEditor } from "plitejs/react";
 
 const App = () => {
-  const editor = usePliteEditor({ initialValue });
+  const editor = useEditor({ initialValue });
 
   return (
     <Plite editor={editor}>
@@ -95,7 +95,7 @@ import {
   ElementApi,
   PointApi,
   RangeApi,
-} from "@platejs/plite";
+} from "plitejs";
 
 const markdownBlocks = defineExtension("markdown-blocks", {
   commands: ({ around, handle }) => [
@@ -157,7 +157,7 @@ const markdownBlocks = defineExtension("markdown-blocks", {
 });
 
 const App = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [markdownBlocks],
     initialValue,
   });

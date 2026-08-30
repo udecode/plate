@@ -215,7 +215,7 @@ Verification evidence:
 - 15-package declaration build: 32/32 tasks passed.
 - 15-package tests: 881/881 passed: Basic Nodes 57, Callout 3, Code Block
   68, Code Drawing 13, Comment 13, Date 16, Footnote 27, Link 76, List 53,
-  List Classic 90, Math 16, Media 81, Suggestion 81, Table 235, Utils 52.
+  Legacy list model 90, Math 16, Media 81, Suggestion 81, Table 235, Utils 52.
 - Core typecheck and declaration/type-contract build passed.
 - Core tests: 697/697 passed with 2,296 expectations; one existing React
   unique-key warning is non-blocking.

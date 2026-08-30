@@ -1,7 +1,7 @@
 'use client';
 
 import type { Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -13,7 +13,7 @@ const editors = createMultiEditorsValue().map((value, index) => ({
 }));
 
 function WithPlate({ id, value }: { id: string; value: Value }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     id,
     // components: PlateUI,
     // plugins: [...BasicBlocksKit, ...BasicMarksKit],

@@ -1,5 +1,5 @@
 ---
-'@platejs/slash-command': major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.

@@ -9,10 +9,10 @@ import {
 test('extracts only JavaScript and TypeScript code fences', () => {
   const source = [
     '```tsx title="editor.tsx"',
-    'usePlateEditor({ plugins: [] });',
+    'useEditor({ plugins: [] });',
     '```',
     '```bash',
-    'usePlateEditor({ plugins: [] });',
+    'useEditor({ plugins: [] });',
     '```',
   ].join('\n');
 
@@ -25,11 +25,13 @@ test('extracts only JavaScript and TypeScript code fences', () => {
 test('derives editor schema identity when direct construction omits it', () => {
   const source = [
     '```tsx',
-    'const editor = usePlateEditor({ plugins: [] });',
-    "createBaseEditor({ initialValue: [{ children: [{ text: '' }], type: 'p' }] });",
+    'const editor = useEditor({ plugins: [] });',
+    "createEditor({ initialValue: [{ children: [{ text: '' }], type: 'p' }] });",
     'createStaticEditor();',
-    'usePlateViewEditor();',
-    'createPlateEditor(undefined);',
+    'useStaticEditor();',
+    'createEditor(undefined);',
+    'createEditor({ schema: { root: schema.content.element(ParagraphPlugin, { min: 1 }) } });',
+    'createEditor({ schema: { overrides: [] } });',
     '```',
   ].join('\n');
 
@@ -39,8 +41,8 @@ test('derives editor schema identity when direct construction omits it', () => {
 test('rejects invalid editor options', () => {
   const source = [
     '```tsx',
-    "usePlateEditor('invalid');",
-    'createPlateEditor(42);',
+    "useEditor('invalid');",
+    'createEditor(42);',
     '```',
   ].join('\n');
 
@@ -50,17 +52,17 @@ test('rejects invalid editor options', () => {
 test('rejects removed and invalid editor initialization shapes', () => {
   const source = [
     '```tsx',
-    'createBaseEditor({ value: [] });',
-    'createPlateEditor({ onReady() {} });',
-    'usePlateEditor({ initialValue: null });',
+    'createEditor({ value: [] });',
+    'createEditor({ onReady() {} });',
+    'useEditor({ initialValue: null });',
     'createStaticEditor({ initialValue: [] });',
-    "createBaseEditor({ initialValue: 'html' });",
-    'createPlateEditor({ initialValue: async () => [] });',
-    'createPlateEditor({ async initialValue() { return []; } });',
-    'createPlateEditor({ initialValue: () => [] });',
-    'createPlateEditor({ initialValue() { return []; } });',
-    'createPlateEditor({ initialValue: Promise.resolve([]) });',
-    'createPlateEditor({ initialValue: new Promise(() => {}) });',
+    "createEditor({ initialValue: 'html' });",
+    'createEditor({ initialValue: async () => [] });',
+    'createEditor({ async initialValue() { return []; } });',
+    'createEditor({ initialValue: () => [] });',
+    'createEditor({ initialValue() { return []; } });',
+    'createEditor({ initialValue: Promise.resolve([]) });',
+    'createEditor({ initialValue: new Promise(() => {}) });',
     '```',
   ].join('\n');
   const issues = auditPlateDocCode(source);
@@ -81,10 +83,10 @@ test('rejects removed and invalid editor initialization shapes', () => {
 test('accepts complete named lineages and typed pass-through options', () => {
   const source = [
     '```ts',
-    "createPlateEditor({ schema: { id: 'comments-example', version: 1 } });",
-    'const makeEditor = (options: CreateEditorOptions) => createBaseEditor(options);',
-    'const spreadEditor = (...options: [CreateEditorOptions]) => createBaseEditor(...options);',
-    'const assertedEditor = createBaseEditor(options as CreateEditorOptions);',
+    "createEditor({ schema: { id: 'comments-example', version: 1 } });",
+    'const makeEditor = (options: CreateEditorOptions) => createEditor(options);',
+    'const spreadEditor = (...options: [CreateEditorOptions]) => createEditor(...options);',
+    'const assertedEditor = createEditor(options as CreateEditorOptions);',
     '```',
   ].join('\n');
 
@@ -94,7 +96,7 @@ test('accepts complete named lineages and typed pass-through options', () => {
 test('rejects incomplete inline identities', () => {
   const source = [
     '```ts',
-    "createPlateEditor({ schema: { id: 'comments-example' } });",
+    "createEditor({ schema: { id: 'comments-example' } });",
     '```',
   ].join('\n');
 
@@ -251,14 +253,14 @@ test('accepts the full independent plugin declaration vocabulary in docs', () =>
 test('requires the sole one-argument clipboard contribution form', () => {
   const accepted = [
     '```ts',
-    "import { clipboardHandler as clipboard } from '@platejs/plite-dom';",
+    "import { clipboardHandler as clipboard } from 'platejs/dom';",
     'clipboard({ insertData() { return true; } });',
     'clipboardHandler({ insertData() { return true; } });',
     '```',
   ].join('\n');
   const rejected = [
     '```ts',
-    "import { clipboardHandler } from '@platejs/plite-dom';",
+    "import { clipboardHandler } from 'platejs/dom';",
     'clipboardHandler(editor, { insertData() { return true; } });',
     '```',
   ].join('\n');
@@ -315,7 +317,7 @@ test('audits aliased Plite factories and resolved author objects in docs', () =>
     '```ts',
     'const directAlias = defineExtension;',
     "directAlias('a', { config: {} });",
-    "import { defineExtension as importedAlias } from '@platejs/plite';",
+    "import { defineExtension as importedAlias } from 'platejs';",
     "importedAlias('b', { state: {} });",
     'const { defineExtension: destructuredAlias } = Plite;',
     "destructuredAlias('c', { tx: {} });",
@@ -519,8 +521,8 @@ test('keeps Plite dependency requirements behind one public extension generic in
 test('keeps dependency carriers internal and teaches exact react composition', () => {
   const source = [
     '```ts',
-    "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite';",
-    "import { react as installReact } from '@platejs/plite-react';",
+    "import type { InternalEditorExtensionTypeProviderOf } from 'platejs';",
+    "import { react as installReact } from 'platejs/react';",
     'type Bad = EditorExtensionDependencyReference<Capability>;',
     'installReact();',
     'installReact({ dom: DOMExtension, readOnly: true });',
@@ -551,8 +553,8 @@ test('keeps dependency carriers internal and teaches exact react composition', (
     auditPlateDocCode(
       [
         '```ts',
-        "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite/internal';",
-        "import { react } from '@platejs/plite-react';",
+        "import type { EditorExtensionTypeProviderOf } from 'platejs';",
+        "import { react } from 'platejs/react';",
         'const shared = { dom: DOMExtension };',
         'type Reference = EditorExtensionDependencyReference;',
         'react({ dom: DOMExtension });',
@@ -562,12 +564,24 @@ test('keeps dependency carriers internal and teaches exact react composition', (
     ),
     []
   );
+  assert.equal(
+    auditPlateDocCode(
+      [
+        '```ts',
+        "import type { EditorExtensionTypeProviderOf } from 'platejs/internal';",
+        '```',
+      ].join('\n')
+    ).filter((issue) =>
+      issue.reason.includes('not a public package entrypoint')
+    ).length,
+    1
+  );
 });
 
 test('keeps Core lowering carriers out of public docs', () => {
   const source = [
     '```ts',
-    "import type { PluginDefinitionCarrier } from '@platejs/core';",
+    "import type { PluginDefinitionCarrier } from 'platejs';",
     '```',
   ].join('\n');
 
@@ -579,7 +593,7 @@ test('keeps Core lowering carriers out of public docs', () => {
     auditPlateDocCode(
       [
         '```ts',
-        "import type { PluginReference, DefinitionOf } from '@platejs/core';",
+        "import type { PluginReference, DefinitionOf } from 'platejs';",
         '```',
       ].join('\n')
     ),

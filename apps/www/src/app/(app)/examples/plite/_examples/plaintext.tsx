@@ -1,8 +1,8 @@
-import { history } from '@platejs/plite-history';
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
+import { history } from 'plitejs/history';
+import { Editable, Plite, useEditor } from 'plitejs/react';
 
 const PlainTextExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history()],
     initialValue: [
       {

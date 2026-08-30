@@ -255,7 +255,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
     await expect
       .poll(() => modelSelection(page))
       .toEqual({
-        anchorPath: expectedDraggedPaths[0]!.split(',').map(Number),
+        anchorPath: expectedDraggedPaths[0].split(',').map(Number),
         focusPath: expectedDraggedPaths.at(-1)!.split(',').map(Number),
         kind: 'node',
         paths: expectedDraggedPaths.map((path) => path.split(',').map(Number)),

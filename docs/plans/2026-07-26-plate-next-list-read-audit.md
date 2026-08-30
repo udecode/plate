@@ -730,7 +730,7 @@ Verification evidence:
   owner-first consolidation and the deleted old helper topology.
 - Current Core source and type tests confirm constructor `read`,
   `editor.read.<plugin>`, portal `.read`, and transaction-local
-  `tx.<plugin>`; `packages/list-classic` independently uses the same contract.
+  `tx.<plugin>`; `packages/platejs/src/features/list` independently uses the same contract.
 - Type/test/build probes are recorded under out-of-scope drift and do not count
   as green package proof.
 - Autogoal checker: `[autogoal] complete` for this audit plan.

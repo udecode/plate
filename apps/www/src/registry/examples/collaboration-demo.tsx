@@ -1,5 +1,7 @@
 'use client';
 
+import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
+import { createEditor, Plate } from 'platejs/react';
 import type {
   YjsAwarenessChange,
   YjsAwarenessState,
@@ -7,11 +9,12 @@ import type {
   YjsProviderEventHandler,
   YjsProviderLike,
   YjsProviderStatus,
-} from '@platejs/yjs';
-import { YjsPlugin } from '@platejs/yjs/plate';
-import { useYjsProviderStatus, useYjsProviderSynced } from '@platejs/yjs/react';
-import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createPlateEditor, Plate } from 'platejs/react';
+} from 'platejs/yjs';
+import {
+  YjsPlugin,
+  useYjsProviderStatus,
+  useYjsProviderSynced,
+} from 'platejs/yjs/react';
 import * as React from 'react';
 import * as Y from 'yjs';
 
@@ -461,7 +464,7 @@ const createPeerEditor = (
     }),
   ] as const;
 
-  return createPlateEditor({
+  return createEditor({
     id: `collaboration-demo-${provider.peer.id}-${schemaVersion}`,
     initialValue: cloneInitialValue(),
     plugins,
@@ -510,7 +513,7 @@ const testSchemaJoin = (room: DemoRoom, version: number) => {
   ] as const;
 
   try {
-    const editor = createPlateEditor({
+    const editor = createEditor({
       id: `collaboration-demo-schema-probe-${version}`,
       initialValue: cloneInitialValue(),
       plugins,

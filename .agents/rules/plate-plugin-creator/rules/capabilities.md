@@ -68,19 +68,19 @@ Let builders and initializers own contextual typing.
   implementation fragment merely to share it between stages. Keep it lexical,
   keep a pure shared domain algorithm private, coalesce stages, or name the
   missing builder capability.
-- If contextual inference fails, repair the owning Core builder/generic or
+- If contextual inference fails, repair the owning Plate foundation builder/generic or
   source API. A new definition alias or explicit `editor`/`tx` annotation is
   not an inference fix.
 - A reusable factory whose generic definition requires an element or mark
   schema receives a required flat `schema.type` or `schema.key`. Optionalizing
-  that handle because the plugin `name` is generic is a Core inference bug;
+  that handle because the plugin `name` is generic is a Plate foundation inference bug;
   repair `PluginAuthorSchemaView` instead of adding a non-null assertion,
   runtime guard, cast, or duplicated identity.
 - A context-bound factory may infer the exact installed-plugin editor inside
   its author callback, but its public factory and emitted value must use the
   smallest portable public contract. An `InternalBaseEditorWithInstalledPlugins`
-  declaration leak belongs to the Core return boundary. Do not patch it with a
-  package-level `BaseEditor<typeof Plugin>` alias, reconstructed option/rule
+  declaration leak belongs to the Plate foundation return boundary. Do not patch it with a
+  package-level `Editor<typeof Plugin>` alias, reconstructed option/rule
   types, an export annotation, or a cast.
 - Forbid `any` in production source. A deliberate local non-type test escape is
   the only exception.
@@ -101,7 +101,7 @@ witness fields may not.
 TS7056 is an owner-level declaration defect, not a package authoring pattern.
 Keep the direct inferred export as the only target. Compact the package's
 honest dependency source, then stop and route the remaining failure to the
-owning Core generic or declaration boundary. Never add another
+owning Plate foundation generic or declaration boundary. Never add another
 `@plate-plugin-declaration-stage`, private definition carrier, annotated
 staging alias, widened dependency, cast, or public subset type. An existing
 marked stage is transitional debt: record its direct-build deletion gate and
@@ -120,10 +120,10 @@ different serialized node identity in `type`; do not encode storage syntax in
 the descriptor name. Package roots expose author-facing contracts only:
 `Any*`, `Internal*`, normalized/compiler types, accumulators, witnesses, and
 raw callback graphs stay private or under a documented internal entrypoint.
-An unparameterized editor has guaranteed Core capabilities only. Carry the
+An unparameterized editor has guaranteed Plate foundation capabilities only. Carry the
 concrete editor or descriptor generic when package code needs installed
-capabilities; never manufacture them with `any`. Plite's public runtime type is
-`Editor`; Plate owns `BaseEditor` and `PlateEditor`.
+capabilities; never manufacture them with `any`. Every editor entrypoint calls
+its public runtime type `Editor`; package and entrypoint establish the layer.
 
 Raw `PluginReference` carries nominal identity only, with no definition generic
 or private witness. Concrete Base and Plate descriptors carry the one invariant
@@ -134,15 +134,14 @@ belong on that public reference.
 
 `EditorExtensionTypeProvider` is the sole public value-sensitive capability
 bridge. Its higher-kinded encoding, normalized installed-capability carrier,
-and transitive dependency expansion are internal-only exports from
-`@platejs/plite/internal`. Static portals require a unique literal name and
+and transitive dependency expansion stay private inside `plitejs`. Static portals require a unique literal name and
 mutually assignable descriptor/installed capabilities. Runtime portals still
 require exact installed descriptor identity. Plite keeps
 `EditorExtension<Definition>` as one public definition parameter, and official
 factory returns are derived rather than reconstructed with another public
 generic.
 
-Core's contextually typed author-source and canonical-lowered aliases are
+Plate foundation's contextually typed author-source and canonical-lowered aliases are
 implementation details. Do not export or teach them. A plugin author supplies
 one object and receives one exact descriptor.
 
@@ -301,18 +300,18 @@ State and native extension mechanics:
   assignability with callback bivariance; keep any erasure at a named internal
   runtime boundary. Direct `update.selection` exposes mutations only.
 - Bare public editor types default to the core-only `readonly []` extension
-  tuple. Never make package code compile by defaulting `Editor`, `BaseEditor`,
+  tuple. Never make package code compile by defaulting `Editor`,
   or their read/update surfaces to `any`; only named internal `AnyEditor`
   boundaries may erase installed capabilities.
 - Treat the installed plugin/extension graph as the single editor capability
   projection. Never repair a package type by intersecting a whole
-  `ReactEditor`, `DOMEditor`, or sibling layered editor back onto Plate; fix the
+  private React, DOM, or sibling layered editor carrier back onto Plate; fix the
   missing owner field or use an explicit erased internal boundary.
 - Type reusable editor helpers from the minimal `read`, `update`, `api`, or
   subscription capabilities they consume. If a helper returns a view of its
   input editor, preserve the full caller type through a layered overload. Never
-  infer one state/provider witness and rebuild a raw `Editor`, `ReactEditor`, or
-  `DOMEditor` around it; keep any erasure inside the runtime implementation.
+  infer one state/provider witness and rebuild a raw or adapter-branded editor
+  around it; keep any erasure inside the runtime implementation.
 - Clipboard ingress is not a plugin field. Add `clipboardHandler(...)` directly
   to `contributions`. `clipboardHandler(handler)` is the sole form; the owning
   extension or Plate stage contextually infers the handler transaction from
@@ -321,7 +320,7 @@ State and native extension mechanics:
   extract domain inputs. A public context identity helper is leaked compiler
   machinery; fix the owning generic rather than adding a callback annotation,
   cast, `any`, alias, or replacement helper.
-- `defineExtension` imported from `@platejs/plite` authors independently
+- `defineExtension` imported from `plitejs` authors independently
   reusable standalone Plite descriptors that compose as dependencies. Do not
   pass Plate plugin context into those factories or copy inline Plate
   contributions through the imported helper.
@@ -445,8 +444,7 @@ transitive coincidence is not an installation contract.
 - Existing Plate descriptors bind or replace the ordinary node component
   through one terminal `.configure({ component })`.
 - Static/base files may import a server-safe component but do not import
-  `platejs/react`,
-  `@platejs/core/react`, or any `@platejs/*/react` entrypoint.
+  `platejs/react` or any `platejs/*/react` entrypoint.
 - Use `toPlatePlugin()` at the owning React adapter to publish a reusable
   Plate-layer descriptor or add genuine Plate-only authoring. A terminal
   consumer never inserts conversion merely to set `component`.
@@ -499,12 +497,12 @@ Schema authoring follows the Plite owner exactly:
   values; do not add meaning to the reusable value descriptor.
 - Plate element declarations use `blockContent` for normal-flow membership.
   Application schema lineage and final grammar composition belong to the app
-  owner under Plate Vision, not to a feature package.
+  owner under Plate Vision, not to a reusable feature module.
 - A plugin may contribute several keyed properties. Domain code keeps direct
   node access; generic plugin code destructures the exact property handle from
   callback `schema`. Consumers use typed nodes or semantic plugin capabilities;
   normalized property maps are not part of the plugin portal.
-- Do not author application-level schema overrides in a feature package.
+- Do not author application-level schema overrides in a reusable feature module.
   Property keys and value laws stay owned by the feature plugin; route final
   grammar composition and app-owned properties to the application owner.
 - Use `schema.create`, `schema.assertDocument`, `schema.assertFragment`, and
@@ -517,7 +515,7 @@ Schema authoring follows the Plite owner exactly:
   properties through typed property handles or a semantic plugin API; never
   infer a property query from an arbitrary one-property descriptor.
 - Never export compiler/provider witnesses or rebuild private schema inference
-  with a public config/model carrier. Repair inference in Core's private
+  with a public config/model carrier. Repair inference in Plate foundation's private
   descriptor compiler.
 
 - Install extensions with `editor.install(...)`; create DOM/React views with

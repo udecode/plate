@@ -9,12 +9,12 @@ plugin.
 
 ## Basic Editor Configuration
 
-To create a basic Plate editor, you can use the `createPlateEditor` function, or `usePlateEditor` in a React component:
+To create a basic Plate editor, you can use the `createEditor` function, or `useCreateEditor` in a React component:
 
 ```ts
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
 });
 ```
@@ -24,7 +24,7 @@ const editor = createPlateEditor({
 Set the initial content of the editor:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
@@ -41,7 +41,7 @@ same complete shape through `onValueChange`.
 Use a synchronous initializer when decoding requires the compiled plugin model:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
     editor.api.html.deserialize({
@@ -59,7 +59,7 @@ for ordinary editors. `editor.read.schema.identity()` returns a derived
 identity with the exact compiled fingerprint:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
 });
 
@@ -73,7 +73,7 @@ negotiation. The same object owns application schema overrides and named
 lineage. The fingerprint remains tied only to the compiled schema:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
   schema: { id: 'acme-document', version: 3 },
 });
@@ -93,7 +93,7 @@ only when the application needs a different top-level grammar.
 ```ts
 import { schema } from 'platejs';
 import {
-  createPlateEditor,
+  createEditor,
   definePlatePlugin,
   ParagraphPlugin,
 } from 'platejs/react';
@@ -106,7 +106,7 @@ const SectionPlugin = definePlatePlugin('section', {
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [SectionPlugin],
   schema: {
     root: schema.content.element(SectionPlugin, { min: 1 }),
@@ -116,7 +116,7 @@ const editor = createPlateEditor({
 
 `root.min` is required and must be a positive integer. Root descriptors must
 match the installed plugin family: use Plate descriptors with
-`createPlateEditor` and Base descriptors with a headless Base plugin tuple.
+`createEditor` and Base descriptors with a headless Base plugin tuple.
 For `schema.content.elements([...])`, the first descriptor constructs the
 default root child.
 
@@ -161,12 +161,12 @@ floor for stored documents without schema metadata; remove it when that data is
 no longer supported.
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { EditorKit, EditorMigrations, EditorSchema } from './editor';
 
 export function DocumentEditor({ persisted }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: persisted,
     migrations: EditorMigrations,
     plugins: EditorKit,
@@ -207,10 +207,10 @@ initial document.
 
 ```tsx
 import type { Value } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 function DocumentEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   return (
     <Plate editor={editor}>
@@ -231,7 +231,7 @@ client loader and explicit replacement patterns.
 You can add plugins to your editor by including them in the `plugins` array:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin, ListPlugin],
 });
 ```
@@ -245,8 +245,8 @@ also needs one exact recursive `Value` across the complete plugin graph.
 Export the runtime inputs from one source file:
 
 ```ts title="src/editor.ts"
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
-import { TablePlugin } from '@platejs/table/react';
+import { HeadingPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 import { property, schema as s, target } from 'platejs';
 
 export const EditorKit = [HeadingPlugin, TablePlugin] as const;
@@ -309,7 +309,7 @@ The generated module exports exact editor/value types, static schema handles,
 and a fingerprint. It does not own runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import {
   schema as generatedSchema,
@@ -324,7 +324,7 @@ export function insertDocumentContent(editor: Editor) {
 }
 
 export function DocumentEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: EditorKit,
     schema: EditorSchema,
     initialValue,
@@ -380,7 +380,7 @@ preserved through the same document and preparation pipeline.
 Set the maximum length of the editor:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   maxLength: 100,
 });
 ```
@@ -392,7 +392,7 @@ const editor = createPlateEditor({
 Set a custom id for the editor:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   id: 'my-custom-editor-id',
 });
 ```
@@ -426,7 +426,7 @@ to block and inline elements, never text nodes.
 ```ts
 import { ElementIdPlugin } from "platejs";
 
-const editor = usePlateEditor({
+const editor = useCreateEditor({
   plugins: [
     ElementIdPlugin.configure({
       initialState: {
@@ -453,7 +453,7 @@ the target in the application schema when only blocks need persisted identity:
 ```ts
 import { ElementIdPlugin, schema, target } from "platejs";
 
-const editor = usePlateEditor({
+const editor = useCreateEditor({
   plugins: [ElementIdPlugin],
   schema: {
     overrides: [
@@ -485,7 +485,7 @@ if (result.duplicates.length > 0) {
   throw new Error("Resolve duplicate element IDs before loading the document.");
 }
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
   initialValue: result.value,
 });
@@ -504,7 +504,7 @@ the plugin off.
 #### Configuration
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   navigationFeedback: {
     duration: 1200,
   },
@@ -519,7 +519,7 @@ const editor = createPlateEditor({
 #### Disabling Navigation Feedback
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   navigationFeedback: false,
 });
 ```
@@ -529,7 +529,7 @@ const editor = createPlateEditor({
 Control whether the editor should normalize its content on initialization:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   shouldNormalizeEditor: true,
 });
 ```
@@ -541,7 +541,7 @@ Note that normalization may take a few dozen milliseconds for large documents, s
 Configure the editor to automatically select a range:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   autoSelect: 'end', // or 'start', or true
 });
 ```
@@ -553,7 +553,7 @@ This is not the same as auto-focus: you can select text without focusing the edi
 Override default components for plugins:
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
   components: {
     paragraph: CustomParagraphComponent,
@@ -573,7 +573,7 @@ const AppLinkPlugin = LinkPlugin.configure({
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [AppLinkPlugin],
 });
 ```
@@ -615,21 +615,21 @@ const AppParagraphPlugin = ParagraphPlugin.configure({
   component: AppParagraphElement,
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [AppParagraphPlugin],
 });
 ```
 
 ## Typed Editor
 
-`createPlateEditor` derives the document value and plugin APIs from the installed
+`createEditor` derives the document value and plugin APIs from the installed
 plugin tuple. `initialValue` is checked against that schema-derived value.
 
 ### Plugins Type
 
 ```ts
 const AppKit = [TablePlugin, LinkPlugin] as const;
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: AppKit,
 });
 
@@ -641,17 +641,17 @@ editor.update((tx) => {
 
 ### Value Type
 
-Use `PlateEditor<typeof Kit>` when another module needs the editor type and
+Use `Editor<typeof Kit>` when another module needs the editor type and
 `ValueOf<MyEditor>` when a named value type improves readability. Do not repeat
 the schema as handwritten element interfaces.
 
 ```ts
 import type { ValueOf } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { Editor } from 'platejs/react';
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
-export type MyEditor = PlateEditor<typeof AppKit>;
+export type MyEditor = Editor<typeof AppKit>;
 export type MyValue = ValueOf<MyEditor>;
 
 const value: MyValue = [{
@@ -659,7 +659,7 @@ const value: MyValue = [{
   children: [{ text: 'Hello, Plate!' }],
 }];
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: AppKit,
   initialValue: value,
 });

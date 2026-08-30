@@ -3,9 +3,8 @@ import {
   parseMediaUrl,
   parseTwitterUrl,
   parseVideoUrl,
-} from '@platejs/media';
-import type { PliteElementProps } from 'platejs/static';
-import { PliteElement } from 'platejs/static';
+} from 'platejs/media';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 
 import { CaptionStatic, getMediaTextAlign } from './caption-static';

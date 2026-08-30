@@ -1,5 +1,9 @@
-import type { BasePluginInput, CreateBaseEditorOptions, Value } from 'platejs';
-import { createBaseEditor } from 'platejs';
+import {
+  type BasePluginInput,
+  type CreateEditorOptions,
+  type Value,
+  createEditor,
+} from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
@@ -8,7 +12,7 @@ export const createStaticEditor = <
 >(
   value: Value,
   options?: Omit<
-    CreateBaseEditorOptions<TPlugins>,
+    CreateEditorOptions<Value, readonly [], TPlugins>,
     'initialValue' | 'plugins'
   > & { plugins?: TPlugins }
 ) => {
@@ -16,7 +20,7 @@ export const createStaticEditor = <
   const plugins: readonly BasePluginInput[] =
     configuredPlugins ?? BaseEditorKit;
 
-  return createBaseEditor({
+  return createEditor({
     ...editorOptions,
     plugins,
     initialValue: value,

@@ -51,3 +51,36 @@ test('routes tooling slow contracts exclusively through the slow suite', (t) => 
   assert.equal(slowFiles.has(fastFixture), false);
   assert.equal(slowFiles.has(slowFixture), true);
 });
+
+test('routes consolidated editor tests only through their package tasks', (t) => {
+  const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'plate-test-suites-'));
+  const fixtures = [
+    'apps/plite/scripts/runner.test.mjs',
+    'benchmarks/editor/benchmarks/metric.test.ts',
+    'packages/platejs/src/editor.spec.ts',
+    'packages/plitejs/test/editor.test.ts',
+  ];
+
+  t.after(() => {
+    rmSync(fixtureRoot, { force: true, recursive: true });
+  });
+  for (const fixture of fixtures) {
+    const filename = path.join(fixtureRoot, fixture);
+
+    mkdirSync(path.dirname(filename), { recursive: true });
+    writeFileSync(filename, '');
+  }
+
+  const fastFiles = new Set(
+    globSync(TEST_FILE_PATTERNS, {
+      cwd: fixtureRoot,
+      ignore: TEST_FAST_IGNORE_PATTERNS,
+      onlyFiles: true,
+    })
+  );
+
+  assert.equal(fastFiles.has(fixtures[0]), true);
+  assert.equal(fastFiles.has(fixtures[1]), true);
+  assert.equal(fastFiles.has(fixtures[2]), false);
+  assert.equal(fastFiles.has(fixtures[3]), false);
+});

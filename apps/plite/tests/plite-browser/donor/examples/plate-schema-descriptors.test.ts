@@ -3,7 +3,7 @@ import {
   createPliteBrowserEditorHarness,
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test('compiles Plate element and mark descriptors into HTML parsing, rendering, and Markdown clipboard bindings', async ({
   page,

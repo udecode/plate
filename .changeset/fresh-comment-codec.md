@@ -1,5 +1,5 @@
 ---
-'@platejs/comment': patch
+'platejs': patch
 ---
 
 Define comment mark Markdown conversion on the comment plugin.

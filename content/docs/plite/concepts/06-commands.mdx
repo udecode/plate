@@ -31,7 +31,7 @@ the update. That is the boundary used by history, collaboration, and tests.
 When defining custom commands, pass the editor into a function and keep the writes grouped:
 
 ```ts
-import type { Editor } from "@platejs/plite";
+import type { Editor } from "plitejs";
 
 function insertParagraph(editor: Editor) {
   editor.update.nodes.insert({ type: "paragraph", children: [{ text: "" }] });
@@ -43,7 +43,7 @@ extensions, or inspected before publication. Its pure builder returns `false`
 or an immutable transaction spec.
 
 ```ts
-import { defineCommand } from "@platejs/plite";
+import { defineCommand } from "plitejs";
 
 type InsertTextInput = {
   text: string;
@@ -69,7 +69,7 @@ descriptor stays first so its identity and input type remain linked to the
 handler. Return `false` to let the next handler or descriptor default run:
 
 ```ts
-import { defineExtension, editorCommands } from "@platejs/plite";
+import { defineExtension, editorCommands } from "plitejs";
 
 const noEmptyText = defineExtension("no-empty-text", {
   commands: ({ handle }) => [
@@ -90,7 +90,7 @@ prefix. Extension configuration determines handler order.
 When writing your own commands, compose transaction methods inside one update:
 
 ```ts
-import { ElementApi, TextApi } from "@platejs/plite";
+import { ElementApi, TextApi } from "plitejs";
 
 editor.update((tx) => {
   tx.nodes.set(

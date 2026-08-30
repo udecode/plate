@@ -1,19 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 const useEditorPluginMock = mock();
 const usePluginStoreMock = mock();
-
-mock.module('@platejs/suggestion/react', () => ({
-  SuggestionPlugin: {
-    extend: mock(() => ({
-      configure: mock(() => ({ name: 'suggestion' })),
-    })),
-    name: 'suggestion',
-  },
-}));
 
 mock.module('./discussion', () => ({
   discussionPlugin: { name: 'discussion' },
@@ -22,7 +14,14 @@ mock.module('./discussion', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...PlateReact,
   PlateLeaf: ({ children }: any) => <span>{children}</span>,
+  SuggestionPlugin: {
+    extend: mock(() => ({
+      configure: mock(() => ({ name: 'suggestion' })),
+    })),
+    name: 'suggestion',
+  },
   useEditorPlugin: (...args: any[]) => useEditorPluginMock(...args),
   usePluginStore: (...args: any[]) => usePluginStoreMock(...args),
 }));

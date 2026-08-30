@@ -76,7 +76,7 @@ Add a manifest guard so `platejs` cannot regress back to `workspace:*` for inter
 
 ## Why this works
 
-`workspace:*` in `packages/plate/package.json` publishes exact internal pins. That is too brittle for an umbrella package that gets installed alongside direct `@platejs/*` packages.
+`workspace:*` in `packages/platejs/package.json` publishes exact internal pins. That is too brittle for an umbrella package that gets installed alongside direct `@platejs/*` packages.
 
 When direct packages moved to `52.3.10` but `platejs` stayed on `52.3.9`, Bun resolved an old `@platejs/utils` and then nested an old `@platejs/core` under it. That stale nested core triggered the prerender crash.
 
@@ -85,7 +85,7 @@ Publishing `platejs` with `workspace:^` makes the umbrella package compatible wi
 ## Prevention
 
 1. Do not use `workspace:*` for internal runtime dependencies in umbrella packages like `platejs`.
-2. Add a manifest check that fails if `packages/plate/package.json` regresses to exact internal workspace pins.
+2. Add a manifest check that fails if `packages/platejs/package.json` regresses to exact internal workspace pins.
 3. When template sync fails after release, inspect the installed package tree before touching template source:
 
 ```bash

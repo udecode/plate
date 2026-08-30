@@ -42,10 +42,10 @@ The fastest way to add common text substitutions is with `AutoformatKit`.
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { AutoformatKit } from '@/components/editor/autoformat';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...AutoformatKit,
@@ -68,26 +68,26 @@ import {
   BlockquoteRules,
   HeadingRules,
   HorizontalRuleRules,
-} from '@platejs/basic-nodes';
+} from 'platejs';
 import {
   BlockquotePlugin,
   HeadingPlugin,
   HorizontalRulePlugin,
-} from '@platejs/basic-nodes/react';
-import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { LinkRules } from '@platejs/link';
-import { LinkPlugin } from '@platejs/link/react';
+} from 'platejs/react';
+import { CodeBlockRules } from 'platejs';
+import { CodeBlockPlugin } from 'platejs/react';
+import { LinkRules } from 'platejs';
+import { LinkPlugin } from 'platejs/react';
 import {
   BulletedListRules,
   OrderedListRules,
   TaskListRules,
-} from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
-import { MathRules } from '@platejs/math';
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+} from 'platejs';
+import { ListPlugin } from 'platejs/react';
+import { MathRules } from 'platejs/math';
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     HeadingPlugin.configure({
       inputRules: [HeadingRules.markdown()],
@@ -147,7 +147,7 @@ const ShortcutsPlugin = defineBasePlugin('shortcuts', {
   ],
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ShortcutsPlugin],
 });
 ```
@@ -157,7 +157,7 @@ const editor = createPlateEditor({
 Rule names are the override unit:
 
 ```tsx
-import { ItalicRules } from '@platejs/basic-nodes';
+import { ItalicRules } from 'platejs';
 
 ItalicPlugin.configure({
   inputRules: [ItalicRules.markdown({ variant: '_' })],

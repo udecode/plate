@@ -1,4 +1,4 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
@@ -48,9 +48,7 @@ test('comment: first composer stays anchored to the selected text', async ({
     await commentButton.click();
 
     const popover = page.locator('.cn-popover-content').filter({
-      has: page.locator(
-        '[data-plite-editor="true"][contenteditable="true"]'
-      ),
+      has: page.locator('[data-plite-editor="true"][contenteditable="true"]'),
     });
     const replyInput = popover
       .locator('[data-plite-editor="true"][contenteditable="true"]')
@@ -161,9 +159,7 @@ test('comment: closing an unsubmitted composer cleans only its draft mark', asyn
     await commentButton.click();
 
     const popover = page.locator('.cn-popover-content').filter({
-      has: page.locator(
-        '[data-plite-editor="true"][contenteditable="true"]'
-      ),
+      has: page.locator('[data-plite-editor="true"][contenteditable="true"]'),
     });
     const selectedCommentMarks = page
       .locator('.plite-comment')
@@ -268,9 +264,7 @@ test('comment: closing an unsubmitted composer cleans only its draft mark', asyn
     await overlappingCommentButton.click();
 
     const overlappingPopover = page.locator('.cn-popover-content').filter({
-      has: page.locator(
-        '[data-plite-editor="true"][contenteditable="true"]'
-      ),
+      has: page.locator('[data-plite-editor="true"][contenteditable="true"]'),
     });
 
     await expect(overlappingPopover).toBeVisible();
@@ -352,9 +346,7 @@ test('comment: resolving a submitted comment preserves floating toolbar recovery
     await commentButton.click();
 
     const popover = page.locator('.cn-popover-content').filter({
-      has: page.locator(
-        '[data-plite-editor="true"][contenteditable="true"]'
-      ),
+      has: page.locator('[data-plite-editor="true"][contenteditable="true"]'),
     });
     const replyInput = popover
       .locator('[data-plite-editor="true"][contenteditable="true"]')

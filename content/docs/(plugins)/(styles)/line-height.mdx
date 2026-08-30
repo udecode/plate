@@ -36,11 +36,11 @@ Use `LineHeightKit` for the Plate UI setup. It targets paragraphs and all headin
 <ComponentSource name="line-height" />
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
 import { LineHeightKit } from "@/components/editor/line-height";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...LineHeightKit],
 });
 ```
@@ -66,7 +66,7 @@ export function LineHeightControls() {
 ### Install Package
 
 ```bash
-npm install @platejs/basic-styles
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add the Plugin
@@ -74,11 +74,11 @@ npm install @platejs/basic-styles
 Configure target block types and the values your UI should expose.
 
 ```tsx
-import { LineHeightPlugin } from "@platejs/basic-styles/react";
+import { LineHeightPlugin } from "platejs/react";
 import { PLUGINS } from "platejs";
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     LineHeightPlugin.configure({
       targetPlugins: [
@@ -111,9 +111,9 @@ editor.update.lineHeight.set(1.5, { at: [] });
 
 | Surface                        | Owner                         | What It Does                                                                                       |
 | ------------------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| `BaseLineHeightPlugin`         | `@platejs/basic-styles`       | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
-| `LineHeightPlugin`             | `@platejs/basic-styles/react` | React wrapper around `BaseLineHeightPlugin`.                                                       |
-| `editor.update.lineHeight.set` | `@platejs/basic-styles`       | Bound update method exposed by the plugin.                                                         |
+| `BaseLineHeightPlugin`         | `platejs`       | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
+| `LineHeightPlugin`             | `platejs/react` | React wrapper around `BaseLineHeightPlugin`.                                                       |
+| `editor.update.lineHeight.set` | `platejs`       | Bound update method exposed by the plugin.                                                         |
 | `BaseLineHeightKit`            | Registry kit                  | Static/headless setup for paragraphs and headings.                                                 |
 | `LineHeightKit`                | Registry kit                  | React setup plus toolbar dependency.                                                               |
 | `LineHeightToolbarButton`      | Registry UI                   | Dropdown that writes values through `lineHeight.set`.                                              |
@@ -150,10 +150,10 @@ value on that block.
 
 | API                                             | Package                       | Use                                            |
 | ----------------------------------------------- | ----------------------------- | ---------------------------------------------- |
-| `LineHeightPlugin`                              | `@platejs/basic-styles/react` | React line-height plugin.                      |
-| `BaseLineHeightPlugin`                          | `@platejs/basic-styles`       | Headless line-height plugin.                   |
-| `editor.update.lineHeight.set(value, options?)` | `@platejs/basic-styles`       | Sets or clears line height on matching blocks. |
-| `tx.lineHeight.set(value, options?)`            | `@platejs/basic-styles`       | Transaction form for a larger atomic update.   |
+| `LineHeightPlugin`                              | `platejs/react` | React line-height plugin.                      |
+| `BaseLineHeightPlugin`                          | `platejs`       | Headless line-height plugin.                   |
+| `editor.update.lineHeight.set(value, options?)` | `platejs`       | Sets or clears line height on matching blocks. |
+| `tx.lineHeight.set(value, options?)`            | `platejs`       | Transaction form for a larger atomic update.   |
 
 ## Options
 

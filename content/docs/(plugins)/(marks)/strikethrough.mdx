@@ -38,11 +38,11 @@ Strikethrough applies the `strikethrough` leaf mark to selected text. The packag
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -53,7 +53,7 @@ Pass `StrikethroughPlugin` to `MarkToolbarButton` so the button uses the configu
 
 ```tsx
 import { StrikethroughIcon } from 'lucide-react';
-import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { StrikethroughPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -76,16 +76,16 @@ export function StrikethroughToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `StrikethroughPlugin` directly when you want the default `<s>` render.
 
 ```tsx
-import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { StrikethroughPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [StrikethroughPlugin],
 });
 ```
@@ -93,8 +93,8 @@ export const editor = createPlateEditor({
 Configure the input rule and shortcut when you want the same behavior as the kit.
 
 ```tsx
-import { StrikethroughRules } from '@platejs/basic-nodes';
-import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
+import { StrikethroughRules } from 'platejs';
+import { StrikethroughPlugin } from 'platejs/react';
 
 export const strikethroughPlugin = StrikethroughPlugin.configure({
   inputRules: [StrikethroughRules.markdown()],
@@ -106,9 +106,9 @@ export const strikethroughPlugin = StrikethroughPlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseStrikethroughPlugin` | `@platejs/basic-nodes` | Headless strikethrough mark, HTML parser, render tag, selection rule, and `toggle` transform. |
-| `StrikethroughPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless strikethrough mark. |
-| `StrikethroughRules.markdown` | `@platejs/basic-nodes` | Optional `~~` mark input rule factory. |
+| `BaseStrikethroughPlugin` | `platejs` | Headless strikethrough mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `StrikethroughPlugin` | `platejs/react` | React wrapper for the headless strikethrough mark. |
+| `StrikethroughRules.markdown` | `platejs` | Optional `~~` mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `StrikethroughPlugin`, the input rule, and `mod+shift+x`. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -133,7 +133,7 @@ The package owns the mark. The registry owns shortcut configuration and toolbar 
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseStrikethroughPlugin` | `@platejs/basic-nodes` | Headless strikethrough plugin. |
-| `StrikethroughPlugin` | `@platejs/basic-nodes/react` | React strikethrough plugin. |
-| `StrikethroughRules.markdown()` | `@platejs/basic-nodes` | Creates the `~~` mark input rule. |
-| `tx.strikethrough.toggle()` | `@platejs/basic-nodes` | Toggles the strikethrough mark at the selection. |
+| `BaseStrikethroughPlugin` | `platejs` | Headless strikethrough plugin. |
+| `StrikethroughPlugin` | `platejs/react` | React strikethrough plugin. |
+| `StrikethroughRules.markdown()` | `platejs` | Creates the `~~` mark input rule. |
+| `tx.strikethrough.toggle()` | `platejs` | Toggles the strikethrough mark at the selection. |

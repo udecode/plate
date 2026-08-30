@@ -92,7 +92,7 @@ needs one full plan instead of another roadmap placeholder.
   - [math-kit.tsx](apps/www/src/registry/components/editor/plugins/math-kit.tsx)
 - explicit insert maps:
   - [transforms.ts](apps/www/src/registry/components/editor/transforms.ts)
-  - [transforms-classic.ts](apps/www/src/registry/components/editor/transforms-classic.ts)
+  - [transforms.ts](apps/www/src/registry/components/editor/transforms.ts)
 - UI docs/demo:
   - [equation.mdx](<content/(plugins)/(elements)/equation.mdx>)
   - [equation-toolbar-button.tsx](apps/www/src/registry/ui/equation-toolbar-button.tsx)

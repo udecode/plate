@@ -1,9 +1,7 @@
 'use client';
 
-import { IndentPlugin } from '@platejs/indent/react';
-import { ListPlugin } from '@platejs/list/react';
 import { NormalizeTypesPlugin } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { useLocale } from '@/hooks/useLocale';
@@ -23,19 +21,12 @@ export default function PlaygroundDemo({
   const locale = useLocale();
   const value = React.useMemo(() => getI18nValues(locale).playground, [locale]);
 
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: [
         ...EditorKit,
         ...CodeDrawingKit,
         ...ExcalidrawKit,
-        ...(id === 'listClassic'
-          ? [
-              IndentPlugin.configure({ enabled: false }),
-              ListPlugin.configure({ enabled: false }),
-            ]
-          : []),
-
         NormalizeTypesPlugin.configure({
           enabled: id === 'forced-layout',
           initialState: {

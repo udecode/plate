@@ -1,7 +1,10 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
+import { jsxt } from '@platejs/test';
+import {
+  BaseParagraphPlugin,
+  createEditor as createProductEditor,
+} from 'platejs';
 
 import { AutoformatKit } from '@/registry/components/editor/autoformat';
 import { LinkKit } from '@/registry/components/editor/link';
@@ -9,7 +12,7 @@ import { LinkKit } from '@/registry/components/editor/link';
 jsxt;
 
 const createPlainEditor = (text: string, offset = text.length) =>
-  createBaseEditor({
+  createProductEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
     selection: {
       kind: 'text',
@@ -19,7 +22,7 @@ const createPlainEditor = (text: string, offset = text.length) =>
     initialValue: [{ children: [{ text }], type: 'paragraph' }],
   } as any);
 const createEditor = (value: any) =>
-  createBaseEditor({
+  createProductEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
     initialValue: value,
   } as any);

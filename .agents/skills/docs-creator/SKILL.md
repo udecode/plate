@@ -263,6 +263,9 @@ Before finishing a docs change:
   source can be affected.
 - Every named API, option, transform, and component exists in the source.
 - Every import path matches the current repo/package layout.
+- Plate application examples import from the symbol's canonical `platejs`
+  root, React root, or feature subpath, never from `plitejs`; raw Plite
+  documentation remains the explicit exception.
 - Every ownership claim matches the code.
 - Every link target or route is real and not about to be removed.
 - Every `<ComponentPreview>` name points at a demo that exists.

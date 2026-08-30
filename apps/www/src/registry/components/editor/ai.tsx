@@ -1,8 +1,8 @@
 'use client';
 
-import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { ElementApi, PathApi, PLUGINS } from 'platejs';
+import { AIChatPlugin, AIPlugin, useChatChunk } from 'platejs/ai/react';
 import {
   PlateElement,
   PlateText,
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { AILoadingBar, AIMenu } from '@/registry/components/editor/ai-menu';
 
 import { CursorOverlayKit } from './cursor-overlay';
-import { AIChatTransportPlugin, useChat } from './use-chat';
+import { AIChatTransportPlugin, useEditorChat } from './use-chat';
 
 export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
@@ -55,7 +55,7 @@ export const aiChatPlugin = AIChatTransportPlugin.extend({
   },
   shortcuts: { show: { keys: 'mod+j' } },
   useHooks: ({ api, editor, read, store }) => {
-    useChat();
+    useEditorChat();
 
     const mode = usePluginStore(AIChatPlugin, 'mode');
     const toolName = usePluginStore(AIChatPlugin, 'toolName');

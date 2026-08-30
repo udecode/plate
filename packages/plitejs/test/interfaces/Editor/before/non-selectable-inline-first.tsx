@@ -1,0 +1,20 @@
+import { jsx } from '../../..';
+/** @jsx jsx */
+import { before as editorBefore } from '../../../../src/internal';
+
+jsx;
+
+// This is invalid due to the lack of a text node before the inline, but this
+// case can arise prior to normalization so it needs to be handled anyway.
+export const input = (
+  <editor>
+    <block>
+      <inline nonSelectable>two</inline>three
+    </block>
+  </editor>
+);
+
+export const test = (editor) =>
+  editorBefore(editor, { path: [0, 1], offset: 0 });
+
+export const output = undefined;

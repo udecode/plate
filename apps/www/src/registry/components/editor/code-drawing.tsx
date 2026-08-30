@@ -1,5 +1,6 @@
 'use client';
 
+import { DownloadIcon, Trash2 } from 'lucide-react';
 import {
   type CodeDrawingLanguage,
   type CodeDrawingView,
@@ -10,9 +11,8 @@ import {
   CODE_DRAWING_VIEWS,
   downloadImage,
   renderCodeDrawing,
-} from '@platejs/code-drawing';
-import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
-import { DownloadIcon, Trash2 } from 'lucide-react';
+} from 'platejs/code-drawing';
+import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
 import {
   type PlateElementProps,
   PlateElement,

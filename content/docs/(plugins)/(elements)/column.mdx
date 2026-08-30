@@ -35,10 +35,10 @@ The fastest way to add column functionality is with the `ColumnKit`, which inclu
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { ColumnKit } from '@/components/editor/column';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...ColumnKit,
@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/layout
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
@@ -63,10 +63,10 @@ npm install @platejs/layout
 Add `ColumnPlugin` to the editor. It installs `ColumnItemPlugin` as the required structural dependency.
 
 ```tsx
-import { ColumnPlugin } from '@platejs/layout/react';
-import { createPlateEditor } from 'platejs/react';
+import { ColumnPlugin } from 'platejs/layout/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ColumnPlugin,
@@ -79,11 +79,11 @@ const editor = createPlateEditor({
 Configure the group and add a complete `ColumnItemPlugin` descriptor when you need to replace the dependency's render component.
 
 ```tsx
-import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
-import { createPlateEditor } from 'platejs/react';
+import { ColumnPlugin, ColumnItemPlugin } from 'platejs/layout/react';
+import { createEditor } from 'platejs/react';
 import { ColumnGroupElement, ColumnElement } from '@/components/editor/column';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ColumnPlugin.configure({ component: ColumnGroupElement }),

@@ -1,7 +1,7 @@
 import {
   createPliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const CASE_ID = 'block-void:native-caret-not-painted-below-void';
@@ -124,7 +124,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
 
     const calloutHeading = editor
       .locator('h3')
-      .filter({ hasText: 'Callouts and Toggles' })
+      .filter({ hasText: 'Callouts and Details' })
       .first();
     await clickTextEnd(
       page,
@@ -132,9 +132,9 @@ test(CASE_ID, async ({ page }, testInfo) => {
     );
     await expect(editor).toBeFocused();
     await page.keyboard.type('!');
-    await expect(calloutHeading).toHaveText('Callouts and Toggles!');
+    await expect(calloutHeading).toHaveText('Callouts and Details!');
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(calloutHeading).toHaveText('Callouts and Toggles');
+    await expect(calloutHeading).toHaveText('Callouts and Details');
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

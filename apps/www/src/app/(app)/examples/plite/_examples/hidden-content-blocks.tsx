@@ -1,22 +1,22 @@
+import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import {
   defineExtension,
   NodeApi,
   schema,
   type Element as PliteElement,
-} from '@platejs/plite';
+} from 'plitejs';
 import type {
   DOMCoverageCopyPolicy,
   DOMCoverageSelectionPolicy,
-} from '@platejs/plite-dom';
+} from 'plitejs/dom';
 import {
   Editable,
   type EditableDOMStrategyMetrics,
   EditableElement,
   type RenderElementProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import {
@@ -142,7 +142,7 @@ const PolicyControls = <T extends string>({
 );
 
 const HiddenContentBlocksExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [hiddenContentBlocks()],
     initialValue: [
       {

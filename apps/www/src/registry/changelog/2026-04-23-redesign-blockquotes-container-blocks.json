@@ -112,14 +112,6 @@
       "diagnostics": []
     },
     {
-      "name": "insert-toolbar-classic-button",
-      "files": [
-        "apps/www/src/registry/components/editor/insert-toolbar-classic-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "slash-node",
       "files": [],
       "definitionFiles": [],
@@ -134,14 +126,6 @@
     {
       "name": "transforms",
       "files": ["apps/www/src/registry/components/editor/transforms.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
       "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
       "diagnostics": []
     },
@@ -235,11 +219,7 @@
       "summary": "Add a Footnote insert entry wired to `action_footnote`.",
       "details": [],
       "migrationNotes": [],
-      "targets": [
-        "insert-toolbar-button",
-        "insert-toolbar-classic-button",
-        "slash-node"
-      ],
+      "targets": ["insert-toolbar-button", "slash-node"],
       "source": {
         "line": 58,
         "row": 5,
@@ -258,7 +238,7 @@
       "migrationNotes": [
         "Map `action_footnote` to `insertFootnote(editor, { select: true })`."
       ],
-      "targets": ["transforms", "transforms-classic"],
+      "targets": ["transforms"],
       "source": {
         "line": 60,
         "row": 6,

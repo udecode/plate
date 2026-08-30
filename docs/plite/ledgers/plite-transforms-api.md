@@ -33,13 +33,13 @@ maintenance entrypoint.
 
 ## Proof owners
 
-- `packages/plite/test/transaction-contract.ts`
-- `packages/plite/test/command-spec.test.ts`
-- `packages/plite/test/transforms-contract.ts`
-- `packages/plite/test/clipboard-contract.ts`
-- `packages/plite/test/slice-fit-contract.test.ts`
-- `packages/plite/test/normalization-contract.ts`
-- `packages/plite/test/runtime-contracts.test.ts`
+- `packages/plitejs/test/transaction-contract.ts`
+- `packages/plitejs/test/command-spec.test.ts`
+- `packages/plitejs/test/transforms-contract.ts`
+- `packages/plitejs/test/clipboard-contract.ts`
+- `packages/plitejs/test/slice-fit-contract.test.ts`
+- `packages/plitejs/test/normalization-contract.ts`
+- `packages/plitejs/test/runtime-contracts.test.ts`
 
 The public surface contains no operation middleware, `EditorIntent`,
 `applyIntent`, or transform-specific fragment choreography.

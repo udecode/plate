@@ -34,10 +34,10 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { DndKit } from '@/components/editor/dnd';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...DndKit,
@@ -54,16 +54,16 @@ const editor = createPlateEditor({
 ### 安装依赖
 
 ```bash
-npm install @platejs/dnd react-dnd react-dnd-html5-backend
+npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
 ```
 
 ### 添加插件
 
 ```tsx
-import { DndPlugin } from '@platejs/dnd';
-import { createPlateEditor } from 'platejs/react';
+import { DndPlugin } from 'platejs/dnd/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     DndPlugin,
@@ -78,7 +78,7 @@ const editor = createPlateEditor({
 ```tsx
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndPlugin } from '@platejs/dnd';
+import { DndPlugin } from 'platejs/dnd/react';
 
 DndPlugin.configure({
   render: {
@@ -97,8 +97,8 @@ DndPlugin.configure({
 添加自动滚动和文件拖放处理：
 
 ```tsx
-import { DndPlugin } from '@platejs/dnd';
-import { PlaceholderPlugin } from '@platejs/media/react';
+import { DndPlugin } from 'platejs/dnd/react';
+import { PlaceholderPlugin } from 'platejs/media/react';
 
 DndPlugin.configure({
   initialState: {
@@ -147,7 +147,7 @@ DndPlugin.configure({
       <APISubListItem parent="onDropFiles" name="dragItem" type="FileDragItemNode">
         包含拖放文件的对象
       </APISubListItem>
-      <APISubListItem parent="onDropFiles" name="editor" type="PlateEditor">
+      <APISubListItem parent="onDropFiles" name="editor" type="Editor">
         编辑器实例
       </APISubListItem>
       <APISubListItem parent="onDropFiles" name="target" type="Path">

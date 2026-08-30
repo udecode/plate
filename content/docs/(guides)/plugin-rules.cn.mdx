@@ -196,7 +196,7 @@ CalloutPlugin.configure({
 **标题拆分时重置：**
 
 ```tsx
-import { HeadingPlugin } from '@platejs/heading/react';
+import { HeadingPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -232,7 +232,7 @@ const plugins = [
 **带换行和智能退出的 Callout：**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...其他插件
@@ -266,7 +266,7 @@ const plugins = [
 **带自定义空块处理的代码块：**
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -304,7 +304,7 @@ const plugins = [
 ### 配置
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 HeadingPlugin.configure({
   rules: {
@@ -335,7 +335,7 @@ HeadingPlugin.configure({
 **在起始处重置 Callout：**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...其他插件
@@ -364,7 +364,7 @@ const plugins = [
 **带起始重置的列表项：**
 
 ```tsx
-import { ListPlugin } from '@platejs/list/react';
+import { ListPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -444,7 +444,7 @@ const plugins = [
 **禁用移除的 Callout：**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...其他插件
@@ -476,7 +476,7 @@ const plugins = [
 **表格单元格在合并时保留结构：**
 
 ```tsx
-import { TablePlugin } from '@platejs/table/react';
+import { TablePlugin } from 'platejs/table/react';
 
 const plugins = [
   // ...其他插件
@@ -546,7 +546,7 @@ LinkPlugin.configure({
 **移除空链接节点：**
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -584,7 +584,7 @@ const plugins = [
 **带自定义空块检测的代码块：**
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -626,7 +626,7 @@ editor.update((tx) => tx.codeBlock.unwrap());
 您可以组合不同的规则来实现全面的块行为：
 
 ```tsx
-import { HeadingPlugin } from '@platejs/heading/react';
+import { HeadingPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -755,7 +755,7 @@ BoldPlugin.configure({
 选择亲和性由光标移动方向决定。当光标移动到边界时，基于其来源位置保持亲和性。
 
 ```tsx
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件
@@ -784,7 +784,7 @@ const plugins = [
 输入会扩展粗体格式，这在 `default` 亲和性下是不可能的。
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 const plugins = [
   // ...其他插件

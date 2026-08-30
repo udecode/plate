@@ -2203,8 +2203,6 @@ None (CI release issue)
 ## @udecode/plate-utils@29.0.0
 
 - [#2829](https://github.com/udecode/plate/pull/2829) by [@zbeyens](https://github.com/zbeyens) –
-  - Moved `withProps` to `@udecode/cn`
-  - Moved `PortalBody`, `Text`, `Box`, `createPrimitiveComponent`, `createSlotComponent`, `withProviders` to `@udecode/react-utils`
   - Removed `getRootProps` (unused)
 
 # 28.0.0
@@ -2507,7 +2505,6 @@ Migration:
 
 - [`0077402`](https://github.com/udecode/plate/commit/00774029236d37737abdadf49b074e613e290792) by [@zbeyens](https://github.com/zbeyens) –
   - This package has been split into multiple packages for separation of concerns and decoupled versioning:
-    - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
     - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
     - `@udecode/slate-react` is a collection of `plite-react` experimental features and bug fixes that that may be moved into `plite-react` one day. It's essentially composed of the generic types. Can be used by vanilla `plite-react` consumers without plate.
     - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.

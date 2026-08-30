@@ -53,7 +53,7 @@ tests, and type tests. It records these exact exclusions rather than silently
 dropping them:
 
 - `packages/plite*/**`: parallel Plite substrate lane;
-- `packages/list-classic/**`: maintenance-only architecture excluded by
+- `packages/platejs/src/features/list/**`: maintenance-only architecture excluded by
   `VISION.md`;
 - `packages/plate-scripts/**`: repository tooling, not an editor surface;
 - `packages/udecode/**`: generic utility workspaces, not Plate owners;
@@ -308,13 +308,13 @@ content-expression engine is material only if donor laws show slice-fitting or
 external-value failures beyond the five utility correction entries. Table
 geometry and list derivation must remain domain planners either way.
 
-The maintenance-only classic-list package is excluded from the target package
+The maintenance-only legacy-list-model package is excluded from the target package
 denominator, but it is still relevant counter-evidence. Its list-item rule
 allows the content element, nested list types, and configured children in any
-order (`packages/list-classic/src/lib/BaseListPlugin.ts:68-103`), while the
+order (`packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:68-103`), while the
 implementation has ten direct index/path assumptions that content is child
 zero and a nested list is child one
-(`packages/list-classic/src/lib/BaseListPlugin.ts:497,504,733,739,1475,2364,2377,2537,2541,2546`).
+(`packages/platejs/src/features/list/src/lib/BaseListPlugin.ts:497,504,733,739,1475,2364,2377,2537,2541,2546`).
 An ordered grammar would make those assumptions valid and make imported slices
 fit the structure. It would not delete the list algorithms themselves, and it
 does not justify retaining a package that `VISION.md` already classifies as
@@ -366,7 +366,7 @@ not already cover.
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Immutable configuration vs editor-local session state | **Accept, P0.** One value cannot safely be both compiler input and mutable state.                                                                                           | 169 production `setOption`/`setOptions` calls in 42 files; four mixed context/portal methods in `PluginBaseContext`; four exported React access hooks; the store and hook owners total 339 lines.                                        | Delete the mixed `getOption`, `getOptions`, `setOption`, and `setOptions` contract; delete the four mixed hook names (`usePluginOption`, `useEditorPluginOption`, `usePluginOptions`, `useEditorPluginOptions`); replace the mixed `PluginOptionsStore` owner. Retain only reusable snapshot/store mechanics under explicit config or session owners.                   |
 | Global plugin/extension priority                      | **Accept, P0. Hard-cut.** A number that changes unrelated compilers is invalid configuration.                                                                               | Two conceptual public scalars repeated across six type declarations; ten Plate consumption sites plus one Plite extension sort; five authored/default magic assignments (`100`, `10_000`, code-block `10`, list `100`, override `-100`). | Delete both global scalars, all eleven cross-lane consumption sites, the five assignments, and priority from plugin graph signatures. Keep capability-local codec, HTML, shortcut, input-rule, and override precedence.                                                                                                                                                 |
-| Ordered content grammar                               | **Defer as a ranked Plate change; accept only with donor fit/validation evidence.** Plate proves a real expressiveness gap, but not enough active deletion value by itself. | Five active correction entries in four utility owners; one hardcoded primary-root grammar; ten unsafe positional assumptions in excluded classic-list.                                                                                   | No immediate hard deletion. If accepted, the maximum first adoption is the root-cardinality part of two single-block/single-line corrections plus static cases of trailing-block and normalize-types. Their merge, newline, matcher, custom-insert, and error policy must remain. Classic-list algorithms remain and the package stays on its independent removal path. |
+| Ordered content grammar                               | **Defer as a ranked Plate change; accept only with donor fit/validation evidence.** Plate proves a real expressiveness gap, but not enough active deletion value by itself. | Five active correction entries in four utility owners; one hardcoded primary-root grammar; ten unsafe positional assumptions in excluded legacy-list-model.                                                                                   | No immediate hard deletion. If accepted, the maximum first adoption is the root-cardinality part of two single-block/single-line corrections plus static cases of trailing-block and normalize-types. Their merge, newline, matcher, custom-insert, and error policy must remain. legacy-list-model algorithms remain and the package stays on its independent removal path. |
 | Schema-owned mutually exclusive mark groups           | **Accept, P1.** This is document validity, not toolbar policy.                                                                                                              | Twelve mark-clear-specific occurrences in six files: one public option, core toggle helper/execution, command forwarding, two feature declarations, and one generic toolbar hook.                                                        | Delete all twelve occurrences and `EditorMarkToggleOptions.clear`; the two mark plugins stop naming each other and the toolbar stops carrying schema knowledge.                                                                                                                                                                                                         |
 | Generic query middleware                              | **Accept, P1, subject only to the external-editor extension inventory.** Five registrations do not justify intercepting nearly every read.                                  | 43 overridable methods, 73 wrapper calls, four exported middleware types, one 216-line execution owner, and five registrations in four Plate files.                                                                                      | Delete the generic map/context/result/args types, registry field and registration path, depth tracking, generator wrapper, 73 wrappers, and all five registrations after adopting four explicit policy owners.                                                                                                                                                          |
 
@@ -761,7 +761,7 @@ const editor = createPlateEditor({
   plugins,
 });
 
-const ClassicListItemPlugin = createBasePlugin({
+const LegacyListModelItemPlugin = createBasePlugin({
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.sequence([
@@ -805,7 +805,7 @@ Adoption/proof:
 Hard gate: if Wordgard/Lexical/ProseMirror tests do not expose material
 fit/validation failures beyond the five current correction entries, keep this
 deferred. Current table/list/layout corrections do not justify it, and
-classic-list is not a target-architecture retention argument.
+legacy-list-model is not a target-architecture retention argument.
 
 ### PL-C6 — publish the two generic host contracts currently used by features
 

@@ -1,23 +1,23 @@
-import { defineExtension } from '@platejs/plite';
-import { clipboardHandler } from '@platejs/plite-dom';
+import imageExtensions from 'image-extensions';
+import isUrl from 'is-url';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
+import { defineExtension } from 'plitejs';
+import { clipboardHandler } from 'plitejs/dom';
 import {
   Editable,
   type RenderElementProps,
   type RenderVoidProps,
   Plite,
-  useEditor,
+  useEditorContext,
   useEditorFocused,
   useElementSelected,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
-import imageExtensions from 'image-extensions';
-import isUrl from 'is-url';
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
 import { cn } from '@/utils/cn';
 
+import { failInvariant } from '../../../../../lib/failInvariant';
 import { Button, Icon, Toolbar } from './components';
 import type {
   CustomEditor,
@@ -133,7 +133,7 @@ const ImagesExample = () => {
 };
 
 const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [image()],
     initialValue: createInitialValue(exampleCase),
   });
@@ -226,7 +226,7 @@ const Paragraph = ({
 }: RenderElementProps<ParagraphElement>) => <p {...attributes}>{children}</p>;
 
 const Image = ({ element }: RenderVoidProps<ImageElement>) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'collapsed' });
 
@@ -269,7 +269,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
 };
 
 const InsertImageButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   return (
     <Button
       onClick={() => {

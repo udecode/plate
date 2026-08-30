@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-28-consolidate-platejs-dependencies",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-28-consolidate-platejs-dependencies.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use platejs for registry editor dependencies",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-28-inline-combobox-platejs-package-registry-editor-df18143f",
+      "kind": "wiring",
+      "summary": "Use `platejs` for registry editor dependencies.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox", "link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-28",
+          "entry": "2026-08-28-consolidate-platejs-dependencies",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

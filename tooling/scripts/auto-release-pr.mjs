@@ -5,13 +5,16 @@ const checkboxText = 'Auto release';
 const legacyBlockPattern =
   /<!-- plate:auto-release:start -->[\s\S]*?<!-- plate:auto-release:end -->\n*/m;
 const blockPattern = new RegExp(
-  `(?:${escapeRegExp(AUTO_RELEASE_START)}[\\s\\S]*?${escapeRegExp(AUTO_RELEASE_END)}|${legacyBlockPattern.source})\\n*`,
+  `(?:${escapeRegExp(AUTO_RELEASE_START)}[\\s\\S]*?${escapeRegExp(
+    AUTO_RELEASE_END
+  )}|${legacyBlockPattern.source})\\n*`,
   'm'
 );
 const checkedAutoReleasePattern =
   /-\s*\[[xX]\]\s*(?:Auto release|Auto-merge the Version Packages PR after this PR lands\.)/;
 const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
-const changesetEntryPattern = /^"[^"]+"\s*:\s*(major|minor|patch|none)\s*$/;
+const changesetEntryPattern =
+  /^(?:"[^"]+"|'[^']+')\s*:\s*(major|minor|patch|none)\s*$/;
 const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
 const changesetFilenamePattern = /^[a-z][a-z0-9-]*\.md$/;
 const lineBreakPattern = /\r?\n/;
@@ -148,7 +151,9 @@ function validateChangesetFile(file) {
 
     if (!changesetEntryPattern.test(entry)) {
       errors.push(
-        `${filename} has invalid entry ${JSON.stringify(entry)}. Expected '"package-name": patch|minor|major|none'.`
+        `${filename} has invalid entry ${JSON.stringify(
+          entry
+        )}. Expected a quoted package name and patch|minor|major|none.`
       );
     }
   }

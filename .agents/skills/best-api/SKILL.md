@@ -84,8 +84,14 @@ If the normal path needs explanation before it reads naturally, the API is not
 done.
 
 Do not review a call expression in isolation. Resolve where every public noun is
-owned and imported from: runtime/core, feature package, registry, or app. A
+owned and imported from: root, feature entrypoint, registry, or app. A
 short call site with the wrong owner is still a bad API.
+
+When a reusable primitive and a complete composition collide on the same noun,
+keep the primitive's established semantic name and name the composition after
+its higher owner. Do not rename the primitive to `*Content`, `*Surface`, or
+another implementation-role noun merely to preserve a vague aggregate name.
+Delete caller aliases by fixing the colliding owner.
 
 ### Maximum-Value Hard-Cut Gate
 
@@ -127,6 +133,30 @@ may expose only code backed by its required dependencies. Code requiring an
 optional framework or runtime peer belongs behind an explicit subpath whose
 packed JavaScript and declarations are proved without unrelated peers. Do not
 use package-wide optional metadata to excuse a root or sibling subpath leak.
+Do not add a vague `basic` subpath to avoid deciding root ownership. A facade
+root may export individual, broadly expected standard editor capabilities, but
+application source owns their preset membership and order. Source size is not
+ownership evidence: an independent product workflow gets its own feature
+subpath even when its first implementation is small.
+
+A public package needs an independent current user job, not merely shared
+implementation. Framework-wide headless contracts belong in the framework
+facade root, framework-wide React contracts belong in its React subpath, and
+one-owner helpers stay with that package or copied registry item. Do not
+publish generic `utils`, `react-utils`, class-name, or wrapper packages merely
+to avoid colocation or give internal helpers separate versions. Optional peers
+can isolate a justified package entrypoint; they cannot create a package job.
+Test infrastructure may earn one public package when testing is its independent
+user job. Keep that package's root headless and Node-safe, put framework and
+runner integrations behind explicit subpaths, and do not publish one npm
+package per environment.
+
+A framework facade over a lower distribution has one executable exception set,
+not a hand-maintained copy of the lower API. Every non-exception export must be
+present by runtime identity; every replacement or omission must be deliberate
+and tested from packed artifacts. Only the facade owner may import the lower
+distribution. Downstream framework packages and applications consume the
+facade, so they cannot accidentally depend on bypassed names or versions.
 
 ### 2. Reality check
 

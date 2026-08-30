@@ -7,12 +7,12 @@ description: 学习如何配置和自定义Plate编辑器。
 
 ## 基础编辑器配置
 
-创建基础Plate编辑器可以使用`createPlateEditor`函数，或在React组件中使用`usePlateEditor`：
+创建基础Plate编辑器可以使用`createEditor`函数，或在React组件中使用`useCreateEditor`：
 
 ```ts
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
 });
 ```
@@ -22,7 +22,7 @@ const editor = createPlateEditor({
 设置编辑器的初始内容：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
@@ -38,7 +38,7 @@ const editor = createPlateEditor({
 也可以使用HTML字符串和关联插件初始化编辑器：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
     editor.api.html.deserialize({
@@ -55,7 +55,7 @@ Plate 根据已安装插件编译文档 schema。普通编辑器省略 `schema` 
 `editor.read.schema.identity()` 返回带有精确编译指纹的派生身份：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
 });
 
@@ -68,7 +68,7 @@ editor.read.schema.identity();
 取决于编译后的 schema：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
   schema: { id: 'acme-document', version: 3 },
 });
@@ -88,7 +88,7 @@ Plate 的标准非空段落 root 不需要 `schema.root`。只有应用需要不
 ```ts
 import { schema } from 'platejs';
 import {
-  createPlateEditor,
+  createEditor,
   definePlatePlugin,
   ParagraphPlugin,
 } from 'platejs/react';
@@ -101,7 +101,7 @@ const SectionPlugin = definePlatePlugin('section', {
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [SectionPlugin],
   schema: {
     root: schema.content.element(SectionPlugin, { min: 1 }),
@@ -110,7 +110,7 @@ const editor = createPlateEditor({
 ```
 
 `root.min` 必须显式提供正整数。Root 描述符必须匹配已安装的插件系列：
-`createPlateEditor` 使用 Plate 描述符，headless Base 插件元组使用 Base 描述符。
+`createEditor` 使用 Plate 描述符，headless Base 插件元组使用 Base 描述符。
 对于 `schema.content.elements([...])`，第一个描述符负责构造默认 root 子节点。
 
 自定义 root 会改变编译指纹。使用命名持久化 schema 时，应先递增 `version` 并添加
@@ -147,12 +147,12 @@ export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
 下限；这些文档不再受支持时应移除该字段。
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { EditorKit, EditorMigrations, EditorSchema } from './editor';
 
 export function DocumentEditor({ persisted }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: persisted,
     migrations: EditorMigrations,
     plugins: EditorKit,
@@ -182,7 +182,7 @@ export function DocumentEditor({ persisted }) {
 function AsyncEditor() {
   const [initialValue, setInitialValue] = React.useState();
   const [loading, setLoading] = React.useState(true);
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     skipInitialization: true,
   });
 
@@ -229,7 +229,7 @@ function AsyncEditor() {
 通过`plugins`数组添加插件：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin, ListPlugin],
 });
 ```
@@ -242,8 +242,8 @@ const editor = createPlateEditor({
 在一个源文件中导出运行时输入：
 
 ```ts title="src/editor.ts"
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
-import { TablePlugin } from '@platejs/table/react';
+import { HeadingPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 import { property, schema as s, target } from 'platejs';
 
 export const EditorKit = [HeadingPlugin, TablePlugin] as const;
@@ -304,7 +304,7 @@ module，不复制生成的 contract。
 运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import {
   schema as generatedSchema,
@@ -319,7 +319,7 @@ export function insertDocumentContent(editor: Editor) {
 }
 
 export function DocumentEditor({ initialValue }: { initialValue: Value }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: EditorKit,
     schema: EditorSchema,
     initialValue,
@@ -369,7 +369,7 @@ cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
 设置编辑器的最大长度：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   maxLength: 100,
 });
 ```
@@ -381,7 +381,7 @@ const editor = createPlateEditor({
 为编辑器设置自定义ID：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   id: 'my-custom-editor-id',
 });
 ```
@@ -412,7 +412,7 @@ editor.update.nodes.remove({ at: nodeKey });
 ```ts
 import { ElementIdPlugin } from "platejs";
 
-const editor = usePlateEditor({
+const editor = useCreateEditor({
   plugins: [
     ElementIdPlugin.configure({
       initialState: {
@@ -438,7 +438,7 @@ const entry = id ? elementId.read.entry(id) : undefined;
 ```ts
 import { ElementIdPlugin, schema, target } from "platejs";
 
-const editor = usePlateEditor({
+const editor = useCreateEditor({
   plugins: [ElementIdPlugin],
   schema: {
     overrides: [
@@ -468,7 +468,7 @@ if (result.duplicates.length > 0) {
   throw new Error("请先解决重复的元素 ID，再加载文档。");
 }
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
   initialValue: result.value,
 });
@@ -479,7 +479,7 @@ const editor = createPlateEditor({
 控制编辑器是否在初始化时规范化其内容：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   shouldNormalizeEditor: true,
 });
 ```
@@ -491,7 +491,7 @@ const editor = createPlateEditor({
 配置编辑器自动选择范围：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   autoSelect: 'end', // 或 'start'，或 true
 });
 ```
@@ -503,7 +503,7 @@ const editor = createPlateEditor({
 覆盖插件的默认组件：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [HeadingPlugin],
   components: {
     paragraph: CustomParagraphComponent,
@@ -523,7 +523,7 @@ const AppLinkPlugin = LinkPlugin.configure({
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [AppLinkPlugin],
 });
 ```
@@ -561,21 +561,21 @@ const AppParagraphPlugin = ParagraphPlugin.configure({
   component: AppParagraphElement,
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [AppParagraphPlugin],
 });
 ```
 
 ## 类型化编辑器
 
-`createPlateEditor` 会根据安装的插件元组派生文档值和插件 API。
+`createEditor` 会根据安装的插件元组派生文档值和插件 API。
 `initialValue` 会根据该 schema 派生的值进行检查。
 
 ### 插件类型
 
 ```ts
 const AppKit = [TablePlugin, LinkPlugin] as const;
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: AppKit,
 });
 
@@ -587,16 +587,16 @@ editor.update((tx) => {
 
 ### 值类型
 
-当其他模块需要编辑器类型时，使用 `PlateEditor<typeof Kit>`；当命名值类型能提高
+当其他模块需要编辑器类型时，使用 `Editor<typeof Kit>`；当命名值类型能提高
 可读性时，使用 `ValueOf<MyEditor>`。不要用手写元素接口重复 schema。
 
 ```ts
 import type { ValueOf } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { Editor } from 'platejs/react';
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
-export type MyEditor = PlateEditor<typeof AppKit>;
+export type MyEditor = Editor<typeof AppKit>;
 export type MyValue = ValueOf<MyEditor>;
 
 const value: MyValue = [{
@@ -604,7 +604,7 @@ const value: MyValue = [{
   children: [{ text: '你好，Plate!' }],
 }];
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: AppKit,
   initialValue: value,
 });

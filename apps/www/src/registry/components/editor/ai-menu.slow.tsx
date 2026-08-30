@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { act, render } from '@testing-library/react';
-import type { PlateEditor } from 'platejs/react';
+import * as Plate from 'platejs';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 const useEditorPluginMock = mock();
@@ -16,17 +17,23 @@ const isAtBlockEndMock = mock();
 
 const Icon = () => <div />;
 
-mock.module('@platejs/ai/react', () => ({
+mock.module('platejs/ai/react', () => ({
   AIChatPlugin: {},
   AIPlugin: {},
 }));
 
-mock.module('@platejs/comment', () => ({
+mock.module('platejs/comment', () => ({
   getTransientCommentKey: () => 'comment',
 }));
+mock.module('platejs/comment/react', () => ({
+  CommentPlugin: {},
+}));
 
-mock.module('@platejs/suggestion', () => ({
+mock.module('platejs/suggestion', () => ({
   SUGGESTION_TRANSIENT_KEY: 'suggestion',
+}));
+mock.module('platejs/suggestion/react', () => ({
+  SuggestionPlugin: {},
 }));
 
 mock.module('cmdk', () => ({
@@ -66,6 +73,7 @@ mock.module('lucide-react', () => ({
 }));
 
 mock.module('platejs', () => ({
+  ...Plate,
   ElementApi: {
     isElement: (node: unknown) =>
       !!node && typeof node === 'object' && 'children' in node,
@@ -82,13 +90,13 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...PlateReact,
   useEditorPlugin: useEditorPluginMock,
   useEditorSelector: useEditorSelectorMock,
   useEditor: useEditorMock,
   useEditorRuntimeState: () => {},
   useFocusedLast: useFocusedLastMock,
   useHotkeys: useHotkeysMock,
-  usePlateEditor: () => ({}),
   usePluginStore: usePluginStoreMock,
 }));
 
@@ -170,6 +178,7 @@ describe('AIMenu slow contracts', () => {
             { id: 'block', children: [{ text: 'text' }], type: 'paragraph' },
             [0],
           ],
+          blocks: () => [],
           isEmpty: () => false,
         },
         selection: Object.assign(() => ({ kind: 'text' }), {
@@ -182,11 +191,12 @@ describe('AIMenu slow contracts', () => {
       update: {
         selection: { setNodes: setNodesMock },
       },
-    } as unknown as PlateEditor;
+    } as unknown as PlateReact.Editor;
 
     useEditorMock.mockReturnValue(editor);
     useEditorSelectorMock.mockImplementation(
-      (selector: (currentEditor: PlateEditor) => unknown) => selector(editor)
+      (selector: (currentEditor: PlateReact.Editor) => unknown) =>
+        selector(editor)
     );
 
     usePluginStoreMock.mockImplementation((_plugin: unknown, key: string) => {

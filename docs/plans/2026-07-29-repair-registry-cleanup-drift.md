@@ -24,7 +24,7 @@ Task source:
 - title: Audit registry cleanup drift and repair the owning skills
 - acceptance criteria:
   - Explain and classify the diffs in code-drawing-demo, excalidraw-demo,
-    list-classic-demo, cursor-overlay, ghost-text, media-image-node,
+    list-demo, cursor-overlay, ghost-text, media-image-node,
     media-video-node, and table-node.
   - Preserve explicit feature wiring in registry examples when it is deliberate
     teaching/install transparency even if EditorKit also includes the feature.
@@ -84,7 +84,7 @@ Boundaries:
   package files/tests/exports only where the diff exposed ownership drift,
   the smallest owning rule/version files, generated skill mirrors, and this
   plan.
-- Browser surface: standalone demos for code drawing, Excalidraw, classic list,
+- Browser surface: standalone demos for code drawing, Excalidraw, legacy list model,
   cursor overlay, ghost text, media image/video, and table when routes exist.
 - Browser strategy: Browser for normal app QA. Use Chrome directly
   for native downloads, print/print-preview, file picker/uploads, clipboard,
@@ -236,7 +236,7 @@ Completion Gates:
 | Agent rules or skills changed | yes | Regenerate skills | `pnpm install`; Plate Next v23 registry validates |
 | Workspace authority proof | yes | Use owning repo/package/app | Every command ran in `/Users/zbeyens/git/plate-2`; Browser used local www routes |
 | Browser surface changed | yes | Verify real routes | Seven mapped `/blocks/*-demo` routes render expected feature content |
-| Browser final proof | yes | Record rendered output | Code image, Excalidraw canvas, classic lists, cursor copy, media figure/video, table, and Copilot DOM visible |
+| Browser final proof | yes | Record rendered output | Code image, Excalidraw canvas, legacy list models, cursor copy, media figure/video, table, and Copilot DOM visible |
 | CI-controlled template output changed | no | N/A | No `templates/**` output touched |
 | Package behavior or public API changed | yes | Record release artifact | Existing DnD major changeset updated; existing Selection major changeset already owns cursor surface |
 | Registry-only component work changed | yes | Generate registry changelog | Source entry plus generated event/index/components pass `--check` |
@@ -280,7 +280,7 @@ Phase / pass table:
 Findings:
 - `code-drawing-demo` and `excalidraw-demo`: deleting explicit feature wiring
   was wrong; filter the aggregate descriptor and configure the feature once.
-- `list-classic-demo`: the only remaining change was property-order churn; removed.
+- `list-demo`: the only remaining change was property-order churn; removed.
 - `cursor-overlay`: cursor package owns geometry; Selection owns cursor state and lifecycle.
 - `ghost-text`: node ids must respect the configured schema property, not `element.id`.
 - `media-image-node` and `media-video-node`: passing `readOnly` was dead because
@@ -329,7 +329,7 @@ Verification evidence:
 - `pnpm brl` -> 55/55.
 - `pnpm install` and Plate Next validation -> v23 valid, 42 active, 1 retired.
 - registry changelog generation/check -> 41/41 source events.
-- Browser -> code drawing, Excalidraw, classic list, cursor overlay, media,
+- Browser -> code drawing, Excalidraw, legacy list model, cursor overlay, media,
   table, and Copilot routes render; zero warning/error diagnostics.
 - Full `www` typecheck source parity passes, then unrelated suggestion fixture
   and line-height value diagnostics stop whole-app `tsc`.

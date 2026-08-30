@@ -223,7 +223,7 @@ current. The list is the sorted output of
 - [x] `content/docs/(plugins)/(elements)/footnote.mdx` — reviewed against current owner; repaired where stale.
 - [x] `content/docs/(plugins)/(elements)/horizontal-rule.mdx` — reviewed against current owner; repaired where stale.
 - [x] `content/docs/(plugins)/(elements)/link.mdx` — reviewed against current owner; repaired where stale.
-- [x] `content/docs/(plugins)/(elements)/list-classic.mdx` — reviewed against current owner; repaired where stale.
+- [x] `content/docs/(plugins)/(elements)/legacy-list-model.mdx` — reviewed against current owner; repaired where stale.
 - [x] `content/docs/(plugins)/(elements)/media.cn.mdx` — reviewed against current owner; repaired where stale.
 - [x] `content/docs/(plugins)/(elements)/media.mdx` — reviewed against current owner; repaired where stale.
 - [x] `content/docs/(plugins)/(elements)/mention.mdx` — reviewed against current owner; repaired where stale.

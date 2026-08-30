@@ -1,22 +1,28 @@
 'use client';
-import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
-import { BaseCalloutPlugin } from '@platejs/callout';
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
-import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
-import { BaseDatePlugin } from '@platejs/date';
-import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
-import { BaseFootnotePlugin } from '@platejs/footnote';
-import { BaseColumnPlugin } from '@platejs/layout';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
-import { BasePlaceholderPlugin } from '@platejs/media';
-import { insertMediaUrl } from '@platejs/media/react';
-import type { Element, NodeEntry, Path } from '@platejs/plite';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { BaseTablePlugin } from '@platejs/table';
-import { BaseTocPlugin } from '@platejs/toc';
-import { PLUGINS } from '@platejs/utils';
-import { ElementApi, PathApi } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import {
+  BaseBlockquotePlugin,
+  BaseCodeBlockPlugin,
+  ElementApi,
+  PathApi,
+  PLUGINS,
+  type Element,
+  type NodeEntry,
+  type Path,
+} from 'platejs';
+import { BaseCalloutPlugin } from 'platejs/callout';
+import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
+import { BaseDatePlugin } from 'platejs/date';
+import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
+import { BaseFootnotePlugin } from 'platejs/footnote';
+import { BaseColumnPlugin } from 'platejs/layout';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
+import { BasePlaceholderPlugin } from 'platejs/media';
+import { insertMediaUrl } from 'platejs/media/react';
+import type { Editor } from 'platejs/react';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
+import { BaseTablePlugin } from 'platejs/table';
+import { BaseTocPlugin } from 'platejs/toc';
 
 import { linkPlugin } from '@/registry/components/editor/link';
 
@@ -36,11 +42,11 @@ const getListType = (action: string) =>
       ? ('numbered' as const)
       : ('bulleted' as const);
 
-const toggleCodeBlock = (editor: PlateEditor) => {
+const toggleCodeBlock = (editor: Editor) => {
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
 };
 
-const runFootnoteAction = (editor: PlateEditor) => {
+const runFootnoteAction = (editor: Editor) => {
   editor.plugin(BaseFootnotePlugin).update.insert({}, { select: true });
 };
 
@@ -53,7 +59,7 @@ const createBlock = ({
   type,
 });
 
-const createBlockquote = (editor: PlateEditor): Element => ({
+const createBlockquote = (editor: Editor): Element => ({
   children: [
     createBlock({
       type: editor.plugin(PLUGINS.paragraph).schema.type,
@@ -62,7 +68,7 @@ const createBlockquote = (editor: PlateEditor): Element => ({
   type: editor.plugin(PLUGINS.blockquote).schema.type,
 });
 
-const getActionType = (editor: PlateEditor, action: string) => {
+const getActionType = (editor: Editor, action: string) => {
   if (LIST_ACTIONS.has(action)) {
     return action;
   }
@@ -79,7 +85,7 @@ const getActionType = (editor: PlateEditor, action: string) => {
 };
 
 const removeEmptySourceAfterInsert = (
-  editor: PlateEditor,
+  editor: Editor,
   insertedNodeType: string,
   path: Path,
   currentBlockType: string
@@ -93,7 +99,7 @@ const removeEmptySourceAfterInsert = (
     inserted[0].type !== insertedNodeType ||
     !source ||
     !ElementApi.isElement(source[0]) ||
-    getBlockType(source[0]) !== currentBlockType ||
+    getBlockType(editor, source[0]) !== currentBlockType ||
     !editor.read.nodes.isEmpty(source[0])
   ) {
     return;
@@ -104,7 +110,7 @@ const removeEmptySourceAfterInsert = (
   });
 };
 
-const insertInlineMap: Record<string, (editor: PlateEditor) => void> = {
+const insertInlineMap: Record<string, (editor: Editor) => void> = {
   [PLUGINS.date]: (editor) => {
     editor.plugin(BaseDatePlugin).update.insert({}, { select: true });
   },
@@ -125,7 +131,7 @@ type InsertBlockOptions = {
 };
 
 export const insertBlock = (
-  editor: PlateEditor,
+  editor: Editor,
   action: string,
   options: InsertBlockOptions = {}
 ) => {
@@ -137,7 +143,7 @@ export const insertBlock = (
 
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
-  const currentBlockType = getBlockType(currentNode);
+  const currentBlockType = getBlockType(editor, currentNode);
   const actionType = getActionType(editor, action);
   const isSameBlockType = actionType === currentBlockType;
 
@@ -170,6 +176,19 @@ export const insertBlock = (
   }
   if (action === PLUGINS.codeBlock) {
     editor.plugin(BaseCodeBlockPlugin).update.insert();
+
+    return;
+  }
+  if (action === PLUGINS.details) {
+    editor
+      .plugin(BaseDetailsPlugin)
+      .update.insert({}, { at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(
+      editor,
+      editor.plugin(BaseDetailsPlugin).schema.type,
+      path,
+      currentBlockType
+    );
 
     return;
   }
@@ -342,7 +361,7 @@ export const insertBlock = (
       if (
         !source ||
         !ElementApi.isElement(source[0]) ||
-        getBlockType(source[0]) !== currentBlockType
+        getBlockType(editor, source[0]) !== currentBlockType
       ) {
         return;
       }
@@ -354,19 +373,22 @@ export const insertBlock = (
   });
 };
 
-export const insertInlineElement = (editor: PlateEditor, action: string) => {
+export const insertInlineElement = (editor: Editor, action: string) => {
   insertInlineMap[action]?.(editor);
 };
 
-const setBlockActionMap: Record<string, (editor: PlateEditor) => void> = {
+const setBlockActionMap: Record<string, (editor: Editor) => void> = {
   [ACTION_THREE_COLUMNS]: (editor) => {
     editor.plugin(BaseColumnPlugin).update.toggle({ columns: 3 });
   },
   [PLUGINS.codeBlock]: toggleCodeBlock,
+  [PLUGINS.details]: (editor) => {
+    editor.plugin(BaseDetailsPlugin).update.wrap();
+  },
 };
 
 export const applyBlockAction = (
-  editor: PlateEditor,
+  editor: Editor,
   action: string,
   { at }: { at?: Path } = {}
 ) => {
@@ -461,7 +483,7 @@ export const applyBlockAction = (
   });
 };
 
-export const getBlockType = (block: Element) => {
+export const getBlockType = (editor: Editor, block: Element) => {
   if (block.listType) {
     if (block.listType === 'numbered') {
       return 'decimal';
@@ -471,7 +493,10 @@ export const getBlockType = (block: Element) => {
     }
     return 'disc';
   }
-  if (block.type === PLUGINS.heading && typeof block.level === 'number') {
+  if (
+    block.type === editor.plugin(PLUGINS.heading).schema.type &&
+    typeof block.level === 'number'
+  ) {
     return `heading-${block.level}`;
   }
 

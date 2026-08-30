@@ -11,9 +11,9 @@ description: Plate 存储的 API 参考文档。
 `PlateStoreState` 对象存储 Plate 编辑器周围的 React 外壳状态：编辑器引用、容器 ref、挂载状态、渲染回调和 decorations。Commit callbacks 是 `Plate` props，不属于可变 store state。
 
 <APIState>
-<APIItem name="editor" type="PlateEditor">
+<APIItem name="editor" type="Editor">
 Plate 编辑器的引用。
-内部 fallback 只用于保持 Hooks 调用结构。`useEditor()` 需要活动编辑器；`useActiveEditor()` 在没有活动编辑器时返回 `null`。
+内部 fallback 只用于保持 Hooks 调用结构。`useEditor()` 需要活动编辑器；`useOptionalEditor()` 在没有活动编辑器时返回 `null`。
 </APIItem>
 
 <APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
@@ -24,7 +24,7 @@ Plate shell 容器元素的引用。
 用于装饰编辑器中范围的函数。
 
 ```ts
-(options: { editor: PlateEditor; entry: NodeEntry }) => Range[]
+(options: { editor: Editor; entry: NodeEntry }) => Range[]
 ```
 </APIItem>
 

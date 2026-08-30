@@ -3,29 +3,29 @@ title: Plate Editor
 description: API reference for the Plate editor runtime.
 ---
 
-`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with typed plugin portals, typed `api`, typed `editor.update()` transactions, DOM services, and editor-local plugin stores.
+`Editor` is the editor type returned by `createEditor` and `useCreateEditor`. The
+selected import path decides whether the instance is headless or React-enabled.
+Both forms expose typed plugin portals, `api`, `editor.update()` transactions,
+and editor-local plugin stores.
 
 ## Ownership
 
-| Surface            | Owner                 | Notes                                                                                                        |
-| ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `PlateEditor`      | `@platejs/core/react` | React editor type with Plate plugin APIs, transaction groups, lifecycle/DOM events, renders, and hooks.      |
-| `BaseEditor`       | `@platejs/core`       | Non-React editor type used by server-side and static editor paths.                                           |
-| Plite primitives   | `@platejs/plite`      | `children`, `selection`, `operations`, core `api`, and the transaction/update runtime.                       |
-| Core plugins       | `@platejs/core`       | Debugging, HTML parsing, product codecs, length, node id, history, input rules, and base paragraph behavior. |
-| React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin.             |
+| Import | Constructor | Notes |
+| --- | --- | --- |
+| `platejs` | `createEditor(options)` | Headless Plate editor for server and non-React code. |
+| `platejs/react` | `createEditor(options)` or `useCreateEditor(options)` | React-enabled editor with components, stores, DOM integration, and hooks. |
 
-Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` when you need the headless editor from `createBaseEditor`.
+Import the matching `Editor` type from the same entrypoint as the constructor.
 
 ## Editor Shape
 
 The editor is still a Plite editor. Plate adds typed plugin access, DOM services, and a small set of Plate runtime flags on top of that shape.
 
-<API name="PlateEditor">
+<API name="Editor">
   <APIAttributes>
     <APIItem name="id" type="string">
-      Unique editor instance id. `withPlite` uses the provided `id`, an existing
-      editor id, or `nanoid()`.
+      Unique editor instance id. `createEditor` uses the provided `id` or
+      creates one with `nanoid()`.
     </APIItem>
     <APIItem name="children" type="Value">
       Current document value.
@@ -36,11 +36,11 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
     <APIItem name="operations" type="Operation[]">
       Operations applied since Plite last flushed the editor.
     </APIItem>
-    <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
+    <APIItem name="api" type="Editor['api'] & CorePluginApi">
       Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
       inferred under their plugin names.
     </APIItem>
-    <APIItem name="update" type="PlateEditor['update']">
+    <APIItem name="update" type="Editor['update']">
       Transaction entrypoint for document, selection, history, and plugin
       commands.
     </APIItem>
@@ -51,10 +51,10 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
       Return the descriptor-scoped portal for a plugin's API, update commands,
       type, and store.
     </APIItem>
-    <APIItem name="dom" type="PlateEditor['dom']">
+    <APIItem name="dom" type="Editor['dom']">
       Runtime DOM state owned by the editor instance.
     </APIItem>
-    <APIItem name="runtime" type="PlateEditor['runtime']">
+    <APIItem name="runtime" type="Editor['runtime']">
       Public Plate runtime-instance and lifecycle state. Compiled plugin
       registries stay private to Plate.
     </APIItem>
@@ -69,7 +69,7 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 | ----------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
 | composition | `editor.api.react.isComposing()`                                   | Plite React composition runtime.                      |
 | focus       | `editor.api.react.isFocused()`                                     | Plite React focus runtime.                            |
-| read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createPlateEditor`, `<Plate>`, and `<PlateContent>`. |
+| read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createEditor`, `<Plate>`, and `<PlateContent>`. |
 
 | Field           | Type                          | Notes                                                   |
 | --------------- | ----------------------------- | ------------------------------------------------------- |
@@ -92,7 +92,7 @@ editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
 ```ts title="Plugin state access"
-import { FindReplacePlugin } from "@platejs/find-replace";
+import { FindReplacePlugin } from 'platejs/find-replace';
 
 const findReplace = editor.plugin(FindReplacePlugin);
 
@@ -127,16 +127,16 @@ installed descriptor owns the name. They return erased portals; check
 
 ## Initialization
 
-`withPlate` wraps `withPlite` with React defaults. It creates each plugin's
-editor-local store from `initialState` and prepends the React core plugins
-before user plugins.
+`useCreateEditor` memoizes the React `createEditor` constructor. The React entrypoint
+creates each plugin's editor-local store from `initialState` and installs React
+core plugins before user plugins.
 
 ```tsx title="Create a typed editor"
-import { usePlateEditor } from "platejs/react";
-import { BoldPlugin } from "@platejs/basic-nodes/react";
+import { useCreateEditor } from "platejs/react";
+import { BoldPlugin } from "platejs/react";
 
 export function useBasicEditor() {
-  return usePlateEditor({
+  return useCreateEditor({
     plugins: [BoldPlugin],
     initialValue: [
       {
@@ -148,7 +148,7 @@ export function useBasicEditor() {
 }
 ```
 
-`withPlite` does the lower-level setup:
+The headless `createEditor` performs the shared setup:
 
 | Step                | Behavior                                                                                                                                             |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -301,25 +301,25 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 
 ## Type Helpers
 
-Use `PlateEditor<typeof Kit>` when another module needs the exact editor type.
+Use `Editor<typeof Kit>` when another module needs the exact editor type.
 The installed plugin schema supplies the value type.
 
 ```ts title="Typed editor helper"
-import type { PlateEditor } from "platejs/react";
+import type { Editor } from "platejs/react";
 import type { ValueOf } from "platejs";
-import { BoldPlugin } from "@platejs/basic-nodes/react";
+import { BoldPlugin } from "platejs/react";
 
 const BasicKit = [BoldPlugin] as const;
 
-type BasicEditor = PlateEditor<typeof BasicKit>;
+type BasicEditor = Editor<typeof BasicKit>;
 type BasicValue = ValueOf<BasicEditor>;
 ```
 
 | Type                        | Purpose                                                         |
 | --------------------------- | --------------------------------------------------------------- |
-| `PlateEditor`               | Broad editor type for framework boundaries.                     |
-| `PlateEditor<typeof Kit>`   | Exact editor type derived from an installed plugin tuple.        |
-| `ValueOf<PlateEditorType>`  | Document value derived from that editor's compiled schema.       |
+| `Editor`               | Broad editor type for framework boundaries.                     |
+| `Editor<typeof Kit>`   | Exact editor type derived from an installed plugin tuple.        |
+| `ValueOf<EditorType>`       | Document value derived from that editor's compiled schema.       |
 
 ## Related APIs
 

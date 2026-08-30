@@ -36,10 +36,10 @@ docs:
 将套件添加到你的插件中：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CalloutKit } from '@/components/editor/callout';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...CalloutKit,
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/callout
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -64,10 +64,10 @@ npm install @platejs/callout
 在创建编辑器时，将 `CalloutPlugin` 包含到 Plate 插件数组中。
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
-import { createPlateEditor } from 'platejs/react';
+import { CalloutPlugin } from 'platejs/callout/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     CalloutPlugin,
@@ -80,11 +80,11 @@ const editor = createPlateEditor({
 你可以通过自定义组件来配置 `CalloutPlugin` 以渲染提示框元素。
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
-import { createPlateEditor } from 'platejs/react';
+import { CalloutPlugin } from 'platejs/callout/react';
+import { createEditor } from 'platejs/react';
 import { CalloutElement } from '@/components/editor/callout';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     CalloutPlugin.configure({ component: CalloutElement }),
@@ -136,7 +136,7 @@ const editor = createPlateEditor({
 ### `CalloutElement`
 
 ```typescript
-import type { CalloutElement } from '@platejs/callout';
+import type { CalloutElement } from 'platejs/callout';
 ```
 
 `CalloutElement` 从 `BaseCalloutPlugin` 派生。其 schema 提供可选的

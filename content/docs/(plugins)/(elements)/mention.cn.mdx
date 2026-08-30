@@ -36,10 +36,10 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { MentionKit } from '@/components/editor/mention';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...MentionKit,
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/mention
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -64,10 +64,10 @@ npm install @platejs/mention
 `MentionPlugin` 会把 `MentionInputPlugin` 作为必需依赖安装。
 
 ```tsx
-import { MentionPlugin } from '@platejs/mention/react';
-import { createPlateEditor } from 'platejs/react';
+import { MentionPlugin } from 'platejs/mention/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     MentionPlugin,
@@ -80,11 +80,11 @@ const editor = createPlateEditor({
 需要替换依赖的渲染组件或配置时，把完整的 `MentionInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import { MentionPlugin, MentionInputPlugin } from '@platejs/mention/react';
-import { createPlateEditor } from 'platejs/react';
+import { MentionPlugin, MentionInputPlugin } from 'platejs/mention/react';
+import { createEditor } from 'platejs/react';
 import { MentionElement, MentionInputElement } from '@/components/editor/mention';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     MentionPlugin.configure({

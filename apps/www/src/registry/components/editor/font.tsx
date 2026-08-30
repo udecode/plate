@@ -5,7 +5,7 @@ import {
   FontColorPlugin,
   FontFamilyPlugin,
   FontSizePlugin,
-} from '@platejs/basic-styles/react';
+} from 'platejs/react';
 
 export const FontKit = [
   FontColorPlugin.configure({

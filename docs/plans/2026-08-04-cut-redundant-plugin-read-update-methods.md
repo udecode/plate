@@ -24,7 +24,7 @@ Verification surface:
 - Source audit: Babel AST extraction of direct return-object methods from the
   34 initial owner files, compared as a file/capability multiset with ledger
   `keep` rows.
-- Focused tests: affected Basic Nodes, Basic Styles, List Classic, Toggle,
+- Focused tests: affected Basic Nodes, Basic Styles, Legacy list model, Toggle,
   Code Block, AI Chat, and Table specs.
 - Type proof: affected package Turbo typechecks and `pnpm --filter www typecheck`.
 - Docs proof: `pnpm --filter www check:docs`.
@@ -194,7 +194,7 @@ Completion Gates:
 
 Changed list:
 - Runtime/API: Basic Nodes headings and blockquote, Basic Styles text indent,
-  List Classic todo, Toggle active read, Code Block start read, AI Chat anchor
+  Legacy list model todo, Toggle active read, Code Block start read, AI Chat anchor
   removal, and Table margin-left setter.
 - Callers: affected package tests/hooks, two installation examples,
   `basic-blocks-kit.tsx`, and `table-node.tsx`.
@@ -216,7 +216,7 @@ Verification evidence:
 - `bun test packages/table/src/react/useTableCellElement.spec.tsx`: 8 pass,
   0 fail.
 - The affected fast set includes the final 22 Basic Nodes tests.
-- Source-first typecheck: Basic Nodes, Basic Styles, List Classic, Toggle,
+- Source-first typecheck: Basic Nodes, Basic Styles, Legacy list model, Toggle,
   Code Block, and AI pass. Table builds; unrelated
   `TablePlugin.onKeyDown.spec.tsx` JSX overload errors remain outside scope.
 - `pnpm --filter www typecheck`: pass.

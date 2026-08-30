@@ -1,12 +1,12 @@
-import { defineExtension } from '@platejs/plite';
+import { defineExtension } from 'plitejs';
 import {
   Editable,
   type RenderElementProps,
   type RenderVoidProps,
   Plite,
+  useEditorContext,
   useEditor,
-  usePliteEditor,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import React, { type ChangeEvent, useMemo } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ import type {
 } from './custom-types.d';
 
 const EmbedsExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [embed()],
     initialValue: [
       {
@@ -96,7 +96,7 @@ const ParagraphElement = ({
 const allowedSchemes = new Set(['http:', 'https:']);
 
 const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const { url } = element;
 
   const safeUrl = useMemo(() => {

@@ -57,7 +57,7 @@ hidden anchor and browser shell for you. App renderers should use
 Typical rendering code will resemble this image element:
 
 ```tsx
-import type { RenderVoidProps } from "@platejs/plite-react";
+import type { RenderVoidProps } from "plitejs/react";
 
 type ImageElement = {
   type: "image";
@@ -86,7 +86,7 @@ still be used to determine how the visible content is rendered. Selection UI is
 an opt-in target subscription:
 
 ```tsx
-import { useElementSelected, type RenderVoidProps } from "@platejs/plite-react";
+import { useElementSelected, type RenderVoidProps } from "plitejs/react";
 
 type MentionElement = {
   type: "mention";

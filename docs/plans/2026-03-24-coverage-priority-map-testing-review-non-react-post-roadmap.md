@@ -82,7 +82,7 @@ There is one last real non-React cleanup batch, and it is mostly `core` static o
 
 1. `core` — package score `32`
 2. `markdown` — package score `21`
-3. `list-classic` — package score `20`
+3. `legacy-list-model` — package score `20`
 4. `slate` — package score `20`
 5. `table` — package score `20`
 6. `docx-io` — package score `19`

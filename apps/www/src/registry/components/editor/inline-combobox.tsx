@@ -12,11 +12,15 @@ import {
   useComboboxStore,
   useStoreState,
 } from '@ariakit/react';
-import { filterWords } from '@platejs/combobox';
-import type { Anchor, Element, Point } from '@platejs/plite';
-import { failInvariant } from '@platejs/plite/internal';
 import { cva } from 'class-variance-authority';
-import { Hotkeys, isHotkey } from 'platejs';
+import {
+  Hotkeys,
+  isHotkey,
+  type Anchor,
+  type Element,
+  type Point,
+} from 'platejs';
+import { filterWords } from 'platejs/combobox';
 import {
   useComposedRef,
   useEditor,
@@ -33,6 +37,7 @@ type FilterFn = (
 ) => boolean;
 
 type InlineComboboxContextValue = {
+  autoFocus: boolean;
   filter: FilterFn | false;
   inputProps: Required<
     Pick<React.InputHTMLAttributes<HTMLInputElement>, 'onBlur' | 'onKeyDown'>
@@ -199,10 +204,6 @@ const InlineCombobox = ({
     [editor, removeInput, trigger, value]
   );
 
-  React.useEffect(() => {
-    if (isCreator) inputRef.current?.focus();
-  }, [isCreator]);
-
   const previousSelected = React.useRef(selected);
 
   React.useEffect(() => {
@@ -263,6 +264,7 @@ const InlineCombobox = ({
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
     () => ({
+      autoFocus: isCreator,
       filter,
       inputProps,
       inputRef,
@@ -271,7 +273,7 @@ const InlineCombobox = ({
       showTrigger,
       trigger,
     }),
-    [filter, inputProps, inputRef, removeInput, showTrigger, trigger]
+    [filter, inputProps, inputRef, isCreator, removeInput, showTrigger, trigger]
   );
 
   const store = useComboboxStore({
@@ -318,14 +320,19 @@ function InlineComboboxInput({
   ref?: React.RefObject<HTMLInputElement | null>;
 }) {
   const {
+    autoFocus,
     inputProps,
     inputRef: contextRef,
     showTrigger,
     trigger,
   } = useInlineComboboxContext();
 
-  const store =
-    useComboboxContext() ?? failInvariant('Expected value to be defined');
+  const store = useComboboxContext();
+
+  if (store == null) {
+    throw new Error('InlineComboboxInput requires a Combobox store');
+  }
+
   const value = useStoreState(store, 'value');
 
   const ref = useComposedRef(propRef, contextRef);
@@ -351,6 +358,7 @@ function InlineComboboxInput({
 
         <Combobox
           ref={ref}
+          autoFocus={autoFocus}
           className={cn(
             'absolute top-0 left-0 size-full bg-transparent outline-none',
             className
@@ -428,8 +436,11 @@ const InlineComboboxItem = ({
 
   const { filter, removeInput } = useInlineComboboxContext();
 
-  const store =
-    useComboboxContext() ?? failInvariant('Expected value to be defined');
+  const store = useComboboxContext();
+
+  if (store == null) {
+    throw new Error('InlineComboboxItem requires a Combobox store');
+  }
 
   const search = useStoreState(store, 'value');
 
@@ -457,8 +468,12 @@ const InlineComboboxEmpty = ({
   className,
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const { setHasEmpty } = useInlineComboboxContext();
-  const store =
-    useComboboxContext() ?? failInvariant('Expected value to be defined');
+  const store = useComboboxContext();
+
+  if (store == null) {
+    throw new Error('InlineComboboxEmpty requires a Combobox store');
+  }
+
   const items = useStoreState(store, 'items');
 
   React.useEffect(() => {

@@ -259,6 +259,16 @@ focus, selection, DOM, and errors, but that verification is evidence, not a
 second permanent regression test. Existing E2E tests remain affected-corpus
 inputs; their existence does not authorize new E2E coverage.
 
+For keyboard, text-input, trigger, or semantic-command regressions, a detached
+root-editor test is a proxy when the mounted Browser case disagrees. Before
+another product attempt, prove the command on the exact mounted runtime owner.
+The applicable `dom-native` Browser oracle must record `runtime-owner: pass`
+and `mutation-owner: pass`; command discovery alone does not prove that the
+mounted route published the semantic mutation before DOM repair or native
+input. A root editor cannot substitute for the mounted owner. After any failed
+fix, both proofs are required before resumption, not only at completion. A
+constructed view that never mounts in the reporter route is still a proxy.
+
 For Plite model-based, generated, or differential cases, use canonical
 `DocumentChange` plus `EditorCommit` laws as the semantic oracle. Compare final
 document state, selection, commit metadata, error class, and follow-up
@@ -300,6 +310,13 @@ apply. One failure keeps the case open.
 Each required stability repetition must execute the proof command. Cached result
 reuse does not count toward the run total; force fresh execution or disable the
 cache before recording stability.
+
+When geometry intentionally settles through an animation frame, resize
+observer, or asynchronous renderer commit, wait for the named invariant with a
+bounded convergence poll before sampling final boxes. One immediate bounding
+box read after resize is invalid proof. Record both pre-convergence and
+converged geometry so a failed run distinguishes product non-convergence from
+an early proof read.
 
 If the first failure appears only during stability after an exact green run,
 freeze product bytes. Before another implementation attempt, add the smallest

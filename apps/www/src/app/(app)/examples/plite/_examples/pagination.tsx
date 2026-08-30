@@ -1,13 +1,20 @@
 import {
+  parseAsBoolean,
+  parseAsStringLiteral,
+  type SetValues,
+  useQueryStates,
+  type Values,
+} from 'nuqs';
+import {
   defineExtension,
   defineStateField,
   type Node,
   NodeApi,
   type Path,
   type Value,
-} from '@platejs/plite';
-import { isHotkey } from '@platejs/plite-dom';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { isHotkey } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   createPlitePage,
   getPlitePageLayoutDecorations,
@@ -22,14 +29,14 @@ import {
   type PlitePageLayoutTypography,
   type PlitePageRect,
   type PlitePageSettings,
-} from '@platejs/plite-layout';
+} from 'plitejs/page-layout';
 import {
   PagedEditable,
   type PliteLayoutRenderedFragment,
   usePliteLayout,
   usePliteLayoutFragmentsAtPath,
   usePliteLayoutSnapshot,
-} from '@platejs/plite-layout/react';
+} from 'plitejs/page-layout/react';
 import {
   type EditableDecorate,
   type EditableDOMStrategyEffectiveType,
@@ -38,19 +45,12 @@ import {
   type RenderLeafProps,
   Plite,
   useDOMStrategyVirtualOffset,
-  useEditor,
+  useEditorContext,
   useEditorState,
   useElementPath,
   useSetStateField,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import {
-  parseAsBoolean,
-  parseAsStringLiteral,
-  type SetValues,
-  useQueryStates,
-  type Values,
-} from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 import {
   type ChangeEvent,
   type ComponentProps,
@@ -1570,7 +1570,7 @@ const PaginationSurface = ({
   controls: PaginationControls;
   setControls: SetPaginationControls;
 }) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const setSettings = useSetStateField(pageSettings);
   const [effectiveDOMStrategy, setEffectiveDOMStrategy] =
     useState<EditableDOMStrategyEffectiveType | null>(null);
@@ -2088,7 +2088,7 @@ const PaginationEditor = ({
     controls.domStrategyMode === 'virtualized'
       ? controls.virtualizedStressPages
       : 0;
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), pageSettingsExtension],
     initialValue: {
       children: createInitialValue({

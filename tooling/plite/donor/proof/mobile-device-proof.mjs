@@ -28,7 +28,7 @@ const {
   classifyBrowserMobileTransportProof,
   validatePliteRawMobileProof,
 } = await import(
-  pathToFileURL(resolve(repoRoot, 'packages/browser/src/core/index.ts')).href
+  pathToFileURL(resolve(repoRoot, 'packages/test/src/proof/index.ts')).href
 );
 
 const readArtifacts = () => {

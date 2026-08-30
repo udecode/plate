@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
+import { jsxt } from '@platejs/test';
 
-import { testValue } from '../../../../../../packages/markdown/src/lib/__tests__/testValue';
+import { testValue } from '../../../../../../packages/platejs/src/markdown/lib/__tests__/testValue';
 import { createTestEditor } from './createTestEditor';
 
 const editor = createTestEditor();

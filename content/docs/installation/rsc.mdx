@@ -8,8 +8,8 @@ Use Plate in React Server Components when you need to render read-only editor co
 ## RSC Setup
 
 <Callout type="warning" title="Use static imports">
-  Do not import `platejs/react` or `@platejs/*/react` from a Server Component.
-  Use `platejs/static`, `platejs`, and base `@platejs/*` entrypoints.
+  Do not import `platejs/react` or another `/react` subpath from a Server
+  Component. Use `platejs/static`, `platejs`, and base `platejs/*` subpaths.
 </Callout>
 
 <Steps>
@@ -103,10 +103,10 @@ If you only need data transforms or Markdown IO, use the Node.js path instead
 of static React rendering.
 
 ```bash
-npm install platejs @platejs/basic-nodes @platejs/markdown
+npm install platejs marked remark-mdx remark-parse remark-stringify unified
 ```
 
-That path uses `createBaseEditor` from `platejs` and does not need copied UI
+That path uses `createEditor` from `platejs` and does not need copied UI
 components.
 
 </Steps>
@@ -117,12 +117,12 @@ components.
 | --- | --- | --- |
 | Server Component | `platejs/static` | Read-only React output with `<PlateStatic>`. |
 | Route handler | `platejs/static` | Static React rendering with `renderStaticHtml`. |
-| Node script | `platejs`, `@platejs/*` | Validation, migration, Markdown IO. |
-| Client editor | `platejs/react`, `@platejs/*/react` | Editable UI, hooks, toolbar interactions. |
+| Node script | `platejs`, `platejs/*` | Validation, migration, Markdown IO. |
+| Client editor | `platejs/react`, `platejs/*/react` | Editable UI, hooks, toolbar interactions. |
 
 <Callout type="info">
   `createStaticEditor` includes the static `ViewPlugin` before your plugins.
-  Use it for rendered output. Use `createBaseEditor` when the script only
+  Use it for rendered output. Use `createEditor` when the script only
   reads or transforms a value.
 </Callout>
 

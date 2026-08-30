@@ -52,7 +52,7 @@ three same-class runtime files found by the follow-up sweep: 36/36 classified.
 | `components/editor/plugins/markdown-kit.tsx` | runtime property keys | fixed with name-latest portals; custom-key regression added |
 | `components/editor/plugins/suggestion-kit.tsx` | capability override/targets; capability CSS class | fixed override; keep `name` for the render class |
 | `components/editor/plugins/tabbable-kit.tsx` | capability override plus runtime element types | fixed override; keep portals |
-| `components/editor/transforms-classic.ts` | capability actions plus runtime element types | fixed action-map keys; keep portals |
+| `components/editor/transforms.ts` | capability actions plus runtime element types | fixed action-map keys; keep portals |
 | `components/editor/transforms.ts` | capability/list-style actions plus runtime element types | fixed action-map keys; keep portals and feature-owned list values |
 | `components/editor/use-chat.ts` | runtime table types/comment key plus copied comment value | fixed runtime identities; keep persisted comment paragraph literal |
 | `examples/markdown-streaming-demo.tsx` | copied initial value plus runtime AI mark key | keep literal value and portal key |
@@ -62,10 +62,10 @@ three same-class runtime files found by the follow-up sweep: 36/36 classified.
 | `ui/block-context-menu.tsx` | capability actions | keep `PLUGINS.*` |
 | `ui/block-draggable.tsx` | runtime element types plus feature-owned list property | keep portals and typed property |
 | `ui/comment.tsx` | type was irrelevant to `NodeApi.string` | removed it |
-| `ui/fixed-toolbar-classic-buttons.tsx` | capability props | keep `PLUGINS.*` |
+| `ui/fixed-toolbar.tsx` | capability props | keep `PLUGINS.*` |
 | `ui/insert-toolbar-button.tsx` | capability actions plus list-style values | keep split ownership |
-| `ui/insert-toolbar-classic-button.tsx` | capability actions | keep `PLUGINS.*` |
-| `ui/list-classic-toolbar-button.tsx` | capability-keyed presentation map | fixed with computed `PLUGINS.*` keys |
+| `ui/insert-toolbar-button.tsx` | capability actions | keep `PLUGINS.*` |
+| `ui/list-toolbar-button.tsx` | capability-keyed presentation map | fixed with computed `PLUGINS.*` keys |
 | `ui/media-placeholder-node.tsx` | persisted media subtype resolved to capability UI config | fixed with editor portal resolution |
 | `ui/media-toolbar-button.tsx` | capability-keyed presentation map | fixed with computed `PLUGINS.*` keys |
 | `ui/mention-node-static.tsx` | static persisted mark properties | keep typed fields; no editor exists |
@@ -77,7 +77,7 @@ three same-class runtime files found by the follow-up sweep: 36/36 classified.
 | `ui/table-node.tsx` | capability selectors | keep `PLUGINS.*` names |
 | `ui/table-toolbar-button.tsx` | runtime table matcher | fixed with Table portal type |
 | `ui/turn-into-toolbar-button.tsx` | capability actions mapped to runtime types | keep capability values and portal resolution |
-| `ui/turn-into-toolbar-classic-button.tsx` | capability actions mapped to runtime types | keep capability values and portal resolution |
+| `ui/turn-into-toolbar-button.tsx` | capability actions mapped to runtime types | keep capability values and portal resolution |
 | `app/api/ai/command/utils.ts` | runtime generic table matchers | fixed with name-latest portals |
 | `ui/block-selection.tsx` | runtime table/table-row comparisons | fixed against `element.type` with name-latest portals; never read `.type` from the render-contribution plugin |
 | `ui/column-node.tsx` | DnD element type | fixed with the exact Column portal type |

@@ -18,13 +18,13 @@ docs:
 ## 安装
 
 ```bash
-npm install @platejs/excalidraw
+npm install platejs @excalidraw/excalidraw @tanstack/react-virtual
 ```
 
 ## 使用方式
 
 ```tsx
-import { ExcalidrawPlugin } from '@platejs/excalidraw/react';
+import { ExcalidrawPlugin } from 'platejs/excalidraw/react';
 
 const plugins = [
   // ...其他插件
@@ -57,7 +57,7 @@ Excalidraw 空元素插件。
 向编辑器中插入 Excalidraw 元素。
 
 ```tsx
-import { BaseExcalidrawPlugin } from '@platejs/excalidraw';
+import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 
 editor.plugin(BaseExcalidrawPlugin).update.insert(
   { data: { elements: [], state: {} } },

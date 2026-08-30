@@ -31,6 +31,9 @@
   },
   "devDependencies": {
     "@faker-js/faker": "9.8.0",
-    "@typescript/native-preview": "7.0.0-dev.20260707.2"
+    "@platejs/test": "workspace:*",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "platejs": "workspace:*",
+    "plitejs": "workspace:*"
   }
 }

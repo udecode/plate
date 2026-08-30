@@ -40,7 +40,7 @@ Element components render block, inline, and void element nodes.
 ```tsx title="components/editor/blockquote.tsx" showLineNumbers
 'use client';
 
-import type { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import type { BlockquotePlugin } from 'platejs/react';
 import { type PlateElementProps, PlateElement } from 'platejs/react';
 
 export function BlockquoteElement({
@@ -69,7 +69,7 @@ Leaf components render marked and decorated text ranges.
 ```tsx title="components/editor/code.tsx" showLineNumbers
 'use client';
 
-import type { CodePlugin } from '@platejs/basic-nodes/react';
+import type { CodePlugin } from 'platejs/react';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function CodeLeaf({
@@ -104,7 +104,7 @@ Use `.configure({ component })` to attach a React component to a plugin.
 import {
   BlockquotePlugin,
   CodePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
 import { CodeLeaf } from '@/components/editor/code';
@@ -121,8 +121,8 @@ When the same plugin also needs rules, shortcuts, initial state, or input rules,
 put every override in that same terminal `.configure()` call.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
-import { CodeRules } from '@platejs/basic-nodes';
-import { CodePlugin } from '@platejs/basic-nodes/react';
+import { CodeRules } from 'platejs';
+import { CodePlugin } from 'platejs/react';
 
 import { CodeLeaf } from '@/components/editor/code';
 
@@ -144,15 +144,15 @@ This is useful for replacing several components in one place.
 import {
   BlockquotePlugin,
   CodePlugin,
-} from '@platejs/basic-nodes/react';
-import { Plate, usePlateEditor } from 'platejs/react';
+} from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
 import { CodeLeaf } from '@/components/editor/code';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export function AppEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     components: {
       blockquote: BlockquoteElement,
       code: CodeLeaf,

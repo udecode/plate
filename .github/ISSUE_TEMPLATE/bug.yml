@@ -166,7 +166,7 @@ body:
     attributes:
       label: Affected packages or entry points
       description: List the packages, plugins, examples, or routes involved.
-      placeholder: '@platejs/table, @platejs/selection, apps/www example'
+      placeholder: 'platejs table APIs, platejs/react selection UI, apps/www example'
     validations:
       required: true
   - type: textarea

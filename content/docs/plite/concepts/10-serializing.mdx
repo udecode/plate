@@ -25,7 +25,7 @@ roots or persistent meta fields. See [Document Meta](14-document-state).
 Use `NodeApi.string` when plain text is enough.
 
 ```ts
-import { NodeApi, type Descendant } from "@platejs/plite";
+import { NodeApi, type Descendant } from "plitejs";
 
 const serializePlainText = (nodes: readonly Descendant[]) =>
   nodes.map((node) => NodeApi.string(node)).join("\n");
@@ -41,7 +41,7 @@ custom elements map to HTML.
 
 ```ts
 import escapeHtml from "escape-html";
-import { ElementApi, TextApi, type Descendant } from "@platejs/plite";
+import { ElementApi, TextApi, type Descendant } from "plitejs";
 
 const serializeNodeToHtml = (node: Descendant): string => {
   if (TextApi.isText(node)) {
@@ -88,7 +88,7 @@ Deserialization is the reverse schema mapping. Parse external HTML, decide which
 tags your editor accepts, and return Plite nodes.
 
 ```ts
-import type { Descendant, Text } from "@platejs/plite";
+import type { Descendant, Text } from "plitejs";
 
 type CustomText = Text & {
   bold?: boolean;
@@ -148,7 +148,7 @@ const deserializeHtml = (html: string): Descendant[] => {
 editor.update.fragment.replace(deserializeHtml(html));
 ```
 
-`@platejs/plite-hyperscript` is useful for tests and fixtures. Production
+`plitejs/hyperscript` is useful for tests and fixtures. Production
 deserialization should use explicit parser code so unsupported tags,
 attributes, marks, and unsafe URLs are handled deliberately.
 

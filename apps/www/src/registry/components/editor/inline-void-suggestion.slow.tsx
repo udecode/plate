@@ -1,11 +1,12 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import type { DateElement } from '@platejs/date';
-import type { LinkElement } from '@platejs/link';
-import type { EquationElement } from '@platejs/math';
-import type { MentionElement } from '@platejs/mention';
 import { render } from '@testing-library/react';
-import type { PlateEditor } from 'platejs/react';
+import type { LinkElement } from 'platejs';
+import * as Plate from 'platejs';
+import type { DateElement } from 'platejs/date';
+import type { EquationElement } from 'platejs/math';
+import type { MentionElement } from 'platejs/mention';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 const useFocusedMock = mock();
@@ -30,6 +31,7 @@ const InlineEquationPluginMock = createPluginMock('inlineEquation');
 Object.assign(globalThis, { React });
 
 mock.module('platejs/react', () => ({
+  ...PlateReact,
   PlateElement: ({
     attributes,
     children,
@@ -72,17 +74,18 @@ mock.module('platejs/react', () => ({
   useElement: useElementMock,
   useEditorFocused: useFocusedMock,
   usePluginStore: usePluginStoreMock,
-  usePlateEditor: () => ({}),
   useEditorReadOnly: useReadOnlyMock,
   useElementSelected: useSelectedMock,
+  SuggestionPlugin: { name: 'suggestion' },
 }));
 
-mock.module('@platejs/math/react', () => ({
+mock.module('platejs/math/react', () => ({
   EquationPlugin: EquationPluginMock,
   InlineEquationPlugin: InlineEquationPluginMock,
 }));
 
-mock.module('@platejs/date', () => ({
+mock.module('platejs', () => ({
+  ...Plate,
   formatDateValue: (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
       2,
@@ -90,12 +93,6 @@ mock.module('@platejs/date', () => ({
     )}-${String(date.getDate()).padStart(2, '0')}`,
   getDateDisplayLabel: (value: string) => value,
   parseCanonicalDateValue: () => new Date(2026, 3, 13),
-}));
-
-mock.module('@platejs/mention', () => ({}));
-
-mock.module('@platejs/suggestion/react', () => ({
-  SuggestionPlugin: { name: 'suggestion' },
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -162,7 +159,7 @@ describe('inline void suggestion styling', () => {
         getAttributes: () => ({ href: 'https://example.com' }),
       },
     }),
-  } as unknown as PlateEditor;
+  } as unknown as PlateReact.Editor;
 
   beforeEach(() => {
     useFocusedMock.mockReset();

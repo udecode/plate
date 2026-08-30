@@ -5,8 +5,8 @@ import {
   defineCommand,
   defineExtension,
   type Value,
-} from '../../../packages/plite/src/index';
-import { dispatchCommand } from '../../../packages/plite/src/internal/index';
+} from '../../../packages/plitejs/src/index';
+import { dispatchCommand } from '../../../packages/plitejs/src/internal/index';
 import { getDefined } from '../../getDefined';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 

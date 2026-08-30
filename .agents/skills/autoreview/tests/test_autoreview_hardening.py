@@ -159,6 +159,7 @@ class AutoreviewHardeningTests(unittest.TestCase):
                         "--no-update",
                         "--no-color",
                         "--results=verified,unknown",
+                        "--json",
                         "--fail",
                         "--fail-on-scan-errors",
                     ],
@@ -697,6 +698,144 @@ class AutoreviewHardeningTests(unittest.TestCase):
                 combined = output.getvalue() + str(error.exception)
                 self.assertIn(expected, combined)
                 self.assertNotIn(scanner_output, combined)
+
+    def test_trufflehog_reports_and_suppresses_only_the_reserved_postgres_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo = init_repo(Path(tempdir))
+            (repo / "runtime.txt").write_text("review me\n", encoding="utf-8")
+            original_find_command = self.helper["find_command"]
+            original_run = self.helper["run"]
+            fixture = "postgres://" + "u:p@" + "example.com:5702"
+            finding = {
+                "DetectorName": "Postgres",
+                "Raw": fixture,
+                "SourceMetadata": {
+                    "Data": {
+                        "Git": {
+                            "file": "fixtures/database-url.txt",
+                            "line": 12,
+                        }
+                    }
+                },
+                "Verified": False,
+            }
+
+            def find_command(name: str, checkout: Path) -> str | None:
+                if name == "trufflehog":
+                    return "/trusted/trufflehog"
+                return original_find_command(name, checkout)
+
+            def run_scanner(
+                command: list[str],
+                cwd: Path,
+                **_kwargs: object,
+            ) -> subprocess.CompletedProcess[str]:
+                if command[0] != "/trusted/trufflehog":
+                    return original_run(command, cwd, **_kwargs)
+                return subprocess.CompletedProcess(
+                    command,
+                    self.helper["TRUFFLEHOG_FINDINGS_EXIT_CODE"],
+                    json.dumps(finding),
+                    "",
+                )
+
+            output = io.StringIO()
+            with (
+                mock.patch.dict(
+                    self.helper["run_trufflehog_preflight"].__globals__,
+                    {
+                        "find_command": find_command,
+                        "run": run_scanner,
+                    },
+                ),
+                contextlib.redirect_stdout(output),
+            ):
+                self.helper["run_trufflehog_preflight"](
+                    repo,
+                    "local",
+                    None,
+                    "HEAD",
+                )
+
+        notice = output.getvalue()
+        self.assertIn('"detector": "Postgres"', notice)
+        self.assertIn('"path": "fixtures/database-url.txt"', notice)
+        self.assertIn('"line": 12', notice)
+        self.assertIn('"reason": "reserved-example-fixture"', notice)
+        self.assertNotIn(fixture, notice)
+
+    def test_trufflehog_reserved_fixture_suppression_cannot_hide_active_findings(self) -> None:
+        fixture = "postgres://" + "u:p@" + "example.com:5702"
+        cases = (
+            {
+                "DetectorName": "Postgres",
+                "Raw": fixture,
+                "Verified": True,
+            },
+            {
+                "DetectorName": "Postgres",
+                "Raw": "postgres://" + "user:pass@" + "db.example/app",
+                "Verified": False,
+            },
+            {
+                "DetectorName": "Github",
+                "Raw": "ghp_" + "A" * 24,
+                "Verified": False,
+            },
+        )
+        for active in cases:
+            with self.subTest(active=active["DetectorName"]), tempfile.TemporaryDirectory() as tempdir:
+                repo = init_repo(Path(tempdir))
+                (repo / "runtime.txt").write_text("review me\n", encoding="utf-8")
+                original_find_command = self.helper["find_command"]
+                original_run = self.helper["run"]
+                allowed = {
+                    "DetectorName": "Postgres",
+                    "Raw": fixture,
+                    "Verified": False,
+                }
+
+                def find_command(name: str, checkout: Path) -> str | None:
+                    if name == "trufflehog":
+                        return "/trusted/trufflehog"
+                    return original_find_command(name, checkout)
+
+                def run_scanner(
+                    command: list[str],
+                    cwd: Path,
+                    **_kwargs: object,
+                ) -> subprocess.CompletedProcess[str]:
+                    if command[0] != "/trusted/trufflehog":
+                        return original_run(command, cwd, **_kwargs)
+                    return subprocess.CompletedProcess(
+                        command,
+                        self.helper["TRUFFLEHOG_FINDINGS_EXIT_CODE"],
+                        "\n".join((json.dumps(allowed), json.dumps(active))),
+                        "",
+                    )
+
+                output = io.StringIO()
+                with (
+                    mock.patch.dict(
+                        self.helper["run_trufflehog_preflight"].__globals__,
+                        {
+                            "find_command": find_command,
+                            "run": run_scanner,
+                        },
+                    ),
+                    self.assertRaisesRegex(
+                        SystemExit,
+                        "found verified or unknown credentials",
+                    ),
+                    contextlib.redirect_stdout(output),
+                ):
+                    self.helper["run_trufflehog_preflight"](
+                        repo,
+                        "local",
+                        None,
+                        "HEAD",
+                    )
+                self.assertIn('"reason": "reserved-example-fixture"', output.getvalue())
 
     def test_powershell_harness_exposes_runnable_engines_only(self) -> None:
         harness = SCRIPT.with_name("test-review-harness.ps1").read_text(encoding="utf-8")
@@ -2598,6 +2737,101 @@ class AutoreviewHardeningTests(unittest.TestCase):
         )
         self.assertTrue(self.helper["secret_text_risk"](typed_default))
 
+    def test_secret_detector_allows_typescript_method_parameter_types(self) -> None:
+        for signature in (
+            "private deleteToken(token: DOMSyncMutationToken) {}",
+            "override formatCredential(credential: ApiCredential) {}",
+            "constructor(token: AuthToken) {}",
+        ):
+            with self.subTest(signature=signature):
+                self.assertFalse(
+                    self.helper["secret_text_risk"](
+                        signature,
+                        javascript_dialect="typescript",
+                    )
+                )
+
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                'private deleteToken(token: DOMSyncMutationToken = "actual-production-secret") {}',
+                javascript_dialect="typescript",
+            )
+        )
+
+        for declaration in (
+            "type State = { token: unknown; };",
+            "const assertActive = (token: TransactionToken) => token;",
+        ):
+            with self.subTest(declaration=declaration):
+                self.assertFalse(
+                    self.helper["secret_text_risk"](
+                        declaration,
+                        javascript_dialect="typescript",
+                    )
+                )
+
+    def test_secret_detector_allows_typescript_member_references(self) -> None:
+        for assignment in (
+            "const token = segment.slices[0]?.data?.token;",
+            "const innerToken = response.items[0].credentials.token;",
+        ):
+            with self.subTest(assignment=assignment):
+                self.assertFalse(
+                    self.helper["secret_text_risk"](
+                        assignment,
+                        javascript_dialect="typescript",
+                    )
+                )
+
+        self.assertFalse(
+            self.helper["secret_text_risk"](
+                "<span data-hook-token={innerToken} />",
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertFalse(
+            self.helper["secret_text_risk"](
+                "querySelector('[data-hook-token=\"one\"]')",
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                "querySelector('[data-api-token=\"actual-production-secret\"]')",
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                '<span data-hook-token={"actual-production-secret"} />',
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertFalse(
+            self.helper["secret_text_risk"](
+                "const PREPARED_SOURCE_TOKEN = Symbol('plite.prepared-source-token');",
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                'const apiToken = Symbol("actual-production-secret");',
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                'const apiToken = Symbol("app.actual-secret");',
+                javascript_dialect="typescript",
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                'const apiToken = createToken("actual-production-secret");',
+                javascript_dialect="typescript",
+            )
+        )
+
     def test_secret_detector_handles_punctuation_and_multiline_diff_values(self) -> None:
         value = "Correct-Horse!" + "@Battery$Staple"
         patch = (
@@ -3640,6 +3874,18 @@ class AutoreviewHardeningTests(unittest.TestCase):
         ):
             with self.subTest(content=content):
                 self.assertTrue(self.helper["secret_text_risk"](content))
+
+    def test_secret_detector_allows_reserved_example_uri_fixture(self) -> None:
+        self.assertFalse(
+            self.helper["secret_text_risk"](
+                "postgres://" + "u:p@" + "example.com:5702/db"
+            )
+        )
+        self.assertTrue(
+            self.helper["secret_text_risk"](
+                "postgres://" + "user:pass@" + "db.example/app"
+            )
+        )
 
     def test_secret_detector_limits_uri_userinfo_to_authority(self) -> None:
         for content in (

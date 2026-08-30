@@ -40,11 +40,11 @@ Highlight applies the `highlight` leaf mark to selected text. It is the authorin
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -55,7 +55,7 @@ Pass `HighlightPlugin` to `MarkToolbarButton` so the button uses the configured 
 
 ```tsx
 import { HighlighterIcon } from 'lucide-react';
-import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { HighlightPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -75,16 +75,16 @@ export function HighlightToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `HighlightPlugin` directly when you want the default `<mark>` render.
 
 ```tsx
-import { HighlightPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { HighlightPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [HighlightPlugin],
 });
 ```
@@ -92,8 +92,8 @@ export const editor = createPlateEditor({
 Configure the registry leaf, input rules, and shortcut when you want the same behavior as the kit.
 
 ```tsx
-import { HighlightRules } from '@platejs/basic-nodes';
-import { HighlightPlugin } from '@platejs/basic-nodes/react';
+import { HighlightRules } from 'platejs';
+import { HighlightPlugin } from 'platejs/react';
 
 import { HighlightLeaf } from '@/components/editor/highlight';
 
@@ -111,9 +111,9 @@ export const highlightPlugin = HighlightPlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseHighlightPlugin` | `@platejs/basic-nodes` | Headless highlight mark, HTML parser, render tag, selection rule, and `toggle` transform. |
-| `HighlightPlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless highlight mark. |
-| `HighlightRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BaseHighlightPlugin` | `platejs` | Headless highlight mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `HighlightPlugin` | `platejs/react` | React wrapper for the headless highlight mark. |
+| `HighlightRules.markdown` | `platejs` | Optional mark input rule factory. |
 | `HighlightLeaf` | Registry UI | Styled client highlight leaf using `PlateLeaf`. |
 | `HighlightLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `HighlightPlugin`, `HighlightLeaf`, two input-rule variants, and `mod+shift+h`. |
@@ -138,9 +138,9 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseHighlightPlugin` | `@platejs/basic-nodes` | Headless highlight plugin. |
-| `HighlightPlugin` | `@platejs/basic-nodes/react` | React highlight plugin. |
-| `HighlightRules.markdown(options)` | `@platejs/basic-nodes` | Creates a highlight mark input rule. |
-| `tx.highlight.toggle()` | `@platejs/basic-nodes` | Toggles the highlight mark at the selection. |
+| `BaseHighlightPlugin` | `platejs` | Headless highlight plugin. |
+| `HighlightPlugin` | `platejs/react` | React highlight plugin. |
+| `HighlightRules.markdown(options)` | `platejs` | Creates a highlight mark input rule. |
+| `tx.highlight.toggle()` | `platejs` | Toggles the highlight mark at the selection. |
 | `HighlightLeaf` | Registry UI | Styled client highlight leaf. |
 | `HighlightLeafStatic` | Registry UI | Styled static highlight leaf. |

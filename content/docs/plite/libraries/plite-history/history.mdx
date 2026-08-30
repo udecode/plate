@@ -8,8 +8,8 @@ The `history()` extension tracks undo and redo batches for an editor.
 ## Usage
 
 ```typescript
-import { createEditor } from "@platejs/plite";
-import { history } from "@platejs/plite-history";
+import { createEditor } from "plitejs";
+import { history } from "plitejs/history";
 
 const editor = createEditor({
   extensions: [history()],
@@ -32,7 +32,7 @@ import type {
   EditorEffect,
   EditorSchemaIdentity,
   Selection,
-} from "@platejs/plite";
+} from "plitejs";
 
 export interface History {
   readonly redos: readonly Batch[];

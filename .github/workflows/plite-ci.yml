@@ -6,17 +6,11 @@ on:
       - main
       - next
     paths:
-      - 'packages/browser/**'
-      - 'packages/core/**'
-      - 'packages/plite/**'
-      - 'packages/plite-dom/**'
-      - 'packages/plite-history/**'
-      - 'packages/plite-hyperscript/**'
-      - 'packages/plite-layout/**'
-      - 'packages/plite-react/**'
-      - 'packages/plate-scripts/**'
-      - 'packages/udecode/**'
-      - 'packages/yjs/**'
+      - 'packages/test/**'
+      - 'packages/platejs/**'
+      - 'packages/plitejs/**'
+      - 'tooling/scripts/plate-pkg.cjs'
+      - 'tooling/scripts/run-with-pkg-dir.cjs'
       - 'apps/plite/**'
       - 'apps/www/src/app/(app)/examples/plite/**'
       - 'apps/www/src/app/dev/editor-perf/**'
@@ -45,6 +39,7 @@ on:
       - 'benchmarks/targets/slate-v2.json'
       - 'config/**'
       - 'tooling/config/**'
+      - 'tooling/entrypoints/**'
       - 'tooling/scripts/build-plite-package.mjs'
       - 'tooling/scripts/build-plite-package.test.mjs'
       - 'tooling/scripts/bench-targets.mjs'
@@ -54,11 +49,14 @@ on:
       - 'tooling/scripts/check-plite-release-artifacts.test.mjs'
       - 'tooling/scripts/check-plite-release-artifacts.slow.test.mjs'
       - 'tooling/scripts/check-plite*.mjs'
+      - 'tooling/scripts/entrypoint-turbo*.mjs'
+      - 'tooling/scripts/generate-entrypoint-turbo.mjs'
       - 'tooling/scripts/plite-source-aliases.test.mjs'
       - 'tooling/scripts/plite-source-aliases.slow.test.mjs'
       - 'tooling/scripts/run-bounded-process.mjs'
       - 'tooling/scripts/run-bounded-process.test.mjs'
       - 'tooling/scripts/run-bounded-process.slow.test.mjs'
+      - 'tooling/scripts/run-entrypoint-*.mjs'
       - 'tooling/scripts/test-fast.mjs'
       - 'tooling/scripts/test-slow.mjs'
       - 'tooling/scripts/test-slowest.mjs'
@@ -80,17 +78,11 @@ on:
       - synchronize
       - reopened
     paths:
-      - 'packages/browser/**'
-      - 'packages/core/**'
-      - 'packages/plite/**'
-      - 'packages/plite-dom/**'
-      - 'packages/plite-history/**'
-      - 'packages/plite-hyperscript/**'
-      - 'packages/plite-layout/**'
-      - 'packages/plite-react/**'
-      - 'packages/plate-scripts/**'
-      - 'packages/udecode/**'
-      - 'packages/yjs/**'
+      - 'packages/test/**'
+      - 'packages/platejs/**'
+      - 'packages/plitejs/**'
+      - 'tooling/scripts/plate-pkg.cjs'
+      - 'tooling/scripts/run-with-pkg-dir.cjs'
       - 'apps/plite/**'
       - 'apps/www/src/app/(app)/examples/plite/**'
       - 'apps/www/src/app/dev/editor-perf/**'
@@ -119,6 +111,7 @@ on:
       - 'benchmarks/targets/slate-v2.json'
       - 'config/**'
       - 'tooling/config/**'
+      - 'tooling/entrypoints/**'
       - 'tooling/scripts/build-plite-package.mjs'
       - 'tooling/scripts/build-plite-package.test.mjs'
       - 'tooling/scripts/bench-targets.mjs'
@@ -128,11 +121,14 @@ on:
       - 'tooling/scripts/check-plite-release-artifacts.test.mjs'
       - 'tooling/scripts/check-plite-release-artifacts.slow.test.mjs'
       - 'tooling/scripts/check-plite*.mjs'
+      - 'tooling/scripts/entrypoint-turbo*.mjs'
+      - 'tooling/scripts/generate-entrypoint-turbo.mjs'
       - 'tooling/scripts/plite-source-aliases.test.mjs'
       - 'tooling/scripts/plite-source-aliases.slow.test.mjs'
       - 'tooling/scripts/run-bounded-process.mjs'
       - 'tooling/scripts/run-bounded-process.test.mjs'
       - 'tooling/scripts/run-bounded-process.slow.test.mjs'
+      - 'tooling/scripts/run-entrypoint-*.mjs'
       - 'tooling/scripts/test-fast.mjs'
       - 'tooling/scripts/test-slow.mjs'
       - 'tooling/scripts/test-slowest.mjs'
@@ -158,62 +154,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  packages:
-    name: Plite packages
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.12
-
-      - name: Monorepo install
-        uses: ./.github/actions/pnpm-install
-
-      - name: Typecheck packages
-        run: pnpm plite:typecheck
-
-      - name: Typecheck www Plite adopters
-        run: pnpm --filter www exec tsc --noEmit -p tsconfig.package-integration.json
-
-      - name: Install Chromium
-        run: pnpm plite:browser:install chromium
-
-      - name: Test packages
-        run: pnpm plite:test
-
-      - name: Test Plite proof contracts
-        run: pnpm check:plite:contracts
-
-  plite-adopters:
-    name: Plite adopter typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.12
-
-      - name: Monorepo install
-        uses: ./.github/actions/pnpm-install
-
-      - name: Typecheck affected Plite adopters
-        env:
-          PLITE_CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: pnpm check:plite:adopters
-
   browser-build:
     name: Plite browser build
     runs-on: ubuntu-latest
@@ -244,7 +184,7 @@ jobs:
           name: plite-browser-build
           path: |
             apps/plite/out
-            packages/browser/dist
+            packages/test/dist
           include-hidden-files: true
           retention-days: 3
 

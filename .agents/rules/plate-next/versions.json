@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 110,
+  "latestVersion": 122,
   "versions": [
     {
       "version": 0,
@@ -1301,275 +1301,381 @@
         "Use selection.nodes() or selection.ranges() for exact node membership and never encode a kind-specific false result in a generic range predicate.",
         "Audit consumers that duplicated node-selection checks around isExpanded(), regenerate doctrine mirrors, and prove range and exact-membership behavior independently."
       ]
+    },
+    {
+      "version": 111,
+      "date": "2026-08-26",
+      "doctrineFingerprint": "sha256:308a1f931663c58b51055a523630792f7dc9179d4b19d298d7d936574c1e427a",
+      "summary": "Editor package and entrypoint select one unqualified editor vocabulary without public internal entrypoints.",
+      "migrationChecks": [
+        "Import the raw substrate from plitejs and the product framework from platejs; Plate applications install and import platejs only.",
+        "Use createEditor, Editor, and CreateEditorOptions on every matching entrypoint; use React useEditor for component ownership and explicit context hooks for mounted retrieval.",
+        "Delete branded editor factories, types, lifecycle hooks, compatibility aliases, and public internal, unsafe, or generic framework entrypoints.",
+        "Keep compiler and layered editor carriers private inside their owning distribution, prove corresponding-subpath dependency closure, and regenerate doctrine mirrors."
+      ]
+    },
+    {
+      "version": 112,
+      "date": "2026-08-27",
+      "doctrineFingerprint": "sha256:b33458b8ed9145944ba123fd17b36b5d1fbcd06daa51fc98633c4182c5665f50",
+      "summary": "Plite package proof follows the consolidated plitejs owner and retires absorbed package review rows.",
+      "migrationChecks": [
+        "Route Plite source, test, build, browser, benchmark, and release proof through packages/plitejs and its explicit public subpaths.",
+        "Retire Diff and Test Utils package-review rows after their code and proof move into plitejs/diff and plitejs/testing.",
+        "Keep historical ledgers intact while current doctrine, docs, tooling, and generated skill mirrors name only live package owners.",
+        "Prove the consolidated package with source-first typecheck, full package tests, Chromium, packed consumers, and the final doctrine fingerprint."
+      ]
+    },
+    {
+      "version": 113,
+      "date": "2026-08-27",
+      "doctrineFingerprint": "sha256:45d0bf58b2e96cd92bd24c9fda65b82fb4fa4eb0614b6177a3d21e0459a83b6a",
+      "summary": "Plate package proof follows the physical platejs owner and package-selected unified editor API.",
+      "migrationChecks": [
+        "Import Plate application and package runtime APIs from platejs or platejs/react; reserve plitejs for raw substrate owners.",
+        "Use createEditor and Editor on both Plate entrypoints, use useEditor for React construction, and use explicit context hooks for mounted retrieval.",
+        "Delete Core and Utils package dependencies, imports, aliases, forwarders, and current documentation references.",
+        "Prove platejs root, React, static, migrations, and low-level facade subpaths through source-first types, tests, packed consumers, runtime identity, headless isolation, apps, registry, and Browser."
+      ]
+    },
+    {
+      "version": 114,
+      "date": "2026-08-27",
+      "doctrineFingerprint": "sha256:202aa581cb3bf95efea110228d6a831c0671f28388767a0b6e94e40935f8de7b",
+      "summary": "The Plate facade owns one mechanically enforced Plite boundary and packed export-identity exception set.",
+      "migrationChecks": [
+        "Allow only packages/platejs to depend on or import plitejs; route every Plate package, app, registry source, and current doc through platejs or platejs/react.",
+        "Compare packed Plite and Plate exports by runtime identity, with explicit replacement and omission sets for root and React entrypoints.",
+        "Keep React and React DOM optional by proving the packed platejs root and its required dependency closure without React.",
+        "Delete stale package paths and public internal editor carriers, regenerate doctrine mirrors, and prove the final doctrine fingerprint."
+      ]
+    },
+    {
+      "version": 115,
+      "date": "2026-08-27",
+      "doctrineFingerprint": "sha256:831a27f110f6974a80d05a11151b975e96b5aa1212c0f6efdac5cb8c5ac0d8d5",
+      "summary": "Plate publishes shared contracts through its facade and keeps one-owner helpers local instead of publishing generic utility packages.",
+      "migrationChecks": [
+        "Import framework-wide headless contracts from platejs and framework-wide React contracts from platejs/react.",
+        "Keep feature-only and copied-registry helpers in their actual owner; delete generic utility, React-utility, class-name, and wrapper packages without compatibility aliases.",
+        "Require an independent current user job before retaining any public helper package; optional peer metadata does not establish that job.",
+        "Prove package manifests, packed entrypoints, current docs, generated registry output, and executable lint boundaries contain no rejected package namespace."
+      ]
+    },
+    {
+      "version": 116,
+      "date": "2026-08-28",
+      "doctrineFingerprint": "sha256:c1e5bb9493a0983907ba354d154324d8bfce9460e447303c9e07134e75f5b4cf",
+      "summary": "Plate reviews one platejs package whose explicit entrypoints own every editor feature.",
+      "migrationChecks": [
+        "Keep platejs as the only active Plate package-review owner; preserve deleted feature-package attestations under retiredPackages.",
+        "Import ordinary APIs from platejs or platejs/react and advanced capabilities from explicit platejs/<feature> or platejs/<feature>/react entrypoints.",
+        "Enforce direct entrypoint dependencies, React-free headless roots, and the sole platejs to plitejs boundary through the generated DAG and Oxlint.",
+        "Prove the four-root inventory, entrypoint-scoped Turbo graph, current docs and registry, Browser demos, and packed release consumers."
+      ]
+    },
+    {
+      "version": 117,
+      "date": "2026-08-28",
+      "doctrineFingerprint": "sha256:f97575fe0ede0d8abb8c246c277404e4258f53d4ea56960d98d53a84efffb5c0",
+      "summary": "The entrypoint graph owns optional-peer declarations and exact packed peer reachability.",
+      "migrationChecks": [
+        "Assign every optional peer import to the direct entrypoint that owns it and require the manifest optional-peer set to match the graph exactly.",
+        "Reject imports of optional peers from sibling or transitive entrypoints through the generated Oxlint rule.",
+        "Install package roots in docs and list only the optional peers required by each selected feature entrypoint.",
+        "Derive packed runtime and declaration peer closure for every public JavaScript export, reject unrelated peers from the base graph, and report unavoidable sibling-peer overlap inside required vendors."
+      ]
+    },
+    {
+      "version": 118,
+      "date": "2026-08-28",
+      "doctrineFingerprint": "sha256:e6902d55fa0ef69d37e06e43150254f82a2869699281acd38475222207b6dbab",
+      "summary": "Agent workflows target the consolidated package roots and their entrypoint-aware proof commands.",
+      "migrationChecks": [
+        "Name only packages/plitejs, packages/platejs, packages/test, and packages/cli as current package roots in agent doctrine.",
+        "Route Plite and Plate checks through the consolidated package scripts, entrypoint graph, and current registry integration owners instead of deleted package paths.",
+        "Validate every live source-rule link, regenerate installed skill mirrors, and reject deleted package-root references from current doctrine."
+      ]
+    },
+    {
+      "version": 119,
+      "date": "2026-08-28",
+      "doctrineFingerprint": "sha256:06e077f8f34d54bbdbd72708f6e1ea6759a8f80e869d83208ebe15b1c692c5f8",
+      "summary": "Plate test infrastructure ships from one environment-isolated public distribution.",
+      "migrationChecks": [
+        "Keep @platejs/test headless and Node-safe while React, DOM, Playwright, and proof helpers remain behind explicit subpaths.",
+        "Require @platejs/test to peer on platejs and reject direct plitejs imports from every test entrypoint.",
+        "Audit current docs, skills, package manifests, Turbo tasks, and Oxlint boundaries for deleted test package names and runtime-crossing imports."
+      ]
+    },
+    {
+      "version": 120,
+      "date": "2026-08-29",
+      "doctrineFingerprint": "sha256:93764226cf704b4874d4690030b136962b0c8a055ec417b92ea6e8888213c36d",
+      "summary": "Lists have one behavior owner and one copied registry UI family.",
+      "migrationChecks": [
+        "Keep root ListPlugin as the sole list behavior owner and use only the standard list registry family.",
+        "Reject classic-list compatibility plugins, copied UI variants, docs, examples, and generated registry items.",
+        "Prove current package, registry, docs, generated output, and agent doctrine contain no classic-list surface while standard list behavior remains covered."
+      ]
+    },
+    {
+      "version": 121,
+      "date": "2026-08-29",
+      "doctrineFingerprint": "sha256:4fd6f352b742d92621f897addc3fe87a1771007e4b20427b270766855002031a",
+      "summary": "Plate feature closeout uses the repository-wide P1 review contract.",
+      "migrationChecks": [
+        "Require a resolved P1 autoreview gate before the Plate feature goal-completion gate.",
+        "Keep the feature template, checker, tests, and generated skill teaching the same review priority.",
+        "Reject unresolved or N/A P1 evidence for package and registry feature delivery."
+      ]
+    },
+    {
+      "version": 122,
+      "date": "2026-08-30",
+      "doctrineFingerprint": "sha256:7c91cbd8159357b2370d8f96faf87c195fc9c72da99da02acb7c6cee204d3f79",
+      "summary": "Generated skill resources include the complete GitHub issue reporting workflow.",
+      "migrationChecks": [
+        "Mirror GitHub issue reporter assets, API boundaries, and publication scripts from rule source into the installed skill.",
+        "Keep the Plate Next resource manifest authoritative for every required generated skill resource.",
+        "Regenerate skills and prove exact source-to-mirror resource parity."
+      ]
     }
   ],
   "retiredPackages": {
+    "ai": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "basic-nodes": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "basic-styles": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "callout": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
     "caption": {
       "appliedVersion": 0,
       "retiredAt": "2026-07-23",
       "evidence": "docs/plans/2026-07-23-schema-api-hard-cuts.md"
+    },
+    "code-block": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "code-drawing": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "combobox": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "comment": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "csv": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "cursor": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "date": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "diff": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-27",
+      "evidence": "docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md"
+    },
+    "dnd": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "docx": {
+      "appliedVersion": 0,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "docx-export": {
+      "appliedVersion": 0,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "docx-import": {
+      "appliedVersion": 0,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "docx-io": {
       "appliedVersion": 50,
       "retiredAt": "2026-08-16",
       "evidence": "docs/plans/2026-08-16-hard-cut-docx-package-topology.md"
     },
+    "docx-paste": {
+      "appliedVersion": 0,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "emoji": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "excalidraw": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "find-replace": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "floating": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "footnote": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "indent": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "juice": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "layout": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "link": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "list": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "markdown": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "math": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "media": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "mention": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
+    "resizable": {
+      "appliedVersion": 50,
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    },
     "selection": {
       "appliedVersion": 50,
       "retiredAt": "2026-08-25",
       "evidence": "docs/plans/2026-08-25-selection-read-surface-hard-cut.md"
-    }
-  },
-  "packages": {
-    "ai": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:91401d3950cb43ed57d3791f5ca6dc2dfea9e21dba22ca199f22b8b7c590f17d",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "basic-nodes": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:6c55c75636a679e110bf91262dd3f4328b9589a7cde273b4e1d4ed7df29c3b92",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "basic-styles": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:dfdd06c1018f09ab434d52995161ced8f738f4af51486c60e8d68bf99eab182d",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "callout": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:6042fd7b43975a8c5f1d4a0ca13ed57d5b29b7db00287ba884cb3b3cc7efed8e",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "code-block": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:98ffda519b5cf574aa594df4996ae829cbae56e197417be1e6af12c5056a06d3",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "code-drawing": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:353ebb496b811c7bf896f3250e825f3eeaa4b446b954646b86597b5cc1a0d212",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "combobox": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:b102ba5036e3412d32eba609bc3725e344334f0142e15cecabf8472e5d5d7f16",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "comment": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:c6d452401a8e23a262095e80556d040432b0d701a1bc65e8b098fbcbfe4a325e",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "csv": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:90380e85798d44afd7d02a2ae4684e245e506151052bfdad494168999542c1db",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "cursor": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:fed711f58e1dbeb5ac017ec637813aab2cd9e4b82bd074f50576173737660600",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "date": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:c3024b5f72b5d248fadc4618689a7a99597c7b8b122b30d9c32f43ac0ad90c76",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "diff": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:5ee56c3625b3b5c6aba7805e0935aff49e1e9999ec93c51693551c570290fef0",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "dnd": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:d31754f0ffad1afbfb5f1a9e9f196a329e2dce922ec0410e21efb5e94bc17b2b",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "docx": {
-      "appliedVersion": 0,
-      "fingerprint": null
-    },
-    "docx-export": {
-      "appliedVersion": 0,
-      "fingerprint": null
-    },
-    "docx-import": {
-      "appliedVersion": 0,
-      "fingerprint": null
-    },
-    "docx-paste": {
-      "appliedVersion": 0,
-      "fingerprint": null
-    },
-    "emoji": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:558220e2007bbff2e55bf5b2d51ae2e485a348f0052a584593ad6ee34a2e1dc8",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "excalidraw": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:b23923fe601251639fafe29c496baddb903a3b5101619201aa5d4a0d40d58942",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "find-replace": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:7f5db8ddd75ee0ecb9a23fe2b8d210c6caaba1cceabc2a2e9fa8f97430b07488",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "floating": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:60ec940111e56c840200a8aba43034fcd00c2b74c91b491f10dd50ec62771a76",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "footnote": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:4a656f50c2bba222601aed3005eec3bc67109b015424158e78d79c213e028d05",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "indent": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:154ed7510b05a4f67b7a8d1318d734422e93438186bda2acbaa1352604c8fb88",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "juice": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:bf21f39893ca844b630c5661fba39c09cc71a4155e22fd2b92cafffd9d72dcd3",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "layout": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:6c7c0afdc4ecb533b665defd18125ffb6aa2a8e65ec7b14d44e1cce2bc3c14ad",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "link": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:5befaf652ceae7538a095bc4157820b326e72e188539e8f33e0f80bd1c17ee55",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "list": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:dd2fa47496eb6c12dccbe3247297be70e154dd6f54ce0578eaf23257916be965",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "list-classic": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:50f984404669689124afa026b2c562d8f5832a510a0c6d2707dd8392cd1d05f6",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "markdown": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:1e5fe604a016c1a281b17e947b7acb8f08ed440bde6da7946d7e2135220d4029",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "math": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:4bced6fe18625f4568f0132549156b555ff01bca34fca489c5bf41044d0c7a7d",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "media": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:3ea271d8be68f947b8c62c642410315ccd376d6df9a1ef58c0b0924e6a5bbadd",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "mention": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:eaa75cdc3b99809ad9c47c3157c02cdbc4cb6625fcdb77f1970c88190a523e53",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "plate": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:243f6d714388ec6f55ebf4fe325292024d4c95b7994bf384adca20ad3a920baf",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
-    },
-    "resizable": {
-      "appliedVersion": 50,
-      "fingerprint": "sha256:c87b8624a4a9884cc4fda394e13402e224f96302b7af0524e2328f78d9499d59",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
     },
     "slash-command": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:27f4fb30c9847d57b78227fc44c01b873ae42cc1948428f272d24289b15767f5",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "suggestion": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:591170c5e3fcc94c9103b56f0d70c665a027cb2fd65b32f41deb4a6eb1d281b7",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "tabbable": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:59b704c349112e93fee84fca59d41c6b633fc75d3f6064a4f044a87cdf85aab3",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "table": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:7cea3d00f56c3e6d8505a3399c602042bf9c1954015f59515b98d04085534f34",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "tag": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:63b96a64fe709687d58c31c7b9cc7d7f190da3e20e804167e3142abee86d4ec1",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "test-utils": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:bf147962d397aeefcb41c3fe4057b7426a5cead0142f954640f893eefcb41c87",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-27",
+      "evidence": "docs/plans/2026-08-26-plitejs-platejs-distribution-hard-cut.md"
     },
     "toc": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:b4393be2d6fa0a3a2402eb1f14d300573573716f60b29ce5f1a41d77826a1ff8",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "toggle": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:824a317316fd2197d54e750f48a7acac0f5d7a886d05cf8079e3a990e6f6c854",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
     },
     "yjs": {
       "appliedVersion": 50,
-      "fingerprint": "sha256:0cd1209d3165eead5d0907af953187db183d95a8e93688fb6defabfca04c77e8",
-      "verifiedAt": "2026-08-03",
-      "evidence": "docs/plans/2026-08-03-application-schema-overrides-and-property-handles.md"
+      "retiredAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-full-platejs-package-cut.md"
+    }
+  },
+  "packages": {
+    "platejs": {
+      "appliedVersion": 122,
+      "fingerprint": "sha256:12d87105e0a46201a6c63187c42370edb7a1b1c7e088b8d831beba53afe7d1e2",
+      "verifiedAt": "2026-08-30",
+      "evidence": "docs/plans/2026-08-29-semantic-details-hard-cut.md"
+    },
+    "test": {
+      "appliedVersion": 119,
+      "fingerprint": "sha256:e1e76d6b738fd753f2d2f706840d24758b9a0a9def0eff380141288e6ca2f1a5",
+      "verifiedAt": "2026-08-28",
+      "evidence": "docs/plans/2026-08-28-plate-test-distribution-hard-cut.md"
     }
   }
 }

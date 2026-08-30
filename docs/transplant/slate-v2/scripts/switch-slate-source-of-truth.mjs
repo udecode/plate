@@ -45,7 +45,7 @@ const packageDestinations = new Map([
 
 const specifierMap = [
   ['@slate/yjs', '@platejs/yjs'],
-  ['slate-browser', '@platejs/browser'],
+  ['slate-browser', '@platejs/test'],
   ['slate-dom', '@platejs/slate-dom'],
   ['slate-history', '@platejs/slate-history'],
   ['slate-hyperscript', '@platejs/slate-hyperscript'],
@@ -161,14 +161,14 @@ const rewritePackageSpecifiers = (content) => {
     .replaceAll('@slate/yjs', '@platejs/yjs')
     .replaceAll(
       'npm install -D slate-browser',
-      'npm install -D @platejs/browser'
+      'npm install -D @platejs/test'
     )
-    .replaceAll('Hello from slate-browser', 'Hello from @platejs/browser')
-    .replaceAll('packages/@platejs/browser', 'packages/browser')
+    .replaceAll('Hello from slate-browser', 'Hello from @platejs/test')
+    .replaceAll('packages/@platejs/test', 'packages/test')
     .replaceAll('packages/@platejs/yjs', 'packages/yjs')
-    .replaceAll('packages/slate-browser', 'packages/browser')
+    .replaceAll('packages/slate-browser', 'packages/test')
     .replaceAll('packages/slate-yjs', 'packages/yjs')
-    .replaceAll('slate-browser/', '@platejs/browser/')
+    .replaceAll('slate-browser/', '@platejs/test/')
     .replaceAll('slate-yjs/', '@platejs/yjs/');
 };
 
@@ -1772,7 +1772,7 @@ const useDecorationSourceLifecycle = <T>(
       );
   }
 
-  if (donorPath === 'packages/browser/src/playwright/selection-actions.ts') {
+  if (donorPath === 'packages/test/src/playwright/selection-actions.ts') {
     text = text
       .replace(
         `) => {
@@ -1857,7 +1857,7 @@ const useDecorationSourceLifecycle = <T>(
       );
   }
 
-  if (donorPath === 'packages/browser/src/playwright/harness.ts') {
+  if (donorPath === 'packages/test/src/playwright/harness.ts') {
     text = text
       .replace(
         `  const root = explicitRoot ?? getEditable(surface, surfaceOptions)
@@ -2061,7 +2061,7 @@ const isNestedEditableDOMTarget = (
       );
   }
 
-  if (donorPath === 'packages/browser/src/playwright/ime.ts') {
+  if (donorPath === 'packages/test/src/playwright/ime.ts') {
     text = text
       .replace(
         `          __slateBrowserHandle?: {

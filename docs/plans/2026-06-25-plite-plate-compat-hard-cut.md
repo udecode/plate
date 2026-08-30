@@ -200,12 +200,12 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the proof commands/artifacts named in this plan | Focused package tests green; broad 23-package typecheck green; stale API audits clean. |
-| Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | Broad typecheck failures drove AI/math/media/core/link/table/suggestion/list-classic packet additions. |
+| Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | Broad typecheck failures drove AI/math/media/core/link/table/suggestion/legacy-list-model packet additions. |
 | Lane authority proof | yes | Prove each command ran in the owning Plite/Plate/shared workspace, or record N/A | Commands ran from `/Users/zbeyens/git/plate-2` against `packages/**` owners. |
 | Workspace authority proof | yes | Record cwd/tool for each package, docs, skill, browser, or benchmark proof | Verification evidence lists root cwd package commands; no docs/browser/benchmark edits claimed. |
 | Behavior gates | N/A | Run focused stable behavior proof or record scoped defer rows | No browser-visible editor behavior claim; package behavior covered by focused package tests. |
 | Visual/native selection proof | N/A | Record Browser/Playwright/native-selection evidence or scoped blocker | No visual/native selection claim in this packet. |
-| Missing oracle repair | yes | Add/verify/revert/quarantine oracle packets or record owner defer | Stale read fixtures repaired in AI, math, media, core, link, table, suggestion, and list-classic specs; focused tests green. |
+| Missing oracle repair | yes | Add/verify/revert/quarantine oracle packets or record owner defer | Stale read fixtures repaired in AI, math, media, core, link, table, suggestion, and legacy-list-model specs; focused tests green. |
 | `@platejs/browser` promotion | N/A | Add/verify helper/API or record queue/defer reason | No repeated browser proof pattern was introduced. |
 | Mobile/raw-device claim width | N/A | Run raw-device proof or record that only scoped viewport/browser proof is available | No mobile/raw-device claim. |
 | Huge-document correctness smoke | N/A | Run focused huge-document behavior smoke or record owner defer | No huge-document behavior claim. |
@@ -244,8 +244,8 @@ Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
 | core/plite-react alias cut | 1 | auto | Core re-exported/aliased Plite React hooks under stale Slate naming. | Deleted `packages/core/src/react/slate-react.ts`; updated imports; `pnpm turbo typecheck --filter=./packages/core` | N/A: API/package cleanup | keep | Broad sweep |
-| Plite block query promotion | 1 | auto | Plate packages needed generic block lookup without `editor.api.block`. | Added `state.nodes.block` and exported related option types in `packages/plite`; `pnpm turbo typecheck --filter=./packages/plite --filter=./packages/list-classic` | N/A: model API cleanup | keep | Package migrations |
-| list-classic read migration | 1 | auto | `list-classic` used old Plate query helpers. | Added local editor query helpers; removed stale `editor.api.node/block/isAt/pathRef/pointRef/start/end`; `pnpm turbo typecheck --filter=./packages/list-classic` | N/A: package API cleanup | keep | Broad sweep |
+| Plite block query promotion | 1 | auto | Plate packages needed generic block lookup without `editor.api.block`. | Added `state.nodes.block` and exported related option types in `packages/plite`; `pnpm turbo typecheck --filter=./packages/plite --filter=./packages/platejs/src/features/list` | N/A: model API cleanup | keep | Package migrations |
+| legacy-list-model read migration | 1 | auto | `legacy-list-model` used old Plate query helpers. | Added local editor query helpers; removed stale `editor.api.node/block/isAt/pathRef/pointRef/start/end`; `pnpm turbo typecheck --filter=./packages/platejs/src/features/list` | N/A: package API cleanup | keep | Broad sweep |
 | utils/indent read migration | 1 | auto | Utility hooks and indent transforms used stale model-read helpers. | Migrated selection/fragment/mark reads and indent node iteration; `pnpm turbo typecheck --filter=./packages/utils`; `pnpm turbo typecheck --filter=./packages/indent` | N/A: package API cleanup | keep | Broad sweep |
 | selection package cleanup | 1 | auto | Block selection used stale node/block/prop/focus/readOnly helpers. | Migrated selection reads, local fragment prop logic, DOM rect typing, selected-block transforms; `pnpm turbo typecheck --filter=./packages/selection` | N/A: type/API cleanup; behavior proof still future if package behavior changes are reviewed | keep | Broad sweep |
 | dnd package cleanup | 1 | auto | DnD package and specs used `api.node`, `api.nodesRange`, `api.isExpanded`. | Migrated to `editor.read`, local range construction, read-based specs; `pnpm turbo typecheck --filter=./packages/dnd` | N/A: package API cleanup | keep | Broad sweep |
@@ -255,7 +255,7 @@ Packet ledger:
 | core focused fixture repair | 2 | auto | Core specs still asserted stale read surfaces. | `packages/core/src/static/plugins/ViewPlugin.spec.ts`; `packages/core/src/lib/editor/withPlite.spec.ts`; `cd packages/core && bun test src/static/plugins/ViewPlugin.spec.ts src/lib/editor/withPlite.spec.ts src/lib/plugin/createBasePlugin.spec.ts` | N/A: package spec cleanup | keep | Core aggregate slowdown logged |
 | link stale dist/source repair | 2 | auto | Link tests used old model-read mock shape and stale dist still referenced removed focus export. | `packages/link/src/react/utils/floatingLinkTriggers.spec.ts`; `pnpm --filter @platejs/link build --output-logs=errors-only`; `pnpm --filter @platejs/link test` | N/A: package API cleanup | keep | Review dist artifact churn |
 | table exact-path query repair | 2 | auto | Table transforms needed exact path or ancestor query semantics after generic read hard cut. | Added `packages/table/src/lib/internal/nodeQueries.ts`; patched row/cell/border transforms; `pnpm --filter @platejs/table test`; `pnpm --filter @platejs/table typecheck` | N/A: package behavior covered by table tests | keep | Review helper shape |
-| AI/list/suggestion stale fixture audit cleanup | 2 | auto | Final stale API audit found test fixtures still wiring generic model reads through `editor.api`. | `packages/ai/src/lib/transforms/undoAI.spec.ts`; `packages/list-classic/src/lib/transforms/*`; `packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts`; `pnpm --filter @platejs/ai typecheck`; `pnpm --filter @platejs/list-classic test`; `pnpm --filter @platejs/suggestion test` | N/A: package spec cleanup | keep | Final audit |
+| AI/list/suggestion stale fixture audit cleanup | 2 | auto | Final stale API audit found test fixtures still wiring generic model reads through `editor.api`. | `packages/ai/src/lib/transforms/undoAI.spec.ts`; `packages/platejs/src/features/list/src/lib/transforms/*`; `packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts`; `pnpm --filter @platejs/ai typecheck`; `pnpm --filter platejs test`; `pnpm --filter @platejs/suggestion test` | N/A: package spec cleanup | keep | Final audit |
 | final source audits and broad proof | 2 | auto | Need prove no stale public compat surface remains in cleaned scope. | `rg` stale `editor.api.*` audit clean; `rg` `editor.tf/getTransforms/getPluginApi` audit clean; broad `pnpm turbo typecheck ...` 45/45 successful | N/A: API/source proof | keep | Handoff |
 
 Behavior proof ledger:
@@ -294,8 +294,8 @@ Workflow slowdowns:
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | Core Plite React import cleanup; Plite `state.nodes.block`; list-classic/utils/indent/selection/dnd/date/toc/footnote/layout/table/link/AI/media/math stale API migrations; table exact-or-ancestor helper for table path semantics |
-| tests/oracles/browser proof | Read-based mocks repaired in DnD, list-classic, selection, suggestion, AI, math, media, core, link, table, utils; no browser proof added because this packet did not claim visual/editor behavior |
+| code/runtime/API | Core Plite React import cleanup; Plite `state.nodes.block`; legacy-list-model/utils/indent/selection/dnd/date/toc/footnote/layout/table/link/AI/media/math stale API migrations; table exact-or-ancestor helper for table path semantics |
+| tests/oracles/browser proof | Read-based mocks repaired in DnD, legacy-list-model, selection, suggestion, AI, math, media, core, link, table, utils; no browser proof added because this packet did not claim visual/editor behavior |
 | generated/package artifacts | `@platejs/link build` regenerated stale link dist; lint/build activity also touched declaration artifacts under several packages |
 | benchmarks/metrics/targets | N/A |
 | examples/docs | N/A intentionally for this packet; `pnpm lint:fix` did touch broader Plite example files and then failed on remaining lint debt |
@@ -339,8 +339,8 @@ Error attempts:
 
 Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/core` passed before broad package loop.
-- `pnpm turbo typecheck --filter=./packages/list-classic` passed.
-- `pnpm turbo typecheck --filter=./packages/plite --filter=./packages/list-classic` passed.
+- `pnpm turbo typecheck --filter=./packages/platejs/src/features/list` passed.
+- `pnpm turbo typecheck --filter=./packages/plite --filter=./packages/platejs/src/features/list` passed.
 - `pnpm turbo typecheck --filter=./packages/utils` passed.
 - `pnpm turbo typecheck --filter=./packages/indent` passed.
 - `pnpm turbo typecheck --filter=./packages/selection` passed.
@@ -360,11 +360,11 @@ Verification evidence:
 - `pnpm --filter @platejs/link test` passed: 85 pass.
 - `pnpm --filter @platejs/table test` passed: 219 pass.
 - `pnpm --filter @platejs/table typecheck` passed.
-- `pnpm --filter @platejs/list-classic test` passed: 105 pass.
-- Grouped package test gate 1 passed for date/dnd/selection/utils/toggle/list/list-classic/layout: 8 successful.
+- `pnpm --filter platejs test` passed: 105 pass.
+- Grouped package test gate 1 passed for date/dnd/selection/utils/toggle/list/legacy-list-model/layout: 8 successful.
 - Grouped package test gate 2 passed for table/suggestion/toc/link/indent/tag/footnote: 7 successful.
 - Grouped package test gate 3 passed for plite/AI/basic-nodes/code-block/code-drawing/media/math: 7 successful.
-- Broad package typecheck passed after all repairs: `pnpm turbo typecheck --output-logs=errors-only --filter=./packages/plite --filter=./packages/core --filter=./packages/ai --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/code-drawing --filter=./packages/media --filter=./packages/math --filter=./packages/footnote --filter=./packages/date --filter=./packages/dnd --filter=./packages/selection --filter=./packages/utils --filter=./packages/toggle --filter=./packages/list --filter=./packages/list-classic --filter=./packages/layout --filter=./packages/table --filter=./packages/suggestion --filter=./packages/toc --filter=./packages/link --filter=./packages/indent --filter=./packages/tag` -> 45/45 successful.
+- Broad package typecheck passed after all repairs: `pnpm turbo typecheck --output-logs=errors-only --filter=./packages/plite --filter=./packages/core --filter=./packages/ai --filter=./packages/basic-nodes --filter=./packages/code-block --filter=./packages/code-drawing --filter=./packages/media --filter=./packages/math --filter=./packages/footnote --filter=./packages/date --filter=./packages/dnd --filter=./packages/selection --filter=./packages/utils --filter=./packages/toggle --filter=./packages/list --filter=./packages/platejs/src/features/list --filter=./packages/layout --filter=./packages/table --filter=./packages/suggestion --filter=./packages/toc --filter=./packages/link --filter=./packages/indent --filter=./packages/tag` -> 45/45 successful.
 - Stale generic model-read audit passed with no matches: `rg -n "editor\.api\.(node|pathRef|isAt|before|after|above|block|edges|nodesRange|blocks|isEmpty|isCollapsed|isExpanded|isFocused)\b|\bblock: true\b|\babove: true\b|nodes\.isEmpty\([^\n]*\{ block" packages -g '*.ts' -g '*.tsx' -g '!**/dist/**'`.
 - Stale transform bridge audit passed with no matches: `rg -n "editor\.(tf|transforms)\b|plugin\.transforms\b|getTransforms\b|getPluginApi\b" ... -g '!**/dist/**'`.
 - Runtime `match: { ... }` shorthand audit has one false positive, `packages/link/src/lib/LinkRules.spec.tsx:194`, which is a TypeScript type literal.
@@ -378,7 +378,7 @@ Final handoff contract:
 - Invocation mode, elapsed/minimum runtime, loop/checkpoint count: full-loop, no timebox, two package-audit loops
 - Behavior gates and visual proof: N/A for this package/API packet; package behavior tests ran for touched owners
 - Primary metric baseline/latest/best and stop reason: stale API audits went from matches to clean; broad package typecheck went from failing packets to 45/45 successful
-- Bugs fixed and oracles added: stale read fixtures repaired across AI/math/media/core/link/table/suggestion/list-classic and package behavior tests rerun
+- Bugs fixed and oracles added: stale read fixtures repaired across AI/math/media/core/link/table/suggestion/legacy-list-model and package behavior tests rerun
 - Benchmark/skill/docs repairs: N/A; no benchmark/docs/skill file changed intentionally
 - Workflow slowdowns and repairs: core aggregate test hang and root lint debt logged; no repair applied because they are separate owner lanes
 - Changed list: current in Changed list table
@@ -399,8 +399,8 @@ Reboot status:
 
 Timeline:
 - 2026-06-25T17:23:01.033Z Goal plan created.
-- 2026-06-25 Broad package loop migrated and proved core, Plite block query, list-classic, utils, indent, selection, DnD, date, TOC, and footnote focused packets.
-- 2026-06-25 Continuation repaired math/media/core/link/table/AI/suggestion/list-classic stale fixtures and table exact-path behavior; focused tests and broad typecheck passed.
+- 2026-06-25 Broad package loop migrated and proved core, Plite block query, legacy-list-model, utils, indent, selection, DnD, date, TOC, and footnote focused packets.
+- 2026-06-25 Continuation repaired math/media/core/link/table/AI/suggestion/legacy-list-model stale fixtures and table exact-path behavior; focused tests and broad typecheck passed.
 - 2026-06-25 Stale API audits passed; `pnpm lint:fix` and full core aggregate test caveats logged.
 
 Open risks:

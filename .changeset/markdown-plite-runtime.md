@@ -1,5 +1,5 @@
 ---
-'@platejs/markdown': major
+'platejs': major
 ---
 
 Resolve `withBlockId` through `ElementIdPlugin`. Serialization rejects the option when persisted element identity is not installed, and deserialization restores persisted IDs from block wrappers.

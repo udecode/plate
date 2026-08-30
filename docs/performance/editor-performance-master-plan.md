@@ -386,12 +386,12 @@ Two obvious ideas were tested and rejected:
 - row/table block-selection context fan-out reduction in
   [table-node.tsx](/Users/zbeyens/git/plate-2/apps/www/src/registry/ui/table-node.tsx)
 - reusing `useSelectedCells()` inside
-  [useTableSelectionDom.ts](/Users/zbeyens/git/plate-2/packages/table/src/react/components/TableElement/useTableSelectionDom.ts)
+  [useTableSelectionDom.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/table/components/TableElement/useTableSelectionDom.ts)
 
 Neither moved the real lane enough to keep.
 
 The kept win is in
-[getTableGridByRange.ts](/Users/zbeyens/git/plate-2/packages/table/src/lib/queries/getTableGridByRange.ts):
+[getTableGridByRange.ts](/Users/zbeyens/git/plate-2/packages/platejs/src/features/table/lib/queries/getTableGridByRange.ts):
 unmerged tables no longer pay the merge-aware selection-grid path.
 
 Kept artifacts:

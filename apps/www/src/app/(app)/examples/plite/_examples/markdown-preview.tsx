@@ -1,12 +1,12 @@
-import { type Descendant, NodeApi } from '@platejs/plite';
+import { cva } from 'class-variance-authority';
+import { type Descendant, NodeApi } from 'plitejs';
 import {
   Editable,
   Plite,
   type PliteRangeDecoration,
-  usePliteEditor,
+  useEditor,
   usePliteRangeDecorationSource,
-} from '@platejs/plite-react';
-import { cva } from 'class-variance-authority';
+} from 'plitejs/react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/utils/cn';
@@ -51,7 +51,7 @@ const markdownSegmentVariants = cva('plite-markdown-preview-segment', {
 });
 
 const MarkdownPreviewExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

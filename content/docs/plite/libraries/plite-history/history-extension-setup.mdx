@@ -8,8 +8,8 @@ Install history with the `history()` extension.
 ## Core Editor Setup
 
 ```typescript
-import { createEditor } from "@platejs/plite";
-import { history } from "@platejs/plite-history";
+import { createEditor } from "plitejs";
+import { history } from "plitejs/history";
 
 const editor = createEditor({
   extensions: [history({ newBatchDelay: 500 })],
@@ -22,16 +22,16 @@ an otherwise-compatible automatic native edit arrives after that idle window.
 Explicit `tx.history.merge()` and `tx.history.newBatch()` decisions remain
 authoritative, and no timing metadata is serialized with history.
 
-`usePliteEditor` installs history by default. Disable it explicitly when a
+`useEditor` installs history by default. Disable it explicitly when a
 React-owned editor should not expose history state or transaction helpers.
 
 ## React Editor Setup
 
 ```typescript
-import { history } from "@platejs/plite-history";
-import { usePliteEditor } from "@platejs/plite-react";
+import { history } from "plitejs/history";
+import { useEditor } from "plitejs/react";
 
-const editor = usePliteEditor({
+const editor = useEditor({
   extensions: [history({ enabled: false })],
   initialValue,
 });

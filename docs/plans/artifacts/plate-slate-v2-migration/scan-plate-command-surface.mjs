@@ -109,7 +109,7 @@ function isMixedTransformFacadeDecision(text, index, relativePath) {
     isAITransformFacadeDecision(text, index, relativePath) ||
     isDocxExportTransformFacadeDecision(text, index, relativePath) ||
     isFootnoteTransformFacadeDecision(text, index, relativePath) ||
-    isListClassicTransformFacadeDecision(text, index, relativePath) ||
+    isLegacyListModelTransformFacadeDecision(text, index, relativePath) ||
     isMediaTransformFacadeDecision(text, index, relativePath) ||
     isTableTransformFacadeDecision(text, index, relativePath) ||
     (after.includes('bindFirst(') &&
@@ -143,7 +143,7 @@ function isFootnoteTransformFacadeDecision(text, index, relativePath) {
   );
 }
 
-function isListClassicTransformFacadeDecision(text, index, relativePath) {
+function isLegacyListModelTransformFacadeDecision(text, index, relativePath) {
   const after = text.slice(index, index + 1800);
 
   return (

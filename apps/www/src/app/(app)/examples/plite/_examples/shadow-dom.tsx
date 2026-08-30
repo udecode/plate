@@ -1,7 +1,8 @@
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
+import { Editable, Plite, useEditor } from 'plitejs/react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+
+import { failInvariant } from '../../../../../lib/failInvariant';
 
 const ShadowDOM = () => {
   const container = useRef<HTMLDivElement>(null);
@@ -37,7 +38,7 @@ const ShadowDOM = () => {
 };
 
 const ShadowEditor = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

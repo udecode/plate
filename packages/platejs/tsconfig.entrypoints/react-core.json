@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/react-core",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/react-core.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/react/index.*",
+    "../src/react/features/basic-nodes/**/*",
+    "../src/react/features/basic-styles/**/*",
+    "../src/react/features/code-block/**/*",
+    "../src/react/features/indent/**/*",
+    "../src/react/features/link/**/*",
+    "../src/react/features/list/**/*",
+    "../src/react/features/callout/**/*",
+    "../src/react/features/comment/**/*",
+    "../src/react/features/date/**/*",
+    "../src/react/features/details/**/*",
+    "../src/react/features/footnote/**/*",
+    "../src/react/features/layout/**/*",
+    "../src/react/features/media/**/*",
+    "../src/react/features/mention/**/*",
+    "../src/react/features/slash-command/**/*",
+    "../src/react/features/suggestion/**/*",
+    "../src/react/features/table/**/*",
+    "../src/react/features/tag/**/*",
+    "../src/react/features/toc/**/*",
+    "../src/react/features/cursor/**/*",
+    "../src/react/features/resizable/**/*",
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/react/**/*"],
+  "references": [
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/core.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/react.json"
+    },
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./static.json"
+    }
+  ]
+}

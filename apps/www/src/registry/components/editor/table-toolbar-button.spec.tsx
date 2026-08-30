@@ -1,13 +1,15 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import * as actualCoreReact from '@platejs/core/react';
 import { fireEvent, render } from '@testing-library/react';
+import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const focusMock = mock();
 const insertRowMock = mock();
 const pluginMock = mock(() => ({
   read: {
+    canMerge: () => false,
+    canSplit: () => false,
     selection: () => ({
       anchor: { colSpan: 1, rowSpan: 1 },
       anchors: [],
@@ -48,7 +50,7 @@ mock.module('platejs/react', () => ({
   usePluginStore: () => false,
 }));
 
-mock.module('./dropdown-menu', () => ({
+mock.module('@/registry/components/editor/dropdown-menu', () => ({
   DropdownMenu: ({ children }: React.PropsWithChildren) => <>{children}</>,
   DropdownMenuContent: ({
     children,
@@ -98,7 +100,7 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
-mock.module('./toolbar', () => ({
+mock.module('@/registry/components/editor/toolbar', () => ({
   ToolbarButton: ({
     children,
     isDropdown: _isDropdown,

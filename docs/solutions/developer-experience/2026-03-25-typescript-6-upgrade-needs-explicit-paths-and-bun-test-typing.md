@@ -41,7 +41,7 @@ Once those config issues are cleared, the remaining failures are real and small.
 The first TS6 dry run failed before touching any code:
 
 - root `tsconfig.json` died on deprecated `baseUrl`
-- `packages/udecode/depset/tsconfig.json` died on deprecated `baseUrl` and `moduleResolution=node`
+- `packages/depset/tsconfig.json` died on deprecated `baseUrl` and `moduleResolution=node`
 - `apps/www/scripts/tsconfig.scripts.json` also surfaced the deprecated `baseUrl`
 
 That is the wrong moment to start chasing random type errors.
@@ -91,13 +91,13 @@ These configs no longer use `baseUrl`:
 - [`apps/www/tsconfig.json`](apps/www/tsconfig.json)
 - [`apps/www/scripts/tsconfig.scripts.json`](apps/www/scripts/tsconfig.scripts.json)
 - [`tooling/config/tsconfig.test.json`](tooling/config/tsconfig.test.json)
-- [`packages/udecode/depset/tsconfig.json`](packages/udecode/depset/tsconfig.json)
+- [`packages/depset/tsconfig.json`](packages/depset/tsconfig.json)
 
 For the test config, rewrite every path target to an explicit relative path.
 
 ### 3. Switch `depset` to modern resolution and restore Bun test types explicitly
 
-In [`packages/udecode/depset/tsconfig.json`](packages/udecode/depset/tsconfig.json):
+In [`packages/depset/tsconfig.json`](packages/depset/tsconfig.json):
 
 - change `moduleResolution` from `"node"` to `"bundler"`
 - add `"types": ["bun-types"]`

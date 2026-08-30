@@ -376,9 +376,9 @@
         "apps/www/src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/comment-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx",
-        "apps/www/src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
-        "apps/www/src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+        "apps/www/src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
+        "apps/www/src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/math-kit.tsx",
         "apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx",
@@ -598,11 +598,11 @@
       ],
       "excluded": false,
       "paths": [
-        "apps/www/src/registry/components/editor/plugins/list-classic-kit.tsx",
-        "content/docs/(plugins)/(elements)/list-classic.cn.mdx",
-        "content/docs/(plugins)/(elements)/list-classic.mdx",
-        "packages/list-classic/src/lib/BaseListPlugin.spec.tsx",
-        "packages/list-classic/src/lib/BaseListPlugin.ts",
+        "apps/www/src/registry/components/editor/plugins/list.tsx",
+        "content/docs/(plugins)/(elements)/legacy-list-model.cn.mdx",
+        "content/docs/(plugins)/(elements)/legacy-list-model.mdx",
+        "packages/platejs/src/features/list/src/lib/BaseListPlugin.spec.tsx",
+        "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
         "packages/list/src/lib/BaseListPlugin.spec.tsx",
         "packages/list/src/lib/BaseListPlugin.tsx"
       ],
@@ -2215,7 +2215,7 @@
       "summary": "Feature plugin APIs, transaction groups, shortcuts, explicit composition, app callers, docs, and proof."
     },
     {
-      "path": "apps/www/src/registry/components/editor/plugins/fixed-toolbar-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/fixed-toolbar-kit.tsx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -2277,7 +2277,7 @@
       "summary": "Feature plugin APIs, transaction groups, shortcuts, explicit composition, app callers, docs, and proof."
     },
     {
-      "path": "apps/www/src/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/floating-toolbar-kit.tsx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -2355,7 +2355,7 @@
       "summary": "Link API, update, safety, shortcut, UI, and paste-policy adoption."
     },
     {
-      "path": "apps/www/src/registry/components/editor/plugins/list-classic-kit.tsx",
+      "path": "apps/www/src/registry/components/editor/plugins/list.tsx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -3868,7 +3868,7 @@
       "summary": "Link API, update, safety, shortcut, UI, and paste-policy adoption."
     },
     {
-      "path": "content/docs/(plugins)/(elements)/list-classic.cn.mdx",
+      "path": "content/docs/(plugins)/(elements)/legacy-list-model.cn.mdx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -3884,7 +3884,7 @@
       "summary": "Flat and structural list API publication, behavior colocation, adoption, and proof."
     },
     {
-      "path": "content/docs/(plugins)/(elements)/list-classic.mdx",
+      "path": "content/docs/(plugins)/(elements)/legacy-list-model.mdx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -11614,7 +11614,7 @@
       "summary": "Link API, update, safety, shortcut, UI, and paste-policy adoption."
     },
     {
-      "path": "packages/list-classic/src/lib/BaseListPlugin.spec.tsx",
+      "path": "packages/platejs/src/features/list/src/lib/BaseListPlugin.spec.tsx",
       "staged": false,
       "unstaged": true,
       "untracked": false,
@@ -11630,7 +11630,7 @@
       "summary": "Flat and structural list API publication, behavior colocation, adoption, and proof."
     },
     {
-      "path": "packages/list-classic/src/lib/BaseListPlugin.ts",
+      "path": "packages/platejs/src/features/list/src/lib/BaseListPlugin.ts",
       "staged": false,
       "unstaged": true,
       "untracked": false,

@@ -1,9 +1,11 @@
 'use client';
 
-import type { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { cva } from 'class-variance-authority';
-import type { PlateElementProps } from 'platejs/react';
-import { PlateElement } from 'platejs/react';
+import {
+  type HeadingPlugin,
+  type PlateElementProps,
+  PlateElement,
+} from 'platejs/react';
 import * as React from 'react';
 
 const headingVariants = cva(

@@ -1,8 +1,8 @@
 'use client';
 
-import type { TabbablePluginState } from '@platejs/tabbable';
-import { TabbablePlugin } from '@platejs/tabbable/react';
 import { PLUGINS, ElementApi } from 'platejs';
+import type { TabbablePluginState } from 'platejs/tabbable';
+import { TabbablePlugin } from 'platejs/tabbable/react';
 
 export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 
@@ -29,12 +29,7 @@ export const TabbableKit = [
         }
 
         const blockingTypes = new Set(
-          [
-            PLUGINS.codeBlock,
-            PLUGINS.listItem,
-            PLUGINS.todoList,
-            PLUGINS.table,
-          ].flatMap((name) => {
+          [PLUGINS.codeBlock, PLUGINS.table].flatMap((name) => {
             const plugin = editor.plugin(name);
 
             return plugin.installed ? [plugin.schema.type] : [];

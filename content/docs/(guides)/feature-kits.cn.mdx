@@ -40,18 +40,16 @@ description: 了解如何使用预配置插件和UI组件的功能套件快速�
 
 - `ParagraphPlugin`及`ParagraphElement`
 - `HeadingPlugin`及`HeadingElement`
-- `HeadingPlugin`及`HeadingElement`
-- `HeadingPlugin`及`HeadingElement`
 - `BlockquotePlugin`及`BlockquoteElement`
 - `HorizontalRulePlugin`及`HrElement`
 
 无需单独添加每个插件，直接使用套件：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...BasicBlocksKit,

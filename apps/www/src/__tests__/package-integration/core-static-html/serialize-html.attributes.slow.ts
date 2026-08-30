@@ -1,4 +1,4 @@
-import { BaseItalicPlugin } from '@platejs/basic-nodes';
+import { BaseItalicPlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';

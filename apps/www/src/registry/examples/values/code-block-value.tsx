@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 
-import { jsx } from '@platejs/test-utils';
+import { jsx } from '@platejs/test';
 
 jsx;
 

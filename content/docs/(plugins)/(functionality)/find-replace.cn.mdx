@@ -32,12 +32,12 @@ decorations；应用负责输入框与替换命令。
 ### 添加插件
 
 ```tsx
-import { FindReplacePlugin } from '@platejs/find-replace';
-import { createPlateEditor } from 'platejs/react';
+import { FindReplacePlugin } from 'platejs/find-replace';
+import { createEditor } from 'platejs/react';
 
 import { SearchHighlightLeaf } from '@/components/editor/search-highlight';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     FindReplacePlugin.configure({ component: SearchHighlightLeaf }),
   ],
@@ -47,7 +47,7 @@ export const editor = createPlateEditor({
 ### 控制搜索
 
 ```tsx title="components/find-toolbar.tsx" showLineNumbers
-import { FindReplacePlugin } from '@platejs/find-replace';
+import { FindReplacePlugin } from 'platejs/find-replace';
 import { useEditor, useEditorPlugin, usePluginStore } from 'platejs/react';
 
 export function FindToolbar() {
@@ -78,7 +78,7 @@ export function FindToolbar() {
 
 | Surface | Owner | 职责 |
 |---------|-------|------|
-| `FindReplacePlugin` | `@platejs/find-replace` | 保存 `search` state、注册叶节点并生成匹配 ranges。 |
+| `FindReplacePlugin` | `platejs` | 保存 `search` state、注册叶节点并生成匹配 ranges。 |
 | `SearchHighlightLeaf` | Registry UI | 以黄色背景渲染匹配范围。 |
 | `FindToolbar` | 应用或 registry 示例 | 更新 `search` 并刷新 decorations。 |
 | 替换操作 | 应用代码 | 使用编辑器 transforms 替换文本；本包不修改内容。 |
@@ -97,5 +97,5 @@ export function FindToolbar() {
 
 | API | Package | 用途 |
 |-----|---------|------|
-| `FindReplacePlugin` | `@platejs/find-replace` | 搜索高亮插件。 |
+| `FindReplacePlugin` | `platejs` | 搜索高亮插件。 |
 | `search` | `string` | 可变的查询 state，默认值为 `''`。 |

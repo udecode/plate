@@ -76,11 +76,11 @@ Use `highlight` for marked text.
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -90,7 +90,7 @@ export const editor = createPlateEditor({
 Use `MarkToolbarButton` for direct mark toggles.
 
 ```tsx
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 import { BoldIcon } from 'lucide-react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -112,7 +112,7 @@ export function BoldToolbarButton() {
 |---------|-------|--------------|
 | `BasicMarksKit` | Registry | Configures the full mark set with input rules and client leaf components. |
 | `BaseBasicMarksKit` | Registry | Configures static/base mark plugins with static code, highlight, and kbd leaves. |
-| Individual mark plugins | `@platejs/basic-nodes` | Own mark keys, HTML parsing, render tags, and `toggle` transforms. |
+| Individual mark plugins | `platejs` | Own mark keys, HTML parsing, render tags, and `toggle` transforms. |
 | `MarkToolbarButton` | Registry UI | Reads mark state and calls the mark toolbar hook. |
 
 The package exports each mark capability independently. The registry owns the
@@ -159,7 +159,7 @@ See [Plugin Input Rules](/docs/plugin-input-rules) for the runtime model.
 Install the package when you want to compose marks yourself.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add only the marks you need.
@@ -170,7 +170,7 @@ import {
   CodePlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 
 export const markPlugins = [
   BoldPlugin,

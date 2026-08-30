@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "files": ["./test/public-api-contract.tsx"],
+  "include": [],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "react", "react-dom"]
+  }
+}

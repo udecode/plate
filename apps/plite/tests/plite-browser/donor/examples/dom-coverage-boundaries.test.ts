@@ -3,7 +3,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 import {
   openExample,
   type SelectionSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const findRenderedText = async (page: Page, text: string) =>
   page.evaluate((query) => {

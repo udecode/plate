@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { openExample } from '@platejs/browser/playwright';
+import { openExample } from '@platejs/test/playwright';
 
 const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
 

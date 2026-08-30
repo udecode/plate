@@ -1,25 +1,18 @@
-import type {
-  Anchor,
-  createEditor,
-  Path,
-  Point,
-  Range,
-  Value,
-} from '@platejs/plite';
+import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
 import {
   Plite,
   useEditorSelector,
   usePliteAnnotationStore,
   usePliteAnnotations,
-  usePliteEditor,
+  useEditor,
   usePliteWidgetStore,
   usePliteWidgets,
-} from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
+} from 'plitejs/react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
+import { failInvariant } from '../../../../../lib/failInvariant';
 import { Instruction } from './components';
 
 const createChildren = (left = 'alpha', right = 'beta'): Value => [
@@ -504,7 +497,7 @@ const AnchoredProjectionContent = ({
 };
 
 const PersistentAnnotationAnchorsExample = () => {
-  const editor = usePliteEditor({ initialValue: createChildren() });
+  const editor = useEditor({ initialValue: createChildren() });
   const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
   const annotations = useMemo(
     () =>

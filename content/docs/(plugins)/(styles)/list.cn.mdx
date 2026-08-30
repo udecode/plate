@@ -28,7 +28,7 @@ docs:
 ~~~tsx
 import { ListKit } from '@/components/editor/list';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...ListKit],
 });
 ~~~
@@ -69,8 +69,8 @@ listStart 保存潜在作者意图。存在兼容的前一项时 Plate 会忽略
 ## 命令
 
 ~~~ts
-import { ListStyle, ListType } from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
+import { ListStyle, ListType } from 'platejs';
+import { ListPlugin } from 'platejs/react';
 
 const list = editor.plugin(ListPlugin);
 list.update.toggle({ type: ListType.Bulleted });

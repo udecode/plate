@@ -119,9 +119,12 @@ else
 fi
 cd "$TEMPLATE_DIR"
 
-# Update all packages to latest versions
-echo "Running bun update --latest..."
-bun update --latest
+node "$BASE/tooling/scripts/prepare-template-refresh.mjs" "$TEMPLATE_DIR"
+
+# Stay within the template's declared semver ranges. Registry dependencies are
+# installed by shadcn below; jumping tooling majors makes refresh nondeterministic.
+echo "Running bun update..."
+bun update
 
 # Add registry component via shadcn
 echo "Adding $REGISTRY_NAME via shadcn..."
@@ -137,6 +140,9 @@ fi
 # shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.
 normalize_relative_ts_imports "$TEMPLATE_DIR/src"
 normalize_react_day_picker_api "$TEMPLATE_DIR"
+node "$BASE/tooling/scripts/prepare-template-refresh.mjs" \
+  --finalize \
+  "$TEMPLATE_DIR"
 
 echo "Running bun lint:fix..."
 bun lint:fix

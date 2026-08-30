@@ -1,13 +1,13 @@
-import { history } from '@platejs/plite-history';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderPlaceholderProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
+  useEditor,
+} from 'plitejs/react';
 
 const PlainTextExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history()],
     initialValue: [
       {

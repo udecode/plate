@@ -632,7 +632,7 @@ editor.update.textDirection.set(null);`),
     ],
     adoptionSurfaces: [
       '`@platejs/basic-styles`: inferred enum schema property, selected-block update, HTML codec, and main-node projection.',
-      'Modern and classic list owners, static RSC renderers, Markdown/HTML round trips, registry control, docs, examples, and persisted fixtures.',
+      'Modern and legacy list model owners, static RSC renderers, Markdown/HTML round trips, registry control, docs, examples, and persisted fixtures.',
       '`plite-dom` continues to derive computed direction and the visual-point dossier owns mixed-bidi movement; the feature adds no Core bidi engine.',
       'History and Yjs treat `textDirection` as ordinary schema-owned persisted data under the configured schema identity.',
     ],

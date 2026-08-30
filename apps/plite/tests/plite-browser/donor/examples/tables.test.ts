@@ -5,7 +5,7 @@ import {
   recordPliteBrowserRuntimeErrors,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const encodePliteFragment = (fragment: unknown) =>
   globalThis.btoa(

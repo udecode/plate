@@ -1,8 +1,11 @@
 'use client';
 
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
 import { WrapText } from 'lucide-react';
-import { useEditor, useSelectionFragmentProp } from 'platejs/react';
+import {
+  LineHeightPlugin,
+  useEditor,
+  useSelectionFragmentProp,
+} from 'platejs/react';
 import * as React from 'react';
 
 import {

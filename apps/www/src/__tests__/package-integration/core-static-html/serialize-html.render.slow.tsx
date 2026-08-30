@@ -1,4 +1,4 @@
-import { property, createBaseEditor, defineBasePlugin } from 'platejs';
+import { property, createEditor, defineBasePlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 import React from 'react';
 
@@ -21,7 +21,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [...BaseEditorKit, renderBelowPlugin],
       initialValue: [
         {
@@ -87,7 +87,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [...BaseEditorKit, testPlugin],
       initialValue: [
         {
@@ -125,7 +125,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [testPlugin],
       initialValue: [
         {
@@ -163,7 +163,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       },
     });
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [testPlugin],
       initialValue: [
         {

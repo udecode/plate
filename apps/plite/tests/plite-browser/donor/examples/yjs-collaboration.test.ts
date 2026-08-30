@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 test.describe('yjs collaboration example', () => {
   test('maps Plite history across offline and remote edits', async ({

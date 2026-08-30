@@ -115,7 +115,7 @@ Boundaries:
 - docs/browser surfaces: no public docs or browser routes.
 - non-goals: no migration of the six older packages whose suites already fail
   on removed Plate APIs.
-- out-of-scope package errors: Layout, Tag, Link, List Classic, List, and Table
+- out-of-scope package errors: Layout, Tag, Link, Legacy list model, List, and Table
   fail before their changed normalizer tests execute because their package
   migrations still reference removed `createSlate*`, bridge, or old Plate APIs.
 
@@ -281,13 +281,13 @@ Changed list:
   `NodeApi.matches` so package typecheck is green.
 - `packages/plite/src/transforms-node/unwrap-nodes.ts`: loop-local dirty-path
   normalization.
-- Layout, Tag, Link, List, List Classic, and Table normalizer tests: direct
+- Layout, Tag, Link, List, Legacy list model, and Table normalizer tests: direct
   `editor.update.normalize` entrypoint; no legacy normalize call remains.
 - `pnpm-lock.yaml`: refreshed by the required install to match committed
   `auto-install-peers=false` configuration.
 
 Needs attention:
-- Layout, Tag, Link, List Classic, List, and Table remain next package-migration
+- Layout, Tag, Link, Legacy list model, List, and Table remain next package-migration
   work. Their full suites fail on old removed Plate APIs before normalizer tests
   execute; this packet does not claim those packages are green.
 - `pnpm-lock.yaml` changed substantially because its committed setting said

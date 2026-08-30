@@ -3,7 +3,7 @@ title: "Plite"
 description: "Use the core editor runtime, document model, transactions, helper APIs, and extensions."
 ---
 
-`@platejs/plite` is the core editor runtime. It owns the document model, canonical changes,
+`plitejs` is the core editor runtime. It owns the document model, canonical changes,
 paths, points, ranges, transactions, state fields, schema extensions, and pure
 node/location helper namespaces.
 
@@ -12,7 +12,7 @@ Use `createEditor` to create an editor.
 ## Create An Editor
 
 ```ts
-import { createEditor } from "@platejs/plite";
+import { createEditor } from "plitejs";
 
 const editor = createEditor({
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
@@ -24,7 +24,7 @@ treating it as an editor.
 
 Use `createEditorView(editor, options)` when framework packages need a
 root-scoped view over a committed editor. App UI should normally use framework
-helpers such as `usePliteEditor` in `@platejs/plite-react`.
+helpers such as `useEditor` in `plitejs/react`.
 
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.
@@ -82,9 +82,9 @@ Extension and schema types include `EditorExtension`,
 `StateFieldValueInput`, `EditorStateField`, `EditorValueCodec`,
 `SerializedEditorValue`, and `SerializedEditorEffect`.
 
-`EditorExtensionDependencyReference` is shallow and non-generic. Compiler-only
-dependency capability/provider types are exported from
-`@platejs/plite/internal`, not the root package.
+`EditorExtensionDependencyReference` is shallow and non-generic. Adapter
+authors use the finite dependency capability/provider types exported from
+`plitejs`; there is no public internal entrypoint.
 
 Command, read-policy, and debug APIs include `EditorCommand`,
 `EditorCommandHandler`, `EditorCommandAroundHandler`,
@@ -134,7 +134,7 @@ update the editor with `context.afterPublish`; it runs after commit observers.
 Activation, validation, API factories, and cleanup are synchronous.
 
 ```ts
-import { defineExtension } from "@platejs/plite";
+import { defineExtension } from "plitejs";
 
 const extension = defineExtension("host-state", {
   activate(editor, context) {
@@ -172,7 +172,7 @@ slice-fitting, identity, and migration contract.
 
 The `/internal` package subpath is reserved for sibling Plite packages in this
 repo. Applications, extension libraries, and framework adapters outside this
-workspace should use the root `@platejs/plite` export.
+workspace should use the root `plitejs` export.
 
 ## Related Docs
 

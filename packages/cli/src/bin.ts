@@ -6,6 +6,7 @@ import { relative } from 'node:path';
 
 import { Command } from 'commander';
 
+import { registerDepsCommand } from './deps';
 import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
 import { runEditorMigrationInput, runEditorMigrations } from './run-migration';
@@ -21,6 +22,8 @@ const program = new Command()
   .name('plate')
   .version(packageJson.version)
   .description('Generate exact Plate editor schema contracts.');
+
+registerDepsCommand(program);
 
 program
   .command('generate')

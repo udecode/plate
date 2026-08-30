@@ -72,7 +72,7 @@ their doctrine into each other:
 | ideal reusable public call shape and API debt ranking                         | `best-api`                                  |
 | accepted API adoption, boundary, and proof plan                               | `plate-plan`                                |
 | end-to-end feature delivery across package, registry, docs, release, and proof | `plate-feature`                             |
-| package plugin implementation, colocation, inference, and package proof       | `plate-plugin-creator`                      |
+| plugin/entrypoint implementation, colocation, inference, and package proof    | `plate-plugin-creator`                      |
 | Plate React/component shape, copied UI, registry wiring, and browser proof    | `plate-ui`                                  |
 | current-state public teaching                                                 | `docs-creator`                              |
 | migration/adoption audit against the latest doctrine                          | `plate-next`                                |
@@ -171,15 +171,15 @@ Default routing:
   cohesion, or long autonomous loop -> `auto`.
 - "best API", "cleanest API", "best DX/AX", public call-shape design/review,
   or whether current API machinery should exist -> `best-api`.
-- Creating or adding a Plate package/feature through registry consumers, docs,
-  release artifacts, and proof -> `plate-feature`. A package-only implementation
+- Creating or adding a Plate feature/entrypoint through registry consumers, docs,
+  release artifacts, and proof -> `plate-feature`. An entrypoint-only implementation
   routes to `plate-plugin-creator`; a React/registry-only implementation routes
   to `plate-ui`; an adoption audit routes to `plate-next`.
 - "compare", "audit", or "pull from" one or more editor repositories at the
   architecture/API/runtime level -> `editor-audit`. Test and issue behavior
   mining stays with the harvesters.
 - Plate v2 cleanup review, "why does this migrated Plate helper exist?",
-  old Slate compatibility cuts in Plate/Core, or no-arg autopilot for the next
+  old Slate compatibility cuts in Plate foundation, or no-arg autopilot for the next
   Plate-to-Plite cleanup packet -> `plate-next`.
 - Post-merge, current-tree, teammate branch, external PR, ready-to-commit, or
   until-clean closure of already-applied work -> `autoclosure`.
@@ -370,7 +370,7 @@ If a local-only build/runtime/test failure points at corrupted files under `node
 
 ```bash
 # Typecheck multiple specific packages through their source graph
-pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils
+pnpm turbo typecheck --filter=./packages/platejs --filter=./packages/test
 
 # Lint multiple packages
 pnpm lint:fix
@@ -386,8 +386,8 @@ pnpm turbo typecheck --filter='[HEAD^1]'
 pnpm turbo typecheck --filter='...[origin/main]'
 
 # For workspace-specific operations
-pnpm --filter @platejs/core typecheck
-pnpm --filter @platejs/core lint:fix
+pnpm --filter platejs typecheck
+pnpm --filter platejs lint:fix
 ```
 
 **Full project commands (use only if needed, these are very slow):**

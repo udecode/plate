@@ -67,7 +67,7 @@ const row = (id, overrides = {}) => {
     'Proof adaptation':
       'adapt — [Wordgard harvest](docs/editor-test-harvester/wordgard/report.md) contributes a portable invariant',
     'Proof/host':
-      'different tradeoff — `packages/browser/src/proof.ts:10` is broader while the reference case is sharper',
+      'different tradeoff — `packages/test/src/proof.ts:10` is broader while the reference case is sharper',
     'Reference adaptation':
       'adapt — `../wordgard/src/owner.ts:20` should replace caller cleanup',
     'Reference mapping': exactMapping('../wordgard/src'),
@@ -289,7 +289,7 @@ test('rejects a preferred base that contradicts classification or mapping', () =
         ledger: ledger(
           row('WG-DOC-001', {
             Classification:
-              'Plate stronger — `packages/plate/src/api.ts:10` exposes the cleaner product API',
+              'Plate stronger — `packages/platejs/src/api.ts:10` exposes the cleaner product API',
             'Plate mapping':
               'absent — [Plate scan](docs/plans/audit.md#plate-scan) found no product owner',
             'Preferred base':

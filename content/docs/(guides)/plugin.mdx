@@ -134,7 +134,7 @@ The `rules` property allows you to configure common editing behaviors like break
 For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
 
 ```ts
-import { HeadingPlugin } from "@platejs/basic-nodes/react";
+import { HeadingPlugin } from "platejs/react";
 
 HeadingPlugin.configure({
   rules: {
@@ -219,7 +219,7 @@ author callback's compiled `schema.properties.textAlign` handle. Consumers use
 typed node fields or the plugin's semantic capabilities instead of reading that
 property map. Its `name` identifies only the capability namespace.
 `.configure()` and `.extend()` do not change schema identity. The `schema`
-passed to `createPlateEditor` or `usePlateEditor` may remap an element type or
+passed to `createEditor` or `useCreateEditor` may remap an element type or
 relationship; plugin-owned property keys remain fixed. A plugin update passes
 one atomic property patch,
 so every key and value comes from the plugin's shallow schema contract. An
@@ -308,7 +308,7 @@ const CustomStatePlugin = definePlatePlugin("customState", {
 </Callout>
 
 An independently reusable standalone Plite descriptor uses
-`defineExtension` from `@platejs/plite`. See
+`defineExtension` from `platejs`. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
 ## Advanced Plugin Configuration
@@ -486,7 +486,7 @@ export const SnippetPlugin = definePlatePlugin("snippet", {
 When using typed plugins, you get full type checking and autocompletion ✨
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [SnippetPlugin],
 });
 

@@ -3,7 +3,7 @@ import {
   assertNoIllegalKernelTransitions,
   installPliteReactRenderProfiler,
   openExample,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 import {
   artifactStepsToScenarioSteps,

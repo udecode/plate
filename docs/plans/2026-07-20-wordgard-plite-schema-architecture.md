@@ -875,7 +875,7 @@ The live declaration inventory for
 `ai`, `basic-nodes`, `basic-styles`, `callout`, `code-block`,
 `code-drawing`, `combobox`, `comment`, `core`, `date`, `emoji`,
 `excalidraw`, `find-replace`, `footnote`, `indent`, `layout`, `link`, `list`,
-`list-classic`, `markdown`, `math`, `media`, `mention`, `plite`,
+`legacy-list-model`, `markdown`, `math`, `media`, `mention`, `plite`,
 `plite-dom`, `selection`, `slash-command`, `suggestion`, `table`, `tag`,
 `utils`, and `yjs`.
 

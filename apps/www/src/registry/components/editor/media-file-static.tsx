@@ -1,8 +1,7 @@
-import type { BaseFilePlugin } from '@platejs/media';
-import type { SuggestionData } from '@platejs/suggestion';
 import { FileUp } from 'lucide-react';
-import type { PliteElementProps } from 'platejs/static';
-import { PliteElement } from 'platejs/static';
+import type { BaseFilePlugin } from 'platejs/media';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
+import type { SuggestionData } from 'platejs/suggestion';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

@@ -1,17 +1,18 @@
 'use client';
 
-import type { ScriptValue } from '@platejs/basic-nodes';
-import type {
-  BoldPlugin,
-  CodePlugin,
-  HighlightPlugin,
-  ItalicPlugin,
-  KbdPlugin,
-  ScriptPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import { useEditor, useEditorSelector } from 'platejs/react';
+import type { ScriptValue } from 'platejs';
+import {
+  type BoldPlugin,
+  type CodePlugin,
+  type HighlightPlugin,
+  type ItalicPlugin,
+  type KbdPlugin,
+  type ScriptPlugin,
+  type StrikethroughPlugin,
+  type UnderlinePlugin,
+  useEditor,
+  useEditorSelector,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';

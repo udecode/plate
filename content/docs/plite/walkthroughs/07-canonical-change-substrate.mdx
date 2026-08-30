@@ -15,7 +15,7 @@ import {
   createEditor,
   decodeEditorEffect,
   encodeEditorEffect,
-} from "@platejs/plite";
+} from "plitejs";
 
 const editor = createEditor();
 
@@ -59,8 +59,8 @@ awareness codec.
 ## Import a canonical change
 
 ```tsx
-import { DocumentChange } from "@platejs/plite";
-import { YjsUpdatePolicy } from "@platejs/yjs";
+import { DocumentChange } from "plitejs";
+import { YjsUpdatePolicy } from "platejs/yjs";
 
 editor.update(YjsUpdatePolicy.remote, (tx) => {
   tx.changes.apply(DocumentChange.fromJSON(message.change));
@@ -129,5 +129,5 @@ positions and awareness ids for cursors and presence.
 | Adapter | Transport, concurrency, persistence, awareness, effect codecs, and canonical change translation. |
 | React | Render the committed projection and subscribe through Plite React. |
 
-`@platejs/yjs` is the production Yjs adapter. Applications own providers,
+`platejs/yjs` is the production Yjs adapter. Applications own providers,
 authentication, room naming, persistence, and server policy.

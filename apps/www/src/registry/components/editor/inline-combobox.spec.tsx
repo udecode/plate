@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 import { fireEvent, render } from '@testing-library/react';
+import type { EditorUpdateTransaction, Point } from 'platejs';
 import * as React from 'react';
 
 const pointAnchorReleaseMock = mock();
@@ -60,21 +60,18 @@ mock.module('@ariakit/react', () => ({
   },
 }));
 
-mock.module('@platejs/combobox', () => ({
-  filterWords: () => true,
-}));
-
-mock.module('class-variance-authority', () => ({
-  cva: () => () => '',
-}));
-
 mock.module('platejs', () => ({
+  filterWords: () => true,
   Hotkeys: {
     isRedo: () => false,
     isUndo: () => false,
   },
   isHotkey: (hotkey: string) => (event: KeyboardEvent) =>
     event.key.toLowerCase() === hotkey.toLowerCase(),
+}));
+
+mock.module('class-variance-authority', () => ({
+  cva: () => () => '',
 }));
 
 mock.module('platejs/react', () => ({

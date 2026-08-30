@@ -185,7 +185,7 @@ content/docs/(plugins)/(ai)/ai.cn.mdx:750:    void editor.getPluginApi(AIChatPlu
 packages/callout/CHANGELOG.md:89:- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.callout`
 packages/math/CHANGELOG.md:103:- [#3644](https://github.com/udecode/plate/pull/3644) by [@felixfeng33](https://github.com/felixfeng33) – Add `editor.tf.insert.equation`, `editor.tf.insert.inlineEquation`
 packages/docx-io/CHANGELOG.md:63:  - `DocxExportPlugin`: Plugin with `editor.api.docxExport` and `editor.tf.docxExport` methods
-packages/list-classic/CHANGELOG.md:63:  editor.tf.toggle.list({ listType: "taskList" });
+packages/platejs/src/features/list/CHANGELOG.md:63:  editor.tf.toggle.list({ listType: "taskList" });
 packages/ai/CHANGELOG.md:340:    - `editor.api.copilot.accept` is now `editor.tf.copilot.accept`.
 packages/ai/CHANGELOG.md:341:    - `editor.api.copilot.acceptNextWord` is now `editor.tf.copilot.acceptNextWord`.
 packages/ai/CHANGELOG.md:519:  - Fix `editor.tf.replaceSelection`:

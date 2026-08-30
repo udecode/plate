@@ -2,21 +2,21 @@
 
 import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
 
-import { BaseBoldPlugin, BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { BaseLinkPlugin } from '@platejs/link';
-import { BaseMediaEmbedPlugin } from '@platejs/media';
-import { jsxt, type TestEditorFixture } from '@platejs/test-utils';
-
+import { jsxt, type TestEditorFixture } from '@platejs/test';
 import {
-  createBaseEditor,
-  type BaseEditor,
+  BaseBoldPlugin,
+  BaseHeadingPlugin,
+  BaseLinkPlugin,
+  BaseParagraphPlugin,
+  createEditor,
   type BasePluginInput,
-} from '../../../../../../packages/core/src/lib/editor';
-import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
+  type Editor,
+} from 'platejs';
+import { BaseMediaEmbedPlugin } from 'platejs/media';
 
 jsxt;
 
-const insertData = (editor: BaseEditor, data: DataTransfer) => {
+const insertData = (editor: Editor, data: DataTransfer) => {
   editor.api.dom.clipboard.insertData(data);
 };
 
@@ -58,7 +58,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [BaseHeadingPlugin],
         selection: input.selection,
         initialValue: input.children,
@@ -89,7 +89,7 @@ describe('when inserting html', () => {
         </editor>
       ) as any;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [BaseHeadingPlugin],
         selection: input.selection,
         initialValue: input.children,
@@ -124,7 +124,7 @@ describe('when inserting html', () => {
 
       const plugins = [BaseParagraphPlugin];
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins,
         selection: input.selection,
         initialValue: input.children,
@@ -169,7 +169,7 @@ describe('when inserting empty html', () => {
   it('keeps the editor unchanged', () => {
     const plugins: readonly BasePluginInput[] = [BaseBoldPlugin];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins,
       selection: input.selection,
       initialValue: input.children,
@@ -210,7 +210,7 @@ describe('when inserting an iframe without src', () => {
   it('falls back to inserting the iframe text content', () => {
     const plugins = [BaseMediaEmbedPlugin];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins,
       selection: input.selection,
       initialValue: input.children,
@@ -254,7 +254,7 @@ describe('when inserting link with href', () => {
   it('insert the link with url', () => {
     const plugins = [BaseParagraphPlugin, BaseLinkPlugin];
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins,
       selection: input.selection,
       initialValue: input.children,
@@ -300,7 +300,7 @@ describe('when inserting plain text', () => {
       <fragment>inserted</fragment>
     );
 
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [],
       selection: input.selection,
       initialValue: input.children,

@@ -178,7 +178,7 @@ Start Gates:
 | Output budget strategy recorded | yes | Scoped/capped strategy above |
 | Package/API pack selected | yes | Public Core portal and package behavior change |
 | Public surface or package boundary identified | yes | Core portal type/runtime plus affected feature packages and registry consumers |
-| Release artifact path selected | yes | Updated Core, CLI, Basic Nodes, Toggle, and List Classic release artifacts; no registry-only changelog applies |
+| Release artifact path selected | yes | Updated Core, CLI, Basic Nodes, Toggle, and Legacy list model release artifacts; no registry-only changelog applies |
 | `changeset` skill loaded when `.changeset` is required | yes | `.agents/skills/changeset/SKILL.md` read completely |
 | Barrel/export impact decision recorded | yes | No file/export topology change expected; rerun `pnpm brl` only if the audit changes that |
 | Browser pack selected | yes | `apps/www` registry shortcut behavior is affected |
@@ -254,11 +254,11 @@ Completion Gates:
 | Timed checkpoint | complete | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-08-12-generic-plugin-toggle-adoption.md` | Run after this closeout update |
 | Public API / package boundary proof | complete | Source-audit public API, exports, and package boundary impact | Core owns the portal/generation law; feature packages only adopt it; no export topology changed |
-| Release artifact classification | complete | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published Core/CLI/Basic Nodes/Toggle/List Classic API and behavior delta |
+| Release artifact classification | complete | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published Core/CLI/Basic Nodes/Toggle/Legacy list model API and behavior delta |
 | Published package changeset | complete | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | Existing major changesets updated; no forbidden minor entry added |
 | Registry changelog | complete | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: registry edits are adoption examples of package behavior |
 | No release artifact | complete | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: release artifacts exist |
-| Package typecheck/build/test | complete | Run owning package checks or record N/A with reason | CLI passes; Core/Basic Nodes/Toggle/List Classic reach only unrelated `plite-react/src/plugin/with-react.ts:178` error after task-owned errors were fixed |
+| Package typecheck/build/test | complete | Run owning package checks or record N/A with reason | CLI passes; Core/Basic Nodes/Toggle/Legacy list model reach only unrelated `plite-react/src/plugin/with-react.ts:178` error after task-owned errors were fixed |
 | Barrel/export generation | complete | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | N/A: no public file or barrel topology changed |
 | Browser interaction proof | complete | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | Browser attempted `/blocks/basic-blocks-demo`; unrelated stale registry index import blocked compilation before interaction |
 | Browser console/network check | complete | Record console/network state or why it is not applicable | Build console reports missing `@/registry/components/editor/plate-types.ts`; no product interaction/network request could start |

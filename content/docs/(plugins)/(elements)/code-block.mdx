@@ -40,10 +40,10 @@ The fastest way to add code blocks is with `CodeBlockKit`. It composes `CodeBloc
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CodeBlockKit } from '@/components/editor/code-block';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CodeBlockKit,
@@ -60,7 +60,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/code-block lowlight
+npm install platejs @tanstack/react-virtual lowlight
 ```
 
 ### Add Plugins
@@ -68,10 +68,10 @@ npm install @platejs/code-block lowlight
 Add `CodeBlockPlugin` for code-block editing. It installs `CodeLinePlugin` as a required dependency; add `CodeHighlightPlugin` separately when you want Lowlight syntax highlighting.
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin,
@@ -86,16 +86,16 @@ Configure each capability where it is owned. `CodeBlockPlugin` owns editing, `Co
 **Basic Setup with All Languages:**
 
 ```tsx
-import { CodeBlockRules } from '@platejs/code-block';
-import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from '@platejs/code-block/react';
+import { CodeBlockRules } from 'platejs';
+import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from 'platejs/react';
 import { all, createLowlight } from 'lowlight';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
 
 // Create a lowlight instance with all languages
 const lowlight = createLowlight(all);
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
@@ -132,7 +132,7 @@ lowlight.register('css', css);
 lowlight.register('js', js);
 lowlight.register('ts', ts);
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
@@ -164,10 +164,10 @@ const editor = createPlateEditor({
 For plain code blocks, omit `CodeHighlightPlugin`:
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [CodeBlockPlugin],
 });
 ```

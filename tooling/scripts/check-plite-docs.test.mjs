@@ -10,7 +10,7 @@ import {
   removedExplicitExtensionGenericPattern,
   removedDefinitionAliasNamePattern,
   removedGenericDependencyReferencePattern,
-  removedRootInternalDependencyTypePattern,
+  removedInternalDependencyTypePattern,
   removedZeroArgumentReactPattern,
   removedExtensionApiPortalPattern,
   removedExtensionValidationPattern,
@@ -151,8 +151,8 @@ test('keeps dependency internals private and React composition exact', () => {
     removedGenericDependencyReferencePattern
   );
   assert.match(
-    "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite'",
-    removedRootInternalDependencyTypePattern
+    "import type { InternalEditorExtensionTypeProviderOf } from 'plitejs'",
+    removedInternalDependencyTypePattern
   );
   assert.match('react()', removedZeroArgumentReactPattern);
 
@@ -161,8 +161,12 @@ test('keeps dependency internals private and React composition exact', () => {
     removedGenericDependencyReferencePattern
   );
   assert.doesNotMatch(
-    "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite/internal'",
-    removedRootInternalDependencyTypePattern
+    "import type { EditorExtensionTypeProviderOf } from 'plitejs'",
+    removedInternalDependencyTypePattern
+  );
+  assert.match(
+    "import type { EditorExtensionTypeProviderOf } from 'plitejs/internal'",
+    removedInternalDependencyTypePattern
   );
   assert.doesNotMatch(
     'react({ dom: DOMExtension })',
@@ -259,6 +263,7 @@ test('detects removed Plate schema flags without banning parser overrides', () =
     'render: { leaf: ParagraphLeaf }',
     "schema: { element: { void: 'markable-inline' } }",
     'state.schema.isMarkableVoid(element)',
+    '`keyToDataAttribute`, `isEditor`, `isElement`, `isLeaf`, `isNode`',
   ]) {
     assert.doesNotMatch(source, removedPlateSchemaFlagsPattern, source);
   }

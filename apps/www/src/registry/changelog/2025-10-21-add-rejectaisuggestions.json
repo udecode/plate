@@ -85,7 +85,6 @@
         "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
-        "apps/www/src/registry/app/api/ai/command/prompt/index.ts",
         "apps/www/src/registry/app/api/ai/command/route.ts",
         "apps/www/src/registry/app/api/ai/command/utils.ts"
       ],

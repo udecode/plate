@@ -1,5 +1,5 @@
 ---
-'@platejs/combobox': patch
+'platejs': patch
 ---
 
 Run combobox triggers only from a text selection.

@@ -36,8 +36,8 @@ Do not do another repo-wide sweep. The honest next work is a **strict `score >= 
 
 That batch is:
 
-1. `list-classic`: [transforms/toggleList.ts](packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
-2. `list-classic`: [transforms/insertListItem.ts](packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
+1. `legacy-list-model`: [transforms/toggleList.ts](packages/platejs/src/features/list/src/lib/transforms/toggleList.ts) — score `7`
+2. `legacy-list-model`: [transforms/insertListItem.ts](packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts) — score `7`
 3. `table`: [lib/withDeleteTable.ts](packages/table/src/lib/withDeleteTable.ts) — score `6`
 4. `table`: [merge/deleteRow.ts](packages/table/src/lib/merge/deleteRow.ts) — score `6`
 5. `diff`: [lib/withGetFragmentExcludeDiff.ts](packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
@@ -50,8 +50,8 @@ That batch is:
 
 Use this only if you want one more sweep before rerunning coverage again.
 
-1. `list-classic`: [transforms/toggleList.ts](packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
-2. `list-classic`: [transforms/insertListItem.ts](packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
+1. `legacy-list-model`: [transforms/toggleList.ts](packages/platejs/src/features/list/src/lib/transforms/toggleList.ts) — score `7`
+2. `legacy-list-model`: [transforms/insertListItem.ts](packages/platejs/src/features/list/src/lib/transforms/insertListItem.ts) — score `7`
 3. `table`: [lib/withDeleteTable.ts](packages/table/src/lib/withDeleteTable.ts) — score `6`
 4. `table`: [merge/deleteRow.ts](packages/table/src/lib/merge/deleteRow.ts) — score `6`
 5. `diff`: [lib/withGetFragmentExcludeDiff.ts](packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
@@ -69,11 +69,11 @@ Use this only if you want one more sweep before rerunning coverage again.
 17. `list`: [transforms/toggleListSet.ts](packages/list/src/lib/transforms/toggleListSet.ts) — score `5`
 18. `list`: [transforms/toggleListUnset.ts](packages/list/src/lib/transforms/toggleListUnset.ts) — score `5`
 19. `core`: [transforms/setAffinitySelection.ts](packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.ts) — score `5`
-20. `list-classic`: [transforms/unindentListItems.ts](packages/list-classic/src/lib/transforms/unindentListItems.ts) — score `5`
+20. `legacy-list-model`: [transforms/unindentListItems.ts](packages/platejs/src/features/list/src/lib/transforms/unindentListItems.ts) — score `5`
 
 ## Package Order By Real Value
 
-1. `list-classic` — package score `29`, top files `toggleList.ts:7; insertListItem.ts:7; unindentListItems.ts:5; unwrapList.ts:5; getHighestEmptyList.ts:5`
+1. `legacy-list-model` — package score `29`, top files `toggleList.ts:7; insertListItem.ts:7; unindentListItems.ts:5; unwrapList.ts:5; getHighestEmptyList.ts:5`
 2. `list` — package score `27`, top files `setListNodes.ts:6; setListSiblingNodes.ts:6; indentList.ts:5; toggleListSet.ts:5; toggleListUnset.ts:5`
 3. `table` — package score `26`, top files `withDeleteTable.ts:6; deleteRow.ts:6; moveSelectionFromCell.ts:5; isTableBorderHidden.ts:5; deleteColumn.ts:4`
 4. `diff` — package score `14`, top files `withGetFragmentExcludeDiff.ts:6; get-properties.ts:3; unused-char-generator.ts:3; transformDiffDescendants.ts:2`
@@ -88,7 +88,7 @@ Use this only if you want one more sweep before rerunning coverage again.
 
 ## Caveats
 
-- Raw package totals still overstate `core`, `docx`, `list`, and `list-classic` because they each have multiple small leftover seams. Use the sorted batch lists above, not raw package totals alone.
+- Raw package totals still overstate `core`, `docx`, `list`, and `legacy-list-model` because they each have multiple small leftover seams. Use the sorted batch lists above, not raw package totals alone.
 - `docx-io` still has big uncovered serializer guts, but they are deliberately penalized as sludge. The only remaining honest value there is the small deterministic utility lane.
 - Tiny one-line crumbs are capped on purpose. If a file only has one uncovered branch left, it does not get to cosplay as the next frontier.
 

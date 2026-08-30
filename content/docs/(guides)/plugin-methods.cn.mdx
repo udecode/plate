@@ -131,7 +131,7 @@ export const TriggerPlugin = defineBasePlugin('trigger', {
 }));
 ```
 
-独立复用的 Plite descriptor 使用从 `@platejs/plite` import 的
+独立复用的 Plite descriptor 使用从 `platejs` import 的
 `defineExtension`，然后把 descriptor 放进 `dependencies`。
 
 插件专用和 editor-wide host service 共用根级 `api` channel；Plite 会按插件
@@ -143,7 +143,7 @@ name 投影它。不要发布两份实现。
 唯一的 inline inference anchor。
 
 ```ts title="records-plugin.ts" showLineNumbers
-import { ContentSlice } from '@platejs/plite';
+import { ContentSlice } from 'platejs';
 import { defineBasePlugin } from 'platejs';
 
 export const RecordsPlugin = defineBasePlugin('records', {
@@ -188,7 +188,7 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({
 应用或 registry 安装插件时，用一次 `.configure()` 修改作者已经声明的字段。
 
 ```tsx title="plugins.tsx" showLineNumbers
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 export const AppHeadingPlugin = HeadingPlugin.configure({
   initialState: {
@@ -235,7 +235,7 @@ export const AppGridPlugins = [
 或添加 Plate-only behavior。应用用户不为设置 component 而插入转换。
 
 ```tsx title="script-plugin.tsx" showLineNumbers
-import { BaseScriptPlugin } from '@platejs/basic-nodes';
+import { BaseScriptPlugin } from 'platejs';
 import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
 export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {

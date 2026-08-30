@@ -84,7 +84,7 @@ There are no `score >= 6` files left. The entire honest `score >= 5` set is just
 4. `table` — package score `17`
 5. `core` — package score `16`
 6. `docx-io` — package score `16`
-7. `list-classic` — package score `16`
+7. `legacy-list-model` — package score `16`
 8. `dnd` — package score `15`
 9. `markdown` — package score `12`
 10. `resizable` — package score `12`

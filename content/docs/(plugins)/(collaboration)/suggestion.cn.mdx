@@ -42,10 +42,10 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SuggestionKit } from '@/components/editor/suggestion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...SuggestionKit,
@@ -62,7 +62,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/suggestion @platejs/plite-dom
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 扩展建议插件
@@ -70,8 +70,8 @@ npm install @platejs/suggestion @platejs/plite-dom
 创建带有状态管理扩展配置的建议插件：
 
 ```tsx
-import { isEditor, isElement, isString } from '@platejs/plite-dom';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { isEditor, isElement, isString } from 'platejs/dom';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import { BlockSuggestion } from '@/components/editor/block-discussion';
 import { SuggestionLeaf } from '@/components/editor/suggestion';
 
@@ -157,14 +157,14 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 ### 添加插件
 
 ```tsx
-import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/editor/suggestion';
 
 const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     suggestionPlugin,
@@ -209,7 +209,7 @@ function SuggestionToolbar() {
 建议插件与[讨论插件](/docs/discussion)协同工作实现完整协作：
 
 ```tsx
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件,
     discussionPlugin,
@@ -315,7 +315,7 @@ editor.update.suggestion.reject(description);
 执行更新时不创建建议标记。直接更新和原子更新都使用包提供的预设。
 
 ```tsx
-import { SuggestionUpdatePolicy } from '@platejs/suggestion';
+import { SuggestionUpdatePolicy } from 'platejs/suggestion';
 
 editor.update(SuggestionUpdatePolicy.skip, (tx) => {
   tx.text.insert('Accepted text');

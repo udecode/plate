@@ -1,6 +1,4 @@
 'use client';
-import { ElementApi } from '@platejs/plite';
-import { PLUGINS } from '@platejs/utils';
 import {
   ChevronRightIcon,
   Code2Icon,
@@ -18,6 +16,7 @@ import {
   QuoteIcon,
   SquareIcon,
 } from 'lucide-react';
+import { ElementApi, PLUGINS } from 'platejs';
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 import * as React from 'react';
 
@@ -68,8 +67,8 @@ function getTurnIntoLabel(value: string) {
     case 'heading-6': {
       return 'Heading 6';
     }
-    case PLUGINS.toggle: {
-      return 'Toggle list';
+    case PLUGINS.details: {
+      return 'Details';
     }
     case PLUGINS.codeBlock: {
       return 'Code';
@@ -114,7 +113,7 @@ export function TurnIntoToolbarButton() {
   const documentValue = useSelectionFragmentProp({
     defaultValue: editor.plugin(PLUGINS.paragraph).schema.type,
     getProp: (node) =>
-      ElementApi.isElement(node) ? getBlockType(node) : undefined,
+      ElementApi.isElement(node) ? getBlockType(editor, node) : undefined,
   });
   const selectedDocumentValue =
     typeof documentValue === 'string' ? documentValue : PLUGINS.paragraph;
@@ -127,7 +126,7 @@ export function TurnIntoToolbarButton() {
       'heading-4',
       'heading-5',
       'heading-6',
-      PLUGINS.toggle,
+      PLUGINS.details,
       PLUGINS.codeBlock,
       PLUGINS.codeDrawing,
       PLUGINS.blockquote,
@@ -193,9 +192,9 @@ export function TurnIntoToolbarButton() {
             </TurnIntoMenuItem>
             <TurnIntoMenuItem
               icon={<ChevronRightIcon />}
-              value={PLUGINS.toggle}
+              value={PLUGINS.details}
             >
-              Toggle list
+              Details
             </TurnIntoMenuItem>
             <TurnIntoMenuItem icon={<FileCodeIcon />} value={PLUGINS.codeBlock}>
               Code

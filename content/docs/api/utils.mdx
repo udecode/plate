@@ -1,30 +1,50 @@
 ---
-title: Plate Utils
-description: API reference for @platejs/utils.
+title: Plate Utilities
+description: Plate-owned utility functions, types, identities, and plugins.
 ---
 
-`@platejs/utils` contains Plate's first-party plugin identity catalog and small
-utility plugins. `@platejs/utils/react` adds the selection-fragment property
-hook and block placeholder plugin used by registry UI.
+`platejs` contains Plate's shared framework utilities and plugin identities.
+`platejs/react` contains React-only hooks and utility plugins.
 
 ## Installation
 
 ```bash
-npm install @platejs/utils
+npm install platejs @tanstack/react-virtual
 ```
 
-Application code usually imports this surface from `platejs` and `platejs/react`.
-Direct package imports are useful inside packages that should not depend on the
-umbrella `platejs` package.
+Import headless utilities from `platejs` and React utilities from
+`platejs/react`.
 
 ## Import Paths
 
-| Import                 | Re-exports                            | Use                                                               |
-| ---------------------- | ------------------------------------- | ----------------------------------------------------------------- |
-| `@platejs/utils`       | `PLUGINS`, utility plugins             | First-party names and headless utility behavior.                   |
-| `@platejs/utils/react` | `useSelectionFragmentProp`, `BlockPlaceholderPlugin` | Registry controls and React-only utility behavior.                 |
-| `platejs`              | `@platejs/utils`                      | App-level imports for identities and utility plugins.              |
-| `platejs/react`        | `@platejs/utils/react`                | App-level imports for React hooks and `BlockPlaceholderPlugin`.     |
+| Import | Exports | Use |
+| --- | --- | --- |
+| `platejs` | URL helpers, shared object types, `PLUGINS`, utility plugins | Framework-wide headless contracts and first-party identities. |
+| `platejs/react` | Ref/effect hooks, `useSelectionFragmentProp`, `BlockPlaceholderPlugin` | React-only framework and registry behavior. |
+
+## Shared Utilities
+
+| Export | Contract |
+| --- | --- |
+| `isDefined(value)` | Narrows `null` and `undefined` out of a value. |
+| `isUrl(value)` | Loosely validates URL strings with a recognized protocol and domain. |
+| `sanitizeUrl(url, options)` | Rejects disallowed schemes and returns a normalized URL, internal path, fragment, or `null`. |
+| `IS_APPLE` | Reports whether the current browser user agent is macOS. |
+| `AnyObject` | String-keyed object whose values are intentionally unchecked. |
+| `UnknownObject` | String-keyed object whose values require narrowing. |
+| `Nullable<T>` | Adds `null` to every property of `T`. |
+
+```ts title="validate-link.ts"
+import { isUrl, sanitizeUrl } from 'platejs';
+
+export function getSafeLink(value: string) {
+  if (!isUrl(value)) return null;
+
+  return sanitizeUrl(value, {
+    allowedSchemes: ['http', 'https'],
+  });
+}
+```
 
 ## Plugin Identities
 
@@ -63,11 +83,11 @@ export const trailingBlock = TrailingBlockPlugin.configure({
 ## Schema-Derived Types
 
 Feature packages own their persisted types. Their readable aliases are derived
-from the same plugin schema used at runtime, so `@platejs/utils` does not carry
+from the same plugin schema used at runtime, so `platejs` does not carry
 a central AST map.
 
 ```ts title="Use an owner-derived element type"
-import type { ImageElement } from '@platejs/media';
+import type { ImageElement } from 'platejs/media';
 
 export function getImageUrl(element: ImageElement) {
   return element.url;
@@ -106,8 +126,10 @@ Use the plugin guide pages for options and examples:
 
 ## React Hooks
 
-| Hook                                 | Returns   | Use                                          |
-| ------------------------------------ | --------- | -------------------------------------------- |
+| Hook | Returns | Use |
+| --- | --- | --- |
+| `useComposedRef(...refs)` | `React.RefCallback<T>` | Assigns one node to callback refs and ref objects, including React 19 cleanup callbacks. |
+| `useIsomorphicLayoutEffect` | React effect hook | Uses `useLayoutEffect` in the browser and `useEffect` during SSR. |
 | `useSelectionFragmentProp(options?)` | `unknown` | Reads a property from the selected fragment. |
 
 ## React Plugins
@@ -138,5 +160,4 @@ export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
 
 - [Plate](/docs/api/plate) covers the umbrella package that re-exports these APIs.
 - [Plate Core](/docs/api/core) covers editor creation, plugin contracts, and stores.
-- [React Utils](/docs/api/react-utils) covers `@udecode/react-utils`, which is re-exported through `platejs/react`.
 - [Toolbar](/docs/toolbar) covers registry controls that use the React hook helpers.

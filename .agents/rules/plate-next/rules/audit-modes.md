@@ -32,15 +32,15 @@ Default suspicion list:
   `editor.transforms`, `plugin.transforms`, `getTransforms`, `getPluginApi`,
   old `getApi` surfaces, and command fallbacks that compete with
   `editor.read`, `editor.api`, or `editor.update`.
-- helpers in `packages/core` that are really generic node/range/selection/
+- helpers in `packages/platejs` that are really generic node/range/selection/
   schema/runtime behavior.
 - `any`/`unknown` casts hiding type loss from migration.
 - explicit callback/helper types in tests that replace inference from
-  `defineBasePlugin`, `createBaseEditor`, exact definitions, update groups, or editor
+  `defineBasePlugin`, Plate `createEditor`, exact definitions, update groups, or editor
   API calls.
 - local variable annotations that duplicate an obvious initializer type,
   especially `const x: NodeEntry<...>[] = editor.read...`,
-  `const x: Value = [...]`, or `const x: PlateEditor = create...` when the
+  `const x: Value = [...]`, or `const x: Editor = create...` when the
   initializer should own inference. Empty arrays and external boundaries are
   the exception, not the default.
 - plugin export annotations/casts that replace inference from
@@ -94,11 +94,11 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   They must be one transaction group at minimum, and `tx` from context is the
   preferred shape when the caller is already inside a transform lane.
 - local JSX/editor fixture aliases in tests, especially `{ children; selection
-}` shapes that should come from `@platejs/test-utils`.
+}` shapes that should come from `@platejs/test`.
 - duplicate Plate helpers around Plite APIs.
 - arbitrary root editor object fields such as `editor.propsChanges`,
   `editor.someCache`, direct property assignment bags, or interface extensions
-  that smuggle plugin/product state onto `BaseEditor` / `PlateEditor`.
+  that smuggle plugin/product state onto the public `Editor`.
 - docs/examples that teach legacy compatibility instead of latest state.
 - React trees split into one file per sibling component or hook, especially
   `components/` / `hooks/` taxonomies and nested barrels where one feature
@@ -165,12 +165,12 @@ reach 100 only when its behavior lives in the right owner.
   only by moving the logic back to the correct owner, deleting the bridge
   dependency, and running focused owner proof.
 
-## Full Core Sweep Law
+## Full Plate foundation Sweep Law
 
-When the target is broad Core review, use full-manifest mode:
+When the target is broad Plate foundation review, use full-manifest mode:
 
-- Enumerate every file under `packages/core/src/**/*.{ts,tsx,mts,cts}`.
-- Include `packages/core/type-tests/**/*.{ts,tsx,mts,cts}` when public type
+- Enumerate every file under `packages/platejs/src/**/*.{ts,tsx,mts,cts}`.
+- Include `packages/platejs/type-tests/**/*.{ts,tsx,mts,cts}` when public type
   surfaces, plugin typing, package API, or runtime typing are in scope.
 - Create `docs/plans/artifacts/<plan-slug>/core-drift-ledger.tsv`.
 - Every file in the manifest gets one row. No sampling, no "highest-risk only",
@@ -194,7 +194,7 @@ When the target is broad Core review, use full-manifest mode:
   - public API/type surface touched while a forbidden bridge remains:
     confidence score `<=75`.
 - Score gate:
-  - the autogoal plan's Core drift ledger must record the manifest command,
+  - the autogoal plan's Plate foundation drift ledger must record the manifest command,
     expected row count, actual row count, missing/extra row count, and top drift
     rows before closure.
   - Any score `>=2` needs an owner, evidence, and next action.
@@ -203,7 +203,7 @@ When the target is broad Core review, use full-manifest mode:
   - The final handoff must list the top drift rows and next owner.
 
 This rule exists because a targeted parser sweep missed
-`packages/core/src/lib/plugins/affinity/AffinityPlugin.ts`. A future sweep must
+`packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts`. A future sweep must
 prove it looked at that file and every peer, even when the first packet is
 green.
 
@@ -219,7 +219,7 @@ to the next package.
 
 Rules:
 
-- Freeze scope to the named package plus the smallest Plite/Core owner needed
+- Freeze scope to the named package plus the smallest Plite/Plate foundation owner needed
   to remove a blocker found in that package.
 - Do not update docs, examples, package callers outside the named package,
   unrelated packages, generated registries, or broad repo surfaces from package
@@ -228,14 +228,14 @@ Rules:
 - Do not run `apps/www`, `www` dev server, docs routes, registry demos, or
   browser proof during package review mode unless the user explicitly targets
   `apps/www`, `content/docs`, registry/docs UI, or asks for browser/docs proof.
-  Package review proof is package-local plus the smallest Plite/Core owner
-  proof. If content docs were touched only because a Plite/Core API name
+  Package review proof is package-local plus the smallest Plite/Plate foundation owner
+  proof. If content docs were touched only because a Plite/Plate foundation API name
   changed, run source/docs parity at most and record route proof as deferred.
 - A hard-cut decision discovered in one package still lands package by package.
   Do not run a global caller rewrite unless the user explicitly says
   `all packages`, `current tree`, `full-loop`, `sweep`, or names the broader
   owner.
-- If a package packet needs a Plite/Core fix, patch only that smallest owner
+- If a package packet needs a Plite/Plate foundation fix, patch only that smallest owner
   and the package proof needed for the current package. Do not opportunistically
   migrate every consumer of the new owner API.
 - Before implementation, generate a package file manifest and materialize one
@@ -291,20 +291,19 @@ Rules:
 - Safe defects found during package review may be patched, but the loop must
   keep returning to the current package checklist until it closes or the user
   redirects.
-- If the package becomes part of the Core/Plite boundary proof, update
-  `tooling/scripts/check-core.mjs` in the same packet before closeout. Core
+- If the package becomes part of the Plate foundation/Plite boundary proof, update
+  `tooling/scripts/check-core.mjs` in the same packet before closeout. Plate foundation
   adjacent package review is not done with package-local proof alone.
-- Package metadata diffs are reviewed from real imports, not from old
-  monolith shape. Package source/runtime code must import the direct owner
-  package it uses (`@platejs/core`, `@platejs/plite`, `@platejs/utils`,
-  `@udecode/*`, etc.), not the user-facing `platejs` umbrella. `platejs` is
-  for app/user convenience and aggregate exports, not internal package
-  dependency plumbing. For every `package.json` diff, audit
+- Package metadata diffs are reviewed from real imports, not from an assumed
+  package shape. Plate package source/runtime code imports `platejs`; raw
+  substrate owners import `plitejs`; shared Plate contracts import the
+  matching `platejs` entrypoint; and one-owner helpers stay local. For every
+  `package.json` diff, audit
   `packages/<name>/src` and runtime entrypoints, then classify each dependency
   delta as `direct-runtime`, `external-peer`, `test-tooling-convention`, or
   `cut`. Keep React as a peer when the package exposes React surfaces. Cut
   dependencies with no source/runtime import. Do not add package-local test
-  harness dependencies like `@platejs/test-utils` only because specs import
+  harness dependencies like `@platejs/test` only because specs import
   them unless repo-wide tooling convention or package-local tooling requires
   it.
 - Every completed package review must add its package slug to

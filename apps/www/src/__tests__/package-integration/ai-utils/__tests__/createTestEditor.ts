@@ -10,20 +10,20 @@ import {
   BaseScriptPlugin,
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
-} from '@platejs/basic-nodes';
-import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
-} from '@platejs/code-block';
-import { BaseListPlugin } from '@platejs/list';
-import { BaseMentionPlugin } from '@platejs/mention';
+  BaseListPlugin,
+  createEditor,
+  type Value,
+  BaseParagraphPlugin,
+} from 'platejs';
+import { BaseMentionPlugin } from 'platejs/mention';
 import {
   BaseTablePlugin,
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-} from '@platejs/table';
-import { createBaseEditor, type Value, BaseParagraphPlugin } from 'platejs';
+} from 'platejs/table';
 
 import { MarkdownKit } from '@/registry/components/editor/markdown';
 
@@ -55,7 +55,7 @@ const BasePlugins = [
 ];
 
 export const createTestEditor = (value: Value) =>
-  createBaseEditor({
+  createEditor({
     plugins: BasePlugins,
     initialValue: value,
   });

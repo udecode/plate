@@ -2,6 +2,17 @@ import type { Registry } from 'shadcn/schema';
 
 export const registryHooks: Registry['items'] = [
   {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'hooks/use-on-click-outside.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-on-click-outside',
+    type: 'registry:hook',
+  },
+  {
     files: [
       {
         path: 'hooks/use-object-url.ts',

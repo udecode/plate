@@ -14,7 +14,7 @@ toc: true
 
 ## 功能特性
 
-- **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`@platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和规范编辑器更改接入编辑器。
+- **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和规范编辑器更改接入编辑器。
 - **自定义提供者：** 将提供者包包装成 `YjsProviderLike`，然后通过 `YjsPlugin.configure` 配置。
 - **Awareness 与光标：** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和临时状态。远程光标 UI 使用 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay)。
 - **多根文档：** 通过同一个编辑器扩展和 Yjs 事务边界同步主 `children`、命名 `roots` 和带根信息的 Awareness。
@@ -32,7 +32,7 @@ toc: true
 安装 Yjs 插件包。
 
 ```bash
-npm install @platejs/yjs
+npm install platejs @tanstack/react-virtual diff-match-patch-ts yjs
 ```
 
 如果应用使用 Hocuspocus：
@@ -53,10 +53,10 @@ npm install y-webrtc
 持久房间使用显式的 `id` 和 `version` 作为谱系；递增版本前先迁移房间。
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/plate";
-import { createPlateEditor } from "platejs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+import { createEditor } from "platejs/react";
 
-const editor = createPlateEditor({
+const editor = createEditor({
   schema: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
@@ -82,8 +82,8 @@ const editor = createPlateEditor({
 把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。Plate 插件从 Plate 子路径导入，远程光标 hooks 从 React 子路径导入。
 
 ```tsx
-import { YjsPlugin } from "@platejs/yjs/plate";
-import { useYjsRemoteCursors } from "@platejs/yjs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+import { useYjsRemoteCursors } from "platejs/yjs/react";
 import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
@@ -144,7 +144,7 @@ editor.update((tx) => {
 
 ```tsx
 import React from "react";
-import { useYjsProviderStatus, useYjsProviderSynced } from "@platejs/yjs/react";
+import { useYjsProviderStatus, useYjsProviderSynced } from "platejs/yjs/react";
 
 function EditorStatus() {
   const status = useYjsProviderStatus(editor);
@@ -170,8 +170,8 @@ function EditorStatus() {
 | 提供者包安装                   | 应用                                     |
 | 房间命名和认证                 | 应用                                     |
 | 持久化和服务扩容               | 应用                                     |
-| 编辑器操作、选择、撤销/重做    | `@platejs/plite` 和 `@platejs/plite-history` |
-| Awareness 和远程光标           | `@platejs/yjs`                           |
+| 编辑器操作、选择、撤销/重做    | `platejs` 和 `platejs/history` |
+| Awareness 和远程光标           | `platejs/yjs`                           |
 
 ## 连接命令
 
@@ -222,7 +222,7 @@ editor.update.history.redo();
 - 在应用日志中暴露提供者连接错误。
 - 编辑器挂载时，不要绕过编辑器直接修改共享 `Y.Doc`。
 - 临时断开连接用 `tx.yjs.disconnect()`，卸载清理交给扩展生命周期。
-- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并渲染 `@platejs/yjs/react` 中的 React 光标 hooks。
+- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并渲染 `platejs/yjs/react` 中的 React 光标 hooks。
 
 ## 相关资源
 

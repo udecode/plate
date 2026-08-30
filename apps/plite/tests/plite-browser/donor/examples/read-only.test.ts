@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openExample } from '@platejs/browser/playwright';
+import { openExample } from '@platejs/test/playwright';
 
 test.describe('readonly editor', () => {
   test.beforeEach(async ({ page }) => {

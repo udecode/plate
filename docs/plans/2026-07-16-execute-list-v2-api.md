@@ -88,7 +88,7 @@ Boundaries:
   inspection after Chrome automation cannot read it.
 - Tracker sync: N/A; local accepted plan without issue/Linear owner.
 - Non-goals: Markdown rule typing, broad repo-wide direct-owner import cleanup,
-  List Classic redesign, Plite/Yjs protocol changes, compatibility aliases,
+  Legacy list model redesign, Plite/Yjs protocol changes, compatibility aliases,
   helper relocation for barrel convenience, PR/commit/push.
 
 Output budget strategy:
@@ -342,7 +342,7 @@ Final handoff contract:
     product APIs and normalization; callers use direct owners.
   - Why not quick patch: casts, `.editor` escapes, and local wrappers would preserve
     false root types and runtime drift.
-  - Why not broader change: Plite/Yjs, List Classic, and unrelated package cleanup
+  - Why not broader change: Plite/Yjs, Legacy list model, and unrelated package cleanup
     are outside the accepted plan and unnecessary for closure.
 - Verified: all named package, integration, release, Browser, lint, and review gates pass.
 - PR body verified: N/A; no PR exists.

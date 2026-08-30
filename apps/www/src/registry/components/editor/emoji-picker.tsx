@@ -5,19 +5,6 @@ import emojiMartData, {
   type EmojiMartData,
 } from '@emoji-mart/data';
 import {
-  AGridSection,
-  EmojiFloatingIndexSearch,
-  EmojiInlineLibrary,
-  type EmojiLibrary,
-  type GridElements,
-  type GridRow,
-  type IEmojiLibrary,
-  type IGrid,
-  DEFAULT_EMOJI_LIBRARY,
-  Grid,
-} from '@platejs/emoji';
-import { EmojiPlugin } from '@platejs/emoji/react';
-import {
   AppleIcon,
   ClockIcon,
   CompassIcon,
@@ -30,6 +17,19 @@ import {
   StarIcon,
   XIcon,
 } from 'lucide-react';
+import {
+  AGridSection,
+  EmojiFloatingIndexSearch,
+  EmojiInlineLibrary,
+  type EmojiLibrary,
+  type GridElements,
+  type GridRow,
+  type IEmojiLibrary,
+  type IGrid,
+  DEFAULT_EMOJI_LIBRARY,
+  Grid,
+} from 'platejs/emoji';
+import { EmojiPlugin } from 'platejs/emoji/react';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
 
@@ -481,7 +481,7 @@ const emojiPickerReducer = (
     }
   }
 
-  throw new Error('Unknown emoji picker action.');
+  return current;
 };
 
 type MutableRefs = React.RefObject<{

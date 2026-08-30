@@ -1,9 +1,9 @@
 'use client';
 
 import { faker } from '@faker-js/faker';
-import { CopilotPlugin } from '@platejs/ai/react';
-import { stripMarkdown } from '@platejs/markdown';
-import type { Element } from '@platejs/plite';
+import type { Element } from 'platejs';
+import { CopilotPlugin } from 'platejs/ai/react';
+import { stripMarkdown } from 'platejs/markdown';
 import { useEditor, useElement, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 

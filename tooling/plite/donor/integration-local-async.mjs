@@ -146,7 +146,7 @@ export const buildPlaywrightCommand = (
 export const buildPliteBrowserBuildCommand = () => [
   'bun',
   '--filter',
-  '@platejs/browser',
+  '@platejs/test',
   'build',
 ];
 

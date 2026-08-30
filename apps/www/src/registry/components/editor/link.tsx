@@ -1,21 +1,21 @@
 'use client';
 
+import { cva } from 'class-variance-authority';
+import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+import { LinkRules } from 'platejs';
 import {
   type UseVirtualFloatingOptions,
   flip,
   getDOMSelectionBoundingClientRect,
   offset,
   useVirtualFloating,
-} from '@platejs/floating';
-import { LinkRules } from '@platejs/link';
-import { LinkPlugin } from '@platejs/link/react';
-import { useHotkeys } from '@udecode/react-hotkeys';
-import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
-import { cva } from 'class-variance-authority';
-import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+} from 'platejs/floating/react';
 import {
+  LinkPlugin,
   type PlateElementProps,
   PlateElement,
+  useComposedRef,
+  useHotkeys,
   useEditor,
   useEditorPlugin,
   useEditorReadOnly,
@@ -31,6 +31,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { commentPlugin } from '@/registry/components/editor/comment';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
+import { useOnClickOutside } from '@/registry/hooks/use-on-click-outside';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {

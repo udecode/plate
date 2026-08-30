@@ -4,30 +4,30 @@ import { readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import {
-  createBaseEditor,
+  createEditor as createPlateEditor,
   defineBasePlugin,
-} from '../../../../../packages/core/src/index.ts';
+} from '../../../../../packages/platejs/src/index.tsx';
 import {
   ContentSlice,
   createEditor,
   defineExtensionSlot,
-} from '../../../../../packages/plite/src/index.ts';
+} from '../../../../../packages/plitejs/src/index.ts';
 import {
   defineHostCodec,
   dom,
   hostCodecs,
   writeHostFragmentData,
-} from '../../../../../packages/plite-dom/src/index.ts';
-import { getExtensionRegistry } from '../../../../../packages/plite/src/internal/index.ts';
-import { EDITOR_TO_WINDOW } from '../../../../../packages/plite-dom/src/internal/index.ts';
-import { insertHostData } from '../../../../../packages/plite-dom/src/plugin/host-codec.ts';
+} from '../../../../../packages/plitejs/src/dom/index.ts';
+import { getExtensionRegistry } from '../../../../../packages/plitejs/src/internal/index.ts';
+import { EDITOR_TO_WINDOW } from '../../../../../packages/plitejs/src/dom/internal/index.ts';
+import { insertHostData } from '../../../../../packages/plitejs/src/dom/plugin/host-codec.ts';
 import {
   insertDOMFragmentData,
   insertDOMTextData,
   readDOMFragmentData,
   writeDOMFragmentData,
   writeDOMSelectionData,
-} from '../../../../../packages/plite-dom/src/plugin/dom-clipboard-runtime.ts';
+} from '../../../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts';
 import { round, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 import {
   CLIPBOARD_AUTHORITY_ARTIFACT_PATH,
@@ -282,7 +282,7 @@ const createBenchmarkEditor = (children, selection, extensions = []) => {
 };
 
 const createPlateBenchmarkEditor = (children, selection, counters) => {
-  const editor = createBaseEditor({
+  const editor = createPlateEditor({
     initialValue: children,
     nodeId: false,
     plugins: [createPlateBenchmarkCodecPlugin(counters, benchmarkPlateFormat)],

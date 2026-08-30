@@ -31,7 +31,7 @@ Completion threshold:
 
 Verification surface:
 - Inventory: completed Plate Next package-review plans versus `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`.
-- Focused proof: Plite typecheck/build and cross-instance editor contracts; list-classic 124-test lane; isolated Selection hook tests; Suggestion block-void deletion test.
+- Focused proof: Plite typecheck/build and cross-instance editor contracts; legacy-list-model 124-test lane; isolated Selection hook tests; Suggestion block-void deletion test.
 - Shared proof: `pnpm check:core` across all 42 package targets.
 - Final review: `agent-native-reviewer` plus `check-complete.mjs`.
 - Browser proof: not applicable; the changed surface is headless tooling, editor runtime behavior, and tests with no package-facing route.
@@ -75,7 +75,7 @@ Start Gates:
 
 Reviewed package inventory:
 - Base targets: `core`, `plite`, `utils`.
-- Completed review targets (39): `ai`, `basic-nodes`, `basic-styles`, `callout`, `caption`, `code-block`, `code-drawing`, `combobox`, `comment`, `csv`, `cursor`, `date`, `diff`, `dnd`, `docx`, `docx-io`, `emoji`, `excalidraw`, `find-replace`, `floating`, `footnote`, `indent`, `juice`, `layout`, `link`, `list`, `list-classic`, `markdown`, `math`, `media`, `mention`, `resizable`, `selection`, `slash-command`, `suggestion`, `tabbable`, `tag`, `toc`, `toggle`.
+- Completed review targets (39): `ai`, `basic-nodes`, `basic-styles`, `callout`, `caption`, `code-block`, `code-drawing`, `combobox`, `comment`, `csv`, `cursor`, `date`, `diff`, `dnd`, `docx`, `docx-io`, `emoji`, `excalidraw`, `find-replace`, `floating`, `footnote`, `indent`, `juice`, `layout`, `link`, `list`, `legacy-list-model`, `markdown`, `math`, `media`, `mention`, `resizable`, `selection`, `slash-command`, `suggestion`, `tabbable`, `tag`, `toc`, `toggle`.
 - Expected reviewed count: 39.
 - Configured reviewed count: 39.
 - Total gate targets: 42.
@@ -96,7 +96,7 @@ Best Plate v2 recommendation:
 Plite / Plate gap ledger:
 | Gap type | Capability | Owner | Decision | Proof |
 |---|---|---|---|---|
-| resolved Plite boundary | Recognize editor proxies from another Plite module instance without losing local traversal performance | Plite `is-editor` and Node API | fixed | Plite typecheck; 125k replace-children contract; list-classic 124/124 |
+| resolved Plite boundary | Recognize editor proxies from another Plite module instance without losing local traversal performance | Plite `is-editor` and Node API | fixed | Plite typecheck; 125k replace-children contract; legacy-list-model 124/124 |
 | resolved Plate ordering | Feature transform middleware must run before generic delete rules | Core `OverridePlugin` | fixed with fallback priority | Suggestion block-void deletion passes in full gate |
 | deferred Plate Plan | Table still needs named Plite runtime contracts | Table plan owner | excluded until its 166 deferred rows can close | `2026-07-13-plate-next-slash-command-tabbable-table-package-reviews.md` |
 
@@ -188,7 +188,7 @@ Error attempts:
 Verification evidence:
 - `pnpm --filter @platejs/plite typecheck` passed.
 - Plite `operations-contract.ts`: 28/28 passed; the 125,000-child row completed in about 3.3 seconds.
-- List Classic: 124/124 passed.
+- Legacy list model: 124/124 passed.
 - Selection isolated hook specs: 2/2 and 2/2 passed.
 - Suggestion block-void deletion focused row passed after rebuilding Core.
 - Final `pnpm check:core` exited 0, emitted 42 package test-target headers, emitted no failure lines, and completed at `@platejs/toggle`.

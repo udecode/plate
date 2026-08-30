@@ -14,12 +14,12 @@ the lifetime of the UI.
 
 | Need                                                                 | Start with                                                                                     | Owner                  |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------- |
-| One editable needs a simple highlight                                | `Editable.decorate`                                                                            | `@platejs/plite-react` |
-| Search, diagnostics, or external highlights are shared with other UI | `usePliteDecorationSource` or `usePliteRangeDecorationSource` plus `<Plite decorationSources>` | `@platejs/plite-react` |
-| A range has durable identity                                         | `usePliteAnnotationStore` plus `<Plite annotationStore>`                                       | `@platejs/plite-react` |
-| UI is anchored to a selection, node, or annotation                   | `usePliteWidgetStore`, `usePliteWidgets`, and `usePliteWidget`                                 | `@platejs/plite-react` |
-| Text paint depends on projected slices                               | `Editable renderSegment`                                                                       | `@platejs/plite-react` |
-| The overlay claim needs browser-visible proof                        | screenshot, DOM selection, displayed selection, and follow-up typing                           | `@platejs/browser`     |
+| One editable needs a simple highlight                                | `Editable.decorate`                                                                            | `plitejs/react` |
+| Search, diagnostics, or external highlights are shared with other UI | `usePliteDecorationSource` or `usePliteRangeDecorationSource` plus `<Plite decorationSources>` | `plitejs/react` |
+| A range has durable identity                                         | `usePliteAnnotationStore` plus `<Plite annotationStore>`                                       | `plitejs/react` |
+| UI is anchored to a selection, node, or annotation                   | `usePliteWidgetStore`, `usePliteWidgets`, and `usePliteWidget`                                 | `plitejs/react` |
+| Text paint depends on projected slices                               | `Editable renderSegment`                                                                       | `plitejs/react` |
+| The overlay claim needs browser-visible proof                        | screenshot, DOM selection, displayed selection, and follow-up typing                           | `@platejs/test`     |
 
 Use decorations for paint. Use annotations when a range needs identity. Use
 widgets when UI hangs off a node, selection, or annotation.
@@ -30,12 +30,12 @@ Projection is a React rendering layer, not a second document model.
 
 | Stage          | What happens                                                                                                  | Owner                                       |
 | -------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Source         | `decorate`, decoration sources, annotation stores, and selection sources provide ranges.                      | `@platejs/plite-react`                      |
-| Projection     | Sources are projected onto runtime text ids and split into slices.                                            | `@platejs/plite-react`                      |
-| Render         | `Editable` renders projected text through `renderSegment`, `renderLeaf`, `renderText`, and element renderers. | `@platejs/plite-react`                      |
-| Overlay UI     | Sidebars, popovers, toolbars, and widgets read annotation or widget snapshots.                                | App UI plus `@platejs/plite-react`          |
-| Commit refresh | Editor commits name the affected projection node keys when possible.                                         | `@platejs/plite` and `@platejs/plite-react` |
-| Proof          | Browser tests verify visible highlights, selection, focus, and follow-up editing.                             | `@platejs/browser`                          |
+| Source         | `decorate`, decoration sources, annotation stores, and selection sources provide ranges.                      | `plitejs/react`                      |
+| Projection     | Sources are projected onto runtime text ids and split into slices.                                            | `plitejs/react`                      |
+| Render         | `Editable` renders projected text through `renderSegment`, `renderLeaf`, `renderText`, and element renderers. | `plitejs/react`                      |
+| Overlay UI     | Sidebars, popovers, toolbars, and widgets read annotation or widget snapshots.                                | App UI plus `plitejs/react`          |
+| Commit refresh | Editor commits name the affected projection node keys when possible.                                         | `plitejs` and `plitejs/react` |
+| Proof          | Browser tests verify visible highlights, selection, focus, and follow-up editing.                             | `@platejs/test`                          |
 
 Keep document data in Plite nodes, roots, and document meta. Keep overlay
 payloads small and render-facing.

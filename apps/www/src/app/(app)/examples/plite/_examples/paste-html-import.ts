@@ -1,8 +1,8 @@
-import { type Descendant, defineExtension, schema } from '@platejs/plite';
-import { clipboardHandler, parseDOMClipboardHtml } from '@platejs/plite-dom';
-import { jsx } from '@platejs/plite-hyperscript';
-import { failInvariant } from '@platejs/plite/internal';
+import { type Descendant, defineExtension, schema } from 'plitejs';
+import { clipboardHandler, parseDOMClipboardHtml } from 'plitejs/dom';
+import { jsx } from 'plitejs/hyperscript';
 
+import { failInvariant } from '../../../../../lib/failInvariant';
 import type {
   CustomElement,
   CustomElementType,

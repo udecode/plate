@@ -31,66 +31,58 @@ function createWorkspacePackages(entries) {
 
 test('auto-releases transitive runtime dependents of released packages', () => {
   const workspacePackages = createWorkspacePackages({
-    '@platejs/core': [],
-    '@platejs/transitive': ['@platejs/utils'],
-    '@platejs/utils': ['@platejs/core'],
-    platejs: ['@platejs/core', '@platejs/utils'],
+    '@platejs/test': ['platejs'],
+    '@fixture/transitive': ['platejs'],
+    platejs: ['plitejs'],
+    plitejs: [],
   });
 
   const autoReleasePackages = getAutoReleasePackages(
-    [{ name: '@platejs/core', type: 'patch' }],
+    [{ name: 'plitejs', type: 'patch' }],
     workspacePackages
   );
 
   assert.deepEqual(autoReleasePackages, [
     {
-      name: '@platejs/transitive',
-      updatedDependencyNames: ['@platejs/utils'],
+      name: '@fixture/transitive',
+      updatedDependencyNames: ['platejs'],
     },
     {
-      name: '@platejs/utils',
-      updatedDependencyNames: ['@platejs/core'],
+      name: '@platejs/test',
+      updatedDependencyNames: ['platejs'],
     },
     {
       name: 'platejs',
-      updatedDependencyNames: ['@platejs/core', '@platejs/utils'],
+      updatedDependencyNames: ['plitejs'],
     },
   ]);
 });
 
 test('does not follow peer-only relationships', () => {
   const workspacePackages = createWorkspacePackages({
-    '@platejs/core': [],
-    '@platejs/utils': ['@platejs/core'],
-    '@platejs/yjs': [],
-    platejs: ['@platejs/core', '@platejs/utils'],
+    '@fixture/optional-peer': [],
+    platejs: ['plitejs'],
+    plitejs: [],
   });
 
   const autoReleasePackages = getAutoReleasePackages(
-    [{ name: '@platejs/core', type: 'patch' }],
+    [{ name: 'plitejs', type: 'patch' }],
     workspacePackages
   );
 
   assert.deepEqual(autoReleasePackages, [
     {
-      name: '@platejs/utils',
-      updatedDependencyNames: ['@platejs/core'],
-    },
-    {
       name: 'platejs',
-      updatedDependencyNames: ['@platejs/core', '@platejs/utils'],
+      updatedDependencyNames: ['plitejs'],
     },
   ]);
 });
 
 test('formats a synthetic changeset for one auto-bumped package', () => {
-  const content = createAutoChangesetContent('platejs', [
-    '@platejs/core',
-    '@platejs/utils',
-  ]);
+  const content = createAutoChangesetContent('platejs', ['plitejs']);
 
   assert.match(content, /"platejs": patch/);
-  assert.match(content, /Updated `@platejs\/core`, `@platejs\/utils`\./);
+  assert.match(content, /Updated `plitejs`\./);
 });
 
 test('uses the release branch as the changeset status base in CI', () => {

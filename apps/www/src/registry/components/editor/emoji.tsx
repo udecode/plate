@@ -1,8 +1,8 @@
 'use client';
 
 import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
-import { EmojiInlineIndexSearch } from '@platejs/emoji';
-import { EmojiInputPlugin, EmojiPlugin } from '@platejs/emoji/react';
+import { EmojiInlineIndexSearch } from 'platejs/emoji';
+import { EmojiInputPlugin, EmojiPlugin } from 'platejs/emoji/react';
 import {
   type PlateElementProps,
   PlateElement,

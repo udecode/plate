@@ -1,8 +1,8 @@
-import type { AIChatRequestRefs } from '@platejs/ai';
-import type { MarkdownEditor } from '@platejs/markdown';
-import { BaseTablePlugin, type TableCellElement } from '@platejs/table';
 import dedent from 'dedent';
 import { ElementApi } from 'platejs';
+import type { AIChatRequestRefs } from 'platejs/ai';
+import type { MarkdownEditor } from 'platejs/markdown';
+import { BaseTablePlugin, type TableCellElement } from 'platejs/table';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 

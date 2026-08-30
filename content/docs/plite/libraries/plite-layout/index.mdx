@@ -3,11 +3,17 @@ title: "Plite Layout"
 description: "Derive page geometry, line fragments, and paged editor mount plans from Plite state."
 ---
 
-`@platejs/plite-layout` derives page geometry, line fragments, and page-level
+`plitejs/page-layout` derives page geometry, line fragments, and page-level
 mount plans from a Plite editor. Use it for pagination lanes, print-like
 surfaces, and page virtualization that still keeps Plite as the document model.
 Keep production use behind explicit flags until your browser, export, table,
 image, and collaboration requirements are proven.
+
+## Installation
+
+```bash
+npm install plitejs @chenglou/pretext
+```
 
 ## Page Layout
 
@@ -16,7 +22,7 @@ measurement engine and derives layout from the current editor snapshot and your
 page settings.
 
 ```tsx
-import { createPliteLayout } from "@platejs/plite-layout";
+import { createPliteLayout } from "plitejs/page-layout";
 
 const layout = createPliteLayout(editor, {
   page: {
@@ -39,15 +45,19 @@ document unless your product explicitly needs authoritative page breaks.
 
 ## React Usage
 
-Use `PagedEditable` from `@platejs/plite-layout/react` when the editor surface should
+Use `PagedEditable` from `plitejs/page-layout/react` when the editor surface should
 render pages.
 
+```bash
+npm install plitejs @chenglou/pretext @tanstack/react-virtual react react-dom
+```
+
 ```tsx
-import { Plite, usePliteEditor } from "@platejs/plite-react";
-import { PagedEditable, usePliteLayout } from "@platejs/plite-layout/react";
+import { Plite, useEditor } from "plitejs/react";
+import { PagedEditable, usePliteLayout } from "plitejs/page-layout/react";
 
 const DocumentEditor = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue,
   });
   const layout = usePliteLayout(editor, {

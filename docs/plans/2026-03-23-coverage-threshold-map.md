@@ -68,7 +68,7 @@ Strong take: use `>= 6` if you want the cleanest value bar. Use `>= 5` only if y
 These are the only score-5 files I would still defend after the strict cut:
 
 - [packages/docx-io/src/lib/internal/utils/image-dimensions.ts](packages/docx-io/src/lib/internal/utils/image-dimensions.ts) `5`
-- [packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.ts](packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.ts) `5`
+- [packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.ts](packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.ts) `5`
 - [packages/table/src/lib/transforms/deleteColumn.ts](packages/table/src/lib/transforms/deleteColumn.ts) `5`
 - [packages/table/src/lib/transforms/overrideSelectionFromCell.ts](packages/table/src/lib/transforms/overrideSelectionFromCell.ts) `5`
 - [packages/table/src/lib/withSetFragmentDataTable.ts](packages/table/src/lib/withSetFragmentDataTable.ts) `5`
@@ -79,7 +79,7 @@ These are the only score-5 files I would still defend after the strict cut:
 | ---- | -------------- | ----: | ----------: | ----------: |
 | 1    | `table`        |    64 |          13 |          16 |
 | 2    | `core`         |    17 |           0 |           0 |
-| 3    | `list-classic` |    10 |           0 |           1 |
+| 3    | `legacy-list-model` |    10 |           0 |           1 |
 | 4    | `docx`         |     9 |           0 |           0 |
 | 5    | `docx-io`      |     7 |           0 |           1 |
 | 6    | `media`        |     5 |           0 |           0 |
@@ -98,7 +98,7 @@ These are the only score-5 files I would still defend after the strict cut:
 - `table` is the only remaining package with a real cluster of above-threshold non-React work.
 - Everything else is either already substantially covered, recently swept, or down to a couple borderline seams.
 - If you want bigger tasks, stop hopping packages and do the whole above-threshold `table` lane as one program.
-- After the strict `table` batch, only two extra files still clear the wider bar: one `docx-io` util and one `list-classic` transform.
+- After the strict `table` batch, only two extra files still clear the wider bar: one `docx-io` util and one `legacy-list-model` transform.
 
 ## Full Data
 

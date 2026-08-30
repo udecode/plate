@@ -265,7 +265,7 @@ recommended first slice and required a complete Base surface.
   requested supported style.
 - Routed provider-sensitive popover, dropdown, and context-menu consumers
   through the four interaction adapters.
-- Kept the 11 `*-classic` items canonical and maintenance-only. Every public
+- Kept the 11 alternative variants items canonical and maintenance-only. Every public
   classic item installs through Base and Radix without provider-specific
   assembly copies. Did not copy `@shadcn/react`, the 374 base-source rows, or
   edit templates.

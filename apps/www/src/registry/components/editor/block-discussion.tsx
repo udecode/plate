@@ -1,25 +1,14 @@
-"use client";
+'use client';
 
-import {
-  BaseCommentPlugin,
-  getCommentCount,
-  getDraftCommentKey,
-} from "@platejs/comment";
-import type { NormalizePluginState } from "@platejs/core/internal";
-import { failInvariant } from "@platejs/plite/internal";
-import {
-  BaseSuggestionPlugin,
-  SUGGESTION_TRANSIENT_KEY,
-} from "@platejs/suggestion";
-import { SuggestionPlugin } from "@platejs/suggestion/react";
 import {
   CheckIcon,
   XIcon,
   MessageSquareTextIcon,
   MessagesSquareIcon,
   PencilLineIcon,
-} from "lucide-react";
+} from 'lucide-react';
 import {
+  type NormalizePluginState,
   ElementApi,
   type Element,
   type NodeEntry,
@@ -28,73 +17,85 @@ import {
   PLUGINS,
   type Text,
   TextApi,
-} from "platejs";
+} from 'platejs';
+import {
+  BaseCommentPlugin,
+  getCommentCount,
+  getDraftCommentKey,
+} from 'platejs/comment';
 import {
   useEditorPlugin,
   useEditorRuntimeState,
   usePluginStore,
-  type PlateEditor,
+  type Editor,
   type RenderNodeWrapper,
   type RenderNodeWrapperProps,
   useEditor,
-} from "platejs/react";
-import * as React from "react";
+} from 'platejs/react';
+import {
+  BaseSuggestionPlugin,
+  SUGGESTION_TRANSIENT_KEY,
+} from 'platejs/suggestion';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
+import * as React from 'react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   type TDiscussion,
   discussionPlugin,
-} from "@/registry/components/editor/discussion";
+} from '@/registry/components/editor/discussion';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
   FloatingPopoverContent,
-} from "@/registry/components/editor/floating-popover";
-import { suggestionPlugin } from "@/registry/components/editor/suggestion";
+} from '@/registry/components/editor/floating-popover';
+import { suggestionPlugin } from '@/registry/components/editor/suggestion';
 import {
   BLOCK_SUGGESTION_TOKEN,
   buildBlockDiscussionIndex,
-  type ResolvedSuggestion,
+  type BlockResolvedSuggestion,
   sameBlockDiscussionSelection,
   shouldRefreshBlockDiscussionIndex,
-} from "@/registry/lib/block-discussion-index";
+} from '@/registry/lib/block-discussion-index';
 
 import {
   Comment,
   CommentCreateForm,
   commentPlugin,
   formatCommentDate,
-} from "./comment";
+} from './comment';
 
 type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 
 const EMPTY_DISCUSSIONS = Object.freeze([]) as readonly TDiscussion[];
-const EMPTY_SUGGESTIONS = Object.freeze([]) as readonly ResolvedSuggestion[];
+const EMPTY_SUGGESTIONS = Object.freeze(
+  []
+) as readonly BlockResolvedSuggestion[];
 
 const suggestionText2Array = (text: string) => {
-  if (text === BLOCK_SUGGESTION_TOKEN) return ["line breaks"];
+  if (text === BLOCK_SUGGESTION_TOKEN) return ['line breaks'];
 
   return text.split(BLOCK_SUGGESTION_TOKEN).filter(Boolean);
 };
 
 const getRemoveSummaryItems = (text: string) => {
   const items = suggestionText2Array(text).map((item) => {
-    if (item === "columnGroup") return "Column";
-    if (item === "codeBlock") return "Code Block";
+    if (item === 'columnGroup') return 'Column';
+    if (item === 'codeBlock') return 'Code Block';
 
     return item;
   });
 
-  if (items.includes("Table")) return ["Table"];
-  if (items.includes("Code Block")) return ["Code Block"];
-  if (items.includes("Column")) return ["Column"];
+  if (items.includes('Table')) return ['Table'];
+  if (items.includes('Code Block')) return ['Code Block'];
+  if (items.includes('Column')) return ['Column'];
 
   return items;
 };
 
 const discussionIndexCache = new WeakMap<
-  PlateEditor,
+  Editor,
   {
     discussions: readonly DiscussionSnapshot[];
     index: ReturnType<typeof buildBlockDiscussionIndex>;
@@ -103,7 +104,7 @@ const discussionIndexCache = new WeakMap<
 >();
 
 const getDiscussionIndex = (
-  editor: PlateEditor,
+  editor: Editor,
   discussions: readonly DiscussionSnapshot[],
   version: number
 ) => {
@@ -123,21 +124,21 @@ const getDiscussionIndex = (
 
   (
     [
-      [PLUGINS.audio, "Audio"],
-      [PLUGINS.blockquote, "Blockquote"],
-      [PLUGINS.callout, "Callout"],
-      [PLUGINS.codeBlock, "Code Block"],
-      [PLUGINS.column, "Column"],
-      [PLUGINS.equation, "Equation"],
-      [PLUGINS.file, "File"],
-      [PLUGINS.heading, "Heading"],
-      [PLUGINS.horizontalRule, "Horizontal Rule"],
-      [PLUGINS.image, "Image"],
-      [PLUGINS.mediaEmbed, "Media"],
-      [PLUGINS.table, "Table"],
-      [PLUGINS.toc, "Table of Contents"],
-      [PLUGINS.toggle, "Toggle"],
-      [PLUGINS.video, "Video"],
+      [PLUGINS.audio, 'Audio'],
+      [PLUGINS.blockquote, 'Blockquote'],
+      [PLUGINS.callout, 'Callout'],
+      [PLUGINS.codeBlock, 'Code Block'],
+      [PLUGINS.column, 'Column'],
+      [PLUGINS.equation, 'Equation'],
+      [PLUGINS.file, 'File'],
+      [PLUGINS.heading, 'Heading'],
+      [PLUGINS.horizontalRule, 'Horizontal Rule'],
+      [PLUGINS.image, 'Image'],
+      [PLUGINS.mediaEmbed, 'Media'],
+      [PLUGINS.table, 'Table'],
+      [PLUGINS.toc, 'Table of Contents'],
+      [PLUGINS.details, 'Details'],
+      [PLUGINS.video, 'Video'],
     ] as const
   ).forEach(([plugin, label]) => {
     const portal = editor.plugin(plugin);
@@ -159,7 +160,7 @@ const getDiscussionIndex = (
       at: [],
       match: (node): node is Element | Text =>
         ElementApi.isElement(node) || TextApi.isText(node),
-      mode: "all",
+      mode: 'all',
     }),
     getBlockLabel: (node) => {
       const heading = editor.plugin(PLUGINS.heading);
@@ -167,16 +168,16 @@ const getDiscussionIndex = (
       if (
         heading.installed &&
         node.type === heading.schema.type &&
-        typeof node.level === "number"
+        typeof node.level === 'number'
       ) {
         return `Heading ${node.level}`;
       }
       if (node.type === paragraphType) {
-        if (node.listType === "task") return "Todo List";
-        if (node.listType === "numbered") return "Ordered List";
-        if (node.listType === "bulleted") return "List";
+        if (node.listType === 'task') return 'Todo List';
+        if (node.listType === 'numbered') return 'Ordered List';
+        if (node.listType === 'bulleted') return 'List';
 
-        return "Paragraph";
+        return 'Paragraph';
       }
 
       return blockLabels.get(node.type) ?? node.type;
@@ -206,23 +207,54 @@ export function BlockSuggestionCard({
 }: {
   idx: number;
   isLast: boolean;
-  suggestion: ResolvedSuggestion;
+  suggestion: BlockResolvedSuggestion;
 }) {
   const { update } = useEditorPlugin(SuggestionPlugin);
 
-  const userInfo = usePluginStore(discussionPlugin, "user", suggestion.userId);
+  const userInfo = usePluginStore(discussionPlugin, 'user', suggestion.userId);
 
-  const accept = (innerSuggestion: ResolvedSuggestion) => {
+  const accept = (innerSuggestion: BlockResolvedSuggestion) => {
     update.accept(innerSuggestion);
   };
 
-  const reject = (innerSuggestion2: ResolvedSuggestion) => {
+  const reject = (innerSuggestion2: BlockResolvedSuggestion) => {
     update.reject(innerSuggestion2);
   };
 
   const [hovering, setHovering] = React.useState(false);
 
   const [editingId, setEditingId] = React.useState<string | null>(null);
+
+  let insertedText: string | undefined;
+  let originalText: string | undefined;
+  let removedText: string | undefined;
+  let replacementText: string | undefined;
+
+  if (suggestion.type === 'remove') {
+    if (suggestion.text == null) {
+      throw new Error('Remove suggestions require the removed text');
+    }
+
+    removedText = suggestion.text;
+  }
+  if (suggestion.type === 'insert') {
+    if (suggestion.newText == null) {
+      throw new Error('Insert suggestions require the inserted text');
+    }
+
+    insertedText = suggestion.newText;
+  }
+  if (suggestion.type === 'replace') {
+    if (suggestion.newText == null) {
+      throw new Error('Replace suggestions require replacement text');
+    }
+    if (suggestion.text == null) {
+      throw new Error('Replace suggestions require the original text');
+    }
+
+    originalText = suggestion.text;
+    replacementText = suggestion.newText;
+  }
 
   return (
     <div
@@ -254,10 +286,8 @@ export function BlockSuggestionCard({
 
         <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
-            {suggestion.type === "remove" &&
-              getRemoveSummaryItems(
-                suggestion.text ?? failInvariant("Expected value to be defined")
-              ).map((text) => (
+            {removedText !== undefined &&
+              getRemoveSummaryItems(removedText).map((text) => (
                 <div key={text} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Delete:</span>
 
@@ -265,54 +295,45 @@ export function BlockSuggestionCard({
                 </div>
               ))}
 
-            {suggestion.type === "insert" &&
-              suggestionText2Array(
-                suggestion.newText ??
-                  failInvariant("Expected value to be defined")
-              ).map((text, index) => (
+            {insertedText !== undefined &&
+              suggestionText2Array(insertedText).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Add:</span>
 
                   <span key={index} className="text-sm">
-                    {text || "line breaks"}
+                    {text || 'line breaks'}
                   </span>
                 </div>
               ))}
 
-            {suggestion.type === "replace" && (
+            {replacementText !== undefined && originalText !== undefined && (
               <div className="flex flex-col gap-2">
-                {suggestionText2Array(
-                  suggestion.newText ??
-                    failInvariant("Expected value to be defined")
-                ).map((text, index) => (
+                {suggestionText2Array(replacementText).map((text, index) => (
                   <React.Fragment key={index}>
                     <div
                       key={index}
                       className="flex items-start gap-2 text-brand/80"
                     >
                       <span className="text-sm">with:</span>
-                      <span className="text-sm">{text || "line breaks"}</span>
+                      <span className="text-sm">{text || 'line breaks'}</span>
                     </div>
                   </React.Fragment>
                 ))}
 
-                {suggestionText2Array(
-                  suggestion.text ??
-                    failInvariant("Expected value to be defined")
-                ).map((text, index) => (
+                {suggestionText2Array(originalText).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
                       <span className="text-sm text-muted-foreground">
-                        {index === 0 ? "Replace:" : "Delete:"}
+                        {index === 0 ? 'Replace:' : 'Delete:'}
                       </span>
-                      <span className="text-sm">{text || "line breaks"}</span>
+                      <span className="text-sm">{text || 'line breaks'}</span>
                     </div>
                   </React.Fragment>
                 ))}
               </div>
             )}
 
-            {suggestion.type === "update" && (
+            {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {Object.keys(suggestion.properties ?? {}).map((key) => (
@@ -378,8 +399,8 @@ export function BlockSuggestionCard({
 }
 
 export const isResolvedSuggestion = (
-  suggestion: ResolvedSuggestion | TDiscussion
-): suggestion is ResolvedSuggestion => "suggestionId" in suggestion;
+  suggestion: BlockResolvedSuggestion | TDiscussion
+): suggestion is BlockResolvedSuggestion => 'suggestionId' in suggestion;
 
 export const BlockDiscussion: RenderNodeWrapper = (_props) =>
   function BlockDiscussionWrapper(props) {
@@ -389,7 +410,7 @@ export const BlockDiscussion: RenderNodeWrapper = (_props) =>
 const BlockCommentContent = ({ children, element }: RenderNodeWrapperProps) => {
   const editor = useEditor();
   const nodeKey = editor.key(element);
-  const discussions = usePluginStore(discussionPlugin, "discussions");
+  const discussions = usePluginStore(discussionPlugin, 'discussions');
   const {
     hasDraftComment,
     isTopLevelBlock,
@@ -405,7 +426,7 @@ const BlockCommentContent = ({ children, element }: RenderNodeWrapperProps) => {
       );
 
       return {
-        contentKey: index.contentKeyByNodeKey.get(nodeKey) ?? "",
+        contentKey: index.contentKeyByNodeKey.get(nodeKey) ?? '',
         hasDraftComment: index.draftCommentNodeKeys.has(nodeKey),
         isTopLevelBlock: index.topLevelNodeKeys.has(nodeKey),
         resolvedDiscussions:
@@ -451,12 +472,10 @@ const BlockCommentDetails = ({
   hasDraftComment: boolean;
   nodeKey: NodeKey;
   resolvedDiscussions: readonly TDiscussion[];
-  resolvedSuggestions: readonly ResolvedSuggestion[];
+  resolvedSuggestions: readonly BlockResolvedSuggestion[];
 }) => {
   const editor = useEditor();
-  const blockPath =
-    editor.read.nodes.path(nodeKey) ??
-    failInvariant("Expected value to be defined");
+  const blockPath = editor.read.nodes.path(nodeKey);
   const {
     api: commentsApi,
     read: commentsRead,
@@ -465,6 +484,10 @@ const BlockCommentDetails = ({
   } = useEditorPlugin(commentPlugin);
   const { api: suggestionApi, read: suggestionRead } =
     useEditorPlugin(suggestionPlugin);
+
+  if (blockPath == null) {
+    throw new Error('Block discussions require a mounted block path');
+  }
 
   const draftCommentNode = hasDraftComment
     ? commentsRead.node({ at: blockPath, isDraft: true })
@@ -477,13 +500,13 @@ const BlockCommentDetails = ({
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
 
-  const activeSuggestionId = usePluginStore(suggestionPlugin, "activeId");
+  const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
   const activeSuggestion =
     activeSuggestionId &&
     resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginStore(commentPlugin, "commentingBlock");
-  const activeCommentId = usePluginStore(commentPlugin, "activeId");
+  const commentingBlock = usePluginStore(commentPlugin, 'commentingBlock');
+  const activeCommentId = usePluginStore(commentPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
@@ -534,13 +557,13 @@ const BlockCommentDetails = ({
 
     return resolvedNode;
   })();
-  const activeNodePathKey = activeNode?.[1].join(",") ?? null;
-  const blockPathKey = blockPath.join(",");
+  const activeNodePathKey = activeNode?.[1].join(',') ?? null;
+  const blockPathKey = blockPath.join(',');
   const activeVirtualAnchor = activeNodePathKey
     ? {
         getBoundingClientRect: () => {
-          const activePath = activeNodePathKey.split(",").map(Number);
-          const fallbackPath = blockPathKey.split(",").map(Number);
+          const activePath = activeNodePathKey.split(',').map(Number);
+          const fallbackPath = blockPathKey.split(',').map(Number);
           const activeNodeElement = editor.read.nodes.get(activePath)?.[0];
           const blockElement = editor.read.nodes.get(fallbackPath)?.[0];
           const anchorElement = activeNodeElement
@@ -588,7 +611,7 @@ const BlockCommentDetails = ({
               editor.update((tx) => {
                 tx.nodes.unset(commentsSchema.key, {
                   at: [],
-                  mode: "lowest",
+                  mode: 'lowest',
                   match: (n) =>
                     TextApi.isText(n) &&
                     Boolean(n[getDraftCommentKey()]) &&
@@ -596,7 +619,7 @@ const BlockCommentDetails = ({
                 });
                 tx.nodes.unset(getDraftCommentKey(), {
                   at: [],
-                  mode: "lowest",
+                  mode: 'lowest',
                   match: (n) =>
                     Boolean(
                       (n as Record<string, unknown>)[getDraftCommentKey()]

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import type { CodeBlockElement } from '@platejs/code-block';
 import { render } from '@testing-library/react';
+import type { CodeBlockElement } from 'platejs';
 import * as React from 'react';
 
 const element = {
@@ -15,7 +15,7 @@ const mockPlugin = (name: string) => ({
   configure: mock(() => ({ name })),
 });
 
-mock.module('@platejs/code-block', () => ({
+mock.module('platejs', () => ({
   BaseCodeBlockPlugin: mockPlugin('codeBlock'),
   BaseCodeHighlightPlugin: mockPlugin('codeHighlight'),
   BaseCodeLinePlugin: mockPlugin('codeLine'),

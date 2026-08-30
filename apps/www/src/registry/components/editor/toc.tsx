@@ -1,6 +1,5 @@
 'use client';
 
-import { TocPlugin } from '@platejs/toc/react';
 import { cva } from 'class-variance-authority';
 import type { NodeKey } from 'platejs';
 import {
@@ -13,6 +12,7 @@ import {
   useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
+import { TocPlugin } from 'platejs/toc/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';

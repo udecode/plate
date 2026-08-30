@@ -2,12 +2,12 @@
 
 import type { ReactNode } from 'react';
 
-import { useState } from 'react';
 import { IconRss } from '@tabler/icons-react';
+import { useState } from 'react';
 
 import {
-  ReleaseIndex,
-  type PlateUiReleaseChangesByTag,
+ReleaseIndex,
+type PlateUiReleaseChangesByTag,
 } from '@/components/release-index';
 import { Button } from '@/components/ui/button';
 import type { ReleaseIndexRelease } from '@/lib/releases';

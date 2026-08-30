@@ -2,7 +2,6 @@
 
 /* DEMO ONLY, DO NOT USE IN PRODUCTION */
 
-import { CopilotPlugin } from '@platejs/ai/react';
 import {
   Check,
   ChevronsUpDown,
@@ -12,6 +11,7 @@ import {
   Settings,
   Wand2Icon,
 } from 'lucide-react';
+import { CopilotPlugin } from 'platejs/ai/react';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
 

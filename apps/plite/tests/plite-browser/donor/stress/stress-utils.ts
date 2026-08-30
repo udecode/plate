@@ -1,21 +1,21 @@
 // Stress artifact paths are normalized once per result.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdirSync,readFileSync,writeFileSync } from 'node:fs';
+import { dirname,resolve } from 'node:path';
 
 import type {
-  EditorSurfaceOptions,
-  PliteBrowserRenderStateSnapshot,
-  PliteBrowserScenarioReductionCandidateSummary,
-  PliteBrowserScenarioReplay,
-  PliteBrowserScenarioResult,
-  PliteBrowserScenarioStep,
-} from '@platejs/browser/playwright';
+EditorSurfaceOptions,
+PliteBrowserRenderStateSnapshot,
+PliteBrowserScenarioReductionCandidateSummary,
+PliteBrowserScenarioReplay,
+PliteBrowserScenarioResult,
+PliteBrowserScenarioStep,
+} from '@platejs/test/playwright';
 import {
-  createScenarioReductionCandidates,
-  createScenarioReplay,
-  decodeScenarioReplay,
-  summarizeScenarioReductionCandidate,
-} from '@platejs/browser/playwright';
+createScenarioReductionCandidates,
+createScenarioReplay,
+decodeScenarioReplay,
+summarizeScenarioReductionCandidate,
+} from '@platejs/test/playwright';
 
 export type StressArtifactStatus = 'failed' | 'passed' | 'running';
 

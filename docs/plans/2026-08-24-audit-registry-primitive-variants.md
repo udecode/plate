@@ -143,7 +143,7 @@ Current item surgery:
 - Add registry-local Radix/Base `floating-popover` variants and migrate: `ai-menu`, `block-discussion`, `code-drawing`, `column`, `footnote`, `media-toolbar`, `select-editor`, and `table`.
 - Stable Plate-facing floating-popover API exposes root, an `element` anchor, and content. It does not expose `asChild`, `render`, or `virtualRef`.
 - Delete unused Radix DropdownMenu root-prop pass-through and direct `ItemIndicator` values from 11 modern items: `align-toolbar-button`, `export-toolbar-button`, `font-color-toolbar-button`, `import-toolbar-button`, `insert-toolbar-button`, `line-height-toolbar-button`, `media-toolbar-button`, `mode-toolbar-button`, `more-toolbar-button`, `table-toolbar-button`, and `turn-into-toolbar-button`.
-- Keep 11 Plate `*-classic` items canonical and maintenance-only. They install
+- Keep 11 Plate alternative variants items canonical and maintenance-only. They install
   through Base and Radix without provider-specific assembly copies.
 - Keep `inline-combobox` common with its explicit Ariakit dependency.
 - Replace the two empty/latest upstream `form` dependency rows with owned dependencies.

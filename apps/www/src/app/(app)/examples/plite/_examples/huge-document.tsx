@@ -1,21 +1,21 @@
 import { faker } from '@faker-js/faker';
-import type { Editor, Value } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
-import {
-  createReactEditor,
-  Editable,
-  type EditableDOMStrategyMetrics,
-  type EditableProps,
-  type RenderElementProps,
-  Plite,
-  useElementSelected,
-} from '@platejs/plite-react';
 import {
   parseAsBoolean,
   parseAsString,
   parseAsStringLiteral,
   useQueryStates,
 } from 'nuqs';
+import type { Editor, Value } from 'plitejs';
+import { history } from 'plitejs/history';
+import {
+  createEditor as createReactEditor,
+  Editable,
+  type EditableDOMStrategyMetrics,
+  type EditableProps,
+  type RenderElementProps,
+  Plite,
+  useElementSelected,
+} from 'plitejs/react';
 import React, {
   type CSSProperties,
   StrictMode,
@@ -193,7 +193,7 @@ const fallbackInitialValue: Value = [
 ];
 
 // The huge-document bench remounts editors from URL/config controls. Normal
-// React-owned examples should use `usePliteEditor`.
+// React-owned examples should use `useEditor`.
 const createEditor = (_config: Config, initialValue: Value) =>
   createReactEditor({ extensions: [history()], initialValue });
 

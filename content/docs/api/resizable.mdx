@@ -1,16 +1,16 @@
 ---
 title: Resizable
-description: API reference for @platejs/resizable.
+description: API reference for platejs/react.
 ---
 
-`@platejs/resizable` exports two headless React components and length utilities.
+`platejs/react` exports two headless React components and length utilities.
 The package owns pointer, touch, keyboard, RTL, ARIA, and transient resize
 behavior. Registry components own styling and editor persistence.
 
 ## Installation
 
 ```bash
-npm install @platejs/resizable
+npm install platejs @tanstack/react-virtual
 ```
 
 ## Usage
@@ -18,8 +18,9 @@ npm install @platejs/resizable
 ```tsx
 import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, useEditor } from 'platejs/react';
-import { Image, ImagePlugin } from '@platejs/media/react';
-import { Resizable, ResizeHandle } from '@platejs/resizable';
+import { Image } from 'platejs/react';
+import { ImagePlugin } from 'platejs/media/react';
+import { Resizable, ResizeHandle } from 'platejs/resizable/react';
 
 export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
   const editor = useEditor();

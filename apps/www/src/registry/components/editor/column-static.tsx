@@ -1,4 +1,4 @@
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

@@ -44,7 +44,7 @@ editor.update((tx) => {
 Use `PathApi` for path math.
 
 ```ts
-import { PathApi } from "@platejs/plite";
+import { PathApi } from "plitejs";
 
 const parent = PathApi.parent([0, 0]);
 const common = PathApi.common([0, 0], [0, 2]);
@@ -133,7 +133,7 @@ document order.
 Use `RangeApi` when you need ordered edges or direction checks.
 
 ```ts
-import { RangeApi } from "@platejs/plite";
+import { RangeApi } from "plitejs";
 
 const [start, end] = RangeApi.edges(range);
 const collapsed = RangeApi.isCollapsed(range);

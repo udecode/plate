@@ -1,8 +1,8 @@
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { linkPlugin } from './link';
 
-const editor = createPlateEditor({ plugins: [linkPlugin] });
+const editor = createEditor({ plugins: [linkPlugin] });
 
 describe('LinkPlugin.api.decodeUrl', () => {
   it('decodes URL', () => {
@@ -68,7 +68,7 @@ describe('LinkPlugin floating API', () => {
         triggerFloatingLinkHotkeys: 'alt+k',
       },
     });
-    const innerEditor = createPlateEditor({ plugins: [configuredPlugin] });
+    const innerEditor = createEditor({ plugins: [configuredPlugin] });
     const link = innerEditor.plugin(configuredPlugin);
 
     link.store.set({ mode: 'insert', text: 'draft', url: '/draft' });
@@ -84,7 +84,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('reopens edit mode from the current link selection after hiding', () => {
-    const innerEditor2 = createPlateEditor({
+    const innerEditor2 = createEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -121,7 +121,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('does not trigger a stale link selection in an unfocused editor', () => {
-    const innerEditor3 = createPlateEditor({
+    const innerEditor3 = createEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -149,7 +149,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('opens insert mode with selected text', () => {
-    const innerEditor4 = createPlateEditor({
+    const innerEditor4 = createEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -174,7 +174,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('loads link state into edit mode and strips duplicate URL text', () => {
-    const innerEditor5 = createPlateEditor({
+    const innerEditor5 = createEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -210,7 +210,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('loads the selected link when the document contains multiple links', () => {
-    const innerEditor6 = createPlateEditor({
+    const innerEditor6 = createEditor({
       plugins: [linkPlugin],
       selection: {
         kind: 'text',
@@ -249,7 +249,7 @@ describe('LinkPlugin floating API', () => {
   });
 
   it('routes edit mode through the edit trigger', () => {
-    const innerEditor7 = createPlateEditor({
+    const innerEditor7 = createEditor({
       plugins: [
         linkPlugin.configure({
           initialState: { mode: 'edit' },

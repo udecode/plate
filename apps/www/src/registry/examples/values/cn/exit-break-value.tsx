@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx } from '@platejs/test-utils';
+import { jsx } from '@platejs/test';
 import type { Value } from 'platejs';
 
 import { createTable } from './table-value';

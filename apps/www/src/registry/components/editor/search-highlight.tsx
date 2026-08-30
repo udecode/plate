@@ -1,6 +1,6 @@
 'use client';
 
-import type { FindReplacePlugin } from '@platejs/find-replace';
+import type { FindReplacePlugin } from 'platejs/find-replace';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function SearchHighlightLeaf(

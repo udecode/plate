@@ -2,17 +2,15 @@
 
 // Fake stream abort control is imperative transport state.
 
-import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
+import { type UseChatHelpers, useChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import type { AIChatRequestContext } from '@platejs/ai';
-import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
-import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { NodeApi, TextApi } from '@platejs/plite';
-import { failInvariant } from '@platejs/plite/internal';
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { PLUGINS, nanoid } from 'platejs';
-import { type PlateEditor, useEditor, usePluginStore } from 'platejs/react';
+import { NodeApi, TextApi, PLUGINS, nanoid } from 'platejs';
+import type { AIChatRequestContext } from 'platejs/ai';
+import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
+import { getCommentKey, getTransientCommentKey } from 'platejs/comment';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { type Editor, useEditor, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
 import { discussionPlugin } from './discussion';
@@ -54,13 +52,39 @@ export type TTableCellUpdate = {
 
 export type MessageDataPart = {
   toolName: ToolName;
-  comment?: TComment;
-  table?: TTableCellUpdate;
+  comment: TComment;
+  table: TTableCellUpdate;
 };
 
 export type Chat = UseChatHelpers<ChatMessage>;
 
-export type ChatMessage = UIMessage<{}, MessageDataPart>;
+export type ChatMessage = UIMessage<unknown, MessageDataPart>;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const isToolName = (value: unknown): value is ToolName =>
+  value === 'comment' || value === 'edit' || value === 'generate';
+
+const isStreamStatus = (value: unknown): value is 'finished' | 'streaming' =>
+  value === 'finished' || value === 'streaming';
+
+const isTableCellUpdate = (value: unknown): value is TTableCellUpdate =>
+  isRecord(value) &&
+  isStreamStatus(value.status) &&
+  (value.cellUpdate === null ||
+    (isRecord(value.cellUpdate) &&
+      typeof value.cellUpdate.content === 'string' &&
+      typeof value.cellUpdate.ref === 'string'));
+
+const isComment = (value: unknown): value is TComment =>
+  isRecord(value) &&
+  isStreamStatus(value.status) &&
+  (value.comment === null ||
+    (isRecord(value.comment) &&
+      typeof value.comment.blockRef === 'string' &&
+      typeof value.comment.comment === 'string' &&
+      typeof value.comment.content === 'string'));
 
 type ChatRequestBody = {
   messages: ChatMessage[];
@@ -68,15 +92,9 @@ type ChatRequestBody = {
   [key: string]: unknown;
 };
 
-function createChatTransport({
-  api,
-  editor,
-}: {
-  api: string;
-  editor: PlateEditor;
-}) {
+function createChatTransport({ api, editor }: { api: string; editor: Editor }) {
   let abortController: AbortController | null = null;
-  const transport = new DefaultChatTransport({
+  const transport = new DefaultChatTransport<ChatMessage>({
     api,
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: (async (input, init) => {
@@ -155,7 +173,7 @@ function createChatTransport({
   };
 }
 
-export const useChat = () => {
+export const useEditorChat = () => {
   const editor = useEditor();
   const markdownApi = editor.plugin(MarkdownPlugin).api;
   const options = usePluginStore(AIChatTransportPlugin, 'chatOptions');
@@ -169,18 +187,16 @@ export const useChat = () => {
     [editor, options.api]
   );
 
-  const baseChat = useBaseChat<ChatMessage>({
+  const baseChat = useChat<ChatMessage>({
     id: 'editor',
     transport: chatTransport.transport,
     onData(data) {
-      if (data.type === 'data-toolName') {
-        editor
-          .plugin(AIChatPlugin)
-          .store.set({ toolName: data.data as ToolName });
+      if (data.type === 'data-toolName' && isToolName(data.data)) {
+        editor.plugin(AIChatPlugin).store.set({ toolName: data.data });
       }
 
-      if (data.type === 'data-table' && data.data) {
-        const tableData = data.data as TTableCellUpdate;
+      if (data.type === 'data-table' && isTableCellUpdate(data.data)) {
+        const tableData = data.data;
 
         if (tableData.status === 'finished') {
           const chatSelection = editor
@@ -194,14 +210,17 @@ export const useChat = () => {
           return;
         }
 
-        const cellUpdate =
-          tableData.cellUpdate ?? failInvariant('Expected value to be defined');
+        const { cellUpdate } = tableData;
+
+        if (cellUpdate == null) {
+          throw new Error('Streaming table data requires a cell update');
+        }
 
         editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
       }
 
-      if (data.type === 'data-comment' && data.data) {
-        const commentData = data.data as TComment;
+      if (data.type === 'data-comment' && isComment(data.data)) {
+        const commentData = data.data;
 
         if (commentData.status === 'finished') {
           editor.update.selection.set(null);
@@ -209,8 +228,12 @@ export const useChat = () => {
           return;
         }
 
-        const aiComment =
-          commentData.comment ?? failInvariant('Expected value to be defined');
+        const aiComment = commentData.comment;
+
+        if (aiComment == null) {
+          throw new Error('Streaming comment data requires a comment');
+        }
+
         const range = editor.plugin(AIChatPlugin).read.commentRange(aiComment);
 
         if (!range) {
@@ -292,7 +315,7 @@ export const useChat = () => {
   return chat;
 };
 
-// Used for testing. Remove it after implementing useChat api.
+// Used for testing. Remove it after implementing the useEditorChat API.
 const fakeStreamText = ({
   chunkCount = 10,
   context,

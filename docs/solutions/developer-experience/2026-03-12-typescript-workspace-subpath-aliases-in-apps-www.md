@@ -77,7 +77,6 @@ In `apps/www/tsconfig.json`:
   - every real `@platejs/<pkg>/static`
 - include package-side ambient declarations:
   - `../../packages/*/src/**/*.d.ts`
-  - `../../packages/udecode/*/src/**/*.d.ts`
 
 That second part matters. Once the app typechecks package source directly, ambient declarations that package builds normally see must also be in the app TS program. A concrete example is `packages/code-drawing/src/types/viz.d.ts`, which provides the missing declarations for `viz.js/full.render`.
 

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "details",
+  "title": "Details",
+  "description": "A semantic disclosure block with an editable summary.",
+  "dependencies": [
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/details-toolbar-button.json",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/details.tsx",
+      "content": "'use client';\n\nimport { ChevronRightIcon } from 'lucide-react';\nimport { BaseDetailsPlugin } from 'platejs/details';\nimport { DetailsPlugin, DetailsSummaryPlugin } from 'platejs/details/react';\nimport {\n  type PlateElementProps,\n  PlateElement,\n  useEditor,\n  useEditorPlugin,\n  usePluginStore,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { Button } from '@/components/ui/button';\nimport { cn } from '@/lib/utils';\n\nexport function DetailsElement(props: PlateElementProps<typeof DetailsPlugin>) {\n  const { element, slots } = props;\n  const editor = useEditor();\n  const detailsKey = editor.key(element);\n  const openKeys = usePluginStore(BaseDetailsPlugin, 'openKeys');\n  const { api } = useEditorPlugin(BaseDetailsPlugin);\n  const open = detailsKey !== undefined && openKeys.has(detailsKey);\n  const bodyId = detailsKey === undefined ? undefined : `details-${detailsKey}`;\n\n  return (\n    <PlateElement {...props} className=\"relative my-1 pl-6\">\n      <Button\n        aria-controls={bodyId}\n        aria-expanded={open}\n        aria-label={open ? 'Collapse details' : 'Expand details'}\n        className=\"absolute top-0 -left-0.5 size-6 rounded-md p-0 text-muted-foreground\"\n        contentEditable={false}\n        size=\"icon\"\n        type=\"button\"\n        variant=\"ghost\"\n        onClick={(event) => {\n          event.preventDefault();\n\n          if (detailsKey !== undefined) api.setOpen(detailsKey, !open);\n        }}\n        onMouseDown={(event) => {\n          event.preventDefault();\n        }}\n      >\n        <ChevronRightIcon\n          className={cn(\n            'transition-transform duration-75',\n            open && 'rotate-90'\n          )}\n          data-icon\n        />\n      </Button>\n\n      {slots.children({ from: 0, to: 0 })}\n\n      <div id={bodyId}>\n        {element.children.length > 1\n          ? slots.contentBoundary({\n              copyPolicy: 'model',\n              mounted: open,\n              onMaterialize: () => {\n                if (detailsKey !== undefined) api.setOpen(detailsKey, true);\n              },\n              reason: 'app-collapse',\n              renderPlaceholder: () => null,\n              scope: {\n                from: 1,\n                to: element.children.length - 1,\n                type: 'children',\n              },\n              selectionPolicy: 'skip',\n            })\n          : null}\n      </div>\n    </PlateElement>\n  );\n}\n\nexport function DetailsSummaryElement(\n  props: PlateElementProps<typeof DetailsSummaryPlugin>\n) {\n  return (\n    <PlateElement {...props} className=\"min-h-6 font-medium\">\n      {props.children}\n    </PlateElement>\n  );\n}\n\nexport const DetailsKit = [\n  DetailsSummaryPlugin.configure({ component: DetailsSummaryElement }),\n  DetailsPlugin.configure({ component: DetailsElement }),\n] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/details.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/details"
+      }
+    ],
+    "examples": [
+      "details-demo"
+    ]
+  },
+  "type": "registry:component"
+}

@@ -1,21 +1,24 @@
-import type { NormalizePluginState } from '@platejs/core/internal';
-import { getDateDisplayLabel, normalizeDateValue } from '@platejs/date';
-import type {
-  EditorCommit,
-  Element,
-  Node,
-  NodeEntry,
-  NodeKey,
-  Path,
-  Text,
-} from '@platejs/plite';
-import type { ResolvedSuggestion as BaseResolvedSuggestion } from '@platejs/suggestion';
-import { ElementApi, NodeApi, PathApi, TextApi } from 'platejs';
+import {
+  ElementApi,
+  NodeApi,
+  PathApi,
+  TextApi,
+  type EditorCommit,
+  type Element,
+  type Node,
+  type NodeEntry,
+  type NodeKey,
+  type NormalizePluginState,
+  type Path,
+  type Text,
+} from 'platejs';
+import { getDateDisplayLabel, normalizeDateValue } from 'platejs/date';
+import type { ResolvedSuggestion } from 'platejs/suggestion';
 
 import type { TComment } from '@/registry/components/editor/comment';
 import type { TDiscussion } from '@/registry/components/editor/discussion';
 
-export interface ResolvedSuggestion extends BaseResolvedSuggestion {
+export interface BlockResolvedSuggestion extends ResolvedSuggestion {
   comments: TComment[];
 }
 
@@ -24,7 +27,7 @@ export type BlockDiscussionSelection = {
   hasDraftComment: boolean;
   isTopLevelBlock: boolean;
   resolvedDiscussions: readonly TDiscussion[];
-  resolvedSuggestions: readonly ResolvedSuggestion[];
+  resolvedSuggestions: readonly BlockResolvedSuggestion[];
 };
 
 export const sameBlockDiscussionSelection = (
@@ -51,8 +54,8 @@ type BlockDiscussionIndex = {
   discussionsByBlock: Map<string, TDiscussion[]>;
   discussionsByNodeKey: Map<NodeKey, TDiscussion[]>;
   draftCommentNodeKeys: Set<NodeKey>;
-  suggestionsByBlock: Map<string, ResolvedSuggestion[]>;
-  suggestionsByNodeKey: Map<NodeKey, ResolvedSuggestion[]>;
+  suggestionsByBlock: Map<string, BlockResolvedSuggestion[]>;
+  suggestionsByNodeKey: Map<NodeKey, BlockResolvedSuggestion[]>;
   topLevelNodeKeys: Set<NodeKey>;
 };
 
@@ -231,7 +234,7 @@ const toResolvedSuggestion = ({
   isInlineEquation: NonNullable<
     BuildBlockDiscussionIndexOptions['isInlineEquation']
   >;
-}): ResolvedSuggestion | null => {
+}): BlockResolvedSuggestion | null => {
   const sortedEntries = [...entries].sort(([, path1], [, path2]) =>
     PathApi.isChild(path1, path2) ? -1 : 1
   );
@@ -477,8 +480,8 @@ export const buildBlockDiscussionIndex = ({
     }
   });
 
-  const suggestionsByBlock = new Map<string, ResolvedSuggestion[]>();
-  const suggestionsByNodeKey = new Map<NodeKey, ResolvedSuggestion[]>();
+  const suggestionsByBlock = new Map<string, BlockResolvedSuggestion[]>();
+  const suggestionsByNodeKey = new Map<NodeKey, BlockResolvedSuggestion[]>();
 
   suggestionEntriesById.forEach((suggestionEntries, suggestionId) => {
     const ownerPath = suggestionOwnerById.get(suggestionId);

@@ -40,10 +40,10 @@ docs:
 
 ```tsx
 import {
-  createPlateEditor } from 'platejs/react';
+  createEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
   ...AIKit,
@@ -74,19 +74,19 @@ AI_GATEWAY_API_KEY="your-api-key"
 ### 安装
 
 ```bash
-npm install @platejs/ai @platejs/markdown @ai-sdk/react ai
+npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
 ```
 
-`@platejs/suggestion` 是可选的，但对于基于差异的编辑建议是必需的。
+`platejs` 是可选的，但对于基于差异的编辑建议是必需的。
 
 ### 添加插件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
-import { AIChatPlugin, AIPlugin } from '@platejs/ai/react';
-import { MarkdownPlugin } from '@platejs/markdown';
+import { createEditor } from 'platejs/react';
+import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import { MarkdownPlugin } from 'platejs/markdown';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     MarkdownPlugin,
     AIPlugin,
@@ -112,7 +112,7 @@ import {
   AIChatPlugin,
   AIPlugin,
   useChatChunk,
-  } from '@platejs/ai/react';
+  } from 'platejs/ai/react';
 import { ElementApi,
   PathApi,
 } from 'platejs';
@@ -209,7 +209,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```ts title="app/api/ai/command/route.ts"
 import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
@@ -217,7 +217,7 @@ import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transfor
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
 
-  const editor = createBaseEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     selection: ctx.selection,
     initialValue: ctx.children,
@@ -252,7 +252,7 @@ import { useEffect } from 'react';
 
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
+import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
 import { useEditorPlugin } from 'platejs/react';
 
 type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
@@ -445,7 +445,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
   <APIOptions>
     <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
-    <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
+    <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>存储 `createAIChatAdapter(useChat(...))` 返回的适配器，以便 API 调用可以访问聊天状态和控制器。</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>与编辑器作用域运行时标识配对的差异编辑建议节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
@@ -626,7 +626,7 @@ editor
 #### 简单自定义命令
 
 ```tsx
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import { ListIcon } from 'lucide-react';
 
 export const aiChatItems = {
@@ -647,7 +647,7 @@ export const aiChatItems = {
 #### 带复杂逻辑的命令
 
 ```tsx
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import { PLUGINS } from 'platejs';
 import { BookIcon } from 'lucide-react';
 

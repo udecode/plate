@@ -115,7 +115,7 @@ describe('integration-local async failure summaries', () => {
     expect(buildPliteBrowserBuildCommand()).toEqual([
       'bun',
       '--filter',
-      '@platejs/browser',
+      '@platejs/test',
       'build',
     ]);
 

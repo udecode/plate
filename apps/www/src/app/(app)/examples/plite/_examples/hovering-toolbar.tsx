@@ -1,14 +1,14 @@
-import { RangeApi } from '@platejs/plite';
+import { RangeApi } from 'plitejs';
 import {
   Editable,
   type RenderLeafProps,
   Plite,
-  useEditor,
+  useEditorContext,
   useEditorFocused,
   useEditorSelection,
   useEditorSelector,
-  usePliteEditor,
-} from '@platejs/plite-react';
+  useEditor,
+} from 'plitejs/react';
 import { type MouseEvent, type PointerEvent, useEffect, useRef } from 'react';
 
 import { Button, Icon, Menu, Portal } from './components';
@@ -41,7 +41,7 @@ const HoveringMenuExample = () => {
       ],
     },
   ];
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue,
   });
 
@@ -97,7 +97,7 @@ const Leaf = ({
 
 const HoveringToolbar = () => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const editor = useEditor();
+  const editor = useEditorContext();
   const inFocus = useEditorFocused();
   const selection = useEditorSelection();
 
@@ -174,7 +174,7 @@ const handleToolbarButtonPointerDown = (
 };
 
 const FormatButton = ({ format, icon }: FormatButtonProps) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)
   );

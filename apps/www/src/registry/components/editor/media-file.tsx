@@ -1,9 +1,13 @@
 'use client';
 
-import type { FilePlugin } from '@platejs/media/react';
 import { FileUp } from 'lucide-react';
-import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useElementSelected, usePath } from 'platejs/react';
+import type { FilePlugin } from 'platejs/media/react';
+import {
+  type PlateElementProps,
+  PlateElement,
+  useElementSelected,
+  usePath,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

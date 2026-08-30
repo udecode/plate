@@ -42,10 +42,10 @@ docs:
 将套件添加到插件列表：
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TableKit } from '@/components/editor/table';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...TableKit,
@@ -62,7 +62,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/table
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -72,10 +72,10 @@ npm install @platejs/table
 `TablePlugin` 会把 `TableRowPlugin` 和 `TableCellPlugin` 作为必需的结构依赖安装。
 
 ```tsx
-import { TablePlugin } from '@platejs/table/react';
-import { createPlateEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     TablePlugin,
@@ -88,19 +88,15 @@ const editor = createPlateEditor({
 配置表格主插件；需要替换依赖的组件或配置时，再加入完整的行或单元格描述符：
 
 ```tsx
-import {
-  TableCellPlugin,
-  TablePlugin,
-  TableRowPlugin,
-} from '@platejs/table/react';
-import { createPlateEditor } from 'platejs/react';
+import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
+import { createEditor } from 'platejs/react';
 import {
   TableCellElement,
   TableElement,
   TableRowElement,
 } from '@/components/editor/table';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     TablePlugin.configure({

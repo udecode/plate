@@ -195,7 +195,7 @@ Each property controls a specific scenario:
 **Reset heading on break:**
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -231,7 +231,7 @@ After (split and reset):
 **Callout with line breaks and smart exits:**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -265,7 +265,7 @@ After (line break):
 **Code block with custom empty handling:**
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -303,7 +303,7 @@ Controls what happens when users press `Backspace` at specific positions.
 ### Configuration
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 HeadingPlugin.configure({
   rules: {
@@ -333,7 +333,7 @@ Each property controls a specific scenario:
 **Reset callouts at start:**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -362,7 +362,7 @@ After (reset):
 **List items with start reset:**
 
 ```tsx
-import { ListPlugin } from '@platejs/list/react';
+import { ListPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -413,7 +413,7 @@ ParagraphPlugin.configure({
 Only paragraph and heading plugins enable removal by default. Most other plugins use `false`:
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 import { ParagraphPlugin } from 'platejs/react';
 
 const plugins = [
@@ -443,7 +443,7 @@ After (empty paragraph removed):
 **Callout with removal disabled:**
 
 ```tsx
-import { CalloutPlugin } from '@platejs/callout/react';
+import { CalloutPlugin } from 'platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -475,7 +475,7 @@ After (empty paragraph preserved):
 **Table cells preserve structure during merge:**
 
 ```tsx
-import { TablePlugin } from '@platejs/table/react';
+import { TablePlugin } from 'platejs/table/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -545,7 +545,7 @@ LinkPlugin.configure({
 **Remove empty link nodes:**
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -583,7 +583,7 @@ The `match` function in plugin rules allows you to override the default behavior
 **Code block with custom empty detection:**
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { CodeBlockPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -605,10 +605,10 @@ The `reset` rule action converts the current block to Plate's default block type
 `CodeBlockPlugin` ships `codeBlock.resetBlock()`, which unwraps the current code block:
 
 ```tsx
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodeBlockPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [CodeBlockPlugin],
 });
 
@@ -622,7 +622,7 @@ editor.update((tx) => {
 You can combine different rules for comprehensive block behavior:
 
 ```tsx
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -755,7 +755,7 @@ Typing would not apply bold formatting to new text.
 Selection affinity is determined by the direction of cursor movement. When the cursor moves to a boundary, it maintains the affinity based on where it came from.
 
 ```tsx
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -784,7 +784,7 @@ After pressing `←`:
 Typing would extend the bold formatting, which is not possible with `default` affinity.
 
 ```tsx
-import { LinkPlugin } from '@platejs/link/react';
+import { LinkPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -817,7 +817,7 @@ Cursor movement direction determines whether new text extends the link or create
 Forces outward affinity, automatically clearing marks when typing at their boundaries. This creates a natural "exit" behavior from formatted text.
 
 ```tsx
-import { CommentPlugin } from '@platejs/comment/react';
+import { CommentPlugin } from 'platejs/comment/react';
 
 const plugins = [
   // ...otherPlugins,
@@ -850,7 +850,7 @@ Users automatically exit comment formatting by typing at the end of commented te
 Creates a "hard" edge that requires two key presses to move across. This provides precise cursor control for elements that need exact positioning.
 
 ```tsx
-import { CodePlugin } from '@platejs/basic-nodes/react';
+import { CodePlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,

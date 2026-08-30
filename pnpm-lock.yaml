@@ -26,81 +26,6 @@ importers:
       '@hocuspocus/provider':
         specifier: 3.4.4
         version: 3.4.4(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30)
-      '@platejs/basic-nodes':
-        specifier: workspace:^
-        version: link:packages/basic-nodes
-      '@platejs/basic-styles':
-        specifier: workspace:^
-        version: link:packages/basic-styles
-      '@platejs/browser':
-        specifier: workspace:^
-        version: link:packages/browser
-      '@platejs/code-block':
-        specifier: workspace:^
-        version: link:packages/code-block
-      '@platejs/combobox':
-        specifier: workspace:^
-        version: link:packages/combobox
-      '@platejs/docx':
-        specifier: workspace:^
-        version: link:packages/docx
-      '@platejs/indent':
-        specifier: workspace:^
-        version: link:packages/indent
-      '@platejs/juice':
-        specifier: workspace:^
-        version: link:packages/juice
-      '@platejs/link':
-        specifier: workspace:^
-        version: link:packages/link
-      '@platejs/list':
-        specifier: workspace:^
-        version: link:packages/list
-      '@platejs/list-classic':
-        specifier: workspace:^
-        version: link:packages/list-classic
-      '@platejs/markdown':
-        specifier: workspace:^
-        version: link:packages/markdown
-      '@platejs/math':
-        specifier: workspace:^
-        version: link:packages/math
-      '@platejs/media':
-        specifier: workspace:^
-        version: link:packages/media
-      '@platejs/mention':
-        specifier: workspace:^
-        version: link:packages/mention
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:packages/plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:packages/plite-dom
-      '@platejs/plite-history':
-        specifier: workspace:^
-        version: link:packages/plite-history
-      '@platejs/plite-hyperscript':
-        specifier: workspace:^
-        version: link:packages/plite-hyperscript
-      '@platejs/plite-layout':
-        specifier: workspace:^
-        version: link:packages/plite-layout
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:packages/plite-react
-      '@platejs/suggestion':
-        specifier: workspace:^
-        version: link:packages/suggestion
-      '@platejs/table':
-        specifier: workspace:^
-        version: link:packages/table
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:packages/test-utils
-      '@platejs/yjs':
-        specifier: workspace:^
-        version: link:packages/yjs
       '@playwright/test':
         specifier: 1.61.0
         version: 1.61.0
@@ -212,9 +137,6 @@ importers:
       oxlint-tsgolint:
         specifier: 7.0.2001
         version: 7.0.2001
-      platejs:
-        specifier: workspace:^
-        version: link:packages/plate
       prompts:
         specifier: 2.4.2
         version: 2.4.2
@@ -291,9 +213,18 @@ importers:
       '@faker-js/faker':
         specifier: 9.8.0
         version: 9.8.0
+      '@platejs/test':
+        specifier: workspace:*
+        version: link:../../packages/test
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20260707.2
         version: 7.0.0-dev.20260707.2
+      platejs:
+        specifier: workspace:*
+        version: link:../../packages/platejs
+      plitejs:
+        specifier: workspace:*
+        version: link:../../packages/plitejs
 
   apps/www:
     dependencies:
@@ -317,7 +248,7 @@ importers:
         version: 1.2.1
       '@excalidraw/excalidraw':
         specifier: 0.18.0
-        version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@faker-js/faker':
         specifier: 9.8.0
         version: 9.8.0
@@ -330,153 +261,9 @@ importers:
       '@next/third-parties':
         specifier: 16.3.2
         version: 16.3.2(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)
-      '@platejs/ai':
+      '@platejs/test':
         specifier: workspace:^
-        version: link:../../packages/ai
-      '@platejs/basic-nodes':
-        specifier: workspace:^
-        version: link:../../packages/basic-nodes
-      '@platejs/basic-styles':
-        specifier: workspace:^
-        version: link:../../packages/basic-styles
-      '@platejs/browser':
-        specifier: workspace:^
-        version: link:../../packages/browser
-      '@platejs/callout':
-        specifier: workspace:^
-        version: link:../../packages/callout
-      '@platejs/code-block':
-        specifier: workspace:^
-        version: link:../../packages/code-block
-      '@platejs/code-drawing':
-        specifier: workspace:^
-        version: link:../../packages/code-drawing
-      '@platejs/combobox':
-        specifier: workspace:^
-        version: link:../../packages/combobox
-      '@platejs/comment':
-        specifier: workspace:^
-        version: link:../../packages/comment
-      '@platejs/csv':
-        specifier: workspace:^
-        version: link:../../packages/csv
-      '@platejs/cursor':
-        specifier: workspace:^
-        version: link:../../packages/cursor
-      '@platejs/date':
-        specifier: workspace:^
-        version: link:../../packages/date
-      '@platejs/diff':
-        specifier: workspace:^
-        version: link:../../packages/diff
-      '@platejs/dnd':
-        specifier: workspace:^
-        version: link:../../packages/dnd
-      '@platejs/docx':
-        specifier: workspace:^
-        version: link:../../packages/docx
-      '@platejs/docx-export':
-        specifier: workspace:^
-        version: link:../../packages/docx-export
-      '@platejs/docx-import':
-        specifier: workspace:^
-        version: link:../../packages/docx-import
-      '@platejs/docx-paste':
-        specifier: workspace:^
-        version: link:../../packages/docx-paste
-      '@platejs/emoji':
-        specifier: workspace:^
-        version: link:../../packages/emoji
-      '@platejs/excalidraw':
-        specifier: workspace:^
-        version: link:../../packages/excalidraw
-      '@platejs/find-replace':
-        specifier: workspace:^
-        version: link:../../packages/find-replace
-      '@platejs/floating':
-        specifier: workspace:^
-        version: link:../../packages/floating
-      '@platejs/footnote':
-        specifier: workspace:^
-        version: link:../../packages/footnote
-      '@platejs/indent':
-        specifier: workspace:^
-        version: link:../../packages/indent
-      '@platejs/juice':
-        specifier: workspace:^
-        version: link:../../packages/juice
-      '@platejs/layout':
-        specifier: workspace:^
-        version: link:../../packages/layout
-      '@platejs/link':
-        specifier: workspace:^
-        version: link:../../packages/link
-      '@platejs/list':
-        specifier: workspace:^
-        version: link:../../packages/list
-      '@platejs/list-classic':
-        specifier: workspace:^
-        version: link:../../packages/list-classic
-      '@platejs/markdown':
-        specifier: workspace:^
-        version: link:../../packages/markdown
-      '@platejs/math':
-        specifier: workspace:^
-        version: link:../../packages/math
-      '@platejs/media':
-        specifier: workspace:^
-        version: link:../../packages/media
-      '@platejs/mention':
-        specifier: workspace:^
-        version: link:../../packages/mention
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../../packages/plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../../packages/plite-dom
-      '@platejs/plite-history':
-        specifier: workspace:^
-        version: link:../../packages/plite-history
-      '@platejs/plite-hyperscript':
-        specifier: workspace:^
-        version: link:../../packages/plite-hyperscript
-      '@platejs/plite-layout':
-        specifier: workspace:^
-        version: link:../../packages/plite-layout
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../../packages/plite-react
-      '@platejs/resizable':
-        specifier: workspace:^
-        version: link:../../packages/resizable
-      '@platejs/slash-command':
-        specifier: workspace:^
-        version: link:../../packages/slash-command
-      '@platejs/suggestion':
-        specifier: workspace:^
-        version: link:../../packages/suggestion
-      '@platejs/tabbable':
-        specifier: workspace:^
-        version: link:../../packages/tabbable
-      '@platejs/table':
-        specifier: workspace:^
-        version: link:../../packages/table
-      '@platejs/tag':
-        specifier: workspace:^
-        version: link:../../packages/tag
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../../packages/test-utils
-      '@platejs/toc':
-        specifier: workspace:^
-        version: link:../../packages/toc
-      '@platejs/toggle':
-        specifier: workspace:^
-        version: link:../../packages/toggle
-      '@platejs/yjs':
-        specifier: workspace:^
-        version: link:../../packages/yjs
+        version: link:../../packages/test
       '@radix-ui/react-accordion':
         specifier: 1.2.11
         version: 1.2.11(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -519,6 +306,9 @@ importers:
       '@radix-ui/react-popover':
         specifier: 1.1.14
         version: 1.1.14(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-primitive':
+        specifier: 2.1.3
+        version: 2.1.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-radio-group':
         specifier: 1.3.7
         version: 1.3.7(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -555,27 +345,9 @@ importers:
       '@shikijs/core':
         specifier: 1.10.1
         version: 1.10.1
-      '@slate-yjs/react':
-        specifier: 1.1.0
-        version: 1.1.0(react@19.2.8)(slate-react@0.124.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1))(slate@0.124.1)(yjs@13.6.30)
       '@tabler/icons-react':
         specifier: 3.34.0
         version: 3.34.0(react@19.2.8)
-      '@udecode/cmdk':
-        specifier: workspace:^
-        version: link:../../packages/udecode/cmdk
-      '@udecode/cn':
-        specifier: workspace:^
-        version: link:../../packages/udecode/cn
-      '@udecode/react-hotkeys':
-        specifier: workspace:^
-        version: link:../../packages/udecode/react-hotkeys
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../../packages/udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../../packages/udecode/utils
       '@uploadthing/react':
         specifier: 7.3.1
         version: 7.3.1(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8))
@@ -674,7 +446,7 @@ importers:
         version: 1.17.1
       platejs:
         specifier: workspace:^
-        version: link:../../packages/plate
+        version: link:../../packages/platejs
       prismjs:
         specifier: 1.30.0
         version: 1.30.0
@@ -829,6 +601,9 @@ importers:
       ora:
         specifier: 8.2.0
         version: 8.2.0
+      plitejs:
+        specifier: workspace:*
+        version: link:../../packages/plitejs
       postcss:
         specifier: 8.5.4
         version: 8.5.4
@@ -884,150 +659,11 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
 
-  packages/ai:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:^
-        version: link:../combobox
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/cursor':
-        specifier: workspace:^
-        version: link:../cursor
-      '@platejs/markdown':
-        specifier: workspace:^
-        version: link:../markdown
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/suggestion':
-        specifier: workspace:^
-        version: link:../suggestion
-      '@platejs/table':
-        specifier: workspace:^
-        version: link:../table
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      fastest-levenshtein:
-        specifier: 1.0.16
-        version: 1.0.16
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@ai-sdk/react':
-        specifier: ^3.0.0
-        version: 3.0.118(react@19.2.8)(zod@4.4.3)
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      ai:
-        specifier: ^6.0.0
-        version: 6.0.116(zod@4.4.3)
-      remark-math:
-        specifier: 6.0.0
-        version: 6.0.0
-
-  packages/basic-nodes:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-hotkeys':
-        specifier: workspace:*
-        version: link:../udecode/react-hotkeys
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/basic-styles:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-
-  packages/browser:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@playwright/test':
-        specifier: 1.61.0
-        version: 1.61.0
-      '@types/node':
-        specifier: 24.12.0
-        version: 24.12.0
-      '@vitest/browser-playwright':
-        specifier: ^4.1.0
-        version: 4.1.9(playwright@1.61.0)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))(vitest@4.1.9)
-      playwright:
-        specifier: ^1.58.2
-        version: 1.61.0
-      vite:
-        specifier: ^7.1.12
-        version: 7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
-      vitest:
-        specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
-
-  packages/callout:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
   packages/cli:
     dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
+      '@antfu/ni':
+        specifier: 24.3.0
+        version: 24.3.0
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -1040,158 +676,49 @@ importers:
       get-tsconfig:
         specifier: 5.0.0-beta.5
         version: 5.0.0-beta.5
+      kleur:
+        specifier: 4.1.5
+        version: 4.1.5
+      ora:
+        specifier: 8.2.0
+        version: 8.2.0
+      prompts:
+        specifier: 2.4.2
+        version: 2.4.2
       typescript:
         specifier: 7.0.2
         version: 7.0.2
+      zod:
+        specifier: 3.25.61
+        version: 3.25.61
     devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
       '@types/node':
         specifier: 24.12.0
         version: 24.12.0
+      '@types/prompts':
+        specifier: 2.4.9
+        version: 2.4.9
+      platejs:
+        specifier: workspace:^
+        version: link:../platejs
 
-  packages/code-block:
+  packages/platejs:
     dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      lowlight:
-        specifier: ^3.3.0
-        version: 3.3.0
-
-  packages/code-drawing:
-    dependencies:
-      '@codemirror/lang-javascript':
-        specifier: 6.2.4
-        version: 6.2.4
-      '@codemirror/theme-one-dark':
-        specifier: 6.1.3
-        version: 6.1.3
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@uiw/react-codemirror':
-        specifier: 4.25.4
-        version: 4.25.4(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.16)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      flowchart.js:
-        specifier: ^1.15.0
-        version: 1.18.0
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-      mermaid:
-        specifier: ^11.6.1
-        version: 11.12.3
-      plantuml-encoder:
-        specifier: ^1.4.0
-        version: 1.4.0
-      viz.js:
-        specifier: ^2.1.2
-        version: 2.1.2
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@types/lodash':
-        specifier: ^4.17.13
-        version: 4.17.17
-      '@types/plantuml-encoder':
-        specifier: ^1.4.2
-        version: 1.4.2
-      '@types/viz.js':
-        specifier: ^2.1.5
-        version: 2.1.5
-
-  packages/combobox:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/comment:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/core:
-    dependencies:
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/plite-history':
-        specifier: workspace:^
-        version: link:../plite-history
-      '@platejs/plite-hyperscript':
-        specifier: workspace:^
-        version: link:../plite-hyperscript
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
+      '@types/is-hotkey':
+        specifier: 0.1.10
+        version: 0.1.10
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
       '@types/unist':
         specifier: ^3.0.3
         version: 3.0.3
-      '@udecode/react-hotkeys':
-        specifier: workspace:*
-        version: link:../udecode/react-hotkeys
-      '@udecode/react-utils':
-        specifier: workspace:*
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:*
-        version: link:../udecode/utils
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      dequal:
+        specifier: 2.0.3
+        version: 2.0.3
       html-entities:
         specifier: ^2.6.0
         version: 2.6.0
@@ -1208,7 +735,7 @@ importers:
         specifier: 2.3.4
         version: 2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.8))(react@19.2.8)
       lodash:
-        specifier: ^4.17.21
+        specifier: ^4.17.23
         version: 4.17.23
       mdast-util-math:
         specifier: 3.0.0
@@ -1225,163 +752,76 @@ importers:
       optics-ts:
         specifier: 2.4.1
         version: 2.4.1
-      use-deep-compare:
-        specifier: ^1.3.0
-        version: 1.3.0(react@19.2.8)
+      plitejs:
+        specifier: workspace:*
+        version: link:../plitejs
+      unist-util-visit:
+        specifier: 5.0.0
+        version: 5.0.0
       zustand:
         specifier: ^5.0.5
-        version: 5.0.11(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
-      zustand-x:
-        specifier: 6.2.1
-        version: 6.2.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)(zustand@5.0.11(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))
+        version: 5.0.11(@types/react@19.2.7)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
     devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      fast-check:
-        specifier: ^3.23.2
-        version: 3.23.2
-
-  packages/csv:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      papaparse:
-        specifier: ^5.5.3
-        version: 5.5.3
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
+      '@ai-sdk/react':
+        specifier: ^3.0.0
+        version: 3.0.118(react@19.2.8)(zod@4.4.3)
+      '@chenglou/pretext':
+        specifier: ^0.0.7
+        version: 0.0.7
+      '@emoji-mart/data':
+        specifier: ^1.2.0
+        version: 1.2.1
+      '@excalidraw/excalidraw':
+        specifier: 0.18.0
+        version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@floating-ui/core':
+        specifier: ^1.6.7
+        version: 1.7.5
+      '@floating-ui/react':
+        specifier: ^0.26.23
+        version: 0.26.28(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@testing-library/react':
+        specifier: 16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/katex':
+        specifier: 0.16.7
+        version: 0.16.7
+      '@types/lodash':
+        specifier: ^4.17.13
+        version: 4.17.17
+      '@types/node':
+        specifier: 24.12.0
+        version: 24.12.0
       '@types/papaparse':
         specifier: ^5.3.16
         version: 5.5.2
-
-  packages/cursor:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/date:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/diff:
-    dependencies:
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      diff-match-patch-ts:
-        specifier: ^0.6.0
-        version: 0.6.0
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/dnd:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-      raf:
-        specifier: ^3.4.1
-        version: 3.4.1
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/docx:
-    dependencies:
-      '@platejs/docx-export':
-        specifier: workspace:^
-        version: link:../docx-export
-      '@platejs/docx-import':
-        specifier: workspace:^
-        version: link:../docx-import
-      '@platejs/docx-paste':
-        specifier: workspace:^
-        version: link:../docx-paste
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/docx-export:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
+      '@types/plantuml-encoder':
+        specifier: ^1.4.2
+        version: 1.4.2
+      '@types/react':
+        specifier: 19.2.7
+        version: 19.2.7
+      '@types/viz.js':
+        specifier: ^2.1.5
+        version: 2.1.5
+      ai:
+        specifier: ^6.0.0
+        version: 6.0.116(zod@4.4.3)
       color-name:
         specifier: ^2.0.0
         version: 2.1.0
-      html-entities:
-        specifier: ^2.5.2
-        version: 2.6.0
+      diff-match-patch-ts:
+        specifier: ^0.6.0
+        version: 0.6.0
+      fast-check:
+        specifier: ^3.23.2
+        version: 3.23.2
+      fastest-levenshtein:
+        specifier: 1.0.16
+        version: 1.0.16
+      flowchart.js:
+        specifier: ^1.15.0
+        version: 1.18.0
       html-to-vdom:
         specifier: ^0.7.0
         version: 0.7.0
@@ -1391,456 +831,45 @@ importers:
       juice:
         specifier: ^11.0.1
         version: 11.1.1
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-      mime-types:
-        specifier: ^2.1.35
-        version: 2.1.35
-      nanoid:
-        specifier: ^5.0.9
-        version: 5.1.6
-      virtual-dom:
-        specifier: ^2.1.1
-        version: 2.1.1
-      xmlbuilder2:
-        specifier: ^3.1.1
-        version: 3.1.1
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/basic-nodes':
-        specifier: workspace:*
-        version: link:../basic-nodes
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/docx-import:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/docx-paste':
-        specifier: workspace:^
-        version: link:../docx-paste
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
+      katex:
+        specifier: 0.16.22
+        version: 0.16.22
+      lowlight:
+        specifier: ^3.3.0
+        version: 3.3.0
       mammoth:
         specifier: ^1.9.0
         version: 1.11.0
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/basic-nodes':
-        specifier: workspace:*
-        version: link:../basic-nodes
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/docx-paste:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      validator:
-        specifier: ^13.15.15
-        version: 13.15.26
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/emoji:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:*
-        version: link:../combobox
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@emoji-mart/data':
-        specifier: ^1.2.1
-        version: 1.2.1
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/excalidraw:
-    dependencies:
-      '@excalidraw/excalidraw':
-        specifier: 0.18.0
-        version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@types/lodash':
-        specifier: ^4.17.13
-        version: 4.17.17
-
-  packages/find-replace:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/floating:
-    dependencies:
-      '@floating-ui/core':
-        specifier: ^1.6.7
-        version: 1.7.5
-      '@floating-ui/react':
-        specifier: ^0.26.23
-        version: 0.26.28(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/footnote:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:^
-        version: link:../combobox
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/indent:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-
-  packages/juice:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      juice:
-        specifier: ^11.0.1
-        version: 11.1.1
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/layout:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/link:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/floating':
-        specifier: workspace:^
-        version: link:../floating
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-hotkeys':
-        specifier: workspace:^
-        version: link:../udecode/react-hotkeys
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/list:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/indent':
-        specifier: workspace:^
-        version: link:../indent
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      lodash:
-        specifier: ^4.17.23
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/list-classic:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/media':
-        specifier: workspace:^
-        version: link:../media
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/markdown:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/list':
-        specifier: workspace:^
-        version: link:../list
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
       marked:
         specifier: ^15.0.12
         version: 15.0.12
-      mdast-util-math:
-        specifier: 3.0.0
-        version: 3.0.0
-      mdast-util-mdx:
-        specifier: 3.0.0
-        version: 3.0.0
-      remark-mdx:
-        specifier: ^3.1.0
-        version: 3.1.1
-      remark-parse:
-        specifier: ^11.0.0
-        version: 11.0.0
-      remark-stringify:
-        specifier: ^11.0.0
-        version: 11.0.0
-      ts-essentials:
-        specifier: 10.1.0
-        version: 10.1.0(typescript@7.0.2)
-      unified:
-        specifier: ^11.0.5
-        version: 11.0.5
-      unist-util-visit:
-        specifier: 5.0.0
-        version: 5.0.0
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/basic-nodes':
-        specifier: workspace:^
-        version: link:../basic-nodes
-      '@platejs/basic-styles':
-        specifier: workspace:^
-        version: link:../basic-styles
-      '@platejs/callout':
-        specifier: workspace:^
-        version: link:../callout
-      '@platejs/code-block':
-        specifier: workspace:^
-        version: link:../code-block
-      '@platejs/comment':
-        specifier: workspace:^
-        version: link:../comment
-      '@platejs/date':
-        specifier: workspace:^
-        version: link:../date
-      '@platejs/footnote':
-        specifier: workspace:^
-        version: link:../footnote
-      '@platejs/layout':
-        specifier: workspace:^
-        version: link:../layout
-      '@platejs/link':
-        specifier: workspace:^
-        version: link:../link
-      '@platejs/list-classic':
-        specifier: workspace:^
-        version: link:../list-classic
-      '@platejs/math':
-        specifier: workspace:^
-        version: link:../math
-      '@platejs/media':
-        specifier: workspace:^
-        version: link:../media
-      '@platejs/mention':
-        specifier: workspace:^
-        version: link:../mention
-      '@platejs/suggestion':
-        specifier: workspace:^
-        version: link:../suggestion
-      '@platejs/table':
-        specifier: workspace:^
-        version: link:../table
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      '@platejs/toc':
-        specifier: workspace:^
-        version: link:../toc
-      '@types/mdast':
-        specifier: ^4.0.4
-        version: 4.0.4
-      '@types/unist':
-        specifier: ^3.0.3
-        version: 3.0.3
+      mermaid:
+        specifier: ^11.6.1
+        version: 11.12.3
+      mime-types:
+        specifier: ^2.1.35
+        version: 2.1.35
+      papaparse:
+        specifier: ^5.5.3
+        version: 5.5.3
+      plantuml-encoder:
+        specifier: ^1.4.0
+        version: 1.4.0
+      raf:
+        specifier: ^3.4.1
+        version: 3.4.1
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dnd:
+        specifier: 16.0.1
+        version: 16.0.1(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.8)
+      react-dnd-html5-backend:
+        specifier: 16.0.1
+        version: 16.0.1
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
       remark-emoji:
         specifier: 5.0.1
         version: 5.0.1
@@ -1850,228 +879,55 @@ importers:
       remark-math:
         specifier: 6.0.0
         version: 6.0.0
+      remark-mdx:
+        specifier: ^3.1.0
+        version: 3.1.1
+      remark-parse:
+        specifier: ^11.0.0
+        version: 11.0.0
+      remark-stringify:
+        specifier: ^11.0.0
+        version: 11.0.0
+      tabbable:
+        specifier: ^6.2.0
+        version: 6.4.0
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
+      validator:
+        specifier: ^13.15.15
+        version: 13.15.26
+      virtual-dom:
+        specifier: ^2.1.1
+        version: 2.1.1
+      viz.js:
+        specifier: ^2.1.2
+        version: 2.1.2
+      xmlbuilder2:
+        specifier: ^3.1.1
+        version: 3.1.1
+      yjs:
+        specifier: 13.6.30
+        version: 13.6.30
 
-  packages/math:
+  packages/plitejs:
     dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      katex:
-        specifier: 0.16.22
-        version: 0.16.22
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      '@testing-library/react':
-        specifier: 16.3.0
-        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@types/katex':
-        specifier: 0.16.7
-        version: 0.16.7
-
-  packages/media:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-hotkeys':
-        specifier: workspace:^
-        version: link:../udecode/react-hotkeys
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/mention:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:*
-        version: link:../combobox
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/plate:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-hotkeys':
-        specifier: workspace:^
-        version: link:../udecode/react-hotkeys
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/plate-scripts: {}
-
-  packages/plite:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      fast-check:
-        specifier: ^3.23.2
-        version: 3.23.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
-
-  packages/plite-dom:
-    dependencies:
       scroll-into-view-if-needed:
         specifier: ^3.1.0
         version: 3.1.0
     devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@types/node':
-        specifier: 24.12.0
-        version: 24.12.0
-      jsdom:
-        specifier: 20.0.3
-        version: 20.0.3
-
-  packages/plite-history:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-
-  packages/plite-hyperscript:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-
-  packages/plite-layout:
-    dependencies:
       '@chenglou/pretext':
         specifier: ^0.0.7
         version: 0.0.7
-    devDependencies:
       '@happy-dom/global-registrator':
         specifier: 20.0.10
         version: 20.0.10
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@testing-library/react':
-        specifier: 16.3.0
-        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@types/react':
-        specifier: 19.2.7
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.7)
-      react:
-        specifier: 19.2.8
-        version: 19.2.8
-      react-dom:
-        specifier: 19.2.8
-        version: 19.2.8(react@19.2.8)
-
-  packages/plite-react:
-    dependencies:
-      '@juggle/resize-observer':
-        specifier: ^3.4.0
-        version: 3.4.0
       '@tanstack/react-virtual':
         specifier: ^3.13.25
         version: 3.14.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/plite-history':
-        specifier: workspace:^
-        version: link:../plite-history
-      '@platejs/plite-hyperscript':
-        specifier: workspace:^
-        version: link:../plite-hyperscript
       '@testing-library/dom':
         specifier: 10.4.0
         version: 10.4.0
@@ -2081,6 +937,9 @@ importers:
       '@testing-library/react':
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@types/jsdom':
+        specifier: ^21.1.7
+        version: 21.1.7
       '@types/lodash':
         specifier: ^4.14.200
         version: 4.17.17
@@ -2093,6 +952,12 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.7)
+      diff-match-patch-ts:
+        specifier: ^0.6.0
+        version: 0.6.0
+      fast-check:
+        specifier: ^3.23.2
+        version: 3.23.2
       jsdom:
         specifier: 20.0.3
         version: 20.0.3
@@ -2104,358 +969,50 @@ importers:
         version: 19.2.8(react@19.2.8)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
 
-  packages/resizable:
+  packages/test:
     dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
+      is-hotkey:
+        specifier: ^0.2.0
+        version: 0.2.0
     devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/slash-command:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:*
-        version: link:../combobox
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/suggestion:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/diff':
-        specifier: workspace:^
-        version: link:../diff
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/tabbable:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      tabbable:
-        specifier: ^6.2.0
-        version: 6.4.0
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/table:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-dom':
-        specifier: workspace:^
-        version: link:../plite-dom
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
-      '@platejs/resizable':
-        specifier: workspace:^
-        version: link:../resizable
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-      '@platejs/yjs':
-        specifier: workspace:^
-        version: link:../yjs
-      mutative:
-        specifier: ^1.1.0
-        version: 1.3.0
-
-  packages/tag:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/test-utils:
-    dependencies:
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-hyperscript':
-        specifier: workspace:^
-        version: link:../plite-hyperscript
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/toc:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/toggle:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/indent':
-        specifier: workspace:^
-        version: link:../indent
-
-  packages/udecode/cmdk:
-    dependencies:
-      '@radix-ui/react-dialog':
-        specifier: ^1.1.14
-        version: 1.1.14(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@radix-ui/react-id':
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react@19.2.7)(react@19.2.8)
-      '@radix-ui/react-primitive':
-        specifier: ^2.1.3
-        version: 2.1.4(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      use-sync-external-store:
-        specifier: ^1.5.0
-        version: 1.6.0(react@19.2.8)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-      '@types/use-sync-external-store':
-        specifier: 0.0.6
-        version: 0.0.6
-
-  packages/udecode/cn:
-    dependencies:
-      '@udecode/react-utils':
-        specifier: workspace:*
-        version: link:../react-utils
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-
-  packages/udecode/depset:
-    dependencies:
-      '@antfu/ni':
-        specifier: 24.3.0
-        version: 24.3.0
-      commander:
-        specifier: 14.0.0
-        version: 14.0.0
-      kleur:
-        specifier: 4.1.5
-        version: 4.1.5
-      ora:
-        specifier: 8.2.0
-        version: 8.2.0
-      prompts:
-        specifier: 2.4.2
-        version: 2.4.2
-      zod:
-        specifier: 3.25.61
-        version: 3.25.61
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-      '@types/prompts':
-        specifier: 2.4.9
-        version: 2.4.9
-
-  packages/udecode/react-hotkeys:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-
-  packages/udecode/react-utils:
-    dependencies:
-      '@radix-ui/react-slot':
-        specifier: ^1.2.3
-        version: 1.2.3(@types/react@19.2.7)(react@19.2.8)
-      '@udecode/utils':
-        specifier: workspace:*
-        version: link:../utils
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-
-  packages/udecode/utils:
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../../plate-scripts
-
-  packages/utils:
-    dependencies:
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@udecode/react-utils':
-        specifier: workspace:^
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/test-utils':
-        specifier: workspace:^
-        version: link:../test-utils
-
-  packages/yjs:
-    dependencies:
-      diff-match-patch-ts:
-        specifier: ^0.6.0
-        version: 0.6.0
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      '@platejs/core':
-        specifier: workspace:^
-        version: link:../core
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      '@platejs/plite-history':
-        specifier: workspace:^
-        version: link:../plite-history
-      '@platejs/plite-react':
-        specifier: workspace:^
-        version: link:../plite-react
+      '@playwright/test':
+        specifier: 1.61.0
+        version: 1.61.0
+      '@testing-library/jest-dom':
+        specifier: ^6.9.1
+        version: 6.10.0(@testing-library/dom@10.4.0)
+      '@testing-library/react':
+        specifier: 16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@types/node':
         specifier: 24.12.0
         version: 24.12.0
       '@types/react':
         specifier: 19.2.7
         version: 19.2.7
+      '@vitest/browser-playwright':
+        specifier: ^4.1.0
+        version: 4.1.9(playwright@1.61.0)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))(vitest@4.1.9)
+      platejs:
+        specifier: workspace:^
+        version: link:../platejs
+      playwright:
+        specifier: ^1.58.2
+        version: 1.61.0
       react:
         specifier: 19.2.8
         version: 19.2.8
-      yjs:
-        specifier: 13.6.30
-        version: 13.6.30
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
+      vite:
+        specifier: ^7.1.12
+        version: 7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
 
 packages:
 
@@ -2856,33 +1413,6 @@ packages:
   '@clack/prompts@1.5.1':
     resolution: {integrity: sha512-zccHj2z2oCCO4yrDiRSlFOxWerGqRiysP7a5jPK6uoI9URKAquwY42Dd/iUP8JWHxEzdRe4TlbvZCo8z1/mhrw==}
     engines: {node: '>= 20.12.0'}
-
-  '@codemirror/autocomplete@6.20.1':
-    resolution: {integrity: sha512-1cvg3Vz1dSSToCNlJfRA2WSI4ht3K+WplO0UMOgmUYPivCyy2oueZY6Lx7M9wThm7SDUBViRmuT+OG/i8+ON9A==}
-
-  '@codemirror/commands@6.10.2':
-    resolution: {integrity: sha512-vvX1fsih9HledO1c9zdotZYUZnE4xV0m6i3m25s5DIfXofuprk6cRcLUZvSk3CASUbwjQX21tOGbkY2BH8TpnQ==}
-
-  '@codemirror/lang-javascript@6.2.4':
-    resolution: {integrity: sha512-0WVmhp1QOqZ4Rt6GlVGwKJN3KW7Xh4H2q8ZZNGZaP6lRdxXJzmjm4FqvmOojVj6khWJHIb9sp7U/72W7xQgqAA==}
-
-  '@codemirror/language@6.12.2':
-    resolution: {integrity: sha512-jEPmz2nGGDxhRTg3lTpzmIyGKxz3Gp3SJES4b0nAuE5SWQoKdT5GoQ69cwMmFd+wvFUhYirtDTr0/DRHpQAyWg==}
-
-  '@codemirror/lint@6.9.5':
-    resolution: {integrity: sha512-GElsbU9G7QT9xXhpUg1zWGmftA/7jamh+7+ydKRuT0ORpWS3wOSP0yT1FOlIZa7mIJjpVPipErsyvVqB9cfTFA==}
-
-  '@codemirror/search@6.6.0':
-    resolution: {integrity: sha512-koFuNXcDvyyotWcgOnZGmY7LZqEOXZaaxD/j6n18TCLx2/9HieZJ5H6hs1g8FiRxBD0DNfs0nXn17g872RmYdw==}
-
-  '@codemirror/state@6.5.4':
-    resolution: {integrity: sha512-8y7xqG/hpB53l25CIoit9/ngxdfoG+fx+V3SHBrinnhOtLvKHRyAJJuHzkWrR4YXXLX8eXBsejgAAxHUOdW1yw==}
-
-  '@codemirror/theme-one-dark@6.1.3':
-    resolution: {integrity: sha512-NzBdIvEJmx6fjeremiGp3t/okrLPYT0d9orIc7AFun8oZcRk58aejkqhv6spnz4MLAevrKNPMQYXEWMg4s+sKA==}
-
-  '@codemirror/view@6.39.16':
-    resolution: {integrity: sha512-m6S22fFpKtOWhq8HuhzsI1WzUP/hB9THbDj0Tl5KX4gbO6Y91hwBl7Yky33NdvB6IffuRFiBxf1R8kJMyXmA4Q==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -3674,18 +2204,6 @@ packages:
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
 
-  '@lezer/common@1.5.1':
-    resolution: {integrity: sha512-6YRVG9vBkaY7p1IVxL4s44n5nUnaNnGM2/AckNgYOnxTG2kWh1vR8BMxPseWPjRNpb5VtXnMpeYAEAADoRV1Iw==}
-
-  '@lezer/highlight@1.2.3':
-    resolution: {integrity: sha512-qXdH7UqTvGfdVBINrgKhDsVTJTxactNNxLk7+UMwZhU13lMHaOBlJe9Vqp907ya56Y3+ed2tlqzys7jDkTmW0g==}
-
-  '@lezer/javascript@1.5.4':
-    resolution: {integrity: sha512-vvYx3MhWqeZtGPwDStM2dwgljd5smolYD2lR2UyFcHfxbBQebqx8yjmFmxtJ/E6nN6u1D9srOiVWm3Rb4tmcUA==}
-
-  '@lezer/lr@1.4.8':
-    resolution: {integrity: sha512-bPWa0Pgx69ylNlMlPvBPryqeLYQjyJjqPx+Aupm5zydLIF3NE+6MMLT8Yi23Bd9cif9VS00aUebn+6fDIGBcDA==}
-
   '@lifeomic/attempt@3.1.0':
     resolution: {integrity: sha512-QZqem4QuAnAyzfz+Gj5/+SLxqwCAw2qmt7732ZXodr6VDWGeYLG6w1i/vYLa55JQM9wRuBKLmXmiZ2P0LtE5rw==}
 
@@ -3694,9 +2212,6 @@ packages:
 
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
-
-  '@marijn/find-cluster-break@1.0.2':
-    resolution: {integrity: sha512-l0h88YhZFyKdXIFNfSWpyjStDjGHwZ/U7iobcK1cQQD8sejsONdQtTVU+1wVN1PBw40PiiHB1vA5S7VTfQiP9g==}
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
@@ -5428,19 +3943,6 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@radix-ui/react-primitive@2.1.4':
-    resolution: {integrity: sha512-9hQc4+GNVtJAIEPEqlYqW5RiYdrr8ea5XQ0ZOnD6fgru+83kqT15mq2OCcbe8KnjRZl5vF3ks69AKz3kh1jrhg==}
-    peerDependencies:
-      '@types/react': '*'
-      '@types/react-dom': '*'
-      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      '@types/react-dom':
-        optional: true
-
   '@radix-ui/react-primitive@2.1.6':
     resolution: {integrity: sha512-wetd0QI77DbvrPpTAvH1SqOxsYF2wZe5TNxqwOd5Ty4XDpV3dpV0s8K/1MGMJBeY5o7lg8ub5VIt1Ub+yVen6g==}
     peerDependencies:
@@ -6451,15 +4953,6 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@slate-yjs/react@1.1.0':
-    resolution: {integrity: sha512-lGpEJLwThMPVZ+beqsoBowwBO2egu7K8ow+TOM4k2Liz9/dD1H9/ZNrdfZkPVSYT9NmgFm4dYc187t5GC4Wd6g==}
-    peerDependencies:
-      '@slate-yjs/core': ^1.0.0
-      react: '>=16.8.0'
-      slate: '>=0.70.0'
-      slate-react: '>=0.70.0'
-      yjs: ^13.5.29
-
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
@@ -6665,6 +5158,13 @@ packages:
   '@testing-library/dom@10.4.0':
     resolution: {integrity: sha512-pemlzrSESWbdAloYml3bAJMEfNh1Z7EduzqPKprCH5S341frlpYnUEW0H72dLxa6IsYr+mPno20GiSm+h9dEdQ==}
     engines: {node: '>=18'}
+
+  '@testing-library/jest-dom@6.10.0':
+    resolution: {integrity: sha512-HQwu0KaB2zyT0iLzBL+8CLyZDL3KlZlZJ+2iyc9uCUnlJVskJU/UlPuVCyIPhtukjPQdT2QNoR5nCP5FqTmmDQ==}
+    engines: {node: '>=22', npm: '>=6', yarn: '>=1'}
+    deprecated: Incorrect minor release with breaking changes (Node >=22 and required @testing-library/dom peer). Use 6.9.1 for the 6.x line, or upgrade to 7.0.0.
+    peerDependencies:
+      '@testing-library/dom': '>=10 <11'
 
   '@testing-library/jest-dom@6.6.3':
     resolution: {integrity: sha512-IteBhl4XqYNkM54f4ejhLRJiZNqcSCoXUOG2CPK7qbD322KjQozM4kHQOfkG2oln9b9HTYqs+Sae8vBATubxxA==}
@@ -6872,6 +5372,9 @@ packages:
   '@types/jest@29.5.14':
     resolution: {integrity: sha512-ZN+4sdnLUbo8EVvVc2ao0GFW6oVrQRPn4K2lglySj7APvSrgzxHiNNK99us4WDMi57xxA2yggblIAMNhXOotLQ==}
 
+  '@types/jsdom@21.1.7':
+    resolution: {integrity: sha512-yOriVnggzrnQ3a9OKOCxaVuSug3w3/SbOj5i7VwXWZEyUNl3bLF9V3MfxGbZKuwqJOQyRfqXyROBB1CoZLFWzA==}
+
   '@types/jsesc@2.5.1':
     resolution: {integrity: sha512-9VN+6yxLOPLOav+7PwjZbxiID2bVaeq0ED4qSQmdQTdjnXJSaCVKTR58t15oqH1H5t8Ng2ZX1SabJVoN9Q34bw==}
 
@@ -6943,6 +5446,9 @@ packages:
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
 
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
@@ -6954,9 +5460,6 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/use-sync-external-store@0.0.6':
-    resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
 
   '@types/validate-npm-package-name@4.0.2':
     resolution: {integrity: sha512-lrpDziQipxCEeK5kWxvljWYhUvOiB2A9izZd9B2AFarYAkqZshb4lPbRs7zKEic6eGtH8V/2qJW+dPp9OtF6bw==}
@@ -7155,17 +5658,6 @@ packages:
     engines: {node: '>=16.20.0'}
     cpu: [x64]
     os: [win32]
-
-  '@uiw/codemirror-extensions-basic-setup@4.25.4':
-    resolution: {integrity: sha512-YzNwkm0AbPv1EXhCHYR5v0nqfemG2jEB0Z3Att4rBYqKrlG7AA9Rhjc3IyBaOzsBu18wtrp9/+uhTyu7TXSRng==}
-
-  '@uiw/react-codemirror@4.25.4':
-    resolution: {integrity: sha512-ipO067oyfUw+DVaXhQCxkB0ZD9b7RnY+ByrprSYSKCHaULvJ3sqWYC/Zen6zVQ8/XC4o5EPBfatGiX20kC7XGA==}
-    peerDependencies:
-      '@codemirror/theme-one-dark': '>=6.0.0'
-      '@codemirror/view': '>=6.0.0'
-      react: '>=17.0.0'
-      react-dom: '>=17.0.0'
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -7871,9 +6363,6 @@ packages:
   code-block-writer@13.0.3:
     resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
 
-  codemirror@6.0.2:
-    resolution: {integrity: sha512-VhydHotNW5w1UGK0Qj96BwSk/Zqbp9WbnyK2W/eVMv4QyF41INRGpjUhFJY7/uDNuudSc33a/PKr4iDqRduvHw==}
-
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
 
@@ -7918,10 +6407,6 @@ packages:
   commander@12.1.0:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
     engines: {node: '>=18'}
-
-  commander@14.0.0:
-    resolution: {integrity: sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA==}
-    engines: {node: '>=20'}
 
   commander@14.0.1:
     resolution: {integrity: sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==}
@@ -8016,9 +6501,6 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
-
-  crelt@1.0.6:
-    resolution: {integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g==}
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -9346,6 +7828,7 @@ packages:
   html2canvas-pro@1.5.11:
     resolution: {integrity: sha512-W4pEeKLG8+9a54RDOSiEKq7gRXXDzt0ORMaLXX+l6a3urSKbmnkmyzcRDCtgTOzmHLaZTLG2wiTQMJqKLlSh3w==}
     engines: {node: '>=16.0.0'}
+    deprecated: All 1.5.x series are deprecated. Known rendering bugs exist and no further maintenance. Please upgrade to the latest 2.x release.
 
   htmlparser2@3.10.1:
     resolution: {integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==}
@@ -9409,9 +7892,6 @@ packages:
 
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
-
-  immer@10.2.0:
-    resolution: {integrity: sha512-d/+XTN3zfODyjr89gM3mPq1WNX2B8pYsu7eORitdwyA2sBubnTl3laYlBk4sXY5FUa5qTZGBDPJICVbvqzjlbw==}
 
   immutable@4.3.8:
     resolution: {integrity: sha512-d/Ld9aLbKpNwyl0KiM2CT1WYvkitQ1TSvmRtkcV8FKStiDoA7Slzgjmb/1G2yhKM1p0XeNOieaTbFZmU1d3Xuw==}
@@ -9989,9 +8469,6 @@ packages:
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
 
-  lodash.mapvalues@4.6.0:
-    resolution: {integrity: sha512-JPFqXFeZQ7BfS00H58kClY7SPVeHertPE0lNuCyZ26/XlN8TvakYD7b9bGyNmXbT/D3BbtPAAmq90gPWqLkxlQ==}
-
   lodash.startcase@4.4.0:
     resolution: {integrity: sha512-+WKqsK294HMSc2jEbNgpHpd0JfIBhp7rEV4aqXWqFr6AlXov+SlcgB1Fv01y2kGe3Gc8nMW7VA0SrGuSkRfIEg==}
 
@@ -10521,21 +8998,12 @@ packages:
   multipasta@0.2.7:
     resolution: {integrity: sha512-KPA58d68KgGil15oDqXjkUBEBYc00XvbPj5/X+dyzeo/lWm9Nc25pQRlf1D+gv4OpK7NM0J1odrbu9JNNGvynA==}
 
-  mutative@1.1.0:
-    resolution: {integrity: sha512-2PJADREjOusk3iJkD3rXV2YjAxTuaLxdfqtqTEt6vcY07LtEBR1seHuBHXWEIuscqRDGvbauYPs+A4Rj/KTczQ==}
-    engines: {node: '>=14.0'}
-
   mutative@1.3.0:
     resolution: {integrity: sha512-8MJj6URmOZAV70dpFe1YnSppRTKC4DsMkXQiBDFayLcDI4ljGokHxmpqaBQuDWa4iAxWaJJ1PS8vAmbntjjKmQ==}
     engines: {node: '>=14.0'}
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  nanoid@3.3.12:
-    resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -11143,9 +9611,6 @@ packages:
     resolution: {integrity: sha512-TmatMXdr2KlRiA2CyDu8GqR8EjahTG3aY3nXjdzFyoZbmB8hrBsTyMezhULIXKnC0jpfjlmiZ3+EaCzoInSu/A==}
     engines: {node: '>= 14'}
 
-  proxy-compare@2.6.0:
-    resolution: {integrity: sha512-8xuCeM3l8yqdmbPoYeLbrAXCBWu19XEYc5/F28f5qOaoAIMyfmBUkl5axiK+x9olUvRlcekvnm98AP9RDngOIw==}
-
   proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
@@ -11362,19 +9827,6 @@ packages:
     engines: {node: '>=10'}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
-  react-tracked@1.7.14:
-    resolution: {integrity: sha512-6UMlgQeRAGA+uyYzuQGm7kZB6ZQYFhc7sntgP7Oxwwd6M0Ud/POyb4K3QWT1eXvoifSa80nrAWnXWFGpOvbwkw==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '*'
-      react-native: '*'
-      scheduler: '>=0.19.0'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
 
   react-tweet@3.2.2:
     resolution: {integrity: sha512-hIkxAVPpN2RqWoDEbo3TTnN/pDcp9/Jb6pTgiA4EbXa9S+m2vHIvvZKHR+eS0PDIsYqe+zTmANRa5k6+/iwGog==}
@@ -12006,9 +10458,6 @@ packages:
     resolution: {integrity: sha512-SlyRoSkdh1dYP0PzclLE7r0M9sgbFKKMFXpFRUMNuKhQSbC6VQIGzq3E0qsfvGJaUFJPGv6Ws1NZ/haTAjfbMA==}
     engines: {node: '>=12'}
 
-  style-mod@4.1.3:
-    resolution: {integrity: sha512-i/n8VsZydrugj3Iuzll8+x/00GH2vnYsk1eomD8QiRrSAeW6ItbCQDtfXCeJHd0iwiNagqjQkvpvREEPtW3IoQ==}
-
   style-to-js@1.1.21:
     resolution: {integrity: sha512-RjQetxJrrUJLQPHbLku6U/ocGtzyjbJMP9lCNK7Ag0CNh690nSH8woqWH9u16nMjYBAok+i7JO1NP2pOy8IsPQ==}
 
@@ -12118,10 +10567,6 @@ packages:
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
-  tinyexec@1.0.2:
-    resolution: {integrity: sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg==}
-    engines: {node: '>=18'}
-
   tinyexec@1.2.4:
     resolution: {integrity: sha512-SHf/r48b7vOrjve9PxJo3MN5v5yuyjHvdUcrQffT3WXMUfnGmHDVbC4k3sHJaJTgZCwpUplIaAo5ANtMyp3YHg==}
     engines: {node: '>=18'}
@@ -12195,14 +10640,6 @@ packages:
 
   ts-error@1.0.6:
     resolution: {integrity: sha512-tLJxacIQUM82IR7JO1UUkKlYuUTmoY9HBJAmNWFzheSlDS5SPMcNIepejHJa4BpPQLAcbRhRf3GDJzyj6rbKvA==}
-
-  ts-essentials@10.1.0:
-    resolution: {integrity: sha512-LirrVzbhIpFQ9BdGfqLnM9r7aP9rnyfeoxbP5ZEkdr531IaY21+KdebRSsbvqu28VDJtcDDn+AlGn95t0c52zQ==}
-    peerDependencies:
-      typescript: '>=4.5.0'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
 
   ts-morph@22.0.0:
     resolution: {integrity: sha512-M9MqFGZREyeb5fTl6gNHKZLqBQA0TjA1lea+CR48R8EBTDuWrNqW6ccC5QvjNR4s6wDumD3LTCjOFSp9iwlzaw==}
@@ -12509,24 +10946,6 @@ packages:
       '@types/react':
         optional: true
 
-  use-context-selector@1.4.4:
-    resolution: {integrity: sha512-pS790zwGxxe59GoBha3QYOwk8AFGp4DN6DOtH+eoqVmgBBRXVx4IlPDhJmmMiNQAgUaLlP+58aqRC3A4rdaSjg==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '*'
-      react-native: '*'
-      scheduler: '>=0.19.0'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-      react-native:
-        optional: true
-
-  use-deep-compare@1.3.0:
-    resolution: {integrity: sha512-94iG+dEdEP/Sl3WWde+w9StIunlV8Dgj+vkt5wTwMoFQLaijiEZSXXy8KtcStpmEDtIptRJiNeD4ACTtVvnIKA==}
-    peerDependencies:
-      react: '>=16.8.0'
-
   use-file-picker@2.1.2:
     resolution: {integrity: sha512-ZEIzRi1wXeIXDWr5i55gRBVER8rTkSGskDUY94bciTTAZJHlBnOTRLL/LDYjgz6d+US3yELHnRvtBhLxFGtB0A==}
     engines: {node: '>=12'}
@@ -12561,8 +10980,8 @@ packages:
       '@types/react':
         optional: true
 
-  use-sync-external-store@1.4.0:
-    resolution: {integrity: sha512-9WXSPC5fMv61vaupRkCKCxsPxBocVnwakBEkMIHHpkTTg6icbJtg6jzgtLDm4bl3cSHAca52rYWih0k4K3PfHw==}
+  use-sync-external-store@1.5.0:
+    resolution: {integrity: sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -12697,7 +11116,6 @@ packages:
       '@vitest/ui': 4.1.9
       happy-dom: '*'
       jsdom: '*'
-      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -12745,9 +11163,6 @@ packages:
 
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
-
-  w3c-keyname@2.2.8:
-    resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
 
   w3c-xmlserializer@4.0.0:
     resolution: {integrity: sha512-d+BFHzbiCx6zGfz0HyQ6Rg69w9k19nviJspaj4yNscGjrHu94sVP+aRm75yEbCh+r2/yR+7q6hux9LVtbuTGBw==}
@@ -12991,11 +11406,6 @@ packages:
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
-  zustand-x@6.2.1:
-    resolution: {integrity: sha512-y3nQMQNx3BORY95vpuodJvh/8AqQu++S3q6mJYBSo1J0Q168Sy+FatqER658YESDqv2bwviXcIT3bgl/Ip6M5g==}
-    peerDependencies:
-      zustand: '>=5.0.2'
-
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
@@ -13115,14 +11525,14 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.6.0
-      tinyexec: 1.0.2
+      tinyexec: 1.2.4
 
   '@antfu/ni@24.3.0':
     dependencies:
       ansis: 3.17.0
       fzf: 0.5.2
       package-manager-detector: 1.6.0
-      tinyexec: 1.0.2
+      tinyexec: 1.2.4
 
   '@ariakit/core@0.4.15': {}
 
@@ -13132,7 +11542,7 @@ snapshots:
       '@floating-ui/dom': 1.7.6
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
-      use-sync-external-store: 1.6.0(react@19.2.8)
+      use-sync-external-store: 1.5.0(react@19.2.8)
 
   '@ariakit/react@0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
@@ -13142,7 +11552,7 @@ snapshots:
 
   '@babel/code-frame@7.29.0':
     dependencies:
-      '@babel/helper-validator-identifier': 7.28.5
+      '@babel/helper-validator-identifier': 7.29.7
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
@@ -13635,69 +12045,6 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@codemirror/autocomplete@6.20.1':
-    dependencies:
-      '@codemirror/language': 6.12.2
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      '@lezer/common': 1.5.1
-
-  '@codemirror/commands@6.10.2':
-    dependencies:
-      '@codemirror/language': 6.12.2
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      '@lezer/common': 1.5.1
-
-  '@codemirror/lang-javascript@6.2.4':
-    dependencies:
-      '@codemirror/autocomplete': 6.20.1
-      '@codemirror/language': 6.12.2
-      '@codemirror/lint': 6.9.5
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      '@lezer/common': 1.5.1
-      '@lezer/javascript': 1.5.4
-
-  '@codemirror/language@6.12.2':
-    dependencies:
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      '@lezer/common': 1.5.1
-      '@lezer/highlight': 1.2.3
-      '@lezer/lr': 1.4.8
-      style-mod: 4.1.3
-
-  '@codemirror/lint@6.9.5':
-    dependencies:
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      crelt: 1.0.6
-
-  '@codemirror/search@6.6.0':
-    dependencies:
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      crelt: 1.0.6
-
-  '@codemirror/state@6.5.4':
-    dependencies:
-      '@marijn/find-cluster-break': 1.0.2
-
-  '@codemirror/theme-one-dark@6.1.3':
-    dependencies:
-      '@codemirror/language': 6.12.2
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-      '@lezer/highlight': 1.2.3
-
-  '@codemirror/view@6.39.16':
-    dependencies:
-      '@codemirror/state': 6.5.4
-      crelt: 1.0.6
-      style-mod: 4.1.3
-      w3c-keyname: 2.2.8
-
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -13979,7 +12326,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.0':
     optional: true
 
-  '@excalidraw/excalidraw@0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
+  '@excalidraw/excalidraw@0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@braintree/sanitize-url': 6.0.2
       '@excalidraw/laser-pointer': 1.3.1
@@ -14013,7 +12360,7 @@ snapshots:
       react-dom: 19.2.8(react@19.2.8)
       roughjs: 4.6.4
       sass: 1.51.0
-      tunnel-rat: 0.1.2(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)
+      tunnel-rat: 0.1.2(@types/react@19.2.7)(react@19.2.8)
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
@@ -14286,22 +12633,6 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
-  '@lezer/common@1.5.1': {}
-
-  '@lezer/highlight@1.2.3':
-    dependencies:
-      '@lezer/common': 1.5.1
-
-  '@lezer/javascript@1.5.4':
-    dependencies:
-      '@lezer/common': 1.5.1
-      '@lezer/highlight': 1.2.3
-      '@lezer/lr': 1.4.8
-
-  '@lezer/lr@1.4.8':
-    dependencies:
-      '@lezer/common': 1.5.1
-
   '@lifeomic/attempt@3.1.0': {}
 
   '@manypkg/find-root@1.1.0':
@@ -14319,8 +12650,6 @@ snapshots:
       fs-extra: 8.1.0
       globby: 11.1.0
       read-yaml-file: 1.1.0
-
-  '@marijn/find-cluster-break@1.0.2': {}
 
   '@mdx-js/mdx@3.1.1':
     dependencies:
@@ -14804,7 +13133,7 @@ snapshots:
 
   '@radix-ui/primitive@1.0.0':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
 
   '@radix-ui/primitive@1.1.1': {}
 
@@ -15054,7 +13383,7 @@ snapshots:
 
   '@radix-ui/react-collection@1.0.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-compose-refs': 1.0.0(react@19.2.8)
       '@radix-ui/react-context': 1.0.0(react@19.2.8)
       '@radix-ui/react-primitive': 1.0.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -15088,7 +13417,7 @@ snapshots:
 
   '@radix-ui/react-compose-refs@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       react: 19.2.8
 
   '@radix-ui/react-compose-refs@1.1.1(@types/react@19.2.7)(react@19.2.8)':
@@ -15138,7 +13467,7 @@ snapshots:
 
   '@radix-ui/react-context@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       react: 19.2.8
 
   '@radix-ui/react-context@1.1.1(@types/react@19.2.7)(react@19.2.8)':
@@ -15227,7 +13556,7 @@ snapshots:
 
   '@radix-ui/react-direction@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       react: 19.2.8
 
   '@radix-ui/react-direction@1.1.1(@types/react@19.2.7)(react@19.2.8)':
@@ -15435,7 +13764,7 @@ snapshots:
 
   '@radix-ui/react-id@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-use-layout-effect': 1.0.0(react@19.2.8)
       react: 19.2.8
 
@@ -15842,7 +14171,7 @@ snapshots:
 
   '@radix-ui/react-presence@1.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-compose-refs': 1.0.0(react@19.2.8)
       '@radix-ui/react-use-layout-effect': 1.0.0(react@19.2.8)
       react: 19.2.8
@@ -15889,7 +14218,7 @@ snapshots:
 
   '@radix-ui/react-primitive@1.0.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-slot': 1.0.1(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
@@ -15906,15 +14235,6 @@ snapshots:
   '@radix-ui/react-primitive@2.1.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@radix-ui/react-slot': 1.2.3(@types/react@19.2.7)(react@19.2.8)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-    optionalDependencies:
-      '@types/react': 19.2.7
-      '@types/react-dom': 19.2.3(@types/react@19.2.7)
-
-  '@radix-ui/react-primitive@2.1.4(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      '@radix-ui/react-slot': 1.2.4(@types/react@19.2.7)(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:
@@ -15978,7 +14298,7 @@ snapshots:
 
   '@radix-ui/react-roving-focus@1.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/primitive': 1.0.0
       '@radix-ui/react-collection': 1.0.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-compose-refs': 1.0.0(react@19.2.8)
@@ -16191,7 +14511,7 @@ snapshots:
 
   '@radix-ui/react-slot@1.0.1(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-compose-refs': 1.0.0(react@19.2.8)
       react: 19.2.8
 
@@ -16255,7 +14575,7 @@ snapshots:
 
   '@radix-ui/react-tabs@1.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/primitive': 1.0.0
       '@radix-ui/react-context': 1.0.0(react@19.2.8)
       '@radix-ui/react-direction': 1.0.0(react@19.2.8)
@@ -16459,7 +14779,7 @@ snapshots:
 
   '@radix-ui/react-use-callback-ref@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       react: 19.2.8
 
   '@radix-ui/react-use-callback-ref@1.1.0(@types/react@19.2.7)(react@19.2.8)':
@@ -16482,7 +14802,7 @@ snapshots:
 
   '@radix-ui/react-use-controllable-state@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@radix-ui/react-use-callback-ref': 1.0.0(react@19.2.8)
       react: 19.2.8
 
@@ -16547,7 +14867,7 @@ snapshots:
   '@radix-ui/react-use-is-hydrated@0.1.0(@types/react@19.2.7)(react@19.2.8)':
     dependencies:
       react: 19.2.8
-      use-sync-external-store: 1.6.0(react@19.2.8)
+      use-sync-external-store: 1.5.0(react@19.2.8)
     optionalDependencies:
       '@types/react': 19.2.7
 
@@ -16559,7 +14879,7 @@ snapshots:
 
   '@radix-ui/react-use-layout-effect@1.0.0(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       react: 19.2.8
 
   '@radix-ui/react-use-layout-effect@1.1.0(@types/react@19.2.7)(react@19.2.8)':
@@ -16891,15 +15211,6 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@slate-yjs/react@1.1.0(react@19.2.8)(slate-react@0.124.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1))(slate@0.124.1)(yjs@13.6.30)':
-    dependencies:
-      react: 19.2.8
-      slate: 0.124.1
-      slate-react: 0.124.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1)
-      use-sync-external-store: 1.6.0(react@19.2.8)
-      y-protocols: 1.0.7(yjs@13.6.30)
-      yjs: 13.6.30
-
   '@socket.io/component-emitter@3.1.2': {}
 
   '@standard-schema/spec@1.0.0-beta.4': {}
@@ -17069,13 +15380,23 @@ snapshots:
   '@testing-library/dom@10.4.0':
     dependencies:
       '@babel/code-frame': 7.29.0
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       chalk: 4.1.2
       dom-accessibility-api: 0.5.16
       lz-string: 1.5.0
       pretty-format: 27.5.1
+
+  '@testing-library/jest-dom@6.10.0(@testing-library/dom@10.4.0)':
+    dependencies:
+      '@adobe/css-tools': 4.4.4
+      '@testing-library/dom': 10.4.0
+      aria-query: 5.3.2
+      css.escape: 1.5.1
+      dom-accessibility-api: 0.6.3
+      picocolors: 1.1.1
+      redent: 3.0.0
 
   '@testing-library/jest-dom@6.6.3':
     dependencies:
@@ -17089,7 +15410,7 @@ snapshots:
 
   '@testing-library/react@16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.7
       '@testing-library/dom': 10.4.0
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
@@ -17317,6 +15638,12 @@ snapshots:
       expect: 29.7.0
       pretty-format: 29.7.0
 
+  '@types/jsdom@21.1.7':
+    dependencies:
+      '@types/node': 24.12.0
+      '@types/tough-cookie': 4.0.5
+      parse5: 7.3.0
+
   '@types/jsesc@2.5.1': {}
 
   '@types/jsonfile@6.1.4':
@@ -17386,6 +15713,8 @@ snapshots:
 
   '@types/stack-utils@2.0.3': {}
 
+  '@types/tough-cookie@4.0.5': {}
+
   '@types/trusted-types@2.0.7':
     optional: true
 
@@ -17394,8 +15723,6 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
-
-  '@types/use-sync-external-store@0.0.6': {}
 
   '@types/validate-npm-package-name@4.0.2': {}
 
@@ -17515,28 +15842,6 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  '@uiw/codemirror-extensions-basic-setup@4.25.4':
-    dependencies:
-      '@codemirror/autocomplete': 6.20.1
-      '@codemirror/commands': 6.10.2
-      '@codemirror/language': 6.12.2
-      '@codemirror/lint': 6.9.5
-      '@codemirror/search': 6.6.0
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
-
-  '@uiw/react-codemirror@4.25.4(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.16)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
-    dependencies:
-      '@babel/runtime': 7.28.6
-      '@codemirror/commands': 6.10.2
-      '@codemirror/state': 6.5.4
-      '@codemirror/theme-one-dark': 6.1.3
-      '@codemirror/view': 6.39.16
-      '@uiw/codemirror-extensions-basic-setup': 4.25.4
-      codemirror: 6.0.2
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-
   '@ungap/structured-clone@1.3.0': {}
 
   '@uploadthing/mime-types@0.3.5': {}
@@ -17564,7 +15869,7 @@ snapshots:
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
       playwright: 1.61.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -17580,7 +15885,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -18242,7 +16547,7 @@ snapshots:
       '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.2.7)(react@19.2.8)
       '@radix-ui/react-dialog': 1.1.14(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-id': 1.1.1(@types/react@19.2.7)(react@19.2.8)
-      '@radix-ui/react-primitive': 2.1.4(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@radix-ui/react-primitive': 2.1.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
     transitivePeerDependencies:
@@ -18250,16 +16555,6 @@ snapshots:
       - '@types/react-dom'
 
   code-block-writer@13.0.3: {}
-
-  codemirror@6.0.2:
-    dependencies:
-      '@codemirror/autocomplete': 6.20.1
-      '@codemirror/commands': 6.10.2
-      '@codemirror/language': 6.12.2
-      '@codemirror/lint': 6.9.5
-      '@codemirror/search': 6.6.0
-      '@codemirror/state': 6.5.4
-      '@codemirror/view': 6.39.16
 
   collapse-white-space@2.1.0: {}
 
@@ -18292,8 +16587,6 @@ snapshots:
   commander@11.1.0: {}
 
   commander@12.1.0: {}
-
-  commander@14.0.0: {}
 
   commander@14.0.1: {}
 
@@ -18382,8 +16675,6 @@ snapshots:
       sha.js: 2.4.12
 
   create-require@1.1.1: {}
-
-  crelt@1.0.6: {}
 
   cross-env@7.0.3:
     dependencies:
@@ -20076,8 +18367,6 @@ snapshots:
 
   immediate@3.0.6: {}
 
-  immer@10.2.0: {}
-
   immutable@4.3.8: {}
 
   immutable@5.1.5: {}
@@ -20558,8 +18847,6 @@ snapshots:
   lodash-es@4.17.23: {}
 
   lodash.debounce@4.0.8: {}
-
-  lodash.mapvalues@4.6.0: {}
 
   lodash.startcase@4.4.0: {}
 
@@ -21069,7 +19356,7 @@ snapshots:
 
   micromark-extension-mdx-expression@3.0.1:
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       devlop: 1.1.0
       micromark-factory-mdx-expression: 2.0.3
       micromark-factory-space: 2.0.1
@@ -21080,7 +19367,7 @@ snapshots:
 
   micromark-extension-mdx-jsx@3.0.2:
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       devlop: 1.1.0
       estree-util-is-identifier-name: 3.0.0
       micromark-factory-mdx-expression: 2.0.3
@@ -21097,7 +19384,7 @@ snapshots:
 
   micromark-extension-mdxjs-esm@3.0.0:
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
       micromark-util-character: 2.1.1
@@ -21500,13 +19787,9 @@ snapshots:
 
   multipasta@0.2.7: {}
 
-  mutative@1.1.0: {}
-
   mutative@1.3.0: {}
 
   nanoid@3.3.11: {}
-
-  nanoid@3.3.12: {}
 
   nanoid@3.3.18: {}
 
@@ -22046,7 +20329,7 @@ snapshots:
 
   postcss@8.5.15:
     dependencies:
-      nanoid: 3.3.12
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -22137,8 +20420,6 @@ snapshots:
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
-
-  proxy-compare@2.6.0: {}
 
   proxy-from-env@1.1.0: {}
 
@@ -22441,15 +20722,6 @@ snapshots:
       use-latest: 1.3.0(@types/react@19.2.7)(react@19.2.8)
     transitivePeerDependencies:
       - '@types/react'
-
-  react-tracked@1.7.14(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0):
-    dependencies:
-      proxy-compare: 2.6.0
-      react: 19.2.8
-      scheduler: 0.27.0
-      use-context-selector: 1.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)
-    optionalDependencies:
-      react-dom: 19.2.8(react@19.2.8)
 
   react-tweet@3.2.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
@@ -23360,8 +21632,6 @@ snapshots:
 
   strip-indent@4.1.1: {}
 
-  style-mod@4.1.3: {}
-
   style-to-js@1.1.21:
     dependencies:
       style-to-object: 1.0.14
@@ -23477,8 +21747,6 @@ snapshots:
 
   tinybench@2.9.0: {}
 
-  tinyexec@1.0.2: {}
-
   tinyexec@1.2.4: {}
 
   tinyglobby@0.2.14:
@@ -23542,10 +21810,6 @@ snapshots:
   ts-dedent@2.2.0: {}
 
   ts-error@1.0.6: {}
-
-  ts-essentials@10.1.0(typescript@7.0.2):
-    optionalDependencies:
-      typescript: 7.0.2
 
   ts-morph@22.0.0:
     dependencies:
@@ -23625,9 +21889,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  tunnel-rat@0.1.2(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8):
+  tunnel-rat@0.1.2(@types/react@19.2.7)(react@19.2.8):
     dependencies:
-      zustand: 4.5.7(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)
+      zustand: 4.5.7(@types/react@19.2.7)(react@19.2.8)
     transitivePeerDependencies:
       - '@types/react'
       - immer
@@ -23899,18 +22163,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  use-context-selector@1.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0):
-    dependencies:
-      react: 19.2.8
-      scheduler: 0.27.0
-    optionalDependencies:
-      react-dom: 19.2.8(react@19.2.8)
-
-  use-deep-compare@1.3.0(react@19.2.8):
-    dependencies:
-      dequal: 2.0.3
-      react: 19.2.8
-
   use-file-picker@2.1.2(react@19.2.8):
     dependencies:
       file-selector: 0.2.4
@@ -23937,7 +22189,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  use-sync-external-store@1.4.0(react@19.2.8):
+  use-sync-external-store@1.5.0(react@19.2.8):
     dependencies:
       react: 19.2.8
 
@@ -24046,7 +22298,7 @@ snapshots:
       tsx: 4.20.1
       yaml: 2.9.0
 
-  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)):
+  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0):
     dependencies:
       '@vitest/expect': 4.1.9
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
@@ -24075,7 +22327,17 @@ snapshots:
       happy-dom: 20.8.3
       jsdom: 20.0.3
     transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
       - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
 
   viz.js@2.1.2: {}
 
@@ -24095,8 +22357,6 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.1.0: {}
-
-  w3c-keyname@2.2.8: {}
 
   w3c-xmlserializer@4.0.0:
     dependencies:
@@ -24328,32 +22588,16 @@ snapshots:
 
   zod@4.4.3: {}
 
-  zustand-x@6.2.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)(zustand@5.0.11(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))):
-    dependencies:
-      immer: 10.2.0
-      lodash.mapvalues: 4.6.0
-      mutative: 1.1.0
-      react-tracked: 1.7.14(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)
-      use-sync-external-store: 1.4.0(react@19.2.8)
-      zustand: 5.0.11(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-native
-      - scheduler
-
-  zustand@4.5.7(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8):
+  zustand@4.5.7(@types/react@19.2.7)(react@19.2.8):
     dependencies:
       use-sync-external-store: 1.6.0(react@19.2.8)
     optionalDependencies:
       '@types/react': 19.2.7
-      immer: 10.2.0
       react: 19.2.8
 
-  zustand@5.0.11(@types/react@19.2.7)(immer@10.2.0)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)):
+  zustand@5.0.11(@types/react@19.2.7)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)):
     optionalDependencies:
       '@types/react': 19.2.7
-      immer: 10.2.0
       react: 19.2.8
       use-sync-external-store: 1.6.0(react@19.2.8)
 

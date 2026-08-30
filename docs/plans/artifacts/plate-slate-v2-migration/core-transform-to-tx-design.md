@@ -137,7 +137,7 @@ Completed facade decision:
    - `packages/basic-nodes` mark and block toggles;
    - `packages/basic-styles` style `set(...)` commands;
    - `packages/code-block` code-block toggle;
-   - `packages/list-classic` todo-list item toggle.
+   - `packages/platejs/src/features/list` todo-list item toggle.
 4. Taught the command-surface scanner to classify
    `tx-backed-transform-facade` separately from raw transform debt.
 

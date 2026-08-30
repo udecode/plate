@@ -1,9 +1,0 @@
-[test]
-# Preload scripts execute BEFORE any test file
-# Redirect workspace exports to source before installing DOM test globals.
-preload = [
-  "../../config/plite-source-aliases.ts",
-  "../../tooling/config/bunTestSetup.ts",
-]
-# Keep package-local runs quiet too.
-onlyFailures = true

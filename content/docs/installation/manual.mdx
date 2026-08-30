@@ -24,7 +24,7 @@ npm create vite@latest
 Install `platejs` for the core editor runtime and React components.
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
 ### TypeScript Configuration
@@ -54,10 +54,10 @@ Start by creating a basic editor component. This example sets up a simple editor
 ```tsx title="src/App.tsx"
 import React from 'react';
 import type { Value } from 'platejs';
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
 
 export default function App() {
-  const editor = usePlateEditor();
+  const editor = useCreateEditor();
 
   return (
     <Plate editor={editor}>
@@ -71,7 +71,7 @@ export default function App() {
 ```
 
 <Callout type="info">
-  `usePlateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createPlateEditor` from `platejs/react`.
+  `useCreateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createEditor` from `platejs/react`.
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
@@ -82,10 +82,10 @@ At this point, you'll have a very basic editor capable of displaying and editing
 
 Let's add support for basic text formatting like bold, italic, and underline.
 
-Install the basic nodes package before adding the mark plugins:
+The mark plugins are included in the `platejs` installation:
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ```tsx showLineNumbers title="src/App.tsx" {4-8,32}
@@ -96,11 +96,11 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 const initialValue: Value = [
@@ -119,7 +119,7 @@ const initialValue: Value = [
 ];
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin],
     initialValue,
   });
@@ -157,12 +157,12 @@ import {
   
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
-  usePlateEditor,
+  useCreateEditor,
   type PlateElementProps,
 } from 'platejs/react';
 
@@ -192,15 +192,9 @@ const initialValue: Value = [
 
 // Define element components
 function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h1" {...props} />;
-}
+  const tag = `h${props.element.level}` as const;
 
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h2" {...props} />;
-}
-
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h3" {...props} />;
+  return <PlateElement as={tag} {...props} />;
 }
 
 function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
@@ -221,13 +215,11 @@ function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
 }
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -265,12 +257,12 @@ import {
   
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
   PlateContent,
   PlateElement,
-  usePlateEditor,
+  useCreateEditor,
   type PlateElementProps,
 } from 'platejs/react';
 
@@ -300,15 +292,9 @@ const initialValue: Value = [
 
 // Define element components
 function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h1" {...props} />;
-}
+  const tag = `h${props.element.level}` as const;
 
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h2" {...props} />;
-}
-
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
-  return <PlateElement as="h3" {...props} />;
+  return <PlateElement as={tag} {...props} />;
 }
 
 function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
@@ -329,13 +315,11 @@ function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
 }
 
 export default function App() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -387,7 +371,7 @@ export default function App() {
 
 <Callout type="info" title="Value Management">
   The example above demonstrates a basic pattern for managing editor value:
-  - Initial value is set through the `initialValue` option in `usePlateEditor`
+  - Initial value is set through the `initialValue` option in `useCreateEditor`
   - Value changes can be handled via the `onValueChange` prop on `<Plate>`
   - The reset button uses `editor.update(...)` with `tx.value.replace(...)` to
     restore the initial value
@@ -403,7 +387,7 @@ You've now set up a basic Plate editor manually! From here, you can:
 *   **Add Styling:**
     *   For a quick start with pre-built components, consider using [Plate UI](/docs/installation/plate-ui)
     *   Or continue styling manually using CSS, CSS-in-JS libraries, or your preferred styling solution
-*   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `@platejs/table`) and add them to your `plugins` array.
+*   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `platejs`) and add them to your `plugins` array.
 *   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/transforms) to apply formatting (e.g., `editor.update.bold.toggle()`, `editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`). You can also use the editor state with the [Editor API](/docs/api).
 *   **Learn More:**
     *   [Editor Configuration](/docs/editor)

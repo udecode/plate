@@ -38,11 +38,11 @@ Italic applies the `italic` leaf mark to selected text. `ItalicPlugin` owns the 
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -53,7 +53,7 @@ Pass `ItalicPlugin` to `MarkToolbarButton` so the button uses the configured mar
 
 ```tsx
 import { ItalicIcon } from 'lucide-react';
-import { ItalicPlugin } from '@platejs/basic-nodes/react';
+import { ItalicPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -73,16 +73,16 @@ export function ItalicToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `ItalicPlugin` directly when you do not want the whole kit.
 
 ```tsx
-import { ItalicPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { ItalicPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [ItalicPlugin],
 });
 ```
@@ -90,8 +90,8 @@ export const editor = createPlateEditor({
 Register Markdown-style input rules when users should type italic delimiters.
 
 ```tsx
-import { ItalicRules } from '@platejs/basic-nodes';
-import { ItalicPlugin } from '@platejs/basic-nodes/react';
+import { ItalicRules } from 'platejs';
+import { ItalicPlugin } from 'platejs/react';
 
 export const italicPlugin = ItalicPlugin.configure({
   inputRules: [
@@ -105,9 +105,9 @@ export const italicPlugin = ItalicPlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseItalicPlugin` | `@platejs/basic-nodes` | Headless italic mark, HTML parser, render tag, and `toggle` transform. |
-| `ItalicPlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+i` shortcut. |
-| `ItalicRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BaseItalicPlugin` | `platejs` | Headless italic mark, HTML parser, render tag, and `toggle` transform. |
+| `ItalicPlugin` | `platejs/react` | React wrapper with default `mod+i` shortcut. |
+| `ItalicRules.markdown` | `platejs` | Optional mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `ItalicPlugin` with `*` and `_` Markdown-style input rules. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -130,7 +130,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseItalicPlugin` | `@platejs/basic-nodes` | Headless italic plugin. |
-| `ItalicPlugin` | `@platejs/basic-nodes/react` | React italic plugin with shortcut defaults. |
-| `ItalicRules.markdown(options)` | `@platejs/basic-nodes` | Creates an italic mark input rule. |
-| `tx.italic.toggle()` | `@platejs/basic-nodes` | Toggles the italic mark at the selection. |
+| `BaseItalicPlugin` | `platejs` | Headless italic plugin. |
+| `ItalicPlugin` | `platejs/react` | React italic plugin with shortcut defaults. |
+| `ItalicRules.markdown(options)` | `platejs` | Creates an italic mark input rule. |
+| `tx.italic.toggle()` | `platejs` | Toggles the italic mark at the selection. |

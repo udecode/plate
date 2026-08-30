@@ -1,5 +1,5 @@
 ---
-'@platejs/find-replace': major
+'platejs': major
 ---
 
 Export `FindReplacePluginState` as the complete mutable state contract for `FindReplacePlugin`.

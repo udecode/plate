@@ -4,7 +4,7 @@ import {
   createEditor,
   defineExtension,
   ElementApi,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
 
 const iterationsArgument = process.argv.find((argument) =>

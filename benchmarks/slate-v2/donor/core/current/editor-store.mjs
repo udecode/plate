@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/plite/src/index.ts';
-import { setEditorChildren } from '../../../../../packages/plite/src/internal/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
-import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
+import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
+import { setEditorChildren } from '../../../../../packages/plitejs/src/internal/index.ts';
+import { summarize,writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number(process.env.EDITOR_STORE_BENCH_ITERATIONS || 5);
 const blockCount = Number(process.env.EDITOR_STORE_BENCH_BLOCKS || 120);

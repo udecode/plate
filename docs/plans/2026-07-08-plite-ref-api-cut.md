@@ -373,7 +373,7 @@ Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/diff` passed.
 - stale public API sweep passed with no matches:
   `rg -n "editor\\.api\\.(pathRef|pointRef|rangeRef|pathRefs|pointRefs|rangeRefs)|read\\.runtime\\.pathRef|createInternalRangeRef|editor\\.refs|read\\.refs" packages content --glob '!**/dist/**' --glob '!content/docs/migration/**'`.
-- Consumer typecheck was attempted for Plite/Core/Diff/Footnote/Layout/Suggestion/List Classic/Table and failed in already-dirty Plate migration packages on old Slate API surfaces such as `createSlateEditor`, `SlateEditor`, and missing migrated tests. That is not accepted as a ref-cut blocker; those packages remain package-by-package Plate Next work.
+- Consumer typecheck was attempted for Plite/Core/Diff/Footnote/Layout/Suggestion/Legacy list model/Table and failed in already-dirty Plate migration packages on old Slate API surfaces such as `createSlateEditor`, `SlateEditor`, and missing migrated tests. That is not accepted as a ref-cut blocker; those packages remain package-by-package Plate Next work.
 
 Reboot status:
 | Question | Answer |

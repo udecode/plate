@@ -13,7 +13,7 @@ title: Serializing CSV
 
 <Callout className="my-4" type="note">
   `CsvPlugin` 不会序列化完整的 Plate value。复制多个表格单元格时，
-  `@platejs/table` 会写入 CSV、TSV 和纯文本剪贴板数据。
+  `platejs` 会写入 CSV、TSV 和纯文本剪贴板数据。
 </Callout>
 
 </PackageInfo>
@@ -25,16 +25,16 @@ title: Serializing CSV
 ### Installation
 
 ```bash
-npm install @platejs/csv
+npm install platejs @tanstack/react-virtual @types/papaparse papaparse
 ```
 
 ### Add Plugin
 
 ```tsx
-import { CsvPlugin } from '@platejs/csv';
-import { createPlateEditor } from 'platejs/react';
+import { CsvPlugin } from 'platejs/csv';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin,
@@ -45,10 +45,10 @@ const editor = createPlateEditor({
 ### Configure Plugin
 
 ```tsx
-import { CsvPlugin } from '@platejs/csv';
-import { createPlateEditor } from 'platejs/react';
+import { CsvPlugin } from 'platejs/csv';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin.configure({

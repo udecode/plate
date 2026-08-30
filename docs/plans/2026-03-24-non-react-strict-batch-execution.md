@@ -13,7 +13,7 @@ Execute the strict next batch from the non-React testing review without turning 
 
 ## Ordered Scope
 
-1. `packages/list-classic/src/lib/BaseTodoListPlugin.ts`
+1. `packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts`
 2. `packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts`
 3. `packages/markdown/src/lib/deserializer/deserializeMd.ts`
 4. `packages/suggestion/src/lib/transforms/deleteSuggestion.ts`
@@ -35,10 +35,10 @@ Execute the strict next batch from the non-React testing review without turning 
 
 ## Verification
 
-- `bun test packages/list-classic/src/lib/BaseTodoListPlugin.spec.ts packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.spec.ts packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts packages/table/src/lib/BaseTablePlugin.spec.ts packages/table/src/lib/merge/deleteColumn.spec.tsx packages/table/src/lib/merge/insertTableColumn.spec.tsx packages/table/src/lib/merge/insertTableRow.spec.tsx packages/list/src/lib/withList.spec.tsx packages/core/src/lib/plugins/override/withMergeRules.spec.tsx`
-- `bun test packages/list-classic/src packages/core/src/lib packages/markdown/src packages/suggestion/src packages/table/src packages/list/src`
+- `bun test packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.spec.ts packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.spec.ts packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts packages/table/src/lib/BaseTablePlugin.spec.ts packages/table/src/lib/merge/deleteColumn.spec.tsx packages/table/src/lib/merge/insertTableColumn.spec.tsx packages/table/src/lib/merge/insertTableRow.spec.tsx packages/list/src/lib/withList.spec.tsx packages/core/src/lib/plugins/override/withMergeRules.spec.tsx`
+- `bun test packages/platejs/src/features/list/src packages/core/src/lib packages/markdown/src packages/suggestion/src packages/table/src packages/list/src`
 - `pnpm install`
-- `pnpm turbo build --filter=./packages/list-classic --filter=./packages/core --filter=./packages/markdown --filter=./packages/suggestion --filter=./packages/table --filter=./packages/list`
-- `pnpm turbo typecheck --concurrency=1 --filter=./packages/list-classic --filter=./packages/core --filter=./packages/markdown --filter=./packages/suggestion --filter=./packages/table --filter=./packages/list`
+- `pnpm turbo build --filter=./packages/platejs/src/features/list --filter=./packages/core --filter=./packages/markdown --filter=./packages/suggestion --filter=./packages/table --filter=./packages/list`
+- `pnpm turbo typecheck --concurrency=1 --filter=./packages/platejs/src/features/list --filter=./packages/core --filter=./packages/markdown --filter=./packages/suggestion --filter=./packages/table --filter=./packages/list`
 - `pnpm lint:fix`
 - post-lint rerun: the targeted `bun test` slice above

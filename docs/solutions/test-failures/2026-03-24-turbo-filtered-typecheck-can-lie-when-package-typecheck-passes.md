@@ -53,7 +53,7 @@ pnpm turbo typecheck --concurrency=1 --filter=./packages/<...>
 
 In this case:
 
-- `@platejs/list-classic` passed on its own
+- the isolated package passed on its own
 - the parallel Turbo run still failed
 - the serialized Turbo run cleared the fake package failure and exposed the next real spec typing issue instead
 

@@ -26,15 +26,15 @@ The target contract is rectangle algebra, not generic nested-block merging:
 
 The current Plite checkout has three explicit skipped fixture owners:
 
-- `packages/plite/test/transforms/insertFragment/of-tables/merge-into-full-cells.tsx`
-- `packages/plite/test/transforms/insertFragment/of-tables/merge-into-empty-cells.tsx`
-- `packages/plite/test/transforms/insertFragment/of-tables/merge-cells-with-nested-blocks.tsx`
+- `packages/plitejs/test/transforms/insertFragment/of-tables/merge-into-full-cells.tsx`
+- `packages/plitejs/test/transforms/insertFragment/of-tables/merge-into-empty-cells.tsx`
+- `packages/plitejs/test/transforms/insertFragment/of-tables/merge-cells-with-nested-blocks.tsx`
 
 Focused current proof:
 
 ```sh
 cd /Users/zbeyens/git/plate-2
-PLITE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/plite/test/index.spec.ts
+PLITE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/plitejs/test/index.spec.ts
 ```
 
 Latest result in this run: `3 pass`, `6 skip`, `0 fail`.
@@ -87,7 +87,7 @@ Core proof:
 
 ```sh
 cd /Users/zbeyens/git/plate-2
-PLITE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/plite/test/index.spec.ts
+PLITE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/plitejs/test/index.spec.ts
 ```
 
 Browser proof after browser rows exist:

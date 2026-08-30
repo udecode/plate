@@ -8,12 +8,41 @@ const audit = (source) =>
 const auditAt = (path, source) =>
   auditPrivatePlateDeclarationBrands([{ path, source }]);
 
+test('checks compiler types only in exported declaration entrypoints', () => {
+  const files = [
+    {
+      path: 'dist/index.d.ts',
+      source: 'export interface BasePlugin<D> {}',
+    },
+    {
+      path: 'dist/index-AbCd1234.d.ts',
+      source:
+        'type MergePluginDefinitions<A, B> = A & B; export { MergePluginDefinitions as M };',
+    },
+  ];
+
+  assert.deepEqual(
+    auditPrivatePlateDeclarationBrands(files, {
+      publicDeclarationPaths: new Set(['dist/index.d.ts']),
+    }),
+    []
+  );
+  assert.deepEqual(
+    auditPrivatePlateDeclarationBrands(files, {
+      publicDeclarationPaths: new Set(['dist/index-AbCd1234.d.ts']),
+    }),
+    [
+      'dist/index-AbCd1234.d.ts: public declaration exposes internal Plate plugin compiler type MergePluginDefinitions',
+    ]
+  );
+});
+
 test('rejects private Plate unique-symbol brands in public declarations', () => {
   for (const source of [
     'declare const PLATE_PLUGIN_SCHEMA_MODEL: unique symbol;',
     'type Model = typeof PLATE_PLUGIN_SCHEMA_MODEL;',
     'interface Model { readonly [PLATE_PLUGIN_SCHEMA_MODEL]: true }',
-    "import { PLATE_PLUGIN_SCHEMA_MODEL as model } from '@platejs/core';",
+    "import { PLATE_PLUGIN_SCHEMA_MODEL as model } from 'platejs';",
   ]) {
     assert.deepEqual(audit(source), [
       'dist/index.d.ts: public declaration exposes private Plate brand PLATE_PLUGIN_SCHEMA_MODEL',
@@ -25,7 +54,7 @@ test('allows ordinary public Plate constants', () => {
   assert.deepEqual(
     audit(
       [
-        "import { PLATE_SCOPE } from '@platejs/core';",
+        "import { PLATE_SCOPE } from 'platejs';",
         "declare const PLATE_SCOPE = 'plate';",
         'declare const PLATE_DEFAULT_PRIORITY = 100;',
         'export { PLATE_DEFAULT_PRIORITY, PLATE_SCOPE };',

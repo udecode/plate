@@ -84,7 +84,7 @@ state fields, effects, facets, and corrections.
 
 Public dependency references are shallow, non-generic identity values. Finite
 name-keyed capability/provider inference stays under
-`@platejs/plite/internal`, does not recursively encode exact ancestry, and
+`plitejs`, does not recursively encode exact ancestry, and
 supports static portal checks without replacing runtime exact-descriptor
 identity.
 

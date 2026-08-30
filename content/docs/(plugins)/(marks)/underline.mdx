@@ -38,11 +38,11 @@ Underline applies the `underline` leaf mark to selected text. `UnderlinePlugin` 
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -53,7 +53,7 @@ Pass `UnderlinePlugin` to `MarkToolbarButton` so the button uses the configured 
 
 ```tsx
 import { UnderlineIcon } from 'lucide-react';
-import { UnderlinePlugin } from '@platejs/basic-nodes/react';
+import { UnderlinePlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -73,16 +73,16 @@ export function UnderlineToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `UnderlinePlugin` directly when you do not want the whole kit.
 
 ```tsx
-import { UnderlinePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { UnderlinePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [UnderlinePlugin],
 });
 ```
@@ -90,8 +90,8 @@ export const editor = createPlateEditor({
 Register the Markdown-style input rule when users should type underline delimiters.
 
 ```tsx
-import { UnderlineRules } from '@platejs/basic-nodes';
-import { UnderlinePlugin } from '@platejs/basic-nodes/react';
+import { UnderlineRules } from 'platejs';
+import { UnderlinePlugin } from 'platejs/react';
 
 export const underlinePlugin = UnderlinePlugin.configure({
   inputRules: [UnderlineRules.markdown()],
@@ -102,9 +102,9 @@ export const underlinePlugin = UnderlinePlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseUnderlinePlugin` | `@platejs/basic-nodes` | Headless underline mark, HTML parser, render tag, and `toggle` transform. |
-| `UnderlinePlugin` | `@platejs/basic-nodes/react` | React wrapper with default `mod+u` shortcut. |
-| `UnderlineRules.markdown` | `@platejs/basic-nodes` | Optional mark input rule factory. |
+| `BaseUnderlinePlugin` | `platejs` | Headless underline mark, HTML parser, render tag, and `toggle` transform. |
+| `UnderlinePlugin` | `platejs/react` | React wrapper with default `mod+u` shortcut. |
+| `UnderlineRules.markdown` | `platejs` | Optional mark input rule factory. |
 | `BasicMarksKit` | Registry | Adds `UnderlinePlugin` with the underscore input rule. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
@@ -127,7 +127,7 @@ The package owns the mark. The registry owns toolbar placement and icon choice.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseUnderlinePlugin` | `@platejs/basic-nodes` | Headless underline plugin. |
-| `UnderlinePlugin` | `@platejs/basic-nodes/react` | React underline plugin with shortcut defaults. |
-| `UnderlineRules.markdown()` | `@platejs/basic-nodes` | Creates the underline mark input rule. |
-| `tx.underline.toggle()` | `@platejs/basic-nodes` | Toggles the underline mark at the selection. |
+| `BaseUnderlinePlugin` | `platejs` | Headless underline plugin. |
+| `UnderlinePlugin` | `platejs/react` | React underline plugin with shortcut defaults. |
+| `UnderlineRules.markdown()` | `platejs` | Creates the underline mark input rule. |
+| `tx.underline.toggle()` | `platejs` | Toggles the underline mark at the selection. |

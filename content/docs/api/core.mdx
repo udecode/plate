@@ -1,26 +1,23 @@
 ---
-title: Plate Core
-description: API reference for @platejs/core.
+title: Plate Editor API
+description: Editor creation, plugins, and React hooks from platejs.
 ---
 
 ## API
 
-### `createPlateEditor`
+### `createEditor`
 
-Generates a new instance of a `PlateEditor`, initialized with a set of plugins and their configurations.
+Creates an `Editor` with the supplied plugins and configuration.
 
-<API name="createPlateEditor">
-<APIOptions type="CreatePlateEditorOptions">
+<API name="createEditor">
+<APIOptions type="CreateEditorOptions">
   <APIItem name="id" type="any" optional>
     Unique identifier for the editor.
-  </APIItem>
-  <APIItem name="editor" type="E" optional>
-    Initial editor without `withPlate`.
   </APIItem>
   <APIItem name="plugins" type="P[]" optional>
     An array of editor plugins.
   </APIItem>
-  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: PlateEditor }) => EditorValueInput)" optional>
+  <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     Synchronous initial document, persisted `{ document, schema }` envelope,
     or primary-root array. Use the callback when decoding needs the compiled
     editor model. Load remote data before constructing the editor.
@@ -97,7 +94,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
 </APIOptions>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   An editor instance with plugins and config applied.
 </APIReturns>
 </API>
@@ -207,14 +204,14 @@ Extends a BasePlugin to create a React PlatePlugin.
 </APIReturns>
 </API>
 
-### `usePlateEditor`
+### `useCreateEditor`
 
 Creates a memoized Plate editor for React components.
 
-<API name="usePlateEditor">
+<API name="useCreateEditor">
 <APIParameters>
-  <APIItem name="options" type="CreatePlateEditorOptions & { enabled?: boolean }" optional>
-    Configuration options for creating the Plate editor. All options from `createPlateEditor` are supported, plus:
+  <APIItem name="options" type="CreateEditorOptions & { enabled?: boolean }" optional>
+    Configuration options for creating the Plate editor. All options from `createEditor` are supported, plus:
     <APISubList>
       <APISubListItem parent="options" name="enabled" type="boolean" optional>
         Whether the editor should be created. When `false`, returns `null`.
@@ -228,7 +225,7 @@ Creates a memoized Plate editor for React components.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor | null">
+<APIReturns type="Editor | null">
   A memoized Plate editor instance. Returns `null` if `enabled` is `false`.
 </APIReturns>
 </API>
@@ -300,14 +297,14 @@ matching editor is active.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   The editor reference.
 </APIReturns>
 </API>
 
-### `useActiveEditor`
+### `useOptionalEditor`
 
-Use `useActiveEditor({ id? })` when no active editor is a valid UI state. It
+Use `useOptionalEditor({ id? })` when no active editor is a valid UI state. It
 returns the same editor value as `useEditor()`, or `null` while the controller
 has no matching active editor.
 
@@ -317,7 +314,7 @@ Subscribe to a specific property of the editor.
 
 <API name="useEditorSelector">
 <APIParameters>
-  <APIItem name="selector" type="(editor: PlateEditor<V>, prev?: T) => T">
+  <APIItem name="selector" type="(editor: Editor<V>, prev?: T) => T">
     The selector function.
   </APIItem>
   <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
@@ -352,7 +349,7 @@ Get the Plate editor reference with re-rendering.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateEditor">
+<APIReturns type="Editor">
   The editor reference.
 </APIReturns>
 </API>
@@ -537,7 +534,7 @@ Explicit-editor variant of `usePluginStore`.
 
 <API name="useEditorPluginStore">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
+  <APIItem name="editor" type="Editor">
     The editor instance.
   </APIItem>
   <APIItem name="plugin" type="PlatePlugin">
@@ -582,7 +579,7 @@ only when deliberately working with the erased `Element` shape.
 </API>
 
 ```tsx
-import { BlockquotePlugin } from "@platejs/basic-nodes/react";
+import { BlockquotePlugin } from "platejs/react";
 import { useElement } from "platejs/react";
 
 const quote = useElement(BlockquotePlugin);
@@ -610,9 +607,9 @@ never assigns IDs to text nodes.
 
 ```ts
 import { ElementIdPlugin, schema, target } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
 });
 
@@ -632,7 +629,7 @@ preparation generates and retains IDs only for elements that match the compiled
 target.
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [ElementIdPlugin],
   schema: {
     overrides: [

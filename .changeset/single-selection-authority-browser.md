@@ -1,11 +1,11 @@
 ---
-'@platejs/browser': major
+'@platejs/test': major
 ---
 
 Use Plite `Range` and `Selection` types for browser kernel commands and traces; remove `PliteBrowserKernelRange`.
 
-**Migration:** Import the canonical model types from `@platejs/plite`:
+**Migration:** Import the canonical model types from `platejs`:
 
 ```ts
-import type { Range, Selection } from '@platejs/plite';
+import type { Range, Selection } from 'platejs';
 ```

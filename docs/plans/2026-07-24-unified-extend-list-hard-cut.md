@@ -277,11 +277,11 @@ Phase / pass table:
 Findings:
 - `packages/list/src/lib/BaseListPlugin.tsx` contains two `.extendApi`, one
   `.extendTx`, and one named `.extendExtension`; these were missed because the
-  previous packet deliberately stopped at the list-classic canary.
+  previous packet deliberately stopped at the legacy-list-model canary.
 - A broad audit found many outside usages, but the newest correction makes
   every one of them out of scope. No Core or skill source may change.
 - This list owner needs only plugin-scoped API, own update, and a named raw
-  extension. The previous list-classic canary already proved those unified
+  extension. The previous legacy-list-model canary already proved those unified
   runtime destinations; package-specific declaration inference remains the
   decisive gate.
 

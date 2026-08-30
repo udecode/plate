@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/static",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/static.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/static/**/*"],
+  "references": [
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/core.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/dom.json"
+    },
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/react.json"
+    },
+    {
+      "path": "./core.json"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { jsxt } from '@platejs/test-utils';
-import { createBaseEditor } from 'platejs';
+import { jsxt } from '@platejs/test';
+import { createEditor as createProductEditor } from 'platejs';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 
@@ -18,7 +18,7 @@ const createEditor = ({
   text?: string;
   value?: any[];
 }) =>
-  createBaseEditor({
+  createProductEditor({
     plugins: BasicBlocksKit,
     selection: {
       kind: 'text',

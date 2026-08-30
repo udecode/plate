@@ -275,11 +275,11 @@ Error attempts:
 - Live source has descriptor selector adoption, but the prior closeout did not
   classify every non-descriptor Plate selector.
 - The first broad package typecheck correctly rejected descriptors in Code
-  Block codec/native command state, List Classic helpers explicitly narrowed
+  Block codec/native command state, Legacy list model helpers explicitly narrowed
   to raw `EditorStateView`, the Slash combobox's narrow base-editor callback,
   and the string-valued custom List toggle API. Restored compiled persisted
   types only at those non-descriptor-aware boundaries; the focused Code Block,
-  List Classic, AI, and app typechecks then passed.
+  Legacy list model, AI, and app typechecks then passed.
 - A first Table fix combined a raw optional `type` with a descriptor default,
   which erased selector inference. Removed `type` from `TableFindOptions`
   instead of casting or adding a result generic; `@platejs/table` typecheck

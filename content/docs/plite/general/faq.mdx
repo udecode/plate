@@ -10,7 +10,7 @@ These answers describe the Plite package set.
 Plite does not know your product schema. It cannot safely turn arbitrary HTML into your nodes without an app-owned policy.
 
 By default, pasted content becomes text. Add a `clipboardHandler(...)` extension
-contribution from `@platejs/plite-dom` when the app wants to consume `DataTransfer`
+contribution from `plitejs/dom` when the app wants to consume `DataTransfer`
 HTML, files, or custom MIME data. Return `true` after the handler owns the
 paste.
 
@@ -32,11 +32,11 @@ API are maintained in the Plate repository.
 
 Read [Why This Fork](../why-this-fork) for the maintenance philosophy and boundaries.
 
-## Should Apps Use `@platejs/browser`?
+## Should Apps Use `@platejs/test`?
 
-Use `@platejs/browser` for tests and proof harnesses. Do not build product editor features on it.
+Use `@platejs/test` for tests and proof harnesses. Do not build product editor features on it.
 
-Apps should build editors with `@platejs/plite`, `@platejs/plite-dom`, `@platejs/plite-react`, and the extensions they need.
+Apps should build editors with `plitejs`, `plitejs/dom`, `plitejs/react`, and the extensions they need.
 
 ## Where Should I Start?
 

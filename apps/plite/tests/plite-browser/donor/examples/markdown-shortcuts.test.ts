@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test.describe('On markdown-shortcuts example', () => {
   test.beforeEach(async ({ page }) => {

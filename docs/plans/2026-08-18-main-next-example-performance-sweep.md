@@ -330,7 +330,7 @@ Findings:
 - The honest shared surface is 26 registry `*-demo` sources served by `/blocks/<name>` on both refs. Main-only `markdown-to-slate-demo` and next-only `markdown-to-plite-demo` are the same renamed family but excluded from strict route identity comparisons.
 - `huge-document-demo` is common and exposes compatible block/chunk/content-visibility controls. Next renames the comparison engine to `upstream-slate` and changes runtime implementation, which is part of the target delta.
 - Both refs ship `perf:editor:public`, but runner and `/dev/editor-perf` source differ materially; branch-native summaries are supporting evidence only, not the frozen cross-branch sweep.
-- Fourteen routes mounted on both refs in every confirmation run. Seven have confirmed median startup regressions: list classic 3.00x, copilot 2.41x, find/replace 2.33x, code drawing 2.32x, markdown streaming 2.20x, Excalidraw 1.83x, and multiple editors 1.67x.
+- Fourteen routes mounted on both refs in every confirmation run. Seven have confirmed median startup regressions: legacy list model 3.00x, copilot 2.41x, find/replace 2.33x, code drawing 2.32x, markdown streaming 2.20x, Excalidraw 1.83x, and multiple editors 1.67x.
 - Eight routes have confirmed fresh-tab heap regressions of 25%-79%. The worst are multiple editors (15.9 MB -> 28.5 MB), select editor (11.4 MB -> 19.3 MB), controlled (10.2 MB -> 15.5 MB), and marks install (11.8 MB -> 17.5 MB).
 - `EditorKit` on next eagerly adds `CsvPlugin` and `DocxIOPlugin`. `DocxIOPlugin` eagerly imports `juice`, `mammoth`, and `JSZip`; `CsvPlugin` eagerly imports PapaParse. The resulting DOCX chunk is 1,610,705 raw bytes and 401,202 transferred bytes. Route JS transfer increases by 398,795 bytes overall.
 - The next huge route does not mount: `Unknown editor element type "h1" at [0]`. The same failure breaks hundreds-editors; five additional next examples fail on missing schema/plugin contracts.
@@ -360,7 +360,7 @@ Verification evidence:
 - Confirmed matrix: `.tmp/main-next-example-performance/confirmed-summary.json` records five alternating startup runs and five fresh-tab heap runs.
 - Browser proof: main huge mounted two editors; next huge and six other routes showed load-error UI with exact logged errors.
 - Network proof: common route JS transfer main 2,790,376 bytes versus next 3,189,171 bytes; next DOCX chunk 401,202 transferred bytes.
-- CPU proof: list classic sampled 217.8 ms total on main versus 411.8 ms on next; next spent 75.7 ms in Turbopack module runtime and loaded eager DOCX/Plate model chunks.
+- CPU proof: legacy list model sampled 217.8 ms total on main versus 411.8 ms on next; next spent 75.7 ms in Turbopack module runtime and loaded eager DOCX/Plate model chunks.
 - Huge control: `.tmp/main-next-example-performance/main-public-perf.json` exists but is rejected for zero/stale rows; next command failed on missing `__editorPerfHarness`.
 
 Final handoff contract:

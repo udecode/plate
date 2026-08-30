@@ -1,5 +1,5 @@
 ---
-'@platejs/plite-dom': major
+'plitejs': major
 ---
 
 - Add prioritized schema-bound host codecs that claim exact schema declarations through `owns` and parse or serialize immutable `ContentSlice` values through read-only state

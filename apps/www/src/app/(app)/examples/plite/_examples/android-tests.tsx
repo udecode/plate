@@ -1,11 +1,11 @@
-import type { Value } from '@platejs/plite';
+import { parseAsStringLiteral, useQueryState } from 'nuqs';
+import type { Value } from 'plitejs';
 import {
   Editable,
   type RenderLeafProps,
   Plite,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
+  useEditor,
+} from 'plitejs/react';
 
 import { Label } from '@/components/ui/label';
 import {
@@ -258,7 +258,7 @@ const AndroidTestsExample = () => {
 };
 
 const TestCase = ({ value }: AndroidTestCase) => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: value,
   });
 

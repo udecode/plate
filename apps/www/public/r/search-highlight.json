@@ -4,13 +4,13 @@
   "title": "Search Highlight",
   "description": "A component that highlights search results in text.",
   "dependencies": [
-    "@platejs/find-replace"
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/search-highlight.tsx",
-      "content": "'use client';\n\nimport type { FindReplacePlugin } from '@platejs/find-replace';\nimport { type PlateLeafProps, PlateLeaf } from 'platejs/react';\n\nexport function SearchHighlightLeaf(\n  props: PlateLeafProps<typeof FindReplacePlugin>\n) {\n  return <PlateLeaf {...props} className=\"bg-yellow-100\" />;\n}\n",
+      "content": "'use client';\n\nimport type { FindReplacePlugin } from 'platejs/find-replace';\nimport { type PlateLeafProps, PlateLeaf } from 'platejs/react';\n\nexport function SearchHighlightLeaf(\n  props: PlateLeafProps<typeof FindReplacePlugin>\n) {\n  return <PlateLeaf {...props} className=\"bg-yellow-100\" />;\n}\n",
       "type": "registry:component",
       "target": "@components/editor/search-highlight.tsx"
     }

@@ -3,17 +3,17 @@ title: Plate 组件
 description: Plate React 组件的 API 参考。
 ---
 
-Plate 组件将 `PlateEditor` 接入 React 渲染。可编辑编辑器使用 `Plate` 和 `PlateContent`，只读静态视图使用 `PlateView`，自定义插件组件则使用节点原语。
+Plate 组件将 `Editor` 接入 React 渲染。可编辑编辑器使用 `Plate` 和 `PlateContent`，只读静态视图使用 `PlateView`，自定义插件组件则使用节点原语。
 
 ## 可编辑编辑器
 
 `Plate` 管理编辑器 store，`PlateContent` 在该 store 下渲染可编辑区域。
 
 ```tsx title="components/editor.tsx"
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 export function Editor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: [
       {
         children: [{ text: "Start writing." }],
@@ -33,7 +33,7 @@ export function Editor() {
 <Callout type="warning" title="需要 Provider">
   `PlateContent` 必须渲染在 `Plate` 下方。`useEditor()`
   需要活动编辑器，否则会抛出错误。只有在控制器 UI 明确处理无活动编辑器时的
-  `null` 状态时，才使用 `useActiveEditor()`。
+  `null` 状态时，才使用 `useOptionalEditor()`。
 </Callout>
 
 ## 只读视图
@@ -41,7 +41,7 @@ export function Editor() {
 需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请为静态编辑器使用 `PlateView`。
 
 ```tsx title="components/read-only-editor.tsx"
-import { PlateView, usePlateViewEditor } from "platejs/react";
+import { PlateView, useStaticEditor } from "platejs/react";
 
 const value = [
   {
@@ -51,7 +51,7 @@ const value = [
 ];
 
 export function ReadOnlyEditor() {
-  const editor = usePlateViewEditor({ initialValue: value });
+  const editor = useStaticEditor({ initialValue: value });
 
   if (!editor) return null;
 
@@ -73,7 +73,6 @@ export function ReadOnlyEditor() {
 | `PlateElement`   | block 和 inline 元素的默认 renderer。                                               |
 | `PlateLeaf`      | 带 decoration 的文本 leaf 默认 renderer。                                           |
 | `PlateText`      | 不经过 decoration leaf 渲染的默认文本节点 renderer。                                |
-| `PlateTest`      | 创建或包装编辑器，并用测试属性渲染 `PlateContent` 的测试辅助组件。                  |
 
 ## 渲染管线
 
@@ -162,7 +161,7 @@ export function FigureElement({
 
 <API name="Plate">
   <APIProps>
-    <APIItem name="editor" type="PlateEditor | null">
+    <APIItem name="editor" type="Editor | null">
       编辑器实例。为 `null` 时，`Plate` 不渲染任何内容。
     </APIItem>
     <APIItem name="children" type="React.ReactNode">
@@ -320,7 +319,7 @@ export function FigureElement({
 
 <API name="PlateView">
   <APIProps>
-    <APIItem name="editor" type="BaseEditor">
+    <APIItem name="editor" type="Editor">
       静态编辑器实例。
     </APIItem>
     <APIItem

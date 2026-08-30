@@ -30,9 +30,9 @@ BasicBlocksKit includes HeadingPlugin, the dynamic HeadingElement, all six keybo
 
 ~~~tsx
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [...BasicBlocksKit],
 });
 ~~~
@@ -40,8 +40,8 @@ const editor = createPlateEditor({
 ## Manual Usage
 
 ~~~tsx
-import { HeadingRules } from '@platejs/basic-nodes';
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingRules } from 'platejs';
+import { HeadingPlugin } from 'platejs/react';
 
 const plugins = [
   HeadingPlugin.configure({
@@ -55,7 +55,7 @@ A renderer reads element.level and chooses the matching intrinsic element.
 
 ~~~tsx
 import type { PlateElementProps } from 'platejs/react';
-import { HeadingPlugin } from '@platejs/basic-nodes/react';
+import { HeadingPlugin } from 'platejs/react';
 import { PlateElement } from 'platejs/react';
 
 export function HeadingElement(

@@ -47,7 +47,7 @@ test('keeps normalization benchmark correctness focused', () => {
 
   assert.equal(
     normalization?.correctness.command,
-    'bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/normalization-contract.ts'
+    'bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/normalization-contract.ts'
   );
 });
 

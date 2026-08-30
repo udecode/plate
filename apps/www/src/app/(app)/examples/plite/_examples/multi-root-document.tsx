@@ -4,19 +4,19 @@ import {
   type EditorCommit,
   type Node,
   valueCodecs,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   Plite,
   useEditorState,
   useSetStateField,
-  usePliteEditor,
+  useEditor,
   usePliteHistory,
   usePliteRootChrome,
   usePliteRootState,
   useStateFieldValue,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type { ChangeEvent } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -251,7 +251,7 @@ const MultiRootPanel = () => {
 };
 
 const MultiRootDocumentExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), documentTitleExtension],
     initialValue: {
       children: [

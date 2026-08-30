@@ -15,18 +15,18 @@ status: active
 Legacy exact rows:
 
 - [legacy-slate-history-test-files.md](/Users/zbeyens/git/plate-2/docs/plite-draft/ledgers/legacy-slate-history-test-files.md)
-- `/Users/zbeyens/git/slate/packages/plite-history/test/**`
+- `/Users/zbeyens/git/slate/packages/plitejs/test/history/**`
 
 Draft contract rows:
 
-- `/Users/zbeyens/git/plite-draft/packages/plite-history/test/history-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite-history/test/integrity-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/history/history-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/history/integrity-contract.ts`
 
 Current live owners:
 
 - [slate-history-api.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/slate-history-api.md)
-- `packages/plite-history/src/**`
-- `packages/plite-history/test/**`
+- `packages/plitejs/src/history/**`
+- `packages/plitejs/test/history/**`
 
 ## `keep-now`
 
@@ -38,8 +38,8 @@ Current live owners:
 
 Immediate current proof owners to restore or create:
 
-- `packages/plite-history/test/history-contract.ts`
-- `packages/plite-history/test/integrity-contract.ts`
+- `packages/plitejs/test/history/history-contract.ts`
+- `packages/plitejs/test/history/integrity-contract.ts`
 
 Current read:
 
@@ -52,10 +52,10 @@ Current read:
 
 Source owners:
 
-- `packages/plite-history/src/history.ts`
-- `packages/plite-history/src/history-editor.ts`
-- `packages/plite-history/src/with-history.ts`
-- `packages/plite-history/src/index.ts`
+- `packages/plitejs/src/history/history.ts`
+- `packages/plitejs/src/history/history-editor.ts`
+- `packages/plitejs/src/history/with-history.ts`
+- `packages/plitejs/src/history/index.ts`
 
 ## `keep-later`
 
@@ -65,8 +65,8 @@ Source owners:
 ## `explicit-cut`
 
 - legacy harness-only rows:
-  - `packages/plite-history/test/index.js`
-  - `packages/plite-history/test/jsx.d.ts`
+  - `packages/plitejs/test/history/index.js`
+  - `packages/plitejs/test/history/jsx.d.ts`
 - legacy non-contiguous timing-based auto-merge heuristic row if it remains
   outside the kept claim
 

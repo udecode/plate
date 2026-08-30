@@ -3,11 +3,11 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DocumentIndex } from '../../../../../packages/plite/src/core/change/document-index.ts';
+import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
 import {
   createTreeIndex,
   ResolvedTokenCursor,
-} from '../../../../../packages/plite/src/core/resolved-token-cursor.ts';
+} from '../../../../../packages/plitejs/src/core/resolved-token-cursor.ts';
 import { summarize } from '../../shared/stats.mjs';
 
 const runs = Number.parseInt(process.env.PLITE_CURSOR_RUNS ?? '3', 10);

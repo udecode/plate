@@ -117,8 +117,8 @@ For every migration run, read the smallest set that owns the current decision:
 - latest user request and active goal plan;
 - `vision`;
 - `content/docs/plite/migration.mdx`;
-- current Plite public source under `packages/plite*`, `packages/browser`, and
-  `packages/yjs`;
+- current Plite public source under `packages/plitejs` and `packages/test`,
+  plus the affected Plate adapter entrypoint under `packages/platejs`;
 - target Plate package/example/docs owners under `packages/**`, `apps/**`,
   `docs/**`, or the named surface;
 - `.agents/rules/changeset.mdc` before writing or repairing changesets;

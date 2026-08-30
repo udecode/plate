@@ -1,7 +1,7 @@
 'use client';
 
-import type { MediaPlugin } from '@platejs/media/react';
 import { Link, Trash2Icon } from 'lucide-react';
+import type { MediaPlugin } from 'platejs/media/react';
 import {
   useEditor,
   useElement,

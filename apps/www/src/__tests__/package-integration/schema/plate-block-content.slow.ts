@@ -1,25 +1,21 @@
-import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from '@platejs/code-block';
-import { createBaseEditor } from '@platejs/core';
-import { BaseFootnoteDefinitionPlugin } from '@platejs/footnote';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import {
-  BaseListItemContentPlugin,
-  BaseListItemPlugin,
-  BaseListPlugin,
-} from '@platejs/list-classic';
-import { ElementApi } from '@platejs/plite';
+  BaseBlockquotePlugin,
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  createEditor,
+  ElementApi,
+} from 'platejs';
+import { BaseFootnoteDefinitionPlugin } from 'platejs/footnote';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
-} from '@platejs/table';
+} from 'platejs/table';
 
 const structuralPlugins = [
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseListItemPlugin,
-  BaseListItemContentPlugin,
   BaseCodeLinePlugin,
   BaseColumnItemPlugin,
 ] as const;
@@ -33,13 +29,12 @@ const normalFlowContainerPlugins = [
 
 describe('Plate block-content eligibility', () => {
   it('keeps structural elements as Plite blocks without admitting them to roots or normal-flow containers', () => {
-    const editor = createBaseEditor({
+    const editor = createEditor({
       plugins: [
         BaseBlockquotePlugin,
         BaseCodeBlockPlugin,
         BaseFootnoteDefinitionPlugin,
         BaseColumnPlugin,
-        BaseListPlugin,
         BaseTablePlugin,
       ],
     });

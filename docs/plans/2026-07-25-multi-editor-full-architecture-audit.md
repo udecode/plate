@@ -2555,7 +2555,7 @@ ProseMirror's regular child language is semantically stronger than Plite's
 set-plus-global-cardinality program. It still does not clear the current
 material-value gate:
 
-- the strongest invalid-order example is maintenance-only `list-classic`;
+- the strongest invalid-order example is maintenance-only `legacy-list-model`;
 - retained table, code, layout, media, callout, and modern-list schemas mostly
   use homogeneous/repeated child classes;
 - trailing/single-block/single-line plugins combine dynamic match, merge,

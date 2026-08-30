@@ -26,7 +26,6 @@
         "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
         "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
-        "apps/www/src/registry/app/api/ai/command/prompt/index.ts",
         "apps/www/src/registry/app/api/ai/command/route.ts",
         "apps/www/src/registry/app/api/ai/command/utils.ts"
       ],
@@ -60,18 +59,6 @@
           "severity": "warning",
           "code": "registry-file-missing",
           "message": "No exact registry source file found for ai-node."
-        }
-      ]
-    },
-    {
-      "name": "autoformat-classic-kit",
-      "files": [],
-      "definitionFiles": [],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for autoformat-classic-kit."
         }
       ]
     },
@@ -406,14 +393,6 @@
       "diagnostics": []
     },
     {
-      "name": "fixed-toolbar-classic-buttons",
-      "files": [
-        "apps/www/src/registry/components/editor/fixed-toolbar-classic-buttons.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "floating-toolbar",
       "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
@@ -732,7 +711,11 @@
     },
     {
       "name": "select-editor",
-      "files": ["apps/www/src/registry/components/editor/select-editor.tsx"],
+      "files": [
+        "apps/www/src/registry/components/editor/select-command-score.ts",
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     },
@@ -824,25 +807,9 @@
       "diagnostics": []
     },
     {
-      "name": "transforms-classic",
-      "files": [
-        "apps/www/src/registry/components/editor/transforms-classic.ts"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "turn-into-toolbar-button",
       "files": [
         "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
-    },
-    {
-      "name": "turn-into-toolbar-classic-button",
-      "files": [
-        "apps/www/src/registry/components/editor/turn-into-toolbar-classic-button.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
@@ -872,7 +839,6 @@
         "ai-kit",
         "ai-menu",
         "ai-node",
-        "autoformat-classic-kit",
         "autoformat-kit",
         "block-context-menu",
         "block-discussion",
@@ -903,7 +869,6 @@
         "excalidraw-kit",
         "excalidraw-node",
         "export-toolbar-button",
-        "fixed-toolbar-classic-buttons",
         "floating-toolbar",
         "font-base-kit",
         "font-color-toolbar-button",
@@ -945,9 +910,7 @@
         "tag-node",
         "toc-node",
         "transforms",
-        "transforms-classic",
         "turn-into-toolbar-button",
-        "turn-into-toolbar-classic-button",
         "use-chat",
         "version-history-demo"
       ],

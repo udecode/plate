@@ -40,11 +40,11 @@ Code applies the `code` leaf mark to inline text. Use [Code Block](/docs/code-bl
 <ComponentSource name="basic-marks" />
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BasicMarksKit],
 });
 ```
@@ -55,7 +55,7 @@ Pass `CodePlugin` to `MarkToolbarButton` so the button uses the configured mark 
 
 ```tsx
 import { Code2Icon } from 'lucide-react';
-import { CodePlugin } from '@platejs/basic-nodes/react';
+import { CodePlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -75,16 +75,16 @@ export function CodeToolbarButton() {
 Install the mark package.
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 Add `CodePlugin` directly when you want the default `<code>` render.
 
 ```tsx
-import { CodePlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { CodePlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [CodePlugin],
 });
 ```
@@ -92,8 +92,8 @@ export const editor = createPlateEditor({
 Configure the registry leaf, input rule, and shortcut when you want the same behavior as the kit.
 
 ```tsx
-import { CodeRules } from '@platejs/basic-nodes';
-import { CodePlugin } from '@platejs/basic-nodes/react';
+import { CodeRules } from 'platejs';
+import { CodePlugin } from 'platejs/react';
 
 import { CodeLeaf } from '@/components/editor/code';
 
@@ -108,9 +108,9 @@ export const codePlugin = CodePlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BaseCodePlugin` | `@platejs/basic-nodes` | Headless inline code mark, HTML parser, render tag, selection rule, and `toggle` transform. |
-| `CodePlugin` | `@platejs/basic-nodes/react` | React wrapper for the headless code mark. |
-| `CodeRules.markdown` | `@platejs/basic-nodes` | Optional backtick input rule. |
+| `BaseCodePlugin` | `platejs` | Headless inline code mark, HTML parser, render tag, selection rule, and `toggle` transform. |
+| `CodePlugin` | `platejs/react` | React wrapper for the headless code mark. |
+| `CodeRules.markdown` | `platejs` | Optional backtick input rule. |
 | `CodeLeaf` | Registry UI | Styled inline code leaf using `PlateLeaf`. |
 | `CodeLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
 | `BasicMarksKit` | Registry | Adds `CodePlugin`, `CodeLeaf`, `CodeRules.markdown()`, and `mod+e`. |
@@ -136,9 +136,9 @@ The package owns inline code semantics. The registry owns visual styling and too
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BaseCodePlugin` | `@platejs/basic-nodes` | Headless inline code plugin. |
-| `CodePlugin` | `@platejs/basic-nodes/react` | React inline code plugin. |
-| `CodeRules.markdown()` | `@platejs/basic-nodes` | Creates the backtick mark input rule. |
-| `tx.code.toggle()` | `@platejs/basic-nodes` | Toggles the inline code mark at the selection. |
+| `BaseCodePlugin` | `platejs` | Headless inline code plugin. |
+| `CodePlugin` | `platejs/react` | React inline code plugin. |
+| `CodeRules.markdown()` | `platejs` | Creates the backtick mark input rule. |
+| `tx.code.toggle()` | `platejs` | Toggles the inline code mark at the selection. |
 | `CodeLeaf` | Registry UI | Styled client inline code leaf. |
 | `CodeLeafStatic` | Registry UI | Styled static inline code leaf. |

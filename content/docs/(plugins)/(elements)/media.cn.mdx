@@ -89,10 +89,10 @@ docs:
 将套件添加到你的插件中:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { MediaKit } from '@/components/editor/media';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...MediaKit,
@@ -121,7 +121,7 @@ UPLOADTHING_TOKEN=xxx
 ### 安装
 
 ```bash
-npm install @platejs/media
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -129,17 +129,10 @@ npm install @platejs/media
 在创建编辑器时将媒体插件包含到Plate插件数组中。
 
 ```tsx
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  PlaceholderPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
-import { createPlateEditor } from 'platejs/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ImagePlugin,
@@ -157,15 +150,8 @@ const editor = createPlateEditor({
 使用自定义组件和上传设置配置插件。
 
 ```tsx
-import {
-  AudioPlugin,
-  FilePlugin,
-  ImagePlugin,
-  MediaEmbedPlugin,
-  PlaceholderPlugin,
-  VideoPlugin,
-} from '@platejs/media/react';
-import { createPlateEditor } from 'platejs/react';
+import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
 import { 
   AudioElement, 
   FileElement, 
@@ -176,7 +162,7 @@ import {
 } from '@/components/editor/media-nodes';
 import { MediaUploadToast } from '@/components/editor/media';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ImagePlugin.configure({ component: ImageElement }),
@@ -206,7 +192,7 @@ const editor = createPlateEditor({
 只需配置媒体插件及其渲染组件：
 
 ```tsx
-import { ImagePlugin } from '@platejs/media/react';
+import { ImagePlugin } from 'platejs/media/react';
 import { ImageElement } from '@/components/editor/media-image';
 
 export const MediaKit = [
@@ -365,7 +351,7 @@ export function useUploadFile({
 
 ```tsx
 import { type PlateElementProps, useEditor } from 'platejs/react';
-import { PlaceholderPlugin } from '@platejs/media/react';
+import { PlaceholderPlugin } from 'platejs/media/react';
 import { PLUGINS } from 'platejs';
 
 import { useUploadFile } from '@/hooks/use-upload-file'; // 你的自定义钩子
@@ -723,11 +709,11 @@ enum UploadErrorCode {
 ### `insertMediaUrl`
 
 提示输入图片或嵌入 URL，并调用对应插件的作用域更新。请从
-`@platejs/media/react` 导入。
+`platejs/react` 导入。
 
 <API name="insertMediaUrl">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
+  <APIItem name="editor" type="Editor">
     接收媒体元素的编辑器。
   </APIItem>
   <APIItem name="options" type="InsertMediaUrlOptions" optional>
@@ -756,7 +742,7 @@ enum UploadErrorCode {
 <ComponentSource name="media-image" />
 <ComponentSource name="media-preview-dialog" />
 
-可调整大小的媒体直接组合 [`@platejs/resizable`](/docs/api/resizable) 的
+可调整大小的媒体直接组合 [`platejs/react`](/docs/api/resizable) 的
 `Resizable` 和 `ResizeHandle`。媒体 renderer 通过 scoped plugin update
 提交最终宽度。
 
@@ -833,13 +819,7 @@ enum UploadErrorCode {
 ### 媒体元素类型
 
 ```tsx
-import type {
-  AudioElement,
-  FileElement,
-  ImageElement,
-  MediaEmbedElement,
-  VideoElement,
-} from '@platejs/media';
+import type { AudioElement, FileElement, ImageElement, MediaEmbedElement, VideoElement } from 'platejs/media';
 ```
 
 每个别名都从其所属插件的 schema 派生。`Element.children` 存储标题的直接行内内容。标题缺失时使用
@@ -848,7 +828,7 @@ import type {
 ### `PlaceholderElement`
 
 ```tsx
-import type { PlaceholderElement } from '@platejs/media';
+import type { PlaceholderElement } from 'platejs/media';
 ```
 
 `PlaceholderElement` 从 `BasePlaceholderPlugin` 派生，并且需要字符串

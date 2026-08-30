@@ -17,7 +17,7 @@ Execute the locked full-repo roadmap from [2026-03-24-full-repo-coverage-roadmap
 - [completed] Phase 2: `ai` cluster
 - [completed] Phase 3: `link`, `toggle`, `combobox`, `table`, `media`
 - [completed] Phase 4: `toc`, `emoji`, `cursor`, `math`
-- [completed] Phase 5: `list`, `list-classic`, `callout`, `excalidraw`
+- [completed] Phase 5: `list`, `legacy-list-model`, `callout`, `excalidraw`
 - [completed] Phase 6: verification and roadmap status update
 
 ## Learnings Applied

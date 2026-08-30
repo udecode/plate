@@ -8,7 +8,7 @@ description: Plate 中的调试。
 当你创建 Plate 编辑器时，`DebugPlugin` 会自动包含在内。你可以通过编辑器的 API 访问其方法：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [/* your plugins */],
 });
 
@@ -30,7 +30,7 @@ editor.api.debug.error('This is an error');
 你可以设置最小日志级别来控制显示哪些消息：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     DebugPlugin.configure({
       initialState: {
@@ -53,7 +53,7 @@ const editor = createPlateEditor({
 配置示例：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     DebugPlugin.configure({
       initialState: {
@@ -117,7 +117,7 @@ const LoggingPlugin = definePlatePlugin('logging', {
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [LoggingPlugin],
 });
 ```
@@ -129,7 +129,7 @@ const editor = createPlateEditor({
 如果你遇到问题，尝试逐个移除插件以隔离问题：
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // 注释或移除可疑插件
     // HeadingPlugin,

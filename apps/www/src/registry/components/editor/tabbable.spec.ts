@@ -1,13 +1,12 @@
-import { getPlateRuntime } from '@platejs/core/internal';
-import { createPlateEditor } from '@platejs/core/react';
-import { IndentPlugin } from '@platejs/indent/react';
-import { TabbablePlugin } from '@platejs/tabbable/react';
+import { getPlateRuntime } from 'platejs';
+import { IndentPlugin, createEditor } from 'platejs/react';
+import { TabbablePlugin } from 'platejs/tabbable/react';
 
 import { IndentKit } from './indent';
 import { TabbableKit } from './tabbable';
 
-const createEditor = (offset: number) =>
-  createPlateEditor({
+const createTestEditor = (offset: number) =>
+  createEditor({
     plugins: TabbableKit,
     selection: {
       kind: 'text',
@@ -23,7 +22,7 @@ const createEditor = (offset: number) =>
 describe('TabbableKit', () => {
   it('disables tab handling at the current block edges', () => {
     for (const offset of [0, 3]) {
-      const editor = createEditor(offset);
+      const editor = createTestEditor(offset);
 
       expect(
         editor.plugin(TabbablePlugin).store.get('query')?.(
@@ -34,7 +33,7 @@ describe('TabbableKit', () => {
   });
 
   it('allows tab handling inside a plain block', () => {
-    const editor = createEditor(1);
+    const editor = createTestEditor(1);
 
     expect(editor.read.selection.isAtBlockStart()).toBe(false);
     expect(editor.read.selection.isAtBlockEnd()).toBe(false);
@@ -50,7 +49,7 @@ describe('TabbableKit', () => {
       [...IndentKit, ...TabbableKit],
       [...TabbableKit, ...IndentKit],
     ]) {
-      const editor = createPlateEditor({ plugins });
+      const editor = createEditor({ plugins });
       const indent = editor.plugin(IndentPlugin);
 
       expect(indent.shortcuts.tab).toBeNull();

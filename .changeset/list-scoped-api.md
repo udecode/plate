@@ -1,10 +1,10 @@
 ---
-'@platejs/list': major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.
 
-Remove modern list toolbar and todo renderer prop hooks. Registry components call list reads and updates directly. `@platejs/list-classic` remains a maintenance-only compatibility surface.
+Registry components call list reads and updates directly.
 
 Export `BaseListPluginState` as the complete mutable state contract for `BaseListPlugin`.
 

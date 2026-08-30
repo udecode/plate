@@ -90,10 +90,12 @@ export const createPlatePackageConfig = ({
   additionalEntries = [],
   directDeclarations = false,
   runtimeImportBoundaries = [],
+  unbundle = false,
 }: {
   additionalEntries?: string[];
   directDeclarations?: boolean;
   runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
+  unbundle?: boolean;
 } = {}) =>
   defineConfig((opts) => {
     const config = {
@@ -109,6 +111,7 @@ export const createPlatePackageConfig = ({
       platform: 'neutral',
       tsconfig: 'tsconfig.build.json',
       sourcemap: enableSourcemaps,
+      unbundle,
       dts: false,
       exports: false,
       failOnWarn: 'ci-only',

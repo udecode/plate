@@ -71,7 +71,7 @@ the portable public factory boundary.
 - 15-package source-first typecheck: **34/34 tasks passed**.
 - 15-package declaration build: **32/32 tasks passed**.
 - 15-package test run: **881/881 tests passed** across Basic Nodes, Callout,
-  Code Block, Code Drawing, Comment, Date, Footnote, Link, List, List Classic,
+  Code Block, Code Drawing, Comment, Date, Footnote, Link, List, Legacy list model,
   Math, Media, Suggestion, Table, and Utils.
 - Core typecheck and build passed; Core tests: **697/697** with 2,296
   expectations. One existing React unique-key warning remains non-blocking.

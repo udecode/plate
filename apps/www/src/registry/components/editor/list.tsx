@@ -6,9 +6,9 @@ import {
   ListType,
   OrderedListRules,
   TaskListRules,
-} from '@platejs/list';
-import { ListPlugin } from '@platejs/list/react';
-import { PLUGINS } from 'platejs';
+  PLUGINS,
+} from 'platejs';
+import { ListPlugin } from 'platejs/react';
 
 import { BlockList } from '@/registry/components/editor/block-list';
 import { IndentKit } from '@/registry/components/editor/indent';
@@ -52,7 +52,7 @@ export const ListKit = [
       PLUGINS.paragraph,
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
-      PLUGINS.toggle,
+      PLUGINS.details,
       PLUGINS.image,
     ],
   }),

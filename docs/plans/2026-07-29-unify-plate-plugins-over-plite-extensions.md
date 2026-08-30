@@ -244,7 +244,7 @@ Conditional evidence:
   do not weaken direct Plite extension documentation.
 - Registry/browser: applies because `apps/www/**`, `content/**`, and package
   behavior change. Verify `/blocks/version-history-demo`,
-  `/blocks/list-classic-demo`, `/blocks/table-nomerge-demo`,
+  `/blocks/list-demo`, `/blocks/table-nomerge-demo`,
   `/blocks/editor-basic`, and `/blocks/editor-ai`, plus the affected plugin
   guide routes with Browser.
 - Release: applies. Core and Plite public types plus affected feature packages
@@ -370,7 +370,7 @@ pnpm turbo typecheck \
   --filter=./packages/layout \
   --filter=./packages/link \
   --filter=./packages/list \
-  --filter=./packages/list-classic \
+  --filter=./packages/platejs/src/features/list \
   --filter=./packages/media \
   --filter=./packages/mention \
   --filter=./packages/selection \

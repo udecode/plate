@@ -1,8 +1,8 @@
-import type { EditorExtensionReference } from '../../../packages/plite/src/index';
+import type { EditorExtensionReference } from '../../../packages/plitejs/src/index';
 import {
   createEditor,
   defineExtension,
-} from '../../../packages/plite/src/index';
+} from '../../../packages/plitejs/src/index';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const outputArgument = process.argv.find((argument) =>

@@ -2,12 +2,24 @@ import { describe, expect, it } from 'bun:test';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import {
+  entrypointDags,
+  resolvePublicEntrypoint,
+} from '../../../../tooling/entrypoints/entrypoint-dag.mjs';
 import { getRegistryIndexComponentPath } from '../../scripts/registry-index.mts';
 import {
   createPlateRegistry,
   PLATE_DEFAULT_REGISTRY_BASE,
   PLATE_REGISTRY_BASES,
 } from './registry';
+import {
+  EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES,
+  EDITOR_AI_OPTIONAL_PEER_NAMES,
+  EDITOR_AI_PACKAGE_ENTRYPOINTS,
+  EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
+  EDITOR_BASIC_OPTIONAL_PEER_NAMES,
+  EDITOR_BASIC_PACKAGE_ENTRYPOINTS,
+} from './registry-package-dependencies';
 import {
   EDITOR_REGISTRY_VARIANTS,
   getEditorRegistryVariantFileName,
@@ -170,6 +182,123 @@ describe('Plate registry editor files', () => {
     );
   });
 
+  it('installs the exact optional peer closure used by editor blocks', () => {
+    const itemsByName = new Map(items.map((item) => [item.name, item]));
+    const editorBlocks = [
+      {
+        dependencies: ['sonner', ...EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES],
+        entrypoints: EDITOR_AI_PACKAGE_ENTRYPOINTS,
+        itemName: 'editor-ai',
+        optionalPeers: EDITOR_AI_OPTIONAL_PEER_NAMES,
+      },
+      {
+        dependencies: EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
+        entrypoints: EDITOR_BASIC_PACKAGE_ENTRYPOINTS,
+        itemName: 'editor-basic',
+        optionalPeers: EDITOR_BASIC_OPTIONAL_PEER_NAMES,
+      },
+    ] as const;
+
+    for (const editorBlock of editorBlocks) {
+      const visitedItems = new Set<string>();
+      const packageEntrypoints = new Set<string>();
+
+      const visitItem = (itemName: string) => {
+        if (visitedItems.has(itemName)) return;
+
+        visitedItems.add(itemName);
+
+        const item = itemsByName.get(itemName);
+
+        expect(item, itemName).toBeDefined();
+
+        for (const file of item?.files ?? []) {
+          const sourcePath = join(import.meta.dir, file.path);
+
+          if (!existsSync(sourcePath)) continue;
+
+          const source = readFileSync(sourcePath, 'utf-8');
+
+          for (const match of source.matchAll(
+            /['"]((?:platejs|plitejs)(?:\/[^'"]*)?)['"]/g
+          )) {
+            let specifier = match[1];
+            let target = resolvePublicEntrypoint(specifier);
+
+            while (!target && specifier.includes('/')) {
+              specifier = specifier.slice(0, specifier.lastIndexOf('/'));
+              target = resolvePublicEntrypoint(specifier);
+            }
+
+            if (target) packageEntrypoints.add(specifier);
+          }
+        }
+
+        for (const dependency of item?.registryDependencies ?? []) {
+          if (!dependency.startsWith('@plate/')) continue;
+
+          visitItem(dependency.slice('@plate/'.length));
+        }
+      };
+
+      visitItem(editorBlock.itemName);
+
+      expect([...packageEntrypoints].toSorted()).toEqual([
+        ...editorBlock.entrypoints,
+      ]);
+
+      const peerDependencies = new Set<string>();
+      const visitedEntrypoints = new Set<string>();
+      const visitEntrypoint = (packageName: string, entrypointName: string) => {
+        const id = `${packageName}/${entrypointName}`;
+
+        if (visitedEntrypoints.has(id)) return;
+
+        visitedEntrypoints.add(id);
+
+        const entrypoint =
+          entrypointDags[packageName as keyof typeof entrypointDags]
+            .entrypoints[entrypointName];
+
+        expect(entrypoint, id).toBeDefined();
+
+        for (const peerDependency of entrypoint?.peerDependencies ?? []) {
+          peerDependencies.add(peerDependency);
+        }
+        for (const dependency of entrypoint?.dependencies ?? []) {
+          visitEntrypoint(packageName, dependency);
+        }
+        for (const dependency of entrypoint?.externalDependencies ?? []) {
+          const target = resolvePublicEntrypoint(dependency);
+
+          expect(target, dependency).toBeDefined();
+
+          if (target) {
+            visitEntrypoint(target.packageName, target.entrypointName);
+          }
+        }
+      };
+
+      for (const specifier of packageEntrypoints) {
+        const target = resolvePublicEntrypoint(specifier);
+
+        expect(target, specifier).toBeDefined();
+
+        if (target) visitEntrypoint(target.packageName, target.entrypointName);
+      }
+
+      peerDependencies.delete('react');
+      peerDependencies.delete('react-dom');
+
+      expect([...peerDependencies].toSorted()).toEqual([
+        ...editorBlock.optionalPeers,
+      ]);
+      expect(itemsByName.get(editorBlock.itemName)?.dependencies).toEqual([
+        ...editorBlock.dependencies,
+      ]);
+    }
+  });
+
   it('keeps generated preview entrypoints client-compatible', () => {
     for (const item of items) {
       const componentPath = getRegistryIndexComponentPath(item);
@@ -254,7 +383,7 @@ describe('Plate registry editor files', () => {
     const editorPlugins = itemsByName.get('editor-plugins');
     const fixedToolbar = itemsByName.get('fixed-toolbar');
 
-    expect(editorPlugins?.dependencies).toContain('@platejs/docx-paste');
+    expect(editorPlugins?.dependencies).toContain('platejs');
     expect(editorPlugins?.registryDependencies).not.toContain('@plate/docx');
     expect(fixedToolbar?.registryDependencies).not.toEqual(
       expect.arrayContaining([

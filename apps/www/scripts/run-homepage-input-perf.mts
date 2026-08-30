@@ -1,8 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { failInvariant } from '@platejs/plite/internal';
 import puppeteer from 'puppeteer';
+
+import { failInvariant } from '../src/lib/failInvariant';
 
 type ProbeRow = {
   beforeinput?: number;

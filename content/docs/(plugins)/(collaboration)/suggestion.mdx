@@ -44,10 +44,10 @@ The fastest way to add suggestion functionality is with the `SuggestionKit`, whi
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SuggestionKit } from '@/components/editor/suggestion';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...SuggestionKit,
@@ -64,7 +64,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/suggestion @platejs/plite-dom
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Extend Suggestion Plugin
@@ -72,8 +72,8 @@ npm install @platejs/suggestion @platejs/plite-dom
 Create the suggestion plugin with extended configuration for state management:
 
 ```tsx
-import { isEditor, isElement, isString } from '@platejs/plite-dom';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { isEditor, isElement, isString } from 'platejs/dom';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import { BlockSuggestion } from '@/components/editor/block-discussion';
 import { SuggestionLeaf } from '@/components/editor/suggestion';
 
@@ -159,14 +159,14 @@ The click handler tracks which suggestion is currently active:
 ### Add Plugins
 
 ```tsx
-import { createPlateEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/editor/suggestion';
 
 const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
   render: { belowNodes: SuggestionLineBreak as any },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     suggestionPlugin,
@@ -211,7 +211,7 @@ You can add [`SuggestionToolbarButton`](/docs/components/suggestion-toolbar-butt
 The suggestion plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
 
 ```tsx
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     discussionPlugin,
@@ -318,7 +318,7 @@ Runs an update without creating suggestion marks. Use the package-owned preset
 for direct or atomic updates.
 
 ```tsx
-import { SuggestionUpdatePolicy } from '@platejs/suggestion';
+import { SuggestionUpdatePolicy } from 'platejs/suggestion';
 
 editor.update(SuggestionUpdatePolicy.skip, (tx) => {
   tx.text.insert('Accepted text');

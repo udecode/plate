@@ -1,34 +1,34 @@
+import { yjs, type YjsAwarenessChange } from 'platejs/yjs';
+import { useYjsRemoteCursors } from 'platejs/yjs/react';
 import {
+  type Editor as CoreEditor,
   createEditor,
   defineEditorSchema,
   defineExtensionSlot,
   type Descendant,
-  type ElementIn,
-  type Editor,
   type EditorExtensionSlotValue,
   type EditorSchemaIdentity,
   type EditorUpdateTransaction,
   type EditorValueFromExtensions,
+  type ElementIn,
   NodeApi,
   type Path,
   property,
   type Range,
   RangeApi,
   schema,
-  type TextIn,
   TextApi,
-} from '@platejs/plite';
-import { history } from '@platejs/plite-history';
+  type TextIn,
+} from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
+  Plite,
+  type Editor as ReactViewEditor,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
-  type ReactEditor,
-  usePliteEditor,
-} from '@platejs/plite-react';
-import { yjs, type YjsAwarenessChange } from '@platejs/yjs';
-import { useYjsRemoteCursors } from '@platejs/yjs/react';
+  useEditor,
+} from 'plitejs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import * as Y from 'yjs';
@@ -49,7 +49,7 @@ type PeerDefinition = {
 };
 
 type PeerCommandTx =
-  YjsEditor extends Editor<infer V, infer TExtensions>
+  YjsEditor extends CoreEditor<infer V, infer TExtensions>
     ? EditorUpdateTransaction<V, TExtensions>
     : never;
 type PeerCommand = (tx: PeerCommandTx) => void;
@@ -106,7 +106,7 @@ const PEERS: PeerDefinition[] = [
   },
 ] as const;
 
-const ROOT_NAME = '@platejs/plite';
+const ROOT_NAME = 'plitejs';
 const schemaSlot = defineExtensionSlot('yjs-collaboration-schema');
 
 const createCollaborationSchema = (version: number) =>
@@ -143,7 +143,7 @@ type CollaborationValue = EditorValueFromExtensions<
 type CollaborationElement = ElementIn<CollaborationValue>;
 type CollaborationText = TextIn<CollaborationValue>;
 const HistoryExtension = history();
-type YjsEditor = ReactEditor<
+type YjsEditor = ReactViewEditor<
   CollaborationValue,
   readonly [
     typeof HistoryExtension,
@@ -1372,7 +1372,7 @@ const PeerPanel = ({
   peer: ExamplePeer;
   version: number;
 }) => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [
       HistoryExtension,
       schemaSlot.of(createCollaborationSchema(1)),

@@ -5,9 +5,10 @@ import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
+import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
+
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');
-const PACKAGES_ROOT = path.join(REPO_ROOT, 'packages');
 
 const toAppImportPath = (targetPath: string) => {
   const relativePath = path
@@ -17,92 +18,20 @@ const toAppImportPath = (targetPath: string) => {
   return relativePath.startsWith('../') ? relativePath : `./${relativePath}`;
 };
 
-const getIndexEntry = (dir: string) => {
-  const tsEntry = path.join(dir, 'index.ts');
-  const tsxEntry = path.join(dir, 'index.tsx');
-  const jsEntry = path.join(dir, 'index.js');
-
-  if (fs.existsSync(tsEntry)) return tsEntry;
-  if (fs.existsSync(tsxEntry)) return tsxEntry;
-  if (fs.existsSync(jsEntry)) return jsEntry;
-
-  return null;
-};
-
-const WORKSPACE_ALIAS_SUBPATHS = [
-  'browser',
-  'core',
-  'internal',
-  'playwright',
-  'react',
-  'static',
-  'transports',
-];
-
 const isPliteMode = process.env.PLATE_WWW_PLITE === '1';
 
-const addAliasEntries = (
-  aliases: Record<string, string>,
-  importPath: string,
-  packageDir: string,
-  rootDirName: 'dist' | 'src'
-) => {
-  const rootDir = path.join(packageDir, rootDirName);
-  const rootEntry = getIndexEntry(rootDir);
+const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') =>
+  Object.fromEntries(
+    getWorkspaceSourceEntries(REPO_ROOT).flatMap(
+      ({ distEntry, sourceEntry, specifier }) => {
+        const target = rootDirName === 'src' ? sourceEntry : distEntry;
 
-  if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
-
-  for (const subpath of WORKSPACE_ALIAS_SUBPATHS) {
-    const subpathEntry = getIndexEntry(path.join(rootDir, subpath));
-
-    if (subpathEntry) {
-      aliases[`${importPath}/${subpath}`] = toAppImportPath(subpathEntry);
-    }
-  }
-};
-
-const buildWorkspaceAliases = (rootDirName: 'dist' | 'src') => {
-  const aliases: Record<string, string> = {};
-
-  addAliasEntries(
-    aliases,
-    'platejs',
-    path.join(PACKAGES_ROOT, 'plate'),
-    rootDirName
-  );
-
-  for (const entry of fs.readdirSync(PACKAGES_ROOT, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-
-    if (entry.name === 'udecode') {
-      const udecodeRoot = path.join(PACKAGES_ROOT, 'udecode');
-
-      for (const udecodeEntry of fs.readdirSync(udecodeRoot, {
-        withFileTypes: true,
-      })) {
-        if (!udecodeEntry.isDirectory()) continue;
-
-        addAliasEntries(
-          aliases,
-          `@udecode/${udecodeEntry.name}`,
-          path.join(udecodeRoot, udecodeEntry.name),
-          rootDirName
-        );
+        return fs.existsSync(target)
+          ? [[specifier, toAppImportPath(target)]]
+          : [];
       }
-
-      continue;
-    }
-
-    addAliasEntries(
-      aliases,
-      `@platejs/${entry.name}`,
-      path.join(PACKAGES_ROOT, entry.name),
-      rootDirName
-    );
-  }
-
-  return aliases;
-};
+    )
+  );
 
 const buildWorkspaceDevAliases = () => {
   const sourceAliases = buildWorkspaceAliases('src');

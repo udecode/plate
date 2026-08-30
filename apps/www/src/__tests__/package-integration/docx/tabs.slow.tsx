@@ -1,5 +1,5 @@
 /** @jsx jsxt */
-import { jsxt } from '@platejs/test-utils';
+import { jsxt } from '@platejs/test';
 
 import { getDocxTestName, testDocxDeserializer } from './testDocxDeserializer';
 

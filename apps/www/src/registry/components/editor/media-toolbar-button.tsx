@@ -1,13 +1,6 @@
 'use client';
 
 import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
-} from '@platejs/media';
-import { PlaceholderPlugin } from '@platejs/media/react';
-import {
   AudioLinesIcon,
   FileUpIcon,
   FilmIcon,
@@ -15,7 +8,14 @@ import {
   LinkIcon,
 } from 'lucide-react';
 import { PLUGINS, isUrl } from 'platejs';
-import { useEditor } from 'platejs/react';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from 'platejs/media';
+import { PlaceholderPlugin } from 'platejs/media/react';
+import { type Editor, useEditor } from 'platejs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
@@ -86,7 +86,7 @@ type MediaPlugin =
   | typeof BaseVideoPlugin;
 
 function insertMedia(
-  editor: ReturnType<typeof useEditor>,
+  editor: Editor,
   plugin: MediaPlugin,
   input: { name?: string; url: string }
 ) {
@@ -105,7 +105,7 @@ function insertMedia(
     }
   }
 
-  return undefined;
+  throw new Error('Unsupported media plugin.');
 }
 
 export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {

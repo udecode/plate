@@ -24,12 +24,12 @@ Next, create a basic editor page. This example sets up a simple editor within an
 ```tsx showLineNumbers title="app/editor/page.tsx"
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor();
+  const editor = useCreateEditor();
 
   return (
     <Plate editor={editor}>      {/* Provides editor context */}
@@ -42,7 +42,7 @@ export default function MyEditorPage() {
 ```
 
 <Callout type="info">
-  `usePlateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createPlateEditor`.
+  `useCreateEditor` creates a memoized editor instance, ensuring stability across re-renders. For a non-memoized version, use `createEditor`.
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
@@ -72,10 +72,10 @@ import {
   BoldPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
@@ -98,7 +98,7 @@ const initialValue: Value = [
 ];
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
     initialValue,
   });
@@ -106,9 +106,9 @@ export default function MyEditorPage() {
   return (
     <Plate editor={editor}>
       <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
         <Editor placeholder="Type your amazing content here..." />
@@ -134,20 +134,18 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   HeadingPlugin,
-  
-  
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
-import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 import { ToolbarButton } from '@/components/editor/toolbar'; // Generic toolbar button
 
@@ -176,13 +174,11 @@ const initialValue: Value = [
 ];
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -198,9 +194,9 @@ export default function MyEditorPage() {
         <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
         <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
         {/* Mark Toolbar Buttons */}
-        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
         <Editor placeholder="Type your amazing content here..." />
@@ -236,20 +232,18 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   HeadingPlugin,
-  
-  
   ItalicPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+} from 'platejs/react';
 import {
   Plate,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
-import { HeadingElement,  HeadingElement } from '@/components/editor/heading';
+import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 import { ToolbarButton } from '@/components/editor/toolbar';
 
@@ -278,13 +272,11 @@ const initialValue: Value = [
 ];
 
 export default function MyEditorPage() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      HeadingPlugin.configure({ component: HeadingElement }),
-      HeadingPlugin.configure({ component: HeadingElement }),
       HeadingPlugin.configure({ component: HeadingElement }),
       BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
@@ -306,9 +298,9 @@ export default function MyEditorPage() {
         <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
         <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
         <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
         <div className="flex-1" />
         <ToolbarButton
           className="px-2"

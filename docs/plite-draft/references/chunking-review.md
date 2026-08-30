@@ -42,7 +42,7 @@ References:
 
 - [09-performance.md](/Users/zbeyens/git/plite/docs/walkthroughs/09-performance.md)
 - [2026-04-09-plite-slate-react-source-deleted-family-closure.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-plite-slate-react-source-deleted-family-closure.md)
-- [react-editor.ts](/Users/zbeyens/git/plite/packages/plite-react/src/plugin/react-editor.ts)
+- [react-editor.ts](/Users/zbeyens/git/plite/packages/plitejs/src/react/plugin/react-editor.ts)
 
 So chunking is doing two different jobs today:
 

@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "line-height",
   "dependencies": [
-    "@platejs/basic-styles"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/line-height-toolbar-button.json"
@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/line-height.tsx",
-      "content": "'use client';\n\nimport { LineHeightPlugin } from '@platejs/basic-styles/react';\nimport { PLUGINS } from 'platejs';\n\nexport const LineHeightKit = [\n  LineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n    },\n    targetPlugins: [PLUGINS.heading, PLUGINS.paragraph],\n  }),\n];\n",
+      "content": "'use client';\n\nimport { PLUGINS } from 'platejs';\nimport { LineHeightPlugin } from 'platejs/react';\n\nexport const LineHeightKit = [\n  LineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n    },\n    targetPlugins: [PLUGINS.heading, PLUGINS.paragraph],\n  }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/line-height.tsx"
     }

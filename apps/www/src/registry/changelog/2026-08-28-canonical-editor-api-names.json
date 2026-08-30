@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-28-canonical-editor-api-names",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-28-canonical-editor-api-names.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use canonical editor API names",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-command-score.ts",
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find-replace-demo",
+      "files": [
+        "apps/www/src/registry/examples/find-replace-demo.tsx",
+        "apps/www/src/registry/examples/values/find-replace-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "huge-document-demo",
+      "files": [
+        "apps/www/src/registry/examples/huge-document-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-document-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-28-canonical-editor-api-names-b33e35c1",
+      "kind": "rename",
+      "summary": "Use `useCreateEditor` for React editor creation. `use-chat` exports `useEditorChat`, block discussion exports `BlockResolvedSuggestion`, and missing required values report contextual errors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "dnd",
+        "inline-combobox",
+        "block-discussion",
+        "use-chat",
+        "ai",
+        "ai-menu",
+        "comment",
+        "select-editor",
+        "find-replace-demo",
+        "code-block",
+        "font-size-toolbar-button",
+        "math",
+        "media-preview-dialog",
+        "huge-document-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-28",
+          "entry": "2026-08-28-canonical-editor-api-names",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

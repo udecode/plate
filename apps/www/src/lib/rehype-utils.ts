@@ -2,7 +2,6 @@ import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { failInvariant } from '@platejs/plite/internal';
 import {
   type Registry,
   type RegistryItem,
@@ -16,6 +15,7 @@ import type { UnistNode } from '@/types/unist';
 
 import registryShadcnData from '../../registry-shadcn.json';
 import { registry } from '../registry/registry';
+import { failInvariant } from './failInvariant';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
 

@@ -37,10 +37,10 @@ The fastest way to add footnote-aware markdown is with the `MarkdownKit`, which 
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { MarkdownKit } from '@/components/editor/markdown';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...MarkdownKit,
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/footnote @platejs/markdown remark-gfm
+npm install platejs @tanstack/react-virtual marked remark-gfm remark-mdx remark-parse remark-stringify unified
 ```
 
 ### Add Plugins
@@ -65,15 +65,12 @@ npm install @platejs/footnote @platejs/markdown remark-gfm
 Add the inline reference and block definition. `FootnotePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
 
 ```tsx
-import {
-  FootnoteDefinitionPlugin,
-  FootnotePlugin,
-} from '@platejs/footnote/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { createPlateEditor } from 'platejs/react';
+import { FootnoteDefinitionPlugin, FootnotePlugin } from 'platejs/footnote/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs/react';
 import remarkGfm from 'remark-gfm';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     FootnotePlugin,
@@ -163,13 +160,10 @@ The transform returns the newly assigned ref string on success, or `false` when 
 Swap in your own React components with `component`:
 
 ```tsx
-import {
-  FootnoteDefinitionPlugin,
-  FootnotePlugin,
-} from '@platejs/footnote/react';
-import { createPlateEditor } from 'platejs/react';
+import { FootnoteDefinitionPlugin, FootnotePlugin } from 'platejs/footnote/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     FootnotePlugin.configure({ component: MyFootnoteReference }),
     FootnoteDefinitionPlugin.configure({ component: MyFootnoteDefinition }),
@@ -200,7 +194,7 @@ Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, ref regist
   <APIItem name="createComboboxInput" type="(trigger: string) => Element" optional>
     Factory for the node inserted when the combobox opens. Defaults to a `footnoteInput` element.
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
     Extra predicate gating the combobox. Return `false` to suppress triggering at the current selection.
   </APIItem>
 </APIOptions>

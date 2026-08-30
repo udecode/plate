@@ -48,7 +48,7 @@ Constraints:
 - No public compatibility aliases or runtime shims.
 - Preserve semantic `@plate/*` ids and `https://platejs.org/r/{style}/{name}.json`.
 - Do not manually edit `templates/**` or generated registry/changelog/skill mirrors.
-- Do not add physical `*-classic` variants; keep those rows canonical and
+- Do not add physical alternative variants variants; keep those rows canonical and
   install-compatible with every supported provider.
 - Do not commit, push, create a PR, or release.
 

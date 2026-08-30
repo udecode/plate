@@ -23,16 +23,16 @@ docs:
 <ComponentSource name="block-menu" />
 
 ```tsx
-import { createPlateEditor } from "platejs/react";
+import { createEditor } from "platejs/react";
 
 import { BlockMenuKit } from "@/components/editor/block-menu";
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [...BlockMenuKit],
 });
 ```
 
-只有保留 Ask AI 操作时才需要安装 `@platejs/ai`。
+只有保留 Ask AI 操作时才需要安装 `platejs/ai`。
 
 ## 选择行为
 

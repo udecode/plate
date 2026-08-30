@@ -192,7 +192,7 @@ Workflow slowdowns:
 | Core test while Plite package build ran in parallel | package artifact graph | small | Core resolved stale Plite artifacts during parallel build/typecheck. | Serial rerun passed. | avoid parallel package build/typecheck when artifact declarations are in flux. |
 | Link typecheck/test before package artifacts were rebuilt | package artifact graph | small | `platejs`/Core artifacts were stale, causing missing exports/import errors. | Rebuilt Core and `platejs`, then Link gates passed. | log artifact-order pitfall. |
 | Broad `pnpm lint:fix` | root lint | about 3s plus fallout | Root lint scanned unrelated Plite browser/examples debt, failed with 1634 diagnostics, and applied 14 fixes before failing. | Scoped Biome on 20 touched files passed; broad package typecheck/build rerun after lint fallout passed. | do not use broad lint as this slice's proof; use scoped Biome and log root lint debt. |
-| Parallel broad typecheck/build after lint | package graph | about 35s | Typecheck raced build artifacts and `list-classic` briefly missed `@platejs/media` declarations. | Serial `pnpm turbo typecheck --filter='./packages/*'` passed. | run broad package typecheck serially after broad build when package artifacts are being regenerated. |
+| Parallel broad typecheck/build after lint | package graph | about 35s | Typecheck raced build artifacts and `legacy-list-model` briefly missed `@platejs/media` declarations. | Serial `pnpm turbo typecheck --filter='./packages/*'` passed. | run broad package typecheck serially after broad build when package artifacts are being regenerated. |
 
 Changed list:
 | Group | Current-run changes |

@@ -1,9 +1,9 @@
 'use client';
 
-import { exportToDocx } from '@platejs/docx-export';
-import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
+import { exportToDocx } from 'platejs/docx';
+import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
@@ -102,7 +102,7 @@ export function ExportToolbarButton() {
   };
 
   const exportToHtml = async () => {
-    const editorStatic = createBaseEditor({
+    const editorStatic = createEditor({
       plugins: BaseEditorKit,
       initialValue: editor.read.children(),
     });

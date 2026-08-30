@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "extends": "../tsconfig.public-api.json",
+  "references": [
+    {
+      "path": "./browser.json"
+    },
+    {
+      "path": "./playwright.json"
+    },
+    {
+      "path": "./proof.json"
+    },
+    {
+      "path": "./react.json"
+    },
+    {
+      "path": "./root.json"
+    }
+  ]
+}

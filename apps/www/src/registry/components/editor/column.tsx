@@ -1,11 +1,10 @@
 'use client';
 
-import { useDraggable, useDropLine } from '@platejs/dnd';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
-import { ColumnItemPlugin, ColumnPlugin } from '@platejs/layout/react';
-import { useComposedRef } from '@udecode/cn';
 import { type LucideProps, Trash2Icon, GripHorizontal } from 'lucide-react';
 import { PathApi } from 'platejs';
+import { useDraggable, useDropLine } from 'platejs/dnd/react';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
+import { ColumnItemPlugin, ColumnPlugin } from 'platejs/layout/react';
 import {
   type PlateElementProps,
   PlateElement,
@@ -15,6 +14,7 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
+  useComposedRef,
 } from 'platejs/react';
 import * as React from 'react';
 

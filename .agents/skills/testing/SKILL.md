@@ -50,7 +50,7 @@ Hard constraints:
   - tiny uncovered crumbs
   - code likely to be deleted or rewritten soon
 
-## Core Rules
+## Plate foundation Rules
 
 - Assert public behavior through editor APIs, plugin APIs, hooks, transforms, or rendered output. Do not assert private state, call order, or implementation detail when public behavior already proves the contract.
 - Prefer file-ranked batches over package sweeps. Package sweeps are for early broad passes, not the endgame.
@@ -71,10 +71,11 @@ Hard constraints:
 - For borderline individual cases, run `pnpm test:slowest -- --top 25 --rerun-each 3` and move only repeatably blocking behavior into the matching `*.slow.ts[x]` family.
 - Treat known third-party resource logs and serializer fallback warnings as test noise. Suppress them narrowly in the shared Bun setup at `tooling/config/bunTestSetup.ts`, not by changing runtime code or sprinkling per-spec console mocks.
 
-## Seam Selection
+## Owner Selection
 
-- Use `createEditor` from `@platejs/slate` for pure Slate query, transform, interface, and history contracts.
-- Use `createSlateEditor` for non-React plugin or editor wiring:
+- Use `createEditor` from `plitejs` for raw substrate query, transform,
+  interface, and history contracts.
+- Use `createEditor` from `platejs` for non-React Plate plugin or editor wiring:
   - plugin option stores
   - selector extension
   - pure plugin API composition
@@ -82,9 +83,9 @@ Hard constraints:
   - parser and deserializer contracts
   - HTML `insertData`
   - DnD-style contracts
-- Use `createPlateEditor` only when the contract is genuinely Plate-specific.
+- Use `createEditor` from `platejs/react` only when the contract is genuinely Plate-specific.
 - Use rendered React tests only when the contract is genuinely React-specific: hooks, providers, stores, DOM behavior, or rerender semantics.
-- Remaining `createPlateEditor` usage is a reviewed allowlist, not a future cleanup queue.
+- Remaining Plate React `createEditor` usage is a reviewed allowlist, not a future cleanup queue.
 
 ## Fake Runtime Contracts
 
@@ -148,7 +149,7 @@ cross-package dev dependencies to support an overbuilt fake runtime.
   - commented-out tests
   - cross-spec imports
   - placeholder titles
-  - non-allowlisted `createPlateEditor` seams
+  - non-allowlisted Plate React `createEditor` boundaries
 - Use `bun run test:profile` for the fast suite when deciding whether a spec belongs in the slow lane. `pnpm test:slowest` and `pnpm check` enforce those thresholds.
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
 - For plugin-composition hotspots, keep one-owner setup inline. Extract only
@@ -160,14 +161,15 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 
 ## Package Rules
 
-### `autoformat`
+### `autoformat` registry integration
 
-- Use package-local rule arrays.
+- Keep rule arrays in the owning copied registry item.
 - Use `PLUGINS` or base plugin descriptors, not copied raw identities.
 - Add only the base plugins a rule actually needs.
 - Collapse tiny mark or block suites into matrices when the contract is the same.
 - Do not import `AutoformatKit` or app registries in package tests.
-- If an `autoformat` case needs cross-package behavior like `code-block` wiring or app-owned integration setup, move it to `apps/www/src/__tests__/package-integration` instead of expanding `packages/autoformat/package.json`.
+- Prove cross-feature behavior such as code-block wiring in
+  `apps/www/src/__tests__/package-integration`.
 
 ### `markdown`
 
@@ -181,7 +183,7 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 - Add a few explicit chunk-boundary tests.
 - Do not hide streaming behavior behind snapshots or giant hand-written trees.
 
-### `core`
+### `plate`
 
 - Use `createSlateEditor` for:
   - pure plugin option stores
@@ -198,8 +200,8 @@ cross-package dev dependencies to support an overbuilt fake runtime.
   - option merging
   - API merging
 - Port upstream Slate React invariants by behavior, not by file.
-- When a core source test mounts `Plate` while the same run also loads public-package React entrypoints, treat duplicate-instance warnings as test noise. Suppress them in the test wrapper with `suppressInstanceWarning` instead of changing runtime warning logic.
-- For provider-only React specs in core, reuse the shared `packages/core/src/react/__tests__/TestPlate.tsx` helper instead of re-declaring local `const Plate = ...` wrappers.
+- When a Plate foundation source test mounts `Plate` while the same run also loads public-package React entrypoints, treat duplicate-instance warnings as test noise. Suppress them in the test wrapper with `suppressInstanceWarning` instead of changing runtime warning logic.
+- For provider-only React specs in the Plate foundation, reuse the shared `packages/platejs/src/react/__tests__/TestPlate.tsx` helper instead of re-declaring local `const Plate = ...` wrappers.
 
 ### `selection`
 
@@ -207,37 +209,37 @@ cross-package dev dependencies to support an overbuilt fake runtime.
   owner. If ownership or public shape is disputed, route the decision to
   `best-api` and the relevant layer plan; testing does not decide it.
 
-### DOCX packages and app integration
+### DOCX entrypoints and app integration
 
 - Keep app-owned cross-package integration tests under `apps/www/src/__tests__/package-integration`.
 - Keep buckets local under that folder instead of scattering app-owned integration coverage through `src/lib`.
 - Package tests must not pull app aliases, app kits, or registries into package graphs.
 - Fixture-heavy `docx-paste` suites are valid reasons to keep `__tests__/`.
 
-### `slate`
+### `plitejs`
 
 - Focus on pure editor, query, and transform behavior first.
 - Keep runtime coverage on navigation, selection math, structural queries, transform edge cases, extension transforms, and `createEditor` legacy sync.
-- Keep a small compile-only type lane for public `@platejs/slate` contracts.
+- Keep a small compile-only type lane for public `plitejs` contracts.
 - Use selective upstream mining. Pull invariants that cheaply improve local public-contract coverage; do not mirror upstream blindly.
 - Add direct helper specs for custom Slate code when indirect coverage is lying.
 - Use `lcov` as package truth. Bun’s text coverage summary is noisy for targeted package runs.
 - Stop once the remaining misses are mostly deferred DOM wrappers plus low-risk non-DOM dust.
-- Later utility and core work should mine these upstream `slate-react` invariants:
+- Later Plate foundation work should mine these upstream `slate-react` invariants:
   - `use-slate-selector`: selector equality and stale-rerender prevention
   - `use-slate`: editor version and subscription behavior
   - `use-selected`: selection rerender and path stability
   - `editable`: value-change vs selection-change partitioning
   - `decorations`: decoration propagation and redecorate behavior
-  - `chunking`: chunk or index invalidation only if remaining core gaps justify it
+  - `chunking`: chunk or index invalidation only if remaining foundational gaps justify it
 - Skip `react-editor` DOM focus coverage unless a real Plate bug forces it.
 - Playwright example coverage stays out.
 
 ## Reviewed Exceptions
 
-### `createPlateEditor` allowlist
+### Plate React `createEditor` allowlist
 
-Keep `createPlateEditor` when the contract is actually about:
+Keep Plate React `createEditor` when the contract is actually about:
 
 - React or provider wiring
 - rendered output or DOM behavior
@@ -258,7 +260,7 @@ Keep `__tests__/` when it holds:
 
 ## Quick Reference
 
-- Start with the smallest seam that proves the contract: `createEditor` -> `createSlateEditor` -> `createPlateEditor`.
+- Start with the smallest boundary that proves the contract: raw `createEditor` -> `createSlateEditor` -> Plate React `createEditor`.
 - Work in passes: `>= 6` first, rerun coverage, then worthwhile `>= 5`, then switch to architecture-safety targets.
 - Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
 - Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.

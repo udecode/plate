@@ -41,7 +41,7 @@ Run fresh repo coverage, sync against the March 17 docs plus the March 22-23 pac
 These lanes are already substantially covered and were intentionally pushed down:
 
 - March 17: `selection`, focused non-React `core`, focused `docx-io`
-- March 22-23: `yjs`, `list-classic`, `suggestion`, `docx`, `ai`, `layout`, `list`, `code-block`, `autoformat`, `csv`, `comment`, `dnd`, `combobox`, `link`, `date`, `code-drawing`, `emoji`
+- March 22-23: `yjs`, `legacy-list-model`, `suggestion`, `docx`, `ai`, `layout`, `list`, `code-block`, `autoformat`, `csv`, `comment`, `dnd`, `combobox`, `link`, `date`, `code-drawing`, `emoji`
 - Table still has raw uncovered surface, but it was the recent push and should not be the next package again.
 
 ## What I Would Do Next

@@ -101,7 +101,7 @@ Boundaries:
   family; prefer `/blocks/[id]-demo`.
 - Tracker sync: N/A; no issue, PR, or public tracker source.
 - Non-goals: no unrelated plugin/runtime redesign; no template edits; no
-  proactive modernization of `*-classic`; no compatibility aliases; no commit,
+  proactive modernization of alternative variants; no compatibility aliases; no commit,
   push, PR, or release.
 
 Output budget strategy:
@@ -156,7 +156,7 @@ Prompt checkpoints:
       rendering, copied registry transparency, and existing non-React WIP.
 - [x] Migrate affected exports, imports, callers, docs, tests, barrels, package
       manifests, registry metadata, changesets, and registry changelog.
-- [x] Leave `*-classic` maintenance-only unless compilation requires adoption
+- [x] Leave alternative variants maintenance-only unless compilation requires adoption
       of a deleted public surface; do not modernize it for parity.
 - [x] Run structural zero-drift audit, package/app proof, docs proof, browser
       proof, lint, barrel generation when needed, release-artifact checks, and
@@ -274,7 +274,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pass | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | Zero-hit structural audit; all functional tests, package/app typechecks, Browser proof, lint, barrels, docs, release artifacts, and doctrine checks pass. |
 | Current-state source audit | pass | Map current owner, boundaries, constraints, and affected surfaces | Every modern package and copied registry React surface classified as direct component, one semantic controller, private context, or justified headless primitive. |
-| Decision criteria closure | pass | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | All v86 criteria pass; `*-classic` remains maintenance-only by explicit boundary. |
+| Decision criteria closure | pass | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | All v86 criteria pass; alternative variants remains maintenance-only by explicit boundary. |
 | Options / tradeoffs / rejection record | pass | Record viable options, chosen recommendation, and why alternatives lose | Direct ownership selected; wrapper preservation, public prop hooks, speculative stores, and registry-owned semantic algorithms rejected. |
 | Review / pressure pass | pass | Run selected reviewer/lens or record N/A with reason | React Compiler lint, source topology audit, browser runtime, `plate-next`, and agent-native capability map completed. |
 | Review findings closure | pass | Fix or explicitly reject accepted/actionable findings and record closure proof | Listener safety, compiler ref access, scale effect, tooltip mount effect, Excalidraw memoization, stale docs, SSR runtime-key attribute, and doctrine fixtures repaired. |
@@ -344,7 +344,7 @@ Decisions and tradeoffs:
   the sole package peer contract.
 - Keep semantic transforms and queries in package owners; direct registry code
   owns only UI state, labels, styling, and product composition.
-- Preserve `list-classic` pipelines as maintenance-only. Modernizing deprecated
+- Preserve `legacy-list-model` pipelines as maintenance-only. Modernizing deprecated
   classic code would add churn without improving the accepted surface.
 - Do not move coherent fast test families merely to satisfy a timing total.
   The 20-second governor remains red rather than gaming test topology.
@@ -423,7 +423,7 @@ Verification evidence:
   factories/HOCs, authored production `forwardRef`, `.Provider` JSX, stale
   exports/docs, serialized drag runtime keys, React 18 peer ranges, or the
   temporary QA route. The sole remaining `forwardRef` is a Core spec fixture
-  proving preservation of foreign React component objects; classic list hooks
+  proving preservation of foreign React component objects; legacy list model hooks
   remain only in explicit maintenance-only source/docs.
 - `pnpm check` reaches only the independent fast-suite timing governor after
   lint, root typecheck, fast tests, and slow functional tests pass. The measured

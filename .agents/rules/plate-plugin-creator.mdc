@@ -1,5 +1,5 @@
 ---
-description: Build or refactor Plate package plugins with owner-first colocation, inference, scoped capabilities, React families, and package proof.
+description: Build or refactor Plate plugins and entrypoints with owner-first colocation, inference, scoped capabilities, React families, and package proof.
 ---
 
 # Plate Plugin Creator
@@ -28,7 +28,7 @@ These references contain package implementation mechanics. Vision and
 does not re-decide it.
 
 Use [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) only
-for current repo examples. Core builders and type tests outrank precedent.
+for current repo examples. Plate foundation builders and type tests outrank precedent.
 
 ## Routing Gate
 
@@ -212,17 +212,20 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
 - Never hand-edit generated `index.ts` / `index.tsx` barrels.
 - After adding, moving, renaming, or deleting exported files, run `pnpm brl`
   and fix source placement or generator configuration if output is wrong.
-- Package source imports its direct runtime owner (`@platejs/core`,
-  `@platejs/plite`, `@platejs/utils`, and so on), never the `platejs` umbrella.
-- Keep React as a peer when the package exposes React surfaces. Keep only
-  dependencies proven by source/runtime imports or repo tooling convention.
+- Plate feature source imports relative owners inside `packages/platejs`;
+  applications consume `platejs`, `platejs/react`, or the canonical feature
+  subpath. Raw substrate source imports `plitejs`. One-owner helpers stay
+  local.
+- Keep React as an optional peer while any public React entrypoint exists. Keep
+  only dependencies proven by source/runtime imports or repo tooling convention;
+  implementation libraries used only by opt-in entrypoints are optional peers.
 
 ## Workflow
 
 1. Read the two required rule files.
 2. Decide the semantic layer and durable production, React-family, and test
    owners before creating files.
-3. Search current Core builders/type tests and the closest clean package
+3. Search current Plate foundation builders/type tests and the closest clean package
    analog. Do not copy a stale file graph.
 4. Route reusable public forks to `best-api`; otherwise keep the inferred
    plugin chain inline.
@@ -231,7 +234,7 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
 6. Delete superseded helper/component/hook/spec files and regenerate barrels.
 7. Prove the smallest honest surface:
    - package typecheck and behavior tests;
-   - Core type tests when builder/public inference changes;
+   - Plate foundation type tests when builder/public inference changes;
    - compile/runtime proof that a required dependent sees staged capabilities;
    - compile/runtime proof for staged tx-to-tx reuse when one tx stage consumes
      another;

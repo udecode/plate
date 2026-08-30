@@ -30,7 +30,7 @@ Closed all 98 P1/P2 rows from `audit-report.md`.
 | layout | LAYOUT-01 | Verified staged owner: the shortcut resolves the constructor-owned `selectAll` update. Moving it into the constructor would erase the dependency order the stage exists to express. |
 | link | LINK-01, LINK-02, LINK-03, LINK-05, LINK-06, LINK-07 | Fixed. |
 | list | LIST-01, LIST-02 | Fixed. |
-| list-classic | LISTC-01, LISTC-02, LISTC-03 | Fixed. |
+| legacy-list-model | LISTC-01, LISTC-02, LISTC-03 | Fixed. |
 | markdown | MD-01, MD-02, MD-06 | Fixed. |
 | math | MATH-01 | Fixed. |
 | media | MEDIA-01, MEDIA-02, MEDIA-03, MEDIA-04, MEDIA-05 | Fixed. |

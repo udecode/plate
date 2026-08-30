@@ -1,13 +1,12 @@
 'use client';
 
-import type { DecoratedRange } from '@platejs/plite';
-import { property, TextApi } from 'platejs';
+import { type DecoratedRange, property, TextApi } from 'platejs';
 import {
   type PlateLeafProps,
   definePlatePlugin,
   Plate,
   PlateLeaf,
-  usePlateEditor,
+  useCreateEditor,
 } from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
 import * as React from 'react';
@@ -101,7 +100,7 @@ const PreviewMarkdownKit = PreviewMarkdownPlugin.configure({
 });
 
 export default function PreviewMdDemo() {
-  const editor = usePlateEditor(
+  const editor = useCreateEditor(
     {
       plugins: [...BasicNodesKit, PreviewMarkdownKit],
       initialValue: previewMdValue,

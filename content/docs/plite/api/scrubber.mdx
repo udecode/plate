@@ -10,7 +10,7 @@ a scrubber for additional fields.
 ## Install A Scrubber
 
 ```typescript
-import { setDebugValueScrubber } from "@platejs/plite";
+import { setDebugValueScrubber } from "plitejs";
 
 setDebugValueScrubber((key, value) => {
   if (key === "text" || key === "src") return "[redacted]";
@@ -26,11 +26,11 @@ setDebugValueScrubber(null);
 
 ## API
 
-<APIReference package="@platejs/plite" symbol="setDebugValueScrubber" />
+<APIReference package="plitejs" symbol="setDebugValueScrubber" />
 
 Set the function used before Plite formats debug values.
 
-<APIReference package="@platejs/plite" symbol="DebugValueScrubber" />
+<APIReference package="plitejs" symbol="DebugValueScrubber" />
 
 The custom scrubber runs before Plite's default text redaction. Return the
 original value to let the default scrubber handle it.

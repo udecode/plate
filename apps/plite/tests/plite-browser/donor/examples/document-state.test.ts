@@ -1,10 +1,10 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
-import type { EditorUpdatePolicy } from '@platejs/plite';
+import type { EditorUpdatePolicy } from 'platejs';
 
 import {
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 type EditorHarness = Awaited<ReturnType<typeof openExample>>;
 

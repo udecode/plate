@@ -29,6 +29,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -38,9 +39,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -77,6 +78,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -86,9 +88,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -101,6 +103,31 @@
       [
         "element:date",
         []
+      ],
+      [
+        "element:details",
+        [
+          "aiChat",
+          "audio",
+          "blockquote",
+          "callout",
+          "codeBlock",
+          "columnGroup",
+          "details",
+          "equation",
+          "file",
+          "footnoteDefinition",
+          "heading",
+          "horizontalRule",
+          "image",
+          "mediaEmbed",
+          "paragraph",
+          "placeholder",
+          "summary",
+          "table",
+          "toc",
+          "video"
+        ]
       ],
       [
         "element:emojiInput",
@@ -133,6 +160,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -142,9 +170,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -241,6 +269,20 @@
         []
       ],
       [
+        "element:summary",
+        [
+          "date",
+          "emojiInput",
+          "footnoteInput",
+          "footnoteReference",
+          "inlineEquation",
+          "link",
+          "mention",
+          "mentionInput",
+          "slashInput"
+        ]
+      ],
+      [
         "element:table",
         [
           "tableRow"
@@ -255,6 +297,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -264,9 +307,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -279,20 +322,6 @@
       [
         "element:toc",
         []
-      ],
-      [
-        "element:toggle",
-        [
-          "date",
-          "emojiInput",
-          "footnoteInput",
-          "footnoteReference",
-          "inlineEquation",
-          "link",
-          "mention",
-          "mentionInput",
-          "slashInput"
-        ]
       ],
       [
         "element:video",
@@ -317,6 +346,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -326,9 +356,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ]
@@ -339,6 +369,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -349,6 +380,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -359,6 +391,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -369,6 +402,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -379,6 +413,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -401,6 +436,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -416,8 +452,19 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
+        ]
+      ],
+      [
+        "details",
+        [
+          "element:blockquote",
+          "element:column",
+          "element:details",
+          "element:footnoteDefinition",
+          "element:tableCell",
+          "root"
         ]
       ],
       [
@@ -430,7 +477,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -439,6 +486,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -449,6 +497,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -459,6 +508,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -474,7 +524,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -488,7 +538,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -497,6 +547,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -507,6 +558,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -517,6 +569,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -532,7 +585,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -546,7 +599,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -555,6 +608,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -570,7 +624,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -584,7 +638,7 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
         ]
       ],
@@ -593,6 +647,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -603,6 +658,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -618,8 +674,19 @@
           "element:image",
           "element:mediaEmbed",
           "element:paragraph",
-          "element:toggle",
+          "element:summary",
           "element:video"
+        ]
+      ],
+      [
+        "summary",
+        [
+          "element:blockquote",
+          "element:column",
+          "element:details",
+          "element:footnoteDefinition",
+          "element:tableCell",
+          "root"
         ]
       ],
       [
@@ -627,6 +694,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -649,16 +717,7 @@
         [
           "element:blockquote",
           "element:column",
-          "element:footnoteDefinition",
-          "element:tableCell",
-          "root"
-        ]
-      ],
-      [
-        "toggle",
-        [
-          "element:blockquote",
-          "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -669,6 +728,7 @@
         [
           "element:blockquote",
           "element:column",
+          "element:details",
           "element:footnoteDefinition",
           "element:tableCell",
           "root"
@@ -817,6 +877,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -826,9 +887,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -847,12 +908,12 @@
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
             "element:suggestion@293b45e36ede53d8",
             "element:suggestionTransient@2a17b5ef44f7caad"
           ]
@@ -865,12 +926,12 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ],
@@ -982,13 +1043,13 @@
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
             "element:language@f075c3fe4239c09c",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
             "element:suggestion@293b45e36ede53d8",
             "element:suggestionTransient@2a17b5ef44f7caad"
           ]
@@ -1001,13 +1062,13 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ],
@@ -1089,6 +1150,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -1098,9 +1160,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -1250,6 +1312,91 @@
           "replaceWhenCovered": true
         },
         "type": "date"
+      },
+      {
+        "behavior": {
+          "atom": false,
+          "editableIsland": false,
+          "inline": false,
+          "isolating": false,
+          "keyboardSelectable": false,
+          "markableVoid": false,
+          "readOnly": false,
+          "selectable": true,
+          "void": false,
+          "voidKind": null
+        },
+        "content": {
+          "allowedElementTypes": [
+            "aiChat",
+            "audio",
+            "blockquote",
+            "callout",
+            "codeBlock",
+            "columnGroup",
+            "details",
+            "equation",
+            "file",
+            "footnoteDefinition",
+            "heading",
+            "horizontalRule",
+            "image",
+            "mediaEmbed",
+            "paragraph",
+            "placeholder",
+            "summary",
+            "table",
+            "toc",
+            "video"
+          ],
+          "allowsText": false,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "element",
+            "type": "summary"
+          },
+          "max": null,
+          "min": 1
+        },
+        "contentRoots": [],
+        "construction": {
+          "materializedPropertyIds": [
+            "element:suggestionTransient@2a17b5ef44f7caad"
+          ],
+          "propertyIds": [
+            "element:aiPreview@65af9e5e9f595296",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
+            "element:suggestion@293b45e36ede53d8",
+            "element:suggestionTransient@2a17b5ef44f7caad"
+          ]
+        },
+        "groups": [
+          "all",
+          "block",
+          "element",
+          "plate:block-content"
+        ],
+        "propertyIds": [
+          "element:aiPreview@65af9e5e9f595296",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
+          "element:suggestion@293b45e36ede53d8",
+          "element:suggestionTransient@2a17b5ef44f7caad"
+        ],
+        "slice": {
+          "preserveContext": false,
+          "replaceWhenCovered": true
+        },
+        "type": "details"
       },
       {
         "behavior": {
@@ -1453,6 +1600,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -1462,9 +1610,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -1660,14 +1808,14 @@
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
             "element:level@94a59f5f3986e008",
             "element:lineHeight@6366f6699ad903fe",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
             "element:suggestion@293b45e36ede53d8",
             "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620"
@@ -1682,14 +1830,14 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
@@ -1792,12 +1940,12 @@
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:alt@92916bfcb7519666",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
             "element:naturalHeight@e20ef9fcaa621321",
             "element:naturalWidth@b685fe279997758e",
             "element:suggestion@293b45e36ede53d8",
@@ -1818,12 +1966,12 @@
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
           "element:alt@92916bfcb7519666",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:naturalHeight@e20ef9fcaa621321",
           "element:naturalWidth@b685fe279997758e",
           "element:suggestion@293b45e36ede53d8",
@@ -2180,13 +2328,13 @@
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
+            "element:checked@27c77ba8343da0d2",
+            "element:indent@08439eef12bbfdcb",
             "element:lineHeight@6366f6699ad903fe",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
+            "element:listRestart@35fa065cd84f9a60",
+            "element:listStart@81a20212d575ce89",
+            "element:listStyle@b90bb1ea0c1c1372",
+            "element:listType@8cf5be6ea266d5d9",
             "element:suggestion@293b45e36ede53d8",
             "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620"
@@ -2201,13 +2349,13 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
@@ -2345,6 +2493,68 @@
         },
         "content": {
           "allowedElementTypes": [
+            "date",
+            "emojiInput",
+            "footnoteInput",
+            "footnoteReference",
+            "inlineEquation",
+            "link",
+            "mention",
+            "mentionInput",
+            "slashInput"
+          ],
+          "allowsText": true,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "text"
+          },
+          "max": null,
+          "min": 1
+        },
+        "contentRoots": [],
+        "construction": {
+          "materializedPropertyIds": [
+            "element:suggestionTransient@2a17b5ef44f7caad"
+          ],
+          "propertyIds": [
+            "element:aiPreview@65af9e5e9f595296",
+            "element:suggestion@293b45e36ede53d8",
+            "element:suggestionTransient@2a17b5ef44f7caad"
+          ]
+        },
+        "groups": [
+          "all",
+          "block",
+          "element",
+          "plate:block-content",
+          "textBlock"
+        ],
+        "propertyIds": [
+          "element:aiPreview@65af9e5e9f595296",
+          "element:suggestion@293b45e36ede53d8",
+          "element:suggestionTransient@2a17b5ef44f7caad"
+        ],
+        "slice": {
+          "preserveContext": false,
+          "replaceWhenCovered": true
+        },
+        "type": "summary"
+      },
+      {
+        "behavior": {
+          "atom": false,
+          "editableIsland": false,
+          "inline": false,
+          "isolating": false,
+          "keyboardSelectable": false,
+          "markableVoid": false,
+          "readOnly": false,
+          "selectable": true,
+          "void": false,
+          "voidKind": null
+        },
+        "content": {
+          "allowedElementTypes": [
             "tableRow"
           ],
           "allowsText": false,
@@ -2409,6 +2619,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -2418,9 +2629,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -2581,80 +2792,6 @@
           "atom": false,
           "editableIsland": false,
           "inline": false,
-          "isolating": false,
-          "keyboardSelectable": false,
-          "markableVoid": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": false,
-          "voidKind": null
-        },
-        "content": {
-          "allowedElementTypes": [
-            "date",
-            "emojiInput",
-            "footnoteInput",
-            "footnoteReference",
-            "inlineEquation",
-            "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
-          ],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": null,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:checked@1fde254c47358b42",
-            "element:indent@5f9241f45cee2bb1",
-            "element:listRestart@4120ca961cdba6c4",
-            "element:listStart@7498d6193a54495b",
-            "element:listStyle@756fcf361d3112e2",
-            "element:listType@7f8d777a96e2f12b",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ]
-        },
-        "groups": [
-          "all",
-          "block",
-          "element",
-          "plate:block-content",
-          "textBlock"
-        ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "toggle"
-      },
-      {
-        "behavior": {
-          "atom": false,
-          "editableIsland": false,
-          "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
           "markableVoid": false,
@@ -2770,6 +2907,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -2779,9 +2917,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -2856,6 +2994,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -2865,9 +3004,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -2906,6 +3045,41 @@
             "kind": "text"
           },
           "max": 1,
+          "min": 1
+        }
+      ],
+      [
+        "element:details",
+        {
+          "allowedElementTypes": [
+            "aiChat",
+            "audio",
+            "blockquote",
+            "callout",
+            "codeBlock",
+            "columnGroup",
+            "details",
+            "equation",
+            "file",
+            "footnoteDefinition",
+            "heading",
+            "horizontalRule",
+            "image",
+            "mediaEmbed",
+            "paragraph",
+            "placeholder",
+            "summary",
+            "table",
+            "toc",
+            "video"
+          ],
+          "allowsText": false,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "element",
+            "type": "summary"
+          },
+          "max": null,
           "min": 1
         }
       ],
@@ -2968,6 +3142,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -2977,9 +3152,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -3202,6 +3377,29 @@
         }
       ],
       [
+        "element:summary",
+        {
+          "allowedElementTypes": [
+            "date",
+            "emojiInput",
+            "footnoteInput",
+            "footnoteReference",
+            "inlineEquation",
+            "link",
+            "mention",
+            "mentionInput",
+            "slashInput"
+          ],
+          "allowsText": true,
+          "allowsUnknownElements": false,
+          "defaultPlan": {
+            "kind": "text"
+          },
+          "max": null,
+          "min": 1
+        }
+      ],
+      [
         "element:table",
         {
           "allowedElementTypes": [
@@ -3227,6 +3425,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -3236,9 +3435,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -3281,29 +3480,6 @@
         }
       ],
       [
-        "element:toggle",
-        {
-          "allowedElementTypes": [
-            "date",
-            "emojiInput",
-            "footnoteInput",
-            "footnoteReference",
-            "inlineEquation",
-            "link",
-            "mention",
-            "mentionInput",
-            "slashInput"
-          ],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": null,
-          "min": 1
-        }
-      ],
-      [
         "element:video",
         {
           "allowedElementTypes": [
@@ -3336,6 +3512,7 @@
             "callout",
             "codeBlock",
             "columnGroup",
+            "details",
             "equation",
             "file",
             "footnoteDefinition",
@@ -3345,9 +3522,9 @@
             "mediaEmbed",
             "paragraph",
             "placeholder",
+            "summary",
             "table",
             "toc",
-            "toggle",
             "video"
           ],
           "allowsText": false,
@@ -3421,6 +3598,13 @@
         }
       ],
       [
+        "element:details",
+        {
+          "kind": "element",
+          "type": "summary"
+        }
+      ],
+      [
         "element:emojiInput",
         {
           "kind": "text"
@@ -3524,6 +3708,12 @@
         }
       ],
       [
+        "element:summary",
+        {
+          "kind": "text"
+        }
+      ],
+      [
         "element:table",
         {
           "kind": "element",
@@ -3546,12 +3736,6 @@
       ],
       [
         "element:toc",
-        {
-          "kind": "text"
-        }
-      ],
-      [
-        "element:toggle",
         {
           "kind": "text"
         }
@@ -3583,6 +3767,7 @@
           "column",
           "columnGroup",
           "date",
+          "details",
           "emojiInput",
           "equation",
           "file",
@@ -3600,11 +3785,11 @@
           "paragraph",
           "placeholder",
           "slashInput",
+          "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -3619,6 +3804,7 @@
           "codeLine",
           "column",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -3628,11 +3814,11 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -3648,6 +3834,7 @@
           "column",
           "columnGroup",
           "date",
+          "details",
           "emojiInput",
           "equation",
           "file",
@@ -3665,11 +3852,11 @@
           "paragraph",
           "placeholder",
           "slashInput",
+          "summary",
           "table",
           "tableCell",
           "tableRow",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -3696,6 +3883,7 @@
           "callout",
           "codeBlock",
           "columnGroup",
+          "details",
           "equation",
           "file",
           "footnoteDefinition",
@@ -3705,9 +3893,9 @@
           "mediaEmbed",
           "paragraph",
           "placeholder",
+          "summary",
           "table",
           "toc",
-          "toggle",
           "video"
         ]
       ],
@@ -3727,7 +3915,7 @@
           "image",
           "mediaEmbed",
           "paragraph",
-          "toggle",
+          "summary",
           "video"
         ]
       ]
@@ -3807,6 +3995,10 @@
         []
       ],
       [
+        "element:blockquote\u0000details",
+        []
+      ],
+      [
         "element:blockquote\u0000equation",
         []
       ],
@@ -3843,15 +4035,15 @@
         []
       ],
       [
+        "element:blockquote\u0000summary",
+        []
+      ],
+      [
         "element:blockquote\u0000table",
         []
       ],
       [
         "element:blockquote\u0000toc",
-        []
-      ],
-      [
-        "element:blockquote\u0000toggle",
         []
       ],
       [
@@ -3931,6 +4123,10 @@
         []
       ],
       [
+        "element:column\u0000details",
+        []
+      ],
+      [
         "element:column\u0000equation",
         []
       ],
@@ -3971,6 +4167,10 @@
         []
       ],
       [
+        "element:column\u0000summary",
+        []
+      ],
+      [
         "element:column\u0000table",
         []
       ],
@@ -3979,15 +4179,91 @@
         []
       ],
       [
-        "element:column\u0000toggle",
-        []
-      ],
-      [
         "element:column\u0000video",
         []
       ],
       [
         "element:date\u0000\u0000text",
+        []
+      ],
+      [
+        "element:details\u0000aiChat",
+        []
+      ],
+      [
+        "element:details\u0000audio",
+        []
+      ],
+      [
+        "element:details\u0000blockquote",
+        []
+      ],
+      [
+        "element:details\u0000callout",
+        []
+      ],
+      [
+        "element:details\u0000codeBlock",
+        []
+      ],
+      [
+        "element:details\u0000columnGroup",
+        []
+      ],
+      [
+        "element:details\u0000details",
+        []
+      ],
+      [
+        "element:details\u0000equation",
+        []
+      ],
+      [
+        "element:details\u0000file",
+        []
+      ],
+      [
+        "element:details\u0000footnoteDefinition",
+        []
+      ],
+      [
+        "element:details\u0000heading",
+        []
+      ],
+      [
+        "element:details\u0000horizontalRule",
+        []
+      ],
+      [
+        "element:details\u0000image",
+        []
+      ],
+      [
+        "element:details\u0000mediaEmbed",
+        []
+      ],
+      [
+        "element:details\u0000paragraph",
+        []
+      ],
+      [
+        "element:details\u0000placeholder",
+        []
+      ],
+      [
+        "element:details\u0000summary",
+        []
+      ],
+      [
+        "element:details\u0000table",
+        []
+      ],
+      [
+        "element:details\u0000toc",
+        []
+      ],
+      [
+        "element:details\u0000video",
         []
       ],
       [
@@ -4063,6 +4339,10 @@
         []
       ],
       [
+        "element:footnoteDefinition\u0000details",
+        []
+      ],
+      [
         "element:footnoteDefinition\u0000equation",
         []
       ],
@@ -4099,15 +4379,15 @@
         []
       ],
       [
+        "element:footnoteDefinition\u0000summary",
+        []
+      ],
+      [
         "element:footnoteDefinition\u0000table",
         []
       ],
       [
         "element:footnoteDefinition\u0000toc",
-        []
-      ],
-      [
-        "element:footnoteDefinition\u0000toggle",
         []
       ],
       [
@@ -4311,6 +4591,46 @@
         []
       ],
       [
+        "element:summary\u0000date",
+        []
+      ],
+      [
+        "element:summary\u0000emojiInput",
+        []
+      ],
+      [
+        "element:summary\u0000footnoteInput",
+        []
+      ],
+      [
+        "element:summary\u0000footnoteReference",
+        []
+      ],
+      [
+        "element:summary\u0000inlineEquation",
+        []
+      ],
+      [
+        "element:summary\u0000link",
+        []
+      ],
+      [
+        "element:summary\u0000mention",
+        []
+      ],
+      [
+        "element:summary\u0000mentionInput",
+        []
+      ],
+      [
+        "element:summary\u0000slashInput",
+        []
+      ],
+      [
+        "element:summary\u0000\u0000text",
+        []
+      ],
+      [
         "element:tableCell\u0000aiChat",
         []
       ],
@@ -4332,6 +4652,10 @@
       ],
       [
         "element:tableCell\u0000columnGroup",
+        []
+      ],
+      [
+        "element:tableCell\u0000details",
         []
       ],
       [
@@ -4371,15 +4695,15 @@
         []
       ],
       [
+        "element:tableCell\u0000summary",
+        []
+      ],
+      [
         "element:tableCell\u0000table",
         []
       ],
       [
         "element:tableCell\u0000toc",
-        []
-      ],
-      [
-        "element:tableCell\u0000toggle",
         []
       ],
       [
@@ -4396,46 +4720,6 @@
       ],
       [
         "element:toc\u0000\u0000text",
-        []
-      ],
-      [
-        "element:toggle\u0000date",
-        []
-      ],
-      [
-        "element:toggle\u0000emojiInput",
-        []
-      ],
-      [
-        "element:toggle\u0000footnoteInput",
-        []
-      ],
-      [
-        "element:toggle\u0000footnoteReference",
-        []
-      ],
-      [
-        "element:toggle\u0000inlineEquation",
-        []
-      ],
-      [
-        "element:toggle\u0000link",
-        []
-      ],
-      [
-        "element:toggle\u0000mention",
-        []
-      ],
-      [
-        "element:toggle\u0000mentionInput",
-        []
-      ],
-      [
-        "element:toggle\u0000slashInput",
-        []
-      ],
-      [
-        "element:toggle\u0000\u0000text",
         []
       ],
       [
@@ -4503,6 +4787,10 @@
         []
       ],
       [
+        "root\u0000details",
+        []
+      ],
+      [
         "root\u0000equation",
         []
       ],
@@ -4539,6 +4827,10 @@
         []
       ],
       [
+        "root\u0000summary",
+        []
+      ],
+      [
         "root\u0000table",
         []
       ],
@@ -4547,19 +4839,15 @@
         []
       ],
       [
-        "root\u0000toggle",
-        []
-      ],
-      [
         "root\u0000video",
         []
       ]
     ]
   },
-  "fingerprint": "fnv1a64:983f2e92578bb5da",
+  "fingerprint": "fnv1a64:7b514f094be6c65e",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:983f2e92578bb5da",
+    "fingerprint": "fnv1a64:7b514f094be6c65e",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4571,6 +4859,7 @@
         "callout",
         "codeBlock",
         "columnGroup",
+        "details",
         "equation",
         "file",
         "footnoteDefinition",
@@ -4580,9 +4869,9 @@
         "mediaEmbed",
         "paragraph",
         "placeholder",
+        "summary",
         "table",
         "toc",
-        "toggle",
         "video"
       ],
       "allowsText": false,
@@ -4726,7 +5015,7 @@
           "required": false
         },
         "exclusiveGroupIds": [],
-        "id": "element:checked@1fde254c47358b42",
+        "id": "element:checked@27c77ba8343da0d2",
         "key": "checked",
         "lifecycle": {
           "copy": "preserve",
@@ -4743,10 +5032,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -4883,7 +5172,7 @@
           "validationVersion": 1
         },
         "exclusiveGroupIds": [],
-        "id": "element:indent@5f9241f45cee2bb1",
+        "id": "element:indent@08439eef12bbfdcb",
         "key": "indent",
         "lifecycle": {
           "copy": "preserve",
@@ -4900,10 +5189,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -5066,7 +5355,7 @@
           "validationVersion": 1
         },
         "exclusiveGroupIds": [],
-        "id": "element:listRestart@4120ca961cdba6c4",
+        "id": "element:listRestart@35fa065cd84f9a60",
         "key": "listRestart",
         "lifecycle": {
           "copy": "preserve",
@@ -5083,10 +5372,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -5098,7 +5387,7 @@
           "validationVersion": 1
         },
         "exclusiveGroupIds": [],
-        "id": "element:listStart@7498d6193a54495b",
+        "id": "element:listStart@81a20212d575ce89",
         "key": "listStart",
         "lifecycle": {
           "copy": "preserve",
@@ -5115,10 +5404,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -5129,7 +5418,7 @@
           "required": false
         },
         "exclusiveGroupIds": [],
-        "id": "element:listStyle@756fcf361d3112e2",
+        "id": "element:listStyle@b90bb1ea0c1c1372",
         "key": "listStyle",
         "lifecycle": {
           "copy": "preserve",
@@ -5146,10 +5435,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -5165,7 +5454,7 @@
           ]
         },
         "exclusiveGroupIds": [],
-        "id": "element:listType@7f8d777a96e2f12b",
+        "id": "element:listType@8cf5be6ea266d5d9",
         "key": "listType",
         "lifecycle": {
           "copy": "preserve",
@@ -5182,10 +5471,10 @@
           "types": [
             "blockquote",
             "codeBlock",
+            "details",
             "heading",
             "image",
-            "paragraph",
-            "toggle"
+            "paragraph"
           ]
         }
       },
@@ -6865,7 +7154,7 @@
         []
       ],
       [
-        "element:checked@1fde254c47358b42",
+        "element:checked@27c77ba8343da0d2",
         []
       ],
       [
@@ -6889,7 +7178,7 @@
         []
       ],
       [
-        "element:indent@5f9241f45cee2bb1",
+        "element:indent@08439eef12bbfdcb",
         []
       ],
       [
@@ -6917,19 +7206,19 @@
         []
       ],
       [
-        "element:listRestart@4120ca961cdba6c4",
+        "element:listRestart@35fa065cd84f9a60",
         []
       ],
       [
-        "element:listStart@7498d6193a54495b",
+        "element:listStart@81a20212d575ce89",
         []
       ],
       [
-        "element:listStyle@756fcf361d3112e2",
+        "element:listStyle@b90bb1ea0c1c1372",
         []
       ],
       [
-        "element:listType@7f8d777a96e2f12b",
+        "element:listType@8cf5be6ea266d5d9",
         []
       ],
       [
@@ -7229,12 +7518,12 @@
         "blockquote",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ]
@@ -7254,13 +7543,13 @@
         "codeBlock",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ]
@@ -7298,6 +7587,20 @@
           "element:suggestionData@12adde23f3c7778a",
           "element:suggestionTransient@2a17b5ef44f7caad",
           "element:value@498b315ffbe887a5"
+        ]
+      ],
+      [
+        "details",
+        [
+          "element:aiPreview@65af9e5e9f595296",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
+          "element:suggestion@293b45e36ede53d8",
+          "element:suggestionTransient@2a17b5ef44f7caad"
         ]
       ],
       [
@@ -7367,14 +7670,14 @@
         "heading",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
@@ -7393,12 +7696,12 @@
         [
           "element:aiPreview@65af9e5e9f595296",
           "element:alt@92916bfcb7519666",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:naturalHeight@e20ef9fcaa621321",
           "element:naturalWidth@b685fe279997758e",
           "element:suggestion@293b45e36ede53d8",
@@ -7470,13 +7773,13 @@
         "paragraph",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
+          "element:checked@27c77ba8343da0d2",
+          "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
+          "element:listRestart@35fa065cd84f9a60",
+          "element:listStart@81a20212d575ce89",
+          "element:listStyle@b90bb1ea0c1c1372",
+          "element:listType@8cf5be6ea266d5d9",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
@@ -7501,6 +7804,14 @@
           "element:trigger@22e2f15f83b62e9d",
           "element:userId@2d6c7ab842a758c3",
           "element:value@902973597f984fa0"
+        ]
+      ],
+      [
+        "summary",
+        [
+          "element:aiPreview@65af9e5e9f595296",
+          "element:suggestion@293b45e36ede53d8",
+          "element:suggestionTransient@2a17b5ef44f7caad"
         ]
       ],
       [
@@ -7539,20 +7850,6 @@
         "toc",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
-        ]
-      ],
-      [
-        "toggle",
-        [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:checked@1fde254c47358b42",
-          "element:indent@5f9241f45cee2bb1",
-          "element:listRestart@4120ca961cdba6c4",
-          "element:listStart@7498d6193a54495b",
-          "element:listStyle@756fcf361d3112e2",
-          "element:listType@7f8d777a96e2f12b",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ]
@@ -7618,7 +7915,7 @@
         }
       ],
       [
-        "element:checked@1fde254c47358b42",
+        "element:checked@27c77ba8343da0d2",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7672,7 +7969,7 @@
         }
       ],
       [
-        "element:indent@5f9241f45cee2bb1",
+        "element:indent@08439eef12bbfdcb",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7735,7 +8032,7 @@
         }
       ],
       [
-        "element:listRestart@4120ca961cdba6c4",
+        "element:listRestart@35fa065cd84f9a60",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7744,7 +8041,7 @@
         }
       ],
       [
-        "element:listStart@7498d6193a54495b",
+        "element:listStart@81a20212d575ce89",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7753,7 +8050,7 @@
         }
       ],
       [
-        "element:listStyle@756fcf361d3112e2",
+        "element:listStyle@b90bb1ea0c1c1372",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -7762,7 +8059,7 @@
         }
       ],
       [
-        "element:listType@7f8d777a96e2f12b",
+        "element:listType@8cf5be6ea266d5d9",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -8414,7 +8711,7 @@
           [
             "checked",
             [
-              "element:checked@1fde254c47358b42"
+              "element:checked@27c77ba8343da0d2"
             ]
           ],
           [
@@ -8450,7 +8747,7 @@
           [
             "indent",
             [
-              "element:indent@5f9241f45cee2bb1"
+              "element:indent@08439eef12bbfdcb"
             ]
           ],
           [
@@ -8487,25 +8784,25 @@
           [
             "listRestart",
             [
-              "element:listRestart@4120ca961cdba6c4"
+              "element:listRestart@35fa065cd84f9a60"
             ]
           ],
           [
             "listStart",
             [
-              "element:listStart@7498d6193a54495b"
+              "element:listStart@81a20212d575ce89"
             ]
           ],
           [
             "listStyle",
             [
-              "element:listStyle@756fcf361d3112e2"
+              "element:listStyle@b90bb1ea0c1c1372"
             ]
           ],
           [
             "listType",
             [
-              "element:listType@7f8d777a96e2f12b"
+              "element:listType@8cf5be6ea266d5d9"
             ]
           ],
           [
@@ -8824,7 +9121,7 @@
         "replace"
       ],
       [
-        "element:checked@1fde254c47358b42",
+        "element:checked@27c77ba8343da0d2",
         "replace"
       ],
       [
@@ -8848,7 +9145,7 @@
         "replace"
       ],
       [
-        "element:indent@5f9241f45cee2bb1",
+        "element:indent@08439eef12bbfdcb",
         "replace"
       ],
       [
@@ -8876,19 +9173,19 @@
         "replace"
       ],
       [
-        "element:listRestart@4120ca961cdba6c4",
+        "element:listRestart@35fa065cd84f9a60",
         "replace"
       ],
       [
-        "element:listStart@7498d6193a54495b",
+        "element:listStart@81a20212d575ce89",
         "replace"
       ],
       [
-        "element:listStyle@756fcf361d3112e2",
+        "element:listStyle@b90bb1ea0c1c1372",
         "replace"
       ],
       [
-        "element:listType@7f8d777a96e2f12b",
+        "element:listType@8cf5be6ea266d5d9",
         "replace"
       ],
       [
@@ -9401,6 +9698,32 @@
         ]
       ],
       [
+        "details",
+        [
+          "text:ai@2f2791ccdc09f005",
+          "text:backgroundColor@cb359bb332a9fb72",
+          "text:bold@66c11ef06c87ed62",
+          "text:code@6939885f562d0514",
+          "text:codeSyntax@7dfa8f6bcd561faf",
+          "text:color@6093816ecb087592",
+          "text:comment_*@3803469ee50dda46",
+          "text:comment@8b8eac6aeb59fd1e",
+          "text:commentTransient@fa9b54e77ec3ce5a",
+          "text:fontFamily@b00b412164ea3c68",
+          "text:fontSize@5b3b0f080627a70d",
+          "text:highlight@b4c2a38d602e5889",
+          "text:italic@4f9fcc9f4f2d32c1",
+          "text:kbd@26be899c0d1b681a",
+          "text:script@508ca8ff29baaad6",
+          "text:strikethrough@9568299587c9032e",
+          "text:suggestion_*@e58430868d4e66c3",
+          "text:suggestion@25176baff2678487",
+          "text:suggestionData@4dd34c29465a5e07",
+          "text:suggestionTransient@2a17b5ef44f7caad",
+          "text:underline@e3a9db819714dd91"
+        ]
+      ],
+      [
         "emojiInput",
         [
           "text:ai@2f2791ccdc09f005",
@@ -9843,6 +10166,32 @@
         ]
       ],
       [
+        "summary",
+        [
+          "text:ai@2f2791ccdc09f005",
+          "text:backgroundColor@cb359bb332a9fb72",
+          "text:bold@66c11ef06c87ed62",
+          "text:code@6939885f562d0514",
+          "text:codeSyntax@7dfa8f6bcd561faf",
+          "text:color@6093816ecb087592",
+          "text:comment_*@3803469ee50dda46",
+          "text:comment@8b8eac6aeb59fd1e",
+          "text:commentTransient@fa9b54e77ec3ce5a",
+          "text:fontFamily@b00b412164ea3c68",
+          "text:fontSize@5b3b0f080627a70d",
+          "text:highlight@b4c2a38d602e5889",
+          "text:italic@4f9fcc9f4f2d32c1",
+          "text:kbd@26be899c0d1b681a",
+          "text:script@508ca8ff29baaad6",
+          "text:strikethrough@9568299587c9032e",
+          "text:suggestion_*@e58430868d4e66c3",
+          "text:suggestion@25176baff2678487",
+          "text:suggestionData@4dd34c29465a5e07",
+          "text:suggestionTransient@2a17b5ef44f7caad",
+          "text:underline@e3a9db819714dd91"
+        ]
+      ],
+      [
         "table",
         [
           "text:ai@2f2791ccdc09f005",
@@ -9947,32 +10296,6 @@
         ]
       ],
       [
-        "toggle",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
-          "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
         "video",
         [
           "text:ai@2f2791ccdc09f005",
@@ -10014,6 +10337,7 @@
       "column",
       "columnGroup",
       "date",
+      "details",
       "emojiInput",
       "equation",
       "file",
@@ -10031,11 +10355,11 @@
       "paragraph",
       "placeholder",
       "slashInput",
+      "summary",
       "table",
       "tableCell",
       "tableRow",
       "toc",
-      "toggle",
       "video"
     ],
     "groupNames": [
@@ -10053,23 +10377,23 @@
       "element:backgroundColor@abc86032ce5e8381",
       "element:backgroundColor@e4bf085a06d2acd9",
       "element:borders@1161f7efe55c616d",
-      "element:checked@1fde254c47358b42",
+      "element:checked@27c77ba8343da0d2",
       "element:colSpan@263bf74d05ba194a",
       "element:columnWidths@ee103944498d7d99",
       "element:header@e1fcb0f762cb1e47",
       "element:height@4222b97bc19b7723",
       "element:icon@b610536939eb3f13",
-      "element:indent@5f9241f45cee2bb1",
+      "element:indent@08439eef12bbfdcb",
       "element:label@1a006ba1885943ec",
       "element:language@f075c3fe4239c09c",
       "element:latex@551cf2c0f2fc3a2d",
       "element:latex@6c61d1f3c8305dce",
       "element:level@94a59f5f3986e008",
       "element:lineHeight@6366f6699ad903fe",
-      "element:listRestart@4120ca961cdba6c4",
-      "element:listStart@7498d6193a54495b",
-      "element:listStyle@756fcf361d3112e2",
-      "element:listType@7f8d777a96e2f12b",
+      "element:listRestart@35fa065cd84f9a60",
+      "element:listStart@81a20212d575ce89",
+      "element:listStyle@b90bb1ea0c1c1372",
+      "element:listType@8cf5be6ea266d5d9",
       "element:marginLeft@da82a82a76b6f0f1",
       "element:mediaType@4b72b6953a6e3307",
       "element:name@1069a658ff703b9d",

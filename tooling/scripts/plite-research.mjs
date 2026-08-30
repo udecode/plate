@@ -144,7 +144,7 @@ function summarizeRichTextStructural() {
     benchmarkCommand:
       'pnpm bench:targets:run -- core-rich-text-operations-compare',
     correctnessCommand:
-      'pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
+      'pnpm --filter plitejs/react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
     metricWork:
       'Add METRIC rich_text_structural_ops_worst_ratio=<number> to the rich-text compare benchmark or a thin artifact reader before running packets.',
     reason:
@@ -174,7 +174,7 @@ function summarizeHistory() {
     direction: 'lower',
     baseline: `${worst.metric} ${worst.ratio}x legacy (${worst.current}ms vs ${worst.legacy}ms)`,
     benchmarkCommand: 'pnpm bench:targets:run -- history-compare',
-    correctnessCommand: 'pnpm --filter @platejs/plite-history test',
+    correctnessCommand: 'pnpm --filter plitejs/history test',
     metricWork:
       'Add METRIC history_fragment_ops_worst_ratio=<number> to the history compare benchmark or a thin artifact reader.',
     reason:
@@ -203,7 +203,7 @@ function summarizeObservation() {
     direction: 'lower',
     baseline: `${worst.metric} ${worst.ratio}x legacy (${worst.current}ms vs ${worst.legacy}ms)`,
     benchmarkCommand: 'pnpm bench:targets:run -- core-observation-compare',
-    correctnessCommand: 'pnpm --filter @platejs/plite test',
+    correctnessCommand: 'pnpm --filter plitejs test',
     metricWork:
       'Add METRIC core_observation_reads_worst_ratio=<number> to the observation compare benchmark or a thin artifact reader.',
     reason:
@@ -338,7 +338,7 @@ function summarizeRuntimeFanout(withChecks) {
           'test/surface-contract.test.tsx',
         ],
         {
-          cwd: path.join(root, 'packages/plite-react'),
+          cwd: path.join(root, 'packages/plitejs'),
           encoding: 'utf-8',
           maxBuffer: 16 * 1024 * 1024,
           stdio: 'pipe',
@@ -366,7 +366,7 @@ function summarizeRuntimeFanout(withChecks) {
     benchmarkCommand:
       'add a small METRIC benchmark around root insert/reorder/replace runtime-node selector checks',
     correctnessCommand:
-      'pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
+      'pnpm --filter plitejs/react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
     metricWork:
       'Promote selector-runtime-node-check counts from the contract tests/profiler into METRIC slate_react_runtime_node_fanout_count=<number>.',
     reason:

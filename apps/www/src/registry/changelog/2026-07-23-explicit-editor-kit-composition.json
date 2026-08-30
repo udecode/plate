@@ -54,27 +54,6 @@
       ]
     },
     {
-      "name": "list-classic-kit",
-      "files": [],
-      "definitionFiles": [],
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "registry-file-missing",
-          "message": "No exact registry source file found for list-classic-kit."
-        }
-      ]
-    },
-    {
-      "name": "list-classic-demo",
-      "files": [
-        "apps/www/src/registry/examples/list-classic-demo.tsx",
-        "apps/www/src/registry/examples/values/list-classic-value.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "playground-demo",
       "files": [
         "apps/www/src/registry/examples/demo.tsx",
@@ -128,8 +107,6 @@
         "editor-kit",
         "fixed-toolbar-kit",
         "floating-toolbar-kit",
-        "list-classic-kit",
-        "list-classic-demo",
         "playground-demo",
         "plate-to-html",
         "single-block-demo"

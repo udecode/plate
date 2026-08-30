@@ -1,80 +1,56 @@
 import assert from 'node:assert/strict';
-import {
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
 import { runTypeScriptConsumer } from './check-plite-release-artifacts.mjs';
 
-test('rejects a packed declaration that imports a missing Core symbol', (t) => {
+test('rejects a packed declaration that imports a missing Plate symbol', (t) => {
   const root = mkdtempSync(join(tmpdir(), 'plite-release-types-'));
   const consumerDirectory = join(root, 'consumer');
-  const coreDirectory = join(root, 'core');
-  const yjsDirectory = join(
-    consumerDirectory,
-    'node_modules',
-    '@platejs',
-    'yjs'
-  );
+  const plateDirectory = join(consumerDirectory, 'node_modules', 'platejs');
+  const yjsDirectory = join(plateDirectory, 'yjs');
 
   t.after(() => {
     rmSync(root, { force: true, recursive: true });
   });
-  mkdirSync(coreDirectory, { recursive: true });
-  mkdirSync(join(yjsDirectory, 'dist'), { recursive: true });
+  mkdirSync(plateDirectory, { recursive: true });
+  mkdirSync(yjsDirectory, { recursive: true });
+  mkdirSync(join(consumerDirectory, 'node_modules'), { recursive: true });
   writeFileSync(
-    join(coreDirectory, 'package.json'),
+    join(plateDirectory, 'package.json'),
     JSON.stringify({
       exports: {
         '.': {
           default: './index.js',
           types: './index.d.ts',
         },
-      },
-      name: '@platejs/core',
-      type: 'module',
-    })
-  );
-  writeFileSync(
-    join(coreDirectory, 'index.d.ts'),
-    'export type Present = true;'
-  );
-  writeFileSync(join(coreDirectory, 'index.js'), 'export {};');
-  symlinkSync(
-    coreDirectory,
-    join(consumerDirectory, 'node_modules', '@platejs', 'core'),
-    'junction'
-  );
-  writeFileSync(
-    join(yjsDirectory, 'package.json'),
-    JSON.stringify({
-      exports: {
-        '.': {
-          default: './dist/index.js',
-          types: './dist/index.d.ts',
+        './yjs': {
+          default: './yjs/index.js',
+          types: './yjs/index.d.ts',
         },
       },
-      name: '@platejs/yjs',
+      name: 'platejs',
       type: 'module',
     })
   );
   writeFileSync(
-    join(yjsDirectory, 'dist', 'index.d.ts'),
+    join(plateDirectory, 'index.d.ts'),
+    'export type Present = true;'
+  );
+  writeFileSync(join(plateDirectory, 'index.js'), 'export {};');
+  writeFileSync(
+    join(yjsDirectory, 'index.d.ts'),
     [
-      "import type { MissingCoreSymbol } from '@platejs/core';",
+      "import type { MissingCoreSymbol } from 'platejs';",
       'export type Probe = MissingCoreSymbol;',
     ].join('\n')
   );
-  writeFileSync(join(yjsDirectory, 'dist', 'index.js'), 'export {};');
+  writeFileSync(join(yjsDirectory, 'index.js'), 'export {};');
   writeFileSync(
     join(consumerDirectory, 'consumer.ts'),
-    "import type { Probe } from '@platejs/yjs'; declare const probe: Probe; void probe;"
+    "import type { Probe } from 'platejs/yjs'; declare const probe: Probe; void probe;"
   );
   writeFileSync(
     join(consumerDirectory, 'package.json'),
@@ -96,5 +72,5 @@ test('rejects a packed declaration that imports a missing Core symbol', (t) => {
 
   assert.throws(() => {
     runTypeScriptConsumer(consumerDirectory, 'tsconfig.json');
-  }, /TS2305: Module .*@platejs\/core.*MissingCoreSymbol/);
+  }, /TS2305: Module .*platejs.*MissingCoreSymbol/);
 });

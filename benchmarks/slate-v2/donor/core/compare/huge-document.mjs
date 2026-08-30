@@ -36,41 +36,27 @@ let CoreInternal = {};
 let isPlite = false;
 
 try {
-  Core = await import('@platejs/plite');
-  CoreInternal = await import('@platejs/plite/internal');
+  Core = await import('platejs');
+  CoreInternal = await import('@platejs/test');
   isPlite = true;
 } catch {
   try {
     Core = await import('../../packages/slate/src/index.ts');
     CoreInternal = await import('../../packages/slate/src/internal/index.ts');
   } catch {
-    try {
-      Core = await import('slate');
-    } catch {
-      Core = await import('@platejs/slate');
-    }
-
-    try {
-      CoreInternal = await import('@platejs/slate/internal');
-    } catch {}
+    Core = await import('slate');
   }
 }
 
 let History = {};
 
 try {
-  History = await import('@platejs/plite-history');
+  History = await import('platejs/history');
 } catch {
   try {
     History = await import('../../packages/slate-history/src/index.ts');
   } catch {
-    try {
-      History = await import('slate-history');
-    } catch {
-      try {
-        History = await import('@platejs/slate-history');
-      } catch {}
-    }
+    History = await import('slate-history');
   }
 }
 
@@ -477,7 +463,7 @@ const legacyPackageManager = currentOnly
   : await parsePackageManager(legacyRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
   await buildRepo(currentRepo, currentPackageManager, './packages/plite-history');
   if (legacyPackageManager) {
     await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');

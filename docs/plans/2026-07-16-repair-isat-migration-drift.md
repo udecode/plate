@@ -34,7 +34,7 @@ Completion threshold:
 Verification surface:
 - Exact `main` inventory under production `apps/www/src/**` and
   `packages/*/src/**`, excluding tests, docs, changelogs, and Slate internals.
-- Core, Selection, Table, List Classic, Suggestion, Toggle, and registry owner
+- Core, Selection, Table, Legacy list model, Suggestion, Toggle, and registry owner
   tests; affected package and `www` source-first typechecks.
 - `pnpm check:core` across its 45 covered Core/reviewed packages.
 - Browser routes `/blocks/block-selection-demo`, `/blocks/editor-ai`, and
@@ -142,8 +142,8 @@ Review matrix:
 | `tabbable-kit.tsx` root point checks | 4 | keep-in-plate after repair | registry TabbableKit | start/end direct tests | none |
 | `ai-menu.tsx` root end check | 4 | keep-in-plate after repair | registry AI menu | direct behavior tests | none |
 | `OverridePlugin.ts` split reset | 5 | keep-in-plate after repair | Core override middleware | start split regression | none |
-| `isAcrossListItems.ts` | 3 | keep-in-plate after repair | List Classic query | full package tests | none |
-| `toggleList.ts` | 3 | keep-in-plate after repair | List Classic transform | full package tests | none |
+| `isAcrossListItems.ts` | 3 | keep-in-plate after repair | Legacy list model query | full package tests | none |
+| `toggleList.ts` | 3 | keep-in-plate after repair | Legacy list model transform | full package tests | none |
 | `BlockSelectionPlugin.tsx` | 5 | keep-in-plate after repair | Selection plugin | progressive/disabled tests and Browser | none |
 | `deleteSuggestion.ts` | 4 | keep-in-plate after repair | Suggestion transaction | full package tests | none |
 | `withSuggestion.ts` | 3 | keep-in-plate after repair | Suggestion middleware | full package tests | none |
@@ -212,7 +212,7 @@ Changed list:
 |-------|---------------------|
 | runtime | 13 drift owners plus Core shortcut priority registration |
 | tests | Core Override/hotkeys, Selection, Table, and two registry specs |
-| manifest | List Classic test-only Media dev dependency and lock importer |
+| manifest | Legacy list model test-only Media dev dependency and lock importer |
 | plan | this execution ledger |
 | generated/release | none |
 
@@ -241,7 +241,7 @@ Error attempts:
 |------------------------|-------|----------------|------------|
 | Override used `tx.break.insert()` inside its own middleware | 1 | invoke captured `next()` | recursion removed; regression passes |
 | package tests resolved stale/missing Utils output | 1 | run the documented reinstall repair | full package tests passed |
-| List Classic test imported undeclared Media package | 1 | declare test-only dev edge and install | source-first graph passed |
+| Legacy list model test imported undeclared Media package | 1 | declare test-only dev edge and install | source-first graph passed |
 | `www` typecheck needed Table artifact after aborted graph | 1 | build the intentional artifact owner | `www` typecheck passed |
 | narrow Table fixture inferred an invariant generic | 1 | deliberately widen the test editor to `Value` | typecheck passed |
 | first Browser URL used a non-existent block name | 1 | inspect registry owner and use exact routes | target routes returned 200 |
@@ -254,7 +254,7 @@ Verification evidence:
   `tabbable-kit.spec.ts` plus `ai-menu.spec.tsx` passed 5/5.
 - Full affected package tests: Core 736, Selection 113, Table 271, List
   Classic 124, Suggestion 103, Toggle 13; zero failures.
-- Source-first typechecks passed for Core, Selection, Table, List Classic,
+- Source-first typechecks passed for Core, Selection, Table, Legacy list model,
   Suggestion, Toggle, and `www`; affected build graph passed 20/20 tasks.
 - `pnpm check:core` passed typecheck/lint/tests for all 45 configured packages.
 - `pnpm lint:fix` checked 4,819 files; final package lint and

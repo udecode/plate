@@ -5,7 +5,7 @@ import {
   BaseMediaEmbedPlugin,
   BasePlaceholderPlugin,
   BaseVideoPlugin,
-} from '@platejs/media';
+} from 'platejs/media';
 
 import { AudioElementStatic } from '@/registry/components/editor/media-audio-static';
 import { MediaEmbedElementStatic } from '@/registry/components/editor/media-embed-static';

@@ -43,11 +43,11 @@ The fastest way to add toolbar functionality is with the `FixedToolbarKit` and `
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { FixedToolbarKit } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbarKit } from '@/components/editor/floating-toolbar';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...FixedToolbarKit,
@@ -91,7 +91,7 @@ const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
   },
 });
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     fixedToolbarPlugin,
@@ -154,19 +154,20 @@ This example creates a "Bold" button.
 
 ```tsx
 import { BoldIcon } from 'lucide-react';
+import { BoldPlugin } from 'platejs/react';
 
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
-    <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
+    <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
       <BoldIcon />
     </MarkToolbarButton>
   );
 }
 ```
 
-- `nodeType`: Specifies the mark to toggle (e.g., `bold`, `italic`).
+- `plugin`: Specifies the mark plugin to toggle (for example, `BoldPlugin`).
 - `tooltip`: Provides a helpful tooltip for the button.
 - `MarkToolbarButton` reads mark state and handles toggling directly in the component.
 

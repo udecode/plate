@@ -63,8 +63,8 @@ Verification surface:
 - `pnpm turbo typecheck --filter=./packages/core`
 - `pnpm --filter @platejs/core test`
 - `pnpm --filter @platejs/core build`
-- touched-package typecheck for `core`, `basic-styles`, `basic-nodes`, `callout`, `code-block`, `comment`, `date`, `list-classic`, `math`, `media`, `mention`, and `tag`
-- touched-package tests for `basic-styles`, `basic-nodes`, `callout`, `code-block`, `comment`, `date`, `list-classic`, `math`, `media`, `mention`, and `tag`
+- touched-package typecheck for `core`, `basic-styles`, `basic-nodes`, `callout`, `code-block`, `comment`, `date`, `legacy-list-model`, `math`, `media`, `mention`, and `tag`
+- touched-package tests for `basic-styles`, `basic-nodes`, `callout`, `code-block`, `comment`, `date`, `legacy-list-model`, `math`, `media`, `mention`, and `tag`
 - touched-package builds plus `platejs` facade build
 - Source/declaration audits for `extendTxGroup`, rejected names, and string-index tx declarations.
 
@@ -248,7 +248,7 @@ Implementation notes:
 - `packages/core/src/lib/plugin/SlatePlugin.ts` and `packages/core/src/react/plugin/PlatePlugin.ts` now type `extendTx` as `PluginTx<C['key'], ...>` and `extendTxGroup` as `PluginTx<K, ...>`.
 - `packages/core/src/lib/plugin/createPlitePlugin.ts` normalizes both public APIs into internal map-shaped `__txExtensions`.
 - `packages/core/src/react/plugin/toPlatePlugin.ts` wraps `extendTxGroup`.
-- Migrated tx callers in basic styles/nodes, callout, code-block, comment, date, list-classic, math, media, mention, and tag.
+- Migrated tx callers in basic styles/nodes, callout, code-block, comment, date, legacy-list-model, math, media, mention, and tag.
 - `packages/comment/src/lib/BaseCommentRuntimePlugin.spec.ts` now uses current `editor.api.comment` and `editor.update(tx => tx.comment...)`.
 
 Review fixes:
@@ -266,9 +266,9 @@ Error attempts:
 Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/core` -> pass.
 - `pnpm --filter @platejs/core test` -> 955 pass.
-- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/basic-styles --filter=./packages/basic-nodes --filter=./packages/callout --filter=./packages/code-block --filter=./packages/comment --filter=./packages/date --filter=./packages/list-classic --filter=./packages/math --filter=./packages/media --filter=./packages/mention --filter=./packages/tag` -> pass, 25 tasks.
-- `pnpm --filter @platejs/basic-styles --filter @platejs/basic-nodes --filter @platejs/callout --filter @platejs/code-block --filter @platejs/comment --filter @platejs/date --filter @platejs/list-classic --filter @platejs/math --filter @platejs/media --filter @platejs/mention --filter @platejs/tag test` -> pass.
-- `pnpm --filter @platejs/core --filter @platejs/basic-styles --filter @platejs/basic-nodes --filter @platejs/callout --filter @platejs/code-block --filter @platejs/comment --filter @platejs/date --filter @platejs/list-classic --filter @platejs/math --filter @platejs/media --filter @platejs/mention --filter @platejs/tag --filter platejs build` -> pass.
+- `pnpm turbo typecheck --filter=./packages/core --filter=./packages/basic-styles --filter=./packages/basic-nodes --filter=./packages/callout --filter=./packages/code-block --filter=./packages/comment --filter=./packages/date --filter=./packages/platejs/src/features/list --filter=./packages/math --filter=./packages/media --filter=./packages/mention --filter=./packages/tag` -> pass, 25 tasks.
+- `pnpm --filter @platejs/basic-styles --filter @platejs/basic-nodes --filter @platejs/callout --filter @platejs/code-block --filter @platejs/comment --filter @platejs/date --filter platejs --filter @platejs/math --filter @platejs/media --filter @platejs/mention --filter @platejs/tag test` -> pass.
+- `pnpm --filter @platejs/core --filter @platejs/basic-styles --filter @platejs/basic-nodes --filter @platejs/callout --filter @platejs/code-block --filter @platejs/comment --filter @platejs/date --filter platejs --filter @platejs/math --filter @platejs/media --filter @platejs/mention --filter @platejs/tag --filter platejs build` -> pass.
 - `pnpm exec biome check --fix <38 touched files>` -> pass, no fixes.
 - `rg -n "extendPluginTx|extendRootTx" packages/core/src packages -g '*.ts' -g '*.tsx' -g '*.d.ts'` -> no matches.
 - Source audit for old map-style `extendTx` authoring -> no matches.

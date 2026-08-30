@@ -1,6 +1,8 @@
 ---
-'@platejs/excalidraw': major
+'platejs': major
 ---
+
+Require `platejs@>=54.0.0-beta.1` as a peer dependency.
 
 Require React and React DOM 19.2 or newer.
 

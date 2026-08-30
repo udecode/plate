@@ -1,0 +1,198 @@
+---
+title: Details
+docs:
+  - route: /docs/components/details
+    title: Details Element
+  - route: /docs/components/details-toolbar-button
+    title: Details Toolbar Button
+---
+
+<ComponentPreview name="details-demo" />
+
+Details adds semantic disclosure blocks with one editable Summary and any number of direct body blocks. Open state belongs to the editor session, so HTML, Markdown, saved values, collaboration, and undo keep only document content.
+
+<PackageInfo>
+
+## Features
+
+- Native `details` and `summary` HTML serialization.
+- Nested Details with direct block children.
+- Transient open state keyed by node identity.
+- Wrap, unwrap, and insert transforms.
+- Keyboard behavior for entering, exiting, and unwrapping Details.
+
+</PackageInfo>
+
+## Document Model
+
+A Details node always starts with exactly one Summary. Every following child is a direct body block:
+
+```tsx
+const value = [
+  {
+    type: 'details',
+    children: [
+      { type: 'summary', children: [{ text: 'Shipping details' }] },
+      { type: 'paragraph', children: [{ text: 'Ships in 2–3 days.' }] },
+    ],
+  },
+];
+```
+
+`open` and `name` are not document properties. Use the plugin state when the application needs to expand or collapse a Details node.
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+Install the copied `DetailsKit`, React elements, and toolbar button with the Plate CLI:
+
+<ComponentSource name="details" />
+
+The kit contains `DetailsPlugin`, `DetailsSummaryPlugin`, `DetailsElement`, and `DetailsSummaryElement`.
+
+### Add Kit
+
+Add `DetailsKit` to the editor plugins:
+
+```tsx title="editor.tsx"
+import { createEditor } from 'platejs/react';
+import { DetailsKit } from '@/components/editor/details';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...DetailsKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add Plugins
+
+Configure both node components. `DetailsPlugin` owns the container behavior; `DetailsSummaryPlugin` owns the editable first child.
+
+```tsx title="editor.tsx"
+import {
+  DetailsPlugin,
+  DetailsSummaryPlugin,
+} from 'platejs/details/react';
+import { createEditor } from 'platejs/react';
+import {
+  DetailsElement,
+  DetailsSummaryElement,
+} from '@/components/editor/details';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    DetailsSummaryPlugin.configure({ component: DetailsSummaryElement }),
+    DetailsPlugin.configure({ component: DetailsElement }),
+  ],
+});
+```
+
+### Add Headless Support
+
+Server transforms and serialization only need `BaseDetailsPlugin`:
+
+```ts
+import { createEditor } from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
+
+const editor = createEditor({
+  plugins: [BaseDetailsPlugin],
+});
+```
+
+</Steps>
+
+## Transforms
+
+### `editor.plugin(BaseDetailsPlugin).update.insert`
+
+Insert an open Details node with an empty Summary and body paragraph. Pass `select: true` to place the selection in the Summary.
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
+```
+
+### `editor.plugin(BaseDetailsPlugin).update.wrap`
+
+Wrap selected sibling blocks. The first text block becomes the Summary; structural first blocks get an empty Summary before them.
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.wrap();
+```
+
+### `editor.plugin(BaseDetailsPlugin).update.unwrap`
+
+Unwrap the selected Details nodes. The Summary becomes the editor's default text block before the body blocks.
+
+```tsx
+editor.plugin(BaseDetailsPlugin).update.unwrap();
+```
+
+## Open State
+
+Read and update disclosure state through `BaseDetailsPlugin`. The state uses `NodeKey`, not a serialized element property.
+
+```tsx
+const details = editor.plugin(BaseDetailsPlugin);
+const key = editor.key(detailsElement);
+
+if (key !== undefined) {
+  details.api.setOpen(key, true);
+  const open = details.store.get('isOpen', key);
+}
+```
+
+Closing a Details node moves a selection inside its body to the end of its Summary. Removing the node prunes its transient key.
+
+## Serialization
+
+HTML uses fixed `<details>` and `<summary>` tags. Markdown uses equivalent MDX elements, including for nested Details. Decoding ignores `open` and `name`, and encoding never writes them.
+
+## Toolbar
+
+Use [`DetailsToolbarButton`](/docs/components/details-toolbar-button) to wrap the current blocks or unwrap the active Details node.
+
+## Plugins
+
+### `BaseDetailsPlugin`
+
+Headless schema, codecs, corrections, transient state, and transforms for `details` nodes.
+
+### `BaseDetailsSummaryPlugin`
+
+Headless text-block schema and codecs for the persisted `summary` node type.
+
+### `DetailsPlugin`
+
+React adapter with Enter, Backspace, and Delete behavior.
+
+### `DetailsSummaryPlugin`
+
+React adapter for Summary rendering.
+
+## Types
+
+```ts
+import type {
+  DetailsElement,
+  DetailsSummaryElement,
+} from 'platejs/details';
+```

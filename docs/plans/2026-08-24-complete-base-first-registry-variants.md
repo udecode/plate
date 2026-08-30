@@ -256,7 +256,7 @@ Error attempts:
 | Changelog tool did not support `--help` | Read the owning skill and source | `--write` and `--check` used correctly. |
 | Early compatibility data retained an obsolete Aria set | Regenerate from current provider policy | Aria is classified unsupported. |
 | Broad upstream output exceeded the read budget | Keep complete TSVs and inspect counted slices | 6,342 rows reconcile without chat dumping. |
-| First response test expected internal `list-classic-demo` | Separate public items from previews | Ten public classic items are tested. |
+| First response test expected internal `list-demo` | Separate public items from previews | Ten public classic items are tested. |
 | Root `tsc --noEmit` checked no referenced source | Run `tsc -b` and focused projects | Provider prop gaps became visible. |
 | Local packages were unpublished to the fixture | Pack 53 exact current `dist` packages with overrides | No source alias reaches the checkout. |
 | First design assumed two provider owners | Let compiler differences determine owners | Dropdown and context menu raised the total to four. |

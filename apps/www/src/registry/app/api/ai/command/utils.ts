@@ -1,8 +1,8 @@
-import type { MarkdownEditor } from '@platejs/markdown';
-import { BaseTableCellPlugin, BaseTablePlugin } from '@platejs/table';
 import type { UIMessage } from 'ai';
 import dedent from 'dedent';
-import { type BaseEditor, RangeApi } from 'platejs';
+import { type Editor, RangeApi } from 'platejs';
+import type { MarkdownEditor } from 'platejs/markdown';
+import { BaseTableCellPlugin, BaseTablePlugin } from 'platejs/table';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 
@@ -207,7 +207,7 @@ export function getLastUserInstruction(messages: ChatMessage[]): string {
 const SELECTION_START = '<Selection>';
 const SELECTION_END = '</Selection>';
 
-export const addSelection = (editor: BaseEditor) => {
+export const addSelection = (editor: Editor) => {
   const selection = editor.read.selection();
 
   if (!selection || RangeApi.isCollapsed(selection)) return;
@@ -264,7 +264,7 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
-export const isMultiBlocks = (editor: BaseEditor) =>
+export const isMultiBlocks = (editor: Editor) =>
   editor.read((state) => {
     if (!state.selection()) return false;
 
@@ -284,7 +284,7 @@ export const getMarkdownWithSelection = (editor: MarkdownEditor) =>
   removeEscapeSelection(editor, serializePromptBlocks(editor));
 
 /** Check if the current selection is inside a table cell */
-export const isSelectionInTable = (editor: BaseEditor): boolean => {
+export const isSelectionInTable = (editor: Editor): boolean => {
   if (!editor.read.selection()) return false;
 
   const tableEntry = editor.read.nodes.block({
@@ -295,7 +295,7 @@ export const isSelectionInTable = (editor: BaseEditor): boolean => {
 };
 
 /** Check if selection is within a single table cell */
-export const isSingleCellSelection = (editor: BaseEditor): boolean => {
+export const isSingleCellSelection = (editor: Editor): boolean => {
   if (!editor.read.selection()) return false;
 
   // Get all td blocks in selection

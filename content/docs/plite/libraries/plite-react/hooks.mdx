@@ -17,11 +17,15 @@ Use hooks inside a `Plite` provider when React UI needs editor facts. Prefer the
 
 ## Editor Hooks
 
-#### `useEditor(): Editor`
+#### `useEditor(options?, deps?): Editor`
 
-Get the current editor object from React context.
-Use `usePliteEditor` to create an editor; use `useEditor` inside descendants
-that read the provider editor.
+Create one component-owned editor. The optional dependency list controls when
+React creates a replacement editor.
+
+#### `useEditorContext(): Editor`
+
+Get the editor from the nearest `Plite` provider. Use
+`useOptionalEditorContext()` when a component may render outside a provider.
 
 #### `useEditorComposing(): boolean`
 
@@ -248,8 +252,8 @@ belongs to the returned dispatcher, so event-time data never becomes hook
 configuration.
 
 ```tsx
-import { editorCommands } from "@platejs/plite";
-import { usePliteCommand } from "@platejs/plite-react";
+import { editorCommands } from "plitejs";
+import { usePliteCommand } from "plitejs/react";
 
 const insertBreak = usePliteCommand(editorCommands.insertBreak, {
   focus: "restore-root",
@@ -267,7 +271,7 @@ For an imperative UI callback that is not a semantic command, use the provider
 editor and React directly. This does not claim replayable command semantics.
 
 ```tsx
-const editor = useEditor();
+const editor = useEditorContext();
 const insertTitle = React.useCallback(() => {
   editor.update.text.insert("Title");
 }, [editor]);

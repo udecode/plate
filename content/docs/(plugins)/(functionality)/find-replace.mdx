@@ -35,12 +35,12 @@ replace command.
 Configure `FindReplacePlugin` with a leaf renderer for highlighted ranges.
 
 ```tsx
-import { FindReplacePlugin } from '@platejs/find-replace';
-import { createPlateEditor } from 'platejs/react';
+import { FindReplacePlugin } from 'platejs/find-replace';
+import { createEditor } from 'platejs/react';
 
 import { SearchHighlightLeaf } from '@/components/editor/search-highlight';
 
-export const editor = createPlateEditor({
+export const editor = createEditor({
   plugins: [
     FindReplacePlugin.configure({ component: SearchHighlightLeaf }),
   ],
@@ -52,7 +52,7 @@ export const editor = createPlateEditor({
 Update the `search` state from your toolbar and refresh the editor decorations.
 
 ```tsx title="components/find-toolbar.tsx" showLineNumbers
-import { FindReplacePlugin } from '@platejs/find-replace';
+import { FindReplacePlugin } from 'platejs/find-replace';
 import { useEditor, useEditorPlugin, usePluginStore } from 'platejs/react';
 
 export function FindToolbar() {
@@ -85,7 +85,7 @@ The demo combines `FindReplacePlugin`, `FixedToolbar`, `Input`, and `SearchHighl
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `FindReplacePlugin` | `@platejs/find-replace` | Stores `initialState.search`, registers a leaf node, and decorates matching text ranges. |
+| `FindReplacePlugin` | `platejs` | Stores `initialState.search`, registers a leaf node, and decorates matching text ranges. |
 | `SearchHighlightLeaf` | Registry UI | Renders decorated ranges with a yellow background. |
 | `FindToolbar` | App or registry example | Updates `search` and calls `editor.api.react.refreshDecorations()`. |
 | Replace actions | App code | Perform text replacement with editor transforms. The package does not replace content for you. |
@@ -116,7 +116,7 @@ npx shadcn@latest add @plate/search-highlight
 The copied component is intentionally small:
 
 ```tsx title="components/editor/search-highlight.tsx"
-import type { FindReplacePlugin } from '@platejs/find-replace';
+import type { FindReplacePlugin } from 'platejs/find-replace';
 import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
 
 export function SearchHighlightLeaf(
@@ -132,5 +132,5 @@ Change the class name when your design system needs a different search color.
 
 | API | Package | Use |
 |-----|---------|-----|
-| `FindReplacePlugin` | `@platejs/find-replace` | Main plugin for search highlighting. |
+| `FindReplacePlugin` | `platejs` | Main plugin for search highlighting. |
 | `search` | `string` | Mutable plugin state containing the query text. Defaults to `''`. |

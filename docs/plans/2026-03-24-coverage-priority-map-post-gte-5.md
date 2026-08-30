@@ -66,7 +66,7 @@ My actual recommendation is slightly stricter than the raw score:
 1. `core` — package score `29`, top files `pluginDeserializeHtml.ts:7; getSelectedDomFragment.tsx:6; resolvePlugin.ts:6; resolvePlugins.ts:5; htmlElementToLeaf.ts:5`
 2. `table` — package score `21`, top files `withApplyTable.ts:5; getSelectedCellsBorders.ts:4; deleteColumn.ts:4; insertTableColumn.ts:4; insertTableRow.ts:4`
 3. `slate` — package score `20`, top files `hasDOMNode.ts:4; hasEditableTarget.ts:4; hasSelectableTarget.ts:4; hasTarget.ts:4; hasRange.ts:4`
-4. `list-classic` — package score `18`, top files `BaseTodoListPlugin.ts:5; withList.ts:5; withInsertFragmentList.ts:4; withDeleteForwardList.ts:2; withNormalizeList.ts:2`
+4. `legacy-list-model` — package score `18`, top files `BaseTodoListPlugin.ts:5; withList.ts:5; withInsertFragmentList.ts:4; withDeleteForwardList.ts:2; withNormalizeList.ts:2`
 5. `suggestion` — package score `18`, top files `deleteSuggestion.ts:5; BaseSuggestionPlugin.ts:4; withSuggestion.ts:4; rejectSuggestion.ts:3; acceptSuggestion.ts:2`
 6. `markdown` — package score `15`, top files `deserializeMd.ts:6; fontRules.ts:3; columnRules.ts:2; convertNodesSerialize.ts:2; customMdxDeserialize.ts:2`
 7. `diff` — package score `12`, top files `transformDiffTexts.ts:7; get-properties.ts:2; unused-char-generator.ts:2; transformDiffDescendants.ts:1`
@@ -82,13 +82,13 @@ My actual recommendation is slightly stricter than the raw score:
 4. `markdown` — [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `6`, coverage `79.2%`, uncovered `15`
 5. `core` — [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`, coverage `88.1%`, uncovered `8`
 6. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`, coverage `37.0%`, uncovered `46`
-7. `list-classic` — [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `5`, coverage `37.1%`, uncovered `22`
+7. `legacy-list-model` — [BaseTodoListPlugin.ts](packages/platejs/src/features/list/src/lib/BaseTodoListPlugin.ts) — score `5`, coverage `37.1%`, uncovered `22`
 8. `table` — [withApplyTable.ts](packages/table/src/lib/withApplyTable.ts) — score `5`, coverage `83.8%`, uncovered `16`
 9. `code-drawing` — [renderers.ts](packages/code-drawing/src/lib/utils/renderers.ts) — score `5`, coverage `85.4%`, uncovered `15`
 10. `core` — [resolvePlugins.ts](packages/core/src/internal/plugin/resolvePlugins.ts) — score `5`, coverage `95.8%`, uncovered `15`
 11. `dnd` — [onDropNode.ts](packages/dnd/src/transforms/onDropNode.ts) — score `5`, coverage `87.5%`, uncovered `14`
 12. `core` — [htmlElementToLeaf.ts](packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `5`, coverage `69.4%`, uncovered `11`
-13. `list-classic` — [withList.ts](packages/list-classic/src/lib/withList.ts) — score `5`, coverage `84.7%`, uncovered `11`
+13. `legacy-list-model` — [withList.ts](packages/platejs/src/features/list/src/lib/withList.ts) — score `5`, coverage `84.7%`, uncovered `11`
 14. `suggestion` — [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `5`, coverage `93.6%`, uncovered `10`
 15. `core` — [cleanHtmlFontElements.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`, coverage `66.7%`, uncovered `4`
 

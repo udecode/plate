@@ -13,7 +13,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `110`.
+Current doctrine version: `122`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -84,7 +84,7 @@ the final API.
 - The user wants a file-by-file or API-by-API Plate v2 cleanup pass.
 - The user wants careful package-by-package migration review before broad Plate
   package migration.
-- The target is Core, Plate runtime, plugin API, package migration, docs/API
+- The target is Plate foundation, Plate runtime, plugin API, package migration, docs/API
   mismatch, or old Slate compatibility in Plate.
 - The user gives no target and expects autopilot to find the next Plate cleanup
   risk.
@@ -107,14 +107,14 @@ Same user-facing shape as `auto`:
 
 - `plate-next`
 - `plate-next editor.api`
-- `plate-next packages/core/src/lib/utils/isType.ts`
-- `plate-next packages/table`
-- `plate-next packages/basic-nodes`
+- `plate-next packages/platejs/src/lib/utils/isType.ts`
+- `plate-next packages/platejs/src/features/table`
+- `plate-next packages/platejs/src/features/basic-nodes`
 - `plate-next sync`
 - `plate-next sync table`
 - `plate-next current tree`
 - `plate-next 2h`
-- `plate-next all core packages full-loop`
+- `plate-next all plate packages full-loop`
 
 No argument means autopilot: scan the highest-risk Plate Next surfaces and pick
 the next cleanup packet without asking.
@@ -165,11 +165,11 @@ Read this reference for the Plate v2 review lens, target shape, and package/file
 
 ## Ownership And Correction → [ownership-and-correction.md](./rules/ownership-and-correction.md)
 
-Read this reference when a gap, corrective sweep, extracted-file recovery, or Core boundary is active.
+Read this reference when a gap, corrective sweep, extracted-file recovery, or Plate foundation boundary is active.
 
 ## Audit Modes → [audit-modes.md](./rules/audit-modes.md)
 
-Read this reference for the review matrix, bridge scoring, full Core sweep, and package review mode.
+Read this reference for the review matrix, bridge scoring, full Plate foundation sweep, and package review mode.
 
 ## Loop
 
@@ -194,11 +194,11 @@ Then loop:
      docs/examples, package exports, and related correction-sweep pattern;
    - one package: package file manifest plus one plan checkbox per package
      file, with score `100` as the only checked state;
-   - broad Core sweep: full Core manifest plus drift ledger for every file.
+   - broad Plate foundation sweep: full Plate foundation manifest plus drift ledger for every file.
 3. Build the extracted-file inventory for the target scope and give every
    untracked/extracted file a bucket before scoring confidence.
 4. Fill the review matrix for every relevant helper/API in the target. For
-   broad Core sweep, every Core file gets a drift score before any closure
+   broad Plate foundation sweep, every Plate foundation file gets a drift score before any closure
    claim.
 5. In review mode, prefer `main-parity-cleanup` when the concept and owner remain
    durable. When `origin/main` shows a one-use migration split, prefer
@@ -215,14 +215,14 @@ Then loop:
 10. Run focused proof: package typecheck/test/build when needed, plus `pnpm brl`
     if exports/barrels changed.
 
-- For Core-only targets, prefer `pnpm check:core` and Core-focused tests.
-  Non-Core package failures are not blockers unless that package is named,
-  touched, or the failure proves the Core API broke it.
+- For Plate foundation-only targets, prefer `pnpm check:core` and Plate foundation-focused tests.
+  Non-Plate foundation package failures are not blockers unless that package is named,
+  touched, or the failure proves the Plate foundation API broke it.
 
 11. Run source audits for removed legacy names. In package review mode, audit
     broadly only to discover risk; patch only the named package and required
     owner.
-12. For full Core sweep, close the autogoal template's drift-ledger score gate.
+12. For full Plate foundation sweep, close the autogoal template's drift-ledger score gate.
 13. For package review mode, close the package file checklist or defer
     unchecked rows for user review before considering the next package.
 14. For a completed package review, update the version registry from the final
@@ -235,35 +235,35 @@ Then loop:
 
 When no target is provided, inspect in this order:
 
-1. Core public API/runtime files touched by the Plate migration.
-2. `packages/core/src/react/editor/createPlateRuntimeEditor.ts`.
-3. Core plugin API types and plugin resolver/installers.
-4. Old Slate compatibility surfaces in Core/package exports.
-5. Plate packages still importing or wrapping legacy substrate behavior.
+1. Plate foundation public API/runtime files touched by the Plate migration.
+2. `packages/platejs/src/react/editor/createPlateRuntimeEditor.ts`.
+3. Plate foundation plugin API types and plugin resolver/installers.
+4. Old Slate compatibility surfaces in Plate foundation/package exports.
+5. `platejs` entrypoints still importing or wrapping legacy substrate behavior.
 6. Docs/examples teaching old APIs.
 7. Tests with fake compatibility assertions instead of current behavior.
 
 ## Proof
 
-For Core/Plite boundary cleanup, prefer:
+For Plate foundation/Plite boundary cleanup, prefer:
 
 ```bash
 pnpm check:core
-pnpm turbo typecheck --filter=./packages/<touched-package>
-pnpm --filter @platejs/<touched-package> test
-pnpm --filter @platejs/<touched-package> build
+pnpm turbo typecheck --filter=./packages/platejs
+pnpm --filter platejs test
+pnpm --filter platejs build
 ```
 
 For package review mode, prefer:
 
 ```bash
-pnpm turbo typecheck --filter=./packages/<package>
-pnpm --filter @platejs/<package> test
-pnpm --filter @platejs/<package> build
+pnpm turbo typecheck --filter=./packages/platejs
+pnpm --filter platejs test
+pnpm --filter platejs build
 ```
 
 Use package-local focused tests when available. Run broader gates only when the
-package exports, public type surface, or Core/Plite owner changes make the
+package exports, public type surface, or Plate foundation/Plite owner changes make the
 package proof insufficient.
 
 Do not start `apps/www` or hit `www` routes from Plate Next package review.
@@ -278,14 +278,14 @@ the shared gate blind to it.
 Use focused tests first. Run broader gates only before closing a risky packet.
 If a broader command reports errors in packages outside the named/touched
 scope, do not fix them in Plate Next by default. Classify them as out-of-scope
-package drift unless the failure is caused by the current Core/API change.
-For broad Core sweeps, the Plate Next autogoal template owns the drift ledger,
+package drift unless the failure is caused by the current Plate foundation/API change.
+For broad Plate foundation sweeps, the Plate Next autogoal template owns the drift ledger,
 manifest count, score gate, and top-drift handoff. Keep this template-only.
 
 If a source audit is the proof, make it exact and small:
 
 ```bash
-rg -n 'oldName|old\\.api|legacyHelper' packages/core/src packages/*/src --glob '!**/dist/**'
+rg -n 'oldName|old\\.api|legacyHelper' packages/platejs/src --glob '!**/dist/**'
 ```
 
 ## Final Handoff

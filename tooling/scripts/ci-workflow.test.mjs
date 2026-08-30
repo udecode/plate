@@ -36,6 +36,19 @@ test('root CI bounds Turbo concurrency without changing check coverage', async (
   assert.equal(packageJson.scripts['check:push'], 'pnpm check');
   assert.equal(packageJson.scripts.typecheck, 'pnpm g:typecheck');
   assert.match(packageJson.scripts['g:typecheck'], /--concurrency=2$/);
+  assert.doesNotMatch(packageJson.scripts['g:typecheck'], /--only/u);
+  assert.match(workflow, /\$\{\{ github\.workspace \}\}\/\.turbo/u);
+  assert.match(workflow, /restore-keys:/u);
+  assert.match(workflow, /bun-version: 1\.3\.12/u);
+  for (const ownedPath of [
+    "'apps/plite/scripts/**'",
+    "'benchmarks/**'",
+    "'config/**'",
+  ]) {
+    assert.equal(workflow.split(ownedPath).length - 1, 2, ownedPath);
+  }
+  assert.equal(workflow.match(/pnpm plite:test/g)?.length, 1);
+  assert.equal(workflow.match(/pnpm plite:public-types/g)?.length, 1);
 });
 
 test('Vercel uses the repo-owned bounded www build', async () => {

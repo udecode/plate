@@ -42,22 +42,14 @@ const workspacePackageBuildEntries = fs
   .readdirSync(packagesRoot, { withFileTypes: true })
   .flatMap((entry) => {
     if (!entry.isDirectory()) return [];
-    const packageRoot = path.join(packagesRoot, entry.name);
 
-    if (entry.name !== 'udecode') {
-      return packageBuildEntries(packageRoot);
-    }
-
-    return fs
-      .readdirSync(packageRoot, { withFileTypes: true })
-      .filter((child) => child.isDirectory())
-      .flatMap((child) =>
-        packageBuildEntries(path.join(packageRoot, child.name))
-      );
+    return packageBuildEntries(path.join(packagesRoot, entry.name));
   });
 
 const pliteToolchainEntries = [
   path.join(repoRoot, 'tsconfig.json'),
+  path.join(repoRoot, 'tooling/entrypoints/entrypoint-dag.mjs'),
+  path.join(repoRoot, 'tooling/entrypoints/entrypoint-runtime.mjs'),
   path.join(repoRoot, 'tooling/config/tsconfig.base.json'),
   path.join(repoRoot, 'tooling/config/tsconfig.build.json'),
   path.join(repoRoot, 'tooling/config/direct-package.config.mts'),
@@ -128,7 +120,7 @@ export const browserBuildEntries = [
   browserBuildScript,
   boundedProcessScript,
   proofInputsScript,
-  ...packageBuildEntries(path.join(repoRoot, 'packages/browser')),
+  ...packageBuildEntries(path.join(repoRoot, 'packages/test')),
   ...pliteToolchainEntries,
   path.join(repoRoot, 'package.json'),
   path.join(repoRoot, 'pnpm-lock.yaml'),
@@ -153,7 +145,7 @@ export const browserRunEntries = [
   browserStaticServerScript,
   path.join(appRoot, 'scripts/plite-browser-runner.mjs'),
   proofInputsScript,
-  path.join(repoRoot, 'packages/browser/dist'),
+  path.join(repoRoot, 'packages/test/dist'),
   path.join(repoRoot, 'package.json'),
 ];
 

@@ -3,6 +3,8 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { getWorkspaceSourceEntries } from '../../../../config/workspace-source-entries.mjs';
+
 const require = createRequire(import.meta.url);
 const appRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -10,6 +12,23 @@ const appRoot = path.resolve(
 );
 
 describe('Vercel runtime packaging', () => {
+  it('aliases every live workspace export and no retired package roots', async () => {
+    const { default: getNextConfig } = await import('../../next.config');
+    const nextConfig = await getNextConfig('phase-development-server');
+    const aliases = nextConfig.turbopack?.resolveAlias ?? {};
+    const repoRoot = path.resolve(appRoot, '../..');
+
+    expect(Object.keys(aliases).toSorted()).toEqual(
+      getWorkspaceSourceEntries(repoRoot)
+        .map(({ specifier }) => specifier)
+        .toSorted()
+    );
+    expect(aliases).toHaveProperty('platejs');
+    expect(aliases).toHaveProperty('platejs/react');
+    expect(aliases).not.toHaveProperty('@platejs/platejs');
+    expect(aliases).not.toHaveProperty('@udecode/plate');
+  });
+
   it('keeps generated Next.js server files loadable by the CommonJS launcher', async () => {
     const packageJson = await Bun.file(
       path.join(appRoot, 'package.json')

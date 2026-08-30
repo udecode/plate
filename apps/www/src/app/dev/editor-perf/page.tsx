@@ -1,6 +1,26 @@
 'use client';
 
 import {
+  Provider as JotaiProvider,
+  atom as createJotaiAtom,
+  useAtomValue,
+} from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
+import { createStore as createJotaiStore } from 'jotai/vanilla';
+import {
+  getPlateRuntime,
+  defineExtension,
+  property,
+  schema,
+  type Element as PliteElement,
+  ElementIdPlugin,
+  migrateElementIds,
+  type Descendant,
+  type Path,
+  type RenderElementProps,
+  type Value,
+} from 'platejs';
+import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
@@ -12,9 +32,6 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
-import { getPlateRuntime } from '@platejs/core/internal';
-import {
   BelowRootNodes,
   ElementProvider,
   createAtomStore,
@@ -25,40 +42,12 @@ import {
   pipeRenderText,
   pluginRenderElement,
   pluginRenderLeaf,
-} from '@platejs/core/react/internal';
-import {
-  defineExtension,
-  property,
-  schema,
-  type Editor,
-  type Element as PliteElement,
-} from '@platejs/plite';
-import { createReactEditor, Plite as PliteRuntime } from '@platejs/plite-react';
-import { failInvariant } from '@platejs/plite/internal';
-import {
-  Provider as JotaiProvider,
-  atom as createJotaiAtom,
-  useAtomValue,
-} from 'jotai';
-import { useHydrateAtoms } from 'jotai/utils';
-import { createStore as createJotaiStore } from 'jotai/vanilla';
-import {
-  ElementIdPlugin,
-  migrateElementIds,
-  type Descendant,
-  type Path,
-  type RenderElementProps,
-  type Value,
-} from 'platejs';
-import {
-  Editable,
-  Plate,
   PlateContent,
+  Plate,
   PlateElement,
   PlateLeaf,
-  Plite,
   definePlatePlugin,
-  createPlateEditor,
+  createEditor,
   useEditor,
   useEditorSelector,
   useEditorState,
@@ -66,15 +55,16 @@ import {
   useElement,
   useElementSelector,
   usePath,
-  usePlateEditor,
+  useCreateEditor,
   usePluginStore,
-  type PlateEditor,
+  type Editor,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+import { failInvariant } from '../../../lib/failInvariant';
 import {
   CORE_PLUGIN_CENSUS_ENTRIES,
   type CorePluginCensusEntry,
@@ -476,6 +466,10 @@ type BenchmarkEditorHandle = {
   selectStart: () => void;
 };
 
+type BenchmarkEditor =
+  | ReturnType<typeof createPluginCensusMountedEditor>
+  | ReturnType<typeof createScenarioMountedEditor>;
+
 type BenchElementStoreState = {
   element: PliteElement | null;
   entry: [PliteElement, Path] | null;
@@ -514,10 +508,10 @@ const { BenchElementNoEffectProvider } = createAtomStore(
 const SCENARIOS: Scenario[] = [
   {
     description:
-      'Bare Plite React editor with the same document and chunking knobs.',
+      'Bare Plate React editor with the same document and chunking knobs.',
     id: 'slate',
     kind: 'slate',
-    label: 'Plite baseline',
+    label: 'Plate baseline',
     plugins: 'none',
   },
   {
@@ -1122,201 +1116,201 @@ function BenchRenderNodeSelectorElement({
 const CORE_MOUNT_CASES: CoreMountCase[] = [
   {
     description:
-      'Plate provider and jotai-x store hydration only. No Plite tree or editable hook work.',
+      'Plate provider and jotai-x store hydration only. No Plate tree or editable hook work.',
     id: 'provider-only',
     label: 'Provider only',
   },
   {
-    description: 'Provider plus Plite. No Editable or PlateContent mount.',
+    description: 'Provider plus Plate. No PlateContent or PlateContent mount.',
     id: 'plite-only',
-    label: 'Plite only',
+    label: 'Plate only',
   },
   {
     description:
-      'Provider plus Plite and Editable with direct static props. No PlateContent effect stack.',
+      'Provider plus Plate and PlateContent with direct static props. No PlateContent effect stack.',
     id: 'editable-static',
-    label: 'Editable static props',
+    label: 'PlateContent static props',
   },
   {
     description:
-      'Static Editable baseline plus PlateElement only, without ElementProvider or getRenderNodeProps. This isolates the default PlateElement render cost.',
+      'Static PlateContent baseline plus PlateElement only, without ElementProvider or getRenderNodeProps. This isolates the default PlateElement render cost.',
     id: 'editable-element-plate-element-no-provider',
-    label: 'Editable + PlateElement, no provider',
+    label: 'PlateContent + PlateElement, no provider',
   },
   {
     description:
-      'PlateElement with just the resolved plugin ref and Plite class injection, but no full editor.plugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
+      'PlateElement with just the resolved plugin ref and Plate class injection, but no full editor.plugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
     id: 'editable-element-plate-element-plugin-only-no-provider',
-    label: 'Editable + PlateElement + plugin',
+    label: 'PlateContent + PlateElement + plugin',
   },
   {
     description:
-      'PlateElement with cached plugin context and Plite class injection, but still no ElementProvider or getRenderNodeProps. This isolates plugin-context prop weight without node-prop composition.',
+      'PlateElement with cached plugin context and Plate class injection, but still no ElementProvider or getRenderNodeProps. This isolates plugin-context prop weight without node-prop composition.',
     id: 'editable-element-plate-element-plugin-context-no-provider',
-    label: 'Editable + PlateElement + plugin ctx',
+    label: 'PlateContent + PlateElement + plugin ctx',
   },
   {
     description:
       'The plain element-pipe fast path, but with a precomputed path map. This isolates the remaining path lookup tax after getRenderNodeProps is out of the way.',
     id: 'editable-element-pipe-plugin-precomputed-path',
-    label: 'Editable + fast pipe (precomputed path)',
+    label: 'PlateContent + fast pipe (precomputed path)',
   },
   {
     description:
       'The same fast element-pipe path, but without BelowRootNodes. This isolates the cost of mounting an empty root-wrapper component on every block.',
     id: 'editable-element-pipe-plugin-precomputed-no-below-root',
-    label: 'Editable + fast pipe (no belowRootNodes)',
+    label: 'PlateContent + fast pipe (no belowRootNodes)',
   },
   {
     description:
-      'A bare plain-element lower bound for paragraph nodes: direct tag output with Plite class and no hook-driven path or readOnly plumbing. This isolates the remaining dispatch tax in the real fast path.',
+      'A bare plain-element lower bound for paragraph nodes: direct tag output with Plate class and no hook-driven path or readOnly plumbing. This isolates the remaining dispatch tax in the real fast path.',
     id: 'editable-element-pipe-bare-plain-fast-path',
-    label: 'Editable + bare plain fast path',
+    label: 'PlateContent + bare plain fast path',
   },
   {
     description:
-      'Static Editable baseline plus one ElementProvider per element, using a precomputed path map and no Plate wrapper logic. This isolates the per-node provider/store tax.',
+      'Static PlateContent baseline plus one ElementProvider per element, using a precomputed path map and no Plate wrapper logic. This isolates the per-node provider/store tax.',
     id: 'editable-element-provider-only',
-    label: 'Editable + element provider only',
+    label: 'PlateContent + element provider only',
   },
   {
     description:
       'The same provider-only lane, but using a plain React context wrapper instead of ElementProvider. This isolates raw per-node provider overhead without jotai-x hydration.',
     id: 'editable-element-provider-only-plain-context',
-    label: 'Editable + plain context only',
+    label: 'PlateContent + plain context only',
   },
   {
     description:
       'The provider-only lane with a raw Jotai Provider and store, but no jotai-x scope lookup or hydration helpers. This isolates the bare per-node Jotai provider/store tax.',
     id: 'editable-element-provider-only-jotai-provider',
-    label: 'Editable + raw Jotai provider',
+    label: 'PlateContent + raw Jotai provider',
   },
   {
     description:
       'The provider-only lane with Jotai Provider plus jotai-x HydrateAtoms initial hydration, but no sync effects. This isolates hydration helper cost without sync churn.',
     id: 'editable-element-provider-only-jotai-hydrate-only',
-    label: 'Editable + Jotai hydrate only',
+    label: 'PlateContent + Jotai hydrate only',
   },
   {
     description:
       'The provider-only lane with Jotai Provider plus full jotai-x HydrateAtoms hydration and sync behavior, but no scope lookup. This isolates the helper stack without the context map.',
     id: 'editable-element-provider-only-jotai-hydrate-sync',
-    label: 'Editable + Jotai hydrate + sync',
+    label: 'PlateContent + Jotai hydrate + sync',
   },
   {
     description:
       'The provider-only lane with a plain React context plus one zustand-x store per node. This isolates whether swapping the atom store for a zustand-x store materially changes the per-node store tax.',
     id: 'editable-element-provider-only-zustand-provider',
-    label: 'Editable + zustand-x store',
+    label: 'PlateContent + zustand-x store',
   },
   {
     description:
       'The same per-node provider lane, but the first-block effect is gated from props instead of subscribing to path inside every provider. This isolates the provider-effect path lookup tax.',
     id: 'editable-element-provider-prop-effect',
-    label: 'Editable + provider + prop effect',
+    label: 'PlateContent + provider + prop effect',
   },
   {
     description:
       'The direct pluginRenderElement path with a precomputed path map, but reading attributes from props instead of useElement(). This isolates the per-node element-store consumer cost inside ElementContent.',
     id: 'editable-element-plugin-precomputed-no-element-hook',
-    label: 'Editable + plugin element, no useElement',
+    label: 'PlateContent + plugin element, no useElement',
   },
   {
     description:
       'ElementProvider plus PlateElement on every node, still without getRenderNodeProps. This isolates PlateElement mount work on top of the provider.',
     id: 'editable-element-provider-plate-element',
-    label: 'Editable + provider + PlateElement',
+    label: 'PlateContent + provider + PlateElement',
   },
   {
     description:
       'The direct pluginRenderElement path with manual plain-plugin node-prop composition. This isolates getRenderNodeProps tax in the rich plugin lane when the plugin has no node props or allowed attributes.',
     id: 'editable-element-plugin-precomputed-fast-node-props',
-    label: 'Editable + plugin element, fast node props',
+    label: 'PlateContent + plugin element, fast node props',
   },
   {
     description:
       'A custom node-component lane that actually calls useElement() and usePath() through the real ElementProvider path. This isolates provider-backed hook-consumer cost instead of PlateElement body cost.',
     id: 'editable-element-plugin-render-node-hooks',
-    label: 'Editable + plugin node hooks',
+    label: 'PlateContent + plugin node hooks',
   },
   {
     description:
       'The same custom node-component lane, but using plain React context instead of ElementProvider. This is the lower bound for useElement/usePath-style consumers without atom-store work.',
     id: 'editable-element-plugin-render-node-hooks-plain-context',
-    label: 'Editable + plugin node hooks, plain context',
+    label: 'PlateContent + plugin node hooks, plain context',
   },
   {
     description:
       'The same custom node-component lane, but using a raw Jotai Provider/store instead of ElementProvider. This isolates the hook-consumer cost on top of bare per-node Jotai.',
     id: 'editable-element-plugin-render-node-hooks-jotai-provider',
-    label: 'Editable + plugin node hooks, raw Jotai',
+    label: 'PlateContent + plugin node hooks, raw Jotai',
   },
   {
     description:
       'The same custom node-component lane, but using Jotai hydration without sync effects. This isolates hydration-only helper cost for hook-heavy consumers.',
     id: 'editable-element-plugin-render-node-hooks-jotai-hydrate-only',
-    label: 'Editable + plugin node hooks, Jotai hydrate only',
+    label: 'PlateContent + plugin node hooks, Jotai hydrate only',
   },
   {
     description:
       'The same custom node-component lane, but using full Jotai hydrate plus sync behavior. This isolates the full jotai-x-style helper stack for hook-heavy consumers.',
     id: 'editable-element-plugin-render-node-hooks-jotai-hydrate-sync',
-    label: 'Editable + plugin node hooks, Jotai hydrate + sync',
+    label: 'PlateContent + plugin node hooks, Jotai hydrate + sync',
   },
   {
     description:
       'A custom node-component lane that calls useElementSelector() through the real ElementProvider path. This isolates exported selector-consumer cost instead of simple element/path hooks.',
     id: 'editable-element-plugin-render-node-selector',
-    label: 'Editable + plugin node selector',
+    label: 'PlateContent + plugin node selector',
   },
   {
     description:
       'The same selector-consumer lane, but using plain React context instead of ElementProvider. This is the lower bound for useElementSelector-style derived reads without atom-store work.',
     id: 'editable-element-plugin-render-node-selector-plain-context',
-    label: 'Editable + plugin node selector, plain context',
+    label: 'PlateContent + plugin node selector, plain context',
   },
   {
     description:
       'The same selector-consumer lane, but using a raw Jotai Provider/store instead of ElementProvider. This isolates selector-consumer cost on top of bare per-node Jotai.',
     id: 'editable-element-plugin-render-node-selector-jotai-provider',
-    label: 'Editable + plugin node selector, raw Jotai',
+    label: 'PlateContent + plugin node selector, raw Jotai',
   },
   {
     description:
       'The same rich fast-node-props lane, but with a plain React context wrapper instead of ElementProvider. This isolates the remaining per-node atom-provider tax in the richer path.',
     id: 'editable-element-plugin-precomputed-fast-node-props-plain-context',
-    label: 'Editable + plugin element, plain context',
+    label: 'PlateContent + plugin element, plain context',
   },
   {
     description:
       'The rich fast-node-props lane with a raw Jotai Provider and store, but no jotai-x scope lookup. This isolates how much of the rich lane is just bare per-node Jotai provider cost.',
     id: 'editable-element-plugin-precomputed-fast-node-props-jotai-provider',
-    label: 'Editable + plugin element, raw Jotai',
+    label: 'PlateContent + plugin element, raw Jotai',
   },
   {
     description:
       'The rich fast-node-props lane with Jotai Provider plus jotai-x HydrateAtoms initial hydration, but no sync effects. This isolates helper hydration cost without provider scope lookup.',
     id: 'editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-only',
-    label: 'Editable + plugin element, Jotai hydrate only',
+    label: 'PlateContent + plugin element, Jotai hydrate only',
   },
   {
     description:
       'The rich fast-node-props lane with Jotai Provider plus full jotai-x HydrateAtoms hydration and sync behavior, but no scope lookup. This isolates helper-stack cost in the richer path.',
     id: 'editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-sync',
-    label: 'Editable + plugin element, Jotai hydrate + sync',
+    label: 'PlateContent + plugin element, Jotai hydrate + sync',
   },
   {
     description:
       'The rich fast-node-props lane with a plain React context plus one zustand-x store per node. This isolates how much the richer path changes if the per-node atom store becomes a zustand-x store.',
     id: 'editable-element-plugin-precomputed-fast-node-props-zustand-provider',
-    label: 'Editable + plugin element, zustand-x',
+    label: 'PlateContent + plugin element, zustand-x',
   },
   {
     description:
       'The render.as-only element lower bound: real basic blockquote plugin, but rendered through the providerless plain fast path shape instead of ElementProvider and PlateElement.',
     documentMode: 'blockquote-only',
     id: 'editable-element-render-as-no-provider',
-    label: 'Editable + render.as, no provider',
+    label: 'PlateContent + render.as, no provider',
     plugins: 'basic',
   },
   {
@@ -1324,86 +1318,86 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
       'The old render.as-only shape: real basic blockquote plugin rendered through ElementProvider plus PlateElement. This is the branch the fast path is replacing.',
     documentMode: 'blockquote-only',
     id: 'editable-element-render-as-provider',
-    label: 'Editable + render.as, provider',
+    label: 'PlateContent + render.as, provider',
     plugins: 'basic',
   },
   {
     description:
       'The direct pluginRenderElement path with the first-block effect gated from props instead of usePath(). This isolates the remaining provider-effect overhead in the rich plugin path.',
     id: 'editable-element-plugin-precomputed-prop-effect',
-    label: 'Editable + plugin element + prop effect',
+    label: 'PlateContent + plugin element + prop effect',
   },
   {
     description:
-      'Static Editable baseline plus getRenderNodeProps and PlateElement, but no ElementProvider. This isolates node-prop composition from the per-node jotai store.',
+      'Static PlateContent baseline plus getRenderNodeProps and PlateElement, but no ElementProvider. This isolates node-prop composition from the per-node jotai store.',
     id: 'editable-element-render-node-props-no-provider',
-    label: 'Editable + render-node props, no provider',
+    label: 'PlateContent + render-node props, no provider',
   },
   {
     description:
-      'Static Editable baseline plus the full default pipeRenderElement path. Paragraph nodes hit the core p plugin; headings fall back.',
+      'Static PlateContent baseline plus the full default pipeRenderElement path. Paragraph nodes hit the core p plugin; headings fall back.',
     id: 'editable-element-pipe',
-    label: 'Editable + element pipe',
+    label: 'PlateContent + element pipe',
   },
   {
     description:
-      'Static Editable baseline plus the full default pipeRenderElement path on a blockquote-only document with basic plugins loaded. This is the real production lane for render.as-only element plugins.',
+      'Static PlateContent baseline plus the full default pipeRenderElement path on a blockquote-only document with basic plugins loaded. This is the real production lane for render.as-only element plugins.',
     documentMode: 'blockquote-only',
     id: 'editable-element-pipe-render-as-basic',
-    label: 'Editable + element pipe (render.as)',
+    label: 'PlateContent + element pipe (render.as)',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderElement on a document where paragraph nodes use an unmapped type. This isolates the fallback renderElement branch without the core p plugin.',
+      'Static PlateContent baseline plus pipeRenderElement on a document where paragraph nodes use an unmapped type. This isolates the fallback renderElement branch without the core p plugin.',
     documentMode: 'paragraph-fallback',
     id: 'editable-element-fallback-pipe',
-    label: 'Editable + fallback element pipe',
+    label: 'PlateContent + fallback element pipe',
   },
   {
     description:
-      'Static Editable baseline plus the core paragraph plugin renderer with a precomputed node->path map. This isolates plugin wrapper cost from dynamic path lookup.',
+      'Static PlateContent baseline plus the core paragraph plugin renderer with a precomputed node->path map. This isolates plugin wrapper cost from dynamic path lookup.',
     id: 'editable-element-plugin-precomputed-path',
-    label: 'Editable + plugin element (precomputed path)',
+    label: 'PlateContent + plugin element (precomputed path)',
   },
   {
     description:
-      'Static Editable baseline plus direct bold leaf/text renderers on a bold-only document with basic plugins loaded. This is the lowest useful mark-side lower bound.',
+      'Static PlateContent baseline plus direct bold leaf/text renderers on a bold-only document with basic plugins loaded. This is the lowest useful mark-side lower bound.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-direct-renderers',
-    label: 'Editable + bold direct renderers',
+    label: 'PlateContent + bold direct renderers',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus pluginRenderLeaf(bold) directly on a bold-only document with only BoldPlugin loaded. This isolates the active bold plugin path without pipeRenderLeaf outer-wrapper work.',
+      'Static PlateContent baseline plus pluginRenderLeaf(bold) directly on a bold-only document with only BoldPlugin loaded. This isolates the active bold plugin path without pipeRenderLeaf outer-wrapper work.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-plugin-leaf-direct',
-    label: 'Editable + bold plugin leaf direct',
+    label: 'PlateContent + bold plugin leaf direct',
     plugins: 'bold-only',
   },
   {
     description:
-      'Static Editable baseline plus PlateLeaf rendered directly as strong on a bold-only document with basic plugins loaded. This isolates PlateLeaf body cost without node-prop composition.',
+      'Static PlateContent baseline plus PlateLeaf rendered directly as strong on a bold-only document with basic plugins loaded. This isolates PlateLeaf body cost without node-prop composition.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-plateleaf-direct',
-    label: 'Editable + bold PlateLeaf direct',
+    label: 'PlateContent + bold PlateLeaf direct',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus getRenderNodeProps feeding PlateLeaf as strong on a bold-only document with basic plugins loaded. This isolates node-prop composition from the rest of pipeRenderLeaf.',
+      'Static PlateContent baseline plus getRenderNodeProps feeding PlateLeaf as strong on a bold-only document with basic plugins loaded. This isolates node-prop composition from the rest of pipeRenderLeaf.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-leaf-node-props',
-    label: 'Editable + bold leaf node props',
+    label: 'PlateContent + bold leaf node props',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf only on a bold-only document with basic plugins loaded. This isolates mark leaf wrapping from renderText work.',
+      'Static PlateContent baseline plus pipeRenderLeaf only on a bold-only document with basic plugins loaded. This isolates mark leaf wrapping from renderText work.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-leaf-pipe',
-    label: 'Editable + bold leaf pipe',
+    label: 'PlateContent + bold leaf pipe',
     plugins: 'basic',
   },
   {
@@ -1411,7 +1405,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
       'The same bold leaf-pipe lane, but with only BoldPlugin loaded instead of the full basic mark stack. This isolates unused mark-plugin fan-out inside pipeRenderLeaf.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-leaf-pipe-bold-only',
-    label: 'Editable + bold leaf pipe (bold only)',
+    label: 'PlateContent + bold leaf pipe (bold only)',
     plugins: 'bold-only',
   },
   {
@@ -1419,106 +1413,106 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
       'The same bold-only leaf-pipe lane, but pipeRenderLeaf finishes with a plain span outer renderer instead of PlateLeaf. This isolates the outer fallback wrapper cost.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-leaf-pipe-plain-outer',
-    label: 'Editable + bold leaf pipe (plain outer)',
+    label: 'PlateContent + bold leaf pipe (plain outer)',
     plugins: 'bold-only',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderText only on a bold-only document with basic plugins loaded. This isolates mark text wrapping from renderLeaf work.',
+      'Static PlateContent baseline plus pipeRenderText only on a bold-only document with basic plugins loaded. This isolates mark text wrapping from renderLeaf work.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-text-pipe',
-    label: 'Editable + bold text pipe',
+    label: 'PlateContent + bold text pipe',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus direct code leaf/text renderers on a code-only document with basic plugins loaded. This is the hard code mark lower bound.',
+      'Static PlateContent baseline plus direct code leaf/text renderers on a code-only document with basic plugins loaded. This is the hard code mark lower bound.',
     documentMode: 'code-only',
     id: 'editable-leaf-text-code-direct-renderers',
-    label: 'Editable + code direct renderers',
+    label: 'PlateContent + code direct renderers',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus PlateLeaf rendered directly as code on a code-only document with only CodePlugin loaded. This isolates hard-affinity PlateLeaf body cost without node-prop composition.',
+      'Static PlateContent baseline plus PlateLeaf rendered directly as code on a code-only document with only CodePlugin loaded. This isolates hard-affinity PlateLeaf body cost without node-prop composition.',
     documentMode: 'code-only',
     id: 'editable-leaf-text-code-plateleaf-direct',
-    label: 'Editable + code PlateLeaf direct',
+    label: 'PlateContent + code PlateLeaf direct',
     plugins: 'code-only',
   },
   {
     description:
-      'Static Editable baseline plus pluginRenderLeaf(code) directly on a code-only document with only CodePlugin loaded. This isolates the active code plugin path without pipeRenderLeaf outer-wrapper work.',
+      'Static PlateContent baseline plus pluginRenderLeaf(code) directly on a code-only document with only CodePlugin loaded. This isolates the active code plugin path without pipeRenderLeaf outer-wrapper work.',
     documentMode: 'code-only',
     id: 'editable-leaf-text-code-plugin-leaf-direct',
-    label: 'Editable + code plugin leaf direct',
+    label: 'PlateContent + code plugin leaf direct',
     plugins: 'code-only',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf only on a code-only document with the code plugin loaded. This isolates the hard code mark leaf path against the existing plain-renderers control.',
+      'Static PlateContent baseline plus pipeRenderLeaf only on a code-only document with the code plugin loaded. This isolates the hard code mark leaf path against the existing plain-renderers control.',
     documentMode: 'code-only',
     id: 'editable-leaf-text-code-pipe',
-    label: 'Editable + code leaf pipe',
+    label: 'PlateContent + code leaf pipe',
     plugins: 'code-only',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf and pipeRenderText on a code-only document with the code plugin loaded. This is the real production lane for the hard code mark path.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on a code-only document with the code plugin loaded. This is the real production lane for the hard code mark path.',
     documentMode: 'code-only',
     id: 'editable-leaf-text-code-text-pipe',
-    label: 'Editable + code leaf/text pipes',
+    label: 'PlateContent + code leaf/text pipes',
     plugins: 'code-only',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf and pipeRenderText on a bold-only document with basic plugins loaded. This is the real production lane for render.as-only marks.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on a bold-only document with basic plugins loaded. This is the real production lane for render.as-only marks.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-pipe',
-    label: 'Editable + bold leaf/text pipes',
+    label: 'PlateContent + bold leaf/text pipes',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus direct underline leaf/text renderers on an underline-only document with basic plugins loaded. This is the underline lower bound.',
+      'Static PlateContent baseline plus direct underline leaf/text renderers on an underline-only document with basic plugins loaded. This is the underline lower bound.',
     documentMode: 'underline-only',
     id: 'editable-leaf-text-underline-direct-renderers',
-    label: 'Editable + underline direct renderers',
+    label: 'PlateContent + underline direct renderers',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus pluginRenderLeaf(underline) directly on an underline-only document with only UnderlinePlugin loaded. This isolates the active underline plugin path without pipeRenderLeaf outer-wrapper work.',
+      'Static PlateContent baseline plus pluginRenderLeaf(underline) directly on an underline-only document with only UnderlinePlugin loaded. This isolates the active underline plugin path without pipeRenderLeaf outer-wrapper work.',
     documentMode: 'underline-only',
     id: 'editable-leaf-text-underline-plugin-leaf-direct',
-    label: 'Editable + underline plugin leaf direct',
+    label: 'PlateContent + underline plugin leaf direct',
     plugins: 'underline-only',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf and pipeRenderText on an underline-only document with basic plugins loaded. This is the real production lane for render.as-only underline marks.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on an underline-only document with basic plugins loaded. This is the real production lane for render.as-only underline marks.',
     documentMode: 'underline-only',
     id: 'editable-leaf-text-underline-pipe',
-    label: 'Editable + underline leaf/text pipes',
+    label: 'PlateContent + underline leaf/text pipes',
     plugins: 'basic',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf and pipeRenderText only. This isolates Plate leaf/text wrapper work.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText only. This isolates Plate leaf/text wrapper work.',
     id: 'editable-leaf-text-pipe',
-    label: 'Editable + leaf/text pipes',
+    label: 'PlateContent + leaf/text pipes',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderLeaf and pipeRenderText fed with plain span renderers. This isolates the default PlateLeaf and PlateText body cost.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText fed with plain span renderers. This isolates the default PlateLeaf and PlateText body cost.',
     id: 'editable-leaf-text-plain-renderers',
-    label: 'Editable + leaf/text plain renderers',
+    label: 'PlateContent + leaf/text plain renderers',
   },
   {
     description:
-      'Static Editable baseline plus pipeRenderElement, pipeRenderLeaf, and pipeRenderText together. This isolates the render pipes from PlateContent handlers and effects.',
+      'Static PlateContent baseline plus pipeRenderElement, pipeRenderLeaf, and pipeRenderText together. This isolates the render pipes from PlateContent handlers and effects.',
     id: 'editable-render-pipes',
-    label: 'Editable + render pipes',
+    label: 'PlateContent + render pipes',
   },
   {
     description:
@@ -1859,10 +1853,10 @@ function getWorkloadPlugins(workloadId: ScenarioWorkloadId) {
 
 function createScenarioConstructionEditor(scenario: Scenario) {
   if (scenario.kind === 'slate') {
-    return createReactEditor() as Editor;
+    return createEditor();
   }
 
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
@@ -1880,20 +1874,20 @@ function createScenarioMountedEditor({
   value: Value;
 }) {
   if (scenario.kind === 'slate') {
-    return createReactEditor({
+    return createEditor({
       extensions: getWorkloadExtensions(config.scenarioWorkload),
       initialValue: value,
-    }) as unknown as Editor;
+    });
   }
 
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
     ],
     initialValue: value,
-  }) as unknown as Editor;
+  });
 }
 
 function createPlateDissectionEditor({
@@ -1907,7 +1901,7 @@ function createPlateDissectionEditor({
   counter?: { count: number };
   value?: Value;
 }) {
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ counter, enabled: caseItem.elementId }),
@@ -1924,7 +1918,7 @@ function createFanoutEditor({
   config: BenchmarkConfig;
   value: Value;
 }) {
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       BenchmarkStorePlugin,
@@ -1944,7 +1938,7 @@ function createCoreMountEditor({
   plugins?: BenchmarkPlugins;
   value: Value;
 }) {
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: elementId }),
@@ -1963,13 +1957,13 @@ function createPluginCensusMountedEditor({
   plugins?: BenchmarkPlugins;
   value: Value;
 }) {
-  return createPlateEditor({
+  return createEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       ...getScenarioPlugins(plugins),
     ],
     initialValue: value,
-  }) as unknown as Editor;
+  });
 }
 
 function createFanoutParagraph(index: number): Descendant {
@@ -2090,10 +2084,10 @@ function SlateScenarioEditor({
 }) {
   const editor = React.useMemo(
     () =>
-      createReactEditor({
+      createEditor({
         extensions: getWorkloadExtensions(config.scenarioWorkload),
         initialValue: value,
-      }) as unknown as Editor,
+      }),
     [config.scenarioWorkload, value]
   );
 
@@ -2124,14 +2118,14 @@ function SlateScenarioEditor({
 
   return (
     <div ref={containerRef} className="h-full overflow-auto p-4">
-      <PliteRuntime editor={editor as any}>
-        <Editable
+      <Plate editor={editor}>
+        <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
-      </PliteRuntime>
+      </Plate>
     </div>
   );
 }
@@ -2151,7 +2145,7 @@ function PlateScenarioEditor({
   scenario: Scenario;
   value: Value;
 }) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     plugins: [
       ...getWorkloadPlugins(config.scenarioWorkload),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
@@ -2205,7 +2199,7 @@ function PrebuiltScenarioEditor({
   scenario,
 }: {
   config: BenchmarkConfig;
-  editor: Editor;
+  editor: BenchmarkEditor;
   scenario: Scenario;
 }) {
   const renderElement = React.useCallback(
@@ -2221,14 +2215,14 @@ function PrebuiltScenarioEditor({
   if (scenario.kind === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <PliteRuntime editor={editor as any}>
-          <Editable
+        <Plate editor={editor}>
+          <PlateContent
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </PliteRuntime>
+        </Plate>
       </div>
     );
   }
@@ -2253,7 +2247,7 @@ function PluginCensusEditorSurface({
   scenarioId,
 }: {
   config: BenchmarkConfig;
-  editor: Editor;
+  editor: BenchmarkEditor;
   scenarioId: PluginCensusScenarioId;
 }) {
   const renderElement = React.useCallback(
@@ -2269,14 +2263,14 @@ function PluginCensusEditorSurface({
   if (scenarioId === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <PliteRuntime editor={editor as any}>
-          <Editable
+        <Plate editor={editor}>
+          <PlateContent
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </PliteRuntime>
+        </Plate>
       </div>
     );
   }
@@ -2394,7 +2388,7 @@ function FanoutSurface({
 }: {
   caseId: FanoutCaseId;
   config: BenchmarkConfig;
-  editor: PlateEditor;
+  editor: Editor;
   subscriberCount: number;
   ref?: React.Ref<FanoutEditorHandle>;
 }) {
@@ -3670,8 +3664,8 @@ function BenchmarkEditableMount({
   );
 
   return (
-    <Plite editor={editor}>
-      <Editable
+    <Plate editor={editor}>
+      <PlateContent
         className="min-h-[70vh] outline-none"
         readOnly={false}
         renderElement={finalRenderElement as any}
@@ -3679,7 +3673,7 @@ function BenchmarkEditableMount({
         renderText={finalRenderText}
         spellCheck={false}
       />
-    </Plite>
+    </Plate>
   );
 }
 
@@ -3690,7 +3684,7 @@ function CoreMountSurface({
 }: {
   caseId: CoreMountCaseId;
   config: BenchmarkConfig;
-  editor: PlateEditor;
+  editor: Editor;
 }) {
   const { id } = editor;
 
@@ -3700,9 +3694,9 @@ function CoreMountSurface({
         {caseId === 'provider-only' ? (
           <div className="min-h-[70vh]" />
         ) : caseId === 'plite-only' ? (
-          <Plite editor={editor}>
+          <Plate editor={editor}>
             <div />
-          </Plite>
+          </Plate>
         ) : caseId === 'editable-static' ? (
           <BenchmarkEditableMount config={config} id={id} />
         ) : caseId === 'editable-element-plate-element-no-provider' ? (
@@ -4306,7 +4300,7 @@ function PluginCensusCard({
             <div className="mb-2 font-medium capitalize">{lane}</div>
             <div className="space-y-1 font-mono text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Plite</span>
+                <span className="text-muted-foreground">Plate</span>
                 <span>
                   {metrics[lane].slate
                     ? `${metrics[lane].slate.mean.toFixed(2)} ms`
@@ -4471,19 +4465,17 @@ export default function EditorPerfPage() {
     'live'
   );
   const [mountVersion, setMountVersion] = React.useState(0);
-  const [prebuiltEditor, setPrebuiltEditor] = React.useState<Editor | null>(
-    null
-  );
+  const [prebuiltEditor, setPrebuiltEditor] =
+    React.useState<BenchmarkEditor | null>(null);
   const [fanoutSubscriberCount, setFanoutSubscriberCount] = React.useState(250);
-  const [fanoutEditor, setFanoutEditor] = React.useState<PlateEditor | null>(
+  const [fanoutEditor, setFanoutEditor] = React.useState<Editor | null>(null);
+  const [fanoutMountVersion, setFanoutMountVersion] = React.useState(0);
+  const [coreMountEditor, setCoreMountEditor] = React.useState<Editor | null>(
     null
   );
-  const [fanoutMountVersion, setFanoutMountVersion] = React.useState(0);
-  const [coreMountEditor, setCoreMountEditor] =
-    React.useState<PlateEditor | null>(null);
   const [coreMountVersion, setCoreMountVersion] = React.useState(0);
   const [pluginCensusEditor, setPluginCensusEditor] =
-    React.useState<Editor | null>(null);
+    React.useState<BenchmarkEditor | null>(null);
   const [pluginCensusVersion, setPluginCensusVersion] = React.useState(0);
   const [pluginCensusSurface, setPluginCensusSurface] =
     React.useState<PluginCensusSurface | null>(null);
@@ -4886,10 +4878,10 @@ export default function EditorPerfPage() {
           ? createScenarioMountedEditor({
               config,
               scenario: {
-                description: 'Plite baseline for plugin census.',
+                description: 'Plate baseline for plugin census.',
                 id: 'slate',
                 kind: 'slate',
-                label: 'Plite',
+                label: 'Plate',
                 plugins: 'none',
               },
               value,
@@ -5214,7 +5206,7 @@ export default function EditorPerfPage() {
 
           const createCounter = { count: 0 };
           const createStart = performance.now();
-          const createEditor = createPlateDissectionEditor({
+          const createdEditor = createPlateDissectionEditor({
             caseItem,
             config,
             counter: createCounter,
@@ -5222,7 +5214,7 @@ export default function EditorPerfPage() {
           });
           const createDuration = performance.now() - createStart;
 
-          pluginCount = getPlateRuntime(createEditor).pluginList.length;
+          pluginCount = getPlateRuntime(createdEditor).pluginList.length;
 
           if (!isWarmup) {
             createWithValueSamples.push(createDuration);
@@ -5291,7 +5283,7 @@ export default function EditorPerfPage() {
             caseItem,
             config.blocks
           );
-          const editor = createPlateEditor({
+          const editor = createEditor({
             plugins: getElementIdPlugins({
               counter: idCounter,
               enabled: caseItem.elementId,
@@ -5683,7 +5675,7 @@ export default function EditorPerfPage() {
         {getBenchmarkDOMStrategy(config)}
       </span>
       <section className="space-y-3">
-        <h1 className="text-3xl font-bold">Plate vs Plite Editor Perf</h1>
+        <h1 className="text-3xl font-bold">Plate vs Plate Editor Perf</h1>
         <p className="max-w-4xl text-muted-foreground">
           One scenario is mounted at a time. That is intentional. Mounting four
           huge editors at once would make the numbers useless.
@@ -6145,7 +6137,7 @@ export default function EditorPerfPage() {
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate core mount dissection</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This lane peels Plate mount cost stage by stage: provider, Plite
+              This lane peels Plate mount cost stage by stage: provider, Plate
               wrapper, editable-props hook stack, minimal editable mount, then
               full <code>PlateContent</code>. If <code>jotai-x</code> were the
               whole story, the provider-only step would already be ugly.

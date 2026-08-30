@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/root",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/root.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/index.*", "../src/root.*"],
+  "references": [
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./standard-basic-nodes.json"
+    },
+    {
+      "path": "./standard-basic-styles.json"
+    },
+    {
+      "path": "./standard-code-block.json"
+    },
+    {
+      "path": "./standard-indent.json"
+    },
+    {
+      "path": "./standard-link.json"
+    },
+    {
+      "path": "./standard-list.json"
+    }
+  ]
+}

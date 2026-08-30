@@ -6,7 +6,7 @@ import {
   startPliteBrowserNativeEventTrace,
   stopPliteBrowserNativeEventTrace,
   takePliteBrowserNativeEventTrace,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const getBrowserUndoHotkey = async (root: Locator) =>
   root

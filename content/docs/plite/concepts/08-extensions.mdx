@@ -34,7 +34,7 @@ import {
   defineExtension,
   defineEditorSchema,
   schema,
-} from "@platejs/plite";
+} from "plitejs";
 
 const ArticleSchema = defineEditorSchema("schema:article", {
   elements: {
@@ -69,7 +69,7 @@ Use `read` for owner-local queries and `update` for owner-local model writes.
 The extension name becomes the namespace on `editor.read` and `editor.update`.
 
 ```ts
-import { createEditor, defineExtension } from "@platejs/plite";
+import { createEditor, defineExtension } from "plitejs";
 
 const LinksExtension = defineExtension("links", {
   read: ({ state }) => ({
@@ -180,11 +180,11 @@ or transitive owner is removed. Configuration fails for dependency cycles,
 duplicate active names, or installed conflicting descriptors.
 
 The public dependency reference is deliberately shallow: literal `name` and
-optional `enabled`, with no generic capability graph. Plite keeps its finite
-name-keyed capability/provider inference under `@platejs/plite/internal`
-instead of recursively publishing dependency ancestry. Static portal types
-prove that one installed name has the same capability as the descriptor;
-runtime access separately requires the exact installed descriptor identity.
+optional `enabled`, with no recursive capability graph. Finite name-keyed
+capability/provider contracts use clean public types from `plitejs`. Static
+portal types prove that one installed name has the same capability as the
+descriptor; runtime access separately requires the exact installed descriptor
+identity.
 
 ## Typed Extension Points
 
@@ -195,7 +195,7 @@ contribution channel outside the headless model.
 import {
   defineExtension,
   defineExtensionPoint,
-} from "@platejs/plite";
+} from "plitejs";
 
 type MeasurementSource = {
   measure(): number;
@@ -260,7 +260,7 @@ creation. The replacement is staged in the surrounding transaction and becomes
 visible with the same commit as document and state changes.
 
 ```ts
-import { createEditor, defineExtensionSlot } from "@platejs/plite";
+import { createEditor, defineExtensionSlot } from "plitejs";
 
 const navigation = defineExtensionSlot("navigation");
 const editor = createEditor({
@@ -287,7 +287,7 @@ properties live with the element; cross-cut properties use a top-level
 property declaration with an explicit target.
 
 ```ts
-import { defineExtension, property, schema } from "@platejs/plite";
+import { defineExtension, property, schema } from "plitejs";
 
 const tableModel = {
   schema: {
@@ -358,7 +358,7 @@ and state types.
 import {
   defineExtension,
   editorReads,
-} from "@platejs/plite";
+} from "plitejs";
 
 const ClosedSectionsExtension = defineExtension("closedSections", {
   readMiddleware: ({ around }) => [
@@ -406,7 +406,7 @@ converge. Keyboard events and host UI remain React or DOM adapter concerns.
 ## Clipboard And Fragment Policy
 
 DOM clipboard ingress is a typed extension point owned by
-`@platejs/plite-dom`. Add `clipboardHandler(...)` to `contributions`. Its
+`plitejs/dom`. Add `clipboardHandler(...)` to `contributions`. Its
 `insertData` callback receives the `DataTransfer`, `next`, and transaction.
 Mutate through that transaction and return `true` when the handler owns the
 payload. Return `next()` to keep Plite's slice and plain-text fallback in the
@@ -456,7 +456,7 @@ when generic library code needs it.
 import {
   type DefinitionOf,
   defineExtension,
-} from "@platejs/plite";
+} from "plitejs";
 
 const ImagesExtension = defineExtension("images", {
   schema: {

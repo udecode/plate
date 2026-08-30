@@ -1,7 +1,7 @@
 import {
   createPliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const CASE_ID = 'keeps native selection drag scrolling outside the editor';
@@ -245,12 +245,12 @@ test(CASE_ID, async ({ page }, testInfo) => {
       expect(downwardModel).not.toBeNull();
       const positiveSamples = downwardScrollTrace.filter(
         (sample, index, samples) =>
-          index > 0 && sample.scrollTop > samples[index - 1]!.scrollTop
+          index > 0 && sample.scrollTop > samples[index - 1].scrollTop
       );
 
       expect(positiveSamples.length).toBeGreaterThan(0);
       expect(positiveSamples.at(-1)!.anchorTop).toBeLessThan(
-        positiveSamples[0]!.anchorTop
+        positiveSamples[0].anchorTop
       );
       await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
     } finally {
@@ -381,12 +381,12 @@ test(CASE_ID, async ({ page }, testInfo) => {
       const upwardPointerTrace = traces.pointer.slice(upwardPointerTraceStart);
       const negativeSamples = traces.scroll.filter(
         (sample, index, samples) =>
-          index > 0 && sample.scrollTop < samples[index - 1]!.scrollTop
+          index > 0 && sample.scrollTop < samples[index - 1].scrollTop
       );
 
       expect(negativeSamples.length).toBeGreaterThan(0);
       expect(negativeSamples.at(-1)!.anchorTop).toBeGreaterThan(
-        negativeSamples[0]!.anchorTop
+        negativeSamples[0].anchorTop
       );
       expect(upwardNative.textLength).toBeGreaterThan(100);
       expect(upwardModel).not.toBeNull();

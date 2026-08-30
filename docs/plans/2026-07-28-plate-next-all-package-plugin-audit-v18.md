@@ -135,7 +135,7 @@ package-level drift; none is falsely attested current.
 1. Core type kernel, builder inference, and honest optional-plugin lookup.
 2. Media factory inference and Selection transaction/weak-peer/hook ownership.
 3. Suggestion nullability, Link and Markdown capability ownership, AI/Table
-   casts, and List Classic stale capability capture.
+   casts, and Legacy list model stale capability capture.
 4. DnD, Toggle, Utils, Selection, and Core EventEditor React families.
 5. Remaining P2/P3 one-owner helpers, taxonomy directories, dead aliases,
    constants, and test families.

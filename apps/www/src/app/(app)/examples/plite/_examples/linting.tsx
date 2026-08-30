@@ -1,14 +1,14 @@
-import { type EditorSnapshot, NodeApi, type Range } from '@platejs/plite';
+import { cva } from 'class-variance-authority';
+import { type EditorSnapshot, NodeApi, type Range } from 'plitejs';
 import {
   Editable,
   Plite,
   type PliteRangeDecoration,
-  useEditor,
+  useEditorContext,
   useEditorState,
-  usePliteEditor,
+  useEditor,
   usePliteRangeDecorationSource,
-} from '@platejs/plite-react';
-import { cva } from 'class-variance-authority';
+} from 'plitejs/react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -150,7 +150,7 @@ const LintingPanel = ({
   setSourceLabel: (label: string) => void;
   sourceLabel: string;
 }) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const diagnostics = useEditorState((state) =>
     lintMode === 'off'
       ? NO_LINT_ISSUES
@@ -279,7 +279,7 @@ const LintingPanel = ({
 };
 
 const LintingExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

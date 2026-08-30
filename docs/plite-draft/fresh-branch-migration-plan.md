@@ -246,7 +246,7 @@ Primary package surfaces:
 
 Optional early-adopt lane:
 
-- `packages/browser/**/*`
+- `packages/test/**/*`
   from `.tmp/plite-draft/packages/plite-browser/**/*`
 
 Forced spillover only if needed by compatibility:

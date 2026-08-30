@@ -1,18 +1,18 @@
 ---
 title: "React Editor Setup"
-description: "Create React-backed editors with usePliteEditor, createReactEditor, or the react extension."
+description: "Create React-backed editors with useEditor, createEditor, or the react extension."
 ---
 
-Create React-backed editors with `usePliteEditor` when a React component owns
+Create React-backed editors with `useEditor` when a React component owns
 the editor lifetime.
 
-## usePliteEditor
+## useEditor
 
 ```tsx
-import { Plite, usePliteEditor } from "@platejs/plite-react";
+import { Plite, useEditor } from "plitejs/react";
 
 const MyEditor = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
   });
 
@@ -20,7 +20,7 @@ const MyEditor = () => {
 };
 ```
 
-`usePliteEditor` creates one editor for the component lifetime and installs
+`useEditor` creates one editor for the component lifetime and installs
 React, DOM, clipboard, and default history capabilities. The editor exposes host
 APIs through `editor.api`.
 
@@ -30,13 +30,13 @@ editor.api.dom.clipboard.insertTextData(dataTransfer);
 editor.api.react.isComposing();
 ```
 
-Use `createReactEditor` when the editor is created outside a component or
+Use `createEditor` when the editor is created outside a component or
 inside a custom hook that owns the same one-shot lifetime.
 
-## createReactEditor
+## createEditor
 
 ```typescript
-const editor = createReactEditor({
+const editor = createEditor({
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });
 ```
@@ -48,9 +48,9 @@ dependency.
 ## react
 
 ```typescript
-import { createEditor } from "@platejs/plite";
-import { dom } from "@platejs/plite-dom";
-import { react } from "@platejs/plite-react";
+import { createEditor } from "plitejs";
+import { dom } from "plitejs/dom";
+import { react } from "plitejs/react";
 
 const DOMExtension = dom();
 
@@ -63,7 +63,7 @@ const editor = createEditor({
 Configure the internal Plite clipboard payload with `clipboardFormatKey`.
 
 ```typescript
-const editor = createReactEditor({
+const editor = createEditor({
   clipboardFormatKey: "x-acme-editor-fragment",
   initialValue,
 });

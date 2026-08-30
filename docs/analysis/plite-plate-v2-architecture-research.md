@@ -466,7 +466,7 @@ Status: `completed`
 
 #### Core engine
 
-- `@tiptap/core` is a ProseMirror wrapper, not a fresh editor engine, in [Editor.ts](/Users/zbeyens/git/tiptap/packages/core/src/Editor.ts)
+- `@tiptap/core` is a ProseMirror wrapper, not a fresh editor engine, in [Editor.ts](/Users/zbeyens/git/tiptap/packages/platejs/src/Editor.ts)
 - `@tiptap/pm` repackages the ProseMirror module set behind one dependency surface in [package.json](/Users/zbeyens/git/tiptap/packages/pm/package.json)
 
 Classification:
@@ -480,7 +480,7 @@ Reason:
 
 #### DOM bridge
 
-- DOM ownership still comes from ProseMirror `EditorView`, just behind Tiptap’s wrapper in [Editor.ts](/Users/zbeyens/git/tiptap/packages/core/src/Editor.ts)
+- DOM ownership still comes from ProseMirror `EditorView`, just behind Tiptap’s wrapper in [Editor.ts](/Users/zbeyens/git/tiptap/packages/platejs/src/Editor.ts)
 
 Classification:
 
@@ -527,8 +527,8 @@ Classification:
 #### Plugin / extension model
 
 - the real value is the extension surface:
-  - `Extension` base class in [Extension.ts](/Users/zbeyens/git/tiptap/packages/core/src/Extension.ts)
-  - `ExtensionManager` composition of commands, keymaps, input rules, paste rules, ProseMirror plugins, node views, and dispatch middleware in [ExtensionManager.ts](/Users/zbeyens/git/tiptap/packages/core/src/ExtensionManager.ts)
+  - `Extension` base class in [Extension.ts](/Users/zbeyens/git/tiptap/packages/platejs/src/Extension.ts)
+  - `ExtensionManager` composition of commands, keymaps, input rules, paste rules, ProseMirror plugins, node views, and dispatch middleware in [ExtensionManager.ts](/Users/zbeyens/git/tiptap/packages/platejs/src/ExtensionManager.ts)
 
 Classification:
 
@@ -677,7 +677,7 @@ Status: `completed`
   - `LayoutInput`
   - `LayoutOutput`
   - `MappingIndex`
-    in [packages/core/src/index.ts](/Users/zbeyens/git/premirror/packages/core/src/index.ts)
+    in [packages/platejs/src/index.ts](/Users/zbeyens/git/premirror/packages/platejs/src/index.ts)
 
 Classification:
 
@@ -1233,7 +1233,7 @@ Status: `completed`
 
 #### Core engine
 
-- `urql` is a client/event hub built around keyed operations and results in [client.ts](/Users/zbeyens/git/urql/packages/core/src/client.ts)
+- `urql` is a client/event hub built around keyed operations and results in [client.ts](/Users/zbeyens/git/urql/packages/platejs/src/client.ts)
 - its core architecture is explicit:
   bindings -> client -> exchanges
   in [architecture.md](/Users/zbeyens/git/urql/docs/architecture.md)
@@ -1289,8 +1289,8 @@ Classification:
 #### Plugin / extension model
 
 - exchanges are the real architectural prize:
-  - explicit composition in [compose.ts](/Users/zbeyens/git/urql/packages/core/src/exchanges/compose.ts)
-  - cache as one exchange in [cache.ts](/Users/zbeyens/git/urql/packages/core/src/exchanges/cache.ts)
+  - explicit composition in [compose.ts](/Users/zbeyens/git/urql/packages/platejs/src/exchanges/compose.ts)
+  - cache as one exchange in [cache.ts](/Users/zbeyens/git/urql/packages/platejs/src/exchanges/cache.ts)
   - authoring rules in [authoring-exchanges.md](/Users/zbeyens/git/urql/docs/advanced/authoring-exchanges.md)
 - the strongest specific lessons are:
   - explicit forward/return contracts

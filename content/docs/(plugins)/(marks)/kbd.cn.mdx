@@ -34,10 +34,10 @@ The fastest way to add the kbd plugin is with the `BasicMarksKit`, which include
 Add the kit to your plugins:
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { BasicMarksKit } from '@/components/editor/basic-marks';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...BasicMarksKit,
@@ -54,7 +54,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/basic-nodes
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugin
@@ -62,10 +62,10 @@ npm install @platejs/basic-nodes
 Include `KbdPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
-import { KbdPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { KbdPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     KbdPlugin,
@@ -78,11 +78,11 @@ const editor = createPlateEditor({
 You can configure the `KbdPlugin` with a custom component.
 
 ```tsx
-import { KbdPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor } from 'platejs/react';
+import { KbdPlugin } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { KbdLeaf } from '@/components/editor/kbd';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     KbdPlugin.configure({ component: KbdLeaf }),

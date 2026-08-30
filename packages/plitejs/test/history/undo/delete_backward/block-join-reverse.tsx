@@ -1,0 +1,30 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+
+import { jsx } from '../..';
+
+void jsx;
+
+export const run = (editor) => {
+  editor.update(() => {
+    editor.deleteBackward();
+  });
+};
+export const input = (
+  <editor>
+    <block>Hello</block>
+    <block>
+      <cursor />
+      world!
+    </block>
+  </editor>
+);
+export const output = (
+  <editor>
+    <block>Hello</block>
+    <block>
+      <cursor />
+      world!
+    </block>
+  </editor>
+);

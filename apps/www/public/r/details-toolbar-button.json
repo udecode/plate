@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "details-toolbar-button",
+  "title": "Details Toolbar Button",
+  "description": "A toolbar button for wrapping or unwrapping Details blocks.",
+  "dependencies": [
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/details-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { ListCollapseIcon } from 'lucide-react';\nimport { BaseDetailsPlugin } from 'platejs/details';\nimport { useEditor, useEditorSelector } from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function DetailsToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n  const pressed = useEditorSelector((innerEditor) => {\n    const selection = innerEditor.read.selection();\n\n    return (\n      !!selection &&\n      !!innerEditor.read.nodes.above({\n        at: selection,\n        type: BaseDetailsPlugin,\n      })\n    );\n  });\n\n  return (\n    <ToolbarButton\n      {...props}\n      pressed={pressed}\n      tooltip=\"Details\"\n      onClick={() => {\n        const details = editor.plugin(BaseDetailsPlugin);\n\n        if (pressed) {\n          details.update.unwrap();\n        } else {\n          details.update.wrap();\n        }\n\n        editor.api.dom.focus();\n      }}\n    >\n      <ListCollapseIcon data-icon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/details-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/details"
+      }
+    ],
+    "examples": [
+      "details-demo"
+    ]
+  },
+  "type": "registry:component"
+}

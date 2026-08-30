@@ -3,34 +3,39 @@ title: Plate
 description: API reference for the platejs package.
 ---
 
-`platejs` is the umbrella package for Plate's base, React, and static APIs. It re-exports the core runtime, Plite runtime, utilities, React helpers, and static renderer through three public subpaths.
+`platejs` is the Plate distribution. Its root owns the headless Plate runtime
+and re-exports the approved Plite API by identity. React, static rendering, and
+low-level runtime adapters use explicit subpaths.
 
 ## Installation
 
 ```bash
-npm install platejs
+npm install platejs @tanstack/react-virtual
 ```
 
-`platejs` has React peer dependencies because the package also owns `platejs/react`.
+React is required only when importing `platejs/react` or `platejs/static`.
 
 ## Import Paths
 
-| Import | Re-exports | Use |
+| Import | Use | Optional peer |
 | --- | --- | --- |
-| `platejs` | `@platejs/core`, `@platejs/plite`, `@platejs/utils`, `@udecode/utils` | Headless editor creation, Plite APIs, core types, and shared utilities. |
-| `platejs/react` | `@platejs/core/react`, `@platejs/utils/react`, `@udecode/react-hotkeys`, `@udecode/react-utils` | React editors, components, hooks, stores, plugins, and React utility hooks. |
-| `platejs/static` | `@platejs/core/static` | Static editor creation, React-based HTML rendering, and static node renderers. |
-
-Use the umbrella imports in application code. Package code can import direct package surfaces such as `@platejs/core/react` when it needs a tighter dependency boundary.
+| `platejs` | Headless editor creation, Plate plugins, approved Plite APIs, core types, and utilities. | None |
+| `platejs/react` | React editor creation, components, hooks, stores, and React plugins. | `@tanstack/react-virtual`, React, and React DOM |
+| `platejs/static` | Static editor creation, HTML rendering, and static node renderers. | React and React DOM |
+| `platejs/dom`, `platejs/history`, `platejs/hyperscript` | Plate-facing access to the matching low-level runtime modules. | None |
+| `@platejs/test` | Node-safe editor fixtures and environment-specific test harnesses. | React and Testing Library for `/react`; Playwright for `/playwright` |
+| `platejs/page-layout` | Page-layout geometry and measurement. | `@chenglou/pretext` |
+| `platejs/page-layout/react` | React page-layout rendering. | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
+| `platejs/diff` | Document diff helpers. | `diff-match-patch-ts` |
 
 ## Base Runtime
 
 Use `platejs` for non-React editor work and shared types.
 
 ```ts title="lib/create-headless-editor.ts"
-import { createBaseEditor } from 'platejs';
+import { createEditor } from 'platejs';
 
-export const editor = createBaseEditor({
+export const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
@@ -45,10 +50,10 @@ export const editor = createBaseEditor({
 Use `platejs/react` for app editors.
 
 ```tsx title="components/basic-editor.tsx"
-import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
+import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
 
 export function BasicEditor() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: [
       {
         type: 'paragraph',
@@ -88,7 +93,7 @@ export const staticEditor = createStaticEditor({
 | --- | --- |
 | [Plate Core](/docs/api/core) | Editor creation, React runtime, plugins, stores, and render primitives. |
 | [Plite](/docs/api/plite) | Plite-compatible editor API, transforms, nodes, locations, operations, and refs. |
-| [Plate Utils](/docs/api/utils) | Shared non-React utilities. |
+| [Plate Utilities](/docs/api/utils) | Plate-owned identities and utility plugins. |
 | [React Utils](/docs/api/react-utils) | React utility hooks and helpers re-exported through `platejs/react`. |
 | [Plate Components](/docs/api/core/plate-components) | `Plate`, `PlateContent`, `PlateView`, and component primitives. |
 | [Plate Editor](/docs/api/core/plate-editor) | Runtime editor type, core APIs, transforms, DOM state, and metadata. |

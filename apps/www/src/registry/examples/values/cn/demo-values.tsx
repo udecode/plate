@@ -27,7 +27,6 @@ import { iframeValue } from './iframe-value';
 import { indentValue } from './indent-value';
 import { lineHeightValue } from './line-height-value';
 import { linkValue } from './link-value';
-import { listValue as listClassicValue } from './list-classic-value';
 import { listValue } from './list-value';
 import { mediaValue } from './media-value';
 import { mentionValue } from './mention-value';
@@ -37,7 +36,7 @@ import { slashCommandValue } from './slash-command-value';
 import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
 import { tocValue } from './toc-value';
-import { toggleValue } from './toggle-value';
+import { detailsValue } from './details-value';
 
 const values = {
   ai: aiValue,
@@ -71,7 +70,6 @@ const values = {
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,
-  'list-classic': listClassicValue,
   markdown: deserializeMdValue,
   media: mediaValue,
   // 'media-toolbar': mediaToolbarValue,
@@ -84,7 +82,7 @@ const values = {
   table: tableValue,
   'text-align': alignValue,
   toc: tocValue,
-  toggle: toggleValue,
+  details: detailsValue,
   // upload: uploadValue,
 };
 

@@ -39,7 +39,7 @@ The CI error looked like this:
 Export normalizeStaticValue doesn't exist in target module
 ```
 
-That did point at a real gap in `packages/plate/src/index.tsx`, but fixing that alone was not enough.
+That did point at a real gap in `packages/platejs/src/index.tsx`, but fixing that alone was not enough.
 
 The misleading part was that the local `platejs` source already built successfully after the export was added. The template still failed, which meant the problem had moved from source code into dependency resolution.
 
@@ -83,7 +83,7 @@ That was not related to the template export failure, but it still needed to be c
 
 ### 1. Re-export the helper from `platejs`
 
-In [`packages/plate/src/index.tsx`](packages/plate/src/index.tsx), add an explicit umbrella export:
+In [`packages/platejs/src/index.tsx`](packages/platejs/src/index.tsx), add an explicit umbrella export:
 
 ```ts
 export { STATIC_VALUE_CREATED_AT, normalizeStaticValue } from "@platejs/core";
@@ -172,7 +172,7 @@ If the template imports from `platejs`, then changes in `@platejs/core` can stil
 These commands passed after the fix:
 
 ```bash
-bun test tooling/scripts/prepare-local-template-packages.test.mjs packages/plate/src/index.spec.ts
+bun test tooling/scripts/prepare-local-template-packages.test.mjs packages/platejs/src/index.spec.ts
 pnpm install
 pnpm brl
 pnpm turbo build --filter=./packages/plate --filter=./packages/dnd

@@ -30,36 +30,36 @@ Legacy exact rows:
 
 - [legacy-slate-test-files.md](/Users/zbeyens/git/plate-2/docs/plite-draft/ledgers/legacy-slate-test-files.md)
 - legacy source/docs under:
-  - `/Users/zbeyens/git/slate/packages/plite/src/**`
-  - `/Users/zbeyens/git/slate/packages/plite/test/**`
+  - `/Users/zbeyens/git/slate/packages/plitejs/src/**`
+  - `/Users/zbeyens/git/slate/packages/plitejs/test/**`
   - `/Users/zbeyens/git/slate/docs/**`
 
 Draft contract rows:
 
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/query-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/transforms-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/operations-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/interfaces-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/surface-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/transaction-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/snapshot-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/range-ref-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/bookmark-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/clipboard-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/normalization-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/headless-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/text-units-contract.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/legacy-editor-nodes-fixtures.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/legacy-interfaces-fixtures.ts`
-- `/Users/zbeyens/git/plite-draft/packages/plite/test/legacy-transforms-fixtures.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/query-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/transforms-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/operations-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/interfaces-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/surface-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/transaction-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/snapshot-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/range-ref-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/bookmark-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/clipboard-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/normalization-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/headless-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/text-units-contract.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/legacy-editor-nodes-fixtures.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/legacy-interfaces-fixtures.ts`
+- `/Users/zbeyens/git/plite-draft/packages/plitejs/test/legacy-transforms-fixtures.ts`
 
 Current live owners:
 
 - [slate-editor-api.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/slate-editor-api.md)
 - [slate-interfaces-api.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/slate-interfaces-api.md)
 - [slate-transforms-api.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/slate-transforms-api.md)
-- `/Users/zbeyens/git/plate-2/packages/plite/src/**`
-- `/Users/zbeyens/git/plate-2/packages/plite/test/**`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/src/**`
+- `/Users/zbeyens/git/plate-2/packages/plitejs/test/**`
 
 ## Row Classes
 
@@ -107,8 +107,8 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite/test/query-contract.ts`
-- `packages/plite/test/legacy-editor-nodes-fixtures.ts`
+- `packages/plitejs/test/query-contract.ts`
+- `packages/plitejs/test/legacy-editor-nodes-fixtures.ts`
 
 Current read:
 
@@ -133,8 +133,8 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite/test/interfaces-contract.ts`
-- `packages/plite/test/legacy-interfaces-fixtures.ts`
+- `packages/plitejs/test/interfaces-contract.ts`
+- `packages/plitejs/test/legacy-interfaces-fixtures.ts`
 
 Current read:
 
@@ -158,9 +158,9 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite/test/transforms-contract.ts`
-- `packages/plite/test/operations-contract.ts`
-- `packages/plite/test/legacy-transforms-fixtures.ts`
+- `packages/plitejs/test/transforms-contract.ts`
+- `packages/plitejs/test/operations-contract.ts`
+- `packages/plitejs/test/legacy-transforms-fixtures.ts`
 
 ### Draft-backed public transaction/snapshot/store rows
 
@@ -183,11 +183,11 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite/test/surface-contract.ts`
-- `packages/plite/test/transaction-contract.ts`
-- `packages/plite/test/snapshot-contract.ts`
-- `packages/plite/test/bookmark-contract.ts`
-- `packages/plite/test/range-ref-contract.ts`
+- `packages/plitejs/test/surface-contract.ts`
+- `packages/plitejs/test/transaction-contract.ts`
+- `packages/plitejs/test/snapshot-contract.ts`
+- `packages/plitejs/test/bookmark-contract.ts`
+- `packages/plitejs/test/range-ref-contract.ts`
 
 ### Draft-backed current contract rows that still matter to product truth
 
@@ -204,10 +204,10 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `packages/plite/test/clipboard-contract.ts`
-- `packages/plite/test/normalization-contract.ts`
-- `packages/plite/test/headless-contract.ts`
-- `packages/plite/test/text-units-contract.ts`
+- `packages/plitejs/test/clipboard-contract.ts`
+- `packages/plitejs/test/normalization-contract.ts`
+- `packages/plitejs/test/headless-contract.ts`
+- `packages/plitejs/test/text-units-contract.ts`
 
 ## `keep-later`
 
@@ -225,8 +225,8 @@ Immediate current proof owners to restore or keep alive:
 ## `explicit-cut`
 
 - legacy harness-only rows with no behavior value:
-  - `packages/plite/test/index.js`
-  - `packages/plite/test/jsx.d.ts`
+  - `packages/plitejs/test/index.js`
+  - `packages/plitejs/test/jsx.d.ts`
   - old batch matrix manifests
   - old perf manifest files
 - exact legacy partial-commit batch failure semantics already replaced by
@@ -235,7 +235,7 @@ Immediate current proof owners to restore or keep alive:
 - legacy ordinary-op adjacent-text/spacer canonicalization rows that conflict
   with the live explicit-only normalization contract
   - owner:
-    `/Users/zbeyens/git/plate-2/packages/plite/test/fixture-claim-overrides.ts`
+    `/Users/zbeyens/git/plate-2/packages/plitejs/test/fixture-claim-overrides.ts`
   - read:
     these rows expected ordinary transforms like `moveNodes`, `insertNodes`,
     `insertFragment`, `mergeNodes`, `wrapNodes`, and related delete/split
@@ -264,5 +264,5 @@ source similarity:
 5. `bookmark-contract.ts` + `range-ref-contract.ts` +
    `clipboard-contract.ts` + `normalization-contract.ts`
 
-If current `packages/plite/src/**` cannot satisfy those rows
+If current `packages/plitejs/src/**` cannot satisfy those rows
 cleanly, rewrite it.

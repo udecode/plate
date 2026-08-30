@@ -3,7 +3,8 @@ import path from 'node:path';
 import { getWorkspaceSourceEntries } from './workspace-source-entries.mjs';
 
 const workspaceDistEntryFilter = /\/packages\/.*\/dist\/.*\.js$/;
-const workspaceSpecifierFilter = /^(?:@platejs\/|@udecode\/|platejs(?:\/|$))/;
+const workspaceSpecifierFilter =
+  /^(?:@platejs\/|platejs(?:\/|$)|plitejs(?:\/|$))/;
 const repoRoot = path.resolve(import.meta.dir, '..');
 const sourceEntries = getWorkspaceSourceEntries(repoRoot);
 const sourceEntryByDistEntry = new Map(

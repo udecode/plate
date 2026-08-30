@@ -38,10 +38,10 @@ The fastest way to add Copilot functionality is with the `CopilotKit`, which inc
 ### Add Kit
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { CopilotKit } from '@/components/editor/copilot';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...CopilotKit,
@@ -77,17 +77,17 @@ OPENAI_API_KEY="your-api-key"
 ### Installation
 
 ```bash
-npm install @platejs/ai @platejs/markdown
+npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
 ```
 
 ### Add Plugins
 
 ```tsx
-import { CopilotPlugin } from '@platejs/ai/react';
-import { MarkdownPlugin } from '@platejs/markdown';
-import { createPlateEditor } from 'platejs/react';
+import { CopilotPlugin } from 'platejs/ai/react';
+import { MarkdownPlugin } from 'platejs/markdown';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     MarkdownPlugin,
@@ -107,11 +107,11 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { CopilotPlugin } from '@platejs/ai/react';
+import { CopilotPlugin } from 'platejs/ai/react';
 import {
   MarkdownPlugin,
   stripMarkdown,
-} from '@platejs/markdown';
+} from 'platejs/markdown';
 import { GhostText } from '@/components/editor/copilot';
 
 const plugins = [
@@ -415,7 +415,7 @@ Plugin for AI-powered text completion suggestions.
 
 <API name="CopilotPlugin">
 <APIOptions>
-  <APIItem name="autoTriggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  <APIItem name="autoTriggerQuery" type="(options: { editor: Editor }) => boolean" optional>
     Additional conditions to auto trigger copilot.
     - **Default:** Checks:
       - Block above is not empty
@@ -432,14 +432,14 @@ Plugin for AI-powered text completion suggestions.
   <APIItem name="getNextWord" type="(options: { text: string }) => { firstWord: string; remainingText: string }" optional>
     Function to extract the next word from suggestion text.
   </APIItem>
-  <APIItem name="getPrompt" type="(options: { editor: PlateEditor }) => string" optional>
+  <APIItem name="getPrompt" type="(options: { editor: Editor }) => string" optional>
     Function to generate the prompt for AI completion.
     - **Default:** Uses markdown serialization of ancestor node
   </APIItem>
   <APIItem name="renderGhostText" type="(() => React.ReactNode) | null" optional>
     Component to render ghost text suggestions.
   </APIItem>
-  <APIItem name="triggerQuery" type="(options: { editor: PlateEditor }) => boolean" optional>
+  <APIItem name="triggerQuery" type="(options: { editor: Editor }) => boolean" optional>
     Conditions to trigger copilot.
     - **Default:** Checks:
       - Selection is not expanded

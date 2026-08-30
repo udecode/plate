@@ -1,4 +1,4 @@
-import { BaseLinkPlugin } from '@platejs/link';
+import { BaseLinkPlugin } from 'platejs';
 import { type PliteElementProps, PliteElement } from 'platejs/static';
 import * as React from 'react';
 

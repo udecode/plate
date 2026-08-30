@@ -67,7 +67,7 @@ Boundaries:
 - Source owners: `packages/{date,mention,footnote,layout,media,code-drawing,math,list,indent,basic-styles,table,plate,cli}`, `apps/www`, `content/docs`,
   `.agents/rules/best-api.mdc`, and the smallest affected Vision/worker owners.
 - Non-goals: the separate P0 live-editor versus persisted-document grammar
-  split, classic-list investment, unrelated editor behavior, third-party ASTs,
+  split, legacy-list-model investment, unrelated editor behavior, third-party ASTs,
   and generic schema-builder expansion beyond constraints this packet needs.
 - Direct Plite boundary owners: existing `property.*` validators/enums and
   schema compilation only. No Plite public API change is expected; a newly

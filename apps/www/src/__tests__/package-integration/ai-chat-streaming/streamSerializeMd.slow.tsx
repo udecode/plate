@@ -1,4 +1,4 @@
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 

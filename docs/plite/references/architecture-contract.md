@@ -143,7 +143,7 @@ document migration in the same commit.
 
 The public `EditorExtensionDependencyReference` is shallow and non-generic:
 `name` plus optional `enabled`. Finite direct capability/provider typing and its
-value-sensitive HKT are available only from `@platejs/plite/internal`; the type
+value-sensitive HKT are available only from `plitejs`; the type
 graph does not recursively reproduce exact dependency ancestry. Static portal
 access proves one literal-name match with an equivalent capability. Runtime
 portal access separately verifies the exact installed descriptor identity.
@@ -160,8 +160,8 @@ document truth.
 
 ## DOM and React
 
-Core remains DOM-free. `@platejs/plite-dom` owns DOM codecs and mapping.
-`@platejs/plite-react` owns rendering, input import, native selection export,
+Core remains DOM-free. `plitejs/dom` owns DOM codecs and mapping.
+`plitejs/react` owns rendering, input import, native selection export,
 projection, DOM repair, and one publication per committed transaction.
 
 React renders immutable committed snapshots. Runtime views preserve the base
@@ -175,24 +175,24 @@ One `DocumentChange` can atomically mutate the primary document and named roots.
 Public base-editor reads default to the primary root; root-bound runtime views
 scope local commands without changing canonical ownership.
 
-`@platejs/yjs` translates between Yjs and canonical changes, preserves provider,
+`platejs/yjs` translates between Yjs and canonical changes, preserves provider,
 awareness, offline, root, and history behavior. Yjs events translate into
 canonical changes, and local canonical changes translate into Yjs deltas.
 
-`@platejs/plite-layout` consumes `commit.changed` range and node-key queries.
+`plitejs/page-layout` consumes `commit.changed` range and node-key queries.
 Pagination and virtualization do not own a parallel document model.
 
 ## Package boundaries
 
-- `@platejs/plite`: model, schema, changes, transactions, selections, anchors,
+- `plitejs`: model, schema, changes, transactions, selections, anchors,
   effects, extensions, and DOM-free runtime
-- `@platejs/plite-dom`: DOM conversion and browser bridge
-- `@platejs/plite-react`: React host, input, projection, and rendering
-- `@platejs/plite-history`: inverse-change history
-- `@platejs/plite-layout`: layout and pagination planning
-- `@platejs/yjs`: Yjs collaboration adapter
-- `@platejs/browser`: first-party browser proof helpers
-- `@platejs/core`: Plate plugin conventions and product-facing composition
+- `plitejs/dom`: DOM conversion and browser bridge
+- `plitejs/react`: React host, input, projection, and rendering
+- `plitejs/history`: inverse-change history
+- `plitejs/page-layout`: layout and pagination planning
+- `platejs/yjs`: Yjs collaboration adapter
+- `@platejs/test`: Node-safe fixtures plus React, DOM, Playwright, and proof helpers
+- `platejs`: Plate plugin conventions and product-facing composition
 
 The `/internal` subpaths exist only for sibling packages in this repository.
 Applications use package root exports.

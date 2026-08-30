@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import type { ExcalidrawElement } from '@platejs/excalidraw';
-import { jsx } from '@platejs/test-utils';
+import type { ExcalidrawElement } from 'platejs/excalidraw';
+import { jsx } from '@platejs/test';
 import type { Value } from 'platejs';
 
 jsx;

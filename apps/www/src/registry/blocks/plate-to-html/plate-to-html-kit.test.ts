@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createPlateEditor, ParagraphPlugin } from '@platejs/core/react';
+import { createEditor, ParagraphPlugin } from 'platejs/react';
 
 import { PlateToHtmlClientSchemaKit } from '@/registry/components/editor/plate-to-html-client-kit';
 import { PlateToHtmlEditorKit } from '@/registry/components/editor/plate-to-html-kit';
@@ -24,7 +24,7 @@ describe('PlateToHtmlEditorKit', () => {
 
   it('accepts ids in the client editor value', () => {
     expect(() =>
-      createPlateEditor({
+      createEditor({
         plugins: [ParagraphPlugin, ...PlateToHtmlClientSchemaKit],
         initialValue: createValue(),
       })

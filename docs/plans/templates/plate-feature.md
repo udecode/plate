@@ -13,27 +13,33 @@ Primary template:
 docs/plans/templates/plate-feature.md
 
 Applied packs:
+
 - TODO: Add only the packs required by the Feature Manifest.
 
 Flow mode:
+
 - TODO: new package | existing package plus React/registry | headless package | registry-only
 
 Completion threshold:
+
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
 - Selected packs, Plate Next attestation, P1 review, feature checker, and goal
   checker are closed.
 
 Verification surface:
+
 - TODO: Name package, app, registry, docs, browser, release, and agent checks.
 
 Constraints:
+
 - Use one Feature Manifest through every phase.
 - Load worker skills only when their phase is active.
 - Do not add package-generation tooling.
 - Do not copy worker doctrine into this plan.
 
 Boundaries:
+
 - Source of truth: TODO.
 - Allowed edit scope: TODO.
 - Browser surface: TODO or N/A with reason.
@@ -41,9 +47,11 @@ Boundaries:
 - Non-goals: TODO.
 
 Output budget strategy:
+
 - TODO: Prefer manifests, counts, and focused proof over broad output.
 
 Blocked condition:
+
 - TODO: Name the external decision or unavailable proof that stops work.
 
 Feature Manifest:
@@ -62,6 +70,7 @@ Feature Manifest:
 | Review/handoff | yes | autoreview | pending | user | pending | pending |
 
 Package file evidence:
+
 - Package: pending or N/A with reason.
 - Manifest command / file count: pending or N/A with reason.
 - Package fingerprint: pending or N/A with reason.
@@ -72,7 +81,17 @@ When package attestation applies, link the Package and Plate Next manifest rows
 to this section. Add one checkbox per package file. Check a file only at score
 `100`; otherwise leave it unchecked with a concrete owner and next action.
 
+Package boundary contract:
+| Contract | Decision | Evidence |
+| --- | --- | --- |
+| shared Plate host | pending or N/A with reason | pending or N/A with reason |
+| Plite ownership | pending or N/A with reason | pending or N/A with reason |
+| external dependency ownership | pending or N/A with reason | pending or N/A with reason |
+| entrypoint direction | pending or N/A with reason | pending or N/A with reason |
+| Oxlint coverage | pending or N/A with reason | pending or N/A with reason |
+
 Phase state:
+
 - current phase: intake
 - status: in_progress
 - next phase: API and layer gate
@@ -88,9 +107,13 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 
 Work Checklist:
+
 - [ ] Fill every Feature Manifest row before source writes.
 - [ ] Settle public shape and layer ownership.
 - [ ] Create any new package manually from two current sibling patterns.
+- [ ] Resolve the package host, Plite ownership, external dependency ownership,
+      headless/React direction, and Oxlint coverage rows for every applicable
+      package change.
 - [ ] Implement and prove package semantics.
 - [ ] Add only applicable package React adapters.
 - [ ] Add applicable copied registry component families.
@@ -106,6 +129,7 @@ Completion Gates:
 | Manifest coverage | yes | Run `node tooling/scripts/check-plate-feature.mjs {{PLAN_PATH}}` | pending |
 | Selected pack closure | yes | Close every selected pack | pending |
 | Package proof | pending | Run owner-selected package proof | pending |
+| Package boundary proof | pending | Run `pnpm test:manifests`, scoped lint, and the affected Oxlint override audit, or record N/A | pending |
 | Registry/browser proof | pending | Verify runnable copied UI or record N/A | pending |
 | Docs/release proof | pending | Verify docs and release classification | pending |
 | Plate Next attestation | pending | Validate reviewed package version/evidence or record N/A | pending |
@@ -113,12 +137,15 @@ Completion Gates:
 | Goal plan complete | yes | Run the autogoal completion checker after autoreview | pending |
 
 Findings:
+
 - None yet.
 
 Decisions and tradeoffs:
+
 - None yet.
 
 Review fixes:
+
 - None yet.
 
 Error attempts:
@@ -127,9 +154,11 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
+
 - Pending.
 
 Final handoff contract:
+
 - Outcome: pending
 - Evidence: pending
 - Browser proof: pending
@@ -138,4 +167,5 @@ Final handoff contract:
 - Next owner: pending
 
 Timeline:
+
 - pending

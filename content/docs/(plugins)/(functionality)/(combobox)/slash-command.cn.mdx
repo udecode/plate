@@ -37,10 +37,10 @@ docs:
 ### 添加套件
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SlashKit } from '@/components/editor/slash';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     ...SlashKit,
@@ -57,7 +57,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/slash-command
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 添加插件
@@ -65,10 +65,10 @@ npm install @platejs/slash-command
 `SlashPlugin` 会把 `SlashInputPlugin` 作为必需依赖安装。
 
 ```tsx
-import { SlashPlugin } from '@platejs/slash-command/react';
-import { createPlateEditor } from 'platejs/react';
+import { SlashPlugin } from 'platejs/slash-command/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     SlashPlugin,
@@ -81,15 +81,12 @@ const editor = createPlateEditor({
 需要替换依赖的组件或配置时，把完整的 `SlashInputPlugin` 描述符加入同一数组。
 
 ```tsx
-import {
-  SlashInputPlugin,
-  SlashPlugin,
-} from '@platejs/slash-command/react';
+import { SlashInputPlugin, SlashPlugin } from 'platejs/slash-command/react';
 import { PLUGINS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { SlashInputElement } from '@/components/editor/slash';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     SlashPlugin.configure({
@@ -167,7 +164,7 @@ const editor = createPlateEditor({
     });
     ```
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: PlateEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
     判断何时启用斜杠命令的函数。可用于在代码块等特定上下文中禁用功能。
   </APIItem>
 </APIOptions>

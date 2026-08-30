@@ -37,23 +37,30 @@
     "brl": "echo 'No barrels to generate'",
     "build": "tsdown --config tsdown.config.mts --log-level warn",
     "clean": "rimraf dist",
-    "lint": "plate-pkg p:lint",
-    "lint:fix": "plate-pkg p:lint:fix",
-    "test": "bun test test",
+    "lint": "node ../../tooling/scripts/plate-pkg.cjs p:lint",
+    "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
+    "test": "bun test src test",
     "test:performance": "bun test/performance.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@platejs/core": "workspace:^",
-    "@platejs/plite": "workspace:^",
+    "@antfu/ni": "24.3.0",
     "chokidar": "4.0.3",
     "commander": "14.0.1",
     "esbuild": "0.25.12",
     "get-tsconfig": "5.0.0-beta.5",
-    "typescript": "7.0.2"
+    "kleur": "4.1.5",
+    "ora": "8.2.0",
+    "prompts": "2.4.2",
+    "typescript": "7.0.2",
+    "zod": "3.25.61"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "@types/node": "24.12.0"
+    "@types/node": "24.12.0",
+    "@types/prompts": "2.4.9",
+    "platejs": "workspace:^"
+  },
+  "peerDependencies": {
+    "platejs": ">=54.0.0-beta.1"
   }
 }

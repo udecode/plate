@@ -76,7 +76,7 @@ Boundaries:
 - allowed proof/test owners: List and Plate migration specs, generated contract checks, www typecheck, default editor Browser route, and root CI scripts
 - generated/source boundary: package schemas and `plugins.ts` are source; `plugins.generated.ts` and `plugins.schema.json` regenerate through `plate generate`
 - browser/device claim width: ordinary Browser proof for input-rule/list rendering; no native Chrome/device claim
-- forbidden product/API/release/public mutations: no list-classic change, no Plite substrate change, no templates, no commit/push/PR/release
+- forbidden product/API/release/public mutations: no legacy-list-model change, no Plite substrate change, no templates, no commit/push/PR/release
 - orchestration mode and writer ownership: root thread is the sole writer; multi-agent delegation is disabled, so the root follows the one-case Patch workflow locally
 
 Output budget strategy:
@@ -121,7 +121,7 @@ Start Gates:
 | Docs style doctrine read | yes | Current-state source-backed reference voice required. |
 | Documented source owner identified | yes | `@platejs/list` schema/runtime and Plate migration are authoritative. |
 | Package/API pack selected | yes | Published `@platejs/list` schema, operation, generated types, and migration change. |
-| Public surface or package boundary identified | yes | List package plus umbrella Plate migration; no Plite/list-classic change. |
+| Public surface or package boundary identified | yes | List package plus umbrella Plate migration; no Plite/legacy-list-model change. |
 | Release artifact path selected | yes | Update the existing `semantic-flat-lists` major changeset because this corrects the same unshipped hard cut. |
 | `changeset` skill loaded when `.changeset` is required | yes | Load before release artifact edit. |
 | Barrel/export impact decision recorded | yes | No exported file move; run `pnpm brl` only if export generation changes. |
@@ -234,7 +234,7 @@ Completion Gates:
 | Docs links / routes / previews | yes | Verify leaf links, routes, anchors, and preview names or record N/A | Existing List preview/links unchanged; registry source check passes. |
 | Docs MDX/content parser | yes | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | www build:source and docs source parity passed. |
 | Plugin page specifics | yes | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | Existing plugin-page topology retained; current API and format limit documented. |
-| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `@platejs/list` owns schema/API; Plate owns migration; no Plite/list-classic change. |
+| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `@platejs/list` owns schema/API; Plate owns migration; no Plite/legacy-list-model change. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published major List contract correction. |
 | Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | Existing `semantic-flat-lists` major changeset updated. |
 | Registry changelog | N/A | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | Package API/runtime change, not registry-only. |
@@ -317,7 +317,7 @@ Timeline:
 Decisions and tradeoffs:
 - Two numeric intent fields beat a mode field with an invalid cross-property state: `listStart` is unconditional; `listStartIfFirst` is independently conditional.
 - HTML internal clipboard preserves the conditional field in Plate data attributes. MDAST emits the currently visible start because Markdown has no latent conditional-start concept.
-- No Plite primitive, list-classic change, alias, or historical normalizer is justified.
+- No Plite primitive, legacy-list-model change, alias, or historical normalizer is justified.
 
 Review fixes:
 - P2 finding rejected: v53 rendered one `ol[start]` per flat item and did not emit `data-list-start`/restart attributes. Current continuation decoding already drops sequential wrapper starts, covered by the multi-wrapper HTML regression test.
@@ -341,7 +341,7 @@ Verification evidence:
 
 Final handoff contract:
 - changed files: List runtime/tests, Plate migration/tests, Markdown serializer/tests, playground integration oracle, EN/CN docs, generated Editor contract, existing List changeset, Best API rule/mirror, Plate Vision, and mechanical unrelated CI formatting/lint blockers.
-- design decisions: unconditional `listStart`, conditional `listStartIfFirst`, derived `read.list.ordinal`; no policy mode object, aliases, Plite/list-classic changes, or historical normalizers.
+- design decisions: unconditional `listStart`, conditional `listStartIfFirst`, derived `read.list.ordinal`; no policy mode object, aliases, Plite/legacy-list-model changes, or historical normalizers.
 - tests and proof: focused counts, generated/docs checks, exact root `pnpm check` green, Browser policy caveat.
 - source/generated sync: `pnpm install` and `plate generate` completed; source/mirror/generated field scan passes.
 - P2 and agent-native findings: historical clipboard finding rejected; agent-native PASS.

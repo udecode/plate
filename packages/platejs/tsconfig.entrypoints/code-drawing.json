@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "incremental": true,
+    "noEmit": false,
+    "outDir": "../.turbo/entrypoint-types/code-drawing",
+    "rootDir": "../src",
+    "sourceMap": false,
+    "tsBuildInfoFile": "../.turbo/entrypoint-types/code-drawing.tsbuildinfo"
+  },
+  "exclude": [
+    "../src/code-drawing/react/**/*",
+    "../src/**/*.spec.*",
+    "../src/**/*.test.*",
+    "../src/**/*.slow.*",
+    "../src/**/*-contract.*",
+    "../src/**/__tests__/**"
+  ],
+  "extends": "../tsconfig.json",
+  "include": ["../src/code-drawing/**/*"],
+  "references": [
+    {
+      "path": "./core.json"
+    }
+  ]
+}

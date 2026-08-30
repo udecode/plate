@@ -54964,7 +54964,7 @@
       "aliases": [
         "C24 structural-list rename"
       ],
-      "claim": "Rejected. Keep `@platejs/list-classic` and its current public symbols until a deliberate deprecation/removal plan. Existing registry names/routes/docs remain maintenance-only; do not add parity, variants, abstractions, polish, demos, adoption, or changelog work. The proposed rename unlocks no behavior, ownership, inference, runtime, or composition capability.",
+      "claim": "Rejected. Keep `platejs` and its current public symbols until a deliberate deprecation/removal plan. Existing registry names/routes/docs remain maintenance-only; do not add parity, variants, abstractions, polish, demos, adoption, or changelog work. The proposed rename unlocks no behavior, ownership, inference, runtime, or composition capability.",
       "conceptIds": [
         "WG-PRODUCT-003C",
         "PLATE-COPIED-KITS"

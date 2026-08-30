@@ -128,7 +128,7 @@ const CustomBoldPlugin = definePlatePlugin("customBold", {
 例如，您可以定义当用户在空标题中按`Enter`或在块引用开头按`Backspace`时发生的情况。
 
 ```ts
-import { HeadingPlugin } from "@platejs/basic-nodes/react";
+import { HeadingPlugin } from "platejs/react";
 
 HeadingPlugin.configure({
   rules: {
@@ -210,7 +210,7 @@ const TextAlignPlugin = definePlatePlugin("textAlign", {
 路径都使用 author callback 的 `schema.properties.textAlign` 编译 handle；consumer
 通过类型化节点字段或插件语义能力访问数据，而不读取该 property 映射。`name`
 只标识能力 namespace。`.configure()` 和 `.extend()` 不更改 schema identity。传给
-`createPlateEditor` 或 `usePlateEditor` 的 `schema` 可以重映射 element type 或关系；
+`createEditor` 或 `useCreateEditor` 的 `schema` 可以重映射 element type 或关系；
 插件拥有的 property key 保持固定。
 插件 update 传入一个原子 property patch，因此每个 key 和 value 都从插件的 shallow
 schema contract 推断。Alias 使用精确 author handle 的 key 作为 computed object key。
@@ -295,7 +295,7 @@ const CustomStatePlugin = definePlatePlugin("customState", {
   constructor 无法访问的 shared factory 或前一阶段类型才使用 `.extend()`。
 </Callout>
 
-独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
+独立复用的 standalone Plite descriptor 使用从 `platejs` import 的
 `defineExtension`。详见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。
 
@@ -469,7 +469,7 @@ export const SnippetPlugin = definePlatePlugin("snippet", {
 使用类型化插件时，您将获得完整的类型检查和自动补全功能 ✨
 
 ```ts
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [SnippetPlugin],
 });
 

@@ -72,12 +72,8 @@ rejected shape.
   owner. Plan short presentation duplication across items instead of a shared
   registry dependency unless the extracted item has an independent user job or
   owns real behavior.
-- Exclude registry surfaces dedicated to `*-classic`, including
-  `list-classic`, from new parity, variant, abstraction, polish, demo, adoption,
-  and API work. They are maintenance-only pending deprecation: plan changes
-  only for a user-facing regression, security/release blocker, or explicitly
-  authorized deprecation/removal. Do not infer removal authority from the
-  planned deprecation.
+- Plan list behavior through root `ListPlugin`. Do not add another persisted
+  list structure, transform family, serializer path, or registry graph.
 
 ## Hard Policy
 

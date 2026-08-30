@@ -1,7 +1,7 @@
 import {
   createPliteBrowserEditorHarness,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 const PAINT_CASE_ID = 'table:hide-native-highlight-during-multi-cell-drag';
@@ -74,9 +74,9 @@ const changedPixelCount = (left: PixelImage, right: PixelImage) => {
 
   for (let index = 0; index < left.data.length; index += 4) {
     const delta = Math.max(
-      Math.abs(left.data[index]! - right.data[index]!),
-      Math.abs(left.data[index + 1]! - right.data[index + 1]!),
-      Math.abs(left.data[index + 2]! - right.data[index + 2]!)
+      Math.abs(left.data[index] - right.data[index]),
+      Math.abs(left.data[index + 1] - right.data[index + 1]),
+      Math.abs(left.data[index + 2] - right.data[index + 2])
     );
 
     if (delta > 16) count += 1;
@@ -103,11 +103,7 @@ const setSelectionPaintControl = async (
   await afterPaint(page);
 };
 
-type TableSelectionLayerControl =
-  | 'absent'
-  | 'actual'
-  | 'duplicate'
-  | 'single';
+type TableSelectionLayerControl = 'absent' | 'actual' | 'duplicate' | 'single';
 
 const setTableSelectionLayerControl = async (
   page: Page,
@@ -115,15 +111,11 @@ const setTableSelectionLayerControl = async (
 ) => {
   await page.evaluate((nextControl) => {
     const id = 'table-selection-layer-control';
-    const table = document.querySelector(
-      '[data-plite-editor="true"] table'
-    );
+    const table = document.querySelector('[data-plite-editor="true"] table');
     const wrapper = table?.parentElement;
 
     document.getElementById(id)?.remove();
-    document
-      .querySelector('[data-test-table-selection-duplicate]')
-      ?.remove();
+    document.querySelector('[data-test-table-selection-duplicate]')?.remove();
     document
       .querySelector('[data-test-table-selection-control]')
       ?.removeAttribute('data-test-table-selection-control');
@@ -264,7 +256,7 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       document.addEventListener(
         'pointerdown',
         (event) => {
-          const pointerEvent = event as PointerEvent;
+          const pointerEvent = event;
           const handle = (event.target as Element).closest(
             '[aria-label="Drag block"]'
           );
@@ -308,16 +300,19 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       )
       .toBe(1);
 
-    const clip = await root.locator('table').first().evaluate((table) => {
-      const rect = table.parentElement!.getBoundingClientRect();
+    const clip = await root
+      .locator('table')
+      .first()
+      .evaluate((table) => {
+        const rect = table.parentElement!.getBoundingClientRect();
 
-      return {
-        height: Math.ceil(rect.bottom) - Math.floor(rect.top),
-        width: Math.ceil(rect.right) - Math.floor(rect.left),
-        x: Math.floor(rect.left + window.scrollX),
-        y: Math.floor(rect.top + window.scrollY),
-      };
-    });
+        return {
+          height: Math.ceil(rect.bottom) - Math.floor(rect.top),
+          width: Math.ceil(rect.right) - Math.floor(rect.left),
+          x: Math.floor(rect.left + window.scrollX),
+          y: Math.floor(rect.top + window.scrollY),
+        };
+      });
     const actual = await capturePixels(page, clip);
 
     await setTableSelectionLayerControl(page, 'single');
@@ -344,10 +339,7 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
 
     const positiveSignal = changedPixelCount(single.image, absentA.image);
     const negativeSignal = changedPixelCount(absentA.image, absentB.image);
-    const duplicateSignal = changedPixelCount(
-      duplicate.image,
-      single.image
-    );
+    const duplicateSignal = changedPixelCount(duplicate.image, single.image);
     const actualSignal = changedPixelCount(actual.image, single.image);
     const allowedSignal = Math.max(
       20,
@@ -432,7 +424,7 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
       document.addEventListener(
         'pointermove',
         (event) => {
-          const pointerEvent = event as PointerEvent;
+          const pointerEvent = event;
           const htmlElement = document.documentElement;
 
           htmlElement.setAttribute(

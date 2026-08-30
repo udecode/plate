@@ -1,13 +1,15 @@
 import {
-  defineExtension,
   defineEditorSchema,
+  defineExtension,
   editorCommands,
+  type EditorValueFromExtensions,
   NodeApi,
   PathApi,
+  type Element as PliteElement,
+  type Text as PliteText,
   PointApi,
   property,
   RangeApi,
-  type EditorValueFromExtensions,
   schema,
   type SchemaDescendant,
   type SchemaElementFor,
@@ -15,26 +17,20 @@ import {
   type SchemaText,
   type SchemaTextPropertyKeys,
   target,
-  type Element as PliteElement,
-  type Text as PliteText,
   TextApi,
-} from '@platejs/plite';
-import {
-  clipboardHandler,
-  isHotkey,
-  parseDOMClipboardHtml,
-} from '@platejs/plite-dom';
-import { history } from '@platejs/plite-history';
+} from 'plitejs';
+import { clipboardHandler, isHotkey, parseDOMClipboardHtml } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   Editable,
-  type ReactEditor,
+  type Editor,
+  Plite,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
   useEditor,
+  useEditorContext,
   useEditorSelector,
-  usePliteEditor,
-} from '@platejs/plite-react';
+} from 'plitejs/react';
 import type React from 'react';
 import type { MouseEvent, PointerEvent } from 'react';
 
@@ -124,7 +120,7 @@ const RichTextSchema = defineEditorSchema('schema:derived', {
 type RichTextValue = EditorValueFromExtensions<
   readonly [typeof RichTextExtension]
 >;
-type RichTextEditor = ReactEditor<RichTextValue>;
+type RichTextEditor = Editor<RichTextValue>;
 type RichTextElement = SchemaElementFor<typeof RichTextSchema>;
 type RichTextElementType = SchemaElementTypes<typeof RichTextSchema>;
 type RichTextDescendant = SchemaDescendant<typeof RichTextSchema>;
@@ -159,7 +155,7 @@ const BLOCK_HOTKEYS: Array<[string, RichTextElementFormat]> = [
 const CLEAR_FORMATTING_HOTKEY = 'mod+\\';
 
 const RichTextExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     extensions: [history(), RichTextExtension],
     initialValue: [
       {
@@ -598,7 +594,7 @@ interface BlockButtonProps {
 }
 
 const BlockButton = ({ format, icon }: BlockButtonProps) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isBlockActive(innerEditor, format, isAlignType(format) ? 'align' : 'type')
   );
@@ -622,7 +618,7 @@ const BlockButton = ({ format, icon }: BlockButtonProps) => {
 };
 
 const ClearFormattingButton = () => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const runCommand = () => {
     clearRichTextFormatting(editor);
   };
@@ -648,7 +644,7 @@ interface MarkButtonProps {
 }
 
 const MarkButton = ({ format, icon }: MarkButtonProps) => {
-  const editor = useEditor();
+  const editor = useEditorContext();
   const active = useEditorSelector(
     (innerEditor2) => innerEditor2.read.marks()?.[format] === true
   );

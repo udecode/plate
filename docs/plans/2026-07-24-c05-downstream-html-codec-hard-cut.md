@@ -30,7 +30,7 @@ Task source:
     current HTML/plugin API docs and guides, plus current non-Core integration
     fixtures only when they prove shipped behavior.
   - Preserve behavior and configured types.
-  - Do not edit Core, `list-classic`, rich codec files, registry, generated
+  - Do not edit Core, `legacy-list-model`, rich codec files, registry, generated
     output, templates, changesets, or historical `content/docs/migration/**`.
   - Do not expand classic work.
   - Run exact typechecks, tests, docs-source checks, and residual scans.
@@ -65,7 +65,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-24-c05-downstream-html-codec-hard-cut.md` passes.
 
 Verification surface:
-- Scoped `rg` scans that exclude Core, `list-classic`, rich codecs, generated
+- Scoped `rg` scans that exclude Core, `legacy-list-model`, rich codecs, generated
   output, templates, registry, and `content/docs/migration/**`.
 - Owning package tests/typechecks for touched fixtures plus `www` typecheck.
 - `pnpm --filter www build:source` and `pnpm --filter www check:docs`.
@@ -94,7 +94,7 @@ Boundaries:
   rendering; use Computer Use only for native Chrome/OS UI that needs visual
   inspection after Chrome automation cannot read it.
 - Tracker sync: N/A: no tracker source.
-- Non-goals: Core, `list-classic`, rich codecs, registry, generated output,
+- Non-goals: Core, `legacy-list-model`, rich codecs, registry, generated output,
   templates, changesets, historical migrations, classic expansion, git/PR work.
 
 Output budget strategy:

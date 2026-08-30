@@ -7,7 +7,7 @@ import {
   openExample,
   recordPliteBrowserRuntimeErrors,
   withExclusiveClipboardAccess,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 test.describe('editable voids', () => {
   const input = 'input[type="text"]';

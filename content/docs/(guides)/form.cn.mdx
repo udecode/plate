@@ -22,7 +22,7 @@ description: 如何将 Plate 编辑器与 react-hook-form 集成。
 ```tsx
 import { useForm } from "react-hook-form";
 import { NodeApi, type EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 type FormData = {
   content: EditorDocumentValue;
@@ -41,7 +41,7 @@ export function RHFEditorForm() {
   });
 
   // 创建/配置 Plate 编辑器
-  const editor = usePlateEditor({ initialValue });
+  const editor = useCreateEditor({ initialValue });
 
   // 为 react-hook-form 注册字段
   register("content", {
@@ -96,7 +96,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import type { EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 type FormValues = {
   content: EditorDocumentValue;
@@ -115,7 +115,7 @@ export function EditorForm() {
   });
 
   // 2. 创建 Plate 编辑器
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: form.getValues("content"),
   });
 
@@ -200,7 +200,7 @@ editor.update((tx) => {
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 function MyForm() {
   const form = useForm({
@@ -211,7 +211,7 @@ function MyForm() {
     },
   });
 
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: form.getValues("content"),
   });
 
@@ -287,7 +287,7 @@ function MyForm() {
 
 import * as React from "react";
 import type { EditorDocumentValue, Value } from "platejs";
-import { Plate, PlateContent, usePlateEditor } from "platejs/react";
+import { Plate, PlateContent, useCreateEditor } from "platejs/react";
 
 /**
  * 一个可重用的非受控编辑器字段。`initialValue` 只读取一次，
@@ -343,7 +343,7 @@ export function EditorField({
   ref,
   ...props
 }: EditorFieldProps) {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue: initialValue ?? [{ type: "paragraph", children: [{ text: "" }] }],
   });
 

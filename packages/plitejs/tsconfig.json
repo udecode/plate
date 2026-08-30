@@ -1,0 +1,20 @@
+{
+  "extends": "../../tooling/config/tsconfig.base.json",
+  "include": ["src", "../../tooling/config/global.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "plitejs": ["./src/index.ts"],
+      "plitejs/diff": ["./src/diff/index.ts"],
+      "plitejs/dom": ["./src/dom/index.ts"],
+      "plitejs/history": ["./src/history/index.ts"],
+      "plitejs/hyperscript": ["./src/hyperscript/index.ts"],
+      "plitejs/page-layout": ["./src/page-layout/index.ts"],
+      "plitejs/page-layout/react": ["./src/page-layout/react.tsx"],
+      "plitejs/react": ["./src/react/index.ts"],
+      "plitejs/testing": ["./src/testing/index.ts"]
+    },
+    "types": ["node", "react", "react-dom"],
+    "jsx": "react-jsx"
+  }
+}

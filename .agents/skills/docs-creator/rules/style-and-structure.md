@@ -99,7 +99,7 @@ Nothing else above the first `##`. No feature brag, no marketing adjectives, no 
 
 ### Ownership
 
-- Always state where behavior lives: core runtime, feature package, kit, app-local copied code.
+- Always state where behavior lives: core runtime, feature entrypoint, kit, or app-local copied code.
 - If the page says "the kit also adds X", the ownership boundary matters — surface it in a table or callout.
 - For every named API, the reader should be able to tell you which package/layer owns it within 10 seconds of scanning.
 - For behavior that spans packages, name each layer: input rule, plugin rule,
@@ -177,7 +177,8 @@ least one useful inbound link from the owning neighborhood.
 ## Code Example Rules
 
 - Repo-backed examples only. If a kit does what you're teaching, cite the exact kit file.
-- Include real imports. Show `platejs` vs `platejs/react` vs `@platejs/*` paths explicitly.
+- Include real imports. Show `platejs`, `platejs/react`, and optional
+  `platejs/<feature>` paths explicitly.
 - Use `// ...otherPlugins,` only when the omission is obvious.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
 - In Plite schema examples, never repeat derived structural membership:

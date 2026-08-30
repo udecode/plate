@@ -1,5 +1,5 @@
 ---
-'@platejs/toc': patch
+'platejs': patch
 ---
 
 Read table-of-contents depth from the semantic heading level.

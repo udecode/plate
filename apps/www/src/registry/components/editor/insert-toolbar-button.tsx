@@ -26,7 +26,7 @@ import {
   TableOfContentsIcon,
 } from 'lucide-react';
 import { PLUGINS } from 'platejs';
-import { type PlateEditor, useEditor } from 'platejs/react';
+import { type Editor, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import {
@@ -52,7 +52,7 @@ type Group = {
 type Item = {
   icon: React.ReactNode;
   value: string;
-  onSelect: (editor: PlateEditor, value: string) => void;
+  onSelect: (editor: Editor, value: string) => void;
   focusEditor?: boolean;
   label?: string;
 };
@@ -128,8 +128,8 @@ const groups: Group[] = [
       },
       {
         icon: <ChevronRightIcon />,
-        label: 'Toggle list',
-        value: PLUGINS.toggle,
+        label: 'Details',
+        value: PLUGINS.details,
       },
     ].map((item) => ({
       ...item,

@@ -21,7 +21,7 @@ Expand rule regression coverage around selection placement after autoformat-styl
 - The live `/blocks/list-demo` regression was real: typing `- ` produced a
   paragraph with list props but left the `-` text behind.
 - Root cause: modern list markdown rules used custom `blockStart` `apply`
-  handlers, and those handlers did not delete `match.range`. `list-classic`
+  handlers, and those handlers did not delete `match.range`. `legacy-list-model`
   already handled this manually.
 - Markdown link completion also had a real bug on `/blocks/link-demo`: it
   inserted the link node but left selection before it.

@@ -1,7 +1,7 @@
-import { Editable, Plite, usePliteEditor } from '@platejs/plite-react';
+import { Editable, Plite, useEditor } from 'plitejs/react';
 
 const ReadOnlyExample = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [
       {
         type: 'paragraph',

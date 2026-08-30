@@ -9,8 +9,7 @@
     "src/registry/components/editor/**/*.ts",
     "src/registry/components/editor/**/*.tsx",
     "src/types/**/*.d.ts",
-    "../../packages/*/src/**/*.d.ts",
-    "../../packages/udecode/*/src/**/*.d.ts"
+    "../../packages/*/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",

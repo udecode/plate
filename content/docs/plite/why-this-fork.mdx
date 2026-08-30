@@ -108,7 +108,7 @@ Reads go through `editor.read(...)`. Writes go through `editor.update(...)`. Ins
 | `tx.selection`       | set, clear, collapse, and move model selection                  |
 | `tx.marks`           | read, set, toggle, add, and remove active marks                 |
 | `tx.roots`           | create, replace, and delete extra roots                         |
-| `tx.history`         | undo and redo when `@platejs/plite-history` is installed        |
+| `tx.history`         | undo and redo when `plitejs/history` is installed        |
 | `tx.changes`         | apply canonical root-aware document changes                     |
 | `tx.effects`         | emit typed state and integration effects                        |
 
@@ -150,7 +150,7 @@ Extensions add named read and update groups. They do not replace the canonical
 change builder or patch random methods onto the editor object.
 
 ```tsx
-import { defineExtension } from "@platejs/plite";
+import { defineExtension } from "plitejs";
 
 const TodoExtension = defineExtension("todo", {
   update: ({ tx }) => ({
@@ -165,13 +165,13 @@ This keeps method-style ergonomics while making ownership visible. App commands 
 
 ## React Runtime
 
-React editors start with `usePliteEditor`, `<Plite>`, and `<Editable>`.
+React editors start with `useEditor`, `<Plite>`, and `<Editable>`.
 
 ```tsx
-import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+import { Editable, Plite, useEditor } from "plitejs/react";
 
 const Editor = () => {
-  const editor = usePliteEditor({
+  const editor = useEditor({
     initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
   });
 
@@ -183,17 +183,17 @@ const Editor = () => {
 };
 ```
 
-`usePliteEditor` installs the normal React, DOM, clipboard, and history path. Use `createReactEditor` when the editor must be created outside component ownership.
+`useEditor` installs the normal React, DOM, clipboard, and history path. Use `createEditor` when the editor must be created outside component ownership.
 
 React rendering is selector-first. App chrome should subscribe to the editor facts it needs, not to the whole editor tree.
 
 | Area                        | Runtime owner                                                                    |
 | --------------------------- | -------------------------------------------------------------------------------- |
-| Editable rendering          | `@platejs/plite-react`                                                           |
-| DOM conversion and coverage | `@platejs/plite-dom`                                                             |
-| History                     | `@platejs/plite-history`                                                         |
-| Extra roots                 | `@platejs/plite` plus root-aware React hooks                                     |
-| Large-document proof lanes  | `@platejs/plite-react`, `@platejs/plite-dom`, `@platejs/browser`, and benchmarks |
+| Editable rendering          | `plitejs/react`                                                           |
+| DOM conversion and coverage | `plitejs/dom`                                                             |
+| History                     | `plitejs/history`                                                         |
+| Extra roots                 | `plitejs` plus root-aware React hooks                                     |
+| Large-document proof lanes  | `plitejs/react`, `plitejs/dom`, `@platejs/test`, and benchmarks |
 
 ## Overlay Model
 
@@ -225,7 +225,7 @@ For cursor, selection, paste, undo, hidden DOM, large documents, and collaborati
 | Replay           | catches proof that only passes once                           |
 | Follow-up typing | proves the editor still works after the asserted state        |
 
-That is why `@platejs/browser` exists. It is not the product editing API. It is the proof harness used to keep the editor honest.
+That is why `@platejs/test` exists. It is not the product editing API. It is the proof harness used to keep the editor honest.
 
 ## Package Ownership
 
@@ -233,14 +233,14 @@ The packages are split by responsibility.
 
 | Package                      | Owns                                                                                                         |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `@platejs/plite`             | editor runtime, document model, canonical changes, transactions, state fields, schema, pure helper APIs       |
-| `@platejs/plite-dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
-| `@platejs/plite-react`       | React editor setup, `<Plite>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
-| `@platejs/plite-history`     | history extension and undo/redo runtime                                                                      |
-| `@platejs/plite-hyperscript` | JSX fixtures for tests                                                                                       |
-| `@platejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
-| `@platejs/plite-layout`      | page layout and page-view proof work                                                                         |
-| `@platejs/browser`           | browser proof harness and Playwright helpers                                                                 |
+| `plitejs`             | editor runtime, document model, canonical changes, transactions, state fields, schema, pure helper APIs       |
+| `plitejs/dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
+| `plitejs/react`       | React editor setup, `<Plite>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
+| `plitejs/history`     | history extension and undo/redo runtime                                                                      |
+| `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
+| `platejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
+| `plitejs/page-layout`      | page layout and page-view proof work                                                                         |
+| `@platejs/test`           | Node-safe fixtures plus React, DOM, Playwright, and proof helpers behind explicit subpaths                   |
 
 Apps should import public package exports. `/internal` subpaths are for sibling packages in this repo.
 
@@ -253,7 +253,7 @@ This fork is intentionally narrow about what it claims.
 | Desktop browser editing    | In scope when covered by browser proof.                                                                         |
 | Raw mobile device behavior | Not claimed without real device proof artifacts.                                                                |
 | Pagination and page layout | Useful proof lane, not a mature production promise for every browser geometry and export case.                  |
-| Collaboration              | `@platejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
+| Collaboration              | `platejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
 | Upstream identity          | This is Plite, not an official upstream Slate release.                                             |
 
 The line is simple: if the proof lane does not own it, the docs should not pretend it is done.
@@ -271,7 +271,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | Document values    | primary `children`, optional extra `roots`, optional persistent `meta`                                                                                                                                                                                                                       |
 | Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
 | State fields       | versioned persistent/shared fields, local fields, history policy, effects, React state-field hooks                                                                                                                                                                                             |
-| React setup        | `usePliteEditor`, `createReactEditor`, `<Plite>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
+| React setup        | `useEditor`, `createEditor`, `<Plite>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
 | React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration/annotation/widget hooks                                                                                                                                                                                          |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
@@ -280,7 +280,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | History            | `history()` extension, `state.history`, `tx.history`, semantic `editor.update({ history })` policies, direct undo/redo, history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
 | Layout             | `createPliteLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                        |
-| Browser proof      | `@platejs/browser/core`, `@platejs/browser/browser`, `@platejs/browser/playwright`, feature contracts, screenshots, traces, replay, and explicit non-replayable imperative runs                                                                                                                 |
+| Browser proof      | `@platejs/test/proof`, `@platejs/test/browser`, `@platejs/test/playwright`, feature contracts, screenshots, traces, replay, and explicit non-replayable imperative runs                                                                                                                 |
 | Docs               | migration guide, walkthroughs, API reference, roots/meta docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                               |
 | Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
 | Hard cuts          | rootless primary APIs, explicit reads/writes, transaction groups, no public compatibility aliases, no primary mutable editor-field authoring story                                                                                                                                            |

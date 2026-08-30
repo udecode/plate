@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "date-static",
   "dependencies": [
-    "@platejs/date"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion-style.json"
@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/date-static.tsx",
-      "content": "import { BaseDatePlugin, getDateDisplayLabel } from '@platejs/date';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';\n\nexport function DateElementStatic(\n  props: PliteElementProps<typeof BaseDatePlugin>\n) {\n  const { element } = props;\n\n  return (\n    <PliteElement as=\"span\" className=\"inline-block\" {...props}>\n      <span\n        className={cn(\n          'w-fit rounded-sm bg-muted px-1 text-muted-foreground',\n          inlineSuggestionVariants()\n        )}\n      >\n        {getDateDisplayLabel(element.value)}\n      </span>\n      {props.children}\n    </PliteElement>\n  );\n}\n\nexport const BaseDateKit = [\n  BaseDatePlugin.configure({ component: DateElementStatic }),\n];\n",
+      "content": "import { BaseDatePlugin, getDateDisplayLabel } from 'platejs/date';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\nimport { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';\n\nexport function DateElementStatic(\n  props: PliteElementProps<typeof BaseDatePlugin>\n) {\n  const { element } = props;\n\n  return (\n    <PliteElement as=\"span\" className=\"inline-block\" {...props}>\n      <span\n        className={cn(\n          'w-fit rounded-sm bg-muted px-1 text-muted-foreground',\n          inlineSuggestionVariants()\n        )}\n      >\n        {getDateDisplayLabel(element.value)}\n      </span>\n      {props.children}\n    </PliteElement>\n  );\n}\n\nexport const BaseDateKit = [\n  BaseDatePlugin.configure({ component: DateElementStatic }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/date-static.tsx"
     }

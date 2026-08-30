@@ -6,7 +6,7 @@ import {
   recordPliteBrowserRuntimeErrors,
   resetPliteReactRenderProfiler,
   takePliteBrowserRenderStateSnapshot,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 type BlockDropCursorEdge = 'bottom' | 'top';
 
@@ -20,6 +20,7 @@ type ElementBoxSnapshot = {
 const firstExampleImageUrl = 'https://picsum.photos/id/1015/160/90.jpg';
 const secondExampleImageUrl = 'https://picsum.photos/id/1025/160/90.jpg';
 const thirdExampleImageUrl = 'https://picsum.photos/id/1069/160/90.jpg';
+const zeroWidthSentinelOffset = 1;
 
 const dispatchImageDragOver = async (
   image: Locator,
@@ -426,7 +427,7 @@ test.describe('images example', () => {
           focus: { path: [3, 0], offset: 0 },
         });
       await editor.assert.domSelectionTarget({
-        anchorOffset: 0,
+        anchorOffset: zeroWidthSentinelOffset,
         anchorPath: [3, 0],
         isCollapsed: true,
       });
@@ -695,7 +696,7 @@ test.describe('images example', () => {
           focus: { path: [3, 0], offset: 0 },
         });
       await editor.assert.domSelectionTarget({
-        anchorOffset: 0,
+        anchorOffset: zeroWidthSentinelOffset,
         anchorPath: [3, 0],
         isCollapsed: true,
       });
@@ -813,7 +814,7 @@ test.describe('images example', () => {
           focus: { path: [2, 0], offset: 0 },
         });
       await editor.assert.domSelectionTarget({
-        anchorOffset: 0,
+        anchorOffset: zeroWidthSentinelOffset,
         anchorPath: [2, 0],
         isCollapsed: true,
       });
@@ -1019,9 +1020,9 @@ test.describe('images example', () => {
         editor: 'visible',
       },
     });
-    const expectedSelectedLines = await editor.root
-      .locator('p')
-      .allTextContents();
+    const expectedSelectedLines = (await editor.get.modelBlockTexts()).filter(
+      (line) => line.length > 0
+    );
 
     await editor.selection.selectDOM({
       anchor: { path: [0, 0], offset: 10 },
@@ -1137,7 +1138,7 @@ test.describe('images example', () => {
         focus: { path: [0, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: zeroWidthSentinelOffset,
       anchorPath: [0, 0],
       isCollapsed: true,
     });
@@ -1154,7 +1155,7 @@ test.describe('images example', () => {
         focus: { path: [2, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: zeroWidthSentinelOffset,
       anchorPath: [2, 0],
       isCollapsed: true,
     });
@@ -1217,7 +1218,7 @@ test.describe('images example', () => {
           focus: { path, offset: 0 },
         });
       await editor.assert.domSelectionTarget({
-        anchorOffset: 0,
+        anchorOffset: path[0] === 4 ? 0 : zeroWidthSentinelOffset,
         anchorPath: path,
         isCollapsed: true,
       });
@@ -1237,7 +1238,7 @@ test.describe('images example', () => {
           focus: { path, offset: 0 },
         });
       await editor.assert.domSelectionTarget({
-        anchorOffset: 0,
+        anchorOffset: zeroWidthSentinelOffset,
         anchorPath: path,
         isCollapsed: true,
       });
@@ -1327,7 +1328,7 @@ test.describe('images example', () => {
         focus: { path: [1, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: zeroWidthSentinelOffset,
       anchorPath: [1, 0],
       isCollapsed: true,
     });
@@ -1395,7 +1396,7 @@ test.describe('images example', () => {
         focus: { path: [1, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: zeroWidthSentinelOffset,
       anchorPath: [1, 0],
       isCollapsed: true,
     });
@@ -1429,7 +1430,7 @@ test.describe('images example', () => {
         focus: { path: [1, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: zeroWidthSentinelOffset,
       anchorPath: [1, 0],
       isCollapsed: true,
     });
@@ -1505,7 +1506,7 @@ test.describe('images example', () => {
       .toEqual({
         anchorOffset: 113,
         anchorPath: [0, 0],
-        focusOffset: 0,
+        focusOffset: zeroWidthSentinelOffset,
         focusPath: [1, 0],
         isCollapsed: false,
       });

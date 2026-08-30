@@ -76,7 +76,7 @@ That batch is:
 6. `markdown` — package score `19`, top files `listToMdastTree.ts:6; deserializeMd.ts:4; fontRules.ts:3; customMdxDeserialize.ts:3; splitIncompleteMdx.ts:3`
 7. `docx` — package score `17`, top files `getVShapes.ts:7; docxListToList.ts:4; cleanDocxImageElements.ts:3; cleanDocxListElementsToList.ts:3`
 8. `suggestion` — package score `17`, top files `getActiveSuggestionDescriptions.ts:5; deleteSuggestion.ts:4; BaseSuggestionPlugin.ts:3; rejectSuggestion.ts:3; withSuggestion.ts:2`
-9. `list-classic` — package score `16`, top files `BaseTodoListPlugin.ts:4; withList.ts:4; withNormalizeList.ts:3; insertTodoListItem.ts:3; withInsertFragmentList.ts:2`
+9. `legacy-list-model` — package score `16`, top files `BaseTodoListPlugin.ts:4; withList.ts:4; withNormalizeList.ts:3; insertTodoListItem.ts:3; withInsertFragmentList.ts:2`
 10. `docx-io` — package score `13`, top files `vnode.ts:5; image-dimensions.ts:4; unit-conversion.ts:4`
 11. `link` — package score `12`, top files `unwrapLink.ts:5; upsertLink.ts:3; encodeUrlIfNeeded.ts:2; safeDecodeUrl.ts:2`
 12. `basic-nodes` — package score `11`, top files `BaseCodePlugin.ts:3; BaseHeadingPlugin.ts:2; BaseBoldPlugin.ts:2; BaseItalicPlugin.ts:2; BaseStrikethroughPlugin.ts:2`

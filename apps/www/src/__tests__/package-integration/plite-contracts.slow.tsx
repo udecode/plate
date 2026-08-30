@@ -1,19 +1,19 @@
 /** @jsx jsxt */
 
-import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
-import { BaseLinkPlugin } from '@platejs/link';
-import { jsxt, projectTestSelectionRange } from '@platejs/test-utils';
+import { jsxt, projectTestSelectionRange } from '@platejs/test';
 import {
-  type BaseEditor,
+  BaseLinkPlugin,
+  type Editor,
   NodeApi,
-  createBaseEditor,
+  createEditor,
   defineBasePlugin,
 } from 'platejs';
+import { BoldPlugin, ItalicPlugin } from 'platejs/react';
 
 jsxt;
 
 const createMarkEditor = (input: any) =>
-  createBaseEditor({
+  createEditor({
     plugins: [BoldPlugin, ItalicPlugin],
     selection: input.selection,
     initialValue: input.children,
@@ -24,16 +24,16 @@ const createVoidElementPlugin = (name: string) =>
     schema: { element: { void: 'block' } },
   });
 
-const deleteBackwardCharacter = (editor: BaseEditor) => {
+const deleteBackwardCharacter = (editor: Editor) => {
   editor.update.text.deleteBackward({ unit: 'character' });
 };
 
-const deleteForwardCharacter = (editor: BaseEditor) => {
+const deleteForwardCharacter = (editor: Editor) => {
   editor.update.text.deleteForward({ unit: 'character' });
 };
 
 const toggleMark = (
-  editor: BaseEditor,
+  editor: Editor,
   key: string,
   options: { remove?: string } = {}
 ) => {
@@ -45,7 +45,7 @@ const toggleMark = (
   });
 };
 
-const isTrailingTextEmpty = (editor: BaseEditor) =>
+const isTrailingTextEmpty = (editor: Editor) =>
   editor.read((state) => {
     const selection = state.selection();
     if (!selection) return true;
@@ -257,7 +257,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         initialValue: input.children,
@@ -296,7 +296,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         initialValue: input.children,
@@ -319,7 +319,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createBaseEditor({
+      const editor = createEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         initialValue: input.children,
@@ -423,7 +423,7 @@ describe('slate cross-package contracts', () => {
   describe('void boundaries', () => {
     for (const { action, input, label, output, plugins } of voidBoundaryCases) {
       it(label, () => {
-        const editor = createBaseEditor({
+        const editor = createEditor({
           plugins,
           selection: input.selection,
           initialValue: input.children,
@@ -432,7 +432,9 @@ describe('slate cross-package contracts', () => {
         action(editor);
 
         expect(editor.read.children()).toEqual(output.children);
-        expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
+        expect(editor.read.selection()).toEqual(
+          projectTestSelectionRange(output.selection)
+        );
       });
     }
   });

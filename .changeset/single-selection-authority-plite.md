@@ -1,5 +1,5 @@
 ---
-'@platejs/plite': major
+'plitejs': major
 ---
 
 Use `editor.update.selection.setNodes(targets, { anchor, focus })` or `tx.selection.setNodes(targets, { anchor, focus })` for directional one-or-many node selection. `NodeSelection` stores canonical `paths` plus exact `anchorPath` and `focusPath`; `SelectionApi.nodes` constructs detached values.

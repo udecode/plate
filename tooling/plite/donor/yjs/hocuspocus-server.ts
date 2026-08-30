@@ -11,7 +11,7 @@ import {
 } from '@hocuspocus/server';
 import * as Y from 'yjs';
 
-import { readPliteValueFromYjs } from '../../packages/yjs/src/core/document';
+import { readPliteValueFromYjs } from '../../packages/platejs/src/yjs/core/document';
 
 type CollabContext = {
   documentName?: string;
@@ -42,7 +42,7 @@ const YJS_PATH = process.env.PLITE_YJS_PATH ?? '/yjs';
 const YJS_TIMEOUT = toNumber(process.env.PLITE_YJS_TIMEOUT, 10_000);
 const YJS_DEBOUNCE = toNumber(process.env.PLITE_YJS_DEBOUNCE, 2000);
 const YJS_MAX_DEBOUNCE = toNumber(process.env.PLITE_YJS_MAX_DEBOUNCE, 10_000);
-const YJS_ROOT_NAME = process.env.PLITE_YJS_ROOT_NAME ?? '@platejs/plite';
+const YJS_ROOT_NAME = process.env.PLITE_YJS_ROOT_NAME ?? 'plitejs';
 const YJS_STORAGE_DIR = path.resolve(
   process.cwd(),
   process.env.PLITE_YJS_STORAGE_DIR ?? '.tmp/yjs-documents'

@@ -39,6 +39,10 @@ const SOURCE_FILES = [
 const SOURCE_INFO_PATH_REGEX = /info: {"path":"([^"]+)"/g;
 const SOURCE_SERVER_DOC_PATH_REGEX = /"([^"]+\.mdx)":\s*__fd_glob_\d+/g;
 const ROUTE_GROUP_REGEX = /^\(.+\)$/;
+const PACKAGE_INSTALL_COMMAND_REGEX =
+  /^\s*(?:npm\s+(?:i|install)|pnpm\s+(?:add|install)|yarn\s+(?:add|install)|bun\s+(?:add|install))\s+(.+)$/u;
+const PACKAGE_IMPORT_REGEX =
+  /\b(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"]((?:platejs|plitejs)(?:\/[^'"]+)?)['"]/gu;
 
 const appOnlyDocsRoutes = new Set([
   '/docs/api',
@@ -134,6 +138,107 @@ async function countCnMdxFiles(dir: string): Promise<number> {
   }
 
   return count;
+}
+
+async function getMdxFiles(dir: string): Promise<string[]> {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...(await getMdxFiles(fullPath)));
+    } else if (entry.name.endsWith('.mdx')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+async function getPackageSpecifiers(packageName: 'platejs' | 'plitejs') {
+  const manifest = JSON.parse(
+    await fs.readFile(
+      path.join(process.cwd(), `../../packages/${packageName}/package.json`),
+      'utf-8'
+    )
+  ) as { exports: Record<string, unknown> };
+
+  return new Set(
+    Object.keys(manifest.exports).map((subpath) =>
+      subpath === '.' ? packageName : `${packageName}${subpath.slice(1)}`
+    )
+  );
+}
+
+async function checkPackageDocs() {
+  const packageSpecifiers = new Set([
+    ...(await getPackageSpecifiers('platejs')),
+    ...(await getPackageSpecifiers('plitejs')),
+  ]);
+  const errors: string[] = [];
+
+  for (const filePath of await getMdxFiles(CONTENT_DIR)) {
+    const source = await fs.readFile(filePath, 'utf-8');
+    const relativePath = path.relative(CONTENT_DIR, filePath);
+    const lines = source.split('\n');
+
+    for (const [index, line] of lines.entries()) {
+      const installArguments = line.match(PACKAGE_INSTALL_COMMAND_REGEX)?.[1];
+
+      if (installArguments) {
+        const packageTokens = installArguments
+          .split(/\s+/u)
+          .filter((token) => !token.startsWith('-'));
+        const invalidSubpaths = packageTokens.filter((token) =>
+          /^(?:platejs|plitejs)\//u.test(token)
+        );
+
+        if (invalidSubpaths.length > 0) {
+          errors.push(
+            `${relativePath}:${index + 1}: install package roots, then import ${invalidSubpaths.join(', ')} as subpaths`
+          );
+        }
+
+        for (const packageName of ['platejs', 'plitejs']) {
+          if (
+            packageTokens.filter((token) => token === packageName).length > 1
+          ) {
+            errors.push(
+              `${relativePath}:${index + 1}: installs ${packageName} more than once`
+            );
+          }
+        }
+      }
+    }
+
+    if (!relativePath.startsWith(`migration${path.sep}`)) {
+      if (source.includes('@platejs/*')) {
+        errors.push(
+          `${relativePath}: teaches the retired @platejs/* namespace`
+        );
+      }
+      if (source.includes('@udecode/')) {
+        errors.push(
+          `${relativePath}: teaches the retired @udecode/* namespace`
+        );
+      }
+    }
+
+    for (const match of source.matchAll(PACKAGE_IMPORT_REGEX)) {
+      if (!packageSpecifiers.has(match[1])) {
+        errors.push(
+          `${relativePath}: imports unknown package subpath ${match[1]}`
+        );
+      }
+    }
+  }
+
+  assert(
+    errors.length === 0,
+    `Package documentation is stale:\n${errors.map((error) => `- ${error}`).join('\n')}`
+  );
 }
 
 async function getGeneratedSourcePaths() {
@@ -480,6 +585,7 @@ try {
   await checkChineseRoutes(sourceRoutes);
   checkChineseFallbackDocRoutes(sourceRoutes);
   checkChinesePagerHrefLookup();
+  await checkPackageDocs();
   await checkDocsRegistry();
   console.info('Docs source parity check passed.');
 } catch (error) {

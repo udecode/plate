@@ -293,7 +293,7 @@ Findings:
 - Seventeen owners use assertions, two use `satisfies`, three registry owners
   confuse widening with configuration, and the remaining owners still need an
   explicit exported/local named contract under the accepted no-inference rule.
-- `list-classic` is included because the user's explicit `go all` overrides the
+- `legacy-list-model` is included because the user's explicit `go all` overrides the
   normal maintenance-only exclusion for this bounded type migration.
 
 Decisions and tradeoffs:
@@ -368,7 +368,7 @@ Verification evidence:
 - Export/release proof: `pnpm brl` passed; `pnpm changeset status` reported 57
   valid changesets / 58 releases and zero forbidden minor releases.
 - Lint: scoped Biome covered the 61 task source files, then the final
-  list-classic demo; both passed. Root `pnpm lint:fix` was intentionally not
+  legacy-list-model demo; both passed. Root `pnpm lint:fix` was intentionally not
   used because the shared checkout contains unrelated WIP.
 - Browser: `http://localhost:3000/blocks/playground` rendered one
   `contenteditable` editor, edit/undo succeeded, and console plus CDP network

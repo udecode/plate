@@ -4,8 +4,8 @@ import {
   formatDateValue,
   getDateDisplayLabel,
   parseCanonicalDateValue,
-} from '@platejs/date';
-import { DatePlugin } from '@platejs/date/react';
+} from 'platejs/date';
+import { DatePlugin } from 'platejs/date/react';
 import {
   type PlateElementProps,
   PlateElement,

@@ -110,7 +110,7 @@ Still worth a pass, but after the three above.
   - Good deterministic cleanup lane after `docx-io`.
 - `suggestion`
   - Real value. Lower leverage than `markdown` and `yjs`, but solid.
-- `list-classic`
+- `legacy-list-model`
   - Good transform seams. Lower urgency than the three above.
 - `dnd`
   - Pure enough to test, but less strategic than the top group.
@@ -137,7 +137,7 @@ Still worth a pass, but after the three above.
 | 5    | `docx-io`      |    46 | Still valuable, but not the very next move      |
 | 6    | `docx`         |    45 | Good second-tier deterministic cleanup          |
 | 7    | `table`        |    44 | Real backlog, but not next after table work     |
-| 8    | `list-classic` |    44 | Useful transform coverage                       |
+| 8    | `legacy-list-model` |    44 | Useful transform coverage                       |
 | 9    | `dnd`          |    44 | Pure but lower leverage                         |
 | 10   | `suggestion`   |    43 | Solid follow-up package                         |
 

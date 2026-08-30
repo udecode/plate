@@ -34,12 +34,12 @@ Execute every current non-React file with coverage score `>= 5` from the refresh
 ### Threshold leftovers outside table
 
 - `packages/docx-io/src/lib/internal/utils/image-dimensions.ts`
-- `packages/list-classic/src/lib/transforms/moveListSiblingsAfterCursor.ts`
+- `packages/platejs/src/features/list/src/lib/transforms/moveListSiblingsAfterCursor.ts`
 
 ## Test Shape
 
 - Pure helper tests for deterministic table queries and `image-dimensions`
-- Thin editor contract tests for table transforms and list-classic movement
+- Thin editor contract tests for table transforms and legacy-list-model movement
 - No `/react`
 - No browser
 - No broad smoke tests
@@ -54,12 +54,12 @@ Execute every current non-React file with coverage score `>= 5` from the refresh
 ## Verification
 
 1. Run targeted `bun test` on touched specs.
-2. Run `bun test packages/table/src packages/docx-io/src/lib/internal/utils packages/list-classic/src/lib/transforms`.
-3. Run `pnpm test:profile -- --top 25 packages/table/src packages/docx-io/src packages/list-classic/src`.
-4. Run `pnpm test:slowest -- --top 25 packages/table/src packages/docx-io/src packages/list-classic/src`.
+2. Run `bun test packages/table/src packages/docx-io/src/lib/internal/utils packages/platejs/src/features/list/src/lib/transforms`.
+3. Run `pnpm test:profile -- --top 25 packages/table/src packages/docx-io/src packages/platejs/src/features/list/src`.
+4. Run `pnpm test:slowest -- --top 25 packages/table/src packages/docx-io/src packages/platejs/src/features/list/src`.
 5. Run `pnpm install`.
-6. Run `pnpm turbo build --filter=./packages/table --filter=./packages/docx-io --filter=./packages/list-classic`.
-7. Run `pnpm turbo typecheck --filter=./packages/table --filter=./packages/docx-io --filter=./packages/list-classic`.
+6. Run `pnpm turbo build --filter=./packages/table --filter=./packages/docx-io --filter=./packages/platejs/src/features/list`.
+7. Run `pnpm turbo typecheck --filter=./packages/table --filter=./packages/docx-io --filter=./packages/platejs/src/features/list`.
 8. Run `pnpm lint:fix`.
 
 ## Done Means

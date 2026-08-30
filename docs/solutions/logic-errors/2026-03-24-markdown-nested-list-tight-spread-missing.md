@@ -42,7 +42,7 @@ The failure only showed up at the final markdown string layer. The helper that b
 
 ## Root cause
 
-The indented-list path in `listToMdastTree` built `listItem` nodes without a `spread` property. The classic list serializer already emitted `listItem.spread: false`, so the two serializer paths did not produce the same mdast shape.
+The indented-list path in `listToMdastTree` built `listItem` nodes without a `spread` property, so the serializer did not produce the required tight-list mdast shape.
 
 That difference matters because `remark-stringify` treats nested lists as loose when `listItem.spread` is missing, even if the parent `list.spread` is `false`. The result is the extra blank line between parent and child items.
 

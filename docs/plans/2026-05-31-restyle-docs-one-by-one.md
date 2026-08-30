@@ -176,7 +176,7 @@ Per-doc canonical English ledger:
 - [x] Doc: content/docs/(plugins)/(elements)/heading.mdx — rewritten as source-backed Heading guide; verified by check:docs, @platejs/basic-nodes typecheck, source/API audit, registry preview/source audit, component route audit, anti-slop audit, opening-length audit, and line-count audit
 - [x] Doc: content/docs/(plugins)/(elements)/horizontal-rule.mdx — rewritten as source-backed Horizontal Rule guide; verified by check:docs, @platejs/basic-nodes typecheck, source/API audit, registry preview/source audit, component route audit, anti-slop audit, opening-length audit, and line-count audit
 - [x] Doc: content/docs/(plugins)/(elements)/link.mdx — rewritten as source-backed Link guide; verified by check:docs, @platejs/link typecheck, source/API audit, registry preview/source audit, component route audit, anti-slop audit, opening-length audit, and line-count audit
-- [x] Doc: content/docs/(plugins)/(elements)/list-classic.mdx — rewritten as source-backed List Classic guide; verified by check:docs, @platejs/list-classic typecheck, source/API audit, registry preview/source audit, component route audit, package-boundary audit, anti-slop audit, opening-length audit, and line-count audit
+- [x] Doc: content/docs/(plugins)/(elements)/legacy-list-model.mdx — rewritten as source-backed Legacy list model guide; verified by check:docs, platejs typecheck, source/API audit, registry preview/source audit, component route audit, package-boundary audit, anti-slop audit, opening-length audit, and line-count audit
 - [x] Doc: content/docs/(plugins)/(elements)/media.mdx — rewritten as source-backed Media guide; verified by check:docs, @platejs/media typecheck, @platejs/caption typecheck, @platejs/markdown typecheck, source/API audit, registry preview/source audit, component route audit, anti-slop audit, opening-length audit, and line-count audit
 - [x] Doc: content/docs/(plugins)/(elements)/mention.mdx — rewritten as source-backed Mention guide; verified by check:docs, @platejs/mention typecheck, @platejs/combobox typecheck, @platejs/markdown typecheck, source/API audit, registry preview/source audit, component route audit, inactive Plus preview audit, anti-slop audit, opening-length audit, and line-count audit
 - [x] Doc: content/docs/(plugins)/(elements)/table.mdx — rewritten as source-backed Table guide; verified by check:docs, @platejs/table typecheck, @platejs/markdown typecheck, source/API audit, registry preview/source audit, component route audit, inactive Plus preview audit, anti-slop audit, opening-length audit, and line-count audit
@@ -292,7 +292,7 @@ Translation parity inventory:
 - [x] Translation inventory: content/docs/(plugins)/(elements)/heading.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
 - [x] Translation inventory: content/docs/(plugins)/(elements)/horizontal-rule.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
 - [x] Translation inventory: content/docs/(plugins)/(elements)/link.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
-- [x] Translation inventory: content/docs/(plugins)/(elements)/list-classic.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
+- [x] Translation inventory: content/docs/(plugins)/(elements)/legacy-list-model.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
 - [x] Translation inventory: content/docs/(plugins)/(elements)/media.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
 - [x] Translation inventory: content/docs/(plugins)/(elements)/mention.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
 - [x] Translation inventory: content/docs/(plugins)/(elements)/table.cn.mdx — deferred from direct rewrite; pair after canonical English source page is accepted
@@ -489,8 +489,8 @@ Error attempts:
 | Anti-slop audit flagged a real TypeScript spread as placeholder ellipsis in the Basic Blocks snippet | 1 | Prefer direct array assignment when the kit is the whole plugin list | Resolved by changing `plugins: [...BasicBlocksKit]` to `plugins: BasicBlocksKit`. |
 | Invented `code-block-pro` preview before checking Pro registry names | 1 | Registry-check preview names before adding Pro previews | Resolved by removing the nonexistent preview. |
 | Component route audit script only scanned registry `route:` fields and missed component routes generated into `content/docs/meta.json` | 1 | Include `content/docs/meta.json` href and route-map entries in component route audits | Resolved by rerunning the Column route audit against `content/docs/meta.json`. |
-| Broad package search mixed `packages/list` with `packages/list-classic` while checking List Classic ownership | 1 | Search the exact package owner before rewriting package-specific docs | Resolved by reading `packages/list-classic` source and keeping `@platejs/list` only as an explicit contrast. |
-| Source audit regex for List Classic had a bad shell quote while searching a backticked import string | 1 | Use simpler quoted regexes for package/API audits | Resolved by rerunning the audit with package names and API identifiers split into a plain alternation. |
+| Broad package search mixed `packages/list` with `packages/platejs/src/features/list` while checking Legacy list model ownership | 1 | Search the exact package owner before rewriting package-specific docs | Resolved by reading `packages/platejs/src/features/list` source and keeping `@platejs/list` only as an explicit contrast. |
+| Source audit regex for Legacy list model had a bad shell quote while searching a backticked import string | 1 | Use simpler quoted regexes for package/API audits | Resolved by rerunning the audit with package names and API identifiers split into a plain alternation. |
 | Broad Media source/API audit returned registry-heavy output while checking media package, markdown, and component routes | 1 | Keep the audit but verify exact claims with targeted package and registry reads | Resolved by reading `packages/media`, `packages/caption`, `packages/markdown`, and registry item sources directly. |
 | Mention Plus registry audit matched a commented `mention-pro` row in `registry-pro.ts` | 1 | Anchor registry checks to active `name:` rows, not commented text | Resolved by rerunning with `^\\s*name:` and removing the nonexistent Plus preview from the doc. |
 | Table source/API audit returned registry-heavy output while checking table transforms, hooks, and routes | 1 | Use targeted reads for `BaseTablePlugin`, transforms, registry nodes, and Markdown table tests | Resolved by reading package and registry sources directly. |
@@ -868,12 +868,12 @@ Verification evidence:
 - Trailing Block anti-slop audit: no banned marketing/changelog/placeholder matches.
 - Trailing Block opening audit: 3 prose sentences before first MDX component.
 - Trailing Block length audit: 148 lines after rewrite.
-- `content/docs/(plugins)/(functionality)/autoformat.mdx`: source-backed against `apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx`, `apps/www/src/registry/components/editor/plugins/autoformat-classic-kit.tsx`, feature kit input-rule registrations, `packages/autoformat/src/plugin.ts`, `packages/core/src/internal/plugin/resolvePlugins.ts`, `packages/core/src/internal/plugin/resolvePlugins.spec.tsx`, and registry kit/example files.
+- `content/docs/(plugins)/(functionality)/autoformat.mdx`: source-backed against `apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx`, `apps/www/src/registry/components/editor/plugins/autoformat.tsx`, feature kit input-rule registrations, `packages/autoformat/src/plugin.ts`, `packages/core/src/internal/plugin/resolvePlugins.ts`, `packages/core/src/internal/plugin/resolvePlugins.spec.tsx`, and registry kit/example files.
 - `pnpm --filter www check:docs` in `/Users/zbeyens/git/plate`: passed after the Autoformat rewrite and wording trim.
 - `pnpm --filter @platejs/autoformat typecheck` in `/Users/zbeyens/git/plate`: passed after the Autoformat rewrite.
 - `pnpm --filter @platejs/core typecheck` in `/Users/zbeyens/git/plate`: passed after the Autoformat rewrite.
 - Autoformat source/API audit: `AutoformatKit`, `AutoformatShortcutsPlugin`, `autoformatShortcuts`, `createTextSubstitutionInputRule`, code-block `enabled` guard, feature-owned `inputRules`, `AutoformatPlugin`, and core `hasAutoformatPlugin` validation verified.
-- Autoformat registry audit: `autoformat-kit`, `autoformat-classic-kit`, `autoformat-demo`, and `autoformat-value` verified.
+- Autoformat registry audit: `autoformat-kit`, `autoformat`, `autoformat-demo`, and `autoformat-value` verified.
 - Autoformat route audit: `/docs/autoformat`, `/docs/examples/autoformat`, `/docs/plugin-input-rules`, `/docs/basic-blocks`, `/docs/basic-marks`, `/docs/code-block`, and `/docs/list` resolve through `content/docs/meta.json`.
 - Autoformat anti-slop audit: no banned marketing/changelog/placeholder matches.
 - Autoformat opening audit: 3 prose sentences before first MDX component.
@@ -1173,7 +1173,7 @@ Verification evidence:
 - List package/API audit: `BaseListPlugin`, `ListPlugin`, `KEYS.list`, `KEYS.listType=listStyleType`, `KEYS.listChecked=checked`, `KEYS.listStart`, `KEYS.listRestart`, `KEYS.listRestartPolite`, `ListStyleType`, `toggleList`, `indentList`, `outdentList`, `someList`, `someTaskList`, and `isOrderedList` verified.
 - List behavior audit: HTML paste flattening, indent/listStyleType extraction, input-rule code-block guards, task split behavior, unindented-list cleanup, unordered-list `listStart` cleanup, ordered-list `listStart` normalization, reset-block outdent behavior, and lower/upper roman continuity branch verified.
 - List registry audit: `ListKit`, `BaseListKit`, `IndentKit` dependency, `BaseIndentKit` dependency, `BlockList`, `BlockListStatic`, `BulletedListToolbarButton`, `NumberedListToolbarButton`, `TaskListToolbarButton`, `list-demo`, and `list-value` verified.
-- List route audit: `/docs/list`, `/docs/examples/list`, `/docs/indent`, `/docs/list-classic`, `/docs/components/block-list`, and `/docs/components/list-toolbar-button` resolve through `content/docs/meta.json`.
+- List route audit: `/docs/list`, `/docs/examples/list`, `/docs/indent`, `/docs/list`, `/docs/components/block-list`, and `/docs/components/list-toolbar-button` resolve through `content/docs/meta.json`.
 - List anti-slop audit: no WIP, banned marketing/changelog, placeholder-comment, stale `otherPlugins`, generic flexible/simplified marketing claims, fake API, open task marker, or FIXME matches.
 - List opening audit: 2 prose sentences before first MDX component.
 - List length audit: 245 lines after rewrite.
@@ -1307,7 +1307,7 @@ Timeline:
 - 2026-05-31T10:55:14Z Checked `content/docs/(plugins)/(elements)/heading.mdx` after rewrite and focused verification.
 - 2026-05-31T10:57:25Z Checked `content/docs/(plugins)/(elements)/horizontal-rule.mdx` after rewrite and focused verification.
 - 2026-05-31T11:00:48Z Checked `content/docs/(plugins)/(elements)/link.mdx` after rewrite and focused verification.
-- 2026-05-31T11:06:50Z Checked `content/docs/(plugins)/(elements)/list-classic.mdx` after rewrite and focused verification.
+- 2026-05-31T11:06:50Z Checked `content/docs/(plugins)/(elements)/legacy-list-model.mdx` after rewrite and focused verification.
 - 2026-05-31T11:11:29Z Checked `content/docs/(plugins)/(elements)/media.mdx` after rewrite and focused verification.
 - 2026-05-31T11:14:42Z Checked `content/docs/(plugins)/(elements)/mention.mdx` after rewrite and focused verification.
 - 2026-05-31T11:18:07Z Checked `content/docs/(plugins)/(elements)/table.mdx` after rewrite and focused verification.

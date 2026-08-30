@@ -53,7 +53,7 @@ const MyComponent = () => {
 要在`Plate`组件外部访问编辑器或处理多个编辑器，使用`PlateController`组件：
 
 ```ts
-import { PlateController, useActiveEditor } from 'platejs/react';
+import { PlateController, useOptionalEditor } from 'platejs/react';
 
 const App = () => (
   <PlateController>
@@ -63,7 +63,7 @@ const App = () => (
 );
 
 const Toolbar = () => {
-  const editor = useActiveEditor();
+  const editor = useOptionalEditor();
 
   if (!editor) return null;
   // 在此使用编辑器方法
@@ -75,11 +75,11 @@ const Toolbar = () => {
 - 焦点改变会切换活动编辑器。
 - 编辑器保持活动状态直到另一个编辑器获得焦点或自身卸载。
 
-`useActiveEditor()` 在没有活动编辑器时返回 `null`。需要编辑器才能渲染的组件使用 `useEditor()`，并在缺少编辑器时立即抛出错误。
+`useOptionalEditor()` 在没有活动编辑器时返回 `null`。需要编辑器才能渲染的组件使用 `useEditor()`，并在缺少编辑器时立即抛出错误。
 
 ```ts
 const Toolbar = () => {
-  const editor = useActiveEditor();
+  const editor = useOptionalEditor();
   
   if (!editor) {
     return <div>编辑器未就绪</div>;
@@ -96,7 +96,7 @@ const Toolbar = () => {
 plugin service。`editor.update` 用于会改变文档、选择、历史或插件状态的命令。
 
 ```ts title="editor-methods.ts" showLineNumbers
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 const selection = editor.read.selection();
 const selectedText = selection ? editor.read.text.string(selection) : '';
@@ -127,7 +127,7 @@ editor.update((tx) => {
 将插件描述符传给 `editor.plugin(plugin)`，即可打开它的类型化 portal。该 portal 包含插件拥有的 API、一次性 update 命令、name 和实时 store。
 
 ```ts title="html-methods.ts" showLineNumbers
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { BoldPlugin } from 'platejs/react';
 
 editor.plugin(BoldPlugin).update.toggle();
 ```

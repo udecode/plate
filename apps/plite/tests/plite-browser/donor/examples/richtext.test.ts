@@ -13,7 +13,7 @@ import {
   createPliteBrowserWarmToolbarArrowGauntlet,
   openExample,
   recordPliteBrowserRuntimeErrors,
-} from '@platejs/browser/playwright';
+} from '@platejs/test/playwright';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3101';
 const macChromeUserAgent =
@@ -783,24 +783,30 @@ test.describe('On richtext example', () => {
         : 'Control'
     );
 
-    await editor.root.press(`${modifier}+b`);
+    await editor.focus();
+
+    await page.keyboard.press(`${modifier}+b`);
     await page.keyboard.type('Bold');
-    await editor.root.press(`${modifier}+b`);
+    await page.keyboard.press(`${modifier}+b`);
     await page.keyboard.type(' Plain');
 
-    await editor.root.press(`${modifier}+i`);
+    await page.keyboard.press(`${modifier}+i`);
     await page.keyboard.type(' Italic');
-    await editor.root.press(`${modifier}+i`);
+    await page.keyboard.press(`${modifier}+i`);
 
-    await editor.root.press(`${modifier}+u`);
+    await page.keyboard.press(`${modifier}+u`);
     await page.keyboard.type(' Under');
-    await editor.root.press(`${modifier}+u`);
+    await page.keyboard.press(`${modifier}+u`);
 
-    await editor.root.press(`${modifier}+Backquote`);
+    await page.keyboard.press(`${modifier}+Backquote`);
     await page.keyboard.type(' Code');
-    await editor.root.press(`${modifier}+Backquote`);
+    await page.keyboard.press(`${modifier}+Backquote`);
     await page.keyboard.type(' Done');
 
+    await expect(editor.root.locator('strong')).toHaveCount(1);
+    await expect(editor.root.locator('em')).toHaveCount(1);
+    await expect(editor.root.locator('u')).toHaveCount(1);
+    await expect(editor.root.locator('code')).toHaveCount(1);
     await expect(editor.root.locator('strong')).toHaveText('Bold');
     await expect(editor.root.locator('em')).toHaveText(' Italic');
     await expect(editor.root.locator('u')).toHaveText(' Under');
@@ -1043,6 +1049,7 @@ test.describe('On richtext example', () => {
     try {
       await editor.selectAll();
       await editor.deleteFragment();
+
       await editor.insertText('Styled');
       await editor.selection.select({
         anchor: { path: [0, 0], offset: 0 },
@@ -5669,7 +5676,6 @@ test.describe('On richtext example', () => {
     page,
   }) => {
     test.setTimeout(60_000);
-
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {

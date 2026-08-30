@@ -1,19 +1,23 @@
 /** @jsx jsxt */
 
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import {
   jsxt,
   projectTestSelectionRange,
   type TestEditorFixture,
-} from '@platejs/test-utils';
-import { type BaseEditor, createBaseEditor } from 'platejs';
+} from '@platejs/test';
+import {
+  type Editor,
+  createEditor as createProductEditor,
+  type Value,
+} from 'platejs';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 jsxt;
 
 const createEditor = (input: TestEditorFixture) =>
-  createBaseEditor({
+  createProductEditor({
     plugins: BaseEditorKit,
     selection: input.selection,
     initialValue: input.children,
@@ -87,7 +91,9 @@ describe('suggestion link integration', () => {
     expect(editor.read.children()[0].children[2]).toEqual(
       output.children[0].children[2]
     );
-    expect(editor.read.selection()).toEqual(projectTestSelectionRange(output.selection));
+    expect(editor.read.selection()).toEqual(
+      projectTestSelectionRange(output.selection)
+    );
   });
 
   it('removes an empty link after accepting the last removed character', () => {
@@ -126,7 +132,11 @@ describe('suggestion link integration', () => {
     });
 
     (
-      editor as BaseEditor<readonly [typeof BaseSuggestionPlugin]>
+      editor as Editor<
+        Value,
+        readonly [],
+        readonly [typeof BaseSuggestionPlugin]
+      >
     ).update.suggestion.accept({
       keyId: editor.plugin(BaseSuggestionPlugin).api.key('1'),
       suggestionId: '1',
@@ -166,7 +176,11 @@ describe('suggestion link integration', () => {
     const editor = createEditor(input);
 
     (
-      editor as BaseEditor<readonly [typeof BaseSuggestionPlugin]>
+      editor as Editor<
+        Value,
+        readonly [],
+        readonly [typeof BaseSuggestionPlugin]
+      >
     ).update.suggestion.reject({
       keyId: 'suggestion_1',
       suggestionId: '1',

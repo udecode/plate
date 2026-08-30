@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-28-rename-plate-editor",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-28-rename-plate-editor.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use PlateEditor for complete editor blocks",
+  "targets": [
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-basic",
+      "files": [
+        "apps/www/src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-28-editor-ai-plateeditor-complete-blocks-1ed30d97",
+      "kind": "rename",
+      "summary": "Export complete editor block composition as `PlateEditor` while keeping the shared presentation component named `Editor`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-ai", "editor-basic"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-28",
+          "entry": "2026-08-28-rename-plate-editor",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

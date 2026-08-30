@@ -2,7 +2,7 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "basic-marks-static",
   "dependencies": [
-    "@platejs/basic-nodes"
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/code-static.json",
@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/basic-marks-static.tsx",
-      "content": "import {\n  BaseBoldPlugin,\n  BaseCodePlugin,\n  BaseHighlightPlugin,\n  BaseItalicPlugin,\n  BaseKbdPlugin,\n  BaseScriptPlugin,\n  BaseStrikethroughPlugin,\n  BaseUnderlinePlugin,\n} from '@platejs/basic-nodes';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nimport { CodeLeafStatic } from '@/registry/components/editor/code-static';\nimport { HighlightLeafStatic } from '@/registry/components/editor/highlight-static';\nimport { KbdLeafStatic } from '@/registry/components/editor/kbd-static';\n\nconst ScriptLeafStatic = (props: PliteLeafProps<typeof BaseScriptPlugin>) => (\n  <PliteLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>\n    {props.children}\n  </PliteLeaf>\n);\n\nexport const BaseBasicMarksKit = [\n  BaseBoldPlugin,\n  BaseItalicPlugin,\n  BaseUnderlinePlugin,\n  BaseCodePlugin.configure({ component: CodeLeafStatic }),\n  BaseStrikethroughPlugin,\n  BaseScriptPlugin.configure({ component: ScriptLeafStatic }),\n  BaseHighlightPlugin.configure({\n    component: HighlightLeafStatic,\n  }),\n  BaseKbdPlugin.configure({ component: KbdLeafStatic }),\n];\n",
+      "content": "import {\n  BaseBoldPlugin,\n  BaseCodePlugin,\n  BaseHighlightPlugin,\n  BaseItalicPlugin,\n  BaseKbdPlugin,\n  BaseScriptPlugin,\n  BaseStrikethroughPlugin,\n  BaseUnderlinePlugin,\n} from 'platejs';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nimport { CodeLeafStatic } from '@/registry/components/editor/code-static';\nimport { HighlightLeafStatic } from '@/registry/components/editor/highlight-static';\nimport { KbdLeafStatic } from '@/registry/components/editor/kbd-static';\n\nconst ScriptLeafStatic = (props: PliteLeafProps<typeof BaseScriptPlugin>) => (\n  <PliteLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>\n    {props.children}\n  </PliteLeaf>\n);\n\nexport const BaseBasicMarksKit = [\n  BaseBoldPlugin,\n  BaseItalicPlugin,\n  BaseUnderlinePlugin,\n  BaseCodePlugin.configure({ component: CodeLeafStatic }),\n  BaseStrikethroughPlugin,\n  BaseScriptPlugin.configure({ component: ScriptLeafStatic }),\n  BaseHighlightPlugin.configure({\n    component: HighlightLeafStatic,\n  }),\n  BaseKbdPlugin.configure({ component: KbdLeafStatic }),\n];\n",
       "type": "registry:component",
       "target": "@components/editor/basic-marks-static.tsx"
     }

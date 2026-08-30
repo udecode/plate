@@ -8,6 +8,8 @@ import next from 'ultracite/oxlint/next';
 import nextJsPlugins from 'ultracite/oxlint/next/js-plugins';
 import react from 'ultracite/oxlint/react';
 
+import { entrypointDags } from './tooling/entrypoints/entrypoint-dag.mjs';
+
 const plateOxlintIgnorePatterns = [
   'templates/**',
   '**/.agents/**',
@@ -26,7 +28,7 @@ const plateOxlintIgnorePatterns = [
   'tooling/plite/donor/**',
 ];
 
-const plateAntiSlop = {
+const plateJsPlugins = {
   ...antiSlop,
   jsPlugins: [
     {
@@ -35,15 +37,60 @@ const plateAntiSlop = {
         new URL('tooling/oxlint/anti-slop-plugin.mjs', import.meta.url)
       ),
     },
+    {
+      name: 'entrypoint-dag',
+      specifier: fileURLToPath(
+        new URL('tooling/oxlint/entrypoint-dag-plugin.mjs', import.meta.url)
+      ),
+    },
   ],
 };
+
+const forbiddenUdecodeImport = {
+  regex: '^@udecode(?:/|$)',
+  message:
+    'The @udecode package namespace is retired. Import Plate contracts from platejs or platejs/react, and keep copied UI helpers local.',
+};
+
+const isPlateReactOwnedEntrypoint = (
+  entrypointName: string,
+  visiting = new Set<string>()
+): boolean => {
+  if (visiting.has(entrypointName)) return false;
+
+  const entrypoint = entrypointDags.platejs.entrypoints[entrypointName];
+  const nextVisiting = new Set(visiting).add(entrypointName);
+
+  return (
+    entrypoint.externalDependencies.some((dependency) =>
+      /^(?:plitejs\/(?:react|page-layout\/react))$/u.test(dependency)
+    ) ||
+    entrypoint.dependencies.some((dependency) =>
+      isPlateReactOwnedEntrypoint(dependency, nextVisiting)
+    )
+  );
+};
+
+const plateReactOwnedSourcePatterns = Object.entries(
+  entrypointDags.platejs.entrypoints
+).flatMap(([entrypointName, entrypoint]) => {
+  if (!isPlateReactOwnedEntrypoint(entrypointName)) return [];
+  if (entrypoint.sourceKind === 'directory') {
+    return [`packages/platejs/src/${entrypoint.source}/**`];
+  }
+  if (entrypoint.sourceKind === 'file') {
+    return [`packages/platejs/src/${entrypoint.source}.*`];
+  }
+
+  return [];
+});
 
 export default defineConfig({
   extends: [
     core,
     react,
     selectJsPlugins(['react-doctor']),
-    plateAntiSlop,
+    plateJsPlugins,
     {
       plugins: next.plugins,
     },
@@ -61,7 +108,199 @@ export default defineConfig({
   settings: jsPluginSettings,
   overrides: [
     {
-      files: ['packages/plite-react/test/render-probes/**/*.{ts,tsx}'],
+      files: [
+        'packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+        'packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+        'packages/test/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/platejs/src/**/*.spec.*',
+        'packages/platejs/src/**/*.test.*',
+        'packages/platejs/src/**/*.slow.*',
+        'packages/platejs/src/**/__tests__/**',
+        'packages/plitejs/src/**/*.spec.*',
+        'packages/plitejs/src/**/*.test.*',
+        'packages/plitejs/src/**/*.slow.*',
+        'packages/plitejs/src/**/__tests__/**',
+        'packages/test/src/**/*.spec.*',
+        'packages/test/src/**/*.test.*',
+        'packages/test/src/**/*.slow.*',
+        'packages/test/src/**/__tests__/**',
+      ],
+      rules: {
+        'entrypoint-dag/no-forbidden-imports': 'error',
+        'import/no-commonjs': 'error',
+      },
+    },
+    {
+      files: ['**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          { patterns: [forbiddenUdecodeImport] },
+        ],
+      },
+    },
+    {
+      files: ['**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        'packages/platejs/**',
+        // Plite contract tests consume the published entrypoints they verify.
+        'packages/plitejs/test/**',
+        // Shared JSX fixtures are part of the raw Plite package test harness.
+        'config/plite-test-jsx.js',
+        // Shared raw examples feed the dedicated Plite proof app.
+        'apps/www/src/app/(app)/examples/plite/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^plitejs(?:/|$)',
+                message:
+                  'Only platejs and dedicated raw Plite proof or test surfaces may import plitejs. Import the matching platejs entrypoint instead.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        'packages/platejs/src/**/*.spec.*',
+        'packages/platejs/src/**/*.test.*',
+        'packages/platejs/src/**/*.slow.*',
+        'packages/platejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^platejs(?:/|$)',
+                message:
+                  'platejs source must use private relative imports instead of its public package name.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        ...plateReactOwnedSourcePatterns,
+        'packages/platejs/src/**/*.spec.*',
+        'packages/platejs/src/**/*.test.*',
+        'packages/platejs/src/**/*.slow.*',
+        'packages/platejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^platejs(?:/|$)',
+                message:
+                  'platejs source must use private relative imports instead of its public package name.',
+              },
+              {
+                regex: '^(?:react|react-compiler-runtime|react-dom)(?:/|$)',
+                message: 'The platejs root cannot depend on React.',
+              },
+              {
+                regex: '^plitejs/(?:react|page-layout/react)(?:/|$)',
+                message:
+                  'The platejs root cannot depend on a Plite React entrypoint.',
+              },
+              {
+                regex:
+                  '^(?:\\.\\.?/)+(?:[^/]+/)*(?:react|static)(?:/|(?:\\.[^/]+)?$)',
+                message:
+                  'The platejs root cannot import a React-owned source tree.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        'packages/plitejs/src/**/*.spec.*',
+        'packages/plitejs/src/**/*.test.*',
+        'packages/plitejs/src/**/*.slow.*',
+        'packages/plitejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^plitejs(?:/|$)',
+                message:
+                  'plitejs source must use private relative imports instead of its public package name.',
+              },
+              {
+                regex: '^platejs(?:/|$)',
+                message: 'plitejs cannot depend on platejs.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        'packages/plitejs/src/react/**',
+        'packages/plitejs/src/page-layout/react.tsx',
+        'packages/plitejs/src/**/*.spec.*',
+        'packages/plitejs/src/**/*.test.*',
+        'packages/plitejs/src/**/*.slow.*',
+        'packages/plitejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              forbiddenUdecodeImport,
+              {
+                regex: '^plitejs(?:/|$)',
+                message:
+                  'plitejs source must use private relative imports instead of its public package name.',
+              },
+              {
+                regex: '^platejs(?:/|$)',
+                message: 'plitejs cannot depend on platejs.',
+              },
+              {
+                regex: '^(?:react|react-compiler-runtime|react-dom)(?:/|$)',
+                message: 'The plitejs root cannot depend on React.',
+              },
+              {
+                regex: '^(?:\\.\\.?/)+(?:[^/]+/)*react(?:/|(?:\\.[^/]+)?$)',
+                message:
+                  'The plitejs root cannot import a React-owned source tree.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['packages/plitejs/test/react/render-probes/**/*.{ts,tsx}'],
       rules: {
         // [P0 test-harness] These components synchronously publish render observations; effects would change the boundary under test.
         'react/immutability': 'off',
@@ -347,16 +586,22 @@ export default defineConfig({
     'react-doctor/prefer-useReducer': 'off',
     // [P0 semantic-change] Manual memoization can provide observable identity to subscriptions, imperative adapters, and third-party hooks; React Compiler optimization does not prove removing each boundary preserves that contract.
     'react-doctor/react-compiler-no-manual-memoization': 'off',
+    'react/display-name': 'error',
     // [P0 lifecycle-conflict] Extra effect dependencies can intentionally trigger resubscription or synchronization when an external editor input changes; removing them changes observable lifecycle timing.
     'react/exhaustive-effect-dependencies': 'off',
     // [P0 public-API-conflict] Plate plugins expose hook functions as runtime extension values, and isomorphic hook aliases remain stable by construction; the standard rules-of-hooks owner still enforces call order.
     'react/hooks': 'off',
+    'react/immutability': 'error',
     // [P0 identity-conflict] Extra memo dependencies can deliberately invalidate values when external editor inputs change; removing them changes callback or object identity observed by subscriptions and consumers.
     'react/memo-dependencies': 'off',
+    'react/preserve-manual-memoization': 'error',
+    'react/refs': 'error',
     // [P0 compiler-policy-conflict] Precise production suppressions encode explicit dependency and ownership invariants; rejecting every React suppression would make the permitted narrow exception policy impossible.
     'react/rule-suppression': 'off',
+    'react/set-state-in-effect': 'error',
     // [P0 compiler-limit] This rule exposes unsupported React Compiler syntax and HIR implementation gaps such as dynamic imports, accessors, logical assignment, and try/finally; source rewrites would change control flow solely for optimization eligibility.
     'react/todo': 'off',
+    'react/use-memo': 'error',
     // [P0 owner-conflict] Coordinate rounding mutates canonical vector geometry without a visual tolerance or screenshot proof; SVG minification and compression, not source lint, own measured asset bytes.
     'react-doctor/rendering-svg-precision': 'off',
     // [P0 semantic-change] Forcing component arrows changes declaration hoisting and temporal availability; component ownership decides the form locally.

@@ -48,7 +48,7 @@ renderer functions inside the editor component during render.
 If unmodified elements are being re-rendered, check to see if they are subscribing to any contexts or hooks that are causing unnecessary re-renders. You can also apply these techniques to any toolbars or other non-element React components that may be re-rendering in response to changes in the editor.
 
 Hot editor UI should subscribe to the narrowest source it needs. Use
-`useEditor()` to access the editor object, `useEditorSelection()` for
+`useEditorContext()` to access the provider editor, `useEditorSelection()` for
 selection-aware toolbar UI, and `useEditorSelector()` for derived editor-level
 toolbar state. Inside rendered editor content, prefer target-scoped hooks such
 as `useElementSelected()`, `useNodeSelector()`, `useTextSelector()`, and

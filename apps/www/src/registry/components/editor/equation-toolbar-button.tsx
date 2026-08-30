@@ -1,7 +1,7 @@
 'use client';
 
-import { BaseInlineEquationPlugin } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
+import { BaseInlineEquationPlugin } from 'platejs/math';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
 

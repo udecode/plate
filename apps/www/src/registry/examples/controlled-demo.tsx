@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ const replacedValue = [
 ];
 
 export default function ControlledEditorDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     initialValue,
   });
 
@@ -71,7 +71,7 @@ function AsyncControlledEditorDemo() {
     Array<{ children: Array<{ text: string }>; type: string }> | undefined
   >(undefined);
   const [loading, setLoading] = React.useState(true);
-  const editor = usePlateEditor();
+  const editor = useCreateEditor();
 
   React.useEffect(() => {
     // Simulate async fetch

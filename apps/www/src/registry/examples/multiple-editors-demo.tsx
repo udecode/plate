@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Separator } from '@/components/ui/separator';
@@ -15,19 +15,19 @@ import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { imageValue } from '@/registry/examples/values/media-value';
 
 export default function MultipleEditorsDemo() {
-  const editor = usePlateEditor({
+  const editor = useCreateEditor({
     id: 'editor1',
     plugins: BasicNodesKit,
     initialValue: basicBlocksValue,
   });
 
-  const editorMarks = usePlateEditor({
+  const editorMarks = useCreateEditor({
     id: 'marks',
     plugins: BasicNodesKit,
     initialValue: basicMarksValue,
   });
 
-  const editorImage = usePlateEditor({
+  const editorImage = useCreateEditor({
     id: 'image',
     plugins: [...BasicNodesKit, ...AlignKit, ...MediaKit],
     initialValue: imageValue,

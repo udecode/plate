@@ -190,7 +190,7 @@ Findings:
   rejected because it also made inherited `children` and `type` optional.
 - Remaining raw intersections are generated schema output, infrastructure,
   property-only semantic refinements (List/Suggestion/NodeId/Resizable), the
-  maintenance-only List Classic exception, or Table's private declaration-cycle
+  maintenance-only Legacy list model exception, or Table's private declaration-cycle
   breaker. None is an unclassified unique plugin-owned public node mirror.
 
 Decisions and tradeoffs:

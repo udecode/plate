@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import type { CodeBlockElement } from '@platejs/code-block';
 import { render } from '@testing-library/react';
-import type { PlateEditor } from 'platejs/react';
+import type { CodeBlockElement } from 'platejs';
+import type { Editor } from 'platejs/react';
 import * as React from 'react';
 
 const useReadOnlyMock = mock(() => true);
@@ -12,26 +12,20 @@ const mockPlugin = (name: string) => ({
 });
 
 let currentElement: CodeBlockElement;
-const editor = {} as PlateEditor;
+const editor = {} as Editor;
 
 mock.module('platejs', () => ({
+  BaseCodeBlockPlugin: mockPlugin('codeBlock'),
+  CodeBlockRules: { markdown: mock(() => ({})) },
   NodeApi: {
     string: () => 'code',
   },
 }));
 
-mock.module('@platejs/code-block', () => ({
-  BaseCodeBlockPlugin: mockPlugin('codeBlock'),
-  CodeBlockRules: { markdown: mock(() => ({})) },
-}));
-
-mock.module('@platejs/code-block/react', () => ({
+mock.module('platejs/react', () => ({
   CodeBlockPlugin: mockPlugin('codeBlock'),
   CodeHighlightPlugin: mockPlugin('codeHighlight'),
   CodeLinePlugin: mockPlugin('codeLine'),
-}));
-
-mock.module('platejs/react', () => ({
   PlateElement: ({ children, className, ...props }: any) => (
     <div className={className} data-testid="plate-element" {...props}>
       {children}

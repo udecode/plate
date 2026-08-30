@@ -19,6 +19,7 @@ const BaseDropdownMenuContent =
 const BaseDropdownMenuTrigger =
   ShadcnDropdownMenuTrigger as React.ComponentType<BaseMenuPrimitive.Trigger.Props>;
 
+// biome-ignore lint/performance/noBarrelFile: This adapter owns one stable menu API across registry bases.
 export {
   DropdownMenu,
   DropdownMenuCheckboxItem,

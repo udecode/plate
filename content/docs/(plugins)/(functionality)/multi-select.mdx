@@ -33,16 +33,16 @@ Unlike traditional input-based multi-selects, this component is built on top of 
 ### Installation
 
 ```bash
-npm install @platejs/tag
+npm install platejs @tanstack/react-virtual
 ```
 
 ### Add Plugins
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
-import { createPlateEditor } from 'platejs/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
+import { createEditor } from 'platejs/react';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     MultiSelectPlugin, // Multi-select editor with tag functionality
@@ -53,11 +53,11 @@ const editor = createPlateEditor({
 ### Configure Plugins
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
-import { createPlateEditor } from 'platejs/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
+import { createEditor } from 'platejs/react';
 import { TagElement } from '@/components/editor/tag';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     MultiSelectPlugin.configure({ component: TagElement }),
@@ -75,7 +75,7 @@ const editor = createPlateEditor({
 ### Basic Example
 
 ```tsx
-import { MultiSelectPlugin } from '@platejs/tag/react';
+import { MultiSelectPlugin } from 'platejs/tag/react';
 import { TagElement } from '@/components/editor/tag';
 import {
   SelectEditor,
@@ -185,7 +185,7 @@ needs different tag-selection behavior.
 ### TagElement
 
 ```ts
-import type { TagElement } from '@platejs/tag';
+import type { TagElement } from 'platejs/tag';
 ```
 
 `TagElement` is derived from `BaseTagPlugin` and requires a string `value`.
@@ -193,5 +193,5 @@ import type { TagElement } from '@platejs/tag';
 ### TagItem
 
 ```ts
-import type { TagItem } from '@platejs/tag';
+import type { TagItem } from 'platejs/tag';
 ```

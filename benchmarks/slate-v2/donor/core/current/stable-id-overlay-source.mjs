@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 
-import { createEditor } from '../../../../../packages/plite/src/index.ts';
-import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
-import { createPliteAnnotationStore } from '../../../../../packages/plite-react/src/annotation-store.ts';
-import { createDecorationSource } from '../../../../../packages/plite-react/src/decoration-source.ts';
-import { createPliteWidgetStore } from '../../../../../packages/plite-react/src/widget-store.ts';
-import { createStableIdMappedSource } from '../../../../../packages/plite-react/src/stable-id-mapped-source.ts';
+import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
+import { createPliteAnnotationStore } from '../../../../../packages/plitejs/src/react/annotation-store.ts';
+import { createDecorationSource } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
+import { createPliteWidgetStore } from '../../../../../packages/plitejs/src/react/widget-store.ts';
+import { createStableIdMappedSource } from '../../../../../packages/plitejs/src/react/stable-id-mapped-source.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const DEFAULT_SIZES = [10_000, 100_000];

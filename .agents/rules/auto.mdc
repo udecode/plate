@@ -131,7 +131,7 @@ or continue the correct goal/template.
 Resolve the lane before checkpoint work:
 
 - **Plite lane:** Plite package/runtime/browser/proof work under
-  `packages/plite*`, `packages/browser`, `packages/yjs`, `apps/plite`, and
+  `packages/plitejs`, `packages/test`, `apps/plite`, and
   `docs/plite`; migration, external editor issue/test harvesting, and Plite
   public API/DX cleanup. Upstream Slate remains a behavior and issue oracle.
 - **Plate lane:** Plate packages, plugin/product docs, registry examples,
@@ -621,7 +621,7 @@ Repair repeated or avoidable workflow slowdowns:
 - slow specialist routing -> patch the owning `.agents/rules/*.mdc`;
 - slow Slate finalization/readiness -> patch `slate-ar`;
 - slow proof gate -> add a focused gate or route through the lane's proof owner;
-- slow browser repetition -> promote reusable proof into `@platejs/browser`;
+- slow browser repetition -> promote reusable proof into `@platejs/test`;
 - slow benchmark setup -> route to `benchmark` and fix target/script ergonomics there;
 - slow output -> narrow command output or write artifacts instead of streaming.
 - slow or silent review -> bound the review packet, record the timeout, then
@@ -665,8 +665,8 @@ pnpm --filter plite test:plite-browser:chromium <file-or--grep>
 pnpm check:plite
 pnpm check:plite:browser-matrix
 PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts -g "<pattern>"
-pnpm --filter @platejs/<package> test -- <file-or-pattern>
-cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
+pnpm --filter platejs test -- <file-or-pattern>
+bun test ./packages/platejs/<file>.test.ts --test-name-pattern "<pattern>"
 ```
 
 Rules:
@@ -699,9 +699,8 @@ Rules:
 - if Bun or Vitest says "No test files found" or "filters did not match", stop
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
-- for Bun workspace package commands, prefer path filters such as
-  `bun --filter ./packages/plite-history typecheck`. Package-name filters can
-  miss in this workspace and waste the loop;
+- run Plite package checks through the entrypoint-aware `plitejs` scripts, such
+  as `pnpm --filter plitejs typecheck`; do not target deleted package roots;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -722,26 +721,26 @@ Rules:
 - every integration entrypoint that imports public package exports during
   Playwright, including async/local wrappers, must route through the repo
   managed `www` Playwright path; raw `playwright test` is a stale-dist footgun
-  when `@platejs/browser/playwright` changes;
+  when `@platejs/test/playwright` changes;
 - if an integration wrapper captures `--reporter=json` from Playwright stdout,
   do not run the full managed browser-proof command as that child command. Run
   the required package build as a separate preflight, then run the repo-owned
   Playwright config with JSON stdout so `report.json` stays parseable;
-- after changing `packages/browser/src/playwright/**` helpers or browser
-  handle APIs consumed through `@platejs/browser/playwright`, run
-  `pnpm --filter @platejs/browser build` before browser proofs that import the
+- after changing `packages/test/src/playwright/**` helpers or browser
+  handle APIs consumed through `@platejs/test/playwright`, run
+  `pnpm --filter @platejs/test build` before browser proofs that import the
   package. The specs can otherwise load stale generated package output and fail
   on missing helper methods instead of product behavior;
-- after changing `packages/plite-react/src/**`, `packages/plite-dom/src/**`, or
+- after changing `packages/plitejs/src/react/**`, `packages/plitejs/src/dom/**`, or
   any public package runtime consumed by the example app through package
   exports, run the touched package build before managed Playwright proof, for
-  example `pnpm --filter @platejs/plite-react build`. The managed Playwright
-  wrapper builds `@platejs/browser` and the Next site, but stale package `dist`
+  example `pnpm --filter plitejs build`. The managed Playwright
+  wrapper builds `@platejs/test` and the Next site, but stale package `dist`
   can still make the browser prove old runtime behavior;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
-  `packages/plite/test/public-package-import-smoke.test.ts` and
-  `packages/plite/test/public-package-types-smoke.ts`. Do not invent public
+  `packages/plitejs/test/public-package-import-smoke.test.ts` and
+  `packages/plitejs/test/public-package-types-smoke.ts`. Do not invent public
   function call examples from memory. Prefer type-importing exported names and
   doing only tiny value references unless the package docs/source were just
   inspected for that exact signature;
@@ -756,24 +755,25 @@ Rules:
   match and suggests adding more `./` prefixes, do not chase prefixes. Either
   add `--path-ignore-patterns ''` from `Plate repo root` or switch to the owning
   package cwd and run the local wrapper path, for example
-  `cd packages/plite-dom && bun test ./test/bridge.test.ts --test-name-pattern
+  `cd packages/plitejs && bun test ./test/dom/bridge.test.ts --test-name-pattern
   "<pattern>"`;
 - do not claim a root package test directory proved anything until its output
   reports the expected file and pass counts. The repo `bunfig.toml` ignores
   `*.test.*` by default, so root aggregate package tests must use
   `--path-ignore-patterns ''` when they intentionally cover `.test.*` contracts.
-  Package-local scripts such as `pnpm --filter @platejs/browser test:core` are also
-  valid because they run under the package owner instead of the root ignore;
+  Package-local scripts such as `pnpm --filter @platejs/test test:proof` are
+  also valid because they run under the package owner instead of the root
+  ignore;
 - for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
   contract bodies live in imported siblings such as `surface-contract.tsx`;
   running the sibling path directly fails the Vitest include filter and proves
   only a command-shape miss. Before running Vitest against any target path that
   does not already match `*.test.*`, locate the wrapper with
   `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
-- `packages/plite-react` contracts are Vitest-owned. Run them from
-  `packages/plite-react` as
-  `bun test:vitest test/<file>.test.tsx`; do not run them through root
-  `bun test ./packages/plite-react/...`;
+- `packages/plitejs/test/react` contracts are Vitest-owned. Run them from
+  `packages/plitejs` as
+  `bun run test:react test/react/<file>.test.tsx`; do not run them through root
+  `bun test ./packages/plitejs/test/react/...`;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -867,9 +867,9 @@ Rules:
   be repaired unless the doc explicitly names a historical draft/source
   checkout such as `slate-v2-draft`;
 - when Playwright imports a package through public exports such as
-  `@platejs/browser/playwright`, verify whether the export resolves built `dist`;
+  `@platejs/test/playwright`, verify whether the export resolves built `dist`;
   after source changes to those packages, run the focused package build (for
-  example `pnpm --filter @platejs/browser build`) before claiming the rerun tested
+  example `pnpm --filter @platejs/test build`) before claiming the rerun tested
   the patch, and patch any wrapper script that bypasses that build path;
 - after package, runtime, example, or generated-site source edits, do not use an
   already-running `PLAYWRIGHT_BASE_URL` dev server for final proof until you

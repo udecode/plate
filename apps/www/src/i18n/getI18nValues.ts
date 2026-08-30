@@ -20,6 +20,7 @@ import { deserializeCsvValue as deserializeCsvValueCn } from '@/registry/example
 import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examples/values/cn/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueCn } from '@/registry/examples/values/cn/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueCn } from '@/registry/examples/values/cn/deserialize-md-value';
+import { detailsValue as detailsValueCn } from '@/registry/examples/values/cn/details-value';
 import { discussionValue as discussionValueCn } from '@/registry/examples/values/cn/discussion-value';
 import { dndValue as dndValueCn } from '@/registry/examples/values/cn/dnd-value';
 import { editableVoidsValue as editableVoidsValueCn } from '@/registry/examples/values/cn/editable-voids-value';
@@ -37,7 +38,6 @@ import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/ifra
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
-import { listValue as listClassicValueCn } from '@/registry/examples/values/cn/list-classic-value';
 import { listValue as listValueCn } from '@/registry/examples/values/cn/list-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
@@ -49,7 +49,6 @@ import { slashCommandValue as slashCommandValueCn } from '@/registry/examples/va
 import { tabbableValue as tabbableValueCn } from '@/registry/examples/values/cn/tabbable-value';
 import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-value';
 import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value';
-import { toggleValue as toggleValueCn } from '@/registry/examples/values/cn/toggle-value';
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { cursorOverlayValue as cursorOverlayValueEn } from '@/registry/examples/values/cursor-overlay-value';
@@ -58,6 +57,7 @@ import { deserializeCsvValue as deserializeCsvValueEn } from '@/registry/example
 import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examples/values/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueEn } from '@/registry/examples/values/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueEn } from '@/registry/examples/values/deserialize-md-value';
+import { detailsValue as detailsValueEn } from '@/registry/examples/values/details-value';
 import { discussionValue as commentValueEn } from '@/registry/examples/values/discussion-value';
 import { dndValue as dndValueEn } from '@/registry/examples/values/dnd-value';
 import { editableVoidsValue as editableVoidsValueEn } from '@/registry/examples/values/editable-voids-value';
@@ -87,7 +87,6 @@ import { slashCommandValue as slashCommandValueEn } from '@/registry/examples/va
 import { tabbableValue as tabbableValueEn } from '@/registry/examples/values/tabbable-value';
 import { tableValue as tableValueEn } from '@/registry/examples/values/table-value';
 import { tocValue as tocValueEn } from '@/registry/examples/values/toc-value';
-import { toggleValue as toggleValueEn } from '@/registry/examples/values/toggle-value';
 
 const i18n = {
   cn: {
@@ -121,7 +120,6 @@ const i18n = {
     lineHeight: lineHeightValueCn,
     link: linkValueCn,
     list: listValueCn,
-    listClassic: listClassicValueCn,
     media: mediaValueCn,
     mention: mentionValueCn,
     placeholder: placeholderValueCn,
@@ -132,7 +130,7 @@ const i18n = {
     table: tableValueCn,
     'text-align': alignValueCn,
     toc: tocValueCn,
-    toggle: toggleValueCn,
+    details: detailsValueCn,
     trailingBlock: trailingBlockValueCn,
   },
   en: {
@@ -177,7 +175,7 @@ const i18n = {
     table: tableValueEn,
     'text-align': alignValueEn,
     toc: tocValueEn,
-    toggle: toggleValueEn,
+    details: detailsValueEn,
     trailingBlock: trailingBlockValueEn,
   },
 };

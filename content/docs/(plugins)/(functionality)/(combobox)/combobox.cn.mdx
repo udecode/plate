@@ -38,7 +38,7 @@ docs:
 ### 安装
 
 ```bash
-npm install @platejs/combobox
+npm install platejs @tanstack/react-virtual
 ```
 
 ### 创建输入插件
@@ -60,7 +60,7 @@ const TagInputPlugin = defineBasePlugin('tagInput', {
 
 ```tsx
 import { defineBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginState } from '@platejs/combobox';
+import type { TriggerComboboxPluginState } from 'platejs/combobox';
 
 export type TagPluginState = TriggerComboboxPluginState;
 
@@ -171,11 +171,11 @@ export function TagElement({ element, ...props }) {
 ### 添加到编辑器
 
 ```tsx
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { TagPlugin, TagInputPlugin } from './tag-plugin';
 import { TagElement, TagInputElement } from './tag-components';
 
-const editor = createPlateEditor({
+const editor = createEditor({
   plugins: [
     // ...其他插件
     TagPlugin.configure({
@@ -223,7 +223,7 @@ const editor = createPlateEditor({
     匹配触发器前字符的模式。
     - **示例:** `/^\s?$/` 匹配行首或空格
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
     控制触发器何时激活的自定义查询函数。
   </APIItem>
 </APIOptions>
