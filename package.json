@@ -107,7 +107,7 @@
     "plite:release:packages": "pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs",
     "plite:release:proof": "node tooling/scripts/check-plite-release-proof.mjs --from-env",
     "plite:release:boundaries": "turbo build --filter=./packages/plitejs --filter=./packages/platejs && node tooling/scripts/check-plite-release-artifacts.mjs --package-boundaries-only",
-    "plite:test": "turbo run test --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --output-logs=errors-only --log-order=grouped",
+    "plite:test": "turbo run test:partition:core --filter=plitejs --concurrency=1 --output-logs=errors-only --log-order=grouped && turbo run test --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --output-logs=errors-only --log-order=grouped",
     "plite:typecheck": "turbo run typecheck --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --output-logs=errors-only --log-order=grouped",
     "sync-shadcn": "node .agents/rules/sync-shadcn/scripts/build-dashboard.mjs",
     "templates:ai": "./tooling/scripts/update-template.sh ai",

@@ -638,6 +638,10 @@ test('root scripts keep source-first typecheck and strict browser closure separa
     scripts['plite:typecheck'],
     /^turbo run typecheck --filter=plitejs --filter=platejs --filter=@platejs\/test --concurrency=8/u
   );
+  assert.equal(
+    scripts['plite:test'],
+    'turbo run test:partition:core --filter=plitejs --concurrency=1 --output-logs=errors-only --log-order=grouped && turbo run test --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --output-logs=errors-only --log-order=grouped'
+  );
   assert.doesNotMatch(scripts['plite:typecheck'], /\bbuild\b/u);
   assert.equal(scripts['test:plite'], 'pnpm plite:test');
   assert.equal(scripts['check:plite'].includes('browser-matrix'), false);
