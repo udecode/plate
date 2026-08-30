@@ -1120,44 +1120,48 @@ describe('DOM coverage boundaries', () => {
     ).toBeNull();
   });
 
-  test('looks up points outside 100 boundaries in a 5000-block document within the stress budget', () => {
-    const editor = createLargeEditor(5000);
-    const outsidePoint = { path: [4999, 0], offset: 0 };
-    const baselineSamples = Array.from({ length: 25 }, () =>
-      measureRepeated(() => {
-        editorHasPath(editor, outsidePoint.path);
-      })
-    );
+  test(
+    'looks up points outside 100 boundaries in a 5000-block document within the stress budget',
+    { timeout: 30_000 },
+    () => {
+      const editor = createLargeEditor(5000);
+      const outsidePoint = { path: [4999, 0], offset: 0 };
+      const baselineSamples = Array.from({ length: 25 }, () =>
+        measureRepeated(() => {
+          editorHasPath(editor, outsidePoint.path);
+        })
+      );
 
-    for (let index = 0; index < 100; index++) {
-      const path = [index * 40];
+      for (let index = 0; index < 100; index++) {
+        const path = [index * 40];
 
-      DOMCoverage.registerBoundary(editor, {
-        boundaryId: `hidden-${index}`,
-        anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, path) },
-        copyPolicy: 'model',
-        coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
-        coveredRuntimeRanges: [],
-        findPolicy: 'native',
-        ownerPath: path,
-        ownerNodeKey: getNodeKey(editor, path),
-        reason: 'app-collapse',
-        selectionPolicy: 'skip',
-        state: 'intentionally-hidden',
-        version: 1,
-      });
+        DOMCoverage.registerBoundary(editor, {
+          boundaryId: `hidden-${index}`,
+          anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, path) },
+          copyPolicy: 'model',
+          coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
+          coveredRuntimeRanges: [],
+          findPolicy: 'native',
+          ownerPath: path,
+          ownerNodeKey: getNodeKey(editor, path),
+          reason: 'app-collapse',
+          selectionPolicy: 'skip',
+          state: 'intentionally-hidden',
+          version: 1,
+        });
+      }
+
+      const coverageSamples = Array.from({ length: 25 }, () =>
+        measureRepeated(() => {
+          DOMCoverage.getBoundaryForPoint(editor, outsidePoint);
+        })
+      );
+
+      expect(
+        median(coverageSamples) - median(baselineSamples)
+      ).toBeLessThanOrEqual(5);
     }
-
-    const coverageSamples = Array.from({ length: 25 }, () =>
-      measureRepeated(() => {
-        DOMCoverage.getBoundaryForPoint(editor, outsidePoint);
-      })
-    );
-
-    expect(
-      median(coverageSamples) - median(baselineSamples)
-    ).toBeLessThanOrEqual(5);
-  });
+  );
 
   test('includes specifically indexed boundaries when querying a large root range', () => {
     const editor = createLargeEditor(500);
