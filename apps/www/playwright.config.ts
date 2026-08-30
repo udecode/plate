@@ -16,7 +16,9 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
-          executablePath: chromiumExecutablePath,
+          ...(chromiumExecutablePath
+            ? { executablePath: chromiumExecutablePath }
+            : {}),
           ignoreDefaultArgs: ['--hide-scrollbars'],
         },
       },

@@ -2048,7 +2048,10 @@ describe('plitejs/react surface contract', () => {
     expect(voidElement?.getAttribute('draggable')).toBe('true');
     expect(image).toBeTruthy();
     expect(image?.parentElement?.getAttribute('contenteditable')).toBe('false');
-    expect(spacer?.querySelector('[data-plite-zero-width]')).toBeTruthy();
+    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+
+    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
   test('renderElement owns void nodes when renderVoid is omitted', () => {
@@ -2074,11 +2077,19 @@ describe('plitejs/react surface contract', () => {
     );
 
     const image = rendered.container.querySelector('[data-renderer="image"]');
+    const spacer = image?.querySelector('[data-plite-spacer]');
 
     expect(renderElement).toHaveBeenCalledTimes(1);
     expect(image).toHaveAttribute('data-plite-node', 'element');
     expect(image).toHaveAttribute('data-plite-void', 'true');
-    expect(image?.querySelector('[data-plite-zero-width]')).toBeTruthy();
+    expect(spacer).toHaveStyle({
+      height: '0px',
+      position: 'absolute',
+    });
+    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+
+    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
   test('editable-island void content keeps classic void chrome while nested editors stay focusable', () => {
@@ -2121,7 +2132,10 @@ describe('plitejs/react surface contract', () => {
       'Controls'
     );
     expect(card?.querySelector('[contenteditable="true"]')).toBeTruthy();
-    expect(spacer?.querySelector('[data-plite-zero-width]')).toBeTruthy();
+    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+
+    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
   test('renderVoid receives content-only props and runtime owns inline void anchor', () => {

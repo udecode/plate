@@ -140,6 +140,7 @@ import {
   type RenderTextProps,
 } from './editable-text';
 import { Plite } from './plite';
+import { PliteSpacer } from './plite-spacer';
 import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
@@ -646,7 +647,20 @@ const resolveTextZeroWidth = ({
   node: PliteTextNode;
   path: Path | null;
 }) => {
-  if (!path || node.text !== '') {
+  if (!path) {
+    return { isLineBreak: true };
+  }
+
+  const parent = readRuntimeNode(editor, path.slice(0, -1));
+
+  if (parent && !editorIsEditor(parent) && editor.read.schema.isVoid(parent)) {
+    return {
+      isLineBreak: false,
+      length: NodeApi.string(parent).length,
+    };
+  }
+
+  if (node.text !== '') {
     return { isLineBreak: true };
   }
 
@@ -939,7 +953,13 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
       attributes,
       element: node as TElement,
       get children() {
-        return renderChildren();
+        const children = renderChildren();
+
+        return voidNode && !inline ? (
+          <PliteSpacer>{children}</PliteSpacer>
+        ) : (
+          children
+        );
       },
       isInline: inline,
       slots: createEditableElementSlots(editor, {

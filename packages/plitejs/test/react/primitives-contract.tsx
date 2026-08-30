@@ -153,6 +153,7 @@ describe('plite-react primitives contract', () => {
     const spacer = rendered.container.querySelector('[data-plite-spacer]');
 
     expect(element?.getAttribute('data-plite-void')).toBe('true');
+    expect(spacer).toHaveStyle({ caretColor: 'transparent' });
     expect(spacer?.textContent).toBe('\uFEFF');
   });
 

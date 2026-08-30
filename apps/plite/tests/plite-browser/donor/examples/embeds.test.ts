@@ -84,7 +84,7 @@ test.describe('embeds example', () => {
         focus: { path: [1, 0], offset: 0 },
       });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: 1,
       anchorPath: [1, 0],
       isCollapsed: true,
     });

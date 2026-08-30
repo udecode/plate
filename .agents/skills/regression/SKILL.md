@@ -199,11 +199,51 @@ Completion also proves the event path that produced the pointer feedback. The
 row result records `interaction-trace: pass`, the actual `target:`, delivered
 `event:`, and `buttons:` state. A computed cursor assertion reached through
 a different boundary event does not prove the reporter's held-pointer path.
+For a continuous held-pointer behavior that leaves an editor, browser viewport,
+window, scrollport, or owning boundary, the same row must also record
+`boundary-liveness: <event/last-coordinate source>` and
+`release-cleanup: <mouseup/pointerup/dragend/blur stop law>`,
+`scroll-owner: <stable acquired owner>`, and
+`speed-law: <distance/phase to signed delta contract>`, and
+`visible-scroll: <actual owner offset plus stable content geometry>`. Its executable
+proof layer must exercise the boundary exit, one transient missing DOM target
+or range, continued scheduling from the last valid boundary coordinate,
+horizontal and vertical exit without owner reselection, constant signed speed
+inside the named outside-speed region, actual owner offset and content geometry
+movement caused by the held interaction rather than a programmatic scroll, and
+the real release/blur cleanup.
+Completion records `boundary-exit-trace: pass`, `range-miss: continue`,
+`owner-lock: pass`, `speed-consistency: pass`, `visible-scroll: pass`, and
+`release: stop`. Selection expansion, a scroll method call, a synthetic
+`scrollTop` mutation, a coordinate-only target/delta test, final scroll offset
+without an interaction-owned before/during trace, or ordinary
+inside-editor drag cannot close this claim because each can pass while the live
+loop dies, changes owner, changes speed, or never visibly moves at the boundary.
 When the report names a flash, flicker, or wrong cursor for one frame, the
 correct state must exist before the target component processes the event. Use
 a target-capture or equivalent pre-handler oracle and record
 `pre-handler-state: pass`. A post-handler computed-style assertion is red for
 that claim even when the eventual cursor is correct.
+
+Any popup or toolbar lifecycle asserted after an action or release requires an
+applicable `follow-up-input@follow-up` oracle. Proving that an overlay closed is
+not enough; the next interaction on the owning surface must still work.
+
+For every applicable popup close row at `after-action` or `after-release`, the
+matrix must also account for `dom-native` and `focus` at that same phase. Mark
+them applicable with exact selection/caret and focus assertions, or explicitly
+N/A with a reason. A later follow-up action cannot prove that close preserved
+the live pointer-created selection or caret.
+
+Any required reporter evidence that names a caret, insertion point,
+caret-accessible line, editable blank line/row, or text cursor must map to
+applicable `dom-native` and `focus` rows at the same phase plus an applicable
+`follow-up-input@follow-up` row. Replay the reporter's real click, selection, or
+keyboard path in a browser-native proof layer. Assert the native caret paint
+independently from wrapper height, DOM markers, model selection, and block
+highlighting, then prove the next valid edit still works. A zero-height spacer,
+selection-capable hidden text node, static screenshot without the selection
+phase, or geometry-only pixel classifier cannot close a caret-visible claim.
 
 Every observed regression needs permanent executable coverage at the layer
 that can prove the claim. Prefer an existing test file and runner over a new
@@ -369,6 +409,11 @@ Classify each failed fix as `reporter-contradiction`, `exact-replay`, or
 `final-verification`. Keep base acceptance in the evidence inventory as
 required or explicitly superseded. Require a `latest-reporter-delta` only for
 `reporter-contradiction`; replay and verification failures cannot invent one.
+An `exact-replay` or `final-verification` failure must also record
+`diagnostic: <unchanged-bytes phase/result>` in its resume state before another
+Patch. The diagnostic reruns the actual failing assertion on frozen product
+bytes and distinguishes product nondeterminism from interaction, host, or
+oracle drift; repeated green alone is not a diagnosis.
 
 Every failed claimed bug fix automatically repairs Regression. Do not wait for
 the user to ask and do not delegate another product patch first:

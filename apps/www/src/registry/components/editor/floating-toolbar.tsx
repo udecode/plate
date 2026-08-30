@@ -22,12 +22,12 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-  useEditorReadOnly,
   definePlatePlugin,
   useEditor,
+  useEditorFocused,
   useEditorId,
+  useEditorReadOnly,
   useEditorSelector,
-  useEventEditorValue,
   usePluginStore,
   useComposedRef,
 } from 'platejs/react';
@@ -136,7 +136,7 @@ function TextFloatingToolbar({
   ...props
 }: FloatingToolbarProps) {
   const editorId = useEditorId();
-  const focusedEditorId = useEventEditorValue('focus');
+  const editorFocused = useEditorFocused();
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
   const editor = useEditor({ id: editorId });
@@ -155,7 +155,7 @@ function TextFloatingToolbar({
   const waitForCollapsedSelection = useEditorSelector(
     (innerEditor4, previous = false) => {
       if (!innerEditor4.read.selection.isExpanded()) return false;
-      if (editorId !== focusedEditorId) return true;
+      if (!editorFocused) return true;
 
       return previous;
     },
@@ -171,7 +171,7 @@ function TextFloatingToolbar({
   const open =
     selectionExpanded &&
     !!selectionText &&
-    (editorId === focusedEditorId || ownedOverlayOpen) &&
+    (editorFocused || ownedOverlayOpen) &&
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
     !options?.hideToolbar &&

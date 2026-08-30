@@ -30,6 +30,7 @@
     "block-discussion": [
       "2026-08-28-canonical-editor-api-names",
       "2026-08-28-inline-required-value-checks",
+      "2026-08-26-fix-comment-popover-position",
       "2026-08-19-stabilize-suggestion-popover-anchor",
       "2026-08-18-align-v55-ast-contracts",
       "2026-08-18-inline-registry-hooks",
@@ -71,6 +72,7 @@
     ],
     "comment": [
       "2026-08-28-canonical-editor-api-names",
+      "2026-08-26-fix-comment-popover-position",
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
@@ -157,6 +159,7 @@
     ],
     "floating-toolbar": [
       "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-comment-popover-position",
       "2026-08-24-preserve-toolbar-focus",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry",

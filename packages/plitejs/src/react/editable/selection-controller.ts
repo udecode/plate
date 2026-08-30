@@ -1355,6 +1355,12 @@ export const syncEditableDOMSelectionToEditor = ({
   const runtime = getMountedEditableDOMRuntime(editor);
 
   if (!runtime) return;
+  if (
+    runtime.inputController.state.isNativeSelectionDragActive &&
+    !runtime.inputController.state.isProjectingSelection
+  ) {
+    return;
+  }
   const { domPhaseScheduler } = runtime;
   const selection = readRuntimeSelection(editor);
   const projectedSelection = getSelectionDOMRange(editor, selection);
@@ -1496,7 +1502,6 @@ export const syncEditableDOMSelectionToEditor = ({
       const restoreScroll = preserveScroll
         ? captureScrollOffsets(editorElement)
         : null;
-
       const isBackward = RangeApi.isBackward(projectedSelection);
 
       if (options?.forceModelExport) {

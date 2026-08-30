@@ -433,7 +433,7 @@ const blockVoidNavigation = (route: 'embeds' | 'images'): StressCase => {
       {
         kind: 'assertSelectionLocation',
         label: 'assert-block-void-dom-location',
-        location: { anchorOffset: 0, anchorPath: [1, 0], isCollapsed: true },
+        location: { anchorOffset: 1, anchorPath: [1, 0], isCollapsed: true },
       },
       { focusOwner: 'editor', kind: 'assertFocusOwner', label: 'assert-focus' },
       {

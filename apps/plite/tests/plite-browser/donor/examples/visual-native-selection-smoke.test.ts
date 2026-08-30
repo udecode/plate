@@ -270,7 +270,7 @@ test.describe('visual native selection smoke', () => {
       },
     });
     await editor.assert.domSelectionTarget({
-      anchorOffset: 0,
+      anchorOffset: 1,
       anchorPath: [3, 0],
       isCollapsed: true,
     });

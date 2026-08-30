@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-26-fix-comment-popover-position",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-26-fix-comment-popover-position.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep comment popovers anchored and restore the floating toolbar after comment actions",
+  "targets": [
+    {
+      "name": "block-discussion",
+      "files": [
+        "apps/www/src/registry/components/editor/block-discussion.tsx",
+        "apps/www/src/registry/lib/block-discussion-index.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-26-block-discussion-keep-comment-popovers-anchored-2d55b951",
+      "kind": "fix",
+      "summary": "Keep comment popovers anchored to their text, clear abandoned draft marks without moving the live selection or caret, and keep the floating toolbar available after resolving a comment.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-discussion", "comment", "floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-26",
+          "entry": "2026-08-26-fix-comment-popover-position",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

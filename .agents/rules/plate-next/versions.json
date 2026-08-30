@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 121,
+  "latestVersion": 122,
   "versions": [
     {
       "version": 0,
@@ -1429,6 +1429,17 @@
         "Keep the feature template, checker, tests, and generated skill teaching the same review priority.",
         "Reject unresolved or N/A P1 evidence for package and registry feature delivery."
       ]
+    },
+    {
+      "version": 122,
+      "date": "2026-08-30",
+      "doctrineFingerprint": "sha256:7c91cbd8159357b2370d8f96faf87c195fc9c72da99da02acb7c6cee204d3f79",
+      "summary": "Generated skill resources include the complete GitHub issue reporting workflow.",
+      "migrationChecks": [
+        "Mirror GitHub issue reporter assets, API boundaries, and publication scripts from rule source into the installed skill.",
+        "Keep the Plate Next resource manifest authoritative for every required generated skill resource.",
+        "Regenerate skills and prove exact source-to-mirror resource parity."
+      ]
     }
   ],
   "retiredPackages": {
@@ -1655,7 +1666,7 @@
   },
   "packages": {
     "platejs": {
-      "appliedVersion": 121,
+      "appliedVersion": 122,
       "fingerprint": "sha256:12d87105e0a46201a6c63187c42370edb7a1b1c7e088b8d831beba53afe7d1e2",
       "verifiedAt": "2026-08-30",
       "evidence": "docs/plans/2026-08-29-semantic-details-hard-cut.md"

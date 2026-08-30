@@ -18,7 +18,11 @@ import {
   type Text,
   TextApi,
 } from 'platejs';
-import { BaseCommentPlugin, getDraftCommentKey } from 'platejs/comment';
+import {
+  BaseCommentPlugin,
+  getCommentCount,
+  getDraftCommentKey,
+} from 'platejs/comment';
 import {
   useEditorPlugin,
   useEditorRuntimeState,
@@ -472,8 +476,12 @@ const BlockCommentDetails = ({
 }) => {
   const editor = useEditor();
   const blockPath = editor.read.nodes.path(nodeKey);
-  const { api: commentsApi, read: commentsRead } =
-    useEditorPlugin(commentPlugin);
+  const {
+    api: commentsApi,
+    read: commentsRead,
+    schema: commentsSchema,
+    store: commentsStore,
+  } = useEditorPlugin(commentPlugin);
   const { api: suggestionApi, read: suggestionRead } =
     useEditorPlugin(suggestionPlugin);
 
@@ -516,55 +524,73 @@ const BlockCommentDetails = ({
     resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
 
   const [_open, setOpen] = React.useState(selected);
+  const [closingDraft, setClosingDraft] = React.useState(false);
 
   // in some cases, we may comment the multiple blocks
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
   const open =
-    _open ||
-    selected ||
-    (isCommenting && !!draftCommentNode && commentingCurrent);
+    !closingDraft &&
+    (_open ||
+      selected ||
+      (isCommenting && !!draftCommentNode && commentingCurrent));
 
-  const anchorElement = (() => {
-    let activeNode: NodeEntry<Element | Text> | undefined;
+  const activeNode = (() => {
+    let resolvedNode: NodeEntry<Element | Text> | undefined;
 
     if (activeSuggestion) {
-      activeNode = suggestionNodes.find(
+      resolvedNode = suggestionNodes.find(
         ([node]) => suggestionApi.id(node) === activeSuggestion.suggestionId
       );
     }
 
     if (activeCommentId) {
       if (activeCommentId === getDraftCommentKey()) {
-        activeNode = draftCommentNode;
+        resolvedNode = draftCommentNode;
       } else {
-        activeNode = commentNodes.find(
+        resolvedNode = commentNodes.find(
           ([node]) => commentsApi.id(node) === activeCommentId
         );
       }
     }
 
-    if (!activeNode) return null;
-
-    return editor.api.dom.resolveDOMNode(activeNode[0]);
+    return resolvedNode;
   })();
+  const activeNodePathKey = activeNode?.[1].join(',') ?? null;
+  const blockPathKey = blockPath.join(',');
+  const activeVirtualAnchor = activeNodePathKey
+    ? {
+        getBoundingClientRect: () => {
+          const activePath = activeNodePathKey.split(',').map(Number);
+          const fallbackPath = blockPathKey.split(',').map(Number);
+          const activeNodeElement = editor.read.nodes.get(activePath)?.[0];
+          const blockElement = editor.read.nodes.get(fallbackPath)?.[0];
+          const anchorElement = activeNodeElement
+            ? editor.api.dom.resolveDOMNode(activeNodeElement)
+            : null;
+          const fallbackElement = blockElement
+            ? editor.api.dom.resolveDOMNode(blockElement)
+            : editor.api.dom.root();
+          const measuredElement =
+            anchorElement ?? fallbackElement ?? editor.api.dom.root();
+
+          return measuredElement?.getBoundingClientRect() ?? new DOMRect();
+        },
+      }
+    : null;
   const [triggerElement, setTriggerElement] =
     React.useState<HTMLButtonElement | null>(null);
-  const popoverAnchorElement = anchorElement ?? triggerElement;
+  const popoverAnchorElement = activeVirtualAnchor ?? triggerElement;
 
   return (
     <div className="flex w-full justify-between">
       <FloatingPopover
-        open={open}
+        open={open && !!popoverAnchorElement}
         onOpenChange={(_open_) => {
-          if (!_open_ && isCommenting && draftCommentNode) {
-            editor.update.nodes.unset(getDraftCommentKey(), {
-              at: [],
-              mode: 'lowest',
-              match: (n) =>
-                Boolean((n as Record<string, unknown>)[getDraftCommentKey()]),
-            });
+          if (!_open_ && isCommenting) {
+            setClosingDraft(true);
+            return;
           }
           setOpen(_open_);
         }}
@@ -578,6 +604,36 @@ const BlockCommentDetails = ({
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onFinalFocus={(e) => {
             e.preventDefault();
+
+            if (!closingDraft) return;
+
+            if (draftCommentNode) {
+              editor.update((tx) => {
+                tx.nodes.unset(commentsSchema.key, {
+                  at: [],
+                  mode: 'lowest',
+                  match: (n) =>
+                    TextApi.isText(n) &&
+                    Boolean(n[getDraftCommentKey()]) &&
+                    getCommentCount(n) === 0,
+                });
+                tx.nodes.unset(getDraftCommentKey(), {
+                  at: [],
+                  mode: 'lowest',
+                  match: (n) =>
+                    Boolean(
+                      (n as Record<string, unknown>)[getDraftCommentKey()]
+                    ),
+                });
+              });
+            }
+
+            commentsStore.set({
+              activeId: null,
+              commentingBlock: null,
+            });
+            setOpen(false);
+            setClosingDraft(false);
           }}
           onInitialFocus={(e) => {
             e.preventDefault();

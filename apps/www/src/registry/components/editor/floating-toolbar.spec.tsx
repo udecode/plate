@@ -7,7 +7,7 @@ let clickOutside: () => void;
 const floatingUpdate = mock();
 const setFloating = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
-let focusedEditorId: null | string = 'editor-1';
+let editorFocused = true;
 let selectedNodeCount = 0;
 let selectionExpanded = true;
 let selectionRange: unknown;
@@ -41,10 +41,19 @@ mock.module('platejs/react', () => ({
   StrikethroughPlugin: { name: 'strikethrough' },
   UnderlinePlugin: { name: 'underline' },
   useEditor: () => editor,
+  useEditorFocused: () => editorFocused,
   useEditorId: () => 'editor-1',
   useEditorReadOnly: () => false,
-  useEditorSelector: (selector: (editor: any) => unknown) => selector(editor),
-  useEventEditorValue: () => focusedEditorId,
+  useEditorSelector: (
+    selector: (editor: any, previous?: unknown) => unknown
+  ) => {
+    const previousRef = React.useRef<unknown>(undefined);
+    const value = selector(editor, previousRef.current);
+
+    previousRef.current = value;
+
+    return value;
+  },
   usePluginStore: () => false,
   useComposedRef: () => mock(),
 }));
@@ -126,7 +135,7 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 
 describe('FloatingToolbar', () => {
   beforeEach(() => {
-    focusedEditorId = 'editor-1';
+    editorFocused = true;
     selectedNodeCount = 0;
     selectionExpanded = true;
     selectionRange = {
@@ -178,6 +187,39 @@ describe('FloatingToolbar', () => {
     expect(view.getByText('toolbar')).toBeTruthy();
   });
 
+  it('opens after local editor focus returns from a collapsed popover selection', async () => {
+    const { FloatingToolbar } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FloatingToolbar>toolbar</FloatingToolbar>);
+
+    expect(view.getByText('toolbar')).toBeTruthy();
+
+    editorFocused = false;
+    selectionExpanded = false;
+    selectionRange = {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+
+    expect(view.queryByText('toolbar')).toBeNull();
+
+    editorFocused = true;
+    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+
+    expect(view.queryByText('toolbar')).toBeNull();
+
+    selectionExpanded = true;
+    selectionRange = {
+      anchor: { offset: 5, path: [0, 0] },
+      focus: { offset: 9, path: [0, 0] },
+    };
+    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+
+    expect(view.getByText('toolbar')).toBeTruthy();
+  });
+
   it('keeps an owned toolbar interaction open across editor blur', async () => {
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
@@ -190,7 +232,7 @@ describe('FloatingToolbar', () => {
 
     act(() => toolbarOverlayOpenChange(true));
 
-    focusedEditorId = null;
+    editorFocused = false;
     view.rerender(
       <FloatingToolbar>
         <button type="button">toolbar action</button>
