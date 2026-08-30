@@ -4,7 +4,7 @@ import {
   type NodeMatch,
   type NodeOf,
   type Path,
-} from 'plitejs';
+} from '../../facade';
 
 export type ApplyDeepToNodesOptions<N extends Descendant> = {
   // Function to call on each node following the query.

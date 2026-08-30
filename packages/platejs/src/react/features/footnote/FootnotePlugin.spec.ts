@@ -1,5 +1,4 @@
-import { DOMEditor } from 'plitejs/dom';
-
+import { DOMEditor } from '../../../dom';
 import { createEditor, NavigationFeedbackPlugin } from '../../core';
 import {
   FootnoteDefinitionPlugin,

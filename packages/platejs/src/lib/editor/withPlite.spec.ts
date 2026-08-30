@@ -1,5 +1,4 @@
-import { defineEditorSchema, defineExtensionSlot, schema } from 'plitejs';
-
+import { defineEditorSchema, defineExtensionSlot, schema } from '../../core';
 import { createEditor } from './withPlite';
 
 describe('createEditor', () => {

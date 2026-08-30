@@ -7,8 +7,7 @@ import type {
   EditorExtensionDependencyContractReference,
   EditorExtensionInstalledCapabilitiesOf,
   EditorExtensionTypeProviderOf,
-} from 'plitejs';
-
+} from '../../facade';
 import type {
   AnyBasePluginDefinition,
   BasePluginDefinition,

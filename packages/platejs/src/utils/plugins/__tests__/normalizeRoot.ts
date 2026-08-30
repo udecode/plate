@@ -1,6 +1,7 @@
 import { type AnyBasePlugin, defineBasePlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { type Selection, type Value, schema } from 'plitejs';
+
+import { type Selection, type Value, schema } from '../../../core';
 
 export const fixtureSchemaPlugins = [
   defineBasePlugin('h1', {

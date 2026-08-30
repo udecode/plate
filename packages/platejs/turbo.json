@@ -90,6 +90,7 @@
         "lint:partition:table-react",
         "lint:partition:tag",
         "lint:partition:tag-react",
+        "lint:partition:testing",
         "lint:partition:toc",
         "lint:partition:toc-react",
         "lint:partition:yjs",
@@ -275,6 +276,7 @@
         "!src/index.*",
         "!src/root.*",
         "!src/static/**",
+        "!src/testing/**",
         "!src/features/basic-nodes/**",
         "!src/features/basic-styles/**",
         "!src/features/code-block/**",
@@ -350,6 +352,7 @@
         "!test/index*",
         "!test/root*",
         "!test/static/**",
+        "!test/testing/**",
         "!test/features/basic-nodes/**",
         "!test/features/basic-styles/**",
         "!test/features/code-block/**",
@@ -1294,6 +1297,21 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:testing": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/testing/**",
+        "test/testing/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:toc": {
       "cache": true,
       "dependsOn": [],
@@ -1554,13 +1572,12 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
-        "plitejs#typecheck:partition:history",
-        "plitejs#typecheck:partition:testing",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
-        "typecheck:partition:root"
+        "typecheck:partition:root",
+        "typecheck:partition:testing"
       ],
       "inputs": [
         "src/**",
@@ -1592,6 +1609,7 @@
         "!src/index.*",
         "!src/root.*",
         "!src/static/**",
+        "!src/testing/**",
         "!src/features/basic-nodes/**",
         "!src/features/basic-styles/**",
         "!src/features/code-block/**",
@@ -1667,6 +1685,7 @@
         "!test/index*",
         "!test/root*",
         "!test/static/**",
+        "!test/testing/**",
         "!test/features/basic-nodes/**",
         "!test/features/basic-styles/**",
         "!test/features/code-block/**",
@@ -1984,9 +2003,9 @@
     "test:partition:footnote-react": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:footnote",
         "typecheck:partition:footnote-react",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core"
       ],
       "inputs": [
@@ -2047,10 +2066,10 @@
     "test:partition:markdown": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:media",
+        "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-list"
@@ -2093,9 +2112,9 @@
     "test:partition:media": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
-        "typecheck:partition:media"
+        "typecheck:partition:media",
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/features/media/**",
@@ -2183,7 +2202,6 @@
     "test:partition:migrations": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
         "typecheck:partition:core",
         "typecheck:partition:media",
         "typecheck:partition:migrations",
@@ -2211,14 +2229,13 @@
     "test:partition:react-core": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
         "plitejs#typecheck:partition:react",
-        "plitejs#typecheck:partition:testing",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
-        "typecheck:partition:static"
+        "typecheck:partition:static",
+        "typecheck:partition:testing"
       ],
       "inputs": [
         "src/react/**",
@@ -2370,8 +2387,8 @@
     "test:partition:standard-basic-styles": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-styles"
       ],
       "inputs": [
@@ -2392,8 +2409,8 @@
     "test:partition:standard-code-block": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:static"
       ],
@@ -2438,8 +2455,8 @@
     "test:partition:standard-indent": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-indent"
       ],
@@ -2528,12 +2545,11 @@
     "test:partition:static": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
         "plitejs#typecheck:partition:react",
-        "plitejs#typecheck:partition:testing",
         "typecheck:partition:core",
-        "typecheck:partition:static"
+        "typecheck:partition:proxies",
+        "typecheck:partition:static",
+        "typecheck:partition:testing"
       ],
       "inputs": [
         "src/static/**",
@@ -2553,8 +2569,8 @@
     "test:partition:suggestion": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:diff",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:suggestion"
       ],
       "inputs": [
@@ -2598,8 +2614,8 @@
     "test:partition:table": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table",
         "typecheck:partition:table-react",
@@ -2623,8 +2639,8 @@
     "test:partition:table-react": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table",
         "typecheck:partition:table-react"
@@ -2821,6 +2837,7 @@
         "typecheck:partition:table-react",
         "typecheck:partition:tag",
         "typecheck:partition:tag-react",
+        "typecheck:partition:testing",
         "typecheck:partition:toc",
         "typecheck:partition:toc-react",
         "typecheck:partition:yjs",
@@ -2838,10 +2855,6 @@
     "typecheck:contracts": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
-        "plitejs#typecheck:partition:history",
-        "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:react",
@@ -3131,8 +3144,7 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
-        "plitejs#typecheck:partition:history"
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/**",
@@ -3164,6 +3176,7 @@
         "!src/index.*",
         "!src/root.*",
         "!src/static/**",
+        "!src/testing/**",
         "!src/features/basic-nodes/**",
         "!src/features/basic-styles/**",
         "!src/features/code-block/**",
@@ -3842,10 +3855,7 @@
     },
     "typecheck:partition:media": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:dom",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
       "inputs": [
         "src/features/media/**",
         "!src/**/*.spec.*",
@@ -3956,10 +3966,7 @@
     },
     "typecheck:partition:migrations": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:core"],
       "inputs": [
         "src/migrations/**",
         "!src/**/*.spec.*",
@@ -4058,7 +4065,6 @@
     "typecheck:partition:react-core": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
         "typecheck:partition:static"
@@ -4336,10 +4342,7 @@
     },
     "typecheck:partition:standard-code-block": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:dom",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
       "inputs": [
         "src/features/code-block/**",
         "!src/**/*.spec.*",
@@ -4565,10 +4568,9 @@
     "typecheck:partition:static": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:core",
-        "plitejs#typecheck:partition:dom",
         "plitejs#typecheck:partition:react",
-        "typecheck:partition:core"
+        "typecheck:partition:core",
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/static/**",
@@ -4595,10 +4597,7 @@
     },
     "typecheck:partition:suggestion": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:diff",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
       "inputs": [
         "src/features/suggestion/**",
         "!src/**/*.spec.*",
@@ -4711,10 +4710,7 @@
     },
     "typecheck:partition:table": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:dom",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
       "inputs": [
         "src/features/table/**",
         "!src/**/*.spec.*",
@@ -4741,8 +4737,8 @@
     "typecheck:partition:table-react": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:dom",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table"
       ],
@@ -4823,6 +4819,32 @@
       "outputs": [
         ".turbo/entrypoint-types/tag-react/**",
         ".turbo/entrypoint-types/tag-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:testing": {
+      "cache": true,
+      "dependsOn": ["plitejs#typecheck:partition:testing"],
+      "inputs": [
+        "src/testing/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/testing.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/testing/**",
+        ".turbo/entrypoint-types/testing.tsbuildinfo"
       ]
     },
     "typecheck:partition:toc": {

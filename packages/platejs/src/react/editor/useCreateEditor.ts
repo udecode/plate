@@ -1,11 +1,11 @@
+import React from 'react';
+
 import type {
   EditorExtensionReference,
   EditorExtensionsFromOptions,
   EditorValueFromOptions,
   Value,
-} from 'plitejs';
-import React from 'react';
-
+} from '../../facade';
 import type { BasePluginInput, EditorApplicationSchema } from '../../lib';
 import type { Editor } from './Editor';
 import { type CreateEditorOptions, createEditor } from './withPlate';

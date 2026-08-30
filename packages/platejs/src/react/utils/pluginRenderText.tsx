@@ -1,4 +1,3 @@
-import { useEditorReadOnly } from 'plitejs/react';
 import React from 'react';
 
 import {
@@ -10,6 +9,7 @@ import type { AnyBasePlugin, RenderTextProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { type PlateNodeProps, PlateText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { useEditorReadOnly } from '../plite-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
 type PlateTextRenderProps = PlateNodeProps & RenderTextProps;

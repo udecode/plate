@@ -1,5 +1,3 @@
-import { writeHostFragmentData } from 'plitejs/dom';
-
 import {
   BaseParagraphPlugin,
   createEditor as createHeadlessEditor,
@@ -12,6 +10,7 @@ import {
   schema,
   target,
 } from '../../../core';
+import { writeHostFragmentData } from '../../../dom';
 import { createEditor } from '../../../react/core';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 

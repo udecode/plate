@@ -1,5 +1,4 @@
-import { NodeApi } from 'plitejs';
-
+import { NodeApi } from '../../core';
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 
 const createNestedElement = () => ({

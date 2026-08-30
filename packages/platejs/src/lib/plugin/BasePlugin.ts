@@ -31,8 +31,7 @@ import type {
   EditorSchemaSourceProvider,
   EditorExtensionTypeProviderOf,
   EditorExtensionWitnessFor,
-} from 'plitejs';
-
+} from '../../facade';
 import type { Editor, InternalBaseEditorWithPlatePlugins } from '../editor';
 import type {
   InternalPlateSchemaExtensionForPlugin,
@@ -457,7 +456,7 @@ type HtmlContribution<C extends AnyBasePluginDefinition> =
 type HtmlContributionElements<C extends AnyBasePluginDefinition> =
   HtmlContribution<C> extends Readonly<{
     elements: infer TElements extends Readonly<
-      Record<string, import('plitejs').SchemaElement>
+      Record<string, import('../../facade').SchemaElement>
     >;
   }>
     ? TElements

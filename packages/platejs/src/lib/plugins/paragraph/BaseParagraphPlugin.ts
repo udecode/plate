@@ -1,5 +1,4 @@
-import { schema } from 'plitejs';
-
+import { schema } from '../../../facade';
 import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 
 export const BaseParagraphPlugin = defineBasePlugin('paragraph', {

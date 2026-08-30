@@ -3,18 +3,18 @@
 import { render, waitFor } from '@testing-library/react';
 import { defineBasePlugin, ElementIdPlugin } from 'platejs';
 import { createEditor, ParagraphPlugin } from 'platejs/react';
+import React from 'react';
+
+import { PlateTest } from '../../../test/react/PlateTest';
+import type { TextSelection } from '../../core';
 import {
   createEditor as createPliteEditor,
   type Element,
   property,
   schema,
   target,
-  type TextSelection,
   type Value,
-} from 'plitejs';
-import React from 'react';
-
-import { PlateTest } from '../../../test/react/PlateTest';
+} from '../../facade';
 import type { InternalPlateEditorWithInstalledPlugins } from '../editor/Editor';
 import { createEditorWithEditor } from '../editor/withPlate';
 import {

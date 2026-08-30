@@ -9,6 +9,7 @@ Current scope:
 - React 19.2 perf architecture
 - read/update lifecycle architecture across Lexical, ProseMirror, and Tiptap
 - node/text/mark/render DX across ProseMirror, Lexical, and Tiptap
+- cursor, Find, collaboration projection, and Widget geometry ownership
 
 If future editor-architecture work moves into other surfaces, add separate
 cluster pages instead of bloating a single mixed summary.
@@ -42,6 +43,7 @@ Disposition:
 Current pages:
 
 - [decorations-annotations-overlay-corpus.md](docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md)
+- [cursor-find-and-widget-geometry.md](docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md)
 - [prosemirror-mapped-overlays-and-bookmarks.md](docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md)
 - [lexical-mark-store-and-decorator-split.md](docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md)
 - [react-19-2-external-store-and-background-ui.md](docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md)

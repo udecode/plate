@@ -1,8 +1,7 @@
 import { useAtomStoreValue } from 'jotai-x';
-import type { RootKey } from 'plitejs';
-import { Plite } from 'plitejs/react';
 import React from 'react';
 
+import type { RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,
@@ -10,6 +9,7 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { PlateRuntimeContext } from '../internal/PlateRuntimeContext';
+import { Plite } from '../internal/plite-components';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor, usePlateStore } from '../stores/plate';
 

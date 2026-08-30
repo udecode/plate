@@ -1,5 +1,4 @@
-import type { Value } from 'plitejs';
-
+import type { Value } from '../../facade';
 import type { GeneratedEditorMutations } from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,

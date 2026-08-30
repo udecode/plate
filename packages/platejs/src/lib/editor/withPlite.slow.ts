@@ -4,8 +4,7 @@ import {
   schema,
   target,
   type Value,
-} from 'plitejs';
-
+} from '../../facade';
 import {
   getCompiledPlateContainerTypes,
   getPlateRuntime,

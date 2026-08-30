@@ -8,8 +8,7 @@ import {
   PathApi,
   TextApi,
   type Value,
-} from 'plitejs';
-
+} from '../facade';
 import type { DocumentMigration } from '../lib/editor/documentMigrations';
 import {
   V53_ELEMENT_TYPE_OWNERS,

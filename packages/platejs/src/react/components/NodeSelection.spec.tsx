@@ -3,10 +3,10 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { schema } from 'plitejs';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { schema } from '../../core';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';

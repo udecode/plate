@@ -72,7 +72,7 @@ const privateRoot = (
 export const rootFeatureDependencies = Object.freeze({
   'basic-nodes': [],
   'basic-styles': [],
-  'code-block': [],
+  'code-block': ['dom'],
   indent: [],
   link: [],
   list: ['standard/indent'],
@@ -87,11 +87,11 @@ export const publicFeatureDependencies = Object.freeze({
   'find-replace': [],
   footnote: ['combobox'],
   layout: [],
-  media: [],
+  media: ['dom'],
   mention: ['combobox'],
   'slash-command': ['combobox'],
-  suggestion: [],
-  table: [],
+  suggestion: ['diff'],
+  table: ['dom'],
   tag: [],
   toc: [],
 });
@@ -117,15 +117,8 @@ export const publicReactOnlyEntrypoints = Object.freeze([
   'resizable',
 ]);
 
-const standardFeatureExternalDependencies = {
-  'code-block': ['plitejs/dom'],
-  media: ['plitejs/dom'],
-  suggestion: ['plitejs/diff'],
-  table: ['plitejs/dom'],
-};
-
-const standardReactExternalDependencies = {
-  table: ['plitejs/dom'],
+const standardReactDependencies = {
+  table: ['dom'],
 };
 
 const standardReactPeerDependencies = {
@@ -150,11 +143,7 @@ const rootFeatureEntrypoints = Object.fromEntries([
   ...Object.entries(rootFeatureDependencies).map(([name, dependencies]) => [
     `standard/${name}`,
     headless(
-      privateDirectory(
-        `features/${name}`,
-        ['core', ...dependencies],
-        standardFeatureExternalDependencies[name] ?? []
-      )
+      privateDirectory(`features/${name}`, ['core', ...dependencies], [])
     ),
   ]),
   ...rootReactFeatures.map((name) => [
@@ -162,8 +151,13 @@ const rootFeatureEntrypoints = Object.fromEntries([
     client(
       privateDirectory(
         `react/features/${name}`,
-        ['core', 'react-core', `standard/${name}`],
-        standardReactExternalDependencies[name] ?? [],
+        [
+          'core',
+          'react-core',
+          `standard/${name}`,
+          ...(standardReactDependencies[name] ?? []),
+        ],
+        [],
         {
           peerDependencies: standardReactPeerDependencies[name] ?? [],
         }
@@ -179,7 +173,7 @@ const publicFeatureEntrypoints = Object.fromEntries([
       directory(
         `features/${name}`,
         ['core', ...dependencies],
-        standardFeatureExternalDependencies[name] ?? [],
+        [],
         name === 'combobox' ? {} : { runtimeProof: 'plate-plugin' }
       )
     ),
@@ -189,8 +183,13 @@ const publicFeatureEntrypoints = Object.fromEntries([
     client(
       directory(
         `react/features/${name}`,
-        ['core', 'react-core', name],
-        standardReactExternalDependencies[name] ?? [],
+        [
+          'core',
+          'react-core',
+          name,
+          ...(standardReactDependencies[name] ?? []),
+        ],
+        [],
         {
           peerDependencies: standardReactPeerDependencies[name] ?? [],
           runtimeProof: 'plate-plugin-client',
@@ -203,8 +202,8 @@ const publicFeatureEntrypoints = Object.fromEntries([
     client(
       directory(
         `react/features/${name}`,
-        ['core', 'react-core'],
-        standardReactExternalDependencies[name] ?? [],
+        ['core', 'react-core', ...(standardReactDependencies[name] ?? [])],
+        [],
         {
           peerDependencies: standardReactPeerDependencies[name] ?? [],
         }
@@ -250,9 +249,7 @@ export const entrypointDags = {
           { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
         )
       ),
-      core: headless(
-        privateRoot([], ['plitejs', 'plitejs/dom', 'plitejs/history'])
-      ),
+      core: headless(privateRoot(['dom', 'history'], ['plitejs'])),
       'code-drawing': client(
         directory('code-drawing', ['core'], [], {
           peerDependencies: [
@@ -355,13 +352,7 @@ export const entrypointDags = {
       'math/react': client(
         directory('math/react', ['core', 'math', 'react-core'])
       ),
-      migrations: headless(
-        directory(
-          'migrations',
-          ['core'],
-          ['plitejs', 'plitejs/dom', 'plitejs/history']
-        )
-      ),
+      migrations: headless(directory('migrations', ['core', 'dom', 'history'])),
       'page-layout': headless(
         directory('page-layout', [], ['plitejs/page-layout'], {
           peerDependencies: ['@chenglou/pretext'],
@@ -373,14 +364,8 @@ export const entrypointDags = {
       'react-core': client(
         privateDirectory(
           'react',
-          ['core', 'static'],
-          [
-            'plitejs',
-            'plitejs/dom',
-            'plitejs/history',
-            'plitejs/react',
-            'plitejs/testing',
-          ],
+          ['core', 'dom', 'history', 'static'],
+          ['plitejs/react'],
           { peerDependencies: ['react', 'react-dom'] }
         )
       ),
@@ -406,16 +391,12 @@ export const entrypointDags = {
         )
       ),
       static: ssr(
-        directory(
-          'static',
-          ['core'],
-          ['plitejs', 'plitejs/dom', 'plitejs/react', 'plitejs/testing'],
-          {
-            peerDependencies: ['react', 'react-dom'],
-            runtimeProof: 'plate-static-html',
-          }
-        )
+        directory('static', ['core', 'dom'], ['plitejs/react'], {
+          peerDependencies: ['react', 'react-dom'],
+          runtimeProof: 'plate-static-html',
+        })
       ),
+      testing: headless(directory('testing', [], ['plitejs/testing'])),
       ...rootFeatureEntrypoints,
       ...publicFeatureEntrypoints,
       tabbable: headless(
@@ -483,6 +464,7 @@ export const entrypointDags = {
         'math/react',
         'tabbable',
         'tabbable/react',
+        'testing',
         'yjs',
         'yjs/react',
       ]),

@@ -1,5 +1,4 @@
-import { defineExtension, getInstalledEditorExtension } from 'plitejs';
-
+import { defineExtension, getInstalledEditorExtension } from '../../core';
 import { createEditor } from '../editor';
 import { defineBasePlugin } from '../plugin';
 

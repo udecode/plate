@@ -1,9 +1,8 @@
 /** @jsx jsxt */
-import type { Value } from 'plitejs';
-import { jsxt } from 'plitejs/testing';
-
+import type { Value } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { defineBasePlugin, DOMPlugin } from '../../lib';
+import { jsxt } from '../../testing';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 

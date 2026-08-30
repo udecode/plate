@@ -1,3 +1,5 @@
+import type React from 'react';
+
 import type {
   DecoratedRange,
   DefinitionOf as PliteDefinitionOf,
@@ -16,10 +18,7 @@ import type {
   EditorSchemaSourceProvider,
   EditorExtensionTypeProviderOf,
   EditorExtensionWitnessFor,
-} from 'plitejs';
-import type { EditableProps as PliteEditableProps } from 'plitejs/react';
-import type React from 'react';
-
+} from '../../facade';
 import type {
   AnyBasePlugin,
   AnyBasePluginContext,
@@ -87,6 +86,7 @@ import type {
   InternalPlateEditorWithInstalledPlugins,
   Editor,
 } from '../editor/Editor';
+import type { EditableProps as PliteEditableProps } from '../internal/plite-components';
 import type { DOMHandlers } from './DOMHandlers';
 
 export type EditableSiblingComponent = (

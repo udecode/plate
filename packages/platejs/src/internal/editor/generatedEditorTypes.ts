@@ -5,7 +5,7 @@ import type {
   SchemaPropertyHandle,
   Text,
   Value,
-} from 'plitejs';
+} from '../../facade';
 
 declare const generatedEditorTypes: unique symbol;
 

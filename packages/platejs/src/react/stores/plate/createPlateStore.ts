@@ -1,4 +1,6 @@
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
+import React from 'react';
+
 import {
   type EditorCommit,
   type EditorStateView,
@@ -6,15 +8,13 @@ import {
   type Range,
   RangeApi,
   type ValueOf,
-} from 'plitejs';
+} from '../../../facade';
+import { createEditor, type Editor } from '../../editor';
+import { createAtomStore } from '../../libs';
 import {
   type EditorRuntimeStateSelectorOptions,
   useEditorRuntimeState,
-} from 'plitejs/react';
-import React from 'react';
-
-import { createEditor, type Editor } from '../../editor';
-import { createAtomStore } from '../../libs';
+} from '../../plite-react';
 import {
   usePlateControllerExists,
   usePlateControllerStore,

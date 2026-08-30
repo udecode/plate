@@ -1,5 +1,3 @@
-import { clipboardHandler } from 'plitejs/dom';
-
 import {
   isUrl,
   defineBasePlugin,
@@ -12,6 +10,7 @@ import {
   property,
   schema,
 } from '../../../../core';
+import { clipboardHandler } from '../../../../dom/plite-dom.internal';
 import {
   defineMediaPlugin,
   mediaElementProperties,

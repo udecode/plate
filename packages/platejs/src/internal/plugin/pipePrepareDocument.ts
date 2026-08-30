@@ -12,8 +12,7 @@ import {
   mapSelectionThroughChange,
   readEditorSelection,
   runTrustedUpdate,
-} from 'plitejs';
-
+} from '../../facade';
 import type {
   Editor,
   InternalBaseEditorWithInstalledPlugins,

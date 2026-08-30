@@ -13,7 +13,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `122`.
+Current doctrine version: `124`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -239,7 +239,9 @@ When no target is provided, inspect in this order:
 2. `packages/platejs/src/react/editor/createPlateRuntimeEditor.ts`.
 3. Plate foundation plugin API types and plugin resolver/installers.
 4. Old Slate compatibility surfaces in Plate foundation/package exports.
-5. `platejs` entrypoints still importing or wrapping legacy substrate behavior.
+5. First-party Plate plugins, features, components, specs, type tests, or
+   fixtures importing `plitejs` instead of the relative facade or matching
+   Plate entrypoint owner, including imports hidden by test-glob exemptions.
 6. Docs/examples teaching old APIs.
 7. Tests with fake compatibility assertions instead of current behavior.
 

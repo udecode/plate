@@ -2,8 +2,7 @@ import {
   defineExtension,
   property,
   getInstalledEditorExtension,
-} from 'plitejs';
-
+} from '../../core';
 import { createEditor } from '../editor';
 import { defineBasePlugin } from './defineBasePlugin';
 

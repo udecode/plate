@@ -10,7 +10,8 @@ import {
   toPlatePlugin,
   useElementSelector,
 } from 'platejs/react';
-import { property, schema } from 'plitejs';
+
+import { property, schema } from '../src/core';
 
 const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
   schema: {

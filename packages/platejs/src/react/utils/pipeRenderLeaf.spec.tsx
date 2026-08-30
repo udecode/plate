@@ -1,9 +1,9 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { render } from '@testing-library/react';
-import { property } from 'plitejs';
 import React from 'react';
 
+import { property } from '../../core';
 import { defineBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';

@@ -27,6 +27,9 @@ export type {
   EditableDOMCoverageBoundaryProps,
   EditableDOMCoverageBoundaryScope,
   EditableElementSlots,
+  RenderElementProps,
+  RenderLeafProps,
+  RenderTextProps,
   RenderVoidProps,
   PliteDecoration,
   PliteDecorationSource,
@@ -107,6 +110,7 @@ export type {
 
 export {
   defaultScrollSelectionIntoView,
+  EditableElement,
   useDecorationSelector,
   useDOMStrategyVirtualOffset,
   useEditorComposing,

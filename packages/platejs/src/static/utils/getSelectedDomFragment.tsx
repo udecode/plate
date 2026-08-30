@@ -5,8 +5,7 @@ import {
   ElementApi,
   NodeApi,
   MAIN_ROOT_KEY,
-} from 'plitejs';
-
+} from '../../facade';
 import { type Editor, HtmlPlugin } from '../../lib';
 
 export const getSelectedDomFragment = (editor: Editor): Descendant[] => {

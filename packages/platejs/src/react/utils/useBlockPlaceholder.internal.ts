@@ -1,8 +1,8 @@
 'use client';
 
-import { type Path, PathApi } from 'plitejs';
 import { useEffect } from 'react';
 
+import { type Path, PathApi } from '../../facade';
 import type {
   GetInjectNodePropsReturnType,
   WithAnyName,

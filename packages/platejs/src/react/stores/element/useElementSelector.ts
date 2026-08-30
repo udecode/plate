@@ -1,6 +1,6 @@
-import type { Element, NodeEntry } from 'plitejs';
 import React from 'react';
 
+import type { Element, NodeEntry } from '../../../facade';
 import type {
   PlateElementDescriptor,
   PlateElementForDescriptor,

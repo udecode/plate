@@ -93,7 +93,10 @@ Treat `platejs` as the shared Plate host, not another feature dependency.
 
 - Only `packages/platejs` declares `plitejs`. Its local
   `dependencies.plitejs` stays `workspace:*` so a prerelease publishes one
-  exact runtime version. No app or other workspace package imports `plitejs`.
+  exact runtime version. Within that package, only exact facade, proxy, or
+  replacement leaves import `plitejs`; feature and plugin source, specs, type
+  tests, and fixtures use relative Plate owners. No app or other workspace
+  package imports `plitejs`.
 - `packages/platejs` does not depend on another Plate workspace package.
   Absorbed foundation code lives inside the host instead of retaining a
   workspace dependency.

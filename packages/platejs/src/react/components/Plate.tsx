@@ -1,4 +1,6 @@
 import isEqual from 'lodash/isEqual.js';
+import React from 'react';
+
 import type {
   EditorCommitContext,
   EditorDocumentValue,
@@ -7,22 +9,20 @@ import type {
   NodeEntry,
   Range,
   Selection,
-} from 'plitejs';
-import {
-  EditorReadOnlyProvider,
-  type PliteAnnotationStore,
-  type PliteDecorationSource,
-  Plite,
-} from 'plitejs/react';
-import React from 'react';
-
+} from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { Editor } from '../editor/Editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { PlateRuntimeContext } from '../internal/PlateRuntimeContext';
+import { Plite } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
+import {
+  EditorReadOnlyProvider,
+  type PliteAnnotationStore,
+  type PliteDecorationSource,
+} from '../plite-react';
 import { PlateStoreProvider } from '../stores';
 
 export type PlateSelectionChangeContext<E = Editor> = PlateCommitContext<E> & {

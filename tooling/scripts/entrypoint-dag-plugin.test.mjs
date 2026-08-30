@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+
+import { parse } from '@babel/parser';
 
 import oxlintConfig from '../../oxlint.config.ts';
 import {
@@ -20,6 +22,60 @@ import {
 
 const repositoryRoot = '/virtual/plate';
 
+const getModuleSpecifiers = (source) => {
+  const specifiers = [];
+  const ast = parse(source, {
+    plugins: ['importAttributes', 'jsx', 'typescript'],
+    sourceType: 'unambiguous',
+  });
+
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+
+    if (
+      (node.type === 'ImportDeclaration' ||
+        node.type === 'ExportAllDeclaration' ||
+        node.type === 'ExportNamedDeclaration') &&
+      node.source?.type === 'StringLiteral'
+    ) {
+      specifiers.push(node.source.value);
+    }
+    if (
+      node.type === 'ImportExpression' &&
+      node.source.type === 'StringLiteral'
+    ) {
+      specifiers.push(node.source.value);
+    }
+    if (
+      node.type === 'CallExpression' &&
+      (node.callee.type === 'Import' ||
+        (node.callee.type === 'Identifier' &&
+          node.callee.name === 'require')) &&
+      node.arguments[0]?.type === 'StringLiteral'
+    ) {
+      specifiers.push(node.arguments[0].value);
+    }
+    if (
+      node.type === 'TSImportType' &&
+      node.argument.type === 'StringLiteral'
+    ) {
+      specifiers.push(node.argument.value);
+    }
+
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        value.forEach(visit);
+      } else {
+        visit(value);
+      }
+    }
+  };
+
+  visit(ast);
+
+  return specifiers;
+};
+
 test('enables the DAG and CommonJS ban on both package source trees', () => {
   const boundaryOverride = oxlintConfig.overrides.find(
     (override) =>
@@ -37,10 +93,10 @@ test('enables the DAG and CommonJS ban on both package source trees', () => {
   });
 });
 
-test('allows only the Plate facade and raw Plite proofs to import plitejs', () => {
+test('allows only exact Plate facade bridges and raw Plite proofs to import plitejs', () => {
   const restriction = oxlintConfig.overrides.find(
     (override) =>
-      override.excludeFiles?.includes('packages/platejs/**') &&
+      override.excludeFiles?.includes('packages/platejs/src/facade.ts') &&
       override.rules?.['no-restricted-imports']
   );
   const [, options] = restriction.rules['no-restricted-imports'];
@@ -50,11 +106,73 @@ test('allows only the Plate facade and raw Plite proofs to import plitejs', () =
 
   assert.ok(plitePattern);
   assert.deepEqual(restriction.excludeFiles, [
-    'packages/platejs/**',
+    'packages/platejs/src/core.tsx',
+    'packages/platejs/src/diff/index.ts',
+    'packages/platejs/src/diff/plite-diff.internal.ts',
+    'packages/platejs/src/dom/index.ts',
+    'packages/platejs/src/dom/plite-dom.internal.ts',
+    'packages/platejs/src/facade.ts',
+    'packages/platejs/src/history/index.ts',
+    'packages/platejs/src/history/plite-history.internal.ts',
+    'packages/platejs/src/hyperscript/index.ts',
+    'packages/platejs/src/page-layout/index.ts',
+    'packages/platejs/src/page-layout/react/index.ts',
+    'packages/platejs/src/react/internal/plite-components.ts',
+    'packages/platejs/src/react/internal/plite-types.ts',
+    'packages/platejs/src/react/plite-react.ts',
+    'packages/platejs/src/static/internal/plite-react.ts',
+    'packages/platejs/src/testing/index.ts',
     'packages/plitejs/test/**',
     'config/plite-test-jsx.js',
     'apps/www/src/app/(app)/examples/plite/**',
   ]);
+});
+
+test('keeps the Plate raw Plite allowlist equal to every source and test import', () => {
+  const restriction = oxlintConfig.overrides.find(
+    (override) =>
+      override.excludeFiles?.includes('packages/platejs/src/facade.ts') &&
+      override.rules?.['no-restricted-imports']
+  );
+  const expectedBridgeFiles = restriction.excludeFiles
+    .filter(
+      (file) => file.startsWith('packages/platejs/src/') && !file.includes('*')
+    )
+    .toSorted();
+  const actualBridgeFiles = [
+    'packages/platejs/src',
+    'packages/platejs/test',
+    'packages/platejs/type-tests',
+  ]
+    .flatMap((auditRoot) =>
+      readdirSync(auditRoot, { recursive: true })
+        .filter(
+          (file) => typeof file === 'string' && /\.[cm]?[jt]sx?$/u.test(file)
+        )
+        .map((file) => path.join(auditRoot, file))
+    )
+    .filter((file) =>
+      getModuleSpecifiers(readFileSync(file, 'utf-8')).some((specifier) =>
+        /^plitejs(?:\/|$)/u.test(specifier)
+      )
+    )
+    .toSorted();
+
+  assert.deepEqual(actualBridgeFiles, expectedBridgeFiles);
+});
+
+test('requires authorable Plate features to use the matching Plate proxy', () => {
+  const filename = representativeFile('platejs', 'media', 'source');
+  const domTarget = representativeFile('platejs', 'dom', 'target');
+
+  assert.equal(lintSource({ filename, specifier: 'plitejs/dom' }).length, 1);
+  assert.equal(
+    lintSource({
+      filename,
+      specifier: importSpecifier(filename, domTarget),
+    }).length,
+    0
+  );
 });
 
 const representativeFile = (packageName, entrypointName, role) => {

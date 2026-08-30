@@ -1,5 +1,4 @@
 import isEqual from 'lodash/isEqual.js';
-import { computeDiff, type ComputeDiffOptions } from 'plitejs/diff';
 
 import {
   ContentSlice,
@@ -36,6 +35,10 @@ import {
   type TextUnit,
   type TextWith,
 } from '../../../core';
+import {
+  computeDiff,
+  type ComputeDiffOptions,
+} from '../../../diff/plite-diff.internal';
 
 /** Tag applied when an update must bypass suggestion tracking. */
 export const SUGGESTION_SKIP_TAG = 'skip-suggestion' as const;

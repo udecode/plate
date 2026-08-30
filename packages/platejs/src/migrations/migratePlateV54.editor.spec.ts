@@ -3,14 +3,14 @@ import {
   defineBasePlugin,
   defineDocumentMigrations,
 } from 'platejs';
+
 import {
   type Value,
   createEditor as createPliteEditor,
   property,
   schema,
   target,
-} from 'plitejs';
-
+} from '../facade';
 import { createEditorWithEditor } from '../lib/editor/withPlite';
 import { migratePlateV54 } from './index';
 

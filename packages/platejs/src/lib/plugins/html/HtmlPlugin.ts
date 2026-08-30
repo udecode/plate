@@ -1,4 +1,11 @@
 import isEqual from 'lodash/isEqual.js';
+
+import type {
+  HostCodec,
+  HostCodecParseContext,
+  HostCodecSerializeContext,
+} from '../../../dom/plite-dom.internal';
+import { parseDOMClipboardHtml } from '../../../dom/plite-dom.internal';
 import {
   ContentSlice,
   ElementApi,
@@ -17,14 +24,7 @@ import {
   type SchemaTarget,
   type Text,
   type Value,
-} from 'plitejs';
-import type {
-  HostCodec,
-  HostCodecParseContext,
-  HostCodecSerializeContext,
-} from 'plitejs/dom';
-import { parseDOMClipboardHtml } from 'plitejs/dom';
-
+} from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   getCompiledPlateModel,

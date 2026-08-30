@@ -1,5 +1,6 @@
 import { defineBasePlugin } from 'platejs';
-import { clipboardHandler } from 'plitejs/dom';
+
+import { clipboardHandler } from '../src/dom';
 
 const ImagePlugin = defineBasePlugin('img', {
   update: () => ({

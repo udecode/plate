@@ -1,6 +1,6 @@
 import defaults from 'lodash/defaults.js';
-import type { Descendant } from 'plitejs';
 
+import type { Descendant } from '../../facade';
 import {
   type ApplyDeepToNodesOptions,
   applyDeepToNodes,

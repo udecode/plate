@@ -1,5 +1,4 @@
-import { defineEffect, type Path, PathApi } from 'plitejs';
-
+import { defineEffect, type Path, PathApi } from '../../../facade';
 import type { Editor } from '../../../lib/editor';
 import type { DefinitionOf } from '../../../lib/plugin';
 import { definePlatePlugin } from '../../plugin';

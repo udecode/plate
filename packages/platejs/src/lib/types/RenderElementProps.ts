@@ -1,4 +1,4 @@
-import type { Element, Path } from 'plitejs';
+import type { Element, Path } from '../../facade';
 
 type ElementContentRootSlot<N extends Element> = N extends {
   childRoots: infer TRoots extends Readonly<Record<string, string>>;

@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
-import { DOMEditor } from 'plitejs/dom';
 import React from 'react';
 
+import { DOMEditor } from '../../../dom';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { Plate } from '../../components/Plate';
 import { PlateContent } from '../../components/PlateContent';

@@ -1,5 +1,4 @@
-import type { Point } from 'plitejs';
-
+import type { Point } from '../../../facade';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,

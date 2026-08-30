@@ -1,5 +1,3 @@
-import { writeHostFragmentData } from 'plitejs/dom';
-
 import {
   BaseParagraphPlugin,
   createEditor,
@@ -9,6 +7,7 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
+import { writeHostFragmentData } from '../../../dom';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,

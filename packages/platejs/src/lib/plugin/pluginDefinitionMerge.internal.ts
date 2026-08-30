@@ -1,5 +1,4 @@
-import type { EditorExtensionReference } from 'plitejs';
-
+import type { EditorExtensionReference } from '../../facade';
 import type { NormalizeBasePluginInput } from './basePluginCompiler.internal';
 import type {
   AnyBasePluginDefinition,

@@ -1,8 +1,7 @@
 import { clsx } from 'clsx';
-import { type Path, PathApi, TextApi } from 'plitejs';
-import { setDOMTextSyncRendererCapability } from 'plitejs/react';
 import React from 'react';
 
+import { type Path, PathApi, TextApi } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlateModelBinding,
@@ -13,6 +12,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { PlateLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
+import { setDOMTextSyncRendererCapability } from '../plite-react';
 import type { AnyResolvedPlatePlugin } from '../plugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf';

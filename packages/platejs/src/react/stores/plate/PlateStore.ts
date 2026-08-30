@@ -1,12 +1,11 @@
-import type { Editor as PliteEditor, NodeEntry, Range } from 'plitejs';
-import type {
-  PliteAnnotationStore,
-  PliteDecorationSource,
-} from 'plitejs/react';
-
+import type { Editor as PliteEditor, NodeEntry, Range } from '../../../facade';
 import type { EditableProps } from '../../../lib';
 import type { Nullable } from '../../../lib/types/Nullable';
 import type { Editor, EditorReference } from '../../editor';
+import type {
+  PliteAnnotationStore,
+  PliteDecorationSource,
+} from '../../plite-react';
 
 export type PlateStoreEditor = EditorReference &
   PliteEditor<any, any> &

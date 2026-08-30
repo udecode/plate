@@ -5,8 +5,7 @@ import {
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
   type Value,
-} from 'plitejs';
-
+} from '../../facade';
 import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
 import type {
   BasePluginInput,

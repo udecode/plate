@@ -1,6 +1,9 @@
-import type { EditorUpdatePolicy, SchemaPropertyHandle, Value } from 'plitejs';
-import { withTransactionSpecDraftRead } from 'plitejs';
-
+import type {
+  EditorUpdatePolicy,
+  SchemaPropertyHandle,
+  Value,
+} from '../../facade';
+import { withTransactionSpecDraftRead } from '../../facade';
 import {
   evaluatePluginSchemaDeclaration,
   getAuthoredPluginPropertyHandle,

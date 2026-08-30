@@ -1,5 +1,4 @@
-import type { EditorExtensionReference } from 'plitejs';
-
+import type { EditorExtensionReference } from '../../facade';
 import { allowPrivateRenderContribution } from '../../internal/plugin/privateRenderContribution';
 import {
   brandPluginDescriptor,

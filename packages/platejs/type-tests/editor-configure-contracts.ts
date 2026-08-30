@@ -3,7 +3,8 @@ import {
   defineBasePlugin,
 } from 'platejs';
 import { createEditor, definePlatePlugin } from 'platejs/react';
-import type { ValueOf } from 'plitejs';
+
+import type { ValueOf } from '../src/core';
 
 const childInitialState: { level: 1 | 2 } = {
   level: 1,

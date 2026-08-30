@@ -5,18 +5,6 @@
   "extends": "../tsconfig.type-tests.json",
   "references": [
     {
-      "path": "../../plitejs/tsconfig.entrypoints/core.json"
-    },
-    {
-      "path": "../../plitejs/tsconfig.entrypoints/dom.json"
-    },
-    {
-      "path": "../../plitejs/tsconfig.entrypoints/history.json"
-    },
-    {
-      "path": "../../plitejs/tsconfig.entrypoints/react.json"
-    },
-    {
       "path": "./core.json"
     },
     {

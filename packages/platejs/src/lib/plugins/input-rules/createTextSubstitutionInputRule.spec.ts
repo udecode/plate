@@ -1,5 +1,4 @@
-import { insertText } from 'plitejs/testing';
-
+import { insertText } from '../../../testing';
 import { createEditor as createRuntimeEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';

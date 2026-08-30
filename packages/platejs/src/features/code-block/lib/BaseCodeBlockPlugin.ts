@@ -1,5 +1,3 @@
-import { clipboardHandler } from 'plitejs/dom';
-
 import {
   ContentSlice,
   DebugPlugin,
@@ -23,6 +21,7 @@ import {
   schema,
   type TextOf,
 } from '../../../core';
+import { clipboardHandler } from '../../../dom/plite-dom.internal';
 import { failInvariant } from '../internal/failInvariant';
 import { findCodeBlockLanguageChange } from './codeHighlight.internal';
 

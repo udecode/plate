@@ -7,8 +7,11 @@ import {
   type InferDependencies,
 } from 'platejs';
 import { createEditor, type Editor, toPlatePlugin } from 'platejs/react';
-import { type EditorExtensionInstalledCapabilitiesOf, schema } from 'plitejs';
 
+import {
+  type EditorExtensionInstalledCapabilitiesOf,
+  schema,
+} from '../src/core';
 import type {
   NormalizePluginState,
   PluginDependencySource,

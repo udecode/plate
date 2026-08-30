@@ -1,4 +1,4 @@
-import type { Anchor, Path, Point, Range } from 'plitejs';
+import type { Anchor, Path, Point, Range } from '../../../facade';
 
 export const NAVIGATION_FEEDBACK_NAME = 'navigation';
 

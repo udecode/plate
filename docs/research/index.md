@@ -76,6 +76,7 @@ This is the entrypoint for the compiled agent research layer.
 - editor architecture lane now also includes:
   - [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
   - [decorations-annotations-overlay-corpus.md](docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md)
+  - [cursor-find-and-widget-geometry.md](docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md)
   - narrower source clusters for:
     ProseMirror,
     Lexical,

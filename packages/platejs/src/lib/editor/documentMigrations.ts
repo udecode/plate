@@ -3,9 +3,8 @@ import type {
   EditorSchemaIdentity,
   PersistedDocumentInput,
   Value,
-} from 'plitejs';
-import { MAIN_ROOT_KEY, SelectionApi } from 'plitejs';
-
+} from '../../facade';
+import { MAIN_ROOT_KEY, SelectionApi } from '../../facade';
 import { mapDocumentSelection } from '../../internal/plugin/pipePrepareDocument';
 import type { Editor } from './Editor';
 import type { EditorApplicationSchema } from './editorApplicationSchema';

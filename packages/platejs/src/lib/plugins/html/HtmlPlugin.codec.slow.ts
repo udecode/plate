@@ -5,9 +5,8 @@ import {
   TextApi,
   property,
   schema,
-} from 'plitejs';
-import { writeHostFragmentData } from 'plitejs/dom';
-
+} from '../../../core';
+import { writeHostFragmentData } from '../../../dom';
 import { createEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 

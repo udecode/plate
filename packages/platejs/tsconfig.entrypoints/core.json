@@ -40,6 +40,7 @@
     "../src/index.*",
     "../src/root.*",
     "../src/static/**/*",
+    "../src/testing/**/*",
     "../src/features/basic-nodes/**/*",
     "../src/features/basic-styles/**/*",
     "../src/features/code-block/**/*",
@@ -99,10 +100,7 @@
       "path": "../../plitejs/tsconfig.entrypoints/core.json"
     },
     {
-      "path": "../../plitejs/tsconfig.entrypoints/dom.json"
-    },
-    {
-      "path": "../../plitejs/tsconfig.entrypoints/history.json"
+      "path": "./proxies.json"
     }
   ]
 }

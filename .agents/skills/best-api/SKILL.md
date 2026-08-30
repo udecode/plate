@@ -154,9 +154,14 @@ package per environment.
 A framework facade over a lower distribution has one executable exception set,
 not a hand-maintained copy of the lower API. Every non-exception export must be
 present by runtime identity; every replacement or omission must be deliberate
-and tested from packed artifacts. Only the facade owner may import the lower
-distribution. Downstream framework packages and applications consume the
-facade, so they cannot accidentally depend on bypassed names or versions.
+and tested from packed artifacts. Only exact facade, proxy, or replacement
+source leaves may import the lower distribution; a package directory is not an
+import owner. All other first-party framework source, including plugins,
+features, components, specs, type tests, and fixtures that model
+user-authorable work, dogfoods the facade or matching framework entrypoint.
+Broad test-glob exemptions are forbidden; only exact lower-distribution parity
+proofs may bypass the facade. Downstream packages and applications do the same,
+so no authoring path can depend on bypassed names or versions.
 
 ### 2. Reality check
 

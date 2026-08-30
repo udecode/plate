@@ -1,6 +1,8 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { act, render, waitFor } from '@testing-library/react';
+import React from 'react';
+
 import {
   ContentSlice,
   defineEditorSchema,
@@ -11,12 +13,10 @@ import {
   target,
   valueCodecs,
   evaluateCommand,
-} from 'plitejs';
-import { useEditorViewState, useStateFieldValue } from 'plitejs/react';
-import React from 'react';
-
+} from '../../core';
 import { defineBasePlugin } from '../../lib';
 import { createEditor } from '../editor';
+import { useEditorViewState, useStateFieldValue } from '../plite-react';
 import { definePlatePlugin } from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useEditor } from '../stores';

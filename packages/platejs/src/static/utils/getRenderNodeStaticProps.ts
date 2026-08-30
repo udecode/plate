@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
-import type { Path } from 'plitejs';
 import type React from 'react';
 
+import type { Path } from '../../facade';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
   type AnyPluginBase,

@@ -2,11 +2,11 @@
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
-import * as pliteReactModule from 'plitejs/react';
 import React from 'react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createEditor } from '../editor';
+import * as pliteReactModule from '../plite-react';
 import { PlateController, usePlateControllerLocalStore } from '../stores';
 import { PlateControllerEffect } from './PlateControllerEffect';
 

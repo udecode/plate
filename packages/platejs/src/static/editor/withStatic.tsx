@@ -1,5 +1,4 @@
-import { createEditor as createPliteEditor, type Value } from 'plitejs';
-
+import { createEditor as createPliteEditor, type Value } from '../../facade';
 import type {
   BasePluginInput,
   Editor,

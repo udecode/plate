@@ -1,5 +1,11 @@
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
+
+import type {
+  DOMApi as PliteDomApi,
+  DOMClipboardApi,
+  ScrollIntoViewOptions,
+} from '../../../dom/plite-dom.internal';
 import {
   type EditorUpdateTransaction,
   type Path,
@@ -7,13 +13,7 @@ import {
   type Point,
   getSelectionDOMRange,
   readEditorSelection,
-} from 'plitejs';
-import type {
-  DOMApi as PliteDomApi,
-  DOMClipboardApi,
-  ScrollIntoViewOptions,
-} from 'plitejs/dom';
-
+} from '../../../facade';
 import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 import { plateDOMExtension } from './plateDOMExtension.internal';
 

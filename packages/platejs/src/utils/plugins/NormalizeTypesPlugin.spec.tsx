@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
-import { jsxt, type TestEditor } from 'plitejs/testing';
-
+import { jsxt, type TestEditor } from '../../testing';
 import { normalizeRoot } from './__tests__/normalizeRoot';
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 

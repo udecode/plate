@@ -1,4 +1,10 @@
 import { clsx } from 'clsx';
+import React from 'react';
+
+import {
+  isElementDecorationsEqual,
+  isTextDecorationsEqual,
+} from '../../dom/plite-dom.internal';
 import {
   type DecoratedRange,
   type Descendant,
@@ -11,10 +17,7 @@ import {
   RangeApi,
   TextApi,
   MAIN_ROOT_KEY,
-} from 'plitejs';
-import { isElementDecorationsEqual, isTextDecorationsEqual } from 'plitejs/dom';
-import React from 'react';
-
+} from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,

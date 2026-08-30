@@ -57,6 +57,7 @@ export default createPlatePackageConfig({
     'src/page-layout/react/index.ts',
     'src/tabbable/index.ts',
     'src/tabbable/react/index.ts',
+    'src/testing/index.ts',
     'src/yjs/index.ts',
     'src/yjs/react/index.ts',
   ],

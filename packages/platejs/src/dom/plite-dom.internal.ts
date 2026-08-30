@@ -1,0 +1,32 @@
+export {
+  clipboardHandler,
+  createCompiledHotkeyMatcher,
+  dom,
+  getEditorDOMRoot,
+  getSelection,
+  hostCodecs,
+  isElementDecorationsEqual,
+  isGeckoDOMHost,
+  isHotkey,
+  isTextDecorationsEqual,
+  parseDOMClipboardHtml,
+  usesAppleDOMHotkeys,
+  writeDOMFragmentData,
+} from 'plitejs/dom';
+
+export type {
+  DOMApi,
+  DOMClipboardApi,
+  DOMElement,
+  DOMExtension,
+  DOMNode,
+  DOMRange,
+  DOMText,
+  HostCodec,
+  HostCodecParseContext,
+  HostCodecSchemaTarget,
+  HostCodecSerializeContext,
+  HotkeySpec,
+  KeyboardEventLike,
+  ScrollIntoViewOptions,
+} from 'plitejs/dom';

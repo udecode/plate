@@ -6,8 +6,7 @@ import {
   PathApi,
   type Path,
   type Element,
-} from 'plitejs';
-
+} from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,

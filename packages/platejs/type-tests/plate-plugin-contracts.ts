@@ -1,7 +1,7 @@
 import type { DefinitionOf } from 'platejs';
 import { createEditor, definePlatePlugin } from 'platejs/react';
-import { ContentSlice } from 'plitejs';
 
+import { ContentSlice } from '../src/core';
 import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;

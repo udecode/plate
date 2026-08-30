@@ -1,5 +1,4 @@
-import { property, createEditor as createPliteEditor } from 'plitejs';
-
+import { property, createEditor as createPliteEditor } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';

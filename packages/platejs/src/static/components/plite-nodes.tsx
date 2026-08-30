@@ -1,4 +1,6 @@
 import { clsx } from 'clsx';
+import React from 'react';
+
 import type {
   Element,
   ElementOf,
@@ -6,9 +8,7 @@ import type {
   Text,
   TextOf,
   EditorSchemaSource,
-} from 'plitejs';
-import React from 'react';
-
+} from '../../facade';
 import type {
   AnyBasePluginDefinition,
   BasePluginContext,

@@ -1,6 +1,5 @@
-import { ContentSlice } from 'plitejs';
-import { writeDOMFragmentData } from 'plitejs/dom';
-
+import { writeDOMFragmentData } from '../../dom/plite-dom.internal';
+import { ContentSlice } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
 import { getSelectedDomNode } from '../utils/getSelectedDomNode';

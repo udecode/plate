@@ -1,5 +1,3 @@
-import { clipboardHandler } from 'plitejs/dom';
-
 import {
   BaseParagraphPlugin,
   ContentSlice,
@@ -31,6 +29,7 @@ import {
   SelectionApi,
   TextApi,
 } from '../../../core';
+import { clipboardHandler } from '../../../dom/plite-dom.internal';
 import { failInvariant } from '../internal/failInvariant';
 import {
   getColSpan,

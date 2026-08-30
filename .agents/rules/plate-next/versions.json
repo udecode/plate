@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 122,
+  "latestVersion": 124,
   "versions": [
     {
       "version": 0,
@@ -1439,6 +1439,28 @@
         "Mirror GitHub issue reporter assets, API boundaries, and publication scripts from rule source into the installed skill.",
         "Keep the Plate Next resource manifest authoritative for every required generated skill resource.",
         "Regenerate skills and prove exact source-to-mirror resource parity."
+      ]
+    },
+    {
+      "version": 123,
+      "date": "2026-08-30",
+      "doctrineFingerprint": "sha256:78457719f607ad18d60da3de5aba01ae1aa87cb0b86c7f0b29403fe31d391561",
+      "summary": "Plate raw Plite imports belong to exact facade bridges, not the package at large.",
+      "migrationChecks": [
+        "Allow direct plitejs imports only in exact facade, proxy, or intentional replacement leaves.",
+        "Route first-party plugins, features, components, and other user-authorable implementations through relative Plate facade or entrypoint owners.",
+        "Prove file-exact lint enforcement, entrypoint DAG ownership, and packed facade export identity."
+      ]
+    },
+    {
+      "version": 124,
+      "date": "2026-08-30",
+      "doctrineFingerprint": "sha256:6a85c423526328530c6fa4b5bf889656dfc82778e462b91d3a339be4bf3191a0",
+      "summary": "Plate specs, type tests, and fixtures dogfood the facade without test-glob raw-import exemptions.",
+      "migrationChecks": [
+        "Route Plate specs, type tests, slow tests, and fixtures through relative Plate facade or entrypoint owners.",
+        "Mirror lower-distribution test helpers through the Plate testing entrypoint when consumer tests need them.",
+        "Reject broad test-glob raw Plite exemptions and prove the exact bridge allowlist against source and test module specifiers."
       ]
     }
   ],

@@ -19,6 +19,7 @@ import {
   type Editor,
   toPlatePlugin,
 } from 'platejs/react';
+
 import {
   type ElementOf,
   type EditorSchemaProperty,
@@ -28,8 +29,7 @@ import {
   schema,
   target,
   type SchemaElement,
-} from 'plitejs';
-
+} from '../src/core';
 import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
 import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
 import type { PliteElementProps } from '../src/static/components/plite-nodes';

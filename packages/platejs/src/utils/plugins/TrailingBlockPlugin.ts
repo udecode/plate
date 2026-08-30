@@ -4,8 +4,7 @@ import {
   NodeApi,
   type NodeMatch,
   PathApi,
-} from 'plitejs';
-
+} from '../../facade';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';

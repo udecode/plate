@@ -1,6 +1,5 @@
-import type { Editor as PliteEditor } from 'plitejs';
-import { getEditorRuntimeOwner } from 'plitejs';
-
+import type { Editor as PliteEditor } from '../../facade';
+import { getEditorRuntimeOwner } from '../../facade';
 import type { AnyBasePlugin, EditorShortcut, NodeComponents } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 import type { CompiledPlateShortcut } from './compilePlateShortcuts';

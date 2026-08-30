@@ -1,6 +1,5 @@
-import { ContentSlice } from 'plitejs';
-import { writeHostFragmentData } from 'plitejs/dom';
-
+import { ContentSlice } from '../../../core';
+import { writeHostFragmentData } from '../../../dom';
 import { createEditor } from '../../editor';
 import { BaseParagraphPlugin } from './BaseParagraphPlugin';
 

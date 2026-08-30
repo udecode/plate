@@ -1,5 +1,4 @@
 import { clsx } from 'clsx';
-import { setDOMTextSyncRendererCapability } from 'plitejs/react';
 import * as React from 'react';
 
 import { failInvariant } from '../../internal/failInvariant';
@@ -12,6 +11,7 @@ import type { AnyBasePlugin, EditableProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { PlateText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { setDOMTextSyncRendererCapability } from '../plite-react';
 import { getRenderNodeProps } from './getRenderNodeProps';
 import { type RenderText, pluginRenderText } from './pluginRenderText';
 

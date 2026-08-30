@@ -1,5 +1,4 @@
-import { ElementApi, property, schema, target } from 'plitejs';
-
+import { ElementApi, property, schema, target } from '../../core';
 import { createEditor, defineBasePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
 

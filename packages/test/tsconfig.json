@@ -87,6 +87,7 @@
       "platejs/table/react": ["../platejs/src/react/features/table/index.ts"],
       "platejs/tag": ["../platejs/src/features/tag/index.ts"],
       "platejs/tag/react": ["../platejs/src/react/features/tag/index.ts"],
+      "platejs/testing": ["../platejs/src/testing/index.ts"],
       "platejs/toc": ["../platejs/src/features/toc/index.ts"],
       "platejs/toc/react": ["../platejs/src/react/features/toc/index.ts"],
       "platejs/yjs": ["../platejs/src/yjs/index.ts"],

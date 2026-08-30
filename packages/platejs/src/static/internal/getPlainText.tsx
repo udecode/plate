@@ -1,4 +1,8 @@
-import type { DOMElement, DOMNode, DOMText } from 'plitejs/dom';
+import type {
+  DOMElement,
+  DOMNode,
+  DOMText,
+} from '../../dom/plite-dom.internal';
 
 const getDefaultView = (value: any): Window | null =>
   value?.ownerDocument?.defaultView || null;

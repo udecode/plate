@@ -4,9 +4,8 @@ import {
   schema,
   property,
   type Value,
-} from 'plitejs';
-import { deleteBackward, deleteForward, insertBreak } from 'plitejs/testing';
-
+} from '../../../facade';
+import { deleteBackward, deleteForward, insertBreak } from '../../../testing';
 import { createEditor } from '../../editor';
 import { createEditorWithEditor } from '../../editor/withPlite';
 import { defineBasePlugin } from '../../plugin';

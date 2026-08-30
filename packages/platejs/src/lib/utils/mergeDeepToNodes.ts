@@ -1,6 +1,6 @@
 import merge from 'lodash/merge.js';
-import type { Descendant } from 'plitejs';
 
+import type { Descendant } from '../../facade';
 import {
   type ApplyDeepToNodesOptions,
   applyDeepToNodes,

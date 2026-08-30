@@ -1,5 +1,7 @@
-import { createCompiledHotkeyMatcher, usesAppleDOMHotkeys } from 'plitejs/dom';
-
+import {
+  createCompiledHotkeyMatcher,
+  usesAppleDOMHotkeys,
+} from '../../dom/plite-dom.internal';
 import type { EditorShortcut, HotkeysEvent } from '../../lib';
 import { failInvariant } from '../failInvariant';
 

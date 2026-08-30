@@ -21,7 +21,8 @@ source_refs:
   - ../vscode/src/vscode-dts/vscode.d.ts
   - ../db/packages/react-db/src/useLiveQuery.ts
   - ../edit-context/dev-design.md
-updated: 2026-04-14
+  - docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md
+updated: 2026-08-30
 related:
   - docs/research/systems/editor-architecture-landscape.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
@@ -46,15 +47,14 @@ It is the research-layer bridge between:
 
 ## Raw layer note
 
-This pass found a real storage structure gap:
+The initial April pass found official repo clones under `../<repo>` but no
+normalized raw families. That statement is historical: Lexical, ProseMirror,
+Tiptap, and Tiptap Docs were normalized under `../raw` on 2026-04-23.
 
-- the strongest evidence for this lane already exists locally
-- but most of it lives in official repo clones under `../<repo>`
-- it has not yet been normalized into dedicated `../raw/<corpus>` families
-
-That is a `structure gap`, not an `evidence gap`.
-
-The conclusions below are still well-supported.
+Bounded maintenance reads may still use pinned official local clones such as
+ProseKit or y-prosemirror when the question does not justify another raw-family
+ingest. The current cursor/Find/Widget decision has neither a raw gap nor a
+compiled-source gap.
 
 ## Scoped corpora
 
@@ -92,12 +92,14 @@ Use the narrower source pages for actual topic reads:
 - [layout-measurement-and-ime-lanes.md](docs/research/sources/editor-architecture/layout-measurement-and-ime-lanes.md)
 - [lightweight-editable-surface-lower-bound.md](docs/research/sources/editor-architecture/lightweight-editable-surface-lower-bound.md)
 - [service-channels-and-live-stores.md](docs/research/sources/editor-architecture/service-channels-and-live-stores.md)
+- [cursor-find-and-widget-geometry.md](docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md)
 
 ## Per-corpus evidence ledger
 
 ### ProseMirror
 
-- compiled pages inspected: none
+- compiled pages inspected:
+  [prosemirror-mapped-overlays-and-bookmarks.md](docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md)
 - raw paths inspected: `../prosemirror/state/src`, `../prosemirror/view/src`
 - direct raw files actually read:
   - `../prosemirror/state/src/selection.ts`
@@ -110,12 +112,12 @@ Use the narrower source pages for actual topic reads:
   - `DecorationSource` / `DecorationSet` plus `forChild(...)` prove the real
     win is mapped child-scoped propagation, not callback-only decoration
 - disposition: `evidenced`
-- next action if this lane stays hot:
-  normalize the official repo clone into `../raw/prosemirror/repo`
+- raw status: normalized under `../raw/prosemirror`; no structure gap
 
 ### Lexical
 
-- compiled pages inspected: none
+- compiled pages inspected:
+  [lexical-mark-store-and-decorator-split.md](docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md)
 - raw paths inspected:
   `../lexical/packages/lexical-mark/src`,
   `../lexical/packages/lexical-playground/src/commenting`,
@@ -132,12 +134,14 @@ Use the narrower source pages for actual topic reads:
   - comment/thread metadata lives in a separate store
   - React portals and node-sized UI are a separate decorator lane
 - disposition: `evidenced`
-- next action if this lane stays hot:
-  normalize the official repo clone into `../raw/lexical/repo`
+- raw status: normalized under `../raw/lexical`; no structure gap
 
 ### Tiptap
 
-- compiled pages inspected: none
+- compiled pages inspected:
+  [tiptap-comments-suggestions-and-node-range.md](docs/research/sources/editor-architecture/tiptap-comments-suggestions-and-node-range.md)
+  and
+  [cursor-find-and-widget-geometry.md](docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md)
 - raw paths inspected:
   `../tiptap/packages/extensions/src`,
   `../tiptap/packages/extension-node-range/src`,
@@ -155,8 +159,7 @@ Use the narrower source pages for actual topic reads:
   - node-range and focus helpers reinforce node/range channels, not one generic
     overlay blob
 - disposition: `evidenced`
-- next action if this lane stays hot:
-  normalize the official repo clone into `../raw/tiptap/repo`
+- raw status: normalized under `../raw/tiptap`; no structure gap
 
 ### Premirror
 
@@ -331,7 +334,5 @@ This corpus is strong enough to support these claims:
 
 ## Remaining gaps
 
-- current corpus storage is still a `structure gap` because these editor repos
-  mostly live in `../`, not dedicated `../raw/<corpus>` families
 - Open UI richer text fields, `urql`, and `@react-libraries/markdown-editor`
   remain supporting references, not deeply ingested corpora, for this lane

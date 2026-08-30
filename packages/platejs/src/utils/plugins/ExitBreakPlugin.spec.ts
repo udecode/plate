@@ -1,7 +1,7 @@
 import { BaseParagraphPlugin, defineBasePlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { schema } from 'plitejs';
 
+import { schema } from '../../core';
 import { ExitBreakPlugin } from './ExitBreakPlugin';
 
 describe('ExitBreakPlugin', () => {

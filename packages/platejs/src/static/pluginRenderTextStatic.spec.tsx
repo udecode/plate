@@ -1,6 +1,6 @@
-import { property } from 'plitejs';
 import React from 'react';
 
+import { property } from '../core';
 import { type RenderTextProps, defineBasePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {

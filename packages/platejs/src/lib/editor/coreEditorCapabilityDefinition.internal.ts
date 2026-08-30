@@ -1,6 +1,8 @@
-import type { Value } from 'plitejs';
-import type { HistoryStateApi, HistoryTxApi } from 'plitejs/history';
-
+import type { Value } from '../../facade';
+import type {
+  HistoryStateApi,
+  HistoryTxApi,
+} from '../../history/plite-history.internal';
 import type { AffinityPluginUpdate } from '../plugins/affinity/AffinityPlugin';
 import type { DebugApi } from '../plugins/debug/DebugPlugin';
 import type { DomApi, DomPluginUpdate } from '../plugins/dom/DOMPlugin';

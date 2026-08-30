@@ -214,8 +214,9 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
   and fix source placement or generator configuration if output is wrong.
 - Plate feature source imports relative owners inside `packages/platejs`;
   applications consume `platejs`, `platejs/react`, or the canonical feature
-  subpath. Raw substrate source imports `plitejs`. One-owner helpers stay
-  local.
+  subpath. Plugin implementations and their specs, type tests, and fixtures
+  never import `plitejs`; only exact facade/proxy/replacement leaves do.
+  One-owner helpers stay local.
 - Keep React as an optional peer while any public React entrypoint exists. Keep
   only dependencies proven by source/runtime imports or repo tooling convention;
   implementation libraries used only by opt-in entrypoints are optional peers.

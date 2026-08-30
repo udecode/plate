@@ -1,4 +1,9 @@
 import isEqual from 'lodash/isEqual.js';
+
+import {
+  getEditorDOMRoot,
+  isGeckoDOMHost,
+} from '../../../dom/plite-dom.internal';
 import {
   type Element,
   type EditorStateView,
@@ -10,9 +15,7 @@ import {
   NodeApi,
   PathApi,
   TextApi,
-} from 'plitejs';
-import { getEditorDOMRoot, isGeckoDOMHost } from 'plitejs/dom';
-
+} from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   getCompiledPlatePluginByKey,

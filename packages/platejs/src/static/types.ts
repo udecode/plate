@@ -1,5 +1,4 @@
-import type { Element, Text } from 'plitejs';
-
+import type { Element, Text } from '../facade';
 import type {
   AnyBasePluginContext,
   BasePluginContext,

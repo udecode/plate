@@ -1,13 +1,13 @@
-import type { Path } from 'plitejs';
-import { useEditorReadOnly, useClaimEditableDOMCommit } from 'plitejs/react';
 import React from 'react';
 
+import type { Path } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderElementProps } from '../../lib';
 import { type PlateNodeProps, PlateElement } from '../components';
 import type { Editor } from '../editor/Editor';
+import { useEditorReadOnly, useClaimEditableDOMCommit } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { useEditor } from '../stores';

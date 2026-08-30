@@ -1,5 +1,35 @@
 # Research Log
 
+## [2026-08-30] maintain | cursor architecture closure reconciliation
+
+- reconciled the accepted cursor/Find/Widget source page with the final Plate
+  Plan target instead of leaving resolved design questions under “remaining
+  pressure”
+- named the existing controller-owned `YjsAwarenessAdapter` as the one private
+  cursor cache/index and separated client decode, cursor-resolution-pass, and
+  endpoint-conversion costs
+- recorded root-aware Plite Anchor mapping, affected-root fallback, exact
+  Editable-ref geometry, and explicit Find+Yjs source/renderer composition
+- left only executable implementation proof open; no new corpus ingest or index
+  entry was required
+
+## [2026-08-30] maintain | cursor, Find, and Widget geometry refresh
+
+- pinned the merged Plate/Plite source plus ProseKit, Tiptap, Lexical, and
+  y-prosemirror comparison commits
+- accepted the Decoration / Annotation / logical Widget lifetime split and
+  rejected a public Overlay, geometry provider/store, and thin Floating wrapper
+- corrected the Yjs target to one private per-editor cursor projection owner
+  shared by data, Decoration, and Widget outputs
+- recorded the missing changed-client invalidation path: awareness ids currently
+  collapse into one revision and force a full Decoration refresh
+- kept Find in copied registry UI for the Find-only packet after comparing
+  ProseKit's complete Search/Replace plugin contract
+- corrected the stale April raw-structure note; the normalized Lexical,
+  ProseMirror, and Tiptap families already close that gap
+- added
+  [cursor-find-and-widget-geometry.md](docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md)
+
 ## [2026-07-25] maintain | context-bound Plate codec inference
 
 - documented the callback-local `defineCodecs(map)` inference anchor for

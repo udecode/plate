@@ -1,9 +1,8 @@
 /** @jsx jsxt */
 
-import { createEditor as createPliteEditor, type Value } from 'plitejs';
-import { jsxt, type TestEditor } from 'plitejs/testing';
-
+import { createEditor as createPliteEditor, type Value } from '../../facade';
 import { createEditorWithEditor } from '../../react/editor/withPlate';
+import { jsxt, type TestEditor } from '../../testing';
 import { SingleLinePlugin } from './SingleLinePlugin';
 
 jsxt;

@@ -1,8 +1,3 @@
-import {
-  useEditorViewState,
-  useEditorScrollElementRef,
-  useOptionalEditorReadOnly,
-} from 'plitejs/react';
 import React, { type HTMLAttributes } from 'react';
 
 import { failInvariant } from '../../internal/failInvariant';
@@ -13,6 +8,11 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { useComposedRef } from '../internal/react-helpers';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import {
+  useEditorViewState,
+  useEditorScrollElementRef,
+  useOptionalEditorReadOnly,
+} from '../plite-react';
 import { useEditor, usePlateValue } from '../stores';
 
 export const PlateContainer = ({

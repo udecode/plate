@@ -30,8 +30,13 @@ Current priorities:
 
 ## Plate Rules
 
-- `packages/platejs` is Plate's sole editor distribution owner. Applications
-  install `platejs`; only that owner depends on or imports `plitejs`.
+- `packages/platejs` is Plate's sole editor distribution owner and the only
+  package that depends on `plitejs`. Direct `plitejs` imports belong only in
+  exact facade, proxy, or intentional replacement leaves. Every other Plate
+  plugin, feature, component, spec, type test, fixture, and user-authorable
+  implementation imports the relative Plate facade or matching Plate
+  entrypoint owner. `platejs/testing` mirrors Plite test helpers; test globs do
+  not receive raw-import authority.
 - `packages/test` is Plate's sole public test distribution. It peers on
   `platejs`, never imports `plitejs`, keeps headless fixtures in its Node-safe
   root, and isolates React, DOM, Playwright, and proof harnesses behind

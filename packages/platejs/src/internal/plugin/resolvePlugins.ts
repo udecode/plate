@@ -3,15 +3,14 @@ import type {
   EditorExtensionReference,
   EditorReadMethodTree,
   EditorStateSchemaApi,
-} from 'plitejs';
+} from '../../facade';
 import {
   compileEditorExtension,
   getCandidateEditorExtensionApi,
   getCompiledEditorSchemaFromApi,
   getCompiledSchemaPropertyId,
   txRead,
-} from 'plitejs';
-
+} from '../../facade';
 import type {
   AnyBasePlugin,
   BasePlugin,

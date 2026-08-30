@@ -39,6 +39,7 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 
 - `plitejs` is the raw editor distribution: model, canonical document changes, runtime, explicit DOM/React/history subpaths, selection, browser proof, and unopinionated APIs.
 - `platejs` is the default product/editor framework distribution: plugins, React wrappers, components, ordinary features, opinionated UX, examples, and app-facing docs. Plate applications install and import `platejs`, never `plitejs`. Dedicated raw Plite examples and proof apps import `plitejs` because their job is to verify the substrate itself.
+- Inside `packages/platejs`, only exact facade, proxy, or intentional replacement leaves import `plitejs`. Every first-party plugin, feature, component, spec, type test, fixture, and other user-authorable implementation consumes the relative Plate facade or matching Plate entrypoint owner; package-wide and test-glob raw-import authority is forbidden. `platejs/testing` mirrors raw Plite test helpers for consumer tests.
 - When Plate API names or runtime habits conflict with Slate v2, Slate v2 wins. Break Plate instead of bending Slate or hiding the conflict behind aliases.
 - Do not fix a Plate product concern by polluting Slate core.
 - Do not hide a Slate primitive gap in Plate glue.

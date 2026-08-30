@@ -5,8 +5,7 @@ import type {
   PropertyOptionsOf,
   SchemaKeyPrefix,
   Text,
-} from 'plitejs';
-
+} from '../../facade';
 import type { AnyBasePlugin } from './BasePlugin';
 import type { AnyBasePluginDefinition } from './PluginDefinition';
 import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';

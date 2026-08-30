@@ -9,7 +9,8 @@ import {
   toPlatePlugin,
   useEditorPlugin,
 } from 'platejs/react';
-import { defineStateField, editorCommands } from 'plitejs';
+
+import { defineStateField, editorCommands } from '../src/core';
 
 export const DeclarationSafeBaseExtensionPlugin = defineBasePlugin(
   'declarationSafeBaseExtension',

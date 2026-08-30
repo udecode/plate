@@ -1,7 +1,7 @@
 import { createStore } from 'jotai/vanilla';
-import type { Element, ElementEntry, Path } from 'plitejs';
 import React from 'react';
 
+import type { Element, ElementEntry, Path } from '../../../facade';
 import type { Nullable } from '../../../lib/types/Nullable';
 import { createAtomStore } from '../../libs/jotai';
 

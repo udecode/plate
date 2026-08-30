@@ -73,8 +73,7 @@ import type {
   EditorSchemaSourceProvider,
   EditorExtensionDependencyReferenceFor,
   EditorExtensionInstalledCapabilitiesOf,
-} from 'plitejs';
-
+} from '../../facade';
 import type { UnionToIntersection } from '../../internal/types';
 import type { AnyBasePlugin } from '../plugin/BasePlugin';
 import type {
@@ -2716,14 +2715,14 @@ export type InternalPlateElementWithInstalledDefinitions<D> =
  */
 export type InternalPlateTextWithInstalledDefinitions<D> =
   true extends IsBroadPluginDefinition<InstalledSchemaDefinitionsOf<D>>
-    ? import('plitejs').Text
+    ? import('../../facade').Text
     : Extract<
         SchemaText<
           PlateSchemaSourceForInstalledDefinitions<
             InstalledSchemaDefinitionsOf<D>
           >
         >,
-        import('plitejs').Text
+        import('../../facade').Text
       >;
 
 export type PlatePluginTransaction<P extends AnyBasePluginDefinition> =

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
-import { jsx } from 'plitejs/testing';
 
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import * as extendStaticEditorModule from '../../static/editor/withStatic';
+import { jsx } from '../../testing';
 import { useStaticEditor } from './useStaticEditor';
 
 jsx;

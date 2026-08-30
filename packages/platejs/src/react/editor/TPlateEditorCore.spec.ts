@@ -1,5 +1,4 @@
-import { property, schema } from 'plitejs';
-
+import { property, schema } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor as createHeadlessEditor } from '../../lib/editor/withPlite';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';

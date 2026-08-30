@@ -3,8 +3,7 @@ import type {
   EditorReadMethodRecord,
   EditorReadMethodTree,
   EditorUpdateContext,
-} from 'plitejs';
-
+} from '../../facade';
 import {
   allowPrivateRenderContribution,
   isPrivateRenderContribution,

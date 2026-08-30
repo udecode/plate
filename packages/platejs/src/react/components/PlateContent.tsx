@@ -3,16 +3,9 @@
 import { clsx } from 'clsx';
 import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
-import {
-  type Element,
-  type RootKey,
-  Editable,
-  type EditableProps as PliteEditableProps,
-  usePliteRootEditor,
-  useOptionalEditorReadOnly,
-} from 'plitejs/react';
 import React, { useRef } from 'react';
 
+import type { Element, RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,
@@ -23,9 +16,14 @@ import type { EditableProps } from '../../lib/types/EditableProps';
 import { pipeDecorate } from '../../static/utils/pipeDecorate';
 import type { Editor } from '../editor/Editor';
 import { useHotkeysContext } from '../hotkeys';
+import {
+  Editable,
+  type EditableProps as PliteEditableProps,
+} from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
 import { useDeepCompareMemo } from '../internal/useDeepCompareMemo';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { usePliteRootEditor, useOptionalEditorReadOnly } from '../plite-react';
 import { useEditor, usePlateStore } from '../stores';
 import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut';
 import { DOM_HANDLERS } from '../utils/dom-attributes';

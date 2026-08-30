@@ -1,5 +1,4 @@
-import type { Range } from 'plitejs';
-
+import type { Range } from '../../../core';
 import { createEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { createRuleFactory } from './createRuleFactory';

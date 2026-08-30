@@ -1,5 +1,4 @@
-import { schema } from 'plitejs';
-
+import { schema } from '../../core';
 import { createEditor } from '../editor';
 import type { AnyBasePlugin } from '../plugin';
 import { defineBasePlugin } from '../plugin';

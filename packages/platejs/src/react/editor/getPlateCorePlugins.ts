@@ -1,5 +1,3 @@
-import { react, type ReactExtension } from 'plitejs/react';
-
 import {
   defineBasePlugin,
   DOMPlugin,
@@ -7,6 +5,7 @@ import {
   type DefinitionOf,
 } from '../../lib';
 import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
+import { react, type ReactExtension } from '../plite-react';
 import { toPlatePlugin } from '../plugin/toPlatePlugin';
 import { ParagraphPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';

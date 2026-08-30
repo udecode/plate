@@ -2,10 +2,10 @@
 
 import { getPlateRuntime } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { createEditor as createPliteEditor, type Value } from 'plitejs';
-import { jsxt, type TestEditor } from 'plitejs/testing';
 
+import { createEditor as createPliteEditor, type Value } from '../../facade';
 import { createEditorWithEditor } from '../../react/editor/withPlate';
+import { jsxt, type TestEditor } from '../../testing';
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';

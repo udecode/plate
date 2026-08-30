@@ -1,10 +1,10 @@
 import { focusAtom } from 'jotai-optics';
 import { type JotaiStore, useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
 import type { WritableAtom } from 'jotai/vanilla/atom';
-import { useEditorFocused } from 'plitejs/react';
 import React from 'react';
 
 import { useStableFn } from '../internal/react-helpers';
+import { useEditorFocused } from '../plite-react';
 import {
   plateControllerStore,
   useEditorId,

@@ -1,5 +1,4 @@
-import type { Value } from 'plitejs';
-
+import type { Value } from '../../../facade';
 import type { Editor } from '../../editor';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
 import type { PluginReference } from '../../plugin/PluginDefinition';

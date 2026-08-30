@@ -1,5 +1,4 @@
-import { history } from 'plitejs/history';
-
+import { history } from '../../history/plite-history.internal';
 import { defineBasePlugin, type DefinitionOf } from '../plugin';
 
 export const HistoryPlugin = defineBasePlugin('history', {}).extend(history());

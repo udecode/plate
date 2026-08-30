@@ -1,4 +1,4 @@
-import type { LeafPosition, Path, Text } from 'plitejs';
+import type { LeafPosition, Path, Text } from '../../facade';
 
 export type RenderLeafFn = (props: RenderLeafProps) => any;
 

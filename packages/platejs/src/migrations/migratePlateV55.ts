@@ -4,8 +4,7 @@ import {
   ElementApi,
   TextApi,
   type Value,
-} from 'plitejs';
-
+} from '../facade';
 import type { DocumentMigration } from '../lib/editor/documentMigrations';
 
 const CODE_DRAWING_LANGUAGES = new Set([

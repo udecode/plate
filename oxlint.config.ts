@@ -52,6 +52,25 @@ const forbiddenUdecodeImport = {
     'The @udecode package namespace is retired. Import Plate contracts from platejs or platejs/react, and keep copied UI helpers local.',
 };
 
+const platePliteBridgePatterns = [
+  'packages/platejs/src/core.tsx',
+  'packages/platejs/src/diff/index.ts',
+  'packages/platejs/src/diff/plite-diff.internal.ts',
+  'packages/platejs/src/dom/index.ts',
+  'packages/platejs/src/dom/plite-dom.internal.ts',
+  'packages/platejs/src/facade.ts',
+  'packages/platejs/src/history/index.ts',
+  'packages/platejs/src/history/plite-history.internal.ts',
+  'packages/platejs/src/hyperscript/index.ts',
+  'packages/platejs/src/page-layout/index.ts',
+  'packages/platejs/src/page-layout/react/index.ts',
+  'packages/platejs/src/react/internal/plite-components.ts',
+  'packages/platejs/src/react/internal/plite-types.ts',
+  'packages/platejs/src/react/plite-react.ts',
+  'packages/platejs/src/static/internal/plite-react.ts',
+  'packages/platejs/src/testing/index.ts',
+];
+
 const isPlateReactOwnedEntrypoint = (
   entrypointName: string,
   visiting = new Set<string>()
@@ -144,7 +163,7 @@ export default defineConfig({
     {
       files: ['**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
       excludeFiles: [
-        'packages/platejs/**',
+        ...platePliteBridgePatterns,
         // Plite contract tests consume the published entrypoints they verify.
         'packages/plitejs/test/**',
         // Shared JSX fixtures are part of the raw Plite package test harness.
@@ -161,7 +180,7 @@ export default defineConfig({
               {
                 regex: '^plitejs(?:/|$)',
                 message:
-                  'Only platejs and dedicated raw Plite proof or test surfaces may import plitejs. Import the matching platejs entrypoint instead.',
+                  'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
               },
             ],
           },

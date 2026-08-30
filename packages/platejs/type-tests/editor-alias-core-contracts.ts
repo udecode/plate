@@ -4,7 +4,8 @@ import {
   HtmlPlugin,
 } from 'platejs';
 import type { Editor } from 'platejs/react';
-import type { Descendant } from 'plitejs';
+
+import type { Descendant } from '../src/core';
 
 declare const baseEditor: HeadlessEditor;
 declare const expectDescendants: (value: Descendant[] | null) => void;

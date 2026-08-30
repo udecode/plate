@@ -1,5 +1,4 @@
-import type { Element, ElementOf, EditorSchemaSource } from 'plitejs';
-
+import type { Element, ElementOf, EditorSchemaSource } from '../../../facade';
 import type { PluginReference } from '../../../lib';
 import { useElementContext } from './useElementStore';
 

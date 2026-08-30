@@ -1,11 +1,11 @@
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
+
 import {
   type KeyboardEventLike as PliteKeyboardEventLike,
   type HotkeySpec,
   isHotkey as isDOMHotkey,
   usesAppleDOMHotkeys,
-} from 'plitejs/dom';
-
+} from '../../dom/plite-dom.internal';
 import type { Editor } from '../editor';
 
 export { isHotkey } from 'is-hotkey';

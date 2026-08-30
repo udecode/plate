@@ -1,14 +1,15 @@
 import {
-  createEditorView,
-  createEditor as createPliteEditor,
   defineCommand,
-  defineExtension,
   dispatchCommand,
   getInstalledEditorExtension,
+} from '../../core';
+import {
+  createEditorView,
+  createEditor as createPliteEditor,
+  defineExtension,
   type Editor as PliteEditor,
   type TransactionSpec,
-} from 'plitejs';
-
+} from '../../facade';
 import type {
   Editor,
   InternalBaseEditorWithInstalledPlugins,

@@ -32,15 +32,15 @@ import type {
   MdxJsxFlowElement,
   MdxJsxTextElement,
 } from 'mdast-util-mdx';
+import type { Node as UnistNode } from 'unist';
+
 import type {
   Descendant,
   Element,
   SchemaElementShapeFor,
   SchemaElementTypes,
   EditorSchemaSourceProvider,
-} from 'plitejs';
-import type { Node as UnistNode } from 'unist';
-
+} from '../../facade';
 import type {
   AnyBasePluginDefinition,
   PluginAuthorSchemaView,

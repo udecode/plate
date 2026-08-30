@@ -1,6 +1,8 @@
-import type { EditorNodeChangeContext, EditorTextChangeContext } from 'plitejs';
-import { defineExtension } from 'plitejs';
-
+import type {
+  EditorNodeChangeContext,
+  EditorTextChangeContext,
+} from '../../facade';
+import { defineExtension } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { failInvariant } from '../failInvariant';

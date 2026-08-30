@@ -4,7 +4,8 @@ import {
 } from 'platejs';
 import { history } from 'platejs/history';
 import { createEditor, toPlatePlugin, useCreateEditor } from 'platejs/react';
-import { defineExtension } from 'plitejs';
+
+import { defineExtension } from '../src/core';
 
 const RuntimeExtensionPlugin = defineBasePlugin('runtimeExtension', {
   api: () => ({

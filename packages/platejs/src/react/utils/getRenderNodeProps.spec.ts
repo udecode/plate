@@ -1,5 +1,4 @@
-import { property, schema, target } from 'plitejs';
-
+import { property, schema, target } from '../../core';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { createEditor } from '../editor/withPlate';

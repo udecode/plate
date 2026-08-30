@@ -1,5 +1,3 @@
-import { getSelection } from 'plitejs/dom';
-
 import {
   DebugPlugin,
   Hotkeys,
@@ -7,6 +5,7 @@ import {
   type NodeKey,
   PathApi,
 } from '../../../core';
+import { getSelection } from '../../../dom/plite-dom.internal';
 import { failInvariant } from '../../../features/table/internal/failInvariant';
 import {
   BaseTableCellPlugin,

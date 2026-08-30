@@ -7,13 +7,13 @@ export {
   useComposedRef,
   useIsomorphicLayoutEffect,
 } from './internal/react-helpers';
-export { EditableElement } from 'plitejs/react';
+export { EditableElement } from './plite-react';
 export type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
   RenderVoidProps,
-} from 'plitejs/react';
+} from './plite-react';
 export * from './components/NodeSelection';
 export * from './components/Plate';
 export * from './components/PlateContainer';

@@ -1,6 +1,4 @@
-import type { Value } from 'plitejs';
-import type { ReactApi } from 'plitejs/react';
-
+import type { Value } from '../../facade';
 import type { GeneratedEditorMutations } from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,
@@ -21,6 +19,7 @@ import type {
 } from '../../lib';
 import type { CoreEditorApi } from '../../lib/editor/coreEditorCapabilityDefinition.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type { ReactApi } from '../plite-react';
 import type {
   AnyResolvedPlatePlugin,
   AnyPlatePlugin,

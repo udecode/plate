@@ -1,6 +1,5 @@
-import type { NodeEntry, Range } from 'plitejs';
-import type { DOMRange } from 'plitejs/dom';
-
+import type { DOMRange } from '../../dom/plite-dom.internal';
+import type { NodeEntry, Range } from '../../facade';
 import type { Editor } from '../editor';
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';

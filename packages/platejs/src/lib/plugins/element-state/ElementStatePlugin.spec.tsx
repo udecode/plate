@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import { property, schema, target } from 'plitejs';
-import { jsxt } from 'plitejs/testing';
-
+import { property, schema, target } from '../../../core';
+import { jsxt } from '../../../testing';
 import { createEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { ElementIdPlugin } from '../element-id';

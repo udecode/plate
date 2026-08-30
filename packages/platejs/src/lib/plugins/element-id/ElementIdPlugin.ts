@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+
 import {
   type Descendant,
   type EditorDocumentValue,
@@ -14,8 +15,7 @@ import {
   type Value,
   getEditorCommitSnapshot,
   MAIN_ROOT_KEY,
-} from 'plitejs';
-
+} from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import { defineBasePlugin } from '../../plugin/defineBasePlugin';
 

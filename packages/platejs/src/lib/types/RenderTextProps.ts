@@ -1,4 +1,4 @@
-import type { Path, Text } from 'plitejs';
+import type { Path, Text } from '../../facade';
 
 export type RenderTextFn = (props: RenderTextProps) => any;
 export type RenderTextProps<N extends Text = Text> = {

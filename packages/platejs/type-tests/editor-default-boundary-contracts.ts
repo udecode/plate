@@ -11,11 +11,11 @@ import {
   createEditor,
   toPlatePlugin,
 } from 'platejs/react';
-import { property, schema, type Value } from 'plitejs';
-import type { DOMEditor } from 'plitejs/dom';
-import type { Editor as ReactViewEditor } from 'plitejs/react';
 
+import { property, schema, type Value } from '../src/core';
+import type { DOMEditor } from '../src/dom';
 import type { InternalPlateEditorWithInstalledPlugins } from '../src/react/editor/Editor';
+import type { PliteReactEditor } from '../src/react/internal/plite-types';
 
 const DefaultBoundaryPlugin = defineBasePlugin('defaultBoundary', {
   api: () => ({
@@ -77,12 +77,12 @@ type ExactInternalPlateEditor = InternalPlateEditorWithInstalledPlugins<
 declare const exactInternalPlateEditor: ExactInternalPlateEditor;
 const broadInternalPlateEditor: Editor = exactInternalPlateEditor;
 const exactDOMEditor: DOMEditor = exactInternalPlateEditor;
-const exactReactEditor: ReactViewEditor = exactInternalPlateEditor;
+const exactReactEditor: PliteReactEditor = exactInternalPlateEditor;
 type ExactPlateProps = PlateProps<ExactInternalPlateEditor>;
 declare const exactPlateProps: ExactPlateProps;
 declare const defaultUseEditorReturn: ReturnType<typeof useEditor>;
 const broadDOMEditor: DOMEditor<any, any> = defaultUseEditorReturn;
-const broadReactEditor: ReactViewEditor<any, any> = defaultUseEditorReturn;
+const broadReactEditor: PliteReactEditor<any, any> = defaultUseEditorReturn;
 const broadUseEditorReturn: Editor = defaultUseEditorReturn;
 
 // @ts-expect-error Store access is owned by usePlateStore(), not the editor.

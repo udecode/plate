@@ -1,10 +1,10 @@
-import {
-  type EditorRuntimeStateSelectorOptions,
-  useEditorRuntimeState,
-} from 'plitejs/react';
 import React from 'react';
 
 import type { Editor } from '../../editor';
+import {
+  type EditorRuntimeStateSelectorOptions,
+  useEditorRuntimeState,
+} from '../../plite-react';
 import { useEditor } from './createPlateStore';
 
 export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<

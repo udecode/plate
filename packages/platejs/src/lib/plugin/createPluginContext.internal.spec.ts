@@ -1,5 +1,9 @@
-import { property, schema, target, type SchemaPropertyHandle } from 'plitejs';
-
+import {
+  property,
+  schema,
+  target,
+  type SchemaPropertyHandle,
+} from '../../core';
 import type { Editor } from '../editor';
 import { createEditor } from '../editor';
 import { createPluginContext } from './createPluginContext.internal';

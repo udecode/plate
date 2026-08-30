@@ -2,8 +2,8 @@
 
 import { createEditor } from 'platejs';
 import { ParagraphPlugin } from 'platejs/react';
-import { jsxt, type TestEditor } from 'plitejs/testing';
 
+import { jsxt, type TestEditor } from '../../testing';
 import { fixtureSchemaPlugins, normalizeRoot } from './__tests__/normalizeRoot';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 

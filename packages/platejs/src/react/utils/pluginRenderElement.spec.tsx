@@ -1,9 +1,9 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { render } from '@testing-library/react';
-import { property, schema, target, type Element } from 'plitejs';
 import React from 'react';
 
+import { property, schema, target, type Element } from '../../core';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';

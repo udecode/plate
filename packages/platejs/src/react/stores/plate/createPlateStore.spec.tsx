@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { Range } from 'plitejs';
 import React from 'react';
 
+import type { Range } from '../../../core';
 import { createEditor } from '../../editor';
 import {
   PlateStoreProvider,

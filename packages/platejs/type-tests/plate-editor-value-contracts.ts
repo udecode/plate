@@ -1,5 +1,6 @@
 import type { EditorApplicationSchema } from 'platejs';
 import { createEditor, definePlatePlugin, type Editor } from 'platejs/react';
+
 import {
   property,
   schema,
@@ -8,8 +9,7 @@ import {
   type Text,
   type Value,
   type ValueOf,
-} from 'plitejs';
-
+} from '../src/core';
 import type { GeneratedEditorTypeProvider } from '../src/internal/editor/generatedEditorTypes';
 import type { InferPlateEditorPlugins } from '../src/react/editor/Editor';
 

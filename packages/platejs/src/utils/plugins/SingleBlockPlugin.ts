@@ -1,5 +1,4 @@
-import { editorCommands, NodeApi } from 'plitejs';
-
+import { editorCommands, NodeApi } from '../../facade';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { PLUGINS } from '../plate-keys';
 

@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
-import type { Element, NodeEntry } from 'plitejs';
 import React from 'react';
 
+import type { Element, NodeEntry } from '../../../core';
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { useElementSelector } from './useElementSelector';

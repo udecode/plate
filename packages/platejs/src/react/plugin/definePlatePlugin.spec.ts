@@ -1,5 +1,4 @@
-import { schema } from 'plitejs';
-
+import { schema } from '../../core';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import type { NodeComponent } from '../../lib';
 import { createEditor } from '../../lib';

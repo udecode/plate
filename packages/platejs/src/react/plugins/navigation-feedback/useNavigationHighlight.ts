@@ -1,6 +1,6 @@
-import { type Element, type Path, PathApi, type Text } from 'plitejs';
 import React from 'react';
 
+import { type Element, type Path, PathApi, type Text } from '../../../facade';
 import {
   useEditor,
   useEditorPluginStore,

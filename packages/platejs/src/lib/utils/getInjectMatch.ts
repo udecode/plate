@@ -1,5 +1,4 @@
-import { type Node, type Path, ElementApi } from 'plitejs';
-
+import { type Node, type Path, ElementApi } from '../../facade';
 import {
   getCompiledPlatePluginByType,
   getResolvedPluginTargetBinding,

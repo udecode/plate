@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import { ElementApi, schema, target } from 'plitejs';
-import { jsxt } from 'plitejs/testing';
-
+import { ElementApi, schema, target } from '../../../core';
+import { jsxt } from '../../../testing';
 import { createEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';
 import { ElementIdPlugin, migrateElementIds } from './ElementIdPlugin';

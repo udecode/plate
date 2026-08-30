@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
-import type { Element, Path, Text } from 'plitejs';
 
+import type { Element, Path, Text } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type {
   AnyPluginBase,

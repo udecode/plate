@@ -1,5 +1,8 @@
 'use client';
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import {
   ElementApi,
   PathApi,
@@ -7,12 +10,9 @@ import {
   type EditorCommit,
   type Element,
   type Path,
-} from 'plitejs';
-import { useEditorEditableElement } from 'plitejs/react';
-import React from 'react';
-import ReactDOM from 'react-dom';
-
+} from '../../facade';
 import type { Editor } from '../editor/Editor';
+import { useEditorEditableElement } from '../plite-react';
 import { useEditor } from '../stores/plate/createPlateStore';
 import { useEditorSelector } from '../stores/plate/useEditorSelector';
 

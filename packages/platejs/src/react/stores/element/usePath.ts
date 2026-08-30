@@ -1,6 +1,5 @@
-import type { Path } from 'plitejs';
-import { useElementPath } from 'plitejs/react';
-
+import type { Path } from '../../../facade';
+import { useElementPath } from '../../plite-react';
 import { useElementContext } from './useElementStore';
 
 /** Subscribe to the live path for the nearest rendered element. */

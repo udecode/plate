@@ -1,4 +1,4 @@
-import { type Node, NodeApi } from 'plitejs';
+import { type Node, NodeApi } from '../../facade';
 
 export type FragmentPropMode = 'all' | 'block' | 'text';
 

@@ -5,8 +5,8 @@ import {
   defineDocumentMigrations,
   migrateDocument,
 } from 'platejs';
-import { type Element, property, schema, target } from 'plitejs';
 
+import { type Element, property, schema, target } from '../core';
 import { migratePlateV54, migratePlateV55 } from './index';
 
 const MigrationSchema = { id: 'plate', version: 55 } as const;

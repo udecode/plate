@@ -1,8 +1,7 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
-import { ContentSlice, property, schema, type ValueOf } from 'plitejs';
-import { writeHostFragmentData } from 'plitejs/dom';
-
+import { ContentSlice, property, schema, type ValueOf } from '../../core';
+import { writeHostFragmentData } from '../../dom';
 import { getPlateNodeCodecContributions } from '../../internal';
 import { createEditor } from '../editor';
 import { defineBasePlugin } from '../plugin';

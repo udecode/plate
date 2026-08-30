@@ -96,8 +96,10 @@ schema law, and application typing remain outside this skill.
     canonical.
 18. **Plate consumes one distribution.** Package and registry source imports
     Plate APIs from their canonical `platejs` root, React root, or feature
-    subpath, never directly from `plitejs`. Only the physical
-    `packages/platejs` facade owner crosses that boundary.
+    subpath, never directly from `plitejs`. Inside `packages/platejs`, only
+    exact facade, proxy, or replacement leaves cross that boundary; React
+    components and their specs, type tests, and fixtures dogfood the relative
+    Plate React facade. Never exempt test globs from this rule.
 
 ## Critical Rules
 

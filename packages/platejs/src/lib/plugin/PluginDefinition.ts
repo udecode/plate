@@ -1,4 +1,5 @@
 import type { Draft } from 'mutative';
+
 /** Shared type contracts for Plate plugin definitions. */
 import type {
   EditorCoreStateView,
@@ -23,8 +24,7 @@ import type {
   EditorSchemaSourceProvider,
   EditorExtensionDependencyReferenceFor,
   EditorExtensionInstalledCapabilitiesOf,
-} from 'plitejs';
-
+} from '../../facade';
 import type { AnyObject } from '../types/AnyObject';
 import type { Nullable } from '../types/Nullable';
 import type {

@@ -5,14 +5,7 @@ import {
   property,
   schema,
   probeCommandNativeEquivalent,
-} from 'plitejs';
-import {
-  insertBreak,
-  insertText,
-  jsxt,
-  string as editorString,
-} from 'plitejs/testing';
-
+} from '../../core';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
@@ -22,6 +15,12 @@ import {
   createRuleFactory,
   defineInputRule,
 } from '../../lib/plugins/input-rules';
+import {
+  insertBreak,
+  insertText,
+  jsxt,
+  string as editorString,
+} from '../../testing';
 import { createEditor } from '../editor';
 import { definePlatePlugin } from '../plugin';
 

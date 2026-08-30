@@ -7,6 +7,7 @@ import {
   createEditor,
   defineBasePlugin,
 } from 'platejs';
+
 import {
   ContentSlice,
   defineExtension,
@@ -14,9 +15,8 @@ import {
   property,
   schema,
   target,
-} from 'plitejs';
-import { type History, history } from 'plitejs/history';
-
+} from '../src/core';
+import { type History, history } from '../src/history';
 import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;

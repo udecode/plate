@@ -1,5 +1,4 @@
-import { type EditorDocumentValue, NodeApi } from 'plitejs';
-
+import { type EditorDocumentValue, NodeApi } from '../../core';
 import { defineBasePlugin } from '../plugin';
 import {
   defineDocumentMigrations,

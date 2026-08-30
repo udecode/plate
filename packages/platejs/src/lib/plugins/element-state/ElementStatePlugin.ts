@@ -1,6 +1,5 @@
-import type { Element } from 'plitejs';
-import { NodeApi } from 'plitejs';
-
+import type { Element } from '../../../facade';
+import { NodeApi } from '../../../facade';
 import { defineBasePlugin, type DefinitionOf } from '../../plugin';
 
 export type ElementStateApi = {

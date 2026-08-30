@@ -1,5 +1,4 @@
-import { ElementApi, PathApi, type Node, type Path } from 'plitejs';
-
+import { ElementApi, PathApi, type Node, type Path } from '../../facade';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { PLUGINS } from '../plate-keys';

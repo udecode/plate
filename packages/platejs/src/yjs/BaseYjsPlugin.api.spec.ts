@@ -32,6 +32,24 @@ const createSeededYjsUpdate = (text: string) => {
 };
 
 describe('BaseYjsPlugin', () => {
+  it('keeps the default persisted Yjs root namespace', () => {
+    const doc = new Y.Doc();
+    const editor = createHeadlessEditor({
+      plugins: [
+        BaseYjsPlugin.configure({
+          initialState: { clientId: 'base-user', doc },
+        }),
+      ],
+      schema: TestSchema,
+    });
+
+    assert.equal(
+      editor.read((state) => state.yjs.root()),
+      doc.get('plitejs', Y.XmlElement)
+    );
+    assert.equal(doc.share.has('plitejs:roots'), true);
+  });
+
   it('installs the configured Plite Yjs extension', () => {
     const doc = new Y.Doc();
     const provider = { doc };

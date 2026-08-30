@@ -1,11 +1,10 @@
+import { clipboardHandler } from '../../../dom/plite-dom.internal';
 import {
   type EditorStateView,
   editorCommands,
   NodeApi,
   RangeApi,
-} from 'plitejs';
-import { clipboardHandler } from 'plitejs/dom';
-
+} from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { defineBasePlugin } from '../../plugin';
 import type {

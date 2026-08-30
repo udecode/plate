@@ -1,5 +1,4 @@
-import type { Element, NodeEntry, Range } from 'plitejs';
-
+import type { Element, NodeEntry, Range } from '../../core';
 import { createEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
 import { pipeDecorate } from './pipeDecorate';

@@ -1,8 +1,8 @@
 import { runInNewContext } from 'node:vm';
 
-import { editorCommands, property, schema } from 'plitejs';
 import React from 'react';
 
+import { editorCommands, property, schema } from '../../core';
 import { createEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';

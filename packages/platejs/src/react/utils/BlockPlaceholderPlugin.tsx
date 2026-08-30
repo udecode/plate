@@ -1,5 +1,4 @@
-import { type Element, type Path, PathApi } from 'plitejs';
-
+import { type Element, type Path, PathApi } from '../../facade';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { PLUGINS } from '../../utils';
 import type { Editor } from '../editor/Editor';

@@ -1,2 +1,2 @@
-export * from 'plitejs/testing';
-export { createEditor as createPliteEditor } from 'plitejs';
+export { createEditor as createPliteEditor } from '../../src/facade';
+export * from '../../src/testing';

@@ -1,12 +1,11 @@
-import type { Descendant, NodeEntry, Range } from 'plitejs';
-import type { EditableProps as PliteEditableProps } from 'plitejs/react';
-
+import type { Descendant, NodeEntry, Range } from '../../facade';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import type { Editor, EditableProps } from '../../lib';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import type { EditableProps as PliteEditableProps } from '../internal/plite-react';
 
 /**
  * @see {@link Decorate} .

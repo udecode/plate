@@ -25,8 +25,7 @@ import {
   setEditorSnapshotInputTransform,
   setEditorStateViewTransform,
   setEditorTransactionViewTransform,
-} from 'plitejs';
-
+} from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { compilePlateCodecs } from '../../internal/plugin/compilePlateCodecs';
 import {

@@ -22,9 +22,6 @@
   "include": ["../src/migrations/**/*"],
   "references": [
     {
-      "path": "../../plitejs/tsconfig.entrypoints/core.json"
-    },
-    {
       "path": "./core.json"
     }
   ]

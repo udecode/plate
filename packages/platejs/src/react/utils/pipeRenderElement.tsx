@@ -1,7 +1,6 @@
-import type { Element, Path } from 'plitejs';
-import { useEditorReadOnly } from 'plitejs/react';
 import React from 'react';
 
+import type { Element, Path } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlateModelBinding,
@@ -13,6 +12,7 @@ import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { type EditableProps, getPluginNodeClass } from '../../lib';
 import { isHtmlVoidElementTag, PlateElement } from '../components';
 import type { Editor } from '../editor/Editor';
+import { useEditorReadOnly } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { ElementProvider } from '../stores';

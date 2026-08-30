@@ -1,6 +1,6 @@
-import { schema, property } from 'plitejs';
 import { createElement } from 'react';
 
+import { schema, property } from '../core';
 import { defineBasePlugin } from '../lib/plugin';
 import { BaseParagraphPlugin } from '../lib/plugins';
 import { createStaticEditor } from './editor/withStatic';

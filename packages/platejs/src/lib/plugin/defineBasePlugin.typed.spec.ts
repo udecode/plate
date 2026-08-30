@@ -1,5 +1,4 @@
-import { property, schema, target, type SchemaElementTarget } from 'plitejs';
-
+import { property, schema, target, type SchemaElementTarget } from '../../core';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
@@ -197,7 +196,7 @@ const assertTypedNodeQueries = () => {
     // @ts-expect-error match is function-only
     match: { type: 'typed_query_link' },
   });
-  editor.read.nodes.find<import('plitejs').Element>({
+  editor.read.nodes.find<import('../../core').Element>({
     // @ts-expect-error callers cannot select an unchecked output generic
     type: LinkPlugin,
   });
@@ -262,7 +261,7 @@ const assertTypedPluginPropertyMutations = () => {
       tx.nodes.set({
         [authorSchema.properties.storedTone.key]: 'warning',
       });
-      tx.nodes.set({ count: 1 }, { at: {} as import('plitejs').Element });
+      tx.nodes.set({ count: 1 }, { at: {} as import('../../core').Element });
       tx.nodes.unset(authorSchema.properties.storedTone);
 
       // @ts-expect-error local property values remain exact

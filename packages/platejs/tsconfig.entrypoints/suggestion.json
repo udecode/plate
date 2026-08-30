@@ -22,10 +22,10 @@
   "include": ["../src/features/suggestion/**/*"],
   "references": [
     {
-      "path": "../../plitejs/tsconfig.entrypoints/diff.json"
+      "path": "./core.json"
     },
     {
-      "path": "./core.json"
+      "path": "./proxies.json"
     }
   ]
 }

@@ -16,8 +16,7 @@ import {
   getCompiledSchemaPropertyId,
   getSchemaElementSourceReference,
   preserveCompiledSchemaPropertyIdentity,
-} from 'plitejs';
-
+} from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type {
   EditorApplicationSchema,

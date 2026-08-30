@@ -1,4 +1,3 @@
-import { writeHostFragmentData } from 'plitejs/dom';
 import type { Pluggable, Preset, Settings } from 'unified';
 
 import {
@@ -12,6 +11,7 @@ import {
   type InitialValue,
   type Value,
 } from '../../core';
+import { writeHostFragmentData } from '../../dom';
 import { BaseBoldPlugin } from '../../features/basic-nodes';
 import { BaseFontColorPlugin } from '../../features/basic-styles';
 import { BaseListPlugin } from '../../features/list';

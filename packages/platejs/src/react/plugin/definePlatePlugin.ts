@@ -2,8 +2,7 @@ import type {
   DecoratedRange,
   EditorExtensionReference,
   EditorUpdateContext,
-} from 'plitejs';
-
+} from '../../facade';
 import {
   type AnyBasePlugin,
   type PlatePluginReadState,

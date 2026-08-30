@@ -1,7 +1,6 @@
-import { type Path, PathApi, TextApi } from 'plitejs';
-import { useEditorReadOnly } from 'plitejs/react';
 import React from 'react';
 
+import { type Path, PathApi, TextApi } from '../../facade';
 import {
   getCompiledPlateModelBinding,
   getPlateRuntime,
@@ -11,6 +10,7 @@ import type { RenderLeafProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { type PlateNodeProps, PlateLeaf } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { useEditorReadOnly } from '../plite-react';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
 

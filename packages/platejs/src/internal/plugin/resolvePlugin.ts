@@ -1,6 +1,8 @@
-import type { EditorExtensionReference, EditorReadMethodTree } from 'plitejs';
-import { isEditorExtension } from 'plitejs';
-
+import type {
+  EditorExtensionReference,
+  EditorReadMethodTree,
+} from '../../facade';
+import { isEditorExtension } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { property, schema } from 'plitejs';
+import { property, schema } from '../../../core';
 import {
   deleteBackward,
   insertText,
@@ -8,8 +8,7 @@ import {
   move,
   projectTestSelectionRange,
   type TestEditor,
-} from 'plitejs/testing';
-
+} from '../../../testing';
 import type { Editor } from '../../editor';
 import { createEditor } from '../../editor';
 import { defineBasePlugin } from '../../plugin';

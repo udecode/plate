@@ -6,8 +6,8 @@ import {
   defineDocumentMigrations,
   migrateDocument,
 } from 'platejs';
-import { ElementApi, PathApi, property, schema, target } from 'plitejs';
 
+import { ElementApi, PathApi, property, schema, target } from '../core';
 import { BaseHeadingPlugin } from '../features/basic-nodes';
 import { BaseCodeBlockPlugin } from '../features/code-block';
 import { BaseListPlugin } from '../features/list';

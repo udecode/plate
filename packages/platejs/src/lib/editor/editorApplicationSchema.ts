@@ -3,7 +3,7 @@ import type {
   SchemaContent,
   SchemaProperty,
   SchemaPropertyDefinition,
-} from 'plitejs';
+} from '../../facade';
 
 export type EditorSchemaIdentity = Readonly<{
   id: string;

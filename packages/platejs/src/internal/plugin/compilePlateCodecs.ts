@@ -1,16 +1,15 @@
-import {
-  ContentSlice,
-  getCompiledSchemaPropertyId,
-  reportEditorLifecycleError,
-} from 'plitejs';
 import type {
   HostCodec,
   HostCodecParseContext,
   HostCodecSchemaTarget,
   HostCodecSerializeContext,
-} from 'plitejs/dom';
-import { hostCodecs } from 'plitejs/dom';
-
+} from '../../dom/plite-dom.internal';
+import { hostCodecs } from '../../dom/plite-dom.internal';
+import {
+  ContentSlice,
+  getCompiledSchemaPropertyId,
+  reportEditorLifecycleError,
+} from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin';
 import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';

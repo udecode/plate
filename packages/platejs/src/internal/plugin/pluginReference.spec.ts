@@ -1,5 +1,4 @@
-import { property, schema, target } from 'plitejs';
-
+import { property, schema, target } from '../../core';
 import { createEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
 import { definePlatePlugin, toPlatePlugin } from '../../react/plugin';

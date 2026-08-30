@@ -1,6 +1,5 @@
-import { DocumentChange } from 'plitejs';
-import { DOMEditor } from 'plitejs/dom';
-
+import { DocumentChange } from '../../../core';
+import { DOMEditor } from '../../../dom';
 import { createEditor } from '../../editor';
 import { DOMPlugin } from './DOMPlugin';
 

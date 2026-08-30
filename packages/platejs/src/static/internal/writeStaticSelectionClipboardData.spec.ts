@@ -1,8 +1,8 @@
-import type { Descendant } from 'plitejs';
-import { createDataTransfer } from 'plitejs/testing';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
+import type { Descendant } from '../../core';
+import { createDataTransfer } from '../../testing';
 import { PlateStatic } from '../components/PlateStatic';
 import { createStaticEditor } from '../editor/withStatic';
 import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';

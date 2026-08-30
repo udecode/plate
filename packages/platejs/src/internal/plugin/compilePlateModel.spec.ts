@@ -1,11 +1,10 @@
+import { getEditorExtensionRegistry } from '../../core';
 import {
   createEditor as createPliteEditor,
-  getEditorExtensionRegistry,
   property,
   schema,
   target,
-} from 'plitejs';
-
+} from '../../facade';
 import { createEditor } from '../../lib/editor';
 import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import type { PluginReference } from '../../lib/plugin';

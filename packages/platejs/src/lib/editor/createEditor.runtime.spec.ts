@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'bun:test';
 
-import { defineExtension } from 'plitejs';
+import { defineExtension } from '../../core';
 
 let reactExtensionCreated = false;
 

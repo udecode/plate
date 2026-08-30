@@ -18,8 +18,7 @@ import type {
   SchemaText,
   Text,
   EditorSchemaSourceProvider,
-} from 'plitejs';
-
+} from '../../facade';
 import type {
   AnyBasePluginDefinition,
   PluginSchema,

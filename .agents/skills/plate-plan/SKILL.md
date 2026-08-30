@@ -61,6 +61,10 @@ rejected shape.
   proof infrastructure.
 - Plate owns product plugins, feature workflows, app/registry kits, registry code,
   app-facing docs/examples, and opinionated UX.
+- Treat the Plate facade boundary as file-exact, never package-wide. Only
+  facade/proxy/replacement leaves import `plitejs`; planned first-party plugin,
+  feature, component, spec, type-test, and fixture adoption uses relative Plate
+  owners. Never grant raw access through a test glob.
 - When a Plate API duplicates an adequate Plite primitive, Plite wins. Cut or
   rename Plate; do not keep a compatibility alias. When Plate exposes a better
   generic primitive or a real substrate gap, route the decision to Plite Plan

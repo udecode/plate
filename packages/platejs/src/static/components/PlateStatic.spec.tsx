@@ -1,16 +1,16 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { render } from '@testing-library/react';
-import { property, schema, target, type Value } from 'plitejs';
-import { getEditorLiveSelection } from 'plitejs/testing';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
+import { property, schema, target, type Value } from '../../core';
 import {
   type Editor,
   createEditor as createHeadlessEditor,
   defineBasePlugin,
 } from '../../lib';
+import { getEditorLiveSelection } from '../../testing';
 import { PlateStatic } from './PlateStatic';
 import { PliteElement, PliteLeaf } from './plite-nodes';
 

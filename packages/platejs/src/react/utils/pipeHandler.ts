@@ -1,6 +1,6 @@
-import type { Value } from 'plitejs';
 import type React from 'react';
 
+import type { Value } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps } from '../../lib';

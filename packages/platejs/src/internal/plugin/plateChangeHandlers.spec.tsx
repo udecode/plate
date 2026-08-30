@@ -7,11 +7,10 @@ import {
   property,
   schema,
   target,
-} from 'plitejs';
-import { jsxt } from 'plitejs/testing';
-
+} from '../../core';
 import { type Editor, createEditor } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
+import { jsxt } from '../../testing';
 import {
   createPlateChangeHandlersExtension,
   subscribePlateChangeCallbacks,

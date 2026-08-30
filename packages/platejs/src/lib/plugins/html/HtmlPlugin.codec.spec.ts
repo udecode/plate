@@ -1,15 +1,15 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
 import fc from 'fast-check';
+
+import { writeHostFragmentData } from '../../../dom';
 import {
   ContentSlice,
   createEditor as createPliteEditor,
   property,
   schema,
   target,
-} from 'plitejs';
-import { writeHostFragmentData } from 'plitejs/dom';
-
+} from '../../../facade';
 import { createEditor } from '../../editor';
 import { createEditorWithEditor } from '../../editor/withPlite';
 import { defineBasePlugin } from '../../plugin';

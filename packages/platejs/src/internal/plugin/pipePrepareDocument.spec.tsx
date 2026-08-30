@@ -1,5 +1,4 @@
-import { type EditorDocumentValue, property, schema, target } from 'plitejs';
-
+import { type EditorDocumentValue, property, schema, target } from '../../core';
 import { createEditor, defineDocumentMigrations } from '../../lib/editor';
 import { defineBasePlugin } from '../../lib/plugin';
 import { pipePrepareDocument } from './pipePrepareDocument';

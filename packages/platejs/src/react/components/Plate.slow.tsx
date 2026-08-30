@@ -2,9 +2,9 @@
 
 import { render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
-import { property, schema, target, type Value } from 'plitejs';
 import React from 'react';
 
+import { property, schema, target, type Value } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';

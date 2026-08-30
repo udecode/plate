@@ -22,10 +22,10 @@
   "include": ["../src/features/table/**/*"],
   "references": [
     {
-      "path": "../../plitejs/tsconfig.entrypoints/dom.json"
+      "path": "./core.json"
     },
     {
-      "path": "./core.json"
+      "path": "./proxies.json"
     }
   ]
 }

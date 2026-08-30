@@ -1,9 +1,8 @@
 /** @jsx jsxt */
 
-import { property } from 'plitejs';
-import { jsxt } from 'plitejs/testing';
-
+import { property } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { jsxt } from '../../testing';
 import { createEditor } from '../editor';
 import { definePlatePlugin } from '../plugin';
 import { pipeHandler } from './pipeHandler';

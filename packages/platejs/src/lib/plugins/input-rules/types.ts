@@ -8,8 +8,7 @@ import type {
   PropertyJsonValue,
   Range,
   TextInsertTextOptions,
-} from 'plitejs';
-
+} from '../../../facade';
 import type { Editor } from '../../editor';
 import type { AnyBasePlugin, PluginReference } from '../../plugin';
 
