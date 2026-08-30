@@ -783,24 +783,30 @@ test.describe('On richtext example', () => {
         : 'Control'
     );
 
-    await editor.root.press(`${modifier}+b`);
+    await editor.focus();
+
+    await page.keyboard.press(`${modifier}+b`);
     await page.keyboard.type('Bold');
-    await editor.root.press(`${modifier}+b`);
+    await page.keyboard.press(`${modifier}+b`);
     await page.keyboard.type(' Plain');
 
-    await editor.root.press(`${modifier}+i`);
+    await page.keyboard.press(`${modifier}+i`);
     await page.keyboard.type(' Italic');
-    await editor.root.press(`${modifier}+i`);
+    await page.keyboard.press(`${modifier}+i`);
 
-    await editor.root.press(`${modifier}+u`);
+    await page.keyboard.press(`${modifier}+u`);
     await page.keyboard.type(' Under');
-    await editor.root.press(`${modifier}+u`);
+    await page.keyboard.press(`${modifier}+u`);
 
-    await editor.root.press(`${modifier}+Backquote`);
+    await page.keyboard.press(`${modifier}+Backquote`);
     await page.keyboard.type(' Code');
-    await editor.root.press(`${modifier}+Backquote`);
+    await page.keyboard.press(`${modifier}+Backquote`);
     await page.keyboard.type(' Done');
 
+    await expect(editor.root.locator('strong')).toHaveCount(1);
+    await expect(editor.root.locator('em')).toHaveCount(1);
+    await expect(editor.root.locator('u')).toHaveCount(1);
+    await expect(editor.root.locator('code')).toHaveCount(1);
     await expect(editor.root.locator('strong')).toHaveText('Bold');
     await expect(editor.root.locator('em')).toHaveText(' Italic');
     await expect(editor.root.locator('u')).toHaveText(' Under');
