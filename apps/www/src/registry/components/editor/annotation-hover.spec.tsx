@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { createPlateEditor, Plate } from 'platejs/react';
+import { createEditor, Plate } from 'platejs/react';
 import * as React from 'react';
 
 import { BasicBlocksKit } from './basic-blocks';
@@ -12,7 +12,7 @@ import {
 
 describe('annotation hover', () => {
   it('renders comment and suggestion hover feedback with native CSS states', () => {
-    const editor = createPlateEditor({
+    const editor = createEditor({
       plugins: [...BasicBlocksKit, ...CommentKit],
       initialValue: [
         {
