@@ -52,7 +52,7 @@ const createSchedulerWindow = () => {
   };
 };
 
-test('DOM phase scheduler orders one frame by model, read, write, repair', () => {
+test('DOM phase scheduler orders explicit navigation after selection repair', () => {
   const fake = createSchedulerWindow();
   const scheduler = createDOMPhaseScheduler({
     getWindow: () => fake.schedulerWindow,
@@ -62,18 +62,22 @@ test('DOM phase scheduler orders one frame by model, read, write, repair', () =>
   scheduler.schedule('selection-repair', 'selection', () =>
     order.push('selection')
   );
+  scheduler.schedule('post-selection', 'navigation', () =>
+    order.push('navigation')
+  );
   scheduler.schedule('dom-write', 'write', () => order.push('write'));
   scheduler.schedule('model', 'model', () => order.push('model'));
   scheduler.schedule('dom-read', 'read', () => order.push('read'));
 
   expect(fake.animationFrames).toHaveLength(1);
   fake.flushAnimationFrame();
-  expect(order).toEqual(['model', 'read', 'write', 'selection']);
+  expect(order).toEqual(['model', 'read', 'write', 'selection', 'navigation']);
   expect(scheduler.diagnostics().lastFlushPhases).toEqual([
     'model',
     'dom-read',
     'dom-write',
     'selection-repair',
+    'post-selection',
   ]);
 });
 

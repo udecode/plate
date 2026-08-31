@@ -283,8 +283,10 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   behavior.
 - Escalate to `plite-plan` when the next useful win is API/runtime boundary.
 - Each mounted `Editable` owns one bounded DOM phase scheduler. Queued root
-  work runs in `model -> DOM read -> DOM/React write -> selection/repair`
-  order, coalesces by semantic key, and reports recursive loop-limit hits.
+  work runs in `model -> DOM read -> DOM/React write -> selection/repair ->
+  post-selection navigation` order, coalesces by semantic key, and reports
+  recursive loop-limit hits. Explicit navigation scrolls are final writes;
+  selection-preservation restores never override them.
 - Browser/OS policy clocks such as composition guard lifetimes and native event
   settling may use timers, but DOM mutation, scroll restoration, focus writes,
   and selection repair re-enter the root scheduler. Standalone internal test

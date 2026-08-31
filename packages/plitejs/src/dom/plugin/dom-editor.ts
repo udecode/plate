@@ -1744,12 +1744,54 @@ export const DOMEditor: DOMEditorInterface = {
     null,
 
   scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
+    const requestedScrollMarginTop = PathApi.isPath(target)
+      ? (() => {
+          const node = editor.read((state) => state.nodes.get(target)?.[0]);
+          const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
+          const window = element?.ownerDocument?.defaultView;
+
+          if (!element || !window) return 0;
+
+          const style = window.getComputedStyle(element);
+
+          return (
+            Number.parseFloat(
+              element.style.scrollMarginTop || style.scrollMarginTop
+            ) || 0
+          );
+        })()
+      : 0;
     const run = () => {
       if (PathApi.isPath(target)) {
         const node = editor.read((state) => state.nodes.get(target)?.[0]);
         const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
 
-        if (element) scrollIntoViewIfNeeded(element, options);
+        if (element) {
+          const scrollElement = EDITOR_TO_DOM_SCROLL.get(editor);
+          const usesRegisteredStartAlignment =
+            scrollElement &&
+            requestedScrollMarginTop > 0 &&
+            typeof options === 'object' &&
+            options.block === 'start' &&
+            options.scrollMode === 'always';
+
+          if (usesRegisteredStartAlignment) {
+            const elementRect = element.getBoundingClientRect();
+            const scrollRect = scrollElement.getBoundingClientRect();
+
+            scrollElement.scroll({
+              behavior: options.behavior ?? 'auto',
+              left: scrollElement.scrollLeft,
+              top:
+                scrollElement.scrollTop +
+                elementRect.top -
+                scrollRect.top -
+                requestedScrollMarginTop,
+            });
+          } else {
+            scrollIntoViewIfNeeded(element, options);
+          }
+        }
 
         return;
       }
@@ -1788,16 +1830,29 @@ export const DOMEditor: DOMEditorInterface = {
       }
     };
 
-    scheduleEditorDOMPhase(
-      editor,
-      'dom-write',
-      'dom-editor-scroll-into-view',
-      run,
-      {
+    if (typeof options !== 'object' || options.scrollMode !== 'always') {
+      scheduleEditorDOMPhase(
+        editor,
+        'dom-write',
+        'dom-editor-scroll-into-view',
+        run,
+        {
+          key: 'dom-editor-scroll-into-view',
+          timing: 'animation-frame',
+        }
+      );
+      return;
+    }
+
+    const scheduleNavigation = (label: string, callback: () => void) =>
+      scheduleEditorDOMPhase(editor, 'post-selection', label, callback, {
         key: 'dom-editor-scroll-into-view',
         timing: 'animation-frame',
-      }
-    );
+      });
+
+    scheduleNavigation('dom-editor-scroll-into-view-settle', () => {
+      scheduleNavigation('dom-editor-scroll-into-view', run);
+    });
   },
 
   resolvePliteNode: (editor, domNode) => {

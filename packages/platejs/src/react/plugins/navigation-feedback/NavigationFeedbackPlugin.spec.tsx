@@ -114,6 +114,7 @@ describe('NavigationFeedbackPlugin', () => {
       variant: 'navigated',
     });
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 25);
+    expect(editor.read.lastCommit()?.tags).toContain('skip-scroll-into-view');
 
     timeoutCallback?.();
 

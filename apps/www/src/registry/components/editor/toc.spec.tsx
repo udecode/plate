@@ -18,6 +18,7 @@ const ButtonMock = mock(({ children, className, ...props }: any) => (
 ));
 
 const flashTargetMock = mock();
+const scrollIntoViewMock = mock();
 const headingElement = document.createElement('h2');
 const headings = [
   { depth: 1, key: 'intro', title: 'Intro', type: 'h1' },
@@ -38,7 +39,12 @@ const useEditorSelectorMock = mock(
   ) => selector(editor)
 );
 const editor = {
-  api: { dom: { resolveDOMNode: () => headingElement } },
+  api: {
+    dom: {
+      resolveDOMNode: () => headingElement,
+      scrollIntoView: scrollIntoViewMock,
+    },
+  },
   plugin: () => ({ read: { headings: () => headings } }),
   read: {
     nodes: {
@@ -68,7 +74,7 @@ mock.module('platejs/react', () => ({
   useEditorScrollElement: () => null,
   useEditorSelector: useEditorSelectorMock,
   usePluginStore: (_plugin: unknown, key: string) =>
-    key === 'isScroll' ? false : 0,
+    key === 'isScroll' ? true : 80,
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -80,6 +86,8 @@ describe('toc node rendering', () => {
     PlateElementMock.mockClear();
     ButtonMock.mockClear();
     flashTargetMock.mockReset();
+    scrollIntoViewMock.mockReset();
+    headingElement.style.scrollMarginTop = '';
     useEditorSelectorMock.mockClear();
   });
 
@@ -111,6 +119,12 @@ describe('toc node rendering', () => {
     expect(flashTargetMock).toHaveBeenCalledWith({
       target: { path: [0], type: 'node' },
     });
+    expect(scrollIntoViewMock).toHaveBeenCalledWith([0], {
+      behavior: 'smooth',
+      block: 'start',
+      scrollMode: 'always',
+    });
+    expect(headingElement.style.scrollMarginTop).toBe('80px');
   });
 
   it('ignores selection commits and equal heading snapshots', async () => {

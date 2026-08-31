@@ -240,6 +240,7 @@ export const NavigationFeedbackPlugin = definePlatePlugin(
       flashTarget: (options: NavigationFlashTargetOptions) => {
         if (!tx.nodes.get(options.target.path)) return false;
 
+        tx.tags.add('skip-scroll-into-view');
         tx.effects.emit(navigationFeedbackEffect, {
           options,
           type: 'flash',

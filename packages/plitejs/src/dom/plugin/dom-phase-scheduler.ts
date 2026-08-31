@@ -6,7 +6,12 @@ import {
   EDITOR_TO_WINDOW,
 } from '../utils/weak-maps';
 
-export type DOMPhase = 'model' | 'dom-read' | 'dom-write' | 'selection-repair';
+export type DOMPhase =
+  | 'model'
+  | 'dom-read'
+  | 'dom-write'
+  | 'selection-repair'
+  | 'post-selection';
 
 export type DOMPhaseTiming =
   | 'animation-frame'
@@ -81,6 +86,7 @@ const PHASE_ORDER: Record<DOMPhase, number> = {
   'dom-read': 1,
   'dom-write': 2,
   'selection-repair': 3,
+  'post-selection': 4,
 };
 
 const ROOT_TO_DOM_PHASE_SCHEDULERS = new WeakMap<

@@ -101,6 +101,7 @@ Plite is the raw editor substrate. It must stay unopinionated, precise, and bori
 - Behavior specs define law; ordinary plugin and extension arrays compose accepted capabilities. Name a reusable kit only after real reuse, and treat runtime control as a separate proven job. Do not add a behavior-profile DSL.
 - Page layout is not core editor truth. Active caret, selection, and composition stay on the native/browser editing path.
 - Browser editing claims require model, DOM, selection/caret where observable, focus owner, legal trace, replayability, and follow-up typing.
+- Explicit navigation scrolling is the final post-selection DOM write; selection preservation must never restore over it.
 - Behavior before perf. Visual proof before green visible-UI claims. Keep perf packets only when correctness stays green. Run measured diagnosis and optimization through `$benchmark`.
 - Degraded huge-document modes stay degraded until native behavior is proved.
 

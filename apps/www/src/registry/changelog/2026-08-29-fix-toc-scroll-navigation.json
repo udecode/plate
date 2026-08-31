@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-29-fix-toc-scroll-navigation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-29-fix-toc-scroll-navigation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix table of contents navigation scrolling",
+  "targets": [
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-29-toc-fix-table-contents-navigation-a72494d3",
+      "kind": "fix",
+      "summary": "Fix table of contents clicks so the selected heading scrolls into view and stays there.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-29",
+          "entry": "2026-08-29-fix-toc-scroll-navigation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -166,27 +166,18 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
                   observedKey: activeKey,
                 });
 
-                const root = isScrollable ? container : document.body;
-
-                if (!root) return;
-
-                if (isScroll) {
-                  const top =
-                    element.getBoundingClientRect().top +
-                    root.scrollTop -
-                    root.getBoundingClientRect().top -
-                    topOffset;
-
-                  if (isScrollable) {
-                    container?.scrollTo({ behavior: 'smooth', top });
-                  } else {
-                    window.scrollTo({ behavior: 'smooth', top });
-                  }
-                }
-
                 const path = editor.read.nodes.path(item.key);
 
                 if (path) {
+                  element.style.scrollMarginTop = `${topOffset}px`;
+
+                  if (isScroll) {
+                    editor.api.dom.scrollIntoView(path, {
+                      behavior: 'smooth',
+                      block: 'start',
+                      scrollMode: 'always',
+                    });
+                  }
                   navigation.update.flashTarget({
                     target: { path, type: 'node' },
                   });
