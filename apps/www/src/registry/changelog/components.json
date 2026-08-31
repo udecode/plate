@@ -1,6 +1,47 @@
 {
   "schemaVersion": 1,
   "components": {
+    "date-node": [
+      "2026-08-31-fix-date-first-click-reopen",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-07-15-fix-date-picker-trigger",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "math": [
+      "2026-08-31-fix-inline-equation-first-click",
+      "2026-08-29-fix-block-equation-layout",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "comment": [
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
+    "suggestion": [
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "date": [
+      "2026-08-30-fix-date-calendar-single-click",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-align-v55-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "toc": [
+      "2026-08-29-fix-toc-scroll-navigation",
+      "2026-08-17-flat-editor-registry"
+    ],
     "details": ["2026-08-29-semantic-details"],
     "details-static": ["2026-08-29-semantic-details"],
     "details-toolbar-button": ["2026-08-29-semantic-details"],
@@ -70,13 +111,6 @@
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
     ],
-    "comment": [
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-26-fix-comment-popover-position",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
-    ],
     "select-editor": [
       "2026-08-28-canonical-editor-api-names",
       "2026-08-27-self-contained-editor-utilities",
@@ -105,13 +139,6 @@
       "2026-08-03-use-schema-handles",
       "2026-07-24-feature-toolbar-plugin-portals",
       "2025-11-20-biome-ultracite"
-    ],
-    "math": [
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-flat-editor-registry"
     ],
     "media-preview-dialog": [
       "2026-08-28-canonical-editor-api-names",
@@ -265,11 +292,6 @@
       "2026-01-28-add-code-drawing-node"
     ],
     "fumadocs": ["2026-08-25-base-first-registry"],
-    "date": [
-      "2026-08-25-base-first-registry",
-      "2026-08-18-align-v55-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "suggestion-style": ["2026-08-25-base-first-registry"],
     "plate-to-html": [
       "2026-08-24-fix-plate-to-html-element-ids",
@@ -486,12 +508,7 @@
     "markdown": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "slash": ["2026-08-17-flat-editor-registry"],
-    "suggestion": [
-      "2026-08-17-flat-editor-registry",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
     "tabbable": ["2026-08-17-flat-editor-registry"],
-    "toc": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
     "editor-static": [
       "2026-08-17-flat-editor-registry",
@@ -892,14 +909,6 @@
     "copilot-kit": [
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state"
-    ],
-    "date-node": [
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-07-15-fix-date-picker-trigger",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "editor-base-kit": [
       "2026-08-13-fix-registry-install-dependencies",

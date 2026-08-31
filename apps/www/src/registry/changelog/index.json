@@ -2,6 +2,114 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-08-31-fix-date-first-click-reopen",
+      "href": "/registry/changelog/2026-08-31-fix-date-first-click-reopen.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open and reopen Date popovers on the first click",
+      "change": {
+        "type": "source",
+        "date": "2026-08-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-31-fix-inline-equation-first-click",
+      "href": "/registry/changelog/2026-08-31-fix-inline-equation-first-click.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open inline equation editors on the first click",
+      "change": {
+        "type": "source",
+        "date": "2026-08-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-30-fix-annotation-hover-scroll",
+      "href": "/registry/changelog/2026-08-30-fix-annotation-hover-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix annotation hover scrolling",
+      "change": {
+        "type": "source",
+        "date": "2026-08-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment", "suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-30-fix-date-calendar-single-click",
+      "href": "/registry/changelog/2026-08-30-fix-date-calendar-single-click.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open Date calendars on the first click",
+      "change": {
+        "type": "source",
+        "date": "2026-08-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-29-fix-block-equation-layout",
+      "href": "/registry/changelog/2026-08-29-fix-block-equation-layout.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep block equations centered",
+      "change": {
+        "type": "source",
+        "date": "2026-08-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-29-fix-toc-scroll-navigation",
+      "href": "/registry/changelog/2026-08-29-fix-toc-scroll-navigation.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix table of contents navigation scrolling",
+      "change": {
+        "type": "source",
+        "date": "2026-08-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-29-semantic-details",
       "href": "/registry/changelog/2026-08-29-semantic-details.json",
       "status": "draft",
