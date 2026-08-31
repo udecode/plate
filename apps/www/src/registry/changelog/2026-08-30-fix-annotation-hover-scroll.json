@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-30-fix-annotation-hover-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-30-fix-annotation-hover-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-30",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix annotation hover scrolling",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-30-comment-fix-annotation-hover-scrolling-1e00a9bd",
+      "kind": "fix",
+      "summary": "Fix annotation hover scrolling",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "suggestion"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-30",
+          "entry": "2026-08-30-fix-annotation-hover-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -34,7 +34,7 @@ const getSuggestionApi = (editor: Editor) =>
 
 export const suggestionVariants = cva(
   cn(
-    'bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200'
+    'bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200 hover:bg-emerald-200/80'
   ),
   {
     defaultVariants: {
@@ -49,7 +49,7 @@ export const suggestionVariants = cva(
       },
       remove: {
         false: '',
-        true: 'bg-red-100 text-red-700',
+        true: 'bg-red-100 text-red-700 hover:bg-red-200/80',
       },
       removeActive: {
         false: '',
@@ -77,22 +77,20 @@ const voidRemoveSuggestionOverlayVariants = cva(
 export function getBlockSuggestionWrapperClassName({
   isActive,
   isColumnGroup,
-  isHover,
   isInsert,
   isRemove,
 }: {
   isActive: boolean;
   isColumnGroup: boolean;
-  isHover: boolean;
   isInsert: boolean;
   isRemove: boolean;
 }) {
   return cn(
     isColumnGroup && 'flex size-full rounded',
     suggestionVariants({
-      insertActive: isInsert && (isActive || isHover),
+      insertActive: isInsert && isActive,
       remove: isRemove,
-      removeActive: (isActive || isHover) && isRemove,
+      removeActive: isActive && isRemove,
     })
   );
 }
@@ -226,17 +224,14 @@ function SuggestionLineBreakElementAnchor({
 }
 
 export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
-  const { api, store } = useEditorPlugin(SuggestionPlugin);
+  const { api } = useEditorPlugin(SuggestionPlugin);
   const { leaf } = props;
 
-  const leafId: string = api.id(leaf) ?? '';
   const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginStore(SuggestionPlugin, 'hoverId');
   const dataList = api.dataList(leaf);
 
   const hasRemove = dataList.some((data) => data.type === 'remove');
   const hasActive = dataList.some((data) => data.id === activeSuggestionId);
-  const hasHover = dataList.some((data) => data.id === hoverSuggestionId);
 
   const diffOperation = { type: hasRemove ? 'delete' : 'insert' } as const;
 
@@ -250,20 +245,11 @@ export function SuggestionLeaf(props: PlateLeafProps<typeof SuggestionPlugin>) {
       as={Component}
       className={cn(
         suggestionVariants({
-          insertActive: hasActive || hasHover,
+          insertActive: hasActive,
           remove: hasRemove,
-          removeActive: (hasActive || hasHover) && hasRemove,
+          removeActive: hasActive && hasRemove,
         })
       )}
-      attributes={{
-        ...props.attributes,
-        onMouseEnter: () => {
-          store.set({ hoverId: leafId });
-        },
-        onMouseLeave: () => {
-          store.set({ hoverId: null });
-        },
-      }}
     >
       {props.children}
     </PlateLeaf>
@@ -306,18 +292,16 @@ export function SuggestionLineBreakContent({
   const isInsert = type === 'insert';
 
   const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginStore(SuggestionPlugin, 'hoverId');
 
   const isActive = activeSuggestionId === suggestionData.id;
-  const isHover = hoverSuggestionId === suggestionData.id;
 
   const { store } = useEditorPlugin(SuggestionPlugin);
   const lineBreakBadgeClassName = cn(
     isInsert &&
       'bg-transparent! text-emerald-700! transition-colors duration-200',
-    isInsert && (isActive || isHover) && 'bg-transparent! text-emerald-700!',
+    isInsert && isActive && 'bg-transparent! text-emerald-700!',
     isRemove && 'bg-transparent! text-red-700! transition-colors duration-200',
-    isRemove && (isActive || isHover) && 'bg-transparent! text-red-700!'
+    isRemove && isActive && 'bg-transparent! text-red-700!'
   );
 
   return (
@@ -375,16 +359,9 @@ export function SuggestionLineBreakContent({
           className={getBlockSuggestionWrapperClassName({
             isActive,
             isColumnGroup,
-            isHover,
             isInsert,
             isRemove,
           })}
-          onMouseEnter={() => {
-            store.set({ hoverId: suggestionData.id });
-          }}
-          onMouseLeave={() => {
-            store.set({ hoverId: null });
-          }}
           data-block-suggestion="true"
         >
           {children}
