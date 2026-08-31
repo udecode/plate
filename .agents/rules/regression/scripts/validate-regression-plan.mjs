@@ -60,6 +60,36 @@ const NO_FLASH_POINTER_PATTERN =
   /\b(?:flash(?:es|ed|ing)?|flicker(?:s|ed|ing)?|frame|pre-handler)\b/i;
 const CARET_VISIBILITY_PATTERN =
   /\bcaret(?:-accessible)?\b|\binsertion point\b|\beditable\s+(?:blank\s+)?(?:line|row)\b|\btext cursor\b/i;
+const FOCUS_FIRST_CLICK_PATTERN =
+  /\binitial-focus\s*:|\b(?:first|single|double)[-\s]?click\b[\s\S]{0,100}\b(?:focus|caret|selection)\b|\b(?:focus|caret|selection)\b[\s\S]{0,100}\bclick\b|第一次点击[\s\S]{0,80}(?:焦点|光标|选中)|(?:焦点|光标|选中)[\s\S]{0,80}(?:单击|双击)/i;
+const PHYSICAL_HIT_PATH_PATTERN = /\bphysical-hit-path:\s*\S/i;
+const CAPTURE_ROUTING_PATH_PATTERN = /\bcapture-routing-path:\s*\S/i;
+const INTERACTION_INTERCEPTOR_PATH_PATTERN =
+  /\binteraction-interceptor-path:\s*\S/i;
+const REPORTER_PROFILE_PATTERN = /\breporter-profile:\s*[^;|]+/i;
+const hasFocusFirstEventOrder = (value) => {
+  const trace =
+    String(value).match(/\bevent-order:\s*([^;|]+)/i)?.[1]?.toLowerCase() ??
+    '';
+
+  return ['pointerdown', 'mousedown', 'click'].every((event) =>
+    trace.includes(event)
+  );
+};
+const getInitialFocusState = (value) => {
+  const state =
+    String(value).match(/\binitial-focus:\s*([^;|]+)/i)?.[1]?.trim() ?? '';
+
+  if (
+    !state ||
+    /[<>{}]/.test(state) ||
+    /^(?:pending|todo|tbd|unknown|unspecified|reporter state)$/i.test(state)
+  ) {
+    return null;
+  }
+
+  return state.toLowerCase();
+};
 const POSITIVE_REFERENCE_ROLE_PATTERN =
   /\b(?:positive(?:[-\s]+(?:authority|reference))|correct(?:[-\s]+reference))\b/i;
 const REFERENCE_GEOMETRY_PATTERN =
@@ -977,6 +1007,277 @@ export const validateRegressionPlan = (
           );
         }
       }
+
+      if (
+        row.disposition?.toLowerCase() === "required" &&
+        INTERACTION_INTERCEPTOR_PATH_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const phase = row.phase?.toLowerCase();
+        const anchor = `dom-native@${phase}`;
+        const domOracle = caseOracles?.get(anchor);
+        const evidence = [row.source_reference, row.claim].join(" ");
+
+        if (!/\bexternal-interceptor-state:\s*\S/i.test(evidence)) {
+          errors.push(
+            `reporter evidence ${caseId} interaction interceptor requires external-interceptor-state`
+          );
+        }
+        if (!anchors.includes(anchor)) {
+          errors.push(
+            `reporter evidence ${caseId} interaction interceptor requires oracle anchor ${anchor}`
+          );
+        }
+        if (!domOracle || domOracle.applies?.toLowerCase() !== "yes") {
+          errors.push(
+            `reporter evidence ${caseId} interaction interceptor requires applicable oracle ${anchor}`
+          );
+        } else {
+          if (!/\b(?:browser|exact-chrome)\b/i.test(domOracle.proof_layer ?? "")) {
+            errors.push(
+              `${caseId} interaction interceptor requires browser proof in ${anchor}`
+            );
+          }
+          if (
+            complete &&
+            !/\bexternal-interceptor-isolated:\s*pass\b/i.test(
+              domOracle.result ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} interaction interceptor requires external-interceptor-isolated: pass in ${anchor}`
+            );
+          }
+        }
+      }
+
+      if (
+        row.disposition?.toLowerCase() === "required" &&
+        CAPTURE_ROUTING_PATH_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const phase = row.phase?.toLowerCase();
+        const anchor = `dom-native@${phase}`;
+        const domOracle = caseOracles?.get(anchor);
+
+        if (!anchors.includes(anchor)) {
+          errors.push(
+            `reporter evidence ${caseId} capture routing requires oracle anchor ${anchor}`
+          );
+        }
+        if (!domOracle || domOracle.applies?.toLowerCase() !== "yes") {
+          errors.push(
+            `reporter evidence ${caseId} capture routing requires applicable oracle ${anchor}`
+          );
+        } else {
+          if (
+            !/\binteraction-owner-chain:\s*\S/i.test(
+              domOracle.positive_assertion ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} capture routing requires interaction-owner-chain in ${anchor}`
+            );
+          }
+          if (
+            !/\bcapture-routing-contract:\s*\S/i.test(
+              domOracle.positive_assertion ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} capture routing requires capture-routing-contract in ${anchor}`
+            );
+          }
+          if (
+            !/\b(?:dom|browser|exact-chrome)\b/i.test(
+              domOracle.proof_layer ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} capture routing requires executable DOM/browser proof in ${anchor}`
+            );
+          }
+          if (complete) {
+            if (
+              !/\binteraction-owner-chain:\s*pass\b/i.test(
+                domOracle.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} capture routing requires interaction-owner-chain: pass in ${anchor}`
+              );
+            }
+            if (
+              !/\bcapture-routing-contract:\s*pass\b/i.test(
+                domOracle.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} capture routing requires capture-routing-contract: pass in ${anchor}`
+              );
+            }
+          }
+        }
+      }
+
+      if (
+        row.disposition?.toLowerCase() === "required" &&
+        FOCUS_FIRST_CLICK_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const phase = row.phase?.toLowerCase();
+        const requiredClickAnchors = [
+          `dom-native@${phase}`,
+          `focus@${phase}`,
+          `popup@${phase}`,
+        ];
+
+        for (const anchor of requiredClickAnchors) {
+          if (!anchors.includes(anchor)) {
+            errors.push(
+              `reporter evidence ${caseId} focus-first click requires oracle anchor ${anchor}`
+            );
+          }
+
+          const oracle = caseOracles?.get(anchor);
+
+          if (!oracle || oracle.applies?.toLowerCase() !== "yes") {
+            errors.push(
+              `reporter evidence ${caseId} focus-first click requires applicable oracle ${anchor}`
+            );
+          }
+        }
+
+        const domOracle = caseOracles?.get(`dom-native@${phase}`);
+        const focusOracle = caseOracles?.get(`focus@${phase}`);
+        const popupOracle = caseOracles?.get(`popup@${phase}`);
+        const evidenceInitialFocus = getInitialFocusState(
+          [row.source_reference, row.claim].join(" ")
+        );
+        const oracleInitialFocus = getInitialFocusState(
+          focusOracle?.positive_assertion ?? ""
+        );
+
+        if (!hasFocusFirstEventOrder(domOracle?.positive_assertion ?? '')) {
+          errors.push(
+            `${caseId} focus-first click requires event-order with pointerdown, mousedown, and click in dom-native@${phase}`
+          );
+        }
+        if (!evidenceInitialFocus) {
+          errors.push(
+            `reporter evidence ${caseId} focus-first click requires initial-focus: <concrete reporter state>`
+          );
+        }
+        if (!oracleInitialFocus) {
+          errors.push(
+            `${caseId} focus-first click requires initial-focus: <concrete reporter state> in focus@${phase}`
+          );
+        } else if (
+          evidenceInitialFocus &&
+          oracleInitialFocus !== evidenceInitialFocus
+        ) {
+          errors.push(
+            `${caseId} focus-first click initial-focus must match reporter evidence in focus@${phase}`
+          );
+        }
+        if (
+          !/\bfirst-click-popup:\s*open\b/i.test(
+            popupOracle?.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} focus-first click requires first-click-popup: open in popup@${phase}`
+          );
+        }
+
+        if (
+          PHYSICAL_HIT_PATH_PATTERN.test(
+            [row.source_reference, row.claim].join(" ")
+          )
+        ) {
+          if (
+            !/\bphysical-hit-target:\s*\S/i.test(
+              domOracle?.positive_assertion ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} physical hit path requires physical-hit-target in dom-native@${phase}`
+            );
+          }
+          if (
+            !/\bselection-origin:\s*physical-pointer\b/i.test(
+              focusOracle?.positive_assertion ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} physical hit path requires selection-origin: physical-pointer in focus@${phase}`
+            );
+          }
+          for (const [anchor, oracle] of [
+            [`dom-native@${phase}`, domOracle],
+            [`focus@${phase}`, focusOracle],
+            [`popup@${phase}`, popupOracle],
+          ]) {
+            if (!/\b(?:browser|exact-chrome)\b/i.test(oracle?.proof_layer ?? "")) {
+              errors.push(
+                `${caseId} physical hit path requires browser proof in ${anchor}`
+              );
+            }
+          }
+        }
+
+        if (complete) {
+          if (!/\bevent-order:\s*pass\b/i.test(domOracle?.result ?? "")) {
+            errors.push(
+              `${caseId} focus-first click requires event-order: pass in dom-native@${phase}`
+            );
+          }
+          if (!/\binitial-focus:\s*pass\b/i.test(focusOracle?.result ?? "")) {
+            errors.push(
+              `${caseId} focus-first click requires initial-focus: pass in focus@${phase}`
+            );
+          }
+          if (
+            !/\bfirst-click-popup:\s*pass\b/i.test(popupOracle?.result ?? "")
+          ) {
+            errors.push(
+              `${caseId} focus-first click requires first-click-popup: pass in popup@${phase}`
+            );
+          }
+          if (
+            PHYSICAL_HIT_PATH_PATTERN.test(
+              [row.source_reference, row.claim].join(" ")
+            )
+          ) {
+            if (
+              !/\bphysical-hit-target:\s*pass\b/i.test(
+                domOracle?.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} physical hit path requires physical-hit-target: pass in dom-native@${phase}`
+              );
+            }
+            if (!/\bclick-delivery:\s*pass\b/i.test(domOracle?.result ?? "")) {
+              errors.push(
+                `${caseId} physical hit path requires click-delivery: pass in dom-native@${phase}`
+              );
+            }
+            if (
+              !/\bselection-origin:\s*pass\b/i.test(
+                focusOracle?.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} physical hit path requires selection-origin: pass in focus@${phase}`
+              );
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1355,6 +1656,13 @@ export const validateRegressionPlan = (
       if (!isResolved(receipt.host)) {
         errors.push(`${label} requires Host identity or host:none reason`);
       }
+      const receiptBaseUrl = receipt.host?.match(/\bbase-url:([^;]+)/i)?.[1];
+
+      if (receiptBaseUrl && !receipt.command.includes(receiptBaseUrl)) {
+        errors.push(
+          `${label} managed browser command must reference its exact base URL ${receiptBaseUrl}`
+        );
+      }
 
       const latestInput = parseTimestamp(receipt.latestInputMtime);
       const proofStarted = parseTimestamp(receipt.proofStarted);
@@ -1449,6 +1757,84 @@ export const validateRegressionPlan = (
       ) {
         errors.push(
           `${caseId} requires an executable-attested exact Chrome proof receipt`
+        );
+      }
+    }
+
+    const reporterProfileEvidence = (evidenceByCase.get(caseId) ?? []).filter(
+      (row) =>
+        REPORTER_PROFILE_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+    );
+
+    if (reporterProfileEvidence.length > 0) {
+      const reporterProfileText = reporterProfileEvidence
+        .map((row) => [row.source_reference, row.claim].join(" "))
+        .join(" ");
+      const profileOracleRows = [];
+
+      if (
+        !REPORTER_PROFILE_PATTERN.test(selected.exact_environment ?? "")
+      ) {
+        errors.push(
+          `${caseId} reporter profile requires Exact environment reporter-profile: <browser and state>`
+        );
+      }
+      if (
+        /\bchrome\b/i.test(reporterProfileText) &&
+        !/^exact-chrome:\s*\S/i.test(selected.exact_environment ?? "")
+      ) {
+        errors.push(
+          `${caseId} Chrome reporter profile requires Exact environment exact-chrome: <proof>`
+        );
+      }
+
+      for (const observation of ["dom-native", "focus", "popup"]) {
+        const applicableRows = Array.from(oracleRows?.values() ?? []).filter(
+          (row) =>
+            row.observation?.toLowerCase() === observation &&
+            row.applies?.toLowerCase() === "yes"
+        );
+
+        for (const row of applicableRows) {
+          profileOracleRows.push(row);
+          const phase = row.phase?.toLowerCase();
+          const label = `${caseId} ${observation}@${phase}`;
+
+          if (!/\breporter-profile\b/i.test(row.proof_layer ?? "")) {
+            errors.push(`${label} requires reporter-profile proof`);
+          }
+          if (
+            complete &&
+            !/\breporter-profile-replay:\s*pass\b/i.test(row.result ?? "")
+          ) {
+            errors.push(`${label} requires reporter-profile-replay: pass`);
+          }
+        }
+      }
+
+      const toolNativeProfileProof =
+        /\btool-proof:\s*computer-use\b/i.test(
+          selected.exact_environment ?? ""
+        ) &&
+        profileOracleRows.length > 0 &&
+        profileOracleRows.every(
+          (row) =>
+            /\bcomputer-use\b/i.test(row.proof_layer ?? "") &&
+            (!complete ||
+              /\breporter-profile-replay:\s*pass\b/i.test(row.result ?? ""))
+        );
+
+      if (
+        complete &&
+        !receipts.some((receipt) =>
+          REPORTER_PROFILE_PATTERN.test(receipt.host ?? "")
+        ) &&
+        !toolNativeProfileProof
+      ) {
+        errors.push(
+          `${caseId} requires a profile-bound receipt or explicit tool-proof: computer-use`
         );
       }
     }

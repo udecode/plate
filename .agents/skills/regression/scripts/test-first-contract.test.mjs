@@ -266,6 +266,7 @@ test('exact Chrome proof attests the launched executable and separates proof-hos
         process.execPath,
         '-e',
         'process.exit(0)',
+        'http://localhost:1',
       ],
       { cwd: root, encoding: 'utf8' }
     );
@@ -303,6 +304,7 @@ test('exact Chrome proof attests the launched executable and separates proof-hos
         '-e',
         'process.exit(0)',
         fakeChrome,
+        'http://localhost:1',
       ],
       { cwd: root, encoding: 'utf8' }
     );
@@ -391,6 +393,217 @@ test('blocking pixel classifiers reject absent and duplicate layers', () => {
     browserPack,
     /reporter-visible paint claim[\s\S]*classified[\s\S]*known-correct[\s\S]*single-layer[\s\S]*known-absent[\s\S]*known-invalid duplicate-layer[\s\S]*positive-control: pass[\s\S]*negative-control: pass[\s\S]*duplicate-control: pass[\s\S]*Computed style[\s\S]*not final paint proof/
   );
+});
+
+test('final screenshots reassert settled reporter state after capture', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /final screenshot[\s\S]*capture[\s\S]*settle boundary[\s\S]*reassert the reporter final state[\s\S]*pre-capture transient poll[\s\S]*cannot close/i
+  );
+  assert.match(
+    methodology,
+    /final screenshot[\s\S]*capture[\s\S]*settle boundary[\s\S]*reassert the reporter final state[\s\S]*pre-capture transient poll[\s\S]*cannot close/i
+  );
+  assert.match(
+    template,
+    /final screenshot[\s\S]*settled reporter final state after capture[\s\S]*pre-capture transient poll[\s\S]*cannot close/i
+  );
+});
+
+test('ordering fixes cover queued-before and delayed-after competitors', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /ordering fix[\s\S]*pre-handler[\s\S]*already queued[\s\S]*delayed post-handler re-entry[\s\S]*one ordering window cannot close/i
+  );
+  assert.match(
+    methodology,
+    /ordering fix[\s\S]*pre-handler[\s\S]*already queued[\s\S]*delayed post-handler re-entry[\s\S]*one ordering window cannot close/i
+  );
+  assert.match(
+    template,
+    /ordering fix[\s\S]*pre-handler already-queued competitor[\s\S]*delayed post-handler re-entry[\s\S]*one[\s\S]*ordering window cannot close/i
+  );
+});
+
+test('geometry placement proof uses a bounded visible interval', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /target placement[\s\S]*bounded visible interval[\s\S]*lower and upper bound[\s\S]*one-sided threshold cannot prove visibility/i
+  );
+  assert.match(
+    methodology,
+    /target placement[\s\S]*bounded visible interval[\s\S]*lower and upper bound[\s\S]*one-sided threshold cannot prove visibility/i
+  );
+  assert.match(
+    template,
+    /target placement[\s\S]*bounded visible interval[\s\S]*lower and upper bound[\s\S]*one-sided threshold cannot prove visibility/i
+  );
+});
+
+test('geometry library mocks remain proxy evidence', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /geometry library[\s\S]*mock[\s\S]*records[\s\S]*only the call[\s\S]*proxy[\s\S]*real[\s\S]*calculation[\s\S]*exact browser probe/i
+  );
+  assert.match(
+    methodology,
+    /geometry library[\s\S]*mock[\s\S]*records[\s\S]*only the call[\s\S]*proxy[\s\S]*real[\s\S]*calculation[\s\S]*exact browser probe/i
+  );
+  assert.match(
+    template,
+    /geometry library[\s\S]*mock[\s\S]*proxy evidence[\s\S]*real[\s\S]*calculation[\s\S]*exact browser probe/i
+  );
+});
+
+test('click reports reject drag surrogates without a delivered click', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  assert.match(
+    regressionRule,
+    /reporter click[\s\S]*drag surrogate[\s\S]*delivered[\s\S]*click[\s\S]*cannot authorize/i
+  );
+  assert.match(
+    methodology,
+    /reporter click[\s\S]*drag surrogate[\s\S]*delivered[\s\S]*click[\s\S]*cannot authorize/i
+  );
+  assert.match(
+    template,
+    /reporter click[\s\S]*drag surrogate[\s\S]*delivered[\s\S]*click[\s\S]*cannot authorize/i
+  );
+});
+
+test('focus-first click reports require the complete first gesture', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /initial-focus:\s*<concrete reporter state>/i);
+    assert.match(source, /reporter evidence/i);
+    assert.match(source, /both[\s\S]{0,80}(?:evidence|focus oracle)/i);
+    assert.match(
+      source,
+      /event-order[\s\S]{0,180}pointerdown[\s\S]{0,180}mousedown[\s\S]{0,180}click/i
+    );
+    assert.match(source, /focus(?: when emitted|[^.]{0,80}only when[^.]{0,80}emits)/i);
+    assert.match(source, /first-click-popup:\s*open/i);
+    assert.match(source, /fireEvent\.click/i);
+  }
+});
+
+test('repeated focus-first contradictions reject popup mocks that own the click', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /passive popup wrapper/i);
+    assert.match(source, /does not inject|never injects/i);
+    assert.match(source, /component-open-owner:\s*pass/i);
+  }
+});
+
+test('reporter-video hit paths reject locator clicks and seeded selections', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /physical-hit-path:\s*<first target -> action target>/i);
+    assert.match(source, /physical-hit-target:\s*(?:<actual target>|pass)/i);
+    assert.match(source, /selection-origin:\s*(?:physical-pointer|pass)/i);
+    assert.match(source, /click-delivery:\s*pass/i);
+    assert.match(source, /locator(?:\.click\(\)| clicks?)/i);
+    assert.match(source, /(?:direct|programmatically created|programmatic)[\s\S]{0,80}(?:Range|selection|caret)/i);
+  }
+});
+
+test('capture routing validates attributes on the actual ancestor owner', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /capture-routing-path:\s*<target -> capture owner>/i);
+    assert.match(source, /interaction-owner-chain:\s*<nodes>/i);
+    assert.match(source, /capture-routing-contract:\s*<owner attributes>/i);
+    assert.match(source, /interaction-owner-chain:\s*pass/i);
+    assert.match(source, /capture-routing-contract:\s*pass/i);
+    assert.match(source, /child[\s\S]{0,100}(?:invalid|proxy)/i);
+  }
+});
+
+test('live-tab contradictions inventory external capture interceptors', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(
+      source,
+      /interaction-interceptor-path:\s*<global capture owner -> target>/i
+    );
+    assert.match(source, /external-interceptor-state:\s*<active mode\/settings>/i);
+    assert.match(source, /preventDefault[\s\S]{0,80}stopPropagation/i);
+    assert.match(source, /external-interceptor-isolated:\s*pass/i);
+    assert.match(
+      source,
+      /(?:(?:do not|may not)[\s\S]{0,100}compensat|cannot[\s\S]{0,100}compensat)/i
+    );
+  }
+});
+
+test('managed browser receipts bind the proof command to the recorded base URL', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /managed browser (?:receipt|host)/i);
+    assert.match(source, /literal[^.]*--base-url/i);
+    assert.match(source, /PLAYWRIGHT_BASE_URL=<url>/i);
+    assert.match(source, /host label/i);
+  }
 });
 
 test('shared style changes inventory explicit paint neutralizers', () => {

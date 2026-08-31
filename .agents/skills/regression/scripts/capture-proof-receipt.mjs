@@ -114,6 +114,12 @@ const assertArgs = (args) => {
     );
   }
 
+  if (managedHost && !args.command.join(' ').includes(args.baseUrl)) {
+    throw new Error(
+      'managed browser proof command must reference the exact --base-url'
+    );
+  }
+
   if (/^exact-chrome(?::|$)/i.test(args.browser ?? '')) {
     if (!args.browserExecutable) {
       throw new Error('exact Chrome proof requires --browser-executable');

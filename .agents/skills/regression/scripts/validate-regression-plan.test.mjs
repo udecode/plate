@@ -39,11 +39,12 @@ const receiptRow = ({
   host = "host:none - deterministic Node workflow",
   inputDigest = digest,
 } = {}) => {
+  const baseUrl = host.match(/\bbase-url:([^;]+)/i)?.[1];
   const receipt = {
     attempt: String(attempt),
     caseId,
     claim: "completed",
-    command: "node --test validate-regression-plan.test.mjs",
+    command: `${baseUrl ? `PLAYWRIGHT_BASE_URL=${baseUrl} ` : ""}node --test validate-regression-plan.test.mjs`,
     host,
     inputCount: "3",
     inputDigest,
@@ -67,12 +68,18 @@ const receiptRow = ({
 
 const oracleRows = ({
   browserCommand = false,
+  captureRoutingPath = false,
   exactChrome = false,
+  externalInterceptorPath = false,
+  focusFirstClick = false,
+  physicalHitPath = false,
   missingForbidden = false,
   missingPixelControls = false,
   missingPopupFollowUp = false,
   popupLifecycle = false,
   popupSamePhaseOracles = true,
+  reporterProfile = false,
+  reporterProfileToolProof = false,
 } = {}) => {
   const rows = [
     {
@@ -105,6 +112,82 @@ const oracleRows = ({
       "runtime-errors",
       "follow-up-input",
     ].map((observation) => {
+      if (focusFirstClick) {
+        const clickOracle = {
+          "dom-native": {
+            forbidden: "the first click is consumed before click delivery",
+            positive: `event-order: pointerdown>mousedown>focus>click from one gesture${
+              physicalHitPath ? "; physical-hit-target: date-button" : ""
+            }${
+              captureRoutingPath
+                ? "; interaction-owner-chain: date-button -> inline-void -> editable; capture-routing-contract: draggable on inline-void"
+                : ""
+            }`,
+            result: `pass: event-order: pass${
+              physicalHitPath
+                ? "; physical-hit-target: pass; click-delivery: pass"
+                : ""
+            }${
+              captureRoutingPath
+                ? "; interaction-owner-chain: pass; capture-routing-contract: pass"
+                : ""
+            }${
+              externalInterceptorPath
+                ? "; external-interceptor-isolated: pass"
+                : ""
+            }`,
+          },
+          focus: {
+            forbidden: "the test starts from a different focus state",
+            positive: `initial-focus: editor-text-caret-before-date; before pointerdown${
+              physicalHitPath ? "; selection-origin: physical-pointer" : ""
+            }`,
+            result: `pass: initial-focus: pass${
+              physicalHitPath ? "; selection-origin: pass" : ""
+            }`,
+          },
+          popup: {
+            forbidden: "the popup waits for a second click",
+            positive: "first-click-popup: open immediately after click",
+            result: "pass: first-click-popup: pass",
+          },
+          "runtime-errors": {
+            forbidden: "the first click throws",
+            positive: "the first gesture emits no runtime error",
+            result: "pass: no runtime error",
+          },
+          "follow-up-input": {
+            forbidden: "the opened popup ignores its next input",
+            positive: "the opened popup accepts the next input",
+            result: "pass: follow-up input",
+          },
+        }[observation];
+
+        if (clickOracle) {
+          return {
+            applies: "yes",
+            layer:
+              reporterProfile
+                ? `exact-chrome reporter-profile browser${
+                    reporterProfileToolProof ? " computer-use" : ""
+                  }`
+                : physicalHitPath ||
+                    captureRoutingPath ||
+                    externalInterceptorPath
+                ? "browser"
+                : "dom",
+            observation,
+            ...clickOracle,
+            result: `${clickOracle.result}${
+              reporterProfile &&
+              ["dom-native", "focus", "popup"].includes(observation)
+                ? "; reporter-profile-replay: pass"
+                : ""
+            }`,
+          };
+        }
+      }
+
       const applies =
         popupLifecycle &&
         (observation === "popup" ||
@@ -183,10 +266,15 @@ const reporterEvidenceRows = ({
   anchorToInapplicableOracle = false,
   failedCount = 0,
   failureKind = "reporter-contradiction",
+  focusFirstClick = false,
+  captureRoutingPath = false,
+  externalInterceptorPath = false,
+  physicalHitPath = false,
   missingBase = false,
   missingLatestReporterDelta = false,
   missingOracle = false,
   preImplementation = false,
+  reporterProfile = false,
   supersededBase = false,
 } = {}) => {
   const result = preImplementation
@@ -208,12 +296,38 @@ const reporterEvidenceRows = ({
     rows.push(
       `| case-complete | ${
         failedCount > 0 ? "latest-reporter-delta" : "current-report"
-      } | latest reporter evidence | after-action | semantic closure matches the cumulative report | required | ${
-        missingOracle
-          ? "focus@during-action"
-          : anchorToInapplicableOracle
-          ? "focus@after-action"
-          : "model@after-action"
+      } | ${
+        focusFirstClick
+          ? `latest reporter evidence: ${
+              reporterProfile
+                ? "reporter-profile: Chrome Dev Profile with Agentation state; "
+                : ""
+            }${
+              physicalHitPath
+                ? "physical-hit-path: word-dates -> date-button; "
+                : ""
+            }${
+              captureRoutingPath
+                ? "capture-routing-path: date-button -> inline-void -> editable; "
+                : ""
+            }${
+              externalInterceptorPath
+                ? "interaction-interceptor-path: Agentation-document-capture -> date-button; external-interceptor-state: active blockInteractions=true; "
+                : ""
+            }first click focuses and second click opens`
+          : "latest reporter evidence"
+      } | after-action | ${
+        focusFirstClick
+          ? "initial-focus: editor-text-caret-before-date; one click opens the popup immediately"
+          : "semantic closure matches the cumulative report"
+      } | required | ${
+        focusFirstClick
+          ? "dom-native@after-action, focus@after-action, popup@after-action, follow-up-input@follow-up"
+          : missingOracle
+            ? "focus@during-action"
+            : anchorToInapplicableOracle
+              ? "focus@after-action"
+              : "model@after-action"
       } | test: ${semanticTestPath}#${semanticTestTitle} | ${result} |`
     );
   }
@@ -261,7 +375,10 @@ const fixture = ({
   anchorToInapplicableOracle = false,
   architectureVerdict = "patch",
   browserCommand = false,
+  captureRoutingPath = false,
   exactChrome = false,
+  externalInterceptorPath = false,
+  focusFirstClick = false,
   failedCount = 0,
   failureKind = "reporter-contradiction",
   failedRows,
@@ -277,16 +394,23 @@ const fixture = ({
   missingReporterOracle = false,
   popupLifecycle = false,
   popupSamePhaseOracles = true,
+  physicalHitPath = false,
   preImplementation = false,
   preImplementationBaseline = false,
   receiptIdOverride,
   redTestEscalation = "unit-red: semantic validator test fails before repair",
+  reporterProfile = false,
+  reporterProfileToolProof = false,
   selectedTestCommand = `${semanticTestPath}; node --test`,
   supersededBaseEvidence = false,
   unresolvedGateFailure = false,
 } = {}) => {
   const host = exactChrome
-    ? "pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140;browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 140.0"
+    ? `pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:exact-chrome:140;browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 140.0${
+        reporterProfile && !reporterProfileToolProof
+          ? ";reporter-profile:Chrome Dev Profile with Agentation state"
+          : ""
+      }`
     : "host:none - deterministic Node workflow";
   let receipt = receiptRow({
     attempt: failedCount + 1,
@@ -327,7 +451,13 @@ Selected executable cases:
       : "accepted-product-law: Regression semantic closure contract"
   } | ${redTestEscalation} | ${
     exactChrome
-      ? "exact-chrome: installed Chrome 140 on the proof host"
+      ? `exact-chrome: installed Chrome 140 on the proof host${
+          reporterProfile
+            ? `; reporter-profile: Chrome Dev Profile with Agentation state${
+                reporterProfileToolProof ? "; tool-proof: computer-use" : ""
+              }`
+            : ""
+        }`
       : browserCommand
         ? "browser: current-source Chromium route"
         : "N/A: deterministic Node workflow"
@@ -340,8 +470,13 @@ Reporter evidence inventory:
 |---|---|---|---|---|---|---|---|---|
 ${reporterEvidenceRows({
   anchorToInapplicableOracle,
+  captureRoutingPath,
+  externalInterceptorPath,
   failedCount,
   failureKind,
+  focusFirstClick,
+  physicalHitPath,
+  reporterProfile,
   missingBase: missingBaseEvidence,
   missingLatestReporterDelta,
   missingOracle: missingReporterOracle,
@@ -354,12 +489,18 @@ Reporter oracle matrix:
 |---|---|---|---|---|---|---|---|---|
 ${oracleRows({
   browserCommand,
+  captureRoutingPath,
   exactChrome,
+  externalInterceptorPath,
+  focusFirstClick,
+  physicalHitPath,
   missingForbidden,
   missingPixelControls,
   missingPopupFollowUp,
   popupLifecycle,
   popupSamePhaseOracles,
+  reporterProfile,
+  reporterProfileToolProof,
 })}
 
 Proof receipts:
@@ -456,6 +597,254 @@ test("pre-implementation validation permits final-proof placeholders", () => {
       rootDir: root,
     }),
     []
+  );
+});
+
+test("focus-first click plans require the complete first gesture", () => {
+  const valid = fixture({ focusFirstClick: true });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const missingSetupAndOrder = valid
+    .replaceAll(
+      "initial-focus: editor-text-caret-before-date",
+      "editor focus is unspecified"
+    )
+    .replace(
+      "event-order: pointerdown>mousedown>focus>click",
+      "click event delivered"
+    )
+    .replace("first-click-popup: open", "popup eventually opens");
+  const setupErrors = validateRegressionPlan(missingSetupAndOrder, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    setupErrors,
+    /requires initial-focus: <concrete reporter state>/
+  );
+  assert.match(
+    setupErrors,
+    /requires event-order with pointerdown, mousedown, and click/
+  );
+  assert.match(setupErrors, /requires first-click-popup: open/);
+
+  const mismatchedSetup = valid.replace(
+    "initial-focus: editor-text-caret-before-date; before pointerdown",
+    "initial-focus: outside-editor; before pointerdown"
+  );
+  const mismatchErrors = validateRegressionPlan(mismatchedSetup, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(mismatchErrors, /initial-focus must match reporter evidence/);
+
+  const alreadyFocusedGesture = valid.replaceAll(
+    "pointerdown>mousedown>focus>click",
+    "pointerdown>mousedown>click"
+  );
+
+  assert.deepEqual(
+    validateRegressionPlan(alreadyFocusedGesture, {
+      complete: true,
+      rootDir: root,
+    }),
+    []
+  );
+
+  const missingCompletionTrace = valid
+    .replace("pass: initial-focus: pass", "pass: focus observed")
+    .replace("pass: event-order: pass", "pass: click observed")
+    .replace("pass: first-click-popup: pass", "pass: popup observed");
+  const completionErrors = validateRegressionPlan(missingCompletionTrace, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(completionErrors, /requires initial-focus: pass/);
+  assert.match(completionErrors, /requires event-order: pass/);
+  assert.match(completionErrors, /requires first-click-popup: pass/);
+});
+
+test("reporter-video hit paths reject locator and programmatic-selection proof", () => {
+  const valid = fixture({
+    failedCount: 1,
+    focusFirstClick: true,
+    physicalHitPath: true,
+  });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const proxyOnly = valid
+    .replaceAll("physical-hit-target: date-button", "locator click reached Date")
+    .replaceAll("selection-origin: physical-pointer", "selection was seeded")
+    .replace("; physical-hit-target: pass; click-delivery: pass", "")
+    .replace("; selection-origin: pass", "");
+  const errors = validateRegressionPlan(proxyOnly, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires physical-hit-target/);
+  assert.match(errors, /requires selection-origin: physical-pointer/);
+  assert.match(errors, /requires physical-hit-target: pass/);
+  assert.match(errors, /requires click-delivery: pass/);
+  assert.match(errors, /requires selection-origin: pass/);
+});
+
+test("reporter-visible browser profiles reject clean-profile substitution", () => {
+  const valid = fixture({
+    exactChrome: true,
+    focusFirstClick: true,
+    reporterProfile: true,
+  });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const cleanEnvironment = valid.replace(
+    "; reporter-profile: Chrome Dev Profile with Agentation state",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(cleanEnvironment, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires Exact environment reporter-profile/
+  );
+
+  const cleanOracle = valid.replaceAll(
+    "exact-chrome reporter-profile browser",
+    "exact-chrome browser"
+  );
+  assert.match(
+    validateRegressionPlan(cleanOracle, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires reporter-profile proof/
+  );
+
+  const missingReplay = valid.replaceAll(
+    "; reporter-profile-replay: pass",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(missingReplay, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires reporter-profile-replay: pass/
+  );
+
+  const cleanReceipt = valid.replace(
+    ";reporter-profile:Chrome Dev Profile with Agentation state",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(cleanReceipt, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires a profile-bound receipt or explicit tool-proof: computer-use/
+  );
+
+  const toolNativeProfileProof = fixture({
+    exactChrome: true,
+    focusFirstClick: true,
+    reporterProfile: true,
+    reporterProfileToolProof: true,
+  });
+
+  assert.deepEqual(
+    validateRegressionPlan(toolNativeProfileProof, {
+      complete: true,
+      rootDir: root,
+    }),
+    []
+  );
+});
+
+test("capture routing validates attributes on the actual ancestor owner", () => {
+  const valid = fixture({
+    captureRoutingPath: true,
+    failedCount: 1,
+    focusFirstClick: true,
+    physicalHitPath: true,
+  });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const childOnly = valid
+    .replaceAll(
+      "interaction-owner-chain: date-button -> inline-void -> editable",
+      "button has draggable"
+    )
+    .replaceAll(
+      "capture-routing-contract: draggable on inline-void",
+      "child draggable asserted"
+    )
+    .replace("; interaction-owner-chain: pass; capture-routing-contract: pass", "");
+  const errors = validateRegressionPlan(childOnly, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires interaction-owner-chain/);
+  assert.match(errors, /requires capture-routing-contract/);
+  assert.match(errors, /requires interaction-owner-chain: pass/);
+  assert.match(errors, /requires capture-routing-contract: pass/);
+});
+
+test("live-tab contradictions inventory external capture interceptors", () => {
+  const valid = fixture({
+    externalInterceptorPath: true,
+    failedCount: 1,
+    focusFirstClick: true,
+    physicalHitPath: true,
+  });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const missingState = valid.replaceAll(
+    "external-interceptor-state: active blockInteractions=true; ",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(missingState, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires external-interceptor-state/
+  );
+
+  const missingIsolation = valid.replace(
+    "; external-interceptor-isolated: pass",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(missingIsolation, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires external-interceptor-isolated: pass/
   );
 });
 
@@ -1140,6 +1529,20 @@ test("completion recomputes the receipt digest from its exact input paths", () =
   );
 });
 
+test("managed browser receipts bind the command to the recorded base URL", () => {
+  const mismatched = fixture({ exactChrome: true }).replace(
+    "PLAYWRIGHT_BASE_URL=http://localhost:3000 ",
+    ""
+  );
+
+  assert.match(
+    validateRegressionPlan(mismatched, { complete: true, rootDir: root }).join(
+      "\n"
+    ),
+    /managed browser command must reference its exact base URL http:\/\/localhost:3000/
+  );
+});
+
 test("capture helper executes proof and prints a valid receipt row", () => {
   const script = join(
     root,
@@ -1174,6 +1577,47 @@ test("capture helper executes proof and prints a valid receipt row", () => {
     result.stdout,
     /^\| capture-case \| 1 \| completed \| .+ \| pass: exit 0 in \d+ms \| (?:commit|dirty):[a-f0-9]{40} \| sha256:[a-f0-9]{64} \| 1 \| \.agents\/rules\/regression\/scripts\/validate-regression-plan\.test\.mjs \| host:none - deterministic Node workflow \| .+ \| 0 \| sha256:[a-f0-9]{64} \|$/m
   );
+});
+
+test("capture helper rejects a managed host command with a different base URL", () => {
+  const script = join(
+    root,
+    ".agents/rules/regression/scripts/capture-proof-receipt.mjs"
+  );
+  const result = spawnSync(
+    process.execPath,
+    [
+      script,
+      "--case-id",
+      "capture-case",
+      "--attempt",
+      "1",
+      "--claim",
+      "completed",
+      "--input",
+      semanticTestPath,
+      "--host-pid",
+      String(process.pid),
+      "--base-url",
+      "http://localhost:3999",
+      "--browser",
+      "playwright-chromium",
+      "--retries",
+      "0",
+      "--",
+      process.execPath,
+      "-e",
+      "process.exit(0)",
+    ],
+    { cwd: root, encoding: "utf8" }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(
+    result.stderr,
+    /managed browser proof command must reference the exact --base-url/
+  );
+  assert.doesNotMatch(result.stdout, /^\| capture-case/m);
 });
 
 test("capture and validation share canonical mixed-path input ordering", () => {

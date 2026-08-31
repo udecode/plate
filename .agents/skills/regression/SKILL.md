@@ -225,6 +225,78 @@ a target-capture or equivalent pre-handler oracle and record
 `pre-handler-state: pass`. A post-handler computed-style assertion is red for
 that claim even when the eventual cursor is correct.
 
+A reporter click cannot be reproduced by a drag surrogate unless the same
+browser gesture records a delivered click event. A drag surrogate without that
+delivered click cannot authorize a product patch for the click report.
+
+When a reporter says the first click only focuses an editable surface and a
+second click performs the action, replay the first gesture from the reporter's
+actual initial focus/selection state. Record that concrete state in both the
+required reporter evidence and focus oracle as
+`initial-focus: <concrete reporter state>`, then record the same gesture as
+`event-order: <actual pointerdown/mousedown/(focus when emitted)/click trace>`
+and assert `first-click-popup: open` immediately after that click.
+`outside-editor` is valid only when the reporter evidence says so. A test that
+invents another focus precondition, calls `fireEvent.click` alone, or checks
+only eventual animation/style cannot certify single-click behavior.
+
+When a fresh focus-first contradiction survives while an existing component
+test stays green, audit the popup mock before another product attempt. The
+owning trigger must also pass against a passive popup wrapper that only reflects
+the component's `open` input and does not inject a click toggle. Record
+`component-open-owner: pass`. A wrapper mock that opens on behalf of the trigger
+is proxy evidence and cannot authorize completion.
+
+When reporter video identifies concrete text and control hit targets after a
+locator-click or programmatically seeded selection stayed green, record
+`physical-hit-path: <first target -> action target>`. Replay both gestures from
+live layout coordinates through the browser mouse. The first gesture must create
+the native selection; direct Range/selection mutation is proxy evidence. The
+DOM oracle records `physical-hit-target: <actual target>` and the focus oracle
+records `selection-origin: physical-pointer`. Completion requires
+`physical-hit-target: pass`, `click-delivery: pass`, and
+`selection-origin: pass`. `locator.click()`, element-dispatched click, or a
+programmatically created caret cannot authorize another completion for that
+contradicted path.
+
+When reporter video visibly identifies a browser family, profile, extension,
+or browser-owned overlay, treat that visible state as part of the exact
+environment even when the reporter does not name it in prose. Record
+`reporter-profile: <browser family and visible profile/extension state>` in
+required reporter evidence and the selected case's Exact environment. An
+in-app browser, clean profile, different browser binding, or exact browser
+binary without that reporter profile is support-only. Applicable DOM/native,
+focus, and popup proof must replay the physical path in the reporter profile
+and record `reporter-profile-replay: pass`; the final receipt host records the
+same `reporter-profile:` identity. When only tool-native profile or OS state
+can replay the reporter path, the final executable receipt still binds the
+final bytes and exact browser binary, Exact environment records
+`tool-proof: computer-use`, and every applicable profile oracle names
+Computer Use plus `reporter-profile-replay: pass`. If neither a profile-bound
+receipt nor that explicit tool-native proof exists, block product completion
+instead of carrying a clean-profile green. Recompute and verify the live physical target after every scroll,
+selection, focus, layout, or overlay-state change; a hit assertion from stale
+coordinates cannot isolate an external interceptor or authorize completion.
+
+When editor capture routing branches on DOM attributes from the target or an
+ancestor, record `capture-routing-path: <target -> capture owner>`. Inventory
+the target-to-owner chain and the exact attributes read at each branch. The
+DOM/native oracle records `interaction-owner-chain: <nodes>` and
+`capture-routing-contract: <owner attributes>`. Completion requires
+`interaction-owner-chain: pass` and `capture-routing-contract: pass`. Proving
+an attribute on a child is invalid when the capture handler reads it from the
+void/editor ancestor.
+
+When the reporter's live tab stays red while the isolated exact-host case is
+green, inventory active dev overlays and document/window capture listeners
+before another product patch. Record
+`interaction-interceptor-path: <global capture owner -> target>` and
+`external-interceptor-state: <active mode/settings>`. If an external owner
+intentionally calls `preventDefault` or `stopPropagation` for the gesture, the
+product case cannot be repaired by compensating inside the target component.
+Completion records `external-interceptor-isolated: pass` after the interceptor
+is deactivated or configured to allow the interaction.
+
 Any popup or toolbar lifecycle asserted after an action or release requires an
 applicable `follow-up-input@follow-up` oracle. Proving that an overlay closed is
 not enough; the next interaction on the owning surface must still work.
@@ -354,6 +426,10 @@ range geometry, model/DOM endpoints, and callback identity. If that state is
 already final while the pixel oracle stays red, reject timing as the cause.
 Keep the pixel oracle blocking; callback traces prove execution, not paint.
 
+An ordering fix must exercise both the pre-handler already queued competitor
+and a delayed post-handler re-entry when either can overwrite the named result.
+Proving only one ordering window cannot close the case.
+
 Before a pixel-diff oracle may block a case, run three controls through the same
 capture and classifier: a known-correct single-layer state, a known-absent state,
 and a known-invalid duplicate-layer state. The single layer must be classified as
@@ -368,6 +444,19 @@ classification in its proof layer and record `positive-control: pass` plus
 style, DOM attributes, callback traces, selection text, and an unclassified
 screenshot are diagnostics only; none can close a visible-paint claim.
 
+When target placement is the claim, use a bounded visible interval with both a
+lower and upper bound. A one-sided threshold cannot prove visibility because
+the target may already be beyond the opposite viewport edge.
+
+When behavior depends on a geometry library, a mock that records only the call
+is proxy evidence. Execute the real calculation or an exact browser probe
+before claiming the candidate satisfies target placement.
+
+When final proof includes a final screenshot, capture it, cross the surface's
+settle boundary, and reassert the reporter final state before accepting the
+artifact. A pre-capture transient poll cannot close a result that screenshot,
+focus, selection repair, layout, or paint work can still invalidate.
+
 Run final proof through `capture-proof-receipt.mjs`. It executes the command,
 fingerprints every named production/test/fixture/harness/config input before
 and after the run, lists those exact inputs, records the ref and host identity,
@@ -375,6 +464,10 @@ and prints a tamper-evident
 Markdown receipt for the transient plan. After the last edit to any shared
 owner, replay every affected exact case in one combined command and bind the
 affected-corpus row to that receipt.
+
+A managed browser receipt must bind the same literal `--base-url` inside its
+proof command, such as `PLAYWRIGHT_BASE_URL=<url>`. A host label that says one
+URL while the command falls back to another port is invalid proof.
 
 Before changing a shared owner, run every already-executable affected case and
 record its `pass:` or `red:` pre-edit baseline in `Affected corpus replay`.

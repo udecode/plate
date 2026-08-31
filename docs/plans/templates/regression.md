@@ -196,6 +196,63 @@ Work Checklist:
 - [ ] Every flash, flicker, or one-frame pointer-feedback claim uses a target-
       capture or equivalent pre-handler oracle and records
       `pre-handler-state: pass`; eventual post-handler style is insufficient.
+- [ ] Every reporter click reproduced through a drag surrogate proves the same
+      gesture delivered a click event; a drag surrogate without the delivered
+      click cannot authorize a product patch.
+- [ ] Every focus-first click report records the reporter's concrete setup in
+      both required evidence and the focus oracle as
+      `initial-focus: <concrete reporter state>`, records one real gesture as
+      `event-order: <actual pointerdown/mousedown/(focus when emitted)/click trace>`,
+      and proves
+      `first-click-popup: open` immediately after that click. A pre-focused or
+      outside-focused setup is valid only when reporter evidence matches it;
+      an invented focus state or `fireEvent.click`-only test cannot close
+      single-click behavior.
+- [ ] Every repeated focus-first contradiction whose component test stays green
+      reruns against a passive popup wrapper that only reflects the component's
+      `open` input and never injects a click toggle; completion records
+      `component-open-owner: pass`.
+- [ ] When reporter video identifies concrete hit targets after locator-click
+      or programmatic-selection proof stayed green, required evidence records
+      `physical-hit-path: <first target -> action target>`. Browser proof drives
+      both gestures from live coordinates, records
+      `physical-hit-target: <actual target>` and
+      `selection-origin: physical-pointer`, and completion records
+      `physical-hit-target: pass`, `click-delivery: pass`, and
+      `selection-origin: pass`. Locator clicks and direct Range mutation remain
+      proxy evidence.
+- [ ] When reporter video visibly identifies a browser family, profile,
+      extension, or browser-owned overlay, required evidence and Exact
+      environment record
+      `reporter-profile: <browser family and visible profile/extension state>`.
+      In-app Browser, clean-profile, different-binding, and exact-binary-only
+      proof stay support-only. Applicable DOM/native, focus, and popup rows
+      replay the physical path in that reporter profile and record
+      `reporter-profile-replay: pass`; the receipt host binds the same profile.
+      If only Computer Use can replay the profile/OS path, Exact environment
+      records `tool-proof: computer-use`, every applicable profile oracle names
+      Computer Use, and an exact executable receipt still binds the final bytes
+      and browser binary.
+      Every scroll, selection, focus, layout, or overlay-state change refreshes
+      and verifies the live hit target before the next physical gesture.
+- [ ] When editor capture routing branches on target/ancestor attributes,
+      required evidence records
+      `capture-routing-path: <target -> capture owner>`. The DOM/native oracle
+      inventories the complete target-to-owner chain and the attributes read on
+      their actual owners as `interaction-owner-chain: <nodes>` and
+      `capture-routing-contract: <owner attributes>`; completion records both
+      `interaction-owner-chain: pass` and `capture-routing-contract: pass`. A
+      child-only attribute assertion is proxy evidence when capture reads the
+      ancestor.
+- [ ] When a reporter's live tab stays red while an isolated exact-host case is
+      green, required evidence inventories active dev overlays and global
+      capture listeners as
+      `interaction-interceptor-path: <global capture owner -> target>` and
+      `external-interceptor-state: <active mode/settings>`. Product code may not
+      compensate for an external owner that calls
+      `preventDefault`/`stopPropagation` on the gesture;
+      completion records `external-interceptor-isolated: pass` after the same
+      tab is replayed with that interceptor inactive or permissive.
 - [ ] Every applicable popup/toolbar oracle after an action or release has an
       applicable `follow-up-input@follow-up` oracle proving the next owning-
       surface interaction still works.
@@ -228,6 +285,9 @@ Work Checklist:
       `e2e-required:` or already-existing affected-corpus E2E coverage.
 - [ ] Final proof ran through `capture-proof-receipt.mjs`; its ref, input digest,
       host, timestamps, retry count, and receipt ID validate.
+- [ ] Every managed browser receipt includes its literal `--base-url` in the
+      proof command (for example `PLAYWRIGHT_BASE_URL=<url>`); a host label and
+      command default may not name different ports.
 - [ ] Required retry-free stability runs passed with no retry.
 - [ ] Responsive geometry proof waits through animation-frame, resize-observer,
       or renderer-commit settling with a bounded invariant poll; it records
@@ -239,6 +299,9 @@ Work Checklist:
 - [ ] Any compositor phase claim records computed style, live range geometry,
       model/DOM endpoints, and callback identity at the mutation boundary. If
       those are final while pixels stay red, timing is rejected as the cause.
+- [ ] Every ordering fix exercises a pre-handler already-queued competitor and
+      a delayed post-handler re-entry when either can overwrite the result; one
+      ordering window cannot close the case.
 - [ ] Every blocking pixel classifier passes known-correct single-layer,
       known-absent, and known-invalid duplicate-layer controls through the same
       capture path; width or outer geometry alone cannot certify layer count.
@@ -249,6 +312,14 @@ Work Checklist:
       plus `negative-control: pass` and `duplicate-control: pass`; computed style,
       DOM state, selection text, callback traces, and unclassified screenshots
       are diagnostics only.
+- [ ] Every target placement oracle uses a bounded visible interval with both a
+      lower and upper bound; a one-sided threshold cannot prove visibility.
+- [ ] When behavior depends on a geometry library, a mock that records only the
+      call stays proxy evidence; a real calculation or exact browser probe runs
+      before the candidate can satisfy target placement.
+- [ ] Every final screenshot is followed by the surface settle boundary and a
+      reassertion of the settled reporter final state after capture; a
+      pre-capture transient poll cannot close the case.
 - [ ] Every shared owner was replayed against its affected exact corpus after
       the final owner edit.
 - [ ] Every shared CSS selector, marker, class map, or style expansion has a

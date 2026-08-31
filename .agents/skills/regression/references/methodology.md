@@ -321,6 +321,86 @@ capture listener before component bubble handlers run, or use an equivalent
 earlier browser anchor. Record `pre-handler-state: pass` in the row result.
 Eventual computed style after the handler cannot certify a no-flash claim.
 
+A reporter click cannot be reproduced by a drag surrogate unless the same
+browser gesture records a delivered click event. A drag surrogate without that
+delivered click cannot authorize a product patch for the click report.
+
+For a focus-first click report—where the first click only focuses an editable
+surface and the second click performs the action—the exact setup starts from
+the focus/selection state visible in the reporter evidence. Record that
+concrete state in both the required evidence row and focus oracle as
+`initial-focus: <concrete reporter state>`; `outside-editor` is valid only when
+the evidence says so. The DOM/native oracle records the actual `event-order`
+from one real gesture and includes `pointerdown`, `mousedown`, and `click`, plus
+`focus` only when the browser emits it. Browser-native focus presence and
+placement are not prescribed. The focus oracle proves initial ownership, and
+the popup oracle asserts
+`first-click-popup: open` immediately after the same click. At completion their
+results record `initial-focus: pass`, `event-order: pass`, and
+`first-click-popup: pass`. Inventing a different focus precondition, calling
+`fireEvent.click` without the preceding native phases, or checking only
+eventual animation/style is a proxy and cannot authorize a single-click fix.
+
+When a fresh focus-first contradiction survives while an existing component
+test stays green, inspect the popup mock before another product attempt. Rerun
+the owner against a passive popup wrapper that only reflects the component's
+`open` input and never injects a click toggle. The trigger must request open on
+its own and record `component-open-owner: pass`. A wrapper mock that opens on
+behalf of the trigger proves only the mock and cannot authorize completion.
+
+If reporter video names concrete text and control hit targets after a green
+automation used locator clicks or a programmatically seeded selection, add
+`physical-hit-path: <first target -> action target>` to the required evidence.
+Drive both gestures from live layout coordinates with the browser mouse. The
+first physical gesture must create the native selection; direct Range or
+selection mutation is proxy evidence. Record
+`physical-hit-target: <actual target>` in the DOM/native oracle and
+`selection-origin: physical-pointer` in the focus oracle. At completion the
+results include `physical-hit-target: pass`, `click-delivery: pass`, and
+`selection-origin: pass`. A `locator.click()`, element-dispatched click, or
+programmatically created caret cannot certify the contradicted physical path.
+
+If reporter video visibly identifies a browser family, profile, extension, or
+browser-owned overlay, that visible state is part of the exact environment even
+when the reporter does not name it in prose. Add
+`reporter-profile: <browser family and visible profile/extension state>` to
+required reporter evidence and Exact environment. An in-app browser, clean
+profile, different browser binding, or exact browser binary without the
+reporter profile is support-only. Replay the physical path in the reporter
+profile for every applicable DOM/native, focus, and popup oracle, record
+`reporter-profile-replay: pass`, and bind the same `reporter-profile:`
+identity in the final receipt host. If only tool-native profile or OS state can
+replay the path, keep the final executable receipt bound to the final bytes and
+exact browser binary, add `tool-proof: computer-use` to Exact environment,
+and name Computer Use plus `reporter-profile-replay: pass` in every
+applicable profile oracle. Without either a profile-bound receipt or that
+explicit tool-native proof, keep product completion blocked instead of carrying
+a clean-profile green. Recompute and verify the physical target after every
+scroll, selection, focus, layout, or overlay-state change; stale coordinates
+cannot isolate an interceptor or authorize completion.
+
+When an editor's capture-phase routing branches on attributes from the event
+target or one of its ancestors, add
+`capture-routing-path: <target -> capture owner>` to required evidence. Trace
+the complete target-to-owner chain and inventory the exact branch attributes on
+the nodes from which the handler reads them. Record
+`interaction-owner-chain: <nodes>` and
+`capture-routing-contract: <owner attributes>` in the DOM/native oracle. At
+completion its result includes `interaction-owner-chain: pass` and
+`capture-routing-contract: pass`. A child-level attribute assertion is proxy
+evidence when the capture handler reads the corresponding law from a void or
+editor ancestor.
+
+If the reporter's live tab remains red while the same exact-host behavior is
+green in an isolated browser, stop product edits and inventory active dev
+overlays plus document/window capture listeners. Add
+`interaction-interceptor-path: <global capture owner -> target>` and
+`external-interceptor-state: <active mode/settings>` to required evidence. If
+an external owner deliberately calls `preventDefault` or `stopPropagation` for
+that gesture, do not compensate inside the product target. Deactivate or
+configure the interceptor, replay the same tab, and record
+`external-interceptor-isolated: pass` before completing the product claim.
+
 When the report names Chrome, Blink, a compositor, or browser-native behavior,
 record `exact-chrome: <environment>` and use exact Chrome for the full final
 replay. Playwright Chromium remains useful diagnosis but cannot certify that
@@ -450,6 +530,10 @@ while the pixel oracle remains red, reject lifecycle ordering as the cause and
 change strategy. A timer or later animation-frame callback may prove that code
 ran; neither proves the intermediate state was painted.
 
+An ordering fix must exercise both the pre-handler already queued competitor
+and a delayed post-handler re-entry when either can overwrite the named result.
+Proving only one ordering window cannot close the case.
+
 A pixel classifier needs executable sentinels before it can judge product
 behavior. Capture a known-correct single-layer state, a known-absent state, and
 a known-invalid duplicate-layer state through the same screenshot path and
@@ -464,6 +548,19 @@ classifier in its proof layer. Its result records `positive-control: pass` and
 `negative-control: pass` plus `duplicate-control: pass`. Computed style, DOM
 state, callback order, selection text, and an unclassified screenshot remain
 diagnostics and cannot close a visible-paint claim.
+
+When target placement is the claim, use a bounded visible interval with both a
+lower and upper bound. A one-sided threshold cannot prove visibility because
+the target may already be beyond the opposite viewport edge.
+
+When behavior depends on a geometry library, a mock that records only the call
+is proxy evidence. Execute the real calculation or an exact browser probe
+before claiming the candidate satisfies target placement.
+
+When final proof includes a final screenshot, capture it, cross the surface's
+settle boundary, and reassert the reporter final state before accepting the
+artifact. A pre-capture transient poll cannot close a result that screenshot,
+focus, selection repair, layout, or paint work can still invalidate.
 
 Nothing issue-owned may change after final replay. If commit, rebase,
 generation, or push changes any proved bytes or runtime inputs, replay before
@@ -492,6 +589,11 @@ exact input paths, host process start, proof timestamps, retries, and a
 tamper-evident receipt ID. Completion validation recomputes the digest from
 those current paths. The helper refuses a failed command or inputs that change
 during proof.
+
+For a managed browser host, the proof command must include the exact literal
+`--base-url`, for example through `PLAYWRIGHT_BASE_URL=<url>`. Merely writing a
+host label with the intended port while the command uses its default URL is a
+host mismatch and cannot produce or validate a receipt.
 
 ### Decide
 
