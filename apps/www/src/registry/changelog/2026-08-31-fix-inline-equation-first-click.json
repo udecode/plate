@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-31-fix-inline-equation-first-click",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-31-fix-inline-equation-first-click.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open inline equation editors on the first click",
+  "targets": [
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-31-math-open-inline-equation-editors-5746d8f0",
+      "kind": "fix",
+      "summary": "Open inline equation editors on the first click.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-fix-inline-equation-first-click",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

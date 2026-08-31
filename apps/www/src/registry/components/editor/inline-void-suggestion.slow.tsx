@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import type { LinkElement } from 'platejs';
 import * as Plate from 'platejs';
 import type { DateElement } from 'platejs/date';
@@ -27,6 +27,10 @@ const createPluginMock = (name: string) => {
 };
 const EquationPluginMock = createPluginMock('equation');
 const InlineEquationPluginMock = createPluginMock('inlineEquation');
+const PopoverContext = React.createContext<{
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+} | null>(null);
 
 Object.assign(globalThis, { React });
 
@@ -109,10 +113,29 @@ mock.module('@/components/ui/calendar', () => ({
 }));
 
 mock.module('@/components/ui/popover', () => ({
-  Popover: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  PopoverContent: () => null,
+  Popover: ({ children }: { children: React.ReactNode }) => {
+    const [open, setOpen] = React.useState(false);
+    const value = React.useMemo(() => ({ open, setOpen }), [open]);
+
+    return (
+      <PopoverContext.Provider value={value}>
+        {children}
+      </PopoverContext.Provider>
+    );
+  },
+  PopoverContent: ({ children }: React.PropsWithChildren) => {
+    const popover = React.useContext(PopoverContext);
+
+    return popover?.open ? <>{children}</> : null;
+  },
   PopoverTrigger: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
+    <PopoverContext.Consumer>
+      {(popover) =>
+        React.cloneElement(children as React.ReactElement<any>, {
+          onClick: () => popover?.setOpen(true),
+        })
+      }
+    </PopoverContext.Consumer>
   ),
 }));
 
@@ -241,7 +264,7 @@ describe('inline void suggestion styling', () => {
     ).toContain('data-[inline-suggestion=insert]:bg-emerald-100!');
   });
 
-  it('marks the date trigger with a stable slot and ancestor-aware suggestion variants', async () => {
+  it('opens the Date calendar on the first click with suggestion styling', async () => {
     const { DateElement } = await import(
       `./date?test=${Math.random().toString(36).slice(2)}`
     );
@@ -260,8 +283,12 @@ describe('inline void suggestion styling', () => {
       />
     );
 
-    const trigger = view.container.querySelector('button[draggable="true"]');
+    const trigger = view.container.querySelector('button[type="button"]');
+    const wrapper = view.getByTestId('plate-element');
 
+    expect(view.queryByTestId('calendar')).toBeNull();
+    fireEvent.click(trigger!);
+    expect(view.getByTestId('calendar')).toBeTruthy();
     expect(trigger?.className).toContain(
       'in-data-[inline-suggestion=insert]:bg-emerald-100!'
     );
@@ -269,6 +296,7 @@ describe('inline void suggestion styling', () => {
       'in-data-[inline-suggestion=remove]:bg-red-100!'
     );
     expect(trigger?.getAttribute('draggable')).toBe('true');
+    expect(wrapper.getAttribute('draggable')).toBeNull();
     expect(trigger?.getAttribute('type')).toBe('button');
   });
 

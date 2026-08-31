@@ -129,20 +129,22 @@ export function InlineEquationElement(
     editor.read.selection.isCollapsed()
   );
   const [popoverState, setPopoverState] = React.useState({
-    dismissed: false,
+    open: selected && isCollapsed,
     selected,
   });
+  const openAtPointerDownRef = React.useRef(false);
+  const open =
+    popoverState.selected === selected
+      ? popoverState.open
+      : selected && (popoverState.open || isCollapsed);
 
   if (popoverState.selected !== selected) {
-    setPopoverState({ dismissed: false, selected });
+    setPopoverState({ open, selected });
   }
 
-  const dismissed =
-    popoverState.selected === selected && popoverState.dismissed;
-  const open = selected && isCollapsed && !dismissed;
   const setOpen = React.useCallback(
     (nextOpen: boolean) => {
-      setPopoverState({ dismissed: !nextOpen, selected });
+      setPopoverState({ open: nextOpen, selected });
     },
     [selected]
   );
@@ -186,6 +188,15 @@ export function InlineEquationElement(
                 'text-muted-foreground after:bg-neutral-500/10'
             )}
             contentEditable={false}
+            onClick={(event) => {
+              if (event.detail === 0 || openAtPointerDownRef.current) return;
+
+              event.preventDefault();
+              setOpen(true);
+            }}
+            onPointerDown={() => {
+              openAtPointerDownRef.current = open;
+            }}
             type="button"
           >
             <span

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-31-fix-date-first-click-reopen",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-31-fix-date-first-click-reopen.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open and reopen Date popovers on the first click",
+  "targets": [
+    {
+      "name": "date-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-node."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-31-date-open-popovers-first-click-4d6014fe",
+      "kind": "fix",
+      "summary": "Open and reopen Date popovers on the first click.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date-node"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-fix-date-first-click-reopen",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

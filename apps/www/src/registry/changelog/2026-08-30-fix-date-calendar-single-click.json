@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-30-fix-date-calendar-single-click",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-30-fix-date-calendar-single-click.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-30",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open Date calendars on the first click",
+  "targets": [
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-30-date-open-calendars-first-click-b4b12265",
+      "kind": "fix",
+      "summary": "Open Date calendars on the first click.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-30",
+          "entry": "2026-08-30-fix-date-calendar-single-click",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

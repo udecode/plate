@@ -199,6 +199,28 @@ describe('InlineEquationElement', () => {
     expect(view.getByTestId('popover').dataset.open).toBe('true');
   });
 
+  it('opens from the first trigger click before editor selection is owned', async () => {
+    selected = false;
+    selectionCollapsed = false;
+    const { InlineEquationElement } = await import(
+      `./math?test=${Math.random().toString(36).slice(2)}`
+    );
+    const props = {
+      attributes: {},
+      children: <span />,
+      editor: {},
+      element,
+    } as any;
+    const view = render(<InlineEquationElement {...props} />);
+
+    expect(view.getByTestId('popover').dataset.open).toBe('false');
+    const trigger = view.getByRole('button', { name: 'Edit equation' });
+
+    fireEvent.pointerDown(trigger);
+    fireEvent.click(trigger, { detail: 1 });
+    expect(view.getByTestId('popover').dataset.open).toBe('true');
+  });
+
   it('merges an escaped inline rollback into the edit history batch', async () => {
     readOnly = false;
     const { InlineEquationElement } = await import(

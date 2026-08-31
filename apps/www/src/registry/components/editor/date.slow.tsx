@@ -16,6 +16,12 @@ const getDateDisplayLabelMock = mock((value: string) => {
 const parseCanonicalDateValueMock = mock(() => new Date(2026, 2, 23));
 const plateElementMock = mock();
 const useReadOnlyMock = mock();
+const PopoverMockContext = React.createContext<{
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+}>({});
+let openOnFocus = false;
+let popoverMode: 'passive' | 'passthrough' | 'radix' = 'passthrough';
 
 mock.module('platejs/date', () => ({
   formatDateValue: formatDateValueMock,
@@ -46,9 +52,45 @@ mock.module('@/components/ui/calendar', () => ({
 }));
 
 mock.module('@/components/ui/popover', () => ({
-  Popover: ({ children }: any) => <>{children}</>,
+  Popover: ({ children, onOpenChange, open }: any) => {
+    const contextValue = React.useMemo(
+      () => ({ onOpenChange, open }),
+      [onOpenChange, open]
+    );
+
+    if (popoverMode === 'passthrough') return <>{children}</>;
+
+    const [trigger, ...content] = React.Children.toArray(children);
+
+    return (
+      <PopoverMockContext.Provider value={contextValue}>
+        {trigger}
+        {open ? content : null}
+      </PopoverMockContext.Provider>
+    );
+  },
   PopoverContent: ({ children }: any) => <>{children}</>,
-  PopoverTrigger: ({ children }: any) => <>{children}</>,
+  PopoverTrigger: ({ children }: any) => {
+    const { onOpenChange, open } = React.useContext(PopoverMockContext);
+
+    if (popoverMode !== 'radix') return <>{children}</>;
+
+    const child = React.Children.only(children) as React.ReactElement<any>;
+
+    return React.cloneElement(child, {
+      onClick: (event: any) => {
+        child.props.onClick?.(event);
+        if (!event.defaultPrevented) onOpenChange?.(!open);
+      },
+      onFocus: (event: any) => {
+        child.props.onFocus?.(event);
+        if (openOnFocus) onOpenChange?.(true);
+      },
+      onPointerDown: (event: any) => {
+        child.props.onPointerDown?.(event);
+      },
+    });
+  },
 }));
 
 mock.module('@/lib/utils', () => ({
@@ -64,6 +106,8 @@ describe('DateElement', () => {
     plateElementMock.mockReset();
     useReadOnlyMock.mockReset();
     useReadOnlyMock.mockReturnValue(false);
+    openOnFocus = false;
+    popoverMode = 'passthrough';
   });
 
   afterAll(() => {
@@ -118,6 +162,73 @@ describe('DateElement', () => {
     );
 
     expect(view.getByText('sometime next week')).toBeTruthy();
+  });
+
+  it('owns first-click opening with a passive popover wrapper', async () => {
+    popoverMode = 'passive';
+    const { DateElement } = await import(
+      `./date?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <DateElement
+        attributes={{}}
+        editor={{}}
+        element={
+          {
+            children: [{ text: '' }],
+            value: '2026-03-23',
+            type: 'date',
+          } as any
+        }
+      >
+        {null}
+      </DateElement>
+    );
+
+    expect(view.queryByTestId('calendar-select')).toBeNull();
+    fireEvent.click(view.getByRole('button', { name: 'Today' }));
+    expect(view.getByTestId('calendar-select')).toBeTruthy();
+  });
+
+  it('keeps a gesture that began closed open when focus opens first', async () => {
+    openOnFocus = true;
+    popoverMode = 'radix';
+    const { DateElement } = await import(
+      `./date?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <DateElement
+        attributes={{}}
+        editor={{}}
+        element={
+          {
+            children: [{ text: '' }],
+            value: '2026-03-23',
+            type: 'date',
+          } as any
+        }
+      >
+        {null}
+      </DateElement>
+    );
+    const trigger = view.getByRole('button', { name: 'Today' });
+
+    expect(view.queryByTestId('calendar-select')).toBeNull();
+    fireEvent.pointerDown(trigger);
+    fireEvent.focus(trigger);
+    expect(view.getByTestId('calendar-select')).toBeTruthy();
+    fireEvent.click(trigger, { detail: 1 });
+    expect(view.getByTestId('calendar-select')).toBeTruthy();
+
+    fireEvent.pointerDown(trigger);
+    fireEvent.click(trigger, { detail: 1 });
+    expect(view.queryByTestId('calendar-select')).toBeNull();
+
+    fireEvent.pointerDown(trigger);
+    fireEvent.focus(trigger);
+    expect(view.getByTestId('calendar-select')).toBeTruthy();
+    fireEvent.click(trigger, { detail: 1 });
+    expect(view.getByTestId('calendar-select')).toBeTruthy();
   });
 
   it('writes the canonical date value on calendar selection', async () => {
