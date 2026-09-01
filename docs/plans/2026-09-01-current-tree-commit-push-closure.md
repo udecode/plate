@@ -107,8 +107,8 @@ Closure state:
 - clean_required_passes: 2 because the checkout includes Regression agent-rule changes
 - current_pass: post-rebase final clean pass
 - current_pass_status: completed
-- next_pass: push and exact remote SHA readback
-- goal_status: active
+- next_pass: commit this closure ledger, push, and perform final exact SHA readback
+- goal_status: ready_for_final_ledger_commit
 
 Current verdict:
 - verdict: current tree is internally coherent; remote integration still required
@@ -196,24 +196,24 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the proof commands/artifacts named in this plan | pending |
-| Workspace authority proof | pending | Record cwd/tool for every proof command | pending |
-| Target map closure | pending | Record target files/surfaces and comparison basis | pending |
-| PR/range diff artifact closure | pending | Record artifact paths for PR/range targets or N/A when target is current checkout | pending |
-| No worktree closure | pending | Confirm no `git worktree`, detached sibling checkout, throwaway same-repo clone, or branch switch was used for closure proof | pending |
-| Coherence audit closure | pending | Close stale fixes/docs/API/orphan/generated/boundary rows | pending |
-| Focused proof after last patch | pending | Run focused proof or record N/A with reason | pending |
-| Browser proof | pending | Capture Browser/route proof or record N/A/blocker | pending |
-| Package/API proof | pending | Run package/type/export/source audit or record N/A | pending |
-| Docs/generated-output proof | pending | Run docs/generated-output/source audit or record N/A | pending |
-| Agent/rule/generated sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
-| Architecture cleanup | pending | Invoke `architecture-cleanup` for source-shape findings or record N/A | pending |
-| Findings ledger closure | pending | Every accepted/rejected/routed finding has evidence | pending |
-| Clean pass count | pending | Record consecutive clean passes after the last patch | pending |
-| Changed list / review attention / stopping checkpoints | pending | Fill final handoff ledgers from current evidence | pending |
-| Agent-native review | pending | Load `agent-native-reviewer` for agent/tooling changes or record N/A | pending |
-| P1 autoreview | pending | Load `autoreview`, pass `--max-priority P1` in the selected target mode, fix/reject accepted findings, and rerun after material fixes within the hard cap of three helper invocations for one unchanged scope; stop and report any remaining findings after invocation 3; P2/P3 are opt-in only | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-01-current-tree-commit-push-closure.md` | pending |
+| Named verification threshold | yes | Run the proof commands/artifacts named in this plan | 52-input Regression receipt, Browser 5/5, generators, mirror parity, and Git readback pass |
+| Workspace authority proof | yes | Record cwd/tool for every proof command | all commands ran in `/Users/felixfeng/Desktop/repos/plate`; Browser ran against the fresh localhost proof host |
+| Target map closure | yes | Record target files/surfaces and comparison basis | whole checkout mapped against fetched `origin/next` `d310464cc1c94d4193731661772d262c2af16512` |
+| PR/range diff artifact closure | yes | Record artifact paths for PR/range targets or N/A when target is current checkout | N/A: current checkout target, no PR/range artifact |
+| No worktree closure | yes | Confirm no `git worktree`, detached sibling checkout, throwaway same-repo clone, or branch switch was used for closure proof | no worktree, clone, detached checkout, or branch switch used |
+| Coherence audit closure | yes | Close stale fixes/docs/API/orphan/generated/boundary rows | two direct passes; zero actionable findings remain |
+| Focused proof after last patch | yes | Run focused proof or record N/A with reason | final receipt and Browser proof ran after rebase/generated reconciliation |
+| Browser proof | yes | Capture Browser/route proof or record N/A/blocker | IAB 5/5; zero `NotFoundError`; zero console errors |
+| Package/API proof | yes | Run package/type/export/source audit or record N/A | www typecheck 5/5; N/A package/API/change set because none changed |
+| Docs/generated-output proof | yes | Run docs/generated-output/source audit or record N/A | registry build, 104-event changelog check, and Regression semantic validation pass |
+| Agent/rule/generated sync | yes | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | `pnpm install`, workflow 190/190, and source/mirror sync pass |
+| Architecture cleanup | yes | Invoke `architecture-cleanup` for source-shape findings or record N/A | N/A: no source-shape, wrapper, split-owner, or navigation finding |
+| Findings ledger closure | yes | Every accepted/rejected/routed finding has evidence | C1-C5 resolved or source-backed N/A; none remain |
+| Clean pass count | yes | Record consecutive clean passes after the last patch | two direct clean passes after product/workflow edits |
+| Changed list / review attention / stopping checkpoints | yes | Fill final handoff ledgers from current evidence | all three ledgers complete; no attention or stopping item |
+| Agent-native review | yes | Load `agent-native-reviewer` for agent/tooling changes or record N/A | PASS from Regression closure; source/mirror/validator/handoff parity present |
+| P1 autoreview | yes | Load `autoreview`, pass `--max-priority P1` in the selected target mode, fix/reject accepted findings, and rerun after material fixes within the hard cap of three helper invocations for one unchanged scope; stop and report any remaining findings after invocation 3; P2/P3 are opt-in only | N/A helper: repository forbids autoreview on `next`; two direct P1 passes, zero findings |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-01-current-tree-commit-push-closure.md` | run immediately before final ledger commit |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -226,7 +226,7 @@ Phase / pass table:
 | Patch/reject/route | completed | keep whole checkout; no product patch; rebase required because remote advanced | integration proof |
 | Architecture/docs/API/generated-output closure | completed | rebase conflicts regenerated from changelog sources; `pnpm install`, registry build, changelog check, and mirror parity pass | clean pass |
 | Clean pass confirmation | completed | two direct P1/coherence passes; final receipt and Browser proof green on rebased bytes | final handoff |
-| Final handoff and goal-plan check | pending | | final response |
+| Final handoff and goal-plan check | completed | whole-tree commit `1cc8cebdd1ab0e5fdcc71663b0185f66ffc14b04` pushed and matched local/upstream/live remote; final ledger commit carries this proof | final response |
 
 Target map:
 | Surface | Files / refs | Owner | Required proof | Status |
@@ -314,32 +314,33 @@ Verification evidence:
 - Codex in-app Browser replayed File -> TOC -> heading five fresh times on `http://localhost:3101/blocks/editor-ai`: all DOM/focus/selection assertions passed with zero `NotFoundError` and zero console errors.
 
 Final handoff contract:
-- Goal plan: pending
-- Closure target and comparison basis: pending
-- PR/range diff artifacts: pending
-- Loop count and clean pass count: pending
-- Accepted findings fixed: pending
-- Findings rejected/routed: pending
-- Commands run with cwd: pending
-- P1 autoreview result and rerun count: pending
-- Architecture-cleanup result: pending
-- Changed list: pending
-- Needs your attention: pending
-- Stopping checkpoints: pending
-- Residual risks and next owner: pending
+- Goal plan: this plan; Autogoal checker required before final ledger commit
+- Closure target and comparison basis: complete current `next` checkout rebased onto fetched `origin/next` `d310464cc1c94d4193731661772d262c2af16512`
+- PR/range diff artifacts: N/A: current checkout target
+- Loop count and clean pass count: two closure loops; two consecutive clean direct P1 passes
+- Accepted findings fixed: generated changelog conflicts regenerated; local Turbopack proof host reset once
+- Findings rejected/routed: architecture cleanup, package/API work, PR, release, and public mutation are N/A/out of scope
+- Commands run with cwd: receipt, tests, typecheck, install sync, registry generator, validators, Git rebase/push/readback in `/Users/felixfeng/Desktop/repos/plate`; IAB against localhost:3101
+- P1 autoreview result and rerun count: helper invocations 0 because branch is `next`; direct P1 passes 2; findings 0
+- Architecture-cleanup result: N/A: no qualifying source-shape finding
+- Changed list: current whole-tree groups recorded above; whole-tree behavior commit `1cc8cebdd1ab0e5fdcc71663b0185f66ffc14b04`
+- Needs your attention: none
+- Stopping checkpoints: none
+- Residual risks and next owner: none after final ledger push/readback; next owner is the user
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Rebase, regeneration, final receipt, Browser 5/5, and second clean pass are complete; final amend/push remains |
-| Where am I going? | Amend the whole-tree commit, push normally, verify local/upstream/live remote SHAs, then record closure |
+| Where am I? | Whole-tree commit is pushed and local/upstream/live remote matched; this ledger is the only follow-up change |
+| Where am I going? | Check this plan, commit/push the ledger, and perform one final local/upstream/live remote SHA readback |
 | What is the goal? | Commit and push the complete current Plate checkout with current proof and exact remote SHA readback |
 | What have I learned? | Remote overlap was generated-only after semantic merge; local Turbopack cache needed the repository reset once |
 | What have I done? | Rebased non-force, regenerated outputs, synced mirrors, reran receipt and Browser 5/5, and completed two clean passes |
 
 Timeline:
 - 2026-09-01T02:32:58.408Z Goal plan created.
+- 2026-09-01T02:51Z Whole-tree commit `1cc8cebdd1ab0e5fdcc71663b0185f66ffc14b04` pushed to `origin/next`; local, tracking, and live remote SHAs matched.
 
 Open risks:
-- Push and live remote SHA readback remain. No product, API, generated-output,
-  browser, or agent-workflow risk remains in the tested checkout.
+- None in the tested product, API, generated-output, browser, agent-workflow,
+  or Git integration scope. Final ledger push/readback is mechanical closure.
