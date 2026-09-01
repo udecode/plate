@@ -79,12 +79,15 @@ const editor = createEditor({
 
 ### 配置提供者和光标
 
-把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。Plate 插件从 Plate 子路径导入，远程光标 hooks 从 React 子路径导入。
+把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。
+在 `YjsPlugin` 上配置复制的光标渲染器；插件的装饰和渲染插槽拥有完整的远程光标路径。
 
 ```tsx
 import { YjsPlugin } from "platejs/yjs/react";
-import { useYjsRemoteCursors } from "platejs/yjs/react";
-import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
+import {
+  RemoteCursorLeaf,
+  RemoteCursorOverlay,
+} from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -93,8 +96,15 @@ export const yjsPlugin = YjsPlugin.configure({
     provider,
     rootName: roomId,
   },
+  render: {
+    afterEditable: RemoteCursorOverlay,
+    leaf: RemoteCursorLeaf,
+  },
 });
 ```
+
+不要在 `<Editor>` 旁手动渲染 `RemoteCursorOverlay`。插件会把精确的
+Editable ref 传给 `afterEditable` 插槽，并通过 `leaf` 插槽绘制远程选区。
 
 - `provider`: 应用拥有的传输包装器，类型为 `YjsProviderLike`。
 - `doc`: 共享的 `Y.Doc`。
@@ -222,7 +232,7 @@ editor.update.history.redo();
 - 在应用日志中暴露提供者连接错误。
 - 编辑器挂载时，不要绕过编辑器直接修改共享 `Y.Doc`。
 - 临时断开连接用 `tx.yjs.disconnect()`，卸载清理交给扩展生命周期。
-- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并渲染 `platejs/yjs/react` 中的 React 光标 hooks。
+- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并在 `YjsPlugin` 上配置两个复制的渲染插槽。
 
 ## 相关资源
 

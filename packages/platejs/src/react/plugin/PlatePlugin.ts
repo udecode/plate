@@ -86,11 +86,26 @@ import type {
   InternalPlateEditorWithInstalledPlugins,
   Editor,
 } from '../editor/Editor';
-import type { EditableProps as PliteEditableProps } from '../internal/plite-components';
 import type { DOMHandlers } from './DOMHandlers';
 
+/** Props passed to components rendered beside the Editable. */
+export type EditableSiblingProps = {
+  /** The mounted Editable element owned by this Plate view. */
+  readonly editableRef: React.RefObject<HTMLDivElement | null>;
+};
+
 export type EditableSiblingComponent = (
-  editableProps: PliteEditableProps
+  props: EditableSiblingProps
+) => React.ReactElement | null;
+
+/** Props passed to components rendered beside the Plate container. */
+export type ContainerSiblingProps = {
+  /** The mounted container element owned by this Plate view. */
+  readonly containerRef: React.RefObject<HTMLDivElement | null>;
+};
+
+export type ContainerSiblingComponent = (
+  props: ContainerSiblingProps
 ) => React.ReactElement | null;
 
 type ErasedPlateCallback<TResult = unknown> = {
@@ -125,9 +140,9 @@ type AnyPlatePluginRender = Omit<
     | ErasedRenderNodeWrapper
     | ErasedRenderNodeWrapperDescriptor
     | null;
-  afterContainer?: EditableSiblingComponent | null;
+  afterContainer?: ContainerSiblingComponent | null;
   afterEditable?: EditableSiblingComponent | null;
-  beforeContainer?: EditableSiblingComponent | null;
+  beforeContainer?: ContainerSiblingComponent | null;
   beforeEditable?: EditableSiblingComponent | null;
   belowNodes?: ErasedRenderNodeWrapper | null;
   belowRootNodes?: ErasedPlateCallback<React.ReactNode> | null;
@@ -355,9 +370,9 @@ export type RenderNodeWrapperProps<
 
 type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
   aboveNodes?: RenderNodeWrapperConfig<C>;
-  afterContainer?: EditableSiblingComponent;
+  afterContainer?: ContainerSiblingComponent;
   afterEditable?: EditableSiblingComponent;
-  beforeContainer?: EditableSiblingComponent;
+  beforeContainer?: ContainerSiblingComponent;
   beforeEditable?: EditableSiblingComponent;
   belowNodes?: RenderNodeWrapper<C>;
   belowRootNodes?: (props: RenderNodeWrapperProps<C>) => React.ReactNode;

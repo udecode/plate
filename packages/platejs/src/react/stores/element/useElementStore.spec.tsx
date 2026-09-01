@@ -151,29 +151,25 @@ describe('ElementProvider', () => {
     );
   };
 
-  type ConsumerProps = {
-    label?: string;
-  };
-
-  const NameElementConsumer = ({ label = '' }: ConsumerProps) => {
+  const NameElementConsumer = ({ label = '' }: { label?: string }) => {
     const element = useElement(NamePlugin);
 
     return <div>{label + element.name}</div>;
   };
 
-  const AgeElementConsumer = ({ label = '' }: ConsumerProps) => {
+  const AgeElementConsumer = ({ label = '' }: { label?: string }) => {
     const element = useElement(AgePlugin);
 
     return <div>{label + element.age}</div>;
   };
 
-  const TypeConsumer = ({ label = '' }: ConsumerProps) => {
+  const TypeConsumer = ({ label = '' }: { label?: string }) => {
     const element = useElement();
 
     return <div>{label + element.type}</div>;
   };
 
-  const OptionalTypeConsumer = ({ label = '' }: ConsumerProps) => {
+  const OptionalTypeConsumer = ({ label = '' }: { label?: string }) => {
     const element = useOptionalElement(MissingPlugin);
 
     return <div>{label + (element?.type ?? 'none')}</div>;
@@ -185,7 +181,7 @@ describe('ElementProvider', () => {
     return <div>{JSON.stringify(element)}</div>;
   };
 
-  const AgeStoreConsumer = ({ label = '' }: ConsumerProps) => {
+  const AgeStoreConsumer = ({ label = '' }: { label?: string }) => {
     const store = useElementStore('age');
     const age = store.useValue(
       'element',

@@ -64,7 +64,7 @@ const commandMenuCopyableRegistryNames = new Set(
   ai align autoformat basic-blocks
   basic-marks basic-nodes block-menu block-placeholder
   callout code-block code-drawing column
-  comment copilot cursor-overlay date discussion dnd
+  comment copilot selection date discussion dnd
   docx docx-export editor-static editor-plugins emoji exit-break
   fixed-toolbar floating-toolbar footnote font indent
   line-height link list markdown math
@@ -73,9 +73,9 @@ const commandMenuCopyableRegistryNames = new Set(
   ai-demo align-demo autoformat-demo basic-blocks-demo basic-marks-demo
   basic-nodes-demo block-menu-demo node-selection-demo callout-demo
   code-block-demo code-drawing-demo collaboration-demo column-demo
-  controlled-demo copilot-demo cursor-overlay-demo date-demo discussion-demo
+  controlled-demo copilot-demo date-demo discussion-demo
   dnd-demo editable-voids-demo emoji-demo equation-demo excalidraw-demo
-  exit-break-demo find-replace-demo floating-toolbar-demo font-demo
+  exit-break-demo find-demo floating-toolbar-demo font-demo
   footnote-demo huge-document-demo hundreds-editors-demo html-demo
   indent-demo link-demo line-height-demo list-demo
   markdown-demo media-demo mention-demo plugin-rules-demo preview-markdown-demo
@@ -156,6 +156,10 @@ const i18n = {
 
 function getNavTitle(item: NavItemWithChildren, locale: string) {
   return locale === 'cn' ? item.titleCn || item.title : item.title;
+}
+
+function getCommandMenuItemKey(item: NavItemWithChildren) {
+  return `${item.href ?? ''}:${item.title ?? ''}:${item.titleCn ?? ''}`;
 }
 
 function isString(value: string | undefined): value is string {
@@ -243,7 +247,7 @@ function CommandItems({
     <>
       {item.href && (
         <CommandMenuItem
-          key={item.href}
+          key={getCommandMenuItemKey(item)}
           onHighlight={() => {
             onHighlight(
               content.goToPage,
@@ -275,7 +279,7 @@ function CommandItems({
       )}
       {item.items?.map((child) => (
         <CommandItems
-          key={child.href ?? `${item.title}:${child.title}`}
+          key={getCommandMenuItemKey(child)}
           content={content}
           item={child}
           locale={locale}
@@ -308,7 +312,7 @@ function CommandMenuGroup({
     <CommandGroup heading={title} className={commandMenuGroupClassName}>
       {group.items.map((navItem) => (
         <CommandItems
-          key={navItem.href ?? `${group.title}:${navItem.title}`}
+          key={getCommandMenuItemKey(navItem)}
           content={content}
           item={navItem}
           locale={locale}
@@ -745,7 +749,7 @@ export function CommandMenuDialog({
 
                   return (
                     <CommandMenuItem
-                      key={navItem.href}
+                      key={getCommandMenuItemKey(navItem)}
                       onHighlight={() => {
                         setHighlightedCommand(content.goToPage);
                       }}

@@ -137,7 +137,8 @@ what another agent needs to run the test:
   `e2e-required: <why no exact unit/package RED is possible>`;
 - executable test file and exact command;
 - applicable model, DOM/native, pointer-feedback, focus, popup,
-  geometry/paint, runtime-error, and follow-up-input fields;
+  geometry/paint, subscription-lifecycle, runtime-error, and follow-up-input
+  fields;
 - tested ref or dirty-state boundary;
 - required retry-free stability.
 
@@ -156,6 +157,21 @@ durable regression test and record `unit-red: <test>`. Do not add an E2E test or
 expand E2E coverage for that case, and do not make E2E a completion gate. A
 final Browser check may still verify the real route when repository policy
 requires it, but manual Browser verification is not permanent E2E coverage.
+
+Before calling a unit or package RED exact, compare its setup with every route
+mode that changes mutation representation or schema properties. Record
+`runtime-modes:` in the selected case's `Exact environment`, including preview,
+suggestion, history, read-only, and any other relevant active or inactive mode.
+The same transform with a route-owned mode disabled is a proxy: it can reproduce
+the first exception while hiding the next invalid state in the same action.
+
+Record `fixture-scope:` beside the runtime modes. Use
+`fixture-scope: complete <input>` when the route consumes a deterministic
+sample, recording, corpus, or generated fixture. A minimal prefix may be
+recorded as `fixture-scope: minimal <invariant>` only while the case remains
+reproduced and complete-fixture replay stays open. Minimal input cannot support
+a kept, fixed, completed, or full-flow claim, even when it reproduces the first
+reported exception.
 
 E2E is the fallback regression layer. Use it only when the exact regression
 cannot be reproduced RED in an owner-level unit or package test. Before adding
@@ -253,6 +269,7 @@ observation:
 | `focus` | Which element owns focus, and which owner is forbidden? |
 | `popup` | Which toolbar, menu, overlay, or dialog is visible/hidden, including after release/close? |
 | `geometry-paint` | What layout or painted pixels must match, and what stale/duplicate paint is forbidden? |
+| `subscription-lifecycle` | Does the same keyed publication path survive add, update, remove, and teardown without stale reads, retained registrations, or post-cleanup wakes? |
 | `runtime-errors` | What error/overlay/console state is forbidden? |
 | `follow-up-input` | What next edit proves the editor remains usable, and what corruption/lost selection is forbidden? |
 
@@ -261,6 +278,71 @@ state, executable proof layer, `test: <path>#<title>` anchor, and result. Mark
 it `no` only with a phase and an N/A reason in every proof cell. “Moved,”
 “rendered,” or “did not crash” never implies selection shape, focus, popup
 exclusion, paint, performance, transient gesture state, or follow-up usability.
+
+For a focus transfer, `FocusEvent.relatedTarget` is evidence, not a guaranteed
+next-target carrier. The exact owner test covers a direct related target and a
+null related target followed by document `focusin`. Put
+`focus-transfer: direct-related-target + null-related-target -> focusin` in the
+positive assertion. Completion records `direct-related-target: pass`,
+`null-related-target: pass`, and `focusin-resolution: pass`. The pending null
+phase renders nothing, while an unmarked `focusin` or window blur clears it.
+
+For popup or toolbar focus, an immediate `activeElement` sample is support-only.
+When focus is applicable in the popup phase, the positive assertion records
+`focus-stability: settled + follow-up-key`. Browser-native proof waits through
+the popup's named layout/render settling boundary, then sends the next real key
+without a click or programmatic focus. Completion records
+`settled-focus: pass` and `follow-up-key: pass`. A locator helper that restores
+focus to its command target, an immediate `toBeFocused`, or an early green from
+another runner cannot overrule later exact-route focus loss.
+For a shortcut- or hotkey-opened popup, add
+`trigger-path: pre-focused-surface + native-keyboard` to the positive assertion.
+Focus the owning surface first, then deliver the shortcut through the browser
+keyboard rather than a locator-owned `press()` that may introduce its own focus
+step. Completion records `native-trigger-key: pass`.
+
+A subscription-backed keyed collection requires an applicable
+`subscription-lifecycle` row. Run add, update, remove, and teardown through the
+same production publication and cleanup path. Completion records `add: pass`,
+`update: pass`, `remove: pass`, and `teardown: pass`. Testing only a stable
+item update is incomplete because removal can notify an item subscriber before
+membership cleanup.
+
+For an effect-owned disposable source, run its `subscription-lifecycle` owner
+test under React Strict Mode. The positive assertion records
+`strict-effect: mount + cleanup + remount`, and the test publishes after the
+remount before the final unmount. Completion records `mount: pass`,
+`cleanup: pass`, `remount: pass`, and `post-remount-publication: pass`. A
+single-mount harness is red for this claim because effect rehearsal can destroy
+a render-created source before live use.
+
+Selective invalidation, affected-only routing, and fan-out repairs require an
+applicable `follow-up-input@follow-up` row. Repeat edits to one already-hot
+target cannot prove skipped state remains correct. The owner test must edit
+an unrelated target, then edit or resolve the previously skipped target, and
+must read an unchanged value without altering its shape. Record
+`unrelated-then-affected:` and `unchanged-read:` in the positive assertion;
+completion records `unrelated-then-affected: pass` and `unchanged-read: pass`.
+Use the real location, identity, membership, or cache state the owner skips.
+Benchmark counters and latency do not substitute for those value assertions.
+
+For persistent collection locality, count entries copied inside rebuilt nodes,
+not just the nodes themselves. Vary key distribution: short keys with divergent
+prefixes can expose a wide copied child map that sequential IDs hide. Preserve
+the same immutable and later-affected value assertions for that cohort.
+
+Runtime identity mapping requires a `model@after-action` oracle that round-trips
+canonical changes through JSON, not just an in-process transaction. Assert that
+retained siblings keep their keys and deleted keys resolve to null; exact value
+equality alone misses identity transfer. Record `serialized-replay:`,
+`retained-identity:`, and `deleted-identity:` in the positive assertion, with
+`: pass` for each at completion. Include fresh-editor and historical reads so
+process-local node metadata cannot accidentally satisfy the wire contract.
+Also record `split-merge-range:` with a content-preserving formatting round-trip.
+Assert selected text and forward/backward direction after both the split and
+merge, then type or navigate from the restored range. Completion requires
+`split-merge-range: pass`; correct document values and node keys alone do not
+prove point mapping through a merge.
 
 Required evidence that names a caret, insertion point, caret-accessible line,
 editable blank line/row, or text cursor must include oracle anchors for
@@ -638,6 +720,27 @@ Patch. Run the actual failing assertion on frozen product bytes and name
 whether product nondeterminism, interaction delivery, host readiness, or oracle
 sampling caused the red. Repeated green runs without a phase/result diagnostic
 cannot resume product edits.
+
+For a failed popup or toolbar focus case, that frozen-byte diagnostic also
+captures native `focusin` and `focusout`, then samples the focus owner at mount,
+Floating UI positioned readiness, settlement, and the no-click follow-up key.
+The failed-fix resume state records
+`focus-owner-trace: mount + positioned + settled + follow-up-key`,
+`native-focus-events: focusin + focusout capture`, and
+`first-divergence: <phase/owner>`. Do not choose another timer, effect phase, or
+positioning gate from final `activeElement` alone. Intercept the native
+`focus()` boundary on frozen product bytes and record
+`focus-call-trace: target + connected + display + visibility + disabled + active-after-call`
+plus `focus-call-result: <called-or-not-called/owner>`. That separates a missing
+focus call from a call rejected because the target was hidden, detached, or
+disabled before another lifecycle owner is chosen.
+
+When the failed candidate schedules focus with a timer, animation frame, or
+equivalent callback, intercept that scheduler too. Record
+`focus-scheduler-trace: request + cancel + run` and
+`focus-scheduler-result: <ran-or-cancelled/target-readiness>` in the failed-fix
+resume state. The callback running does not prove the target was focusable; use
+the focus-call target state from that same callback.
 
 That event immediately interrupts product work:
 

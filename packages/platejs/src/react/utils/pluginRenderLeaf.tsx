@@ -72,7 +72,8 @@ const getSimpleLeafAttributes = (
  */
 export const pluginRenderLeaf = (
   editor: Editor,
-  plugin: AnyResolvedPlatePlugin
+  plugin: AnyResolvedPlatePlugin,
+  options: { assumeActive?: boolean } = {}
 ): RenderLeaf =>
   function RenderLeaf(props) {
     const readOnly = useEditorReadOnly();
@@ -84,9 +85,9 @@ export const pluginRenderLeaf = (
     const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
-    if (!leafKey) return children;
+    if (!leafKey && !options.assumeActive) return children;
 
-    if (leaf[leafKey]) {
+    if (options.assumeActive || (leafKey && leaf[leafKey])) {
       const canUseSimpleLeaf =
         !Component &&
         getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&

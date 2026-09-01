@@ -1,0 +1,549 @@
+{
+  "evidenceKind": "diagnostic render profile; one measured sample per lane; not acceptance timing",
+  "runtime": {
+    "executable": "/Users/zbeyens/.local/share/fnm/node-versions/v22.22.1/installation/bin/node",
+    "node": "v22.22.1",
+    "v8": "12.4.254.21-node.35"
+  },
+  "config": {
+    "overscan": 0,
+    "blocks": 5000,
+    "disposeDelayMs": 0,
+    "segmentSize": 32,
+    "includeSyntheticBeforeInput": false,
+    "isolateCurrentSurfaces": true,
+    "iterations": 1,
+    "measureNativeSurfaceCompletion": false,
+    "profile": true,
+    "readyOnly": false,
+    "rootGroupSize": 16,
+    "splitSelectionLanes": true,
+    "typeOps": 10
+  },
+  "artifactPaths": {
+    "latest": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
+    "run": "tmp/slate-react-huge-document-legacy-compare-benchmark-current-only-v2DefaultRenderAuto-v2A-e44d29f7-blocks-5000-iters-1-ops-10-chunk-1000-segment-32-radius-0-dispose-0-full-run-native-beforeinput-isolated-surfaces-split-selection-profile.json"
+  },
+  "surfaces": {
+    "v2DefaultRenderAuto": {
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          68.84
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 61,
+          "dom-text-sync": 2,
+          "editable": 1,
+          "element": 1,
+          "leaf": 1,
+          "root-plan": 1,
+          "runtime-time": 21,
+          "selector": 494,
+          "text": 1
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-text-insert",
+            "p95": 53.86
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 34.56
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 34.46
+          },
+          {
+            "name": "core-time:notify-listeners",
+            "p95": 28.37
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 24.49
+          },
+          {
+            "name": "runtime-time:selector-dispatch",
+            "p95": 18.98
+          },
+          {
+            "name": "core-time:document-change-build",
+            "p95": 17.22
+          },
+          {
+            "name": "core-time:transaction-node-keys",
+            "p95": 15.14
+          },
+          {
+            "name": "core-time:transaction-runtime-map-index",
+            "p95": 15.13
+          },
+          {
+            "name": "core-time:runtime-index-publish-changed",
+            "p95": 11.8
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 9.59
+          },
+          {
+            "name": "core-time:notify-source-listeners",
+            "p95": 3.85
+          }
+        ],
+        "counts": [
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-check",
+            "p95": 312
+          },
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-notify",
+            "p95": 156
+          },
+          {
+            "name": "selector:selector-top-level-selection-index-check",
+            "p95": 6
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 4
+          },
+          {
+            "name": "runtime-time:projection-store.map-source:plite-inactive-selection",
+            "p95": 3
+          }
+        ]
+      },
+      "replaceFullDocumentWithTextModelCommitMs": {
+        "samples": [
+          31.45
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 51
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-text-insert",
+            "p95": 31.12
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 30.91
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 30.86
+          },
+          {
+            "name": "core-time:transaction-node-keys",
+            "p95": 16.95
+          },
+          {
+            "name": "core-time:transaction-runtime-map-index",
+            "p95": 16.94
+          },
+          {
+            "name": "core-time:runtime-index-publish-changed",
+            "p95": 15.63
+          },
+          {
+            "name": "core-time:document-change-build",
+            "p95": 12.95
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 0.19
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 0.16
+          },
+          {
+            "name": "core-time:schema-validation-incremental",
+            "p95": 0.07
+          },
+          {
+            "name": "core-time:build-change",
+            "p95": 0.06
+          },
+          {
+            "name": "core-time:runtime-index-map-descriptor",
+            "p95": 0.04
+          }
+        ],
+        "counts": [
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 4
+          },
+          {
+            "name": "core-time:build-change",
+            "p95": 2
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 2
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 2
+          },
+          {
+            "name": "core-time:notify-extension-commit-listeners",
+            "p95": 2
+          }
+        ]
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          77.37
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 86,
+          "dom-text-sync": 2,
+          "editable": 1,
+          "element": 1,
+          "leaf": 1,
+          "root-plan": 1,
+          "runtime-time": 21,
+          "selector": 494,
+          "text": 1
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-fragment-insert",
+            "p95": 56.22
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 35.8
+          },
+          {
+            "name": "core-time:notify-listeners",
+            "p95": 31.73
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 30.23
+          },
+          {
+            "name": "core-time:transaction-spec-callback",
+            "p95": 30.18
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 28.14
+          },
+          {
+            "name": "runtime-time:selector-dispatch",
+            "p95": 21.78
+          },
+          {
+            "name": "core-time:slice-fit-canonicalize",
+            "p95": 17.87
+          },
+          {
+            "name": "core-time:slice-fit-canonical-change-map",
+            "p95": 17.74
+          },
+          {
+            "name": "core-time:slice-fit-structural-candidates",
+            "p95": 11.83
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 11.78
+          },
+          {
+            "name": "core-time:transaction-node-keys",
+            "p95": 5.31
+          }
+        ],
+        "counts": [
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-check",
+            "p95": 312
+          },
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-notify",
+            "p95": 156
+          },
+          {
+            "name": "selector:selector-top-level-selection-index-check",
+            "p95": 6
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 5
+          },
+          {
+            "name": "runtime-time:projection-store.map-source:plite-inactive-selection",
+            "p95": 3
+          }
+        ]
+      }
+    },
+    "v2AutoExplicit": {
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          62.75
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 61,
+          "dom-text-sync": 2,
+          "editable": 1,
+          "leaf": 1,
+          "root-plan": 1,
+          "runtime-time": 21,
+          "selector": 494,
+          "text": 1
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-text-insert",
+            "p95": 46.65
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 28.61
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 28.54
+          },
+          {
+            "name": "core-time:notify-listeners",
+            "p95": 28.36
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 24.55
+          },
+          {
+            "name": "runtime-time:selector-dispatch",
+            "p95": 19.02
+          },
+          {
+            "name": "core-time:document-change-build",
+            "p95": 14.07
+          },
+          {
+            "name": "core-time:transaction-node-keys",
+            "p95": 13.79
+          },
+          {
+            "name": "core-time:transaction-runtime-map-index",
+            "p95": 13.78
+          },
+          {
+            "name": "core-time:runtime-index-publish-changed",
+            "p95": 10.94
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 10.85
+          },
+          {
+            "name": "core-time:notify-source-listeners",
+            "p95": 3.78
+          }
+        ],
+        "counts": [
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-check",
+            "p95": 312
+          },
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-notify",
+            "p95": 156
+          },
+          {
+            "name": "selector:selector-top-level-selection-index-check",
+            "p95": 6
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 4
+          },
+          {
+            "name": "runtime-time:projection-store.map-source:plite-inactive-selection",
+            "p95": 3
+          }
+        ]
+      },
+      "replaceFullDocumentWithTextModelCommitMs": {
+        "samples": [
+          34.18
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 51
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-text-insert",
+            "p95": 33.86
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 33.71
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 33.63
+          },
+          {
+            "name": "core-time:transaction-node-keys",
+            "p95": 17.5
+          },
+          {
+            "name": "core-time:transaction-runtime-map-index",
+            "p95": 17.49
+          },
+          {
+            "name": "core-time:document-change-build",
+            "p95": 15
+          },
+          {
+            "name": "core-time:runtime-index-publish-changed",
+            "p95": 14.71
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 0.21
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 0.13
+          },
+          {
+            "name": "core-time:schema-validation-incremental",
+            "p95": 0.06
+          },
+          {
+            "name": "core-time:runtime-index-map-descriptor",
+            "p95": 0.04
+          },
+          {
+            "name": "core-time:transaction-resolve-target",
+            "p95": 0.04
+          }
+        ],
+        "counts": [
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 4
+          },
+          {
+            "name": "core-time:build-change",
+            "p95": 2
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 2
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 2
+          },
+          {
+            "name": "core-time:notify-extension-commit-listeners",
+            "p95": 2
+          }
+        ]
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          52.33
+        ],
+        "byKind": {
+          "benchmark-time": 2,
+          "core-time": 86,
+          "dom-text-sync": 2,
+          "editable": 1,
+          "leaf": 1,
+          "root-plan": 1,
+          "runtime-time": 21,
+          "selector": 494,
+          "text": 1
+        },
+        "duration": [
+          {
+            "name": "benchmark-time:editor-update-fragment-insert",
+            "p95": 35.99
+          },
+          {
+            "name": "core-time:notify-listeners",
+            "p95": 27.58
+          },
+          {
+            "name": "core-time:notify-commit-listeners",
+            "p95": 23.32
+          },
+          {
+            "name": "runtime-time:selector-dispatch",
+            "p95": 19.15
+          },
+          {
+            "name": "core-time:transaction-callback",
+            "p95": 18.59
+          },
+          {
+            "name": "core-time:mutation-root",
+            "p95": 15.31
+          },
+          {
+            "name": "core-time:transaction-spec-callback",
+            "p95": 15.24
+          },
+          {
+            "name": "core-time:slice-fit-canonicalize",
+            "p95": 14.75
+          },
+          {
+            "name": "core-time:slice-fit-canonical-change-map",
+            "p95": 14.65
+          },
+          {
+            "name": "benchmark-time:editor-update-selection-set",
+            "p95": 10.57
+          },
+          {
+            "name": "core-time:notify-source-listeners",
+            "p95": 4.23
+          },
+          {
+            "name": "core-time:notify-source-listeners:selection",
+            "p95": 3.78
+          }
+        ],
+        "counts": [
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-check",
+            "p95": 312
+          },
+          {
+            "name": "selector:selector-dom-strategy-partial-dom-preview-notify",
+            "p95": 156
+          },
+          {
+            "name": "selector:selector-top-level-selection-index-check",
+            "p95": 6
+          },
+          {
+            "name": "core-time:transaction-finalize-representation",
+            "p95": 5
+          },
+          {
+            "name": "runtime-time:projection-store.map-source:plite-inactive-selection",
+            "p95": 3
+          }
+        ]
+      }
+    }
+  }
+}

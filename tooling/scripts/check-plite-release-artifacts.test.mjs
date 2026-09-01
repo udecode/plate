@@ -106,12 +106,12 @@ test('owns focused packed proof for Plite package boundaries', () => {
 test('tracks root and every public Plate feature entrypoint bundle size', () => {
   const specifiers = getPlateEntrypointSizeSpecifiers();
 
-  assert.equal(specifiers.length, 31);
+  assert.equal(specifiers.length, 29);
   assert.equal(new Set(specifiers).size, specifiers.length);
   assert.equal(specifiers[0], 'platejs');
   assert.ok(specifiers.includes('platejs/media'));
   assert.ok(specifiers.includes('platejs/media/react'));
-  assert.ok(specifiers.includes('platejs/cursor/react'));
+  assert.ok(specifiers.includes('platejs/resizable/react'));
 
   assert.doesNotThrow(() =>
     assertPlateEntrypointSizes(
@@ -708,7 +708,7 @@ test('builds an executable typed Plite schema consumer without changing DCE fixt
 
   assert.match(sources.types, /SchemaElementFor/);
   assert.match(sources.runtime, /releaseIdentityEqual/);
-  assert.match(sources.runtime, /plitejs\/page-layout\/react/);
+  assert.match(sources.runtime, /plitejs\/pagination\/react/);
 
   for (const source of [sources.baseline, sources.bare, sources.named]) {
     assert.doesNotMatch(source, /release-consumer-schema/);

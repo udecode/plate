@@ -114,15 +114,17 @@ export type PlateHTMLProps<
   style?: React.CSSProperties;
 };
 
-type PlateElementComponentProps<
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = never,
-  T extends keyof HTMLElementTagNameMap = 'div',
-> = Omit<RenderElementProps<N>, 'attributes' | 'path'> &
-  Pick<PlateNodeProps<C>, 'ref'> & {
-    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+export const PlateElement = function PlateElement({
+  as: Tag = 'div',
+  children,
+  insetProp,
+  ref,
+  ...props
+}: Omit<RenderElementProps, 'attributes' | 'path'> &
+  Pick<PlateNodeProps, 'ref'> & {
+    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements['div']> &
       UnknownObject;
-    as?: T;
+    as?: 'div';
     className?: string;
     insetProp?: boolean;
     plugin?: {
@@ -131,15 +133,7 @@ type PlateElementComponentProps<
       };
     };
     style?: React.CSSProperties;
-  };
-
-export const PlateElement = function PlateElement({
-  as: Tag = 'div',
-  children,
-  insetProp,
-  ref,
-  ...props
-}: PlateElementComponentProps) {
+  }) {
   const attributes = {
     ...props.attributes,
     className:
@@ -168,10 +162,36 @@ export const PlateElement = function PlateElement({
     C extends AnyBasePluginDefinition = never,
     T extends keyof HTMLElementTagNameMap = 'div',
   >(
-    props: PlateElementComponentProps<N, C, T>
+    props: Omit<RenderElementProps<N>, 'attributes' | 'path'> &
+      Pick<PlateNodeProps<C>, 'ref'> & {
+        attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+          UnknownObject;
+        as?: T;
+        className?: string;
+        insetProp?: boolean;
+        plugin?: {
+          rules: {
+            selection?: SelectionRules;
+          };
+        };
+        style?: React.CSSProperties;
+      }
   ): React.ReactElement;
   <T extends keyof HTMLElementTagNameMap = 'div'>(
-    props: PlateElementComponentProps<Element, never, T>
+    props: Omit<RenderElementProps, 'attributes' | 'path'> &
+      Pick<PlateNodeProps, 'ref'> & {
+        attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+          UnknownObject;
+        as?: T;
+        className?: string;
+        insetProp?: boolean;
+        plugin?: {
+          rules: {
+            selection?: SelectionRules;
+          };
+        };
+        style?: React.CSSProperties;
+      }
   ): React.ReactElement;
 };
 
@@ -235,35 +255,25 @@ function PlateElementBody({
   );
 }
 
-type PlateTextRenderProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = never,
-> = PlateNodeProps<C> &
-  RenderTextProps<N> & {
-    attributes: UnknownObject;
-  };
-
 /** Props for the text component owned by a plugin descriptor. */
 export type PlateTextProps<TPlugin extends PlateNodePropsDescriptor> =
   TPlugin extends PlateNodePropsDescriptor
-    ? PlateTextRenderProps<
-        PlateTextPropsNode<TPlugin>,
-        PlateTextPropsConfig<TPlugin>
-      >
+    ? PlateNodeProps<PlateTextPropsConfig<TPlugin>> &
+        RenderTextProps<PlateTextPropsNode<TPlugin>> & {
+          attributes: UnknownObject;
+        }
     : never;
-
-type PlateTextComponentProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = never,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateTextRenderProps<N, C> & PlateHTMLProps<C, T>;
 
 export const PlateText = function PlateText({
   as: Tag = 'span',
   children,
   ref,
   ...props
-}: PlateTextComponentProps) {
+}: (PlateNodeProps &
+  RenderTextProps & {
+    attributes: UnknownObject;
+  }) &
+  PlateHTMLProps<never, 'span'>) {
   const attributes = {
     ...props.attributes,
     className:
@@ -284,7 +294,11 @@ export const PlateText = function PlateText({
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
-  props: PlateTextComponentProps<N, C, T>
+  props: (PlateNodeProps<C> &
+    RenderTextProps<N> & {
+      attributes: UnknownObject;
+    }) &
+    PlateHTMLProps<C, T>
 ) => React.ReactElement;
 
 type PlateLeafRenderProps<
@@ -308,12 +322,6 @@ export type PlateLeafProps<TPlugin extends PlateNodePropsDescriptor> =
       >
     : never;
 
-type PlateLeafComponentProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = never,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PlateLeafRenderProps<N, C> & PlateHTMLProps<C, T>;
-
 const NonBreakingSpace = () => (
   <span style={{ fontSize: 0, lineHeight: 0 }} contentEditable={false}>
     {String.fromCodePoint(160)}
@@ -326,7 +334,18 @@ export const PlateLeaf = function PlateLeaf({
   inset: insetProp,
   ref,
   ...props
-}: PlateLeafComponentProps) {
+}: (PlateNodeProps &
+  RenderLeafProps<
+    Text,
+    Text &
+      Partial<
+        [never] extends [never] ? {} : InferPluginDecoration<NoInfer<never>>
+      >
+  > & {
+    attributes: UnknownObject;
+    inset?: boolean;
+  }) &
+  PlateHTMLProps<never, 'span'>) {
   const attributes = {
     ...props.attributes,
     className:
@@ -364,4 +383,12 @@ export const PlateLeaf = function PlateLeaf({
 >({
   className,
   ...props
-}: PlateLeafComponentProps<N, C, T>) => React.ReactElement;
+}: (PlateNodeProps<C> &
+  RenderLeafProps<
+    N,
+    N & Partial<[C] extends [never] ? {} : InferPluginDecoration<NoInfer<C>>>
+  > & {
+    attributes: UnknownObject;
+    inset?: boolean;
+  }) &
+  PlateHTMLProps<C, T>) => React.ReactElement;

@@ -9,22 +9,20 @@ import React, {
 import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
 import { ProjectionContext } from '../projection-context';
 
-type EditableDOMCommitFenceProps = {
-  children?: ReactNode;
-  runtime: EditableDOMRuntime;
-};
-
-type EditableDOMCommitFenceStateProps = EditableDOMCommitFenceProps & {
-  commitVersion: number;
-  projectionSnapshot: unknown;
-};
-
 const EMPTY_PROJECTION_SNAPSHOT = Object.freeze(Object.create(null));
 const subscribeEmpty = () => () => {};
 const getEmptyProjectionSnapshot = () => EMPTY_PROJECTION_SNAPSHOT;
 
 // oxlint-disable-next-line react/prefer-function-component -- [P0 React lifecycle] getSnapshotBeforeUpdate has no function-component equivalent.
-class EditableDOMCommitFenceComponent extends Component<EditableDOMCommitFenceStateProps> {
+class EditableDOMCommitFenceComponent extends Component<
+  {
+    children?: ReactNode;
+    runtime: EditableDOMRuntime;
+  } & {
+    commitVersion: number;
+    projectionSnapshot: unknown;
+  }
+> {
   componentDidMount() {
     this.props.runtime.completeReactCommit();
   }
@@ -47,7 +45,10 @@ class EditableDOMCommitFenceComponent extends Component<EditableDOMCommitFenceSt
 export const EditableDOMCommitFence = ({
   children,
   runtime,
-}: EditableDOMCommitFenceProps) => {
+}: {
+  children?: ReactNode;
+  runtime: EditableDOMRuntime;
+}) => {
   const projectionStore = useContext(ProjectionContext);
   const subscribeCommit = useCallback(
     (listener: () => void) => runtime.editor.subscribeCommit(listener),

@@ -1,0 +1,17 @@
+{
+  "case": "PLITE-FANOUT-ROOT-FOCUS",
+  "command": "fnm exec --using=22 node scripts/run-plite-browser.mjs direct --project=chromium --workers=1 --repeat-each=30 tests/plite-browser/donor/examples/synced-blocks.test.ts --grep 'extends Shift\\+Arrow through synced blocks like sibling blocks'",
+  "cwd": "apps/plite",
+  "retries": 0,
+  "passed": 22,
+  "failed": 8,
+  "productionBuildFingerprint": "719ead25e73c2a8cebfb8066ba3ab376bc6dacaec6a3fe967ab5bd199d7f8a10",
+  "observedTransition": {
+    "requestedSelection": { "path": [6, 0], "offset": 0 },
+    "acceptedBeforeDeferredWork": true,
+    "laterSelection": { "path": [0, 0], "offset": 0, "root": "synced-block:shared:body" },
+    "laterOrigin": "programmatic-export"
+  },
+  "ownerTest": "packages/plitejs/test/react/content-root-navigation-contract.test.ts",
+  "ownerRed": "Deferred focus runs twice after a newer selection; exactly one immediate call is expected. Unchanged-selection replay passes."
+}

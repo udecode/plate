@@ -10,6 +10,7 @@ const EditorContext = React.createContext<any>(null);
 
 let currentOverlayEditor: any;
 let currentPositions: any[] = [];
+let editableRef: React.RefObject<HTMLDivElement | null>;
 
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
@@ -60,17 +61,32 @@ mock.module('platejs/react', () => ({
     <EditorContext value={editor}>{children}</EditorContext>
   ),
   useEditor: () => React.useContext(EditorContext) ?? currentOverlayEditor,
-  useEditorScrollElement: (editor: any) => editor.api.dom.scroll(),
 }));
 
 mock.module('platejs/yjs/react', () => ({
   YjsPlugin: {
-    configure: ({ initialState }: any) => ({ initialState, name: 'yjs' }),
+    configure: ({ initialState, render: renderSlots }: any) => ({
+      initialState,
+      name: 'yjs',
+      render: renderSlots,
+    }),
   },
-  useYjsRemoteCursorOverlayPositions: (editor: unknown) => {
+  useYjsRemoteCursor: (_editor: unknown, clientId: number) =>
+    currentPositions.find((position) => position.clientId === clientId)
+      ?.cursor ?? null,
+  useYjsRemoteCursorGeometry: (
+    _editor: unknown,
+    clientId: number,
+    options: { editableRef: React.RefObject<HTMLElement | null> }
+  ) =>
+    options.editableRef.current
+      ? (currentPositions.find((position) => position.clientId === clientId)
+          ?.geometry ?? null)
+      : null,
+  useYjsRemoteCursorIds: (editor: unknown) => {
     overlayPositionsMock(editor);
 
-    return [currentPositions];
+    return currentPositions.map((position) => position.clientId);
   },
   useYjsProviderStatus: (editor: any) => editor.provider.status,
   useYjsProviderSynced: (editor: any) => editor.provider.synced,
@@ -90,6 +106,7 @@ mock.module('@/registry/components/editor/editor', () => ({
 }));
 
 mock.module('@/registry/components/editor/remote-cursor-overlay', () => ({
+  RemoteCursorLeaf: () => <span data-remote-cursor-leaf="" />,
   RemoteCursorOverlay: () => <div data-remote-cursor-overlay="" />,
 }));
 
@@ -98,18 +115,8 @@ describe('CollaborativeEditingDemo', () => {
     createPlateEditorMock.mockClear();
     overlayPositionsMock.mockClear();
     currentPositions = [];
-    const scrollElement = {
-      getBoundingClientRect: () => ({ left: 10, top: 20 }),
-      scrollLeft: 8,
-      scrollTop: 5,
-    };
-    currentOverlayEditor = {
-      api: {
-        dom: {
-          scroll: () => scrollElement,
-        },
-      },
-    };
+    currentOverlayEditor = {};
+    editableRef = { current: document.createElement('div') };
   });
 
   afterAll(() => {
@@ -139,61 +146,71 @@ describe('CollaborativeEditingDemo', () => {
     expect(providers[0].listenerCount()).toBeGreaterThan(0);
     expect(providers[1].listenerCount()).toBeGreaterThan(0);
     expect(view.container.querySelectorAll('[data-peer]')).toHaveLength(2);
+    for (const [options] of createPlateEditorMock.mock.calls) {
+      const yjsPlugin = options.plugins.find(
+        (plugin: any) => plugin.name === 'yjs'
+      );
+
+      expect(yjsPlugin.render.afterEditable).toBeDefined();
+      expect(yjsPlugin.render.leaf).toBeDefined();
+    }
 
     expect(() => view.unmount()).not.toThrow();
     expect(providers[0].listenerCount()).toBe(0);
     expect(providers[1].listenerCount()).toBe(0);
   });
 
-  it('renders remote carets and selections in the editor scroll space', async () => {
+  it('renders remote carets from focus geometry', async () => {
     currentPositions = [
       {
         clientId: 101,
-        cursor: { data: { color: '#7C3AED', name: 'Ada' } },
-        range: {
-          anchor: { offset: 2, path: [0, 0] },
-          focus: { offset: 2, path: [0, 0] },
+        cursor: {
+          data: { color: '#7C3AED', name: 'Ada' },
+          selection: {
+            anchor: { offset: 2, path: [0, 0] },
+            focus: { offset: 2, path: [0, 0] },
+          },
         },
-        rect: { height: 12, left: 50, top: 75, width: 10 },
+        geometry: {
+          boundingRect: { height: 12, left: 50, top: 75, width: 0 },
+          focusRect: { height: 12, left: 50, top: 75, width: 0 },
+          rects: [],
+        },
       },
       {
         clientId: 202,
-        cursor: { data: { color: '#0891B2', name: 'Lin' } },
-        range: {
-          anchor: { offset: 1, path: [0, 0] },
-          focus: { offset: 4, path: [0, 0] },
+        cursor: {
+          data: { color: '#0891B2', name: 'Lin' },
+          selection: {
+            anchor: { offset: 1, path: [0, 0] },
+            focus: { offset: 4, path: [0, 0] },
+          },
         },
-        rect: { height: 18, left: 90, top: 120, width: 30 },
+        geometry: {
+          boundingRect: { height: 18, left: 90, top: 120, width: 30 },
+          focusRect: { height: 18, left: 120, top: 120, width: 0 },
+          rects: [{ height: 18, left: 90, top: 120, width: 30 }],
+        },
       },
     ];
 
     const { RemoteCursorOverlay } = await import(
       `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay />);
+    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
     const adaCaret = view.container.querySelector(
       '[data-remote-caret][data-client-id="101"]'
     );
     const linCaret = view.container.querySelector(
       '[data-remote-caret][data-client-id="202"]'
     );
-    const linSelection = view.container.querySelector(
-      '[data-remote-selection][data-client-id="202"]'
-    );
-
     expect(overlayPositionsMock).toHaveBeenCalledWith(currentOverlayEditor);
-    expect(
-      view.container.querySelector(
-        '[data-remote-selection][data-client-id="101"]'
-      )
-    ).toBeNull();
-    expect(adaCaret?.getAttribute('style')).toContain('left: 48px');
-    expect(adaCaret?.getAttribute('style')).toContain('top: 60px');
+    expect(view.container.querySelector('[data-remote-selection]')).toBeNull();
+    expect(adaCaret?.getAttribute('style')).toContain('left: 50px');
+    expect(adaCaret?.getAttribute('style')).toContain('top: 75px');
     expect(adaCaret?.getAttribute('style')).toContain('height: 16px');
     expect(adaCaret?.textContent).toBe('Ada');
-    expect(linSelection?.getAttribute('style')).toContain('left: 88px');
-    expect(linSelection?.getAttribute('style')).toContain('width: 30px');
-    expect(linCaret?.getAttribute('style')).toContain('left: 118px');
+    expect(linCaret?.getAttribute('style')).toContain('left: 120px');
     expect(linCaret?.textContent).toBe('Lin');
   });
 
@@ -201,28 +218,36 @@ describe('CollaborativeEditingDemo', () => {
     currentPositions = [
       {
         clientId: 2,
-        cursor: { data: { color: 'red', name: '   ' } },
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
+        cursor: {
+          data: { color: 'red', name: '   ' },
+          selection: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 0, path: [0, 0] },
+          },
         },
-        rect: { height: 20, left: 30, top: 40, width: 0 },
+        geometry: {
+          boundingRect: { height: 20, left: 30, top: 40, width: 0 },
+          focusRect: { height: 20, left: 30, top: 40, width: 0 },
+          rects: [],
+        },
       },
       {
         clientId: 3,
-        cursor: { data: { color: '#FFFFFF', name: 'Deleted' } },
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
+        cursor: {
+          data: { color: '#FFFFFF', name: 'Deleted' },
+          selection: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 0, path: [0, 0] },
+          },
         },
-        rect: null,
+        geometry: null,
       },
     ];
 
     const { RemoteCursorOverlay } = await import(
       `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay />);
+    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
     const caret = view.container.querySelector(
       '[data-remote-caret][data-client-id="2"]'
     );
@@ -232,14 +257,29 @@ describe('CollaborativeEditingDemo', () => {
     expect(view.container.querySelector('[data-client-id="3"]')).toBeNull();
   });
 
-  it('renders no overlay until the editor scroll container is mounted', async () => {
-    currentOverlayEditor.api.dom.scroll = () => null;
+  it('renders no cursors until the exact Editable is mounted', async () => {
+    editableRef = { current: null };
+    currentPositions = [
+      {
+        clientId: 2,
+        cursor: {
+          selection: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 0, path: [0, 0] },
+          },
+        },
+        geometry: {
+          focusRect: { height: 20, left: 30, top: 40, width: 0 },
+          rects: [],
+        },
+      },
+    ];
 
     const { RemoteCursorOverlay } = await import(
       `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay />);
+    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
 
-    expect(view.container.innerHTML).toBe('');
+    expect(view.container.querySelector('[data-remote-caret]')).toBeNull();
   });
 });

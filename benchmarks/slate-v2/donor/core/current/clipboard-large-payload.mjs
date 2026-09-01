@@ -1173,7 +1173,7 @@ const measureFullSelectionCopy = (
   const children = createFragment(lineCount);
   const selection = fullSelection(children);
 
-  return measurePreparedLane(
+  const result = measurePreparedLane(
     sampleCount,
     () => ({
       data: new FakeDataTransfer(),
@@ -1204,6 +1204,34 @@ const measureFullSelectionCopy = (
       warmup,
     }
   );
+  const editor = createBenchmarkEditor(children, selection);
+  const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+  const copiedNodes = new WeakSet(editor.read.children().flatMap((node) => [node, ...node.children]));
+  const originalEntries = Object.entries;
+  let copyPropertyVisitCount = 0;
+  let runtimeIndexBuildCount = 0;
+  Object.entries = (value) => {
+    if (copiedNodes.has(value)) copyPropertyVisitCount += 1;
+    return originalEntries(value);
+  };
+  globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+    record(event) {
+      if (event.kind === 'core-time' && event.id === 'runtime-index-full-build') {
+        runtimeIndexBuildCount += 1;
+      }
+    },
+  };
+  try {
+    const data = new FakeDataTransfer();
+    writeDOMSelectionData(editor, data);
+    verify(data.getData('text/plain').length > 0, 'Copy locality probe must write the selected text');
+  } finally {
+    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    Object.entries = originalEntries;
+  }
+  verify(runtimeIndexBuildCount === 0, 'Model-backed copy must not build identities for missing DOM');
+  verify(copyPropertyVisitCount === 0, 'Preserve-only copy must not inspect node properties');
+  return { ...result, copyPropertyVisitCount, runtimeIndexBuildCount };
 };
 
 const measurePopulatedMiddlePlainTextPaste = (
@@ -1624,6 +1652,10 @@ const maximumMetadata = (key) =>
     )
   );
 const metrics = {
+  plite_clipboard_full_copy_identity_builds:
+    issueTargets?.populatedFullSelectionCopy10000.runtimeIndexBuildCount ?? 0,
+  plite_clipboard_full_copy_property_visits:
+    issueTargets?.populatedFullSelectionCopy10000.copyPropertyVisitCount ?? 0,
   plite_clipboard_correctness_failures: correctnessFailures.length,
   plite_clipboard_cut_edit_inspection_p95_ms:
     pathological.cutTwoBlocksEditMs.inspectionMs.p95,

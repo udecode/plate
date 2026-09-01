@@ -1,0 +1,24 @@
+{
+  "metrics": {
+    "pagination_staged_burst_ms": 27.4,
+    "pagination_staged_table_burst_ms": 92.9,
+    "pagination_virtualized_block_visible": 1,
+    "pagination_virtualized_burst_ms": 96.6,
+    "pagination_virtualized_chars_correct": 1,
+    "pagination_virtualized_dom_nodes": 335,
+    "pagination_virtualized_failed": 0,
+    "pagination_virtualized_load_after_dom_ms": 497,
+    "pagination_virtualized_max_typing_ms": 8.5,
+    "pagination_virtualized_page_surfaces": 3,
+    "pagination_virtualized_p95_typing_ms": 7.3,
+    "pagination_virtualized_scroll_ms": 16,
+    "pagination_virtualized_vs_table_ratio": 1.04
+  },
+  "playwright": {
+    "reportPath": "/Users/zbeyens/git/plate-2/tmp/slate-pagination-virtualized-char-burst-playwright.json",
+    "status": 0,
+    "stderrTail": "(node:29500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+    "stdoutTail": "\nRunning 3 tests using 1 worker\n\n\n\n[1/3] [chromium] › apps/plite/tests/plite-browser/donor/examples/pagination.test.ts:4939:7 › pagination example › keeps staged burst typing responsive in the 15-page document\n[2/3] [chromium] › apps/plite/tests/plite-browser/donor/examples/pagination.test.ts:5111:7 › pagination example › keeps staged typing responsive in a 500-row provider-owned table document\n[3/3] [chromium] › apps/plite/tests/plite-browser/donor/examples/pagination.test.ts:5296:7 › pagination example › keeps rows=800 virtualized pagination in the staged-class perf envelope\n  3 passed (4.5s)\n"
+  },
+  "artifact": "tmp/slate-pagination-virtualized-char-burst-benchmark.json"
+}

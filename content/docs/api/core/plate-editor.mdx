@@ -92,12 +92,15 @@ editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
 ```ts title="Plugin state access"
-import { FindReplacePlugin } from 'platejs/find-replace';
+import { definePlatePlugin } from 'platejs/react';
 
-const findReplace = editor.plugin(FindReplacePlugin);
+const PanelPlugin = definePlatePlugin('panel', {
+  initialState: { open: false },
+});
+const panel = editor.plugin(PanelPlugin);
 
-const search = findReplace.store.get("search");
-findReplace.store.set({ search: search.trim() });
+const open = panel.store.get('open');
+panel.store.set({ open: !open });
 ```
 
 In the table below, `P` is the exact plugin descriptor type and
@@ -287,7 +290,7 @@ the constructor's `update` field.
   </APITransforms>
 </API>
 
-## Plugin Pipeline Effects
+## Plugin pipeline effects
 
 Some core behavior is exposed by routing browser/editor events into the Plite transaction runtime rather than by adding public editor methods.
 

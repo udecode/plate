@@ -1,0 +1,3592 @@
+{
+  "purpose": "Disposable causal intervention; one sample per row, not a percentile or release claim",
+  "rows": [
+    {
+      "blocks": 100,
+      "edits": 1,
+      "path": "current",
+      "duration": 12.10145799999998,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 2,
+          "duration": 0.0810419999999965
+        },
+        "slice-fit-input": {
+          "count": 3,
+          "duration": 0.0019989999999836527
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 3,
+          "duration": 0.0081249999999784
+        },
+        "slice-fit-target-index": {
+          "count": 3,
+          "duration": 0.015749999999997044
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 3,
+          "duration": 0.002001000000007025
+        },
+        "slice-fit-changeset-build": {
+          "count": 3,
+          "duration": 1.5677919999999972
+        },
+        "change-set-local-decode": {
+          "count": 3,
+          "duration": 0.08150100000000293
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.0030000000000143245
+        },
+        "change-set-apply-indexed": {
+          "count": 6,
+          "duration": 0.7943339999999921
+        },
+        "change-set-apply": {
+          "count": 6,
+          "duration": 0.8364980000000628
+        },
+        "slice-fit-changeset-apply": {
+          "count": 3,
+          "duration": 0.6203760000000216
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 3,
+          "duration": 0.16912500000000819
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 3,
+          "duration": 2.847791000000001
+        },
+        "slice-fit-canonicalize": {
+          "count": 3,
+          "duration": 3.6997499999999945
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 0.04049899999998274
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 0.49641600000003905
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.09137400000000184
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.02816599999997038
+        },
+        "transaction-runtime-source-index": {
+          "count": 3,
+          "duration": 0.15004100000001586
+        },
+        "runtime-index-map-changed": {
+          "count": 2,
+          "duration": 1.5424179999999978
+        },
+        "runtime-index-map-descriptor": {
+          "count": 2,
+          "duration": 0.08866700000001515
+        },
+        "transaction-runtime-map-index": {
+          "count": 3,
+          "duration": 1.9928320000000213
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 2,
+          "duration": 2.151999999999987
+        },
+        "transaction-spec-callback": {
+          "count": 2,
+          "duration": 15.264375000000001
+        },
+        "transaction-finalize-representation": {
+          "count": 4,
+          "duration": 0.09583199999997305
+        },
+        "transaction-spec-finalize": {
+          "count": 2,
+          "duration": 0.12562499999998522
+        },
+        "transaction-spec-adopt": {
+          "count": 1,
+          "duration": 0.007082999999994399
+        },
+        "schema-validation-incremental-hit": {
+          "count": 1,
+          "duration": 0.00008300000001781882
+        },
+        "schema-validation-window-discovery": {
+          "count": 1,
+          "duration": 0.017083000000013726
+        },
+        "schema-validation-move-detection": {
+          "count": 1,
+          "duration": 0.002207999999995991
+        },
+        "schema-validation-incremental": {
+          "count": 1,
+          "duration": 0.07333300000001941
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0007090000000005148
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.010500000000007503
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.05700000000001637
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.021459000000021433
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.001833999999973912
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 1.0115000000000123
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0008330000000000837
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.0028750000000172804
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0007500000000106866
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.0047089999999911925
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.014082999999999402
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.0027499999999918145
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.015332999999998265
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.004792000000009011
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.0027500000000202363
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.08991599999998812
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.3012080000000026
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0006660000000238142
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.3195839999999919
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0008330000000000837
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0007910000000208584
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 100,
+      "edits": 1,
+      "path": "detached-schema",
+      "duration": 2.5599170000000413,
+      "phases": {
+        "slice-fit-input": {
+          "count": 2,
+          "duration": 0.0012500000000272848
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 2,
+          "duration": 0.0038759999999911088
+        },
+        "slice-fit-target-index": {
+          "count": 2,
+          "duration": 0.007958000000030552
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 2,
+          "duration": 0.0011249999999449756
+        },
+        "slice-fit-changeset-build": {
+          "count": 2,
+          "duration": 0.03070800000006102
+        },
+        "change-set-local-decode": {
+          "count": 1,
+          "duration": 0.019166999999981726
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.005708999999967546
+        },
+        "change-set-apply-indexed": {
+          "count": 4,
+          "duration": 0.13066599999990558
+        },
+        "change-set-apply": {
+          "count": 4,
+          "duration": 0.1572900000000459
+        },
+        "slice-fit-changeset-apply": {
+          "count": 2,
+          "duration": 0.06029200000000401
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 2,
+          "duration": 0.04524999999995316
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 2,
+          "duration": 0.03895800000003646
+        },
+        "slice-fit-canonicalize": {
+          "count": 2,
+          "duration": 0.16541699999999082
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 0.04929200000003675
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 0.532416000000012
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.000624999999956799
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.008458000000018728
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.04149999999998499
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0007090000000289365
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.010540999999989253
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.07670899999999392
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0009160000000179025
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 1.0052909999999997
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0005830000000059954
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0005840000000034706
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.002250000000003638
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0004999999999881766
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.004707999999993717
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.01583299999998644
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.002415999999982432
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.012874999999951342
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.003999999999962256
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.002709000000038486
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.061666999999999916
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.17016699999999219
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0005830000000059954
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.177833000000021
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0004999999999881766
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0005419999999958236
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 100,
+      "edits": 30,
+      "path": "current",
+      "duration": 85.45099999999996,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 60,
+          "duration": 1.2703689999999597
+        },
+        "slice-fit-input": {
+          "count": 90,
+          "duration": 0.01608200000009674
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 90,
+          "duration": 0.13545599999991964
+        },
+        "slice-fit-target-index": {
+          "count": 90,
+          "duration": 0.25141700000000355
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 90,
+          "duration": 0.014546999999879517
+        },
+        "slice-fit-changeset-build": {
+          "count": 90,
+          "duration": 26.197373999999627
+        },
+        "change-set-local-decode": {
+          "count": 148,
+          "duration": 0.8479150000002846
+        },
+        "change-set-local-splice": {
+          "count": 146,
+          "duration": 0.7277439999996318
+        },
+        "change-set-apply-indexed": {
+          "count": 93,
+          "duration": 4.7500749999998675
+        },
+        "change-set-apply": {
+          "count": 93,
+          "duration": 5.318830000000105
+        },
+        "slice-fit-changeset-apply": {
+          "count": 90,
+          "duration": 3.4428749999999013
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 90,
+          "duration": 2.3603360000001885
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 90,
+          "duration": 13.641164999999432
+        },
+        "slice-fit-canonicalize": {
+          "count": 90,
+          "duration": 19.95845799999995
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 0.16070400000006657
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 1.3734190000001831
+        },
+        "transaction-runtime-source-index": {
+          "count": 61,
+          "duration": 0.1422879999999509
+        },
+        "runtime-index-map-changed": {
+          "count": 60,
+          "duration": 8.806050999999968
+        },
+        "runtime-index-map-descriptor": {
+          "count": 60,
+          "duration": 0.12696099999988064
+        },
+        "transaction-runtime-map-index": {
+          "count": 61,
+          "duration": 10.245580000000245
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 60,
+          "duration": 10.577498999999818
+        },
+        "transaction-spec-callback": {
+          "count": 60,
+          "duration": 127.47971400000017
+        },
+        "transaction-finalize-representation": {
+          "count": 62,
+          "duration": 2.1667520000001446
+        },
+        "transaction-spec-finalize": {
+          "count": 60,
+          "duration": 2.892708999999968
+        },
+        "transaction-spec-adopt": {
+          "count": 30,
+          "duration": 0.054581999999982145
+        },
+        "schema-validation-incremental-hit": {
+          "count": 30,
+          "duration": 0.0021669999998721323
+        },
+        "schema-validation-window-discovery": {
+          "count": 30,
+          "duration": 0.5371290000001068
+        },
+        "schema-validation-move-detection": {
+          "count": 30,
+          "duration": 0.03391599999991968
+        },
+        "schema-validation-incremental": {
+          "count": 30,
+          "duration": 1.7621659999999792
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.03987399999999752
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.01079200000003766
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0012500000000272848
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.05658299999998917
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.3552079999999478
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.06579199999998764
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.001167000000009466
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 2.279375000000016
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0012909999999806132
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.0035829999999918982
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0006660000000238142
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.00620800000001509
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.016124999999988177
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.0036249999999995453
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.02304199999997536
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.005459000000030301
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.002583999999956177
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.40800000000001546
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.9205830000000219
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0007500000000391083
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.9280830000000151
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0005419999999958236
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0004999999999881766
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 100,
+      "edits": 30,
+      "path": "detached-schema",
+      "duration": 12.145624999999995,
+      "phases": {
+        "slice-fit-input": {
+          "count": 60,
+          "duration": 0.007462000000032276
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 60,
+          "duration": 0.046496000000161075
+        },
+        "slice-fit-target-index": {
+          "count": 60,
+          "duration": 0.05491399999993973
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 60,
+          "duration": 0.005919999999719039
+        },
+        "slice-fit-changeset-build": {
+          "count": 60,
+          "duration": 0.41116100000044753
+        },
+        "change-set-local-decode": {
+          "count": 30,
+          "duration": 0.42921000000023923
+        },
+        "change-set-local-splice": {
+          "count": 30,
+          "duration": 0.03612799999973504
+        },
+        "change-set-apply-indexed": {
+          "count": 33,
+          "duration": 2.3018719999995483
+        },
+        "change-set-apply": {
+          "count": 33,
+          "duration": 2.4635839999998552
+        },
+        "slice-fit-changeset-apply": {
+          "count": 60,
+          "duration": 0.9227110000003904
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 60,
+          "duration": 0.8509209999998575
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 60,
+          "duration": 0.487917999999695
+        },
+        "slice-fit-canonicalize": {
+          "count": 60,
+          "duration": 2.388668000000166
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 0.08571199999994406
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 0.859122000000184
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0024160000000392756
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.042291999999974905
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.32387500000004366
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0014169999999467109
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.08399999999994634
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.1690409999999929
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0015419999999721767
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 2.2732090000000653
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0002500000000509317
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0010839999999916472
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.003249999999979991
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0007090000000289365
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.004542000000014923
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.012791999999990367
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.003917000000001281
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.01595800000006875
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.004457999999999629
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.0017080000000078144
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.33770800000002055
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.8483330000000251
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0008329999999432403
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.8551670000000513
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0007500000000391083
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.00045799999998052954
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 100,
+      "edits": 120,
+      "path": "current",
+      "duration": 229.9475000000001,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 200,
+          "duration": 3.043499999999881
+        },
+        "slice-fit-input": {
+          "count": 300,
+          "duration": 0.0270580000009204
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 300,
+          "duration": 0.3394599999995762
+        },
+        "slice-fit-target-index": {
+          "count": 300,
+          "duration": 0.7000469999985626
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 300,
+          "duration": 0.04011800000034782
+        },
+        "slice-fit-changeset-build": {
+          "count": 300,
+          "duration": 74.63741600000071
+        },
+        "change-set-local-decode": {
+          "count": 496,
+          "duration": 2.1816259999989143
+        },
+        "change-set-local-splice": {
+          "count": 494,
+          "duration": 2.880000999997719
+        },
+        "change-set-apply-indexed": {
+          "count": 303,
+          "duration": 13.789668999999094
+        },
+        "change-set-apply": {
+          "count": 303,
+          "duration": 15.02095000000054
+        },
+        "slice-fit-changeset-apply": {
+          "count": 300,
+          "duration": 9.425574999998389
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 300,
+          "duration": 6.570044000000962
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 300,
+          "duration": 43.438941999998974
+        },
+        "slice-fit-canonicalize": {
+          "count": 300,
+          "duration": 60.444206999999324
+        },
+        "schema-root-ownership-index-build": {
+          "count": 101,
+          "duration": 0.322922000000176
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 101,
+          "duration": 2.626832999998669
+        },
+        "transaction-runtime-source-index": {
+          "count": 201,
+          "duration": 0.3036230000006981
+        },
+        "runtime-index-map-changed": {
+          "count": 200,
+          "duration": 23.31679099999917
+        },
+        "runtime-index-map-descriptor": {
+          "count": 200,
+          "duration": 0.28511699999967277
+        },
+        "transaction-runtime-map-index": {
+          "count": 201,
+          "duration": 26.77841500000045
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 200,
+          "duration": 27.266036999999983
+        },
+        "transaction-spec-callback": {
+          "count": 200,
+          "duration": 352.0961279999998
+        },
+        "transaction-finalize-representation": {
+          "count": 202,
+          "duration": 4.266876999999795
+        },
+        "transaction-spec-finalize": {
+          "count": 200,
+          "duration": 5.721831000001089
+        },
+        "transaction-spec-adopt": {
+          "count": 100,
+          "duration": 0.11446000000000822
+        },
+        "schema-validation-incremental-hit": {
+          "count": 100,
+          "duration": 0.010540999999989253
+        },
+        "schema-validation-window-discovery": {
+          "count": 100,
+          "duration": 0.8529589999993732
+        },
+        "schema-validation-move-detection": {
+          "count": 100,
+          "duration": 0.03925299999991694
+        },
+        "schema-validation-incremental": {
+          "count": 100,
+          "duration": 3.419457999999622
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.03375000000005457
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.009374999999977263
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0007499999999254214
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.1435839999999189
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.879833000000076
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.1352080000000342
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0015409999999747015
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 6.285292000000027
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0012500000000272848
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.004416999999989457
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.00100000000009004
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.0049579999999878055
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.022959000000014385
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.004874999999969987
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.020999999999958163
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.005875000000060027
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.0027499999999918145
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.597084000000109
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 2.277708999999959
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.001209000000017113
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 2.285833000000025
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0007090000000289365
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0004999999999881766
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 100,
+          "changedRanges": 100,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 100
+        }
+      ]
+    },
+    {
+      "blocks": 100,
+      "edits": 120,
+      "path": "detached-schema",
+      "duration": 36.65054199999997,
+      "phases": {
+        "slice-fit-input": {
+          "count": 200,
+          "duration": 0.011789000000021588
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 200,
+          "duration": 0.16437399999949776
+        },
+        "slice-fit-target-index": {
+          "count": 200,
+          "duration": 0.17529399999978068
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 200,
+          "duration": 0.013588999999910811
+        },
+        "slice-fit-changeset-build": {
+          "count": 200,
+          "duration": 1.2490890000000263
+        },
+        "change-set-local-decode": {
+          "count": 100,
+          "duration": 1.6347910000006323
+        },
+        "change-set-local-splice": {
+          "count": 100,
+          "duration": 0.1264969999999721
+        },
+        "change-set-apply-indexed": {
+          "count": 103,
+          "duration": 6.910919000000035
+        },
+        "change-set-apply": {
+          "count": 103,
+          "duration": 7.321247999999628
+        },
+        "slice-fit-changeset-apply": {
+          "count": 200,
+          "duration": 5.478499999999485
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 200,
+          "duration": 3.4012189999990596
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 200,
+          "duration": 2.2970450000000255
+        },
+        "slice-fit-canonicalize": {
+          "count": 200,
+          "duration": 11.628246000000331
+        },
+        "schema-root-ownership-index-build": {
+          "count": 101,
+          "duration": 0.25113199999987046
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 101,
+          "duration": 1.9880000000005111
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0009159999999610591
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.12495799999999235
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 2.7506669999999076
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0013330000000451037
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.24358300000005784
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.32166700000004766
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0014999999999645297
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 6.64970900000003
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0014999999999645297
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0013330000000451037
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.00520799999992505
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0015419999999721767
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.005499999999983629
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.03129100000001017
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.005541999999991276
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.03408300000000963
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.02029200000004039
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.004625000000032742
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.634584000000018
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 2.2766249999999673
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.008207999999967797
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 2.2962909999999965
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0020419999999603533
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.001125000000001819
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 100,
+          "changedRanges": 100,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 100
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 1,
+      "path": "current",
+      "duration": 23.71266700000001,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 2,
+          "duration": 0.11333400000012261
+        },
+        "slice-fit-input": {
+          "count": 3,
+          "duration": 0.0006670000002486631
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 3,
+          "duration": 0.02233299999988958
+        },
+        "slice-fit-target-index": {
+          "count": 3,
+          "duration": 0.04658300000005511
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 3,
+          "duration": 0.0008759999998346757
+        },
+        "slice-fit-changeset-build": {
+          "count": 3,
+          "duration": 7.047249999999849
+        },
+        "change-set-local-decode": {
+          "count": 3,
+          "duration": 0.049916000000166605
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.0016249999998763087
+        },
+        "change-set-apply-indexed": {
+          "count": 6,
+          "duration": 1.0344579999998587
+        },
+        "change-set-apply": {
+          "count": 6,
+          "duration": 1.064375000000382
+        },
+        "slice-fit-changeset-apply": {
+          "count": 3,
+          "duration": 0.3755419999999958
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 3,
+          "duration": 0.14175000000000182
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 3,
+          "duration": 3.333499999999958
+        },
+        "slice-fit-canonicalize": {
+          "count": 3,
+          "duration": 3.8757089999999152
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 0.2530410000001666
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 4.084457999999813
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.0701249999999618
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.06279100000028848
+        },
+        "transaction-runtime-source-index": {
+          "count": 3,
+          "duration": 0.5140830000000278
+        },
+        "runtime-index-map-changed": {
+          "count": 2,
+          "duration": 2.8202510000000984
+        },
+        "runtime-index-map-descriptor": {
+          "count": 2,
+          "duration": 0.005458999999746084
+        },
+        "transaction-runtime-map-index": {
+          "count": 3,
+          "duration": 2.873458000000255
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 2,
+          "duration": 3.3860830000000988
+        },
+        "transaction-spec-callback": {
+          "count": 2,
+          "duration": 28.44362500000011
+        },
+        "transaction-finalize-representation": {
+          "count": 4,
+          "duration": 0.12479300000040894
+        },
+        "transaction-spec-finalize": {
+          "count": 2,
+          "duration": 0.21379099999990103
+        },
+        "transaction-spec-adopt": {
+          "count": 1,
+          "duration": 0.0019999999999527063
+        },
+        "schema-validation-incremental-hit": {
+          "count": 1,
+          "duration": 0.0002500000000509317
+        },
+        "schema-validation-window-discovery": {
+          "count": 1,
+          "duration": 0.007582999999840467
+        },
+        "schema-validation-move-detection": {
+          "count": 1,
+          "duration": 0.0003749999998490239
+        },
+        "schema-validation-incremental": {
+          "count": 1,
+          "duration": 0.058250000000043656
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0008749999999508873
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.012042000000064945
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.05608299999994415
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.015000000000100044
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.002375000000029104
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 5.1058750000001965
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0019579999998313724
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.0049579999999878055
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0011660000000119908
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.06604200000015226
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.1402090000001408
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.004500000000007276
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.022375000000010914
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.005583000000115135
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.005457999999862295
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.21920799999998053
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.9367919999999685
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0012499999997999112
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.9430409999999938
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0007920000000467553
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0007080000000314612
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 1,
+      "path": "detached-schema",
+      "duration": 8.923541999999998,
+      "phases": {
+        "slice-fit-input": {
+          "count": 2,
+          "duration": 0.0004169999997429841
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 2,
+          "duration": 0.0047090000002754095
+        },
+        "slice-fit-target-index": {
+          "count": 2,
+          "duration": 0.005666000000019267
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 2,
+          "duration": 0.0006249999998999556
+        },
+        "slice-fit-changeset-build": {
+          "count": 2,
+          "duration": 0.028876000000082058
+        },
+        "change-set-local-decode": {
+          "count": 1,
+          "duration": 0.01879100000019207
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.0017080000000078144
+        },
+        "change-set-apply-indexed": {
+          "count": 4,
+          "duration": 0.5107499999999163
+        },
+        "change-set-apply": {
+          "count": 4,
+          "duration": 0.5260419999999613
+        },
+        "slice-fit-changeset-apply": {
+          "count": 2,
+          "duration": 0.04683399999998983
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 2,
+          "duration": 0.045666999999866675
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 2,
+          "duration": 0.029958999999962543
+        },
+        "slice-fit-canonicalize": {
+          "count": 2,
+          "duration": 0.13541699999996126
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 0.24570799999992232
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 4.285540999999739
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0005830000000059954
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.013791000000082931
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.05279199999995399
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0017499999999017746
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.00874999999996362
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.5980839999999716
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0016249999998763087
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 5.8501249999999345
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0010419999998703133
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0011660000000119908
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.0037079999999605207
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0007499999999254214
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.042374999999992724
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.0894580000001497
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.003292000000101325
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.01954200000000128
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.004666000000042914
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.002290999999786436
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.21391600000015387
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 0.8057080000000951
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0013330000001587905
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 0.8122909999999592
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0007920000000467553
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0007499999999254214
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 30,
+      "path": "current",
+      "duration": 425.6249579999999,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 60,
+          "duration": 3.3992899999989277
+        },
+        "slice-fit-input": {
+          "count": 90,
+          "duration": 0.017919000003530527
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 90,
+          "duration": 0.1634569999996529
+        },
+        "slice-fit-target-index": {
+          "count": 90,
+          "duration": 1.4356300000004012
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 90,
+          "duration": 0.025787999999465683
+        },
+        "slice-fit-changeset-build": {
+          "count": 90,
+          "duration": 197.12304499999937
+        },
+        "change-set-local-decode": {
+          "count": 148,
+          "duration": 0.7906240000011167
+        },
+        "change-set-local-splice": {
+          "count": 146,
+          "duration": 2.163414999998622
+        },
+        "change-set-apply-indexed": {
+          "count": 93,
+          "duration": 18.059211000004325
+        },
+        "change-set-apply": {
+          "count": 93,
+          "duration": 18.57670599999983
+        },
+        "slice-fit-changeset-apply": {
+          "count": 90,
+          "duration": 5.544958999999835
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 90,
+          "duration": 3.9357549999990624
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 90,
+          "duration": 95.58108000000084
+        },
+        "slice-fit-canonicalize": {
+          "count": 90,
+          "duration": 105.52983399999857
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 0.3801669999998012
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 6.789336000001185
+        },
+        "transaction-runtime-source-index": {
+          "count": 61,
+          "duration": 0.6314979999992829
+        },
+        "runtime-index-map-changed": {
+          "count": 60,
+          "duration": 63.24874799999998
+        },
+        "runtime-index-map-descriptor": {
+          "count": 60,
+          "duration": 0.12704200000007404
+        },
+        "transaction-runtime-map-index": {
+          "count": 61,
+          "duration": 64.72470300000168
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 60,
+          "duration": 65.50970300000154
+        },
+        "transaction-spec-callback": {
+          "count": 60,
+          "duration": 728.1728719999983
+        },
+        "transaction-finalize-representation": {
+          "count": 62,
+          "duration": 3.6983299999997143
+        },
+        "transaction-spec-finalize": {
+          "count": 60,
+          "duration": 5.952834000000166
+        },
+        "transaction-spec-adopt": {
+          "count": 30,
+          "duration": 0.04895899999883113
+        },
+        "schema-validation-incremental-hit": {
+          "count": 30,
+          "duration": 0.006583999998838408
+        },
+        "schema-validation-window-discovery": {
+          "count": 30,
+          "duration": 0.35012200000119265
+        },
+        "schema-validation-move-detection": {
+          "count": 30,
+          "duration": 0.013082999998005107
+        },
+        "schema-validation-incremental": {
+          "count": 30,
+          "duration": 1.8645869999982096
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.05016600000044491
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.0643329999998059
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0011660000000119908
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.053792000000157714
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.28774999999996
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.06141600000000835
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.001750000000356522
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 11.915666999999758
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0014169999999467109
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.004417000000103144
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0011250000002291927
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.055499999999938154
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.11337500000036016
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.004042000000026746
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.0343750000001819
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.006166999999550171
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.004125000000385626
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.4177079999999478
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 5.347458000000188
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.00179100000013932
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 5.356374999999844
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0010419999998703133
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0006659999999101274
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 30,
+      "path": "detached-schema",
+      "duration": 28.5751250000003,
+      "phases": {
+        "slice-fit-input": {
+          "count": 60,
+          "duration": 0.00396500000033484
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 60,
+          "duration": 0.042580000002089946
+        },
+        "slice-fit-target-index": {
+          "count": 60,
+          "duration": 0.04483299999947121
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 60,
+          "duration": 0.004916999998840765
+        },
+        "slice-fit-changeset-build": {
+          "count": 60,
+          "duration": 0.3129980000012438
+        },
+        "change-set-local-decode": {
+          "count": 30,
+          "duration": 0.4486260000016955
+        },
+        "change-set-local-splice": {
+          "count": 30,
+          "duration": 0.03645800000094823
+        },
+        "change-set-apply-indexed": {
+          "count": 33,
+          "duration": 14.304751000000124
+        },
+        "change-set-apply": {
+          "count": 33,
+          "duration": 14.435375000000931
+        },
+        "slice-fit-changeset-apply": {
+          "count": 60,
+          "duration": 0.879911000001357
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 60,
+          "duration": 0.7037450000025274
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 60,
+          "duration": 0.4440379999978177
+        },
+        "slice-fit-canonicalize": {
+          "count": 60,
+          "duration": 2.1252939999990303
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 0.25908500000150525
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 4.646877999998196
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0010419999998703133
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.06591699999989942
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.32666599999993196
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0017920000000231084
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.23841700000002675
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.8060829999999441
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0018749999999272404
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 11.1140419999997
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0004590000003190653
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0017090000001189765
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.004915999999866472
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0010419999998703133
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.04383400000006077
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.09362499999997453
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.005167000000255939
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.02266700000018318
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.006207999999787717
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.0028330000000096334
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.3866250000000946
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 5.361999999999625
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.001209000000017113
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 5.37566599999991
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.001291999999921245
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0006249999996725819
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 120,
+      "path": "current",
+      "duration": 1852.2685829999996,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 240,
+          "duration": 14.211004000002958
+        },
+        "slice-fit-input": {
+          "count": 360,
+          "duration": 0.07794999999669017
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 360,
+          "duration": 0.6594059999988531
+        },
+        "slice-fit-target-index": {
+          "count": 360,
+          "duration": 5.9572589999979755
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 360,
+          "duration": 0.11662399999477202
+        },
+        "slice-fit-changeset-build": {
+          "count": 360,
+          "duration": 862.9382809999915
+        },
+        "change-set-local-decode": {
+          "count": 598,
+          "duration": 3.776301000008516
+        },
+        "change-set-local-splice": {
+          "count": 596,
+          "duration": 10.592039999982717
+        },
+        "change-set-apply-indexed": {
+          "count": 363,
+          "duration": 79.63481699999647
+        },
+        "change-set-apply": {
+          "count": 363,
+          "duration": 81.61071899998888
+        },
+        "slice-fit-changeset-apply": {
+          "count": 360,
+          "duration": 26.070709000014176
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 360,
+          "duration": 16.827994000004765
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 360,
+          "duration": 454.0246600000087
+        },
+        "slice-fit-canonicalize": {
+          "count": 360,
+          "duration": 498.84332700000095
+        },
+        "schema-root-ownership-index-build": {
+          "count": 121,
+          "duration": 0.7682450000020253
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 121,
+          "duration": 8.390742000004593
+        },
+        "transaction-runtime-source-index": {
+          "count": 241,
+          "duration": 0.9730819999990672
+        },
+        "runtime-index-map-changed": {
+          "count": 240,
+          "duration": 276.7123699999979
+        },
+        "runtime-index-map-descriptor": {
+          "count": 240,
+          "duration": 0.49730100000761013
+        },
+        "transaction-runtime-map-index": {
+          "count": 241,
+          "duration": 283.78157399999463
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 240,
+          "duration": 285.437747999998
+        },
+        "transaction-spec-callback": {
+          "count": 240,
+          "duration": 3253.6584660000076
+        },
+        "transaction-finalize-representation": {
+          "count": 242,
+          "duration": 14.759628999996949
+        },
+        "transaction-spec-finalize": {
+          "count": 240,
+          "duration": 24.685956000006627
+        },
+        "transaction-spec-adopt": {
+          "count": 120,
+          "duration": 0.30362599999443773
+        },
+        "schema-validation-incremental-hit": {
+          "count": 120,
+          "duration": 0.025328999998237123
+        },
+        "schema-validation-window-discovery": {
+          "count": 120,
+          "duration": 1.1529959999979837
+        },
+        "schema-validation-move-detection": {
+          "count": 120,
+          "duration": 0.055089999999836436
+        },
+        "schema-validation-incremental": {
+          "count": 120,
+          "duration": 7.3571220000067115
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.05425000000013824
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.05525000000034197
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0010419999998703133
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.32591599999977916
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 1.0403750000004948
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.19099999999980355
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.002041000000644999
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 26.038042000000132
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0015419999999721767
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.005583000000115135
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0011660000000119908
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.04283399999985704
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.09083300000020245
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.004167000000052212
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.02304199999980483
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.00633300000026793
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.008084000000053493
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 0.8053749999999127
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 22.732833000000028
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0016669999995428952
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 22.744416999999885
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0009169999993901001
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0007089999999152496
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 120,
+          "changedRanges": 120,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 120
+        }
+      ]
+    },
+    {
+      "blocks": 1000,
+      "edits": 120,
+      "path": "detached-schema",
+      "duration": 103.46100000000024,
+      "phases": {
+        "slice-fit-input": {
+          "count": 240,
+          "duration": 0.021580000005997135
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 240,
+          "duration": 0.19221500000639935
+        },
+        "slice-fit-target-index": {
+          "count": 240,
+          "duration": 0.19554199999583943
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 240,
+          "duration": 0.019711999999344698
+        },
+        "slice-fit-changeset-build": {
+          "count": 240,
+          "duration": 1.3675419999972291
+        },
+        "change-set-local-decode": {
+          "count": 120,
+          "duration": 1.616746000004241
+        },
+        "change-set-local-splice": {
+          "count": 120,
+          "duration": 0.15404200000466517
+        },
+        "change-set-apply-indexed": {
+          "count": 123,
+          "duration": 68.7305809999898
+        },
+        "change-set-apply": {
+          "count": 123,
+          "duration": 69.2437500000051
+        },
+        "slice-fit-changeset-apply": {
+          "count": 240,
+          "duration": 3.5280800000036834
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 240,
+          "duration": 3.294925999993211
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 240,
+          "duration": 1.9277929999998378
+        },
+        "slice-fit-canonicalize": {
+          "count": 240,
+          "duration": 9.205663999995522
+        },
+        "schema-root-ownership-index-build": {
+          "count": 121,
+          "duration": 0.4590829999970083
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 121,
+          "duration": 5.504710999998679
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0010830000001078588
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.19475000000056752
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.9199170000001686
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.0027089999994132086
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.37804200000027777
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 1.014999999999418
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.008332999999765889
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 25.963541000000077
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0004990000006728224
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.001750000000356522
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.005291999999826658
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0010409999995317776
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.04841699999997218
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 0.10183299999971496
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.004542000000583357
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.023457999999664025
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.006499999999505235
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.0054579999996349216
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 1.0206670000006852
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 28.81224999999995
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.004124999999476131
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 28.828209000000243
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.001959000000169908
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0009999999992942321
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 120,
+          "changedRanges": 120,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 120
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 1,
+      "path": "current",
+      "duration": 301.2522079999999,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 2,
+          "duration": 1.9334579999995185
+        },
+        "slice-fit-input": {
+          "count": 3,
+          "duration": 0.0009160000008705538
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 3,
+          "duration": 0.007541999999375548
+        },
+        "slice-fit-target-index": {
+          "count": 3,
+          "duration": 0.8972500000018044
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 3,
+          "duration": 0.0006249999987630872
+        },
+        "slice-fit-changeset-build": {
+          "count": 3,
+          "duration": 120.48658400000022
+        },
+        "change-set-local-decode": {
+          "count": 3,
+          "duration": 0.08812600000055681
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.001958000000740867
+        },
+        "change-set-apply-indexed": {
+          "count": 6,
+          "duration": 10.652959000002738
+        },
+        "change-set-apply": {
+          "count": 6,
+          "duration": 10.690875000002052
+        },
+        "slice-fit-changeset-apply": {
+          "count": 3,
+          "duration": 2.7152509999978065
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 3,
+          "duration": 1.255833999999595
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 3,
+          "duration": 36.91270900000018
+        },
+        "slice-fit-canonicalize": {
+          "count": 3,
+          "duration": 40.906041000002006
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 2.2471669999995356
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 47.315708000000086
+        },
+        "change-set-local-root-window-decode": {
+          "count": 2,
+          "duration": 0.10095900000305846
+        },
+        "change-set-local-root-window-splice": {
+          "count": 2,
+          "duration": 0.5160410000007687
+        },
+        "transaction-runtime-source-index": {
+          "count": 3,
+          "duration": 5.641374000000724
+        },
+        "runtime-index-map-changed": {
+          "count": 2,
+          "duration": 33.48224999999911
+        },
+        "runtime-index-map-descriptor": {
+          "count": 2,
+          "duration": 0.008208000001104665
+        },
+        "transaction-runtime-map-index": {
+          "count": 3,
+          "duration": 33.593041000000085
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 2,
+          "duration": 39.23779199999808
+        },
+        "transaction-spec-callback": {
+          "count": 2,
+          "duration": 395.13033299999915
+        },
+        "transaction-finalize-representation": {
+          "count": 4,
+          "duration": 1.294540999995661
+        },
+        "transaction-spec-finalize": {
+          "count": 2,
+          "duration": 2.6554589999996097
+        },
+        "transaction-spec-adopt": {
+          "count": 1,
+          "duration": 0.005041000000346685
+        },
+        "schema-validation-incremental-hit": {
+          "count": 1,
+          "duration": 0.00033400000029359944
+        },
+        "schema-validation-window-discovery": {
+          "count": 1,
+          "duration": 0.011749999999665306
+        },
+        "schema-validation-move-detection": {
+          "count": 1,
+          "duration": 0.0007499999992433004
+        },
+        "schema-validation-incremental": {
+          "count": 1,
+          "duration": 0.07691700000032142
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.001082999999198364
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.04162499999983993
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.057500000000800355
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.029667000000699772
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.008750000000873115
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 58.718166999999085
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0012080000014975667
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.004542000000583357
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.001082999999198364
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.8691660000004049
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 1.7253330000003189
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.0062499999985448085
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.03175000000010186
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.007500000001527951
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.004875000000538421
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 3.487042000000656
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 10.746375000000626
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.00145899999915855
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 10.756208999999217
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0014160000009724172
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0007500000010622898
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 1,
+      "path": "detached-schema",
+      "duration": 102.93329100000119,
+      "phases": {
+        "slice-fit-input": {
+          "count": 2,
+          "duration": 0.0006669999966106843
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 2,
+          "duration": 0.0054579999996349216
+        },
+        "slice-fit-target-index": {
+          "count": 2,
+          "duration": 0.0087489999968966
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 2,
+          "duration": 0.0008749999979045242
+        },
+        "slice-fit-changeset-build": {
+          "count": 2,
+          "duration": 0.029041999998298706
+        },
+        "change-set-local-decode": {
+          "count": 1,
+          "duration": 0.029125000000931323
+        },
+        "change-set-local-splice": {
+          "count": 1,
+          "duration": 0.003209000002243556
+        },
+        "change-set-apply-indexed": {
+          "count": 4,
+          "duration": 8.172083000004932
+        },
+        "change-set-apply": {
+          "count": 4,
+          "duration": 8.201999999997497
+        },
+        "slice-fit-changeset-apply": {
+          "count": 2,
+          "duration": 0.07349999999860302
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 2,
+          "duration": 0.05358400000113761
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 2,
+          "duration": 0.04470900000160327
+        },
+        "slice-fit-canonicalize": {
+          "count": 2,
+          "duration": 0.17858300000079907
+        },
+        "schema-root-ownership-index-build": {
+          "count": 2,
+          "duration": 2.4426670000029844
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 2,
+          "duration": 47.07983400000376
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0007089999999152496
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.022625000001426088
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.08399999999892316
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.008916999999200925
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.036083000002690824
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 6.40729199999987
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.00283300000228337
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 65.93804200000159
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0007089999999152496
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0013330000001587905
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.005582999998296145
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0006670000002486631
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.9935839999998279
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 1.9109580000003916
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.008791000000201166
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.036041999999724794
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.015625
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.005375000000640284
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 3.8514169999980368
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 12.139416999998502
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.00166700000045239
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 12.149625000001834
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.001082999999198364
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0004579999986162875
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 1,
+          "changedRanges": 1,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 1
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 30,
+      "path": "current",
+      "duration": 5061.757792,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 60,
+          "duration": 59.684163000005356
+        },
+        "slice-fit-input": {
+          "count": 90,
+          "duration": 0.030497000017930986
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 90,
+          "duration": 0.24987499999406282
+        },
+        "slice-fit-target-index": {
+          "count": 90,
+          "duration": 29.863253000024997
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 90,
+          "duration": 0.045755000013741665
+        },
+        "slice-fit-changeset-build": {
+          "count": 90,
+          "duration": 2230.6741600000096
+        },
+        "change-set-local-decode": {
+          "count": 90,
+          "duration": 2.0814980000286596
+        },
+        "change-set-local-splice": {
+          "count": 30,
+          "duration": 0.06928999999217922
+        },
+        "change-set-apply-indexed": {
+          "count": 93,
+          "duration": 347.0414200000014
+        },
+        "change-set-apply": {
+          "count": 93,
+          "duration": 347.6889569999912
+        },
+        "slice-fit-changeset-apply": {
+          "count": 90,
+          "duration": 83.29591099998288
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 90,
+          "duration": 36.28487700000187
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 90,
+          "duration": 1267.2749589999985
+        },
+        "slice-fit-canonicalize": {
+          "count": 90,
+          "duration": 1387.7493709999908
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 2.5944150000032096
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 46.39266500000667
+        },
+        "change-set-local-root-window-decode": {
+          "count": 60,
+          "duration": 2.5702429999946617
+        },
+        "change-set-local-root-window-splice": {
+          "count": 60,
+          "duration": 16.689543999997113
+        },
+        "transaction-runtime-source-index": {
+          "count": 61,
+          "duration": 5.564624999977241
+        },
+        "runtime-index-map-changed": {
+          "count": 60,
+          "duration": 792.7178760000061
+        },
+        "runtime-index-map-descriptor": {
+          "count": 60,
+          "duration": 0.2782489999917743
+        },
+        "transaction-runtime-map-index": {
+          "count": 61,
+          "duration": 795.6978769999951
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 60,
+          "duration": 801.8064149999918
+        },
+        "transaction-spec-callback": {
+          "count": 60,
+          "duration": 8596.453258999998
+        },
+        "transaction-finalize-representation": {
+          "count": 62,
+          "duration": 42.04467200000363
+        },
+        "transaction-spec-finalize": {
+          "count": 60,
+          "duration": 82.2923329999976
+        },
+        "transaction-spec-adopt": {
+          "count": 30,
+          "duration": 0.11220699998739292
+        },
+        "schema-validation-incremental-hit": {
+          "count": 30,
+          "duration": 0.019833000002108747
+        },
+        "schema-validation-window-discovery": {
+          "count": 30,
+          "duration": 0.5197450000123354
+        },
+        "schema-validation-move-detection": {
+          "count": 30,
+          "duration": 0.027502000019012485
+        },
+        "schema-validation-incremental": {
+          "count": 30,
+          "duration": 2.6831230000025243
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0009580000005371403
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.07312499999898137
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.3172919999997248
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.11266699999760021
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.006875000002764864
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 144.85779100000218
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0014170000031299423
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.005042000000685221
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0008749999979045242
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.9970830000020214
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 1.985541000001831
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.012291999999433756
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.039249999997991836
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.008417000000918051
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.008458000000246102
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 4.052917000000889
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 89.15404099999796
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.001958000000740867
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 89.16458299999795
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0012920000008307397
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0005419999979494605
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 30,
+      "path": "detached-schema",
+      "duration": 366.0645420000001,
+      "phases": {
+        "slice-fit-input": {
+          "count": 60,
+          "duration": 0.004535999985819217
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 60,
+          "duration": 0.055748999991919845
+        },
+        "slice-fit-target-index": {
+          "count": 60,
+          "duration": 0.07562399998278124
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 60,
+          "duration": 0.005999999993946403
+        },
+        "slice-fit-changeset-build": {
+          "count": 60,
+          "duration": 0.4194600000118953
+        },
+        "change-set-local-decode": {
+          "count": 30,
+          "duration": 0.4669560000183992
+        },
+        "change-set-local-splice": {
+          "count": 30,
+          "duration": 0.03991900000983151
+        },
+        "change-set-apply-indexed": {
+          "count": 33,
+          "duration": 267.50687599999947
+        },
+        "change-set-apply": {
+          "count": 33,
+          "duration": 267.6889190000147
+        },
+        "slice-fit-changeset-apply": {
+          "count": 60,
+          "duration": 0.9583760000023176
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 60,
+          "duration": 0.7934599999935017
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 60,
+          "duration": 0.6055379999670549
+        },
+        "slice-fit-canonicalize": {
+          "count": 60,
+          "duration": 2.493666000002122
+        },
+        "schema-root-ownership-index-build": {
+          "count": 31,
+          "duration": 2.5300029999998515
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 31,
+          "duration": 47.00199799998518
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.0011669999948935583
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.08970899999985704
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.3265830000018468
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.007124999996449333
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.123291000003519
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 6.553458000002138
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0020000000004074536
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 142.29966599999898
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0012500000011641532
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0017090000037569553
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.0061659999992116354
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0006250000005820766
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 1.0597500000003492
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 2.046042000001762
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.010457999997015577
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.03654200000164565
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.02020799999445444
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.005541999998968095
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 4.298750000001746
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 85.38412499999686
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0016659999964758754
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 85.39495800000441
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.001083000002836343
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0005420000015874393
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 30,
+          "changedRanges": 30,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 30
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 120,
+      "path": "current",
+      "duration": 18800.078416000004,
+      "phases": {
+        "transaction-spec-context": {
+          "count": 240,
+          "duration": 245.984917999951
+        },
+        "slice-fit-input": {
+          "count": 360,
+          "duration": 0.10545100003218977
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 360,
+          "duration": 0.9751560000659083
+        },
+        "slice-fit-target-index": {
+          "count": 360,
+          "duration": 118.5352159999893
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 360,
+          "duration": 0.17492200009291992
+        },
+        "slice-fit-changeset-build": {
+          "count": 360,
+          "duration": 8268.043543999971
+        },
+        "change-set-local-decode": {
+          "count": 360,
+          "duration": 7.561093000047549
+        },
+        "change-set-local-splice": {
+          "count": 120,
+          "duration": 0.28729599999496713
+        },
+        "change-set-apply-indexed": {
+          "count": 363,
+          "duration": 1352.1907470000442
+        },
+        "change-set-apply": {
+          "count": 363,
+          "duration": 1354.801665999912
+        },
+        "slice-fit-changeset-apply": {
+          "count": 360,
+          "duration": 329.8380380000235
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 360,
+          "duration": 156.7871210000303
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 360,
+          "duration": 4705.644823999995
+        },
+        "slice-fit-canonicalize": {
+          "count": 360,
+          "duration": 5195.123171999941
+        },
+        "schema-root-ownership-index-build": {
+          "count": 121,
+          "duration": 3.599958999984665
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 121,
+          "duration": 52.440714000003936
+        },
+        "change-set-local-root-window-decode": {
+          "count": 240,
+          "duration": 9.52715599998919
+        },
+        "change-set-local-root-window-splice": {
+          "count": 240,
+          "duration": 71.27300399999513
+        },
+        "transaction-runtime-source-index": {
+          "count": 241,
+          "duration": 5.877325000008568
+        },
+        "runtime-index-map-changed": {
+          "count": 240,
+          "duration": 3014.5063810000065
+        },
+        "runtime-index-map-descriptor": {
+          "count": 240,
+          "duration": 0.9783709999901475
+        },
+        "transaction-runtime-map-index": {
+          "count": 241,
+          "duration": 3025.170718999958
+        },
+        "transaction-draft-runtime-paths": {
+          "count": 240,
+          "duration": 3033.163370999966
+        },
+        "transaction-spec-callback": {
+          "count": 240,
+          "duration": 32150.79882699999
+        },
+        "transaction-finalize-representation": {
+          "count": 242,
+          "duration": 168.27771100000245
+        },
+        "transaction-spec-finalize": {
+          "count": 240,
+          "duration": 331.2294450000045
+        },
+        "transaction-spec-adopt": {
+          "count": 120,
+          "duration": 0.45641700004489394
+        },
+        "schema-validation-incremental-hit": {
+          "count": 120,
+          "duration": 0.07120400002168026
+        },
+        "schema-validation-window-discovery": {
+          "count": 120,
+          "duration": 1.7821760000224458
+        },
+        "schema-validation-move-detection": {
+          "count": 120,
+          "duration": 0.08936599997832673
+        },
+        "schema-validation-incremental": {
+          "count": 120,
+          "duration": 10.25033600001916
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.002790999998978805
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.30662499999743886
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 0.9948749999966822
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 0.3201249999983702
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.008416999997280072
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 379.9445839999971
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.006124999999883585
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.015625
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0019170000014128163
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 0.9717909999963013
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 1.8905830000003334
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.01583299999765586
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.07462500000110595
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.06854099999327445
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.009834000004047994
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 4.906333999999333
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 336.3333749999947
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.010834000000613742
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 336.3729999999996
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.005292000001645647
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.002833999998983927
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 120,
+          "changedRanges": 120,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 120
+        }
+      ]
+    },
+    {
+      "blocks": 10000,
+      "edits": 120,
+      "path": "detached-schema",
+      "duration": 1094.9491249999992,
+      "phases": {
+        "slice-fit-input": {
+          "count": 240,
+          "duration": 0.015110000007553026
+        },
+        "slice-fit-vocabulary-validation": {
+          "count": 240,
+          "duration": 0.17221700004301965
+        },
+        "slice-fit-target-index": {
+          "count": 240,
+          "duration": 0.21898899992811494
+        },
+        "slice-fit-candidate-materialize": {
+          "count": 240,
+          "duration": 0.038087999979325105
+        },
+        "slice-fit-changeset-build": {
+          "count": 240,
+          "duration": 1.3643810000285157
+        },
+        "change-set-local-decode": {
+          "count": 120,
+          "duration": 1.6279120000181138
+        },
+        "change-set-local-splice": {
+          "count": 120,
+          "duration": 0.1432100000747596
+        },
+        "change-set-apply-indexed": {
+          "count": 123,
+          "duration": 980.0550889999722
+        },
+        "change-set-apply": {
+          "count": 123,
+          "duration": 980.5684230000188
+        },
+        "slice-fit-changeset-apply": {
+          "count": 240,
+          "duration": 3.3177850000356557
+        },
+        "slice-fit-canonical-change-finalize": {
+          "count": 240,
+          "duration": 2.7828759999611066
+        },
+        "slice-fit-canonical-change-map": {
+          "count": 240,
+          "duration": 1.981707999962964
+        },
+        "slice-fit-canonicalize": {
+          "count": 240,
+          "duration": 8.537205000022368
+        },
+        "schema-root-ownership-index-build": {
+          "count": 121,
+          "duration": 2.380044999939855
+        },
+        "schema-validation-full-document-boundary": {
+          "count": 121,
+          "duration": 45.260995000004186
+        },
+        "transaction-roots-snapshot": {
+          "count": 1,
+          "duration": 0.000915999997232575
+        },
+        "representation-window-discovery": {
+          "count": 1,
+          "duration": 0.20116699999925913
+        },
+        "representation-window-apply": {
+          "count": 1,
+          "duration": 1.0937919999996666
+        },
+        "transaction-runtime-source-index": {
+          "count": 1,
+          "duration": 0.00391700000182027
+        },
+        "transaction-runtime-map-index": {
+          "count": 1,
+          "duration": 0.516790999994555
+        },
+        "transaction-node-keys": {
+          "count": 1,
+          "duration": 6.065083000001323
+        },
+        "mutation-root": {
+          "count": 1,
+          "duration": 0.0045839999947929755
+        },
+        "transaction-callback": {
+          "count": 1,
+          "duration": 382.81324999999924
+        },
+        "transaction-finalize-representation": {
+          "count": 2,
+          "duration": 0.0005420000015874393
+        },
+        "transaction-has-net-changes": {
+          "count": 1,
+          "duration": 0.0016659999964758754
+        },
+        "transaction-publish-draft": {
+          "count": 1,
+          "duration": 0.004457999995793216
+        },
+        "set-version": {
+          "count": 1,
+          "duration": 0.0008339999985764734
+        },
+        "snapshot-clone-children": {
+          "count": 1,
+          "duration": 1.1347080000050482
+        },
+        "transaction-after-snapshot": {
+          "count": 1,
+          "duration": 2.1134170000004815
+        },
+        "transaction-commit-snapshot": {
+          "count": 1,
+          "duration": 0.0090829999971902
+        },
+        "build-change": {
+          "count": 1,
+          "duration": 0.0430419999975129
+        },
+        "transaction-record-facets": {
+          "count": 1,
+          "duration": 0.00900000000547152
+        },
+        "transaction-publish-anchors": {
+          "count": 1,
+          "duration": 0.004416999996465165
+        },
+        "notify-extension-change-listeners": {
+          "count": 1,
+          "duration": 4.954499999999825
+        },
+        "notify-extension-commit-listeners": {
+          "count": 1,
+          "duration": 349.53741699999955
+        },
+        "notify-commit-listeners": {
+          "count": 1,
+          "duration": 0.0020839999997406267
+        },
+        "notify-listeners": {
+          "count": 1,
+          "duration": 349.5501250000016
+        },
+        "run-after-commit-handlers": {
+          "count": 1,
+          "duration": 0.0010410000031697564
+        },
+        "transaction-flush-post-commit": {
+          "count": 1,
+          "duration": 0.0005420000015874393
+        }
+      },
+      "trace": [
+        {
+          "changedChildren": 120,
+          "changedRanges": 120,
+          "importKind": "event-change",
+          "mode": "remote-reconcile",
+          "readTopLevelNodes": 120
+        }
+      ]
+    }
+  ],
+  "source": {
+    "packages/platejs/src/yjs/core/editor-adapter.ts": "9b8d128e6296612d795bf0bb151706ef5fe50417868aa2512cc282fc8f1d0b6b",
+    "packages/platejs/src/yjs/core/extension.ts": "7b9438b721afea1b71a09fb9034d309684b244ab18406dc1a07a34a766ddd5be",
+    "packages/platejs/src/yjs/core/event-change-bridge.ts": "582bed920b7cb79d06e515d9808565224518cc8af4a91d8a7338828ad55d58f3"
+  }
+}

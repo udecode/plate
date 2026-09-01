@@ -160,8 +160,11 @@ Current verdict:
   one private geometry engine exposed through `usePliteWidgetGeometry`; no raw
   Range target survives. `PliteWidgetStore` names its editor explicitly, and
   geometry requires the exact mounted Editable ref supplied by its caller;
-  Plite never chooses a view for the application. Copied registry UI owns
-  selection retention, Find, Floating UI composition, and all visuals. Yjs
+  Plite never chooses a view for the application. Plite React owns built-in
+  inactive-selection paint on the exact Editable that blurs to a target marked
+  with `data-plite-keep-selection-visible`; Plate React inherits it, while
+  copied registry UI owns markers, styling, Find, Floating UI composition, and
+  all visuals. Yjs
   keeps its data hooks plus separate Decoration and Widget outputs, all reading
   one remote-cursor cache/index inside the existing private controller-owned
   `YjsAwarenessAdapter`, with no React or projection types. That cache reuses
@@ -173,13 +176,16 @@ Current verdict:
   receive that local ref, container sibling slots get their own truthful prop
   type, and `PlateStatic` invokes no before/after Editable sibling renderer.
   Find uses one copied `useFindController` result owner because Decoration
-  snapshots contain projected slices, not canonical ranges. Its source and
-  renderer compose explicitly with other app-owned sources/renderers; neither
-  silently replaces Yjs or another projection. Performance gates separate
+  snapshots contain projected slices, not canonical ranges. `FindKit` installs
+  its local plugin; Plate privately lowers that plugin beside Yjs without
+  app-root carrier composition. Performance gates separate
   deterministic counters from calibrated timing and consumer bundles.
 - confidence: final 0.96; the closure inventory, requirement audit, research
   reconciliation, formatting gate, and mechanical completion check pass.
-- next owner: user review, followed by a separate execution goal if accepted.
+- next owner: the native inactive-selection execution goal at
+  `docs/plans/2026-08-31-native-inactive-selection-focus-marker.md`. The
+  historical execution plan records the superseded implementation and the
+  corrected marker-driven follow-up.
 - reason: merged source at `494d90c495092d25941b6f57ca7ebf97b5db13dd`
   proves that the three Plate entrypoints duplicate Plite capabilities or wrap
   registry-only UI. Implementation, maintainer, high-risk, and ecosystem
@@ -187,8 +193,8 @@ Current verdict:
   existing headless Yjs awareness adapter rather than creating another store,
   fixed canonical one-source Find, made geometry explicitly view-scoped, and
   closed the registry dependency/static-renderer ownership gaps. Revision then
-  reconciled every accepted decision into one normative inventory, explicit
-  Find/Yjs source-and-renderer composition, exact cost units, calibrated timing,
+  reconciled every accepted decision into one normative inventory, private
+  Plate plugin lowering, exact cost units, calibrated timing,
   law-update timing, phases, gates, and handoff. Closure mapped all 32 normative
   decisions to a current owner, accepted owner, and executable proof; no public
   API or ownership ambiguity remains.
@@ -198,7 +204,7 @@ Current verdict:
 | Dimension                                            |   Weight |    Score | Current-pass evidence                                                                                                                   |
 | ---------------------------------------------------- | -------: | -------: | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Evidence and authority strength                      |     0.18 |     0.96 | Exact plugin-slot, source/renderer plumbing, registry-closure, structural-store, and Yjs endpoint reads were reconciled owner by owner. |
-| Plate editor-behavior DX and product fit             |     0.16 |     0.96 | Exact-ref geometry supports mirrored views; copied selection, Find, and Floating owners remain editable and independently installable.  |
+| Plate editor-behavior DX and product fit             |     0.16 |     0.96 | Exact-view inactive selection, copied Find, and Floating owners stay distinct and customizable.                                         |
 | Node model, affinity, and permanent-home coherence   |     0.16 |     0.97 | No raw Range Widget; Yjs caches typed cursor data and Plite Anchors headlessly; Find owns original ranges without editor mutation.      |
 | Protocol, parity, and regression-proof testing       |     0.20 |     0.96 | Packed fixtures, per-ref mirrored-view rows, install closure, renderer coexistence, static exclusion, and the Yjs oracle are explicit.  |
 | Research freshness and completeness                  |     0.15 |     0.94 | Pinned external evidence remains current; high-risk conclusions were rechecked against the immutable merged Plate/Plite snapshot.       |
@@ -212,9 +218,10 @@ Current verdict:
   model that remains fast with collaboration cursors, correct across multiline
   ranges, safe under SSR, and understandable without knowing Plate history.
 - Desired outcome: applications use `platejs` and `platejs/react`; optional Yjs
-  adaptation stays under `platejs/yjs/react`; copied registry UI owns visuals
-  and Floating UI composition; no application imports a generic cursor, find,
-  floating, or overlay package.
+  adaptation stays under `platejs/yjs/react`; `PlateContent` inherits Plite's
+  marker-driven exact-view inactive-selection behavior; copied registry UI owns
+  focus markers, visuals, and Floating UI composition; no application imports
+  a generic cursor, find, floating, or overlay package.
 - In scope: current-file Find highlights and navigation; inactive local
   selection; native drop caret; remote Yjs selection paint, caret, and label;
   selection/node/annotation Widget targets; viewport geometry; order and
@@ -230,6 +237,78 @@ Current verdict:
   product preference or public-API ambiguity.
 
 ## Accepted pass-2 decision brief
+
+### Accepted exact-view selection correction (2026-08-31)
+
+The earlier registry-plugin and controlled-prop verdicts were category errors.
+Focus ownership is already observable by the exact mounted view. The corrected
+target is a literal DOM protocol:
+
+```tsx
+import { Editable } from "plitejs/react";
+
+<>
+  <Editable />
+  <button data-plite-keep-selection-visible="" type="button">
+    Edit link
+  </button>
+</>;
+```
+
+- `plitejs` keeps the sole canonical selection. There is no public boolean,
+  `Range`, or second selection state.
+- `plitejs/react` watches the exact Editable's focus transition. A marked next
+  target activates expanded fill or a collapsed caret; focus return or any
+  unmarked target clears it.
+- Plite exposes neutral `data-plite-inactive-selection` and
+  `data-plite-inactive-selection-caret` styling hooks. The marker and paint
+  never write model or DOM selection, input, history, clipboard,
+  collaboration, or private projected view selection.
+- `platejs/react` inherits the behavior through `PlateContent`; it adds no prop,
+  plugin, store, kit, or second API name.
+- Copied `Editor` places `data-plite-keep-selection-visible` on owned focus
+  targets and styles the output hooks.
+- Delete the registry `SelectionRetentionPlugin`, `SelectionRetentionKit`, and
+  independent `selection-retention` install item. The behavior may keep a demo,
+  but its reusable API is the Plite DOM protocol.
+
+This section supersedes every later normative row that assigns inactive
+selection rendering to a registry plugin, kit, Decoration contribution, or
+Widget carrier. Historical source reads, rejected options, proof receipts, and
+pass logs may still name that implemented shape as evidence; they are not the
+target.
+
+### Accepted execution correction
+
+The user accepted one API correction before implementation. The lifetime split
+below remains authoritative, but the normal Plate path no longer exposes raw
+Decoration-source, `renderSegment`, singleton selection-Widget, or Yjs
+Widget-store assembly.
+
+- Plite still owns Decoration, Annotation, logical Widget, and the exact-view
+  geometry coordinator. It adds the direct domain read
+  `useSelectionGeometry({ editableRef })`; generic Widget APIs remain the
+  advanced path for app-owned node and annotation targets.
+- Plate's existing `decorate`, `render.leaf`, and Editable sibling slots are
+  the normal semantic authoring surface. Plate privately lowers those plugin
+  contributions to Plite projection/render carriers and automatically
+  invalidates an owning decoration contribution when its plugin store changes.
+  Transient decoration data does not require a persisted schema mark.
+- Find remains copied registry product policy inside `FindKit`. Inactive
+  selection uses the Plite React view prop proxied by `PlateContent`; copied
+  `Editor` owns only the boolean activation and styles. Normal consumers do not
+  install a retention plugin or wire sources/renderers at the root.
+- Existing `YjsPlugin` remains the only public collaboration owner. The
+  integration keeps its generic Widget adapter private and exposes domain reads
+  for cursor ids, one cursor, and one cursor's exact-view geometry. No
+  `YjsCursorPlugin` survives.
+- Raw `PlateProps.decorationSources`, `Editable.renderSegment`, generic Widget
+  stores, and source refresh remain advanced escape paths only when a caller
+  genuinely owns a custom projection.
+
+This correction supersedes any later normative row or example that calls raw
+source/store/renderer composition the normal Plate API. Historical option and
+falsification text may still name that rejected shape as evidence.
 
 ### Principles
 
@@ -252,7 +331,8 @@ Current verdict:
 
 1. Correct multiline and collapsed-range behavior under live editing.
 2. Narrow source and per-widget invalidation at hundreds of remote cursors.
-3. One obvious Plate import path without generic abstraction tax.
+3. One obvious Plate plugin/registry path without generic abstraction tax or
+   lower-layer carrier assembly.
 
 ### Viable architectures
 
@@ -273,21 +353,22 @@ Current verdict:
   implements it nor weakens its locked structural-safety law.
 - `floating` stops being a Plate wrapper around an optional upstream dependency.
   Registry components import `@floating-ui/react` directly.
-- Selection retention remains copied registry policy. It stores only whether
-  retention is active and reads the live editor selection; it is not a Plate or
-  Plite public plugin. It uses Plate's existing Decoration hook for expanded
-  paint and a selection Widget only for a collapsed caret.
+- Inactive-selection mechanics move to the exact Plite React view. Copied
+  `Editor` stores or derives only whether product chrome should keep the live
+  selection visible and passes that boolean through `PlateContent`; it owns no
+  Range, plugin, Decoration contribution, or Widget carrier.
 - Plite publishes its existing logical Widget target families, one ids selector,
   per-id reads, and one geometry hook. The ids selector reuses the existing
   subscription and stable `allIds` identity; no `getIds`/`subscribeIds` methods
   are added. The geometry coordinator and its store are private. The proposed
   raw Range target is cut because no independent caller survives.
-- Yjs publishes one Widget-store adapter because it must subscribe to awareness
-  without forcing a host React render. It and the Decoration source share one
-  cache/index by extending the existing private controller-owned
-  `YjsAwarenessAdapter`; a parallel controller store, generic cursor APIs,
-  React-owned resolution, duplicate pipelines, and a new public awareness-event
-  callback do not survive.
+- Yjs keeps one private Widget-store adapter because awareness must update
+  per-id cursor state without forcing a host React render. It and the
+  Decoration source share one cache/index by extending the existing private
+  controller-owned `YjsAwarenessAdapter`; public domain hooks project ids,
+  one cursor, and exact-view geometry. A public store, parallel controller,
+  generic cursor manager, React-owned resolution, duplicate pipelines, and a
+  new public awareness-event callback do not survive.
 - Find owns its ordered original ranges in one registry-local result owner. Its
   Decoration source reads that owner; navigation never reverse-engineers
   logical ranges from per-node projection slices.
@@ -296,29 +377,32 @@ Current verdict:
 
 ### Best API deletion cone
 
-| Public noun / surface                                | Independent current job                                                                 | Decision and priority                                                                                                                                                                                                                               |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `platejs/cursor/react`                               | None; it conflates local retention, native drop feedback, arbitrary cursors, and DOM UI | Delete, P0 architecture debt.                                                                                                                                                                                                                       |
-| `CursorOverlayPlugin`                                | None after those jobs return to their owners                                            | Delete, P0. Do not preserve generic add/remove cursor commands.                                                                                                                                                                                     |
-| `SelectionRetentionPlugin`                           | None outside copied registry product controls                                           | Do not publish, P1. Keep `SelectionRetentionKit` in copied registry UI only.                                                                                                                                                                        |
-| `platejs/find-replace`                               | None; current code only stores a query and highlights                                   | Delete, P1. Find becomes copied UI over existing primitives; Replace remains future behavior.                                                                                                                                                       |
-| `platejs/floating/react`                             | None; terminal consumers already own Floating UI policy                                 | Delete, P1. Registry imports the optional dependency directly.                                                                                                                                                                                      |
-| `platejs/overlay` / `OverlayStore`                   | No coherent lifetime or consumer                                                        | Never add, P0.                                                                                                                                                                                                                                      |
-| `PliteWidgetStore`                                   | Yes; it resolves app-owned logical targets independent of DOM                           | Keep and repair, P0 foundation; do not add a raw Range target.                                                                                                                                                                                      |
-| `PliteWidgetGeometryStore` / provider                | No caller needs to own or configure the scheduling engine                               | Keep private, P1.                                                                                                                                                                                                                                   |
-| `usePliteWidgetGeometry(store, id, { editableRef })` | Yes; mounted UI needs one narrow, exact-view geometry snapshot                          | Add, P0 foundation.                                                                                                                                                                                                                                 |
-| `usePliteWidgetIds(store)`                           | Yes; lists must render only when membership/order changes                               | Add over existing `subscribe` plus stable `getSnapshot().allIds`; do not add `getIds` or `subscribeIds`.                                                                                                                                            |
-| `useYjsRemoteCursor` / `useYjsRemoteCursors`         | Yes; app-owned presence/data UI may need one client or a deliberate whole-list read     | Keep over the same adapter cache; make the singular hook per-client, retain the plural hook as intentionally broad, and do not use the plural hook for the copied cursor layer.                                                                     |
-| `useYjsRemoteCursorDecorationSource`                 | Yes; Yjs-relative selections need a collaboration-specific Decoration adapter           | Keep; read one shared private remote-cursor cache/index, P0.                                                                                                                                                                                        |
-| `useYjsRemoteCursorWidgetStore`                      | Yes; awareness must update per-id Widget state without a host React render              | Add; read the same private owner, P0 integration.                                                                                                                                                                                                   |
-| Public Yjs remote-cursor cache owner                 | No caller should coordinate resolution, mapping, or output fan-out                      | Do not add. Extend the existing private controller-owned `YjsAwarenessAdapter` into the DOM/React-free cache/index; preserve changed ids, decode each changed client once, and run at most one endpoint-resolution pass when its selection changes. |
-| Structured public awareness callback                 | No independent consumer; only the private adapter cache needs exact changed ids         | Do not add. Keep `subscribeAwareness(listener: () => void)` unchanged and pass the existing private observer event directly to `YjsAwarenessAdapter`.                                                                                               |
-| `useYjsRemoteCursorOverlayPositions`                 | None after Widget geometry exists                                                       | Delete, P0 duplication.                                                                                                                                                                                                                             |
-| Floating UI virtual-element helper                   | None outside copied registry Floating UI consumers                                      | Do not publish, P2. Adapt the immutable rectangle locally.                                                                                                                                                                                          |
+| Public noun / surface                                  | Independent current job                                                                 | Decision and priority                                                                                                                                                                                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `platejs/cursor/react`                                 | None; it conflates local retention, native drop feedback, arbitrary cursors, and DOM UI | Delete, P0 architecture debt.                                                                                                                                                                                                                       |
+| `CursorOverlayPlugin`                                  | None after those jobs return to their owners                                            | Delete, P0. Do not preserve generic add/remove cursor commands.                                                                                                                                                                                     |
+| `SelectionRetentionPlugin` / `SelectionRetentionKit`   | No independent job; both wrap exact-view presentation and product focus policy          | Delete both, P0. Make inactive selection built into `plitejs/react` `Editable`, drive it with `data-plite-keep-selection-visible`, and keep marker placement/styling in copied `Editor`.                                                           |
+| `platejs/find-replace`                                 | None; current code only stores a query and highlights                                   | Delete, P1. Find becomes copied UI over existing primitives; Replace remains future behavior.                                                                                                                                                       |
+| `platejs/floating/react`                               | None; terminal consumers already own Floating UI policy                                 | Delete, P1. Registry imports the optional dependency directly.                                                                                                                                                                                      |
+| `platejs/overlay` / `OverlayStore`                     | No coherent lifetime or consumer                                                        | Never add, P0.                                                                                                                                                                                                                                      |
+| `PliteWidgetStore`                                     | Yes; it resolves app-owned logical targets independent of DOM                           | Keep and repair, P0 foundation; do not add a raw Range target.                                                                                                                                                                                      |
+| `PliteWidgetGeometryStore` / provider                  | No caller needs to own or configure the scheduling engine                               | Keep private, P1.                                                                                                                                                                                                                                   |
+| `usePliteWidgetGeometry(store, id, { editableRef })`   | Yes; advanced app-owned node/annotation Widgets need one exact-view geometry snapshot   | Add, P0 foundation; do not teach it for ordinary selection UI.                                                                                                                                                                                      |
+| `useSelectionGeometry({ editableRef })`                | Yes; toolbar, link, and retained-caret UI all ask for the current selection geometry    | Add as the normal direct Plite React read, proxied by `platejs/react`; privately reuse the same exact-view coordinator.                                                                                                                             |
+| `usePliteWidgetIds(store)`                             | Yes; lists must render only when membership/order changes                               | Add over existing `subscribe` plus stable `getSnapshot().allIds`; do not add `getIds` or `subscribeIds`.                                                                                                                                            |
+| `useYjsRemoteCursor` / `useYjsRemoteCursors`           | Yes; app-owned presence/data UI may need one client or a deliberate whole-list read     | Keep over the same adapter cache; make the singular hook per-client, retain the plural hook as intentionally broad, and do not use the plural hook for the copied cursor layer.                                                                     |
+| `useYjsRemoteCursorDecorationSource`                   | Yes; Yjs-relative selections need a collaboration-specific Decoration adapter           | Keep; read one shared private remote-cursor cache/index, P0.                                                                                                                                                                                        |
+| `useYjsRemoteCursorWidgetStore`                        | No caller needs the complete generic carrier                                            | Keep private inside `platejs/yjs/react`; publish cursor ids and per-id cursor/geometry reads instead.                                                                                                                                               |
+| `useYjsRemoteCursorIds` / `useYjsRemoteCursorGeometry` | Yes; custom cursor renderers need stable membership and one exact-view geometry read    | Add domain reads over the private Widget adapter and shared awareness cache.                                                                                                                                                                        |
+| Public Yjs remote-cursor cache owner                   | No caller should coordinate resolution, mapping, or output fan-out                      | Do not add. Extend the existing private controller-owned `YjsAwarenessAdapter` into the DOM/React-free cache/index; preserve changed ids, decode each changed client once, and run at most one endpoint-resolution pass when its selection changes. |
+| Structured public awareness callback                   | No independent consumer; only the private adapter cache needs exact changed ids         | Do not add. Keep `subscribeAwareness(listener: () => void)` unchanged and pass the existing private observer event directly to `YjsAwarenessAdapter`.                                                                                               |
+| `useYjsRemoteCursorOverlayPositions`                   | None after Widget geometry exists                                                       | Delete, P0 duplication.                                                                                                                                                                                                                             |
+| Floating UI virtual-element helper                     | None outside copied registry Floating UI consumers                                      | Do not publish, P2. Adapt the immutable rectangle locally.                                                                                                                                                                                          |
 
 No other new public noun survives the deletion test. In particular, there is no
-cursor manager, overlay provider, Find plugin, geometry context, renderer
-registry, positioning package, or compatibility alias.
+cursor manager, overlay provider, package Find plugin, geometry context,
+renderer registry, positioning package, projection/view plugin layer,
+`YjsCursorPlugin`, or compatibility alias.
 
 Accepted entrypoint DAG:
 
@@ -379,9 +463,9 @@ to that commit; `/tmp/plate-cursor-audit.L4c8go` is the immutable read snapshot.
 | Plate CursorOverlay state | `packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx:4-108`                                                                                               | One plugin stores copied raw ranges for arbitrary cursors, inactive selection, and drag caret; it repairs state with `setTimeout(0)`.                                                                                                                                                                                             | Delete concept and entrypoint.                                                                                                                                                              |
 | Plate cursor geometry     | `packages/platejs/src/react/features/cursor/useCursorOverlay.ts:26-157`                                                                                                  | Per-hook Range identity cache, local rAF, local ResizeObserver, and React state compute rectangles.                                                                                                                                                                                                                               | Replace with one Plite Widget geometry projection.                                                                                                                                          |
 | Drop caret                | `packages/plitejs/src/react/components/editable.tsx:339-373`; registry editor style at `apps/www/src/registry/components/editor/editor.tsx:60-66`                        | Plite already creates and clears `[data-plite-drop-cursor]`; registry already styles it.                                                                                                                                                                                                                                          | Delete CursorOverlay drag state and renderer.                                                                                                                                               |
-| Inactive selection        | `CursorOverlayPlugin.tsx:31-106`; exact prior browser contract `docs/plans/2026-08-24-cursor-overlay-focus-transition.md`                                                | Focus transfer to `[data-plate-focus]` needs one retained visual selection while native DOM selection is empty.                                                                                                                                                                                                                   | Preserve the contract in copied registry UI with a truthful marker; publish no CursorOverlay or retention plugin.                                                                           |
+| Inactive selection        | `CursorOverlayPlugin.tsx:31-106`; exact prior browser contract `docs/plans/2026-08-24-cursor-overlay-focus-transition.md`                                                | Focus transfer into marked product chrome needs one visual selection while native DOM selection is empty.                                                                                                                                                                                                                         | Make neutral paint native to `plitejs/react` `Editable`; activate it with `data-plite-keep-selection-visible`; let `PlateContent` inherit it; keep marker placement and styles in copied `Editor`; publish no retention plugin/kit. |
 | Plite view selection      | `packages/plitejs/src/react/{view-selection,view-selection-decoration}.ts`; its keyboard, clipboard, history, mutation, and reconciliation consumers                     | Built-in view selection is editing-engine state for projected/nested selection, is cleared by many input paths, and already mounts its own Decoration source inside Editable.                                                                                                                                                     | Do not reuse or expose it for toolbar retention; product blur paint must not alter editing-engine selection state.                                                                          |
-| Cursor terminal consumers | `apps/www/src/registry/components/editor/{plugins,cursor-overlay,ai,ai-menu,link,link-toolbar-button,font-size-toolbar-button}.tsx`                                      | Every selection-retention marker and renderer is copied registry UI; the AI package depends on CursorOverlay only to clear one retained selection.                                                                                                                                                                                | Keep policy in registry, rename the marker, and remove the AI package dependency instead of publishing a plugin.                                                                            |
+| Cursor terminal consumers | `apps/www/src/registry/components/editor/{plugins,cursor-overlay,ai,ai-menu,link,link-toolbar-button,font-size-toolbar-button}.tsx`                                      | Every focus marker and current retained-selection renderer is copied registry UI; the AI package depends on CursorOverlay only to clear one retained selection.                                                                                                                                                                   | Move mechanics to the exact Editable lifecycle, keep marker placement in copied `Editor`, rename the marker, and remove the AI/package/plugin dependency.                                    |
 | Yjs selection paint       | `packages/platejs/src/yjs/react/useYjs.ts:559-688`                                                                                                                       | `useYjsRemoteCursorDecorationSource` already produces the correct DOM-neutral range source.                                                                                                                                                                                                                                       | Keep. Registry must actually mount it.                                                                                                                                                      |
 | Yjs caret geometry        | `packages/platejs/src/yjs/react/useYjs.ts:690-877`                                                                                                                       | A second hook duplicates rAF, global scroll/resize listeners, equality, and range geometry.                                                                                                                                                                                                                                       | Delete hook; expose the awareness-adapter cursor cache through a Widget-store adapter.                                                                                                      |
 | Yjs React invalidation    | `packages/platejs/src/yjs/react/useYjs.ts:145-176,540-688`; `packages/platejs/src/yjs/core/controller.ts:125,242-244,886-955`; `core/awareness-adapter.ts:34-48,150-230` | Remote-cursor hooks subscribe only to awareness; resolved relative selections can change on editor commits. The private observer receives exact ids, while the public callback remains scalar/void. `YjsAwarenessAdapter` already owns cursor decoding. The Decoration hook also re-renders its host on every awareness revision. | Route the private event/commits into a stateful DOM/React-free awareness adapter; preserve the public callback; React adapters consume per-id/list/source subscriptions without host state. |
@@ -435,20 +519,21 @@ maintainer, high-risk, ecosystem, and revision pressure. The closure pass audits
 them against the normative inventory; compatibility does not preserve a
 rejected noun.
 
-| Responsibility                  | Permanent home                                                              | Accepted target                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pure text matching              | `plitejs` root, proxied by `platejs`                                        | Keep `NodeApi.findTextRanges`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Transient inline paint          | `plitejs/react`, proxied by `platejs/react`                                 | Keep range Decoration sources and `renderSegment`; never add a document mark.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Durable positions               | Plite Annotation lane                                                       | Keep persistent anchors/affinity there; Widget does not become durable storage.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Logical out-of-flow target      | `plitejs/react`, proxied by `platejs/react`                                 | Rename `PliteWidgetAnchor` to `PliteWidgetTarget`, `anchor` to `target`, and `visible` to `available`; keep explicit `nodeKey`; retain only annotation, node, and selection targets; collapsed selections are available.                                                                                                                                                                                                                                                                                                                                                       |
-| Widget list and item reads      | `plitejs/react`, proxied by `platejs/react`                                 | Keep `usePliteWidget`; add `usePliteWidgetIds`, subscribing to the existing store while reading stable `getSnapshot().allIds`; item-only publication invokes at most the one list listener but changes no ids snapshot and causes no list render. Add no subscription methods; expose the store's canonical `readonly editor` because every store is editor-bound and integration stores must participate without private branding. Keep `usePliteWidgets` only for deliberate whole-snapshot consumers.                                                                       |
-| Mounted Widget geometry         | private Plite React runtime coordinator with public immutable snapshots     | Add `usePliteWidgetGeometry(store, id, { editableRef }): PliteWidgetGeometry \| null`. Key registrations by store identity, id, and exact Editable ref; read `store.editor` explicitly and reject a ref not registered to that editor. Do not publish a geometry store, provider, scheduler, virtual-element adapter, imperative refresh API, implicit active-view policy, or private-brand requirement.                                                                                                                                                                       |
-| Plate render-slot DOM scope     | `platejs/react` plugin render contract                                      | Add `EditableSiblingProps.editableRef` and pass the exact local `PlateContent` ref to `beforeEditable`/`afterEditable`; split `ContainerSiblingProps.containerRef` for container slots. No-argument renderers remain valid. `PlateStatic` renders document nodes only and never invokes before/after Editable sibling slots.                                                                                                                                                                                                                                                   |
-| Inactive local selection policy | copied registry UI                                                          | Export registry-local `SelectionRetentionKit`; store one retained boolean, read the live editor selection, use the existing Plate `decorate` path for expanded fill and selection Widget geometry for a collapsed caret, and rename `[data-plate-focus]` to `[data-plate-retain-selection]`. Never write Plite view selection.                                                                                                                                                                                                                                                 |
-| Native drop caret               | Plite Editable                                                              | Keep `[data-plite-drop-cursor]`; no Plate state/API.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Yjs awareness adaptation        | existing private `platejs/yjs` awareness adapter plus public React adapters | Make `YjsAwarenessAdapter` the DOM/React-free cache keyed by client; feed it the private awareness event and affected-root transaction completion; retain cursor data, raw Yjs relative endpoints, root-aware Plite Anchors, order, and private per-id/list subscriptions; have existing data plus React Decoration/Widget adapters read it; delete the position hook.                                                                                                                                                                                                         |
-| Floating placement/style        | copied registry UI                                                          | Import `@floating-ui/react` directly through one copied `use-widget-floating` registry hook installed by both toolbar and link items; adapt `geometry.boundingRect` to a virtual reference and let Floating UI observe only its floating element, not duplicate reference scroll/resize ownership. Remove both Floating peers from `platejs`; the copied hook declares the direct package dependency.                                                                                                                                                                          |
-| Find controller/style           | copied `find` registry item                                                 | Export copied `useFindController`; local input query, deferred projection query, requested match index, and a tiny private active-match store; one result owner retains ordered `{ id, range }` matches from one `NodeApi.findTextRanges` read and supplies both navigation and its Decoration source. The caller appends that source to the stable app-owned `<Plate decorationSources>` array and explicitly composes its stable renderer with any existing `<Editor renderSegment>`. No dynamic Plate-store registration, plugin/schema/document/history state, or Replace. |
+| Responsibility                                | Permanent home                                                                  | Accepted target                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pure text matching                            | `plitejs` root, proxied by `platejs`                                            | Keep `NodeApi.findTextRanges`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Transient inline paint                        | Plite carriers; Plate plugin compiler for normal apps                           | Keep range Decoration sources and `renderSegment` as Plite/advanced carriers. Plate plugin `decorate` plus `render.leaf` is the normal semantic API and privately lowers to those carriers; transient decoration data never requires a persisted schema mark.                                                                                                                                                                                                                                                       |
+| Durable positions                             | Plite Annotation lane                                                           | Keep persistent anchors/affinity there; Widget does not become durable storage.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Logical out-of-flow target                    | `plitejs/react`, proxied by `platejs/react`                                     | Rename `PliteWidgetAnchor` to `PliteWidgetTarget`, `anchor` to `target`, and `visible` to `available`; keep explicit `nodeKey`; retain only annotation, node, and selection targets; collapsed selections are available.                                                                                                                                                                                                                                                                                            |
+| Widget list and item reads                    | `plitejs/react`, proxied by `platejs/react`                                     | Keep `usePliteWidget`; add `usePliteWidgetIds`, subscribing to the existing store while reading stable `getSnapshot().allIds`; item-only publication invokes at most the one list listener but changes no ids snapshot and causes no list render. Add no subscription methods; expose the store's canonical `readonly editor` because every store is editor-bound and integration stores must participate without private branding. Keep `usePliteWidgets` only for deliberate whole-snapshot consumers.            |
+| Mounted Widget geometry                       | private Plite React runtime coordinator with public immutable snapshots         | Add `usePliteWidgetGeometry(store, id, { editableRef }): PliteWidgetGeometry \| null` for advanced generic Widgets and `useSelectionGeometry({ editableRef })` for the normal selection job. Both require the exact Editable ref and reject wrong-editor/root refs. Do not publish a geometry store, provider, scheduler, virtual-element adapter, imperative refresh API, or implicit active-view policy.                                                                                                          |
+| Plate projection lowering                     | private `platejs/react` plugin compiler                                         | Lower installed plugin `decorate` and `render.leaf` contributions into stable Plite Decoration/render carriers. Subscribe only to owning plugin state and source invalidation; plugin-store changes never require consumer `refreshDecorations()`. Keep raw `PlateProps.decorationSources` and `Editable.renderSegment` as explicitly advanced composition.                                                                                                                                                         |
+| Plate render-slot DOM scope                   | `platejs/react` plugin render contract                                          | Make `EditableSiblingProps` contain only `editableRef` and pass the exact local `PlateContent` ref to `beforeEditable`/`afterEditable`; make `ContainerSiblingProps` contain only `containerRef`. No-argument renderers remain valid. `PlateStatic` renders document nodes only and never invokes before/after Editable sibling slots.                                                                                                                                                                                        |
+| Inactive local selection mechanics and policy | `plitejs/react` exact Editable + inherited `platejs/react` behavior + copied `Editor` policy | Derive activation from the exact Editable blurring to `data-plite-keep-selection-visible`. Render expanded/collapsed mechanics from the live canonical selection with neutral data attributes. Copied `Editor` owns marker placement and styling. Delete the retention plugin/kit/item and never write Plite view selection.                                                                                                                   |
+| Native drop caret                             | Plite Editable                                                                  | Keep `[data-plite-drop-cursor]`; no Plate state/API.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Yjs awareness adaptation                      | existing private `platejs/yjs` awareness adapter plus public domain React reads | Make `YjsAwarenessAdapter` the DOM/React-free cache keyed by client; feed it the private awareness event and affected-root transaction completion; retain cursor data, raw Yjs relative endpoints, root-aware Plite Anchors, order, and private per-id/list subscriptions. Existing data/Decoration plus `useYjsRemoteCursorIds` and `useYjsRemoteCursorGeometry` read it; the generic Widget adapter remains private and the position hook is deleted.                                                             |
+| Floating placement/style                      | copied registry UI                                                              | Import `@floating-ui/react` directly through one copied `use-widget-floating` registry hook installed by both toolbar and link items; adapt `geometry.boundingRect` to a virtual reference and let Floating UI observe only its floating element, not duplicate reference scroll/resize ownership. Remove both Floating peers from `platejs`; the copied hook declares the direct package dependency.                                                                                                               |
+| Find controller/style                         | copied `find` registry item                                                     | Export `FindKit` containing one registry-local plugin and copied UI. Local input query, deferred query, requested match index, and a tiny private active-match store feed one result owner retaining ordered `{ id, range }` matches from one `NodeApi.findTextRanges` read. The local plugin contributes Plate `decorate`, `render.leaf`, and `render.afterEditable`; callers install the kit and perform no source/renderer wiring. No package plugin, persisted schema mark, document/history state, or Replace. |
 
 Accepted logical Widget target:
 
@@ -487,11 +572,11 @@ type PliteWidgetStore<
 Accepted Plate sibling scopes:
 
 ```ts
-type EditableSiblingProps = PliteEditableProps & {
+type EditableSiblingProps = {
   readonly editableRef: React.RefObject<HTMLDivElement | null>;
 };
 
-type ContainerSiblingProps = React.HTMLAttributes<HTMLDivElement> & {
+type ContainerSiblingProps = {
   readonly containerRef: React.RefObject<HTMLDivElement | null>;
 };
 ```
@@ -527,6 +612,12 @@ declare function usePliteWidgetIds(store: PliteWidgetStore): readonly string[];
 declare function usePliteWidgetGeometry(
   store: PliteWidgetStore,
   id: string,
+  options: Readonly<{
+    editableRef: React.RefObject<HTMLElement | null>;
+  }>
+): PliteWidgetGeometry | null;
+
+declare function useSelectionGeometry(
   options: Readonly<{
     editableRef: React.RefObject<HTMLElement | null>;
   }>
@@ -593,46 +684,52 @@ Geometry law:
 Ideal normal Plate call site:
 
 ```tsx
-import {
-  type PliteWidget,
-  usePliteWidgetGeometry,
-  usePliteWidgetStore,
-} from "platejs/react";
-import { useRef } from "react";
+import { FindKit } from "@/components/editor/find";
+import { CollaborationKit } from "@/components/editor/collaboration";
 
-const editableRef = useRef<HTMLDivElement | null>(null);
+const editor = useCreateEditor({
+  plugins: [...EditorKit, ...FindKit, ...CollaborationKit],
+});
 
-const widgets = [
-  { id: "toolbar", target: { type: "selection" } },
-] satisfies readonly PliteWidget[];
-const store = usePliteWidgetStore(editor, widgets);
-const geometry = usePliteWidgetGeometry(store, "toolbar", { editableRef });
+return (
+  <Plate editor={editor}>
+    <Editor />
+  </Plate>
+);
+```
 
-return <PlateContent ref={editableRef} />;
+One copied renderer that genuinely needs custom selection placement reads the
+domain value rather than constructing a singleton Widget carrier:
+
+```tsx
+import { useSelectionGeometry } from "platejs/react";
+
+const geometry = useSelectionGeometry({ editableRef });
 ```
 
 The copied toolbar adapts `geometry?.boundingRect` to Floating UI. Plite does
-not import or name Floating UI.
+not import or name Floating UI. Generic `usePliteWidgetStore` and
+`usePliteWidgetGeometry` remain the advanced path for app-owned node and
+annotation Widgets.
 
 Ideal Yjs renderer split:
 
 ```tsx
 import {
   useYjsRemoteCursorDecorationSource,
-  useYjsRemoteCursorWidgetStore,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
 } from "platejs/yjs/react";
-import {
-  usePliteWidget,
-  usePliteWidgetGeometry,
-  usePliteWidgetIds,
-} from "platejs/react";
 
 const selectionSource = useYjsRemoteCursorDecorationSource(editor);
-const widgetStore = useYjsRemoteCursorWidgetStore(editor);
-const cursorIds = usePliteWidgetIds(widgetStore);
+const cursorIds = useYjsRemoteCursorIds(editor);
+const geometry = useYjsRemoteCursorGeometry(editor, cursorIds[0], {
+  editableRef,
+});
 ```
 
-The two hooks read the same private remote-cursor cache/index inside the
+The hooks read the same private remote-cursor cache/index and Widget adapter
+inside the
 controller-owned `YjsAwarenessAdapter`. The public
 `subscribeAwareness(listener: () => void): () => void` contract does not change.
 The controller's existing private `awarenessObserver(event)` sends exact
@@ -647,7 +744,8 @@ local Yjs transaction or remote editor import completes, it reads only affected
 root buckets, preserves Yjs association semantics through those Anchors, and
 publishes only changed clients. It exposes private order, per-client, and cache
 subscriptions consumed by existing data reads and the React
-Decoration/Widget adapters. No parallel controller store, public aggregate
+Decoration/Widget adapters. No parallel controller store, public generic
+Widget-store carrier, public aggregate
 cursor store, structured awareness callback, React-owned cache, or bespoke
 point mapper is added.
 
@@ -671,21 +769,30 @@ valid selection remains in the id/data view and has an unavailable Widget/no
 Decoration. Removal or a full rebuild releases every Plite Anchor before
 publication. Sorted client-id order changes only on membership.
 
-The list renders one keyed child per id. Each child reads only
-`usePliteWidget(widgetStore, id)` and
-`usePliteWidgetGeometry(widgetStore, id, { editableRef })`. The source owner
-appends `selectionSource` to the stable app-owned `<Plate decorationSources>`
-array before render; the copied `renderRemoteCursorSegment` handles its slices,
-while caret/label come from `focusRect`. A mirrored view mounts a second
-renderer with its own exact `editableRef`; it does not ask Plite to pick a
-global winner. The concrete copied renderer may call itself an overlay; that
-word never names a package, store, plugin, state lifetime, or public substrate.
+The list renders one keyed child per id. Each child reads only the singular
+cursor data hook and `useYjsRemoteCursorGeometry(editor, id, { editableRef })`.
+The configured registry-local collaboration renderer contributes selection
+paint through the existing `YjsPlugin` owner and Plate's private projection
+lowering; normal apps append no source and compose no segment renderer. A
+mirrored view mounts a second renderer with its own exact `editableRef`; it does
+not ask Plite to pick a global winner. The concrete copied renderer may call
+itself an overlay; that word never names a package, store, plugin, state
+lifetime, or public substrate.
 
-Ideal Find controller primitives:
+Ideal Find registry composition:
 
 ```tsx
 import { NodeApi } from "platejs";
-import { usePliteRangeDecorationSource } from "platejs/react";
+
+const findPlugin = definePlatePlugin("find", {
+  decorate: readFindDecorations,
+  render: {
+    afterEditable: FindBar,
+    leaf: FindMatch,
+  },
+});
+
+export const FindKit = [findPlugin] as const;
 ```
 
 The copied `useFindController(editor)` owns `query` and `requestedIndex`;
@@ -699,40 +806,13 @@ source from the same list. It never derives ranges from
 registry-local per-id active-match store, scrolls the active segment, and keeps
 focus in the Find input; only the old and new match components wake. A semantic
 `commitActiveMatch` action writes editor selection/focus, but this plan does not
-freeze a dedicated Jump button. Its caller appends the returned Decoration
-source to the same stable source array used by Yjs or other projections and
-composes its stable segment renderer explicitly instead of replacing an
-existing renderer:
-
-```tsx
-const decorationSources = useMemo(
-  () => [...baseDecorationSources, cursorSource, find.decorationSource],
-  [baseDecorationSources, cursorSource, find.decorationSource]
-);
-
-const renderSegment = useCallback(
-  (segment, children) => {
-    const base = baseRenderSegment?.(segment, children) ?? children;
-    const cursor = renderRemoteCursorSegment(segment, base);
-
-    return find.renderSegment(segment, cursor);
-  },
-  [baseRenderSegment, find.renderSegment]
-);
-
-return (
-  <Plate decorationSources={decorationSources} editor={editor}>
-    <Editor renderSegment={renderSegment} />
-  </Plate>
-);
-```
-
-The copied items own those renderer functions; no public renderer registry,
-plugin pipeline, or new Plite composition API is added. Each delegate runs at
-most once per rendered segment. The controller never mutates the Plate store
-after mount to register a source. Query changes reset `requestedIndex` in the
-input event, while text edits clamp it synchronously; no effect mirrors derived
-state.
+freeze a dedicated Jump button. The registry-local plugin projects the same
+result owner through `decorate` and `render.leaf`; Plate privately composes it
+with every installed plugin contribution. The normal caller installs `FindKit`
+and performs no root source/renderer registration. No public renderer registry,
+second plugin layer, or new Plite composition API is added. Query changes reset
+`requestedIndex` in the input event, while text edits clamp it synchronously;
+no effect mirrors derived state.
 
 ## Pass-4 implementation pressure verdict
 
@@ -744,15 +824,15 @@ headless Yjs.
 
 ### Authority, model, affinity, and permanent home
 
-| Surface                             | Node model / affinity                               | Canonical authority                                             | Permanent home                                                                   | Rejected pressure                                                                               |
-| ----------------------------------- | --------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Search match paint                  | overlay / no node; `n/a`                            | existing `EDIT-SEARCH-*` law plus pure `NodeApi.findTextRanges` | Plite Decoration source configured by copied registry Find                       | document mark, schema key, plugin query store, or package entry                                 |
-| Active Find result                  | overlay / no node; `n/a`                            | copied Find navigation contract                                 | registry-local canonical result owner, tiny per-id active store, and DOM segment | projection-snapshot range recovery or document selection mutation on every next/previous action |
-| Inactive local selection            | overlay / no node; existing model-selection mapping | exact #5091 behavior and registry focus policy                  | copied `SelectionRetentionKit`; Plate `decorate` plus selection Widget           | Plite view selection, copied Range state, timers, or public plugin                              |
-| Remote selection                    | overlay / no node; Yjs endpoint association         | existing `EDIT-COLLAB-*` plus Yjs relative positions            | private stateful Yjs awareness adapter -> React Decoration adapter               | React revision scan or one bounding box                                                         |
-| Remote caret/label                  | overlay / no node; same Yjs endpoints               | same private cursor entity as remote selection                  | Yjs Widget adapter -> Plite geometry -> copied renderer                          | second resolver, bespoke geometry hook, or generic cursor manager                               |
-| Toolbar/link target                 | overlay / no node; `n/a`                            | live selection or stable node key                               | Plite Widget geometry; copied Floating UI                                        | editor-version effects or direct DOM-range reads in each component                              |
-| Durable comment/suggestion position | editor-only annotation; existing affinity           | Annotation law, outside this product cut                        | existing Plite Annotation lane                                                   | Widget range persistence or widening this plan into comments                                    |
+| Surface                             | Node model / affinity                       | Canonical authority                                             | Permanent home                                                                                     | Rejected pressure                                                                                         |
+| ----------------------------------- | ------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Search match paint                  | overlay / no node; `n/a`                    | existing `EDIT-SEARCH-*` law plus pure `NodeApi.findTextRanges` | registry-local Find plugin `decorate`/`render.leaf`, privately lowered by Plate                    | document mark, persisted schema key, package plugin, or root source wiring                                |
+| Active Find result                  | overlay / no node; `n/a`                    | copied Find navigation contract                                 | registry-local canonical result owner, tiny per-id active store, and leaf UI                       | projection-snapshot range recovery or document selection mutation on every next/previous action           |
+| Inactive local selection            | overlay / no node; live canonical selection | exact #5091 behavior and copied focus policy                    | exact Editable focus transition; `data-plite-keep-selection-visible`; copied `Editor` marker/style policy | Plite view selection, copied Range state, boolean prop, timers, Decoration/Widget carrier, plugin, kit, or install item |
+| Remote selection                    | overlay / no node; Yjs endpoint association | existing `EDIT-COLLAB-*` plus Yjs relative positions            | private stateful Yjs awareness adapter -> React Decoration adapter                                 | React revision scan or one bounding box                                                                   |
+| Remote caret/label                  | overlay / no node; same Yjs endpoints       | same private cursor entity as remote selection                  | private Yjs Widget adapter -> domain geometry hook -> copied renderer                              | public generic adapter, second resolver, old position hook, or cursor manager                             |
+| Toolbar/link target                 | overlay / no node; `n/a`                    | live selection                                                  | `useSelectionGeometry`; copied Floating UI                                                         | singleton Widget assembly, editor-version effects, or per-component DOM-range reads                       |
+| Durable comment/suggestion position | editor-only annotation; existing affinity   | Annotation law, outside this product cut                        | existing Plite Annotation lane                                                                     | Widget range persistence or widening this plan into comments                                              |
 
 The existing Plite view-selection source is explicitly not reused. It is
 editing-engine state consumed by keyboard, clipboard, history, mutation, and
@@ -779,24 +859,24 @@ must not make the input engine believe it owns a projected selection.
 - Remote cursor labels, retained-selection styling, floating toolbar, and link
   popover remain copied registry components. Product styling never enters
   Widget data or Plite geometry.
-- Selection retention tests the closest marked ancestor of `relatedTarget`,
-  survives focus moves inside the same marked chrome, clears when focus leaves
-  that chrome or returns to the editor, and renders only while the editor is
-  not natively focused. The boolean never owns a Range. Default copied
+- Plite activation tests the marked target or composed ancestor of
+  `relatedTarget`, survives focus moves inside marked chrome, clears when focus
+  leaves that chrome or returns to the editor, and renders only while the
+  editor is not natively focused. No public value owns a Range. Default copied
   composition suppresses text fill for multi-cell table selection (the table
   selection UI already owns it) and while AI streaming hides editor chrome;
   neither Table nor AI depends back on retention.
 
 ### React and effect contract
 
-| Owner                     | Accepted React shape                                                                                                                                                                                                            | Effects allowed                                                                             | Effects rejected                                                                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Widget ids/items/geometry | `useSyncExternalStore` over stable `getSnapshot().allIds`, per-id item, and `(store,id,editableRef)` geometry snapshots; one keyed child per id                                                                                 | external subscription registration and cleanup                                              | whole-snapshot value as list snapshot, redundant ids subscription API, implicit active-view choice, geometry in React state, render-time owner mutation                             |
-| Geometry runtime          | private `(editor,ownerDocument)` coordinator; exact-ref routes and keyed scheduler tasks; stable event callbacks                                                                                                                | view/listener/observer registration, DOM read scheduling, cleanup                           | implicit global view selection, per-widget/view rAF/observer/listener, `setTimeout`, state-sync effects                                                                             |
-| Yjs adapters              | stateful DOM/React-free awareness adapter below React; existing scalar public subscription stays stable; source/store hooks expose external stores                                                                              | activate/release adapters and sources under StrictMode-safe lifecycle                       | parallel controller/React cache, `useYjsAwarenessRevision` host rerender pipeline, public structured-event churn, module-global request state                                       |
-| Find                      | local input/open/requested-index state; deferred query; one canonical result owner; matches/effective index derived; private active-match store; stable source array and explicit segment-renderer composition at the app owner | editor-root shortcut listener when plugin keydown cannot own it; result/source subscription | query-to-plugin mirroring, projection-snapshot range recovery, effect-clamped index, second matcher call, dynamic Plate registration, or silently replacing another source/renderer |
-| Selection retention       | registry-local plugin events and derived live selection                                                                                                                                                                         | none beyond normal plugin subscription lifecycle                                            | copied Range state, post-commit timeout, Plite view-selection writes                                                                                                                |
-| Floating/link             | one copied `use-widget-floating` registry hook; exact Editable-scoped geometry drives a virtual reference; visibility selectors stay narrow                                                                                     | synchronize Floating UI reference and observe floating-element resize only                  | editor-version update effect, duplicate ancestor scroll/resize observers, two geometry hooks for one target                                                                         |
+| Owner                     | Accepted React shape                                                                                                                                                                                                            | Effects allowed                                                                                   | Effects rejected                                                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Widget ids/items/geometry | `useSyncExternalStore` over stable `getSnapshot().allIds`, per-id item, and `(store,id,editableRef)` geometry snapshots; one keyed child per id                                                                                 | external subscription registration and cleanup                                                    | whole-snapshot value as list snapshot, redundant ids subscription API, implicit active-view choice, geometry in React state, render-time owner mutation                                        |
+| Geometry runtime          | private `(editor,ownerDocument)` coordinator; exact-ref routes and keyed scheduler tasks; stable event callbacks                                                                                                                | view/listener/observer registration, DOM read scheduling, cleanup                                 | implicit global view selection, per-widget/view rAF/observer/listener, `setTimeout`, state-sync effects                                                                                        |
+| Yjs adapters              | stateful DOM/React-free awareness adapter below React; existing scalar public subscription stays stable; source/store hooks expose external stores                                                                              | activate/release adapters and sources under StrictMode-safe lifecycle                             | parallel controller/React cache, `useYjsAwarenessRevision` host rerender pipeline, public structured-event churn, module-global request state                                                  |
+| Find                      | registry-local input/open/requested-index state; deferred query; one canonical result owner; matches/effective index derived; private active-match store; one local plugin whose `decorate` and render slot lower through Plate | editor-root shortcut listener when plugin keydown cannot own it; result/plugin-store subscription | query-to-plugin mirroring, projection-snapshot range recovery, effect-clamped index, second matcher call, dynamic Plate registration, app-root source arrays, or app-root renderer composition |
+| Inactive selection        | exact Editable lifecycle over live canonical selection; copied `Editor` marks owned focus targets                                                                                                                               | exact-view lifecycle and document focus cleanup only                                               | controlled prop, editor-global plugin/store/kit, copied Range, post-commit timeout, Plite view-selection writes                                                                                |
+| Floating/link             | one copied `use-widget-floating` registry hook; exact Editable-scoped geometry drives a virtual reference; visibility selectors stay narrow                                                                                     | synchronize Floating UI reference and observe floating-element resize only                        | editor-version update effect, duplicate ancestor scroll/resize observers, two geometry hooks for one target                                                                                    |
 
 If a native shortcut listener is required, it uses React 19 `useEffectEvent` so
 the subscription is stable and reads current state without a ref-sync effect.
@@ -890,8 +970,8 @@ behavior it owns, turns GREEN, and preserves the previous tracers:
 8. Find result-owner/source unit: one scan feeds the canonical range list,
    highlights, count, ordering, and navigation; no logical range is recovered
    from projection slices; marked leaves/inline descendants match; blocks never
-   join; requested index derives safely through edits; source-array composition
-   preserves another source, and each composed segment renderer delegates once.
+   join; requested index derives safely through edits; installing Find beside
+   Yjs preserves both plugin outputs without app-root carrier wiring.
 9. Find browser route: seed, shortcut, deferred typing, wrap navigation,
    accessible count, semantic `commitActiveMatch`, Escape, scroll, and zero
    document/history mutation before that commit.
@@ -934,27 +1014,27 @@ Pass-4 law reconciliation:
 
 Proposed protocol rows:
 
-| ID                          | Context / input                                                                             | Expected                                                                                                                       | Initial status and proof owner                                         |
-| --------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `EDIT-SELECTION-RETAIN-001` | expanded or collapsed editor selection; focus enters `[data-plate-retain-selection]` chrome | keep exactly one visual selection while model selection survives and native focus leaves; refocus restores normal native paint | `specified`; registry unit plus exact #5091 browser row                |
-| `EDIT-COLLAB-CURSOR-001`    | remote forward/backward/RTL multiline selection                                             | Decoration paints every visible segment; one caret/label follows the logical focus endpoint                                    | `specified`; Yjs React contract plus collaboration browser route       |
-| `EDIT-SEARCH-FIND-001`      | `Mod+F` with collapsed or expanded selection                                                | open current-file Find, seeding from selected text when expanded, without document/schema/history mutation                     | existing wildcard narrowed to `specified`; Find controller/browser     |
-| `EDIT-SEARCH-FIND-002`      | Enter / Shift+Enter or next / previous with matches                                         | wrap through ordered matches, keep Find input focus, scroll and mark the active result, and do not rescan                      | existing wildcard narrowed to `specified`; Find unit/browser/stress    |
-| `EDIT-SEARCH-FIND-003`      | copied UI invokes semantic `commitActiveMatch` for the active result                        | set and focus the editor selection at that range while preserving document structure; no dedicated button is required          | existing wildcard narrowed to `specified`; Find controller/browser     |
-| `EDIT-SEARCH-FIND-004`      | query or document text changes                                                              | recompute one shared match source, clamp the effective result synchronously, and never join separate block roots               | existing wildcard narrowed to `specified`; pure matcher/source/browser |
+| ID                          | Context / input                                                                                   | Expected                                                                                                                       | Initial status and proof owner                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `EDIT-SELECTION-RETAIN-001` | expanded or collapsed editor selection; focus enters `[data-plite-keep-selection-visible]` chrome | keep exactly one visual selection while model selection survives and native focus leaves; refocus restores normal native paint | `specified`; Plite React DOM contract, copied Editor unit, and exact #5091 browser row |
+| `EDIT-COLLAB-CURSOR-001`    | remote forward/backward/RTL multiline selection                                                   | Decoration paints every visible segment; one caret/label follows the logical focus endpoint                                    | `specified`; Yjs React contract plus collaboration browser route                                |
+| `EDIT-SEARCH-FIND-001`      | `Mod+F` with collapsed or expanded selection                                                      | open current-file Find, seeding from selected text when expanded, without document/schema/history mutation                     | existing wildcard narrowed to `specified`; Find controller/browser                              |
+| `EDIT-SEARCH-FIND-002`      | Enter / Shift+Enter or next / previous with matches                                               | wrap through ordered matches, keep Find input focus, scroll and mark the active result, and do not rescan                      | existing wildcard narrowed to `specified`; Find unit/browser/stress                             |
+| `EDIT-SEARCH-FIND-003`      | copied UI invokes semantic `commitActiveMatch` for the active result                              | set and focus the editor selection at that range while preserving document structure; no dedicated button is required          | existing wildcard narrowed to `specified`; Find controller/browser                              |
+| `EDIT-SEARCH-FIND-004`      | query or document text changes                                                                    | recompute one shared match source, clamp the effective result synchronously, and never join separate block roots               | existing wildcard narrowed to `specified`; pure matcher/source/browser                          |
 
 Runtime/package proof contracts, deliberately outside the editor behavior
 matrix:
 
-| ID                                   | Contract                                                                                                                                                                                                                                                    | Proof owner                                         |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| `PLITE-WIDGET-GEOMETRY-001`          | mounted selection/node/annotation geometry follows `store.editor` plus an exact `editableRef`, fails closed for invalid scope, never unions views/documents, and is null on the server                                                                      | Plite React unit plus browser geometry fixture      |
-| `PLITE-WIDGET-SUBSCRIPTION-001`      | stable membership preserves ids identity and wakes no unrelated item/geometry subscriber                                                                                                                                                                    | deterministic Widget store counters                 |
-| `PLATE-EDITABLE-SIBLING-SCOPE-001`   | every dynamic editable sibling receives its local `editableRef`, container siblings receive `containerRef`, and `PlateStatic` invokes no Editable sibling renderer                                                                                          | Plate type/unit plus static/SSR fixtures            |
-| `PLATE-YJS-CURSOR-PROJECTION-001`    | exact awareness ids, one decode and at most one cursor-resolution pass per changed client, zero duplicate endpoint conversions, Plite Anchor/direct-Yjs oracle equivalence, affected-root fallback, and no host-render pipeline hold at 1/100/1,000 clients | Yjs core/React property and stress contracts        |
-| `PLATE-RUNTIME-SSR-001`              | surviving React/Yjs/Widget/Find consumers import and SSR-render with no DOM/timer/request-shared state or hydration mismatch                                                                                                                                | runtime-lane SSR fixtures                           |
-| `PLATE-ENTRYPOINT-DAG-001`           | source, runtime, declarations, optional peers, DCE, and size budgets obey the accepted DAG                                                                                                                                                                  | Oxlint plus packed release-artifact checker         |
-| `PLATE-REGISTRY-INSTALL-CLOSURE-001` | `selection-retention`, `find`, `use-widget-floating`, and `remote-cursor-overlay` each install and compile independently with direct package/registry dependencies; Find+Yjs source and renderer composition preserves both outputs                         | registry checker plus isolated copied-item fixtures |
+| ID                                   | Contract                                                                                                                                                                                                                                                                                                                    | Proof owner                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `PLITE-WIDGET-GEOMETRY-001`          | mounted selection/node/annotation geometry follows `store.editor` plus an exact `editableRef`, fails closed for invalid scope, never unions views/documents, and is null on the server                                                                                                                                      | Plite React unit plus browser geometry fixture      |
+| `PLITE-WIDGET-SUBSCRIPTION-001`      | stable membership preserves ids identity and wakes no unrelated item/geometry subscriber                                                                                                                                                                                                                                    | deterministic Widget store counters                 |
+| `PLATE-EDITABLE-SIBLING-SCOPE-001`   | every dynamic editable sibling receives its local `editableRef`, container siblings receive `containerRef`, and `PlateStatic` invokes no Editable sibling renderer                                                                                                                                                          | Plate type/unit plus static/SSR fixtures            |
+| `PLATE-YJS-CURSOR-PROJECTION-001`    | exact awareness ids, one decode and at most one cursor-resolution pass per changed client, zero duplicate endpoint conversions, Plite Anchor/direct-Yjs oracle equivalence, affected-root fallback, and no host-render pipeline hold at 1/100/1,000 clients                                                                 | Yjs core/React property and stress contracts        |
+| `PLATE-RUNTIME-SSR-001`              | surviving React/Yjs/Widget/Find consumers import and SSR-render with no DOM/timer/request-shared state or hydration mismatch                                                                                                                                                                                                | runtime-lane SSR fixtures                           |
+| `PLATE-ENTRYPOINT-DAG-001`           | source, runtime, declarations, optional peers, DCE, and size budgets obey the accepted DAG                                                                                                                                                                                                                                  | Oxlint plus packed release-artifact checker         |
+| `PLATE-REGISTRY-INSTALL-CLOSURE-001` | `find`, `use-widget-floating`, and `remote-cursor-overlay` each install and compile independently with direct package/registry dependencies; `Editor` consumes the proxied inactive-selection prop without a retention install item; installing Find and Yjs plugins preserves both outputs without app-root carrier wiring | registry checker plus isolated copied-item fixtures |
 
 ## Implementation-skill review matrix
 
@@ -984,7 +1064,7 @@ invent them:
    invokes before/after Editable sibling renderers; SSR of interactive
    `PlateContent` passes a stable null ref until commit.
 3. Retained selection: exact #5091 mouse path; focus a
-   `[data-plate-retain-selection]` control; native selection is empty; exactly
+   `[data-plite-keep-selection-visible]` control; native selection is empty; exactly
    one expanded fill or collapsed caret remains; refocus and type. Multi-cell
    table selection and AI-streaming composition do not add a second layer.
 4. Find: matches across marked leaves and inline elements, never across block
@@ -992,8 +1072,8 @@ invent them:
    canonical result owner and its Decoration source; next/previous wraps and
    uses navigation feedback without recovering ranges from projection slices;
    query/index never enter document data, schema, operations, or history. In a
-   Find+Yjs route, both sources and both copied segment renderers remain active,
-   each delegate runs once, and neither feature drops the other's paint.
+   Find+Yjs route, both installed plugins remain active and neither feature
+   drops or double-renders the other's paint.
    Replace is not in this packet.
 5. Remote cursor: collapsed and multiline forward/backward/RTL selections;
    decorations paint every line; the label follows the focus edge; awareness
@@ -1086,7 +1166,7 @@ union rectangles from separate views or documents.
 | Awareness change          | exact changed ids rebuild their cached entities once                 | no awareness/provider disconnected exposes an empty list   | awareness with zero remote states preserves one stable empty ids snapshot                    | malformed data is omitted; invalid selection retains client/data with no Decoration and unavailable Widget; one bad client cannot poison others |
 | Yjs document commit       | affected-root Anchors map and changed ids publish                    | commit touches no cursor root: zero cursor publication     | root bucket with zero cursors does zero endpoint work                                        | bridge/root fallback re-resolves that root; mapping failure fails closed for its selection and increments fallback/error metrics                |
 | Find query                | one epoch supplies ordered ranges, Decoration, count, and navigation | absent seed selection leaves the input unchanged/empty     | empty query performs zero matcher reads; zero results has no effective index                 | failed epoch clears results and exposes copied UI error state; stale epochs cannot publish                                                      |
-| Selection retention       | marked chrome keeps one visual model selection                       | model selection null produces no retained paint            | collapsed selection uses caret geometry, expanded uses Decoration segments                   | window blur, destroyed editor, removed marker, or invalid target clears retention; no timeout repair                                            |
+| Inactive selection        | exact Editable focus transition keeps one visual model selection     | model selection null produces no inactive paint            | collapsed caret and expanded fill come from the same exact-view renderer                     | window blur, destroyed editor, removed marker, or invalid target clears activation; no timeout or state repair                                  |
 | Floating consumer         | one virtual reference follows geometry revision                      | null geometry keeps the UI closed/unpositioned             | zero-width caret with usable height remains valid                                            | Floating failure stays copied UI-local and cannot mutate Widget or editor state                                                                 |
 | SSR/headless              | headless matching/Yjs execute; React-static renders null geometry    | no DOM globals or optional peer on unrelated entries       | server/client initial geometry snapshots are both null                                       | any import-time DOM access, timer, hydration mismatch, or request-shared state fails the runtime lane                                           |
 | Hard cut                  | migrated consumers use surviving entries                             | no serialized-data migration exists                        | no old imports yields no compatibility code                                                  | third-party old imports fail at compile/load by design; rollback is package version/revert, never an alias                                      |
@@ -1133,17 +1213,17 @@ Rollback is intentionally boring:
 
 ### Blast radius and proof owners
 
-| Radius               | Exact implementation obligation                                                                                                                                              | Proof owner                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `plitejs/react`      | Widget target rename, `store.editor`, ids hook, exact-Editable geometry coordinator, DOM-binding validation, metrics, SSR snapshot                                           | Widget unit/type + runtime browser fixtures                        |
-| `platejs/react`      | truthful editable/container sibling prop types, exact local refs, and dynamic-only sibling rendering outside `PlateStatic`                                                   | plugin type/unit + static/SSR fixtures                             |
-| `platejs/yjs`        | awareness cache/index, Plite Anchors, root buckets, provider/root/fallback lifecycle, public scalar callback unchanged                                                       | headless Yjs unit/property/stress                                  |
-| `platejs/yjs/react`  | Decoration and Widget adapters over one cache; no host revision render or bespoke geometry                                                                                   | React/SSR/collaboration browser                                    |
-| copied registry      | retained selection, `find` controller/UI, remote cursor source/segment renderer, explicit Find+Yjs composition, copied Floating hook/dependency closure, AI/table exclusions | registry unit/accessibility/install/coexistence/browser/changelog  |
-| `platejs` topology   | delete cursor/find/floating exports and dependencies; keep optional peers isolated                                                                                           | generated Oxlint DAG + manifests + declarations + packed consumers |
-| Turbo/CI             | scoped Plite React, Yjs, registry, runtime-lane, and consumer-bundle tasks with exact inputs and upstream entrypoint dependencies                                            | entrypoint Turbo checker and cache-hit/invalidation fixture        |
-| docs/API metadata    | latest-state imports and lifetime guide only; migration prose only in release artifact                                                                                       | stale-reference search + docs build/API generation                 |
-| downstream ecosystem | explicit import/API mapping; no shim                                                                                                                                         | packed third-party-style compile fixtures                          |
+| Radius               | Exact implementation obligation                                                                                                                                           | Proof owner                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `plitejs/react`      | Widget target rename, `store.editor`, ids hook, exact-Editable geometry coordinator, DOM-binding validation, metrics, SSR snapshot                                        | Widget unit/type + runtime browser fixtures                        |
+| `platejs/react`      | truthful editable/container sibling prop types, exact local refs, and dynamic-only sibling rendering outside `PlateStatic`                                                | plugin type/unit + static/SSR fixtures                             |
+| `platejs/yjs`        | awareness cache/index, Plite Anchors, root buckets, provider/root/fallback lifecycle, public scalar callback unchanged                                                    | headless Yjs unit/property/stress                                  |
+| `platejs/yjs/react`  | Decoration and Widget adapters over one cache; no host revision render or bespoke geometry                                                                                | React/SSR/collaboration browser                                    |
+| copied registry      | retained selection, local `find` plugin/controller/UI kit, remote cursor presentation over Yjs domain reads, copied Floating hook/dependency closure, AI/table exclusions | registry unit/accessibility/install/coexistence/browser/changelog  |
+| `platejs` topology   | delete cursor/find/floating exports and dependencies; keep optional peers isolated                                                                                        | generated Oxlint DAG + manifests + declarations + packed consumers |
+| Turbo/CI             | scoped Plite React, Yjs, registry, runtime-lane, and consumer-bundle tasks with exact inputs and upstream entrypoint dependencies                                         | entrypoint Turbo checker and cache-hit/invalidation fixture        |
+| docs/API metadata    | latest-state imports and lifetime guide only; migration prose only in release artifact                                                                                    | stale-reference search + docs build/API generation                 |
+| downstream ecosystem | explicit import/API mapping; no shim                                                                                                                                      | packed third-party-style compile fixtures                          |
 
 ### High-risk kill criteria
 
@@ -1192,10 +1272,11 @@ Live ecosystem facts:
   `PlateStatic` invokes before/after Editable renderers without any Editable
   (`PlateContent.tsx:299-382`, `PlatePlugin.ts:92-94`,
   `PlateStatic.tsx:299-356`). That is the missing plugin extension point.
-- `PlateProps.decorationSources` is the existing explicit source boundary
-  (`Plate.tsx:51-60,210-245`). Find and Yjs source owners must pass sources
-  there; they must not mutate the Plate store after mount or add a dynamic
-  registration API.
+- `PlateProps.decorationSources` and `Editable.renderSegment` are existing
+  advanced carrier boundaries (`Plate.tsx:51-60,210-245`). Normal installed
+  Plate plugins do not pass them from the app root: the Plate compiler lowers
+  plugin decoration/render contributions privately. Explicit props remain for
+  custom app-owned sources and renderers only.
 - The registry checker follows copied imports, registry dependencies, and
   package dependencies transitively and rejects missing direct ownership
   (`apps/www/scripts/check-registry-source.mts:430-650`). A shared copied helper
@@ -1208,37 +1289,40 @@ Live ecosystem facts:
 
 Canonical extension and adoption surface:
 
-| Owner                      | Exact extension point                                                                                            | App/plugin customization and opt-out                                                                                                           | Migration surface                                                                                                                                   | Closure proof                                                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Plite Widget               | structural `PliteWidgetStore` with `readonly editor`; `usePliteWidgetIds`; per-id item hook                      | implement the structural store or use the React hook; omit a Widget or geometry subscriber to opt out                                          | rename `anchor -> target`, `visible -> available`; add `editor`; collapsed selection becomes available                                              | public type/JSDoc, official-store and packed custom-store fixtures, stable ids/item counters                                     |
-| Plite geometry             | `usePliteWidgetGeometry(store, id, { editableRef })`                                                             | caller owns the exact ref and may mount zero or one renderer in each of multiple views; visuals and positioning stay app-owned                 | replace Cursor/Yjs geometry helpers with immutable rect reads; no raw Range target                                                                  | portal, duplicate-view per-ref, cross-editor/wrong-root, ref replacement, SSR, browser invalidation, bundle fixtures             |
-| Plate plugin rendering     | `EditableSiblingProps.editableRef`; separate `ContainerSiblingProps.containerRef`                                | no-argument renderers remain valid; scoped renderers use the supplied ref; omitting the renderer opts out                                      | explicit types replace the current falsely shared sibling type; `PlateStatic` stops invoking before/after Editable sibling slots                    | source/type fixture, `PlateContent` local-ref unit, `PlateStatic` exclusion, SSR hydration fixture                               |
-| Yjs data/collab            | existing provider/awareness options, `YjsCursorDataSchema`, `YjsRemoteCursor`, scalar subscription               | custom metadata validation and Decoration `decorate` callback remain; omit either React adapter independently                                  | only the geometry hook is replaced; provider, awareness fields, cursor data, headless cursor reads, and scalar callback stay source-compatible      | custom-schema type/runtime tests, malformed-client isolation, reconnect/root lifecycle, direct-Yjs oracle, no-host-render stress |
-| Copied Find                | registry `find` item exporting `useFindController` plus copied toolbar/match UI                                  | edit copied matcher/UI/actions or omit the item; append its source and compose its renderer explicitly at the Plate/Editor owner               | delete `FindReplacePlugin`; absorb `search-highlight`; rename `find-replace-demo` to `find-demo`; Replace remains absent                            | registry install compile, one-scan/stale/error unit, Find+Yjs composition, accessibility/browser/history rows                    |
-| Copied selection retention | registry `selection-retention` item and `SelectionRetentionKit`                                                  | install, edit exclusions, or omit it; no package plugin                                                                                        | delete `cursor-overlay` registry item/renderer; replace its EditorKit dependency; AI no longer imports it                                           | registry closure, #5091 browser path, table/AI exclusions, static exclusion                                                      |
-| Copied Floating            | registry hook item `use-widget-floating`                                                                         | edit Floating options locally or omit link/toolbar items                                                                                       | link and floating-toolbar depend on the copied hook; hook declares `@floating-ui/react`; remove both Floating peers from `platejs`                  | registry source/install closure, missing-peer fixture, link/toolbar browser rows, base-bundle reachability                       |
-| Remote cursor UI           | existing `remote-cursor-overlay` registry item over the two Yjs adapters plus copied `renderRemoteCursorSegment` | customize label/color/portal locally or omit fill/Widget renderer independently; compose the segment renderer with Find or other app renderers | item declares `platejs` and `yjs`; collaboration demo appends its Decoration source, composes its renderer, and passes exact ref to Widget geometry | independent item install, custom schema, Find coexistence, multiline/RTL/browser/teardown rows                                   |
+| Owner                   | Exact extension point                                                                                   | App/plugin customization and opt-out                                                                                                    | Migration surface                                                                                                                                        | Closure proof                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Plite Widget            | structural `PliteWidgetStore` with `readonly editor`; `usePliteWidgetIds`; per-id item hook             | implement the structural store or use the React hook; omit a Widget or geometry subscriber to opt out                                   | rename `anchor -> target`, `visible -> available`; add `editor`; collapsed selection becomes available                                                   | public type/JSDoc, official-store and packed custom-store fixtures, stable ids/item counters                                     |
+| Plite geometry          | `useSelectionGeometry({ editableRef })`; advanced `usePliteWidgetGeometry(store, id, { editableRef })`  | caller owns the exact ref; common selection UI reads the domain value while app-owned node/annotation Widgets use the generic store     | replace Cursor/Yjs/Floating geometry helpers with immutable exact-view reads; no raw Range target                                                        | portal, duplicate-view per-ref, cross-editor/wrong-root, ref replacement, SSR, browser invalidation, bundle fixtures             |
+| Plate plugin projection | `decorate`, `render.leaf`, `EditableSiblingProps.editableRef`, and `ContainerSiblingProps.containerRef` | configure or omit ordinary plugins/kits; raw source/render props remain advanced                                                        | privately lower transient paint; auto-invalidate owning plugin state; stop requiring schema marks and consumer refresh calls; static omits dynamic slots | compiler/type/unit source-scope proof, local-ref unit, `PlateStatic` exclusion, SSR hydration fixture                            |
+| Yjs data/collab         | existing provider/awareness options, `YjsCursorDataSchema`, `YjsRemoteCursor`, scalar subscription      | custom metadata validation and Decoration `decorate` callback remain; omit either React adapter independently                           | only the geometry hook is replaced; provider, awareness fields, cursor data, headless cursor reads, and scalar callback stay source-compatible           | custom-schema type/runtime tests, malformed-client isolation, reconnect/root lifecycle, direct-Yjs oracle, no-host-render stress |
+| Copied Find             | registry `find` item exporting `FindKit` with one local plugin plus copied toolbar/match UI             | edit copied matcher/UI/actions or omit the kit; normal apps install it with no root source/renderer plumbing                            | delete `FindReplacePlugin`; absorb `search-highlight`; rename `find-replace-demo` to `find-demo`; Replace remains absent                                 | registry install compile, one-scan/stale/error unit, Find+Yjs composition, accessibility/browser/history rows                    |
+| Inactive selection      | built-in `Editable` focus lifecycle inherited by `PlateContent`; copied `Editor` marker/style policy    | mark owned focus targets and edit copied styles; no package or registry plugin/kit                                                     | delete `cursor-overlay` and `selection-retention` plugin/kit/item; bind EditorKit through `Editor`; AI no longer imports it                              | Plite React DOM contract, #5091 browser path, multi-view, table/AI exclusions, static exclusion                                  |
+| Copied Floating         | registry hook item `use-widget-floating`                                                                | edit Floating options locally or omit link/toolbar items                                                                                | link and floating-toolbar depend on the copied hook; hook declares `@floating-ui/react`; remove both Floating peers from `platejs`                       | registry source/install closure, missing-peer fixture, link/toolbar browser rows, base-bundle reachability                       |
+| Remote cursor UI        | existing `remote-cursor-overlay` registry item over Yjs domain reads and Plate plugin projection        | customize label/color/portal locally or omit fill/caret renderers independently; the installed collaboration kit owns their composition | item declares `platejs` and `yjs`; collaboration kit contributes selection paint and passes the exact ref to cursor geometry                             | independent item install, custom schema, Find coexistence, multiline/RTL/browser/teardown rows                                   |
 
 The release migration table is deliberately mechanical:
 
-| Old public/copy-owned surface                                                                 | Target                                                                                              |
-| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `CursorOverlayPlugin.addCursor/removeCursor`                                                  | selection retention kit, Plite native drop caret, or app-owned Annotation/Widget by actual lifetime |
-| `useCursorOverlayPositions`, `getSelectionRects`, `getCaretPosition`, `getCursorOverlayState` | scoped `usePliteWidgetGeometry`; consumers read `rects`, `boundingRect`, and `focusRect`            |
-| `useYjsRemoteCursorOverlayPositions`                                                          | `useYjsRemoteCursorWidgetStore` plus scoped Widget item/geometry hooks                              |
-| `FindReplacePlugin` and plugin `search` state                                                 | copied `useFindController`; explicit `decorationSources` and `renderSegment` wiring                 |
-| `platejs/floating/react` exports                                                              | direct `@floating-ui/react` inside copied `use-widget-floating`                                     |
-| `render.beforeEditable/afterEditable` guessing global editor DOM                              | supplied `EditableSiblingProps.editableRef`                                                         |
+| Old public/copy-owned surface                                                                 | Target                                                                                                             |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `CursorOverlayPlugin.addCursor/removeCursor`                                                  | exact Editable inactive-selection prop, Plite native drop caret, or app-owned Annotation/Widget by actual lifetime |
+| `useCursorOverlayPositions`, `getSelectionRects`, `getCaretPosition`, `getCursorOverlayState` | `useSelectionGeometry`; generic Widget geometry only for app-owned non-selection targets                           |
+| `useYjsRemoteCursorOverlayPositions`                                                          | `useYjsRemoteCursorIds`, singular cursor data, and `useYjsRemoteCursorGeometry`                                    |
+| `FindReplacePlugin` and plugin `search` state                                                 | copied registry-local `FindKit`; Plate privately composes its decoration/render contribution                       |
+| `platejs/floating/react` exports                                                              | direct `@floating-ui/react` inside copied `use-widget-floating`                                                    |
+| `render.beforeEditable/afterEditable` guessing global editor DOM                              | supplied `EditableSiblingProps.editableRef`                                                                        |
 
 There is no codemod pretending to infer product intent from arbitrary cursor
 ids or raw ranges. Type errors plus the release mapping are the honest migration
 mechanism. Current reference docs describe only the surviving shape; migration
 prose lives in the two major changesets/release note and registry changelog.
 
-Pass-7 delta: replace the implicit mounted-view winner with required exact-ref
-geometry; add truthful Plate editable/container sibling props and dynamic-only
-static behavior; freeze explicit Find/Yjs source plumbing; name the `find`,
-`selection-retention`, and `use-widget-floating` registry owners; require direct
+Pass-7 delta plus accepted execution correction: replace the implicit
+mounted-view winner with required exact-ref geometry; add a direct selection
+read, truthful Plate editable/container sibling props, private plugin
+projection lowering, and dynamic-only static behavior; remove normal Find/Yjs
+source plumbing; name the `find` and `use-widget-floating` registry owners;
+route inactive selection through the exact Editable lifecycle and copied `Editor` marker;
+require direct
 `yjs`/Floating install closure; preserve Yjs metadata/schema/decorate extension
 points; add packed custom-store/plugin/cursor-schema and registry-install proof.
 No behavior-law file changed in this planning pass.
@@ -1251,7 +1335,7 @@ property. Pass 7 attacked every surviving decision from downstream plugin,
 app, docs/test, and collaboration/data ownership and records the resulting
 extension point and proof obligations in each row.
 
-### M-01 — Keep the lifetime split; do not add `platejs/overlay`
+### M-01: Keep the lifetime split; do not add `platejs/overlay`
 
 - Change: retire `cursor` as a generic architecture noun and use Decoration,
   Annotation, and Widget by state lifetime.
@@ -1288,11 +1372,12 @@ extension point and proof obligations in each row.
   conflict behavior are unchanged; Yjs adaptation is covered by M-05.
 - Verdict: `keep`.
 
-### M-02 — Publish one narrow, explicitly view-scoped Widget geometry hook
+### M-02: Publish one direct selection read and one advanced view-scoped Widget geometry hook
 
-- Change: add `usePliteWidgetGeometry(store, id, { editableRef })` while keeping
-  its coordinator, listeners, observers, scheduler, and registration map
-  private.
+- Change: add `useSelectionGeometry({ editableRef })` for the common singular
+  selection job and retain `usePliteWidgetGeometry(store, id, {
+editableRef })` for advanced generic Widget consumers. Keep the coordinator,
+  listeners, observers, scheduler, and registration map private.
 - Who feels pain: Plite maintainers inherit a browser geometry engine and its
   SSR/virtualization proof burden.
 - Likely objection: "This is a lot of substrate for copied toolbar code; let
@@ -1340,7 +1425,7 @@ extension point and proof obligations in each row.
   virtualization rect semantics remain, and the root-move observer algorithm
   stays private/proof-driven.
 
-### M-03 — Add an ids selector, not an ids subscription API
+### M-03: Add an ids selector, not an ids subscription API
 
 - Change: add only `usePliteWidgetIds`; retain the existing store subscription,
   per-item subscription, and deliberate whole-snapshot API.
@@ -1383,7 +1468,7 @@ extension point and proof obligations in each row.
 - Verdict: `keep`. Plan response: drop `getIds` and `subscribeIds`; keep only
   `usePliteWidgetIds` over existing `subscribe` plus `getSnapshot().allIds`.
 
-### M-04 — Reject a raw Range Widget target
+### M-04: Reject a raw Range Widget target
 
 - Change: Widget supports annotation, node, and live selection targets only.
 - Who feels pain: an app with an arbitrary ephemeral Range cannot pass that
@@ -1422,7 +1507,7 @@ extension point and proof obligations in each row.
   are mandatory.
 - Verdict: `keep`.
 
-### M-05 — Extend the existing Yjs awareness adapter; keep it headless
+### M-05: Extend the existing Yjs awareness adapter; keep it headless
 
 - Change: the existing controller-owned `YjsAwarenessAdapter` becomes the one
   remote-cursor cache/index supplying data reads and React Decoration/Widget
@@ -1465,26 +1550,25 @@ extension point and proof obligations in each row.
   headless cursor reads, and the Decoration `decorate` callback remain the
   supported extension points; no React/Widget/Decoration type enters the core
   adapter.
-- App author: mount fill and caret/label independently, customize metadata and
-  copied rendering, or omit either output without changing the controller;
-  append the source and compose `renderRemoteCursorSegment` rather than
-  replacing another installed projection.
-- Docs/test maintainer: collaboration docs show explicit Plate source-array and
-  segment-renderer composition, exact-ref Widget rendering, custom
-  schema/decorate examples, Find coexistence, and teardown.
+- App author: install the existing `YjsPlugin`, mount copied presentation when
+  wanted, and read cursor ids, one cursor, or exact-view cursor geometry without
+  composing raw source or segment-renderer carriers at the app root.
+- Docs/test maintainer: collaboration docs show Yjs domain reads, private
+  Widget lowering, custom schema/decorate examples, Find coexistence, exact-ref
+  rendering, and teardown.
 - Collab/data maintainer: client id, raw Yjs endpoints, association, named root,
   validation, provider lifecycle, remote apply, and affected-root publication
   remain deterministic in one controller-owned cache.
-- Affected extension points: private `YjsAwarenessAdapter` internals plus the
-  new React Widget-store hook; public provider/schema/state contracts stay
-  compatible. The direct-Yjs oracle, malformed-client isolation, provider
+- Affected extension points: private `YjsAwarenessAdapter` internals, private
+  Widget adaptation, and public cursor-domain reads; provider/schema/state
+  contracts stay compatible. The direct-Yjs oracle, malformed-client isolation, provider
   replacement, packed schema fixture, and no-host-render stress are blockers.
 - Verdict: `keep`. High-risk revision: extend `YjsAwarenessAdapter` instead of
   adding a parallel controller store; call its state a remote-cursor
   cache/index; reuse headless Plite Anchors for mapped endpoints; and forbid
   React, DOM, Decoration, Annotation, or Widget types in that owner.
 
-### M-06 — Drop the public structured awareness callback
+### M-06: Drop the public structured awareness callback
 
 - Change: attack widening `subscribeAwareness` to deliver an optional
   `YjsAwarenessChange`.
@@ -1521,7 +1605,7 @@ extension point and proof obligations in each row.
 - Verdict: `drop`. The proposed optional callback signature and `undefined`
   reset sentinel were removed from the target.
 
-### M-07 — Give Find one canonical result owner
+### M-07: Give Find one canonical result owner
 
 - Change: one registry-local owner retains ordered original match ranges and
   supplies navigation plus the Decoration source.
@@ -1541,34 +1625,34 @@ extension point and proof obligations in each row.
   `decoration-source.ts:58-78` exposes only slice snapshots.
 - Rejected alternative: copying the full Range into every slice's data wastes
   memory and makes renderer projection the owner of navigation state.
-- Adoption answer: registry callers use one copied Find controller, append its
-  source to the stable app-owned source array, and compose its renderer after
-  any existing renderer; no package or public Plite API is added.
+- Adoption answer: registry callers install one copied `FindKit`; its local
+  plugin lowers `decorate` and its render slot through Plate. No package,
+  app-root carrier wiring, or public Plite API is added.
 - Docs/example answer: the copied Find example explains query, ordered results,
   navigation, loading/error status, and Decoration as outputs of one private
   owner.
 - Regression proof: one matcher count per query/text revision, identical
   canonical ranges for navigation and paint, stale-epoch rejection,
   fail-closed error clearing, no scan on next/previous, no document/history
-  mutation, and a Find+Yjs route where both sources/renderers survive with one
-  call per delegate.
-- Plugin maintainer: no Plate plugin wrapper is needed; reusable substrate stays
-  `NodeApi.findTextRanges` plus a Decoration source.
-- App author: install/edit the copied `find` item, append its source and compose
-  its segment renderer explicitly, or build another UI directly on the pure
-  matcher.
+  mutation, and a Find+Yjs route where both plugins render without app-root
+  carrier composition.
+- Plugin maintainer: the copied local Plate plugin is the ordinary authoring
+  unit; reusable substrate stays `NodeApi.findTextRanges` plus private lowered
+  Decoration/render carriers.
+- App author: install/edit the copied `find` item and add `FindKit`, or build
+  another local plugin directly on the pure matcher.
 - Docs/test maintainer: `find` and `find-demo` replace misleading
   FindReplace/SearchHighlight names; docs keep Replace separately deferred.
 - Collab/data maintainer: N/A: query/results are local ephemeral state and never
   enter operations, snapshots, history, URLs, or remote apply.
-- Affected extension points: copied `useFindController`, `PlateProps` existing
-  `decorationSources`, and `Editable.renderSegment`; registry install,
-  source/renderer coexistence, one-scan, stale/error, accessibility, and
+- Affected extension points: copied `useFindController`, `FindKit`, and Plate's
+  existing plugin `decorate`/render slots; registry install, plugin
+  coexistence, one-scan, stale/error, accessibility, and
   history-immutability proofs close it.
 - Verdict: `keep`. Plan response: remove every claim that ranges are recovered
   from `PliteDecorationSource.getSnapshot()`.
 
-### M-08 — Keep per-id active Find state private and tiny
+### M-08: Keep per-id active Find state private and tiny
 
 - Change: next/previous publishes only the old and new active match ids.
 - Who feels pain: the registry owns a tiny `useSyncExternalStore`-compatible
@@ -1601,47 +1685,41 @@ extension point and proof obligations in each row.
 - Collab/data maintainer: N/A: the state is local, ephemeral, and non-serialized.
 - Verdict: `keep`.
 
-### M-09 — Keep selection retention in copied registry UI
+### M-09: Promote inactive selection to the exact Editable
 
-- Change: replace the package CursorOverlay selection path with copied
-  `SelectionRetentionKit`, boolean state, Decoration fill, and selection Widget
-  caret.
-- Who feels pain: apps that do not use the registry must implement their own
-  focus-retention product policy.
-- Likely objection: "The toolbar-selection contract is reusable; hiding it in
-  copied code guarantees divergence."
-- Steelman antithesis: a public Plate plugin would give every toolbar and form
-  one tested behavior and one import.
-- Tradeoff tension: copied ownership favors customization over one centrally
-  versioned runtime behavior.
-- Why this is not change for change's sake: the policy explicitly knows copied
-  chrome markers, table multi-selection, AI streaming visibility, and product
-  focus transitions; those are not Plite or headless Plate mechanics.
-- Evidence: all marker consumers are under
-  `apps/www/src/registry/components/editor`; AI only calls cursor removal;
-  Plite view selection is input-engine state with keyboard/clipboard/history
-  consumers, not blur paint.
-- Rejected alternative: a public plugin either imports product policy or grows
-  configuration for every app-specific exclusion.
-- Adoption answer: registry users receive the canonical copied kit; custom apps
-  compose Decoration and selection Widget directly.
-- Docs/example answer: toolbar/input examples carry the retention marker and
-  explain focus/refocus behavior; no package API page is created.
-- Regression proof: exact #5091 browser path, expanded/collapsed rows, internal
-  focus transitions, table/AI suppression, native-layer count, and typing after
-  refocus.
-- Plugin maintainer: public Decoration/Widget primitives stay available without
-  importing registry policy or wrapping core calls.
-- App author: install, edit exclusions, or omit the copied
-  `selection-retention` item; the exact Editable ref prevents mirrored-view
-  guessing.
-- Docs/test maintainer: EditorKit dependency, marker docs, #5091 browser path,
-  table/AI exclusions, and `PlateStatic` exclusion share one registry owner.
-- Collab/data maintainer: model selection stays live and no copied Range,
-  operation, history entry, or remote state is created.
-- Verdict: `keep`.
+- Change: make the exact `plitejs/react` Editable derive inactive paint when it
+  blurs to `data-plite-keep-selection-visible`. Let `platejs/react`
+  `PlateContent` inherit the behavior. Delete `SelectionRetentionPlugin`,
+  `SelectionRetentionKit`, and the independent registry item.
+- Who feels pain: Plite React owns one small renderer law; Plate and registry
+  callers stop composing lower-layer Decoration/Widget machinery.
+- Likely objection: "The toolbar policy is app-specific, so all mechanics
+  should stay copied."
+- Steelman antithesis: keeping everything copied avoids one Plite DOM contract.
+- Tradeoff tension: the activation decision is product policy, but correct
+  expanded/collapsed paint and native-paint deduplication are reusable
+  per-Editable mechanics.
+- Why this is not change for change's sake: one editor can mount multiple
+  Editables, so an editor-global plugin boolean has the wrong lifetime. The
+  exact view is the only owner that can render without guessing or duplicating
+  state.
+- Evidence: canonical selection already lives in Plite; `PlateContent` already
+  inherits Plite Editable behavior; the current registry plugin owns only
+  transition state plus renderer mechanics; internal projected view selection
+  also changes keyboard/clipboard/history behavior and cannot be reused.
+- Rejected alternatives: public Plate plugin, registry-local plugin/kit, copied
+  Range, public selection Widget carrier, or internal view-selection writes.
+- Adoption answer: raw Plite and Plate render normal `Editable`/`PlateContent`;
+  copied `Editor` places `data-plite-keep-selection-visible` on owned focus
+  targets and owns product exclusions/styles.
+- Docs/example answer: teach the marker and output hooks as the API; no
+  retention install page, prop, or plugin API exists.
+- Regression proof: exact #5091 browser path; expanded/collapsed, backward/RTL,
+  root/multi-block, two views over one editor, two editors, native-layer count,
+  SSR/unmounted/virtualized behavior, and typing/copy/history after refocus.
+- Verdict: `rearchitect` and `cut` the plugin/kit/item.
 
-### M-10 — Delete the Floating wrapper and the three obsolete entrypoints
+### M-10: Delete the Floating wrapper and the three obsolete entrypoints
 
 - Change: delete `platejs/floating/react`, `platejs/cursor/react`, and
   `platejs/find-replace` with no aliases; copied Floating consumers import the
@@ -1689,7 +1767,7 @@ extension point and proof obligations in each row.
   major changesets; replacement proofs precede one atomic topology deletion;
   rollback is a whole version/revert, never a shim.
 
-### M-11 — Keep hard performance law; drop fake precision
+### M-11: Keep hard performance law; drop fake precision
 
 - Change: enforce deterministic complexity/subscriber/listener counters,
   calibrated controlled-lane timings, and consumer-scenario bundle budgets.
@@ -1733,7 +1811,7 @@ extension point and proof obligations in each row.
   noise band, and one-frame budget first. Unrelated React DCE is exactly zero;
   opt-in 8/10 KiB caps remain explicit design ceilings.
 
-### M-12 — Do not freeze a dedicated Find Jump button
+### M-12: Do not freeze a dedicated Find Jump button
 
 - Change: attack requiring labelled previous, next, jump, and close controls.
 - Who feels pain: design-system and product owners would inherit a control that
@@ -1766,7 +1844,7 @@ extension point and proof obligations in each row.
 - Verdict: `drop`. The mandatory Jump control was removed while the semantic
   action and protocol remain.
 
-### M-13 — Make Plate sibling slots exact-view and dynamic-only
+### M-13: Make Plate sibling slots exact-view and dynamic-only
 
 - Change: pass `EditableSiblingProps.editableRef` to before/after Editable
   renderers, split container sibling props around `containerRef`, and stop
@@ -1819,7 +1897,7 @@ Pass-5 verdict:
 
 - Keep: lifetime split, three entrypoint hard cuts, public geometry hook, three
   Widget target families, `usePliteWidgetIds`, private per-id Find activity,
-  copied selection retention, and direct Floating UI ownership.
+  exact-view inactive-selection presentation, and direct Floating UI ownership.
 - Drop: public structured awareness events, a parallel Yjs controller cache,
   `getIds`/`subscribeIds`, a raw Range Widget target, and mandatory Jump chrome.
 - Revise: extend `YjsAwarenessAdapter`; give Find one original-range owner;
@@ -1832,12 +1910,14 @@ Pass-5 verdict:
 Pass-7 ecosystem verdict:
 
 - Keep: lifetime split, all three entrypoint cuts, structural store editor,
-  stable ids selector, three Widget target kinds, one Yjs cache, copied
-  selection/Find/Floating UI, explicit source plumbing, and hard release gates.
+  stable ids selector, three Widget target kinds, one Yjs cache, exact-view
+  inactive selection plus copied Find/Floating UI, explicit source plumbing,
+  and hard release gates.
 - Revise: geometry is required-ref and view-scoped; Plate editable/container
   slot props expose exact refs; static rendering invokes no before/after
-  Editable slot; copied owners are named `selection-retention`, `find`, and
-  `use-widget-floating`; registry items declare direct Yjs/Floating closure.
+  Editable slot; copied owners are named `find` and `use-widget-floating`;
+  inactive selection is the inherited exact-view behavior; registry items declare
+  direct Yjs/Floating closure.
 - Preserve: Yjs provider/awareness fields, cursor-data schema, headless cursor
   reads, scalar subscription, Decoration `decorate`/`revision`, and app-owned
   renderer customization.
@@ -1859,11 +1939,11 @@ Pass-7 ecosystem verdict:
 - Cut the AI package dependency on CursorOverlay and every
   `removeCursor('selection')` call. Retention hiding/clearing is registry
   composition policy.
-- Cut the copied `cursor-overlay` registry item/name; replace it with the
-  narrowly owned `selection-retention` item. Absorb `search-highlight` into the
-  copied `find` item and rename `find-replace-demo` to `find-demo`.
-- Rename registry selection-retention markers from `[data-plate-focus]` to
-  `[data-plate-retain-selection]`; do not keep both attributes.
+- Cut the copied `cursor-overlay` and `selection-retention` item/plugin/kit
+  names. Absorb `search-highlight` into the copied `find` item and rename
+  `find-replace-demo` to `find-demo`.
+- Rename registry focus-retention markers from `[data-plate-focus]` to
+  `[data-plite-keep-selection-visible]`; do not keep both attributes.
 - Stop `PlateStatic` from invoking before/after Editable chrome; container
   siblings remain a client `PlateContainer` surface, and static node renderers
   remain the only static plugin rendering surface.
@@ -1876,17 +1956,17 @@ Pass-7 ecosystem verdict:
 
 ## Accepted implementation phases and owners
 
-1. **Contract freeze** — `plate-plan` + protocol owner: lock the accepted target
-   names, registry selection-retention owner, geometry semantics, proof rows,
+1. **Contract freeze**: `plite-plan` + `plate-plan` + protocol owner: lock the
+   exact-view inactive-selection owner/API, geometry semantics, proof rows,
    Find-only packet boundary, and hard-cut list; update the readable behavior
    spec, protocol matrix, and roadmap before runtime code.
-2. **Load-bearing spikes** — focused `major-task`: first prove exact-ref
+2. **Load-bearing spikes**: focused `major-task`: first prove exact-ref
    geometry with duplicate same-root Editable views, portals, named roots,
    ref replacement/unmount, cross-editor rejection, and separate documents;
    then prove Plite
    Anchors equal direct Yjs resolution across randomized local/remote operation
    sequences. No consumer migration or export deletion precedes these proofs.
-3. **Widget geometry and scoped Plate slots** — `best-api` then `major-task`:
+3. **Widget geometry and scoped Plate slots**: `best-api` then `major-task`:
    rename target fields,
    make collapsed selections available, add the stable ids selector and
    `readonly editor`, and implement runtime-owned `(store,id,editableRef)`
@@ -1895,39 +1975,37 @@ Pass-7 ecosystem verdict:
    `plitejs/react`. In the same API slice, split Plate editable/container
    sibling props, pass exact local refs, and stop `PlateStatic` from invoking
    before/after Editable sibling renderers.
-4. **Yjs split** — `plate-feature`/Yjs owner: extend the existing private
+4. **Yjs split**: `plate-feature`/Yjs owner: extend the existing private
    `YjsAwarenessAdapter` into the one DOM/React-free remote-cursor cache/index;
    feed it exact changed-client ids from the private awareness observer and
    editor commits; share it across existing cursor data plus React Decoration
    and Widget adapters; keep the public scalar subscription unchanged; keep raw
    Yjs endpoints plus root-aware Plite Anchors; publish after local Yjs and
    remote editor transactions; rebuild affected roots only on explicit
-   fallback/lifecycle events; pass remote selection Decoration explicitly to
-   the collaboration demo's stable `Plate` source array; expose the copied
-   `renderRemoteCursorSegment` for explicit app-owned composition; add the
-   Widget-store adapter using cached cursors as Widget data; and migrate
-   caret/label to exact-ref Widgets.
-5. **Selection split** — `plate-feature` + `plate-ui`: preserve #5091 behavior
+   fallback/lifecycle events; privately lower remote selection paint and
+   cursor Widgets through the existing `YjsPlugin`; expose cursor ids,
+   singular cursor data, and exact-view cursor geometry; and migrate
+   caret/label to those domain reads.
+5. **Selection split**: `plate-feature` + `plate-ui`: preserve #5091 behavior
    in copied registry code with boolean retention state, Plate `decorate` fill,
-   and selection Widget caret; never write Plite view selection; remove the AI
+   and direct selection geometry; never write Plite view selection; remove the AI
    dependency and rely on Plite drop cursor. Keep the old Cursor entry until the
    replacement browser row passes.
-6. **Find cut** — `plate-ui`: replace the plugin demo with a copied `find` item
-   exporting `useFindController`; its single `NodeApi.findTextRanges` read feeds
-   canonical navigation ranges and its Decoration source, which the app appends
-   explicitly to `Plate`; compose its stable segment renderer with existing
-   renderers; add deferred
+6. **Find cut**: `plate-ui`: replace the plugin demo with a copied `find` item
+   exporting `useFindController` and `FindKit`; its single
+   `NodeApi.findTextRanges` read feeds canonical navigation ranges and the
+   local plugin's transient `decorate` output; add deferred
    query, private per-id active match, seeded query, wrap navigation, the
    semantic `commitActiveMatch` action, stale-epoch rejection, fail-closed error
    state, and accessibility; leave Replace deferred. Keep the old Find entry
    until the replacement unit/browser rows pass.
-7. **Floating cut** — `plate-ui`: feed exact-ref Widget geometry to direct
+7. **Floating cut**: `plate-ui`: feed exact-ref Widget geometry to direct
    `@floating-ui/react` consumers through one copied `use-widget-floating`
    registry hook; make link and floating-toolbar declare that item and its
    package closure; disable duplicate reference ancestor observers while
    retaining floating-element resize. Keep the wrapper until link/toolbar
    replacement browser rows pass.
-8. **Atomic topology cleanup** — package/tooling owners: delete all three old
+8. **Atomic topology cleanup**: package/tooling owners: delete all three old
    entries and bespoke Yjs geometry only after replacement proofs; update
    exports, aliases, entrypoint DAG/runtime lanes, remove Floating peers from
    `platejs`, retain optional Yjs ownership only in the Yjs entry, update size
@@ -1935,7 +2013,7 @@ Pass-7 ecosystem verdict:
    tasks, direct registry `yjs`/Floating dependencies, unrelated-consumer DCE and opted-in bundle
    scenarios, packed proofs, `plitejs`/`platejs` major changesets, and the
    registry changelog in one publishable diff.
-9. **Closure** — focused unit/type/SSR/browser/stress/packed proof, immutable
+9. **Closure**: focused unit/type/SSR/browser/stress/packed proof, immutable
    prerelease artifact verification, then P1
    review under the repo invocation cap.
 
@@ -1964,15 +2042,17 @@ Pass-7 ecosystem verdict:
   controller store or widen the public `subscribeAwareness` callback to solve an
   internal problem. Do not add a bespoke endpoint mapper while Plite Anchors
   satisfy the direct-Yjs oracle.
-- Gate H: no selection-retention approval if copied UI writes Plite view
-  selection, stores a copied Range, schedules a repair timeout, or shows both
-  native and retained paint.
+- Gate H: no inactive-selection approval unless the exact Editable derives its
+  marked focus transition, reads the live canonical selection, avoids duplicate
+  native paint, and stays presentation-only. Any controlled prop, copied Range,
+  editor-global plugin/store/kit, internal view-selection write, repair timeout,
+  or cross-view guessing fails the gate.
 - Gate I: no Find approval if query/text revision invokes the matcher more than
   once, navigation recovers ranges from projection slices, next/previous invokes
   the matcher at all, or query/current state reaches schema, operations,
   history, URL state, or a dynamic Plate-store registration effect. Find also
-  fails this gate if installing it drops or double-invokes another Decoration
-  source or segment renderer.
+  fails this gate if installing its local plugin drops or double-invokes
+  another plugin's paint.
 - Gate J: no runtime approval unless headless/import, SSR/static, and real-client
   proof lanes plus dependency reachability, unrelated-consumer zero-delta DCE,
   and opted-in minified+gzip budgets all pass.
@@ -1995,9 +2075,10 @@ Pass-7 ecosystem verdict:
   export deletion, the final packed tarball passes the same runtime/declaration/
   optional-peer/DCE/size matrix, and rollback is a whole-version/revert path
   with no alias or dual runtime.
-- Gate O: no copied-UI approval until `selection-retention`, `find`,
-  `use-widget-floating`, and `remote-cursor-overlay` each install independently,
-  direct registry/package dependencies close every import/optional-peer need,
+- Gate O: no copied-UI approval until `find`, `use-widget-floating`, and
+  `remote-cursor-overlay` each install independently, copied `Editor` consumes
+  the proxied inactive-selection prop without a retention item, direct
+  registry/package dependencies close every import/optional-peer need,
   `PlateStatic` invokes no before/after Editable slot, and generated registry
   outputs are produced only by CI.
 
@@ -2008,127 +2089,129 @@ but cannot override this inventory.
 
 ### Plite projection substrate
 
-- `keep` — Decoration owns transient inline paint, Annotation owns durable
+- `keep`: Decoration owns transient inline paint, Annotation owns durable
   positions/affinity, and Widget owns logical out-of-flow targets
   (`docs/vision/plite.md:217`; M-01).
-- `cut` — no `platejs/overlay`, Overlay store/plugin/provider, global renderer,
+- `cut`: no `platejs/overlay`, Overlay store/plugin/provider, global renderer,
   or DOM rectangle in a headless logical snapshot (M-01; Gate C).
-- `rename` — `PliteWidgetAnchor -> PliteWidgetTarget`, `anchor -> target`, and
+- `rename`: `PliteWidgetAnchor -> PliteWidgetTarget`, `anchor -> target`, and
   `visible -> available`; collapsed selection becomes logically available
   (`widget-store.ts:30-107`; M-04).
-- `keep` — Widget target kinds remain annotation, node with explicit `nodeKey`,
+- `keep`: Widget target kinds remain annotation, node with explicit `nodeKey`,
   and live selection; arbitrary copied Range is rejected (M-04).
-- `add` — every structural `PliteWidgetStore` exposes `readonly editor`; no
+- `add`: every structural `PliteWidgetStore` exposes `readonly editor`; no
   hidden brand, registration API, or private-store exception exists (M-02).
-- `add` — `usePliteWidgetIds` reads stable `allIds` through existing
+- `add`: `usePliteWidgetIds` reads stable `allIds` through existing
   subscription methods; no `getIds`/`subscribeIds` API is added (M-03).
-- `add` — `usePliteWidgetGeometry(store,id,{editableRef})` returns immutable
+- `add`: `usePliteWidgetGeometry(store,id,{editableRef})` returns immutable
   viewport `rects`, `boundingRect`, and direction-aware `focusRect`, or null
   when exact-view geometry is unavailable (M-02;
   `PLITE-WIDGET-GEOMETRY-001`).
-- `keep private` — one coordinator per `(editor,ownerDocument)` owns exact-view
+- `keep private`: one coordinator per `(editor,ownerDocument)` owns exact-view
   registrations, shared observers/listeners, scheduler reads, equality, and
   metrics; no per-widget/view loop or implicit active-view policy survives
   (Gate L).
 
 ### Plate React and selection policy
 
-- `add` — `EditableSiblingProps.editableRef` and distinct
+- `add`: `EditableSiblingProps.editableRef` and distinct
   `ContainerSiblingProps.containerRef` make plugin slots truthful while
   preserving no-argument components (M-13).
-- `cut` — `PlateStatic` invokes no before/after Editable sibling renderer;
+- `cut`: `PlateStatic` invokes no before/after Editable sibling renderer;
   static node rendering remains document-only (M-13;
   `PLATE-EDITABLE-SIBLING-SCOPE-001`).
-- `cut` — `platejs/cursor/react`, `CursorOverlayPlugin`, arbitrary
+- `cut`: `platejs/cursor/react`, `CursorOverlayPlugin`, arbitrary
   add/remove-cursor commands, copied Range state, bespoke rectangle helpers,
   timeout repair, and the AI dependency all disappear (M-10).
-- `keep` — Plite's native `[data-plite-drop-cursor]` remains the only drop-caret
+- `keep`: Plite's native `[data-plite-drop-cursor]` remains the only drop-caret
   owner (`editable.tsx:339-373`).
-- `add copied` — registry `selection-retention` owns one boolean, expanded
-  Plate Decoration fill, collapsed selection Widget caret, table/AI exclusions,
-  and `[data-plate-retain-selection]`; it never writes Plite view selection or
-  serializes a Range (M-09; `EDIT-SELECTION-RETAIN-001`).
+- `add/cut`: make `Editable` derive activation from
+  `data-plite-keep-selection-visible`, let `PlateContent` inherit it, and let
+  copied `Editor` own only marker placement, exclusions, and styles. Cut the
+  retention plugin/kit/item, copied Range, Decoration contribution, and Widget
+  carrier (M-09; `EDIT-SELECTION-RETAIN-001`).
 
 ### Yjs collaboration projection
 
-- `revise private` — the existing controller-owned `YjsAwarenessAdapter`
+- `revise private`: the existing controller-owned `YjsAwarenessAdapter`
   becomes the one DOM/React-free remote-cursor cache/index over raw Yjs
   endpoints and root-aware Plite Anchors; no parallel/public/React cache exists
   (M-05).
-- `keep` — provider/awareness interfaces, configurable fields,
+- `keep`: provider/awareness interfaces, configurable fields,
   `YjsCursorDataSchema`, `YjsRemoteCursor<T>`, headless reads, scalar
   `subscribeAwareness`, and Decoration `decorate`/`revision` stay public
   extension points (M-05; M-06).
-- `keep/add/cut` — keep singular/broad `useYjsRemoteCursor(s)` data hooks and
-  `useYjsRemoteCursorDecorationSource`, add
-  `useYjsRemoteCursorWidgetStore`, and delete
-  `useYjsRemoteCursorOverlayPositions`; every surviving output reads one cache,
-  the copied cursor layer avoids the broad hook, and the Widget stores the
-  cached cursor itself as data (M-05).
-- `add copied` — `remote-cursor-overlay` remains a concrete copied visual item,
-  exports `renderRemoteCursorSegment`, appends its source at the Plate owner,
-  and uses exact-ref Widget geometry for caret/label. “Overlay” is descriptive
+- `keep/add/cut`: keep singular/broad `useYjsRemoteCursor(s)` data hooks and
+  `useYjsRemoteCursorDecorationSource`, add cursor-id and exact-view cursor
+  geometry domain reads, privately adapt the cache to Widgets, and delete
+  `useYjsRemoteCursorOverlayPositions`; every surviving output reads one cache
+  and the copied cursor layer avoids the broad hook (M-05).
+- `add copied`: `remote-cursor-overlay` remains a concrete copied visual item,
+  installs under the existing `YjsPlugin`, reads cursor-domain geometry, and
+  renders caret/label. “Overlay” is descriptive
   UI wording here, never a public architecture noun (M-01; M-05).
-- `gate` — one changed awareness client is decoded once and runs at most one
+- `gate`: one changed awareness client is decoded once and runs at most one
   cursor-resolution pass with at most two endpoint conversions; ordinary
   commits map Anchors with zero Yjs endpoint conversions, while named fallback
   paths re-resolve only affected roots (`PLATE-YJS-CURSOR-PROJECTION-001`).
 
 ### Find
 
-- `cut` — `platejs/find-replace`, `FindReplacePlugin`, `searchHighlight`
+- `cut`: `platejs/find-replace`, `FindReplacePlugin`, `searchHighlight`
   schema/query state, and the misleading `find-replace-demo` disappear; the
   current package never implemented Replace (M-10).
-- `add copied` — registry `find`/`find-demo` exports `useFindController`; one
+- `add copied`: registry `find`/`find-demo` exports `useFindController` and
+  `FindKit`; one
   monotonic result owner performs one `NodeApi.findTextRanges` scan and retains
   canonical ordered ranges for count, paint, and navigation (M-07).
-- `keep private` — query/open/requested index stay local, effective index/count
+- `keep private`: query/open/requested index stay local, effective index/count
   are derived, and a tiny per-id activity store wakes only old/new active
   segments; stale/error epochs fail closed (M-08).
-- `compose` — the app appends Find's stable Decoration source and composes its
-  stable segment renderer with existing Yjs/other renderers, invoking each
-  delegate at most once; no dynamic Plate registration or public renderer
-  pipeline is added (`PLATE-REGISTRY-INSTALL-CLOSURE-001`).
-- `keep deferred` — Replace and broader search/outline work stay in their
+- `lower`: Plate privately lowers the local Find plugin's `decorate` and
+  render contributions beside Yjs/other plugins; no app-root carrier wiring,
+  dynamic registration, or public renderer pipeline is added
+  (`PLATE-REGISTRY-INSTALL-CLOSURE-001`).
+- `keep deferred`: Replace and broader search/outline work stay in their
   existing behavior/roadmap lane; `commitActiveMatch` remains semantic and its
   dedicated Jump button remains optional (M-12).
 
 ### Floating UI and copied installation
 
-- `cut` — `platejs/floating/react` and its reexports disappear; both Floating
+- `cut`: `platejs/floating/react` and its reexports disappear; both Floating
   peers leave `platejs` after the wrapper is gone (M-10).
-- `add copied` — registry `use-widget-floating` imports
+- `add copied`: registry `use-widget-floating` imports
   `@floating-ui/react` directly, adapts immutable Widget geometry, and is a
   dependency of copied link/floating-toolbar items; geometry owns reference
   invalidation while Floating observes its own element (M-10).
-- `gate` — `selection-retention`, `find`, `use-widget-floating`, and
-  `remote-cursor-overlay` independently install/compile with direct registry
-  and package dependencies; the cursor item declares `yjs`, and the Floating
-  helper declares `@floating-ui/react`
+- `gate`: `find`, `use-widget-floating`, and `remote-cursor-overlay`
+  independently install/compile with direct registry and package dependencies;
+  copied `Editor` uses the proxied inactive-selection prop without a separate
+  install item; the cursor item declares `yjs`, and the Floating helper declares
+  `@floating-ui/react`
   (`PLATE-REGISTRY-INSTALL-CLOSURE-001`; Gate O).
 
 ### Publication, performance, and law
 
-- `cut atomically` — the three obsolete entrypoints, all source/generated/docs
+- `cut atomically`: the three obsolete entrypoints, all source/generated/docs
   references, aliases, manifests, declarations, and internal imports disappear
   only after replacement proofs; no alias, forwarding path, or dual runtime is
   allowed (M-10; Gate N).
-- `gate` — generated Oxlint restrictions, exact-input Turbo tasks, runtime-lane
+- `gate`: generated Oxlint restrictions, exact-input Turbo tasks, runtime-lane
   imports, packed declarations, optional-peer reachability, unrelated-consumer
   zero-delta DCE, and reviewed opt-in bundle ceilings prove the entrypoint DAG
   (`PLATE-ENTRYPOINT-DAG-001`).
-- `gate` — structural operation/subscriber/listener counters are hard
+- `gate`: structural operation/subscriber/listener counters are hard
   everywhere; wall-clock p95 becomes hard only after 30 warm samples on a
   recorded controlled lane and uses the reviewed noise/regression band plus
   recorded frame budget (M-11).
-- `revise law during execution` — contract freeze updates readable law,
+- `revise law during execution`: contract freeze updates readable law,
   protocol, and roadmap before runtime code; executable closure updates parity
   status. Standards/audit remain unchanged because no authority winner shifted
   (Editor-behavior output map).
-- `release` — separate `major` changesets cover `plitejs` and `platejs`; copied
+- `release`: separate `major` changesets cover `plitejs` and `platejs`; copied
   UI uses the registry changelog; rollback is a prior package version or atomic
   revert, never a compatibility path (Migration and cutover order).
-- `prove` — exact-ref and Anchor/direct-Yjs spikes precede migration; unit,
+- `prove`: exact-ref and Anchor/direct-Yjs spikes precede migration; unit,
   type, headless, SSR, real-browser, stress, registry-install, packed-consumer,
   declaration, DCE, size, stale-reference, and immutable-artifact gates all
   block release (TDD tracer sequence; Fast driver gates).
@@ -2155,41 +2238,41 @@ instead of inventing a before shape.
 
 ### Plate React and selection policy
 
-| ID / status       | Current / before evidence                                                                                                                                                                                                                             | Accepted target and owner                                                                                                                                           | Proof pointer                            |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| R-01 `add`        | `packages/platejs/src/react/plugin/PlatePlugin.ts:92-131`, `packages/platejs/src/react/components/PlateContent.tsx:298-382`, and `packages/platejs/src/react/components/PlateContainer.tsx:32-75` discard or mis-type the local refs                  | `EditableSiblingProps.editableRef` and distinct `ContainerSiblingProps.containerRef` in `platejs/react`; no-argument renderers remain valid                         | M-13; `PLATE-EDITABLE-SIBLING-SCOPE-001` |
-| R-02 `cut`        | `packages/platejs/src/static/components/PlateStatic.tsx:299-356` invokes before/after Editable renderers without an Editable                                                                                                                          | `PlateStatic` renders document nodes only and invokes neither slot                                                                                                  | M-13; static/SSR fixture                 |
-| R-03 `cut`        | `packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx:4-108` stores arbitrary copied ranges and repairs them with a timer; `useCursorOverlay.ts` owns duplicate geometry                                                                | Delete `platejs/cursor/react`, CursorOverlay commands/state/helpers, timeout repair, and the AI dependency                                                          | M-10; Gates B/E/N                        |
-| R-04 `keep`       | `packages/plitejs/src/react/components/editable.tsx:339-373` already owns `[data-plite-drop-cursor]`                                                                                                                                                  | Plite Editable remains the only drop-caret owner                                                                                                                    | retained/drop browser row                |
-| R-05 `add copied` | `packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx` plus `apps/www/src/registry/components/editor/{ai-menu,font-size-toolbar-button,link-toolbar-button,link}.tsx` currently own toolbar-blur selection through `[data-plate-focus]` | Copied `selection-retention` owns one boolean, expanded Decoration fill, collapsed selection Widget caret, table/AI exclusions, and `[data-plate-retain-selection]` | M-09; `EDIT-SELECTION-RETAIN-001`        |
+| ID / status    | Current / before evidence                                                                                                                                                                                                            | Accepted target and owner                                                                                                                                                                                                                  | Proof pointer                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| R-01 `add`     | `packages/platejs/src/react/plugin/PlatePlugin.ts:92-131`, `packages/platejs/src/react/components/PlateContent.tsx:298-382`, and `packages/platejs/src/react/components/PlateContainer.tsx:32-75` discard or mis-type the local refs | `EditableSiblingProps.editableRef` and distinct `ContainerSiblingProps.containerRef` in `platejs/react`; no-argument renderers remain valid                                                                                                | M-13; `PLATE-EDITABLE-SIBLING-SCOPE-001` |
+| R-02 `cut`     | `packages/platejs/src/static/components/PlateStatic.tsx:299-356` invokes before/after Editable renderers without an Editable                                                                                                         | `PlateStatic` renders document nodes only and invokes neither slot                                                                                                                                                                         | M-13; static/SSR fixture                 |
+| R-03 `cut`     | `packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx:4-108` stores arbitrary copied ranges and repairs them with a timer; `useCursorOverlay.ts` owns duplicate geometry                                               | Delete `platejs/cursor/react`, CursorOverlay commands/state/helpers, timeout repair, and the AI dependency                                                                                                                                 | M-10; Gates B/E/N                        |
+| R-04 `keep`    | `packages/plitejs/src/react/components/editable.tsx:339-373` already owns `[data-plite-drop-cursor]`                                                                                                                                 | Plite Editable remains the only drop-caret owner                                                                                                                                                                                           | retained/drop browser row                |
+| R-05 `add/cut` | `packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx` plus current copied retention plugin and focus-marker consumers split one view job across package and registry state                                            | `plitejs/react` `Editable` owns marker-driven exact-view expanded/collapsed paint; `PlateContent` inherits it; copied `Editor` owns marker placement, exclusions, and styles; cut plugin/kit/item | M-09; `EDIT-SELECTION-RETAIN-001`        |
 
 ### Yjs collaboration projection
 
-| ID / status           | Current / before evidence                                                                                                                                                              | Accepted target and owner                                                                                                                                    | Proof pointer                                      |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| Y-01 `revise private` | `packages/platejs/src/yjs/core/controller.ts:125,242-244,896-955` discards awareness ids while `awareness-adapter.ts:150-230` already decodes cursors                                  | Existing controller-owned `YjsAwarenessAdapter` becomes the one DOM/React-free cursor cache/index over raw endpoints and Plite Anchors                       | M-05; direct-Yjs oracle                            |
-| Y-02 `keep`           | `packages/platejs/src/yjs/core/types.ts:5-104,148-195` and `packages/platejs/src/yjs/react/useYjs.ts:559-688` expose provider/schema/data/scalar-subscription/Decoration customization | Preserve those public extension points unchanged                                                                                                             | M-05/M-06; packed custom-schema fixture            |
-| Y-03 `keep/add/cut`   | `packages/platejs/src/yjs/react/useYjs.ts:540-877` has singular/broad data hooks, a Decoration source, and a separate overlay-position resolver                                        | Keep data and Decoration hooks, add `useYjsRemoteCursorWidgetStore`, delete `useYjsRemoteCursorOverlayPositions`; every output reads one cache               | M-05; Yjs core/React contracts                     |
-| Y-04 `add copied`     | `apps/www/src/registry/components/editor/remote-cursor-overlay.tsx:70-148` renders one bounding box and duplicates geometry                                                            | Keep the concrete copied item, add `renderRemoteCursorSegment`, append its source at the Plate owner, and use exact-ref Widget geometry for caret/label      | M-01/M-05; multiline/RTL/coexistence browser rows  |
-| Y-05 `gate`           | Current awareness and React paths independently scan/resolve and force host/source refresh                                                                                             | One changed client: one decode, at most one cursor-resolution pass and two distinct-endpoint conversions; ordinary commits map Anchors with zero conversions | `PLATE-YJS-CURSOR-PROJECTION-001`; stress counters |
+| ID / status           | Current / before evidence                                                                                                                                                              | Accepted target and owner                                                                                                                                                                   | Proof pointer                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Y-01 `revise private` | `packages/platejs/src/yjs/core/controller.ts:125,242-244,896-955` discards awareness ids while `awareness-adapter.ts:150-230` already decodes cursors                                  | Existing controller-owned `YjsAwarenessAdapter` becomes the one DOM/React-free cursor cache/index over raw endpoints and Plite Anchors                                                      | M-05; direct-Yjs oracle                            |
+| Y-02 `keep`           | `packages/platejs/src/yjs/core/types.ts:5-104,148-195` and `packages/platejs/src/yjs/react/useYjs.ts:559-688` expose provider/schema/data/scalar-subscription/Decoration customization | Preserve those public extension points unchanged                                                                                                                                            | M-05/M-06; packed custom-schema fixture            |
+| Y-03 `keep/add/cut`   | `packages/platejs/src/yjs/react/useYjs.ts:540-877` has singular/broad data hooks, a Decoration source, and a separate overlay-position resolver                                        | Keep data and Decoration hooks, add cursor ids and exact-view cursor geometry reads, privately adapt Widgets, and delete `useYjsRemoteCursorOverlayPositions`; every output reads one cache | M-05; Yjs core/React contracts                     |
+| Y-04 `add copied`     | `apps/www/src/registry/components/editor/remote-cursor-overlay.tsx:70-148` renders one bounding box and duplicates geometry                                                            | Keep the concrete copied item under `YjsPlugin`; read domain geometry for caret/label with no app-root carrier composition                                                                  | M-01/M-05; multiline/RTL/coexistence browser rows  |
+| Y-05 `gate`           | Current awareness and React paths independently scan/resolve and force host/source refresh                                                                                             | One changed client: one decode, at most one cursor-resolution pass and two distinct-endpoint conversions; ordinary commits map Anchors with zero conversions                                | `PLATE-YJS-CURSOR-PROJECTION-001`; stress counters |
 
 ### Find
 
-| ID / status          | Current / before evidence                                                                                                                                                                                                                                           | Accepted target and owner                                                                                                                                  | Proof pointer                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| F-01 `cut`           | `packages/platejs/src/features/find-replace/lib/FindReplacePlugin.ts:14-137` stores query/schema highlight state and implements no Replace                                                                                                                          | Delete `platejs/find-replace`, `FindReplacePlugin`, `searchHighlight`, and `find-replace-demo`                                                             | M-10; Gates E/N                            |
-| F-02 `add copied`    | `packages/plitejs/src/interfaces/node.ts` (`NodeApi.findTextRanges`) and `apps/www/src/app/(app)/examples/plite/_examples/search-highlighting.tsx` already provide pure matching/projection without schema mutation                                                 | Copied `find`/`find-demo` exports `useFindController`; one result owner scans once and retains ordered canonical ranges                                    | M-07; Find source/controller contract      |
-| F-03 `keep private`  | `decision`: current package has no complete Find UI or navigation store                                                                                                                                                                                             | Query/open/requested index stay local, count/effective index derive, and a tiny private per-id activity store wakes only old/new matches                   | M-08; 10k navigation counters              |
-| F-04 `compose`       | `packages/platejs/src/react/components/Plate.tsx:51-60,210-245`, `packages/platejs/src/react/components/PlateContent.tsx:40-57,260-294`, and `packages/plitejs/src/react/components/editable-text.tsx:353-356,475-477` expose one source array and one app renderer | App appends Find's stable source and explicitly composes its renderer with Yjs/others once per delegate; no dynamic registration or public composition API | M-07; `PLATE-REGISTRY-INSTALL-CLOSURE-001` |
-| F-05 `keep deferred` | `docs/editor-behavior/markdown-editing-spec.md` and protocol/roadmap rows already lock broader Search/Replace as deferred                                                                                                                                           | Ship only current-file Find/navigation; keep Replace and broader search in the existing future lane; `commitActiveMatch` stays semantic                    | M-12; `EDIT-SEARCH-FIND-001..004`          |
+| ID / status          | Current / before evidence                                                                                                                                                                                                                  | Accepted target and owner                                                                                                                   | Proof pointer                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| F-01 `cut`           | `packages/platejs/src/features/find-replace/lib/FindReplacePlugin.ts:14-137` stores query/schema highlight state and implements no Replace                                                                                                 | Delete `platejs/find-replace`, `FindReplacePlugin`, `searchHighlight`, and `find-replace-demo`                                              | M-10; Gates E/N                            |
+| F-02 `add copied`    | `packages/plitejs/src/interfaces/node.ts` (`NodeApi.findTextRanges`) and `apps/www/src/app/(app)/examples/plite/_examples/search-highlighting.tsx` already provide pure matching/projection without schema mutation                        | Copied `find`/`find-demo` exports `useFindController` and `FindKit`; one result owner scans once and retains ordered canonical ranges       | M-07; Find source/controller contract      |
+| F-03 `keep private`  | `decision`: current package has no complete Find UI or navigation store                                                                                                                                                                    | Query/open/requested index stay local, count/effective index derive, and a tiny private per-id activity store wakes only old/new matches    | M-08; 10k navigation counters              |
+| F-04 `lower`         | `packages/platejs/src/react/components/Plate.tsx:51-60,210-245`, `packages/platejs/src/react/components/PlateContent.tsx:40-57,260-294`, and `packages/plitejs/src/react/components/editable-text.tsx:353-356,475-477` expose raw carriers | Plate privately lowers plugin `decorate` and render slots; installing Find and Yjs plugins needs no app-root source or renderer composition | M-07; `PLATE-REGISTRY-INSTALL-CLOSURE-001` |
+| F-05 `keep deferred` | `docs/editor-behavior/markdown-editing-spec.md` and protocol/roadmap rows already lock broader Search/Replace as deferred                                                                                                                  | Ship only current-file Find/navigation; keep Replace and broader search in the existing future lane; `commitActiveMatch` stays semantic     | M-12; `EDIT-SEARCH-FIND-001..004`          |
 
 ### Floating UI and copied installation
 
-| ID / status       | Current / before evidence                                                                                                              | Accepted target and owner                                                                                                                         | Proof pointer                                |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| L-01 `cut`        | `packages/platejs/src/floating/react/*` is a six-file reexport/wrapper and `packages/platejs/package.json` carries both Floating peers | Delete `platejs/floating/react` and remove both peers from `platejs` after migration                                                              | M-10; Gates E/N                              |
-| L-02 `add copied` | Registry link and floating-toolbar currently read DOM rectangles and refresh on editor revisions                                       | Copied `use-widget-floating` imports `@floating-ui/react`, adapts Widget geometry, and lets Floating observe only its own element                 | M-10; link/toolbar browser rows              |
-| L-03 `gate`       | `apps/www/scripts/check-registry-source.mts:430-650` requires transitive copied-item dependency closure                                | `selection-retention`, `find`, `use-widget-floating`, and `remote-cursor-overlay` install independently with direct package/registry dependencies | Gate O; `PLATE-REGISTRY-INSTALL-CLOSURE-001` |
+| ID / status       | Current / before evidence                                                                                                              | Accepted target and owner                                                                                                                           | Proof pointer                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| L-01 `cut`        | `packages/platejs/src/floating/react/*` is a six-file reexport/wrapper and `packages/platejs/package.json` carries both Floating peers | Delete `platejs/floating/react` and remove both peers from `platejs` after migration                                                                | M-10; Gates E/N                              |
+| L-02 `add copied` | Registry link and floating-toolbar currently read DOM rectangles and refresh on editor revisions                                       | Copied `use-widget-floating` imports `@floating-ui/react`, adapts Widget geometry, and lets Floating observe only its own element                   | M-10; link/toolbar browser rows              |
+| L-03 `gate`       | `apps/www/scripts/check-registry-source.mts:430-650` requires transitive copied-item dependency closure                                | `find`, `use-widget-floating`, and `remote-cursor-overlay` install independently; copied `Editor` uses the proxied view prop with no retention item | Gate O; `PLATE-REGISTRY-INSTALL-CLOSURE-001` |
 
 ### Publication, performance, and behavior law
 
@@ -2350,13 +2433,13 @@ Pass-state ledger:
 | Pass                                                                          | Status   | Evidence added                                                                                                                                                                                                | Plan delta                                                                                                                                                                                                                                                                                                                                                 | Editor-behavior output delta                                                                                                                                                                               | Open issues                                                                                  | Next owner                                  |
 | ----------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | 1. Current-state read and initial score                                       | complete | Merged commit pin; owner/consumer/source matrices; live Vision, tests, examples, exports, package dependencies, runtime scheduling, and registry consumers                                                    | Replaced tentative "overlay substrate" with three hard cuts and a preliminary lifetime-split target; score 0.79                                                                                                                                                                                                                                            | Recorded exact later spec/protocol/roadmap owners; no behavior-law file changed in this pass                                                                                                               | Selection-retention publication and exact Widget geometry API need pressure                  | `plate-plan` intent/boundary + `best-api`   |
-| 2. Intent/boundary and decision brief                                         | complete | Best API deletion cone; terminal-consumer and AI dependency reads; exact Widget/Yjs/Find call sites; behavior-law reconciliation                                                                              | Selection retention is registry-only; Widget adds range/order/geometry only; Yjs earns a direct-subscription Widget adapter; Find excludes Replace; score 0.81                                                                                                                                                                                             | Corrected stale output map: Yjs and Search law already exist; later protocol/parity/roadmap updates are mandatory                                                                                          | Research may falsify names or show a smaller geometry/Yjs shape                              | `research-wiki` maintain                    |
+| 2. Intent/boundary and decision brief                                         | complete | Best API deletion cone; terminal-consumer and AI dependency reads; exact Widget/Yjs/Find call sites; behavior-law reconciliation                                                                              | Historical pass selected registry-only retention; the 2026-08-31 exact-view correction supersedes that row. Widget/Yjs/Find decisions otherwise remain.                                                                                                                                                                                                    | Corrected stale output map: Yjs and Search law already exist; later protocol/parity/roadmap updates are mandatory                                                                                          | Resolved by the exact-view correction                                                        | `plite-plan` + `plate-plan`                 |
 | 3. Research and live-source refresh                                           | complete | Pinned ProseKit/Tiptap/Lexical/ProseMirror/y-prosemirror reads; compiled source page; refreshed concepts/index/log                                                                                            | Lifetime split and hard cuts survived; Yjs changed to one shared private cursor owner; score 0.84                                                                                                                                                                                                                                                          | No behavior-law edit; exact protocol/parity/roadmap deltas remain scheduled                                                                                                                                | Internal changed-key primitive and shared-owner React lifecycle need pressure                | implementation-lens matrix                  |
 | 4. Authority/model/home/protocol/UI/React/effect/perf/TDD/regression pressure | complete | Plite view-selection and projection owners; exact Widget/Yjs/Find/Floating call paths; north-star, UI, React, effect, performance, and TDD matrices                                                           | Cut raw Range Widget; moved Yjs cache to controller; fixed one-source Find, runtime geometry lifecycle, budgets, and tracer order; score 0.91                                                                                                                                                                                                              | Proposed eleven behavior/runtime rows; no law file changed because this is an unshipped planning pass                                                                                                      | Hard cuts, controller cache, geometry limits, and budgets need maintainer attack             | maintainer objection + steelman             |
 | 5. Maintainer objection + steelman                                            | complete | Twelve concrete ledger rows; exact Yjs callback/controller/awareness-adapter, Decoration slice, Widget/stable-id snapshots, and bundle-checker reads                                                          | Dropped public awareness-event payload, `getIds`/`subscribeIds`, and mandatory Jump button; revised Find to one canonical result owner, geometry ownership/rect law, Yjs to extend its existing private awareness adapter, timing calibration, and consumer DCE; hard cuts/lifetime split survived; score 0.93                                             | No behavior-law file changed; refined future `EDIT-SEARCH-FIND-003`, Widget/Yjs runtime proof, and consumer-bundle gates                                                                                   | High-risk cut ordering, rollback, mapping failure modes, and browser falsification remain    | `plate-plan` high-risk deliberate mode      |
 | 6. High-risk deliberate mode                                                  | complete | Deep feasibility/adversarial pass; multi-Editable runtime and DOM-binding reads; Plite Anchor/Yjs association/controller lifecycle reads; failure-path, cutover, rollback, and blast-radius matrices          | Replaced hidden store branding with `readonly editor`; replaced bespoke Yjs mapper with Plite Anchors plus affected-root fallback; initially specified focused/last-focused/stable-mount geometry later rejected by pass 7; added stale Find/error handling, major release classification, atomic migration, calibrated timing, and kill gates; score 0.94 | No behavior-law file changed; strengthened future Widget/Yjs/Find/runtime proof rows and added duplicate-view/oracle cases                                                                                 | Downstream plugin/app/docs/test/collab ergonomics and extension points need ecosystem attack | `plate-plan` ecosystem maintainer           |
 | 7. Ecosystem maintainer                                                       | complete | Source-only Widget adoption manifest; exact PlateContent/plugin/container/static slots; explicit decoration-source boundary; registry dependency closure; package optional peers; Yjs public extension points | Rejected Plite's implicit active-view policy; required exact Editable refs; split truthful Plate sibling props; excluded before/after Editable slots from PlateStatic; fixed copied registry item ownership and direct peer closure; preserved Yjs schemas, callbacks, and adapters; score 0.95                                                            | No behavior-law file changed; strengthened future exact-view, static, copied-install, custom-store, custom-schema, Find-source, and Yjs-source proof rows                                                  | Accepted ecosystem deltas need whole-plan reconciliation                                     | `plate-plan` revision                       |
-| 8. Revision                                                                   | complete | Whole-plan read; exact behavior-law, `renderSegment`/`PlateContent`, Plate sibling-slot, Yjs cursor type/adapter, and endpoint-resolution rereads; canonical decision and contradiction audits                | Reconciled Find/Yjs source-array and segment-renderer composition without a new public helper; defined Yjs decode/resolution/endpoint counters; fixed one `(editor, ownerDocument)` coordinator, exact static wording, calibrated timing, law-update timing, phases, gates, and one normative inventory; score 0.96                                        | No behavior-law file changed because this goal ships no behavior; execution phase 1 updates readable law/protocol/roadmap before runtime code, and implementation closure updates parity/status from proof | Closure-only inventory, score, mechanical checker, and handoff remain                        | `plate-plan` closure                        |
+| 8. Revision                                                                   | complete | Whole-plan read; exact behavior-law, `renderSegment`/`PlateContent`, Plate sibling-slot, Yjs cursor type/adapter, and endpoint-resolution rereads; canonical decision and contradiction audits                | Defined Yjs decode/resolution/endpoint counters; fixed one `(editor, ownerDocument)` coordinator, exact static wording, calibrated timing, law-update timing, phases, gates, and one normative inventory; the accepted execution correction moves ordinary composition behind Plate's plugin compiler; score 0.96                                          | No behavior-law file changed because this goal ships no behavior; execution phase 1 updates readable law/protocol/roadmap before runtime code, and implementation closure updates parity/status from proof | Closure-only inventory, score, mechanical checker, and handoff remain                        | `plate-plan` closure                        |
 | 9. Closure score and final gates                                              | complete | 32/32 decision inventory; 13/13 requirement rows; source/research contradiction audit; weighted score 0.96; scoped formatting and `check-complete.mjs`                                                        | Closed every remaining gate without changing the accepted API: exact current/target/proof mapping, final handoff, completed phase state, and implementation-only residual-risk classification                                                                                                                                                              | No behavior-law file changed; closure verified that execution updates readable spec/protocol/roadmap before code and parity/status only after executable proof                                             | None for planning; all residual implementation risks have named falsifiers                   | user review, then a separate execution goal |
 
 Findings:
@@ -2421,14 +2504,10 @@ Findings:
   hides that useful scope, while `PlateContainer` reuses the same type for div
   props and `PlateStatic` invokes Editable siblings without an Editable. The
   current extension contract is both underpowered and false.
-- `PlateProps.decorationSources` is the canonical explicit source boundary.
-  Find and Yjs must pass their sources through that prop; runtime registration
-  in Plate state would add lifecycle bugs for no capability gain.
-- `PlateContent` passes through one app-owned `renderSegment`, while Plite
-  segments already contain slices from every installed Decoration source.
-  Find and Yjs therefore need explicit source-array and renderer composition;
-  letting either copied item replace the callback would erase the other's
-  paint (`PlateContent.tsx:40-57,260-294`;
+- `PlateProps.decorationSources` and Plite's segment renderer are advanced raw
+  carrier boundaries. Normal Plate plugins contribute `decorate` and render
+  slots; the Plate compiler must lower and compose them privately without
+  replacing another plugin's paint (`PlateContent.tsx:40-57,260-294`;
   `editable-text.tsx:353-356,475-477`).
 - Copied registry dependency closure is transitive and enforced. Shared
   Floating composition therefore needs its own copied hook item, remote cursor
@@ -2454,9 +2533,10 @@ Decisions and tradeoffs:
 
 - Pass 2 accepts the hard-cut and lifetime split as the target subject to later
   falsification. Compatibility is not a decision driver.
-- Selection retention has no independent package consumer and stays copied
-  registry policy. Yjs Widget adaptation does have an independent integration
-  and performance job and earns one public hook.
+- Inactive-selection state has no independent owner: Plite's canonical
+  selection survives. Exact-view rendering is a reusable Plite React job;
+  copied registry code owns only activation and styling. Yjs Widget adaptation
+  has an independent integration/performance job and earns one public hook.
 - One exact-ref geometry hook plus one stable ids selector is the minimum public
   cost that makes component-local DOM duplication and list-wide cursor render
   fan-out illegal. The selector reuses existing subscription methods; the store
@@ -2471,20 +2551,21 @@ Decisions and tradeoffs:
   Find implementation packet.
 - One-source Find means one canonical result owner feeding Decoration and
   navigation, not reverse-engineering original ranges from projected slices.
-- Copied `useFindController` returns the one Decoration source and stable
-  segment renderer that the app passes explicitly to `Plate` and `Editor`; it
-  owns no plugin, editor schema, document, history, URL, or dynamically
-  registered Plate state.
+- Copied `useFindController` feeds one registry-local `findPlugin`; Plate
+  privately lowers its Decoration and render contributions. It owns no editor
+  schema, document, history, URL, or dynamically registered Plate state.
 - Plate supplies `EditableSiblingProps.editableRef` and a separate truthful
   `ContainerSiblingProps.containerRef`; no-argument components remain valid,
   and `PlateStatic` invokes no dynamic Editable sibling renderer.
-- Copied `find`, `selection-retention`, and `use-widget-floating` registry items
-  are the customization units. Each declares its direct package dependencies;
-  package boundaries do not compensate for incomplete copied-item manifests.
-- One stable app-owned `decorationSources` array composes Find, Yjs, and other
-  projections. Copied segment renderers delegate explicitly in app-chosen
-  order and each runs once; no public renderer registry, new Plite helper, or
-  dynamic Plate registration is justified.
+- Copied `find` and `use-widget-floating` registry items are customization
+  units. Inactive selection is activated by copied `Editor` markers through the
+  inherited exact-view behavior, with no install item. Surviving items declare their
+  direct dependencies; package boundaries do not compensate for incomplete
+  copied-item manifests.
+- Plate's existing plugin compiler composes Find, Yjs, and other semantic
+  contributions in installed-plugin order and lowers each once; no public
+  renderer registry, new public projection layer, or dynamic registration is
+  justified. Raw app-owned carriers remain advanced escape paths.
 - The Yjs adapter caches `YjsRemoteCursor<T>` itself as Widget data, feeds
   explicit Decoration and Widget outputs from one headless owner, and preserves
   all existing public metadata/schema/custom-decoration contracts.
@@ -2501,7 +2582,8 @@ Implementation notes:
 
 Review fixes:
 
-- `best-api` rejected a public selection-retention plugin and any geometry
+- `best-api` rejected every selection-retention plugin/kit/store and selected
+  the exact Editable boolean prop; it also rejected any public geometry
   store/provider/virtual-element API.
 - Narrow-subscription pressure added `usePliteWidgetIds` and replaced the
   tentative registry mapping of `useYjsRemoteCursors` with a direct-subscription
@@ -2511,6 +2593,9 @@ Review fixes:
 - Research pressure corrected that target: `useYjsRemoteCursorWidgetStore` and
   `useYjsRemoteCursorDecorationSource` share one private owner that preserves
   awareness ids and shares cached endpoints across outputs.
+- The accepted execution correction keeps that Widget adapter private and
+  exposes cursor ids, singular cursor data, and exact-view cursor geometry as
+  the public Yjs reads.
 - Implementation pressure moved that owner into the headless Yjs controller,
   removed the speculative raw-Range Widget target, and required exact
   awareness-change payloads, per-id/order subscriptions, and zero repeated Yjs
@@ -2560,9 +2645,9 @@ Review fixes:
   y-prosemirror reinforced the lifetime split and one-source/multiple-output
   cursor model.
 - Ecosystem pressure also fixed copied registry ownership and direct dependency
-  closure, preserved the current Yjs extension surface, and made Find/Yjs
-  Decoration sources explicit at the Plate owner.
-- Revision reconciled source and segment-renderer composition, Yjs resolution
+  closure, preserved the current Yjs extension surface, and made Plate plugin
+  lowering the normal Find/Yjs owner.
+- Revision reconciled private source and segment-renderer lowering, Yjs resolution
   counter units, the coordinator owner, timing calibration, exact static slot
   wording, behavior-law timing, and one normative decision inventory.
 - Closure reconciled the linked research layer, mapped all 32 decisions to
@@ -2671,7 +2756,7 @@ Verification evidence:
   custom-store proof obligation.
 - Read exact `PlateContent`, `PlatePlugin`, `PlateContainer`, `PlateStatic`, and
   `PlateProps.decorationSources` owners; required exact local refs, truthful
-  sibling types, static exclusion, and explicit Find/Yjs source plumbing.
+  sibling types, static exclusion, and private Find/Yjs plugin lowering.
 - Read the registry source checker and exact Find, selection-retention,
   remote-cursor, collaboration, link, and floating-toolbar item manifests;
   required copied helper ownership and direct `yjs`/Floating dependency closure.
@@ -2681,10 +2766,10 @@ Verification evidence:
 - Re-read exact readable behavior-law owners and fixed execution timing: contract
   freeze updates the spec/protocol/roadmap before runtime code; parity/status
   changes only after executable implementation proof.
-- Re-read the single app-owned `renderSegment` path through `PlateContent` and
-  Plite `EditableText`; required one stable app-owned Decoration-source array and
-  explicit once-per-delegate Find/Yjs renderer composition without a public
-  renderer registry or helper.
+- Re-read the raw `renderSegment` path through `PlateContent` and Plite
+  `EditableText`; required Plate's existing plugin compiler to lower each
+  plugin contribution exactly once without a public renderer registry or
+  app-root carrier helper.
 - Re-read `YjsRemoteCursor` and the awareness adapter endpoint path; separated
   changed-client decode, cursor-resolution-pass, and per-distinct-endpoint
   conversion counters, including metadata-only endpoint reuse.
@@ -2773,7 +2858,8 @@ Timeline:
   Editable slot, fixed copied registry ownership/direct dependencies, preserved
   Yjs extension points, and moved the score to 0.95.
 - 2026-08-30 Revision pass completed: reconciled all accepted decisions into one
-  normative inventory; made Find/Yjs source and renderer coexistence explicit;
+  normative inventory; the accepted execution correction moved Find/Yjs
+  carrier coexistence behind Plate's plugin compiler;
   defined exact Yjs work units and one geometry coordinator owner; removed fake
   timing precision; fixed static-slot and behavior-law timing; score moved to
   0.96. Closure remains a separate pass.
@@ -2781,14 +2867,18 @@ Timeline:
   32 normative decisions to current owner/target/proof, satisfied all 13
   objective requirements, closed every plan gate, and passed scoped formatting
   plus the mechanical goal-plan checker at final score 0.96.
+- 2026-08-31 API correction completed: registry-only retention was split into
+  marker-driven Plite React mechanics inherited by PlateContent and copied
+  Editor marker/styles. The retention plugin/kit/item became deletion targets;
+  earlier pass-log statements remain historical only.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Closure complete at final score 0.96; planning goal complete. |
-| Where am I going? | User review, then a separate execution goal if accepted. |
+| Where am I? | Architecture corrected after the historical execution: exact-view inactive selection is the accepted target. |
+| Where am I going? | Complete `docs/plans/2026-08-31-native-inactive-selection-focus-marker.md` for Plite lifecycle behavior and registry deletion/adoption. |
 | What is the goal? | Choose and prove the canonical Plite cursor/find/overlay architecture. |
-| What have I learned? | Overlay is the wrong public noun; existing Widget targets are sufficient; geometry needs the caller's exact Editable ref; Find and Yjs must compose one source array and renderer callback; Yjs work needs separate decode, resolution-pass, and endpoint counters. |
+| What have I learned? | Overlay is the wrong public noun; existing Widget targets are sufficient; geometry needs the caller's exact Editable ref; normal Find and Yjs authoring belongs in Plate plugins while raw carriers stay advanced; Yjs work needs separate decode, resolution-pass, and endpoint counters. |
 | What have I done? | Reconciled all accepted decisions across API, migration, performance, behavior law, phases, research, proof, gates, and the 32-row handoff inventory; passed closure at 0.96. |
 
 Open risks:

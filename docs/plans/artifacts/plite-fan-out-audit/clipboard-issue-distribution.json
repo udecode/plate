@@ -1,0 +1,1469 @@
+{
+  "artifactVersion": 2,
+  "benchmark": "plite-clipboard-large-payload-worker",
+  "config": {
+    "hugeCutBlocks": 10000,
+    "hugeCutIterations": 3,
+    "iterations": 3,
+    "issueTargetIterations": 9,
+    "issueTargetStressLines": 10000,
+    "issueTargetsEnabled": true,
+    "stressLineCount": 2000,
+    "stressIterations": 1
+  },
+  "correctnessFailures": [],
+  "lane": "issue",
+  "pid": 12999,
+  "issueTargets": {
+    "largePlainTextPaste10000": {
+      "samples": [
+        49.58,
+        47.47,
+        46.72,
+        44.14,
+        41.04,
+        44.94,
+        50.32,
+        46.13,
+        46.53
+      ],
+      "mean": 46.32,
+      "p50": 46.53,
+      "p95": 50.32,
+      "min": 41.04,
+      "max": 50.32,
+      "heapDeltaBytes": {
+        "max": 25479603,
+        "mean": 2620636.33,
+        "samples": [
+          22575306,
+          0,
+          8919861,
+          25479603,
+          0,
+          5739065,
+          22290090,
+          0,
+          -61418198
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          1,
+          0.5,
+          0.56,
+          0.62,
+          0.64,
+          0.52,
+          0.54,
+          0.51,
+          0.53
+        ],
+        "mean": 0.6,
+        "p50": 0.54,
+        "p95": 1,
+        "min": 0.5,
+        "max": 1
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0,
+        "retainedExistingBlocks": 0,
+        "topLevelRanges": [
+          [
+            0,
+            9999
+          ]
+        ],
+        "insertedBlocks": 10000,
+        "lineCount": 10000,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": -20762414,
+        "mean": -20762414,
+        "samples": [
+          -20762414
+        ]
+      },
+      "setupMs": {
+        "samples": [
+          0.93,
+          0.92,
+          0.69,
+          0.83,
+          0.8,
+          0.95,
+          0.65,
+          0.84,
+          0.72
+        ],
+        "mean": 0.82,
+        "p50": 0.83,
+        "p95": 0.95,
+        "min": 0.65,
+        "max": 0.95
+      }
+    },
+    "populatedFullSelectionCopy10000": {
+      "samples": [
+        19.79,
+        17.64,
+        15.06,
+        14.81,
+        15.27,
+        14.77,
+        15.07,
+        14.29,
+        14.41
+      ],
+      "mean": 15.68,
+      "p50": 15.06,
+      "p95": 19.79,
+      "min": 14.29,
+      "max": 19.79,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          0.14,
+          0.11,
+          0.11,
+          0.11,
+          0.1,
+          0.11,
+          0.11,
+          0.12,
+          0.11
+        ],
+        "mean": 0.11,
+        "p50": 0.11,
+        "p95": 0.14,
+        "min": 0.1,
+        "max": 0.14
+      },
+      "metadata": {
+        "applicationBytes": 2171996,
+        "fragmentNodes": 10000,
+        "textHtmlBytes": 2750967,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [
+          233.76,
+          231.13,
+          217.81,
+          205.58,
+          204.75,
+          205.44,
+          204.37,
+          203.1,
+          200.7
+        ],
+        "mean": 211.85,
+        "p50": 205.44,
+        "p95": 233.76,
+        "min": 200.7,
+        "max": 233.76
+      },
+      "copyPropertyVisitCount": 0,
+      "runtimeIndexBuildCount": 0
+    },
+    "populatedMiddlePlainTextPaste10000Into10000": {
+      "samples": [
+        55.16,
+        47.52,
+        57.45,
+        52.99,
+        46.89,
+        49.36,
+        47.05,
+        48.85,
+        66.3
+      ],
+      "mean": 52.4,
+      "p50": 49.36,
+      "p95": 66.3,
+      "min": 46.89,
+      "max": 66.3,
+      "heapDeltaBytes": {
+        "max": 6708381,
+        "mean": 745375.67,
+        "samples": [
+          0,
+          0,
+          6708381,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          1.66,
+          1.37,
+          1.65,
+          19.65,
+          1.44,
+          1.7,
+          1.38,
+          1.63,
+          2.17
+        ],
+        "mean": 3.63,
+        "p50": 1.65,
+        "p95": 19.65,
+        "min": 1.37,
+        "max": 19.65
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0.9999,
+        "retainedExistingBlocks": 9999,
+        "topLevelRanges": [
+          [
+            5000,
+            14999
+          ]
+        ],
+        "existingBlockCount": 10000,
+        "insertedBlocks": 10000,
+        "nextBlockCount": 19999,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [
+            [
+              5000,
+              14999
+            ]
+          ],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [
+          0
+        ]
+      },
+      "setupMs": {
+        "samples": [
+          229.95,
+          250.61,
+          205.26,
+          220.5,
+          211.55,
+          213.46,
+          244.76,
+          219.82,
+          244.52
+        ],
+        "mean": 226.71,
+        "p50": 220.5,
+        "p95": 250.61,
+        "min": 205.26,
+        "max": 250.61
+      }
+    }
+  },
+  "plateCodecs": {
+    "compilationMs": {
+      "samples": [
+        19.2,
+        4.99,
+        4.31,
+        3.97,
+        4.09,
+        4.14,
+        3.91,
+        3.69,
+        3.55
+      ],
+      "mean": 5.76,
+      "p50": 4.09,
+      "p95": 19.2,
+      "min": 3.55,
+      "max": 19.2,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "metadata": {
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 0,
+        "decodeMs": 0,
+        "encodeCallbacks": 0,
+        "encodeMs": 0,
+        "queryCallbacks": 0
+      },
+      "metadataSamples": [
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        }
+      ],
+      "retainedHeapDeltaBytes": null
+    },
+    "parseInsert10000Ms": {
+      "samples": [
+        670.52,
+        637.96,
+        646.12,
+        576.28,
+        577.57,
+        565.53,
+        582.73,
+        585.56,
+        622.68
+      ],
+      "mean": 607.22,
+      "p50": 585.56,
+      "p95": 670.52,
+      "min": 565.53,
+      "max": 670.52,
+      "heapDeltaBytes": {
+        "max": 155251514,
+        "mean": 18047825.56,
+        "samples": [
+          60841749,
+          51332950,
+          141097622,
+          -229035549,
+          155251514,
+          -101035992,
+          -30501463,
+          -19750926,
+          134230525
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          1.66,
+          1.41,
+          1.4,
+          1.34,
+          1.49,
+          1.29,
+          1.63,
+          1.54,
+          1.54
+        ],
+        "mean": 1.48,
+        "p50": 1.49,
+        "p95": 1.66,
+        "min": 1.29,
+        "max": 1.66
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608890,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0,
+        "retainedExistingBlocks": 0,
+        "topLevelRanges": [
+          [
+            0,
+            9999
+          ]
+        ],
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 1,
+        "decodeMs": 14.06,
+        "encodeCallbacks": 0,
+        "encodeMs": 0,
+        "queryCallbacks": 1,
+        "insertedBlocks": 10000,
+        "lineCount": 10000,
+        "payloadBytes": 1028929
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.06,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.87,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 33.58,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 16.79,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 13.96,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.71,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.6,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 15.06,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [
+            [
+              0,
+              9999
+            ]
+          ],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.06,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": -122953405,
+        "mean": -122953405,
+        "samples": [
+          -122953405
+        ]
+      },
+      "setupMs": {
+        "samples": [
+          4.06,
+          4.72,
+          4.74,
+          24.48,
+          4.27,
+          21,
+          4.56,
+          4.36,
+          4.58
+        ],
+        "mean": 8.53,
+        "p50": 4.58,
+        "p95": 24.48,
+        "min": 4.06,
+        "max": 24.48
+      }
+    },
+    "reconfigurationMs": {
+      "samples": [
+        1.04,
+        0.49,
+        0.32,
+        0.49,
+        0.35,
+        0.35,
+        0.3,
+        0.31,
+        0.3
+      ],
+      "mean": 0.44,
+      "p50": 0.35,
+      "p95": 1.04,
+      "min": 0.3,
+      "max": 1.04,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          1.63,
+          0.91,
+          0.65,
+          0.82,
+          0.82,
+          0.57,
+          0.5,
+          0.63,
+          0.62
+        ],
+        "mean": 0.79,
+        "p50": 0.65,
+        "p95": 1.63,
+        "min": 0.5,
+        "max": 1.63
+      },
+      "metadata": {
+        "configurationCommitCount": 1,
+        "configurationDirtyCommits": 1,
+        "configurationRevisionDelta": 1,
+        "initialCompilationCallbacks": 1,
+        "initialDecodeCallbacks": 0,
+        "initialEncodeCallbacks": 0,
+        "initialQueryCallbacks": 0,
+        "replacementCompilationCallbacks": 1,
+        "replacementDecodeCallbacks": 1,
+        "replacementEncodeCallbacks": 1,
+        "replacementQueryCallbacks": 1
+      },
+      "metadataSamples": [
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [
+          1.02,
+          0.72,
+          0.45,
+          0.56,
+          0.45,
+          0.46,
+          0.39,
+          0.53,
+          0.4
+        ],
+        "mean": 0.55,
+        "p50": 0.46,
+        "p95": 1.02,
+        "min": 0.39,
+        "max": 1.02
+      }
+    },
+    "serialize10000Ms": {
+      "samples": [
+        21.73,
+        18.69,
+        20.06,
+        19.3,
+        16.27,
+        15.2,
+        16.25,
+        16.99,
+        18.08
+      ],
+      "mean": 18.06,
+      "p50": 18.08,
+      "p95": 21.73,
+      "min": 15.2,
+      "max": 21.73,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "inspectionMs": {
+        "samples": [
+          0.11,
+          0.04,
+          0.04,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.05,
+          0.03
+        ],
+        "mean": 0.04,
+        "p50": 0.03,
+        "p95": 0.11,
+        "min": 0.03,
+        "max": 0.11
+      },
+      "metadata": {
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 0,
+        "decodeMs": 0,
+        "encodeCallbacks": 1,
+        "encodeMs": 3.87,
+        "queryCallbacks": 0,
+        "fragmentNodes": 10000,
+        "lineCount": 10000,
+        "payloadBytes": 1028929
+      },
+      "metadataSamples": [
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 4.11,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.61,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.55,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.74,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.78,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.67,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.65,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.45,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.87,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 1028929
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [
+          3.76,
+          3.97,
+          3.71,
+          3.71,
+          15.69,
+          3.33,
+          4.01,
+          3.46,
+          3.28
+        ],
+        "mean": 4.99,
+        "p50": 3.71,
+        "p95": 15.69,
+        "min": 3.28,
+        "max": 15.69
+      }
+    }
+  }
+}

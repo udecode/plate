@@ -26,7 +26,6 @@
         "../platejs/src/react/features/comment/index.ts"
       ],
       "platejs/csv": ["../platejs/src/csv/index.ts"],
-      "platejs/cursor/react": ["../platejs/src/react/features/cursor/index.ts"],
       "platejs/date": ["../platejs/src/features/date/index.ts"],
       "platejs/date/react": ["../platejs/src/react/features/date/index.ts"],
       "platejs/details": ["../platejs/src/features/details/index.ts"],
@@ -41,8 +40,6 @@
       "platejs/emoji/react": ["../platejs/src/emoji/react/index.ts"],
       "platejs/excalidraw": ["../platejs/src/excalidraw/index.ts"],
       "platejs/excalidraw/react": ["../platejs/src/excalidraw/react/index.ts"],
-      "platejs/find-replace": ["../platejs/src/features/find-replace/index.ts"],
-      "platejs/floating/react": ["../platejs/src/floating/react/index.ts"],
       "platejs/footnote": ["../platejs/src/features/footnote/index.ts"],
       "platejs/footnote/react": [
         "../platejs/src/react/features/footnote/index.ts"
@@ -62,10 +59,8 @@
         "../platejs/src/react/features/mention/index.ts"
       ],
       "platejs/migrations": ["../platejs/src/migrations/index.ts"],
-      "platejs/page-layout": ["../platejs/src/page-layout/index.ts"],
-      "platejs/page-layout/react": [
-        "../platejs/src/page-layout/react/index.ts"
-      ],
+      "platejs/pagination": ["../platejs/src/pagination/index.ts"],
+      "platejs/pagination/react": ["../platejs/src/pagination/react/index.ts"],
       "platejs/react": ["../platejs/src/react/index.tsx"],
       "platejs/resizable/react": [
         "../platejs/src/react/features/resizable/index.ts"

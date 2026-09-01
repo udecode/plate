@@ -36,7 +36,6 @@ import {
   type SerializeMdOptions,
 } from '../../markdown';
 import { type Editor, definePlatePlugin } from '../../react/core';
-import { CursorOverlayPlugin } from '../../react/features/cursor';
 import { SuggestionPlugin } from '../../react/features/suggestion';
 import { failInvariant } from '../internal/failInvariant';
 import type {
@@ -140,12 +139,7 @@ type StreamInsertOptions = {
 const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
 const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
 const aiChatShowEffect = defineEffect({ key: 'ai.chat.show' });
-const dependencies = [
-  BaseAIPlugin,
-  MarkdownPlugin,
-  CursorOverlayPlugin,
-  SuggestionPlugin,
-] as const;
+const dependencies = [BaseAIPlugin, MarkdownPlugin, SuggestionPlugin] as const;
 
 type AIChatPluginReadState = PlatePluginReadState<
   DefinitionOf<(typeof dependencies)[number]>
@@ -201,6 +195,41 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         ? chunk.slice(trimmed.length)
         : chunk.slice(0, chunk.length - trimmed.length);
     };
+    const appendTrailingText = (element: Element, text: string): Element => {
+      const lastChild = element.children.at(-1);
+      const content = editor.read.schema.element(element.type)?.content;
+
+      if (content && !content.allowsText) {
+        if (!ElementApi.isElement(lastChild)) return element;
+
+        return {
+          ...element,
+          children: [
+            ...element.children.slice(0, -1),
+            appendTrailingText(lastChild, text),
+          ],
+        };
+      }
+
+      if (
+        lastChild &&
+        TextApi.isText(lastChild) &&
+        Object.keys(lastChild).length === 1
+      ) {
+        return {
+          ...element,
+          children: [
+            ...element.children.slice(0, -1),
+            { text: lastChild.text + text },
+          ],
+        };
+      }
+
+      return {
+        ...element,
+        children: [...element.children, { text }],
+      };
+    };
     const isCompleteCodeBlock = (value: string) => {
       const trimmed = value.trim();
 
@@ -215,25 +244,37 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     };
     function withNodeProps(
       nodes: readonly Element[],
-      options: StreamInsertOptions
+      options: StreamInsertOptions,
+      preview: boolean
     ): Element[];
     function withNodeProps(
       nodes: readonly Descendant[],
-      options: StreamInsertOptions
+      options: StreamInsertOptions,
+      preview: boolean
     ): Descendant[];
     function withNodeProps(
       nodes: readonly Descendant[],
-      options: StreamInsertOptions
+      options: StreamInsertOptions,
+      preview: boolean
     ): Descendant[] {
       return nodes.map((node) => {
         if (!ElementApi.isElement(node)) {
           return { ...options.textProps, ...node, text: node.text };
         }
 
+        const previewAllowed =
+          preview &&
+          editor.read.schema.property({
+            key: AI_PREVIEW_KEY,
+            placement: 'element',
+            type: node.type,
+          }) !== null;
+
         return {
           ...node,
           ...options.elementProps,
-          children: withNodeProps(node.children, options),
+          ...(previewAllowed ? { [AI_PREVIEW_KEY]: true } : {}),
+          children: withNodeProps(node.children, options, preview),
         };
       });
     }
@@ -357,32 +398,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         trailing.length > 0 &&
         !addNewLine
       ) {
-        const lastChild = lastBlock.children.at(-1);
-
-        if (
-          lastChild &&
-          TextApi.isText(lastChild) &&
-          Object.keys(lastChild).length === 1
-        ) {
-          result = [
-            ...result.slice(0, -1),
-            {
-              ...lastBlock,
-              children: [
-                ...lastBlock.children.slice(0, -1),
-                { text: lastChild.text + trailing },
-              ],
-            },
-          ];
-        } else {
-          result = [
-            ...result.slice(0, -1),
-            {
-              ...lastBlock,
-              children: [...lastBlock.children, { text: trailing }],
-            },
-          ];
-        }
+        result = [
+          ...result.slice(0, -1),
+          appendTrailingText(lastBlock, trailing),
+        ];
       }
       if (addNewLine && !isCodeBlockOrTable) {
         result.push({ children: [{ text: '' }], type: paragraph.schema.type });
@@ -1247,16 +1266,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const hasPreview = tx.ai.hasPreview();
 
           if (hasPreview) tx.history.skip();
-
-          const insertOptions = hasPreview
-            ? {
-                ...options,
-                elementProps: {
-                  ...options.elementProps,
-                  [AI_PREVIEW_KEY]: true,
-                },
-              }
-            : options;
           const { _blockChunks, _blockPath } = context.store.get();
 
           if (_blockPath === null) {
@@ -1268,7 +1277,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             const insertPath = startInEmptyParagraph
               ? path
               : PathApi.next(path);
-            const insertedBlocks = withNodeProps(blocks, insertOptions);
+            const insertedBlocks = withNodeProps(blocks, options, hasPreview);
 
             const insert = () => {
               if (startInEmptyParagraph) {
@@ -1340,7 +1349,11 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 if (!end) return;
 
                 tx.nodes.insert(
-                  withNodeProps(deserializeInlineChunk(chunk), insertOptions),
+                  withNodeProps(
+                    deserializeInlineChunk(chunk),
+                    options,
+                    hasPreview
+                  ),
                   { at: end, select: true }
                 );
 
@@ -1361,7 +1374,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 ) {
                   nextChunks = combined;
                 } else {
-                  tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+                  tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
                     at: _blockPath,
                     select: true,
                   });
@@ -1384,7 +1397,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                   { value: { children: blocks } },
                   combined
                 );
-                tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+                tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
                   at: _blockPath,
                   select: true,
                 });
@@ -1393,7 +1406,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               return;
             }
 
-            tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+            tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
               at: _blockPath,
               select: true,
             });
@@ -1470,7 +1483,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             return;
           }
 
-          editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
           const nextNodes = diffNodes(content);
 
           if (chatNodes.length <= 1) {

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "find-docs",
+  "title": "Find",
+  "description": "Search editable text with transient highlights and keyboard navigation.",
+  "files": [
+    {
+      "path": "../../content/docs/(plugins)/(functionality)/find.mdx",
+      "content": "---\ntitle: Find\ndescription: Search editable text with transient highlights and keyboard navigation.\ndocs:\n  - route: /docs/components/find\n    title: Find Component\n  - route: /docs/examples/find\n    title: Find Demo\n---\n\n<ComponentPreview name=\"find-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Opens with `Mod+F` and seeds the query from an expanded editor selection.\n- Highlights every match without writing marks into the document or history.\n- Searches through adjacent text leaves and inline descendants.\n- Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons.\n- Rescans after document commits and keeps one active result visible.\n- Exposes `useFindController` for app-owned controls.\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpx shadcn@latest add @plate/find\n```\n\n## Usage\n\nInstall `FindKit` with the rest of your editor plugins:\n\n```tsx\nimport { createEditor } from 'platejs/react';\n\nimport { FindKit } from '@/components/editor/find';\nimport { EditorKit } from '@/components/editor/plugins';\n\nconst editor = createEditor({\n  plugins: [...EditorKit, ...FindKit],\n});\n```\n\n`FindKit` owns the search shortcut, transient decorations, active-match style,\nand accessible search bar. The copied component keeps its result owner outside\nthe editor document, so a query never creates an editor operation.\n\n<ComponentSource name=\"find\" />\n\n## Custom Controls\n\nUse `useFindController` inside the matching `<Plate>` tree when your product\nneeds a different button or search bar:\n\n```tsx\nimport { useFindController } from '@/components/editor/find';\n\nexport function FindButton() {\n  const find = useFindController();\n\n  return (\n    <button onClick={() => find.open()} type=\"button\">\n      Find\n    </button>\n  );\n}\n```\n\nThe controller exposes `open`, `close`, `setQuery`, `next`, `previous`, and\n`commitActiveMatch`, plus query, count, active-index, pending, and error state.\n`commitActiveMatch` selects the active result and focuses the editor.\n\n## Keyboard Behavior\n\n| Key | Behavior |\n| --- | --- |\n| `Mod+F` | Open Find. An expanded selection becomes the initial query. |\n| `Enter` | Move to the next result. |\n| `Shift+Enter` | Move to the previous result. |\n| `Escape` | Close Find and return focus to the editor. |\n\nFind searches text. Document replacement belongs to an app command with its own\nselection, history, and collaboration policy.\n\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(functionality)/find.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

@@ -29,14 +29,14 @@ import {
   type PlitePageLayoutTypography,
   type PlitePageRect,
   type PlitePageSettings,
-} from 'plitejs/page-layout';
+} from 'plitejs/pagination';
 import {
   PagedEditable,
   type PliteLayoutRenderedFragment,
   usePliteLayout,
   usePliteLayoutFragmentsAtPath,
   usePliteLayoutSnapshot,
-} from 'plitejs/page-layout/react';
+} from 'plitejs/pagination/react';
 import {
   type EditableDecorate,
   type EditableDOMStrategyEffectiveType,
@@ -1079,12 +1079,6 @@ const renderTableChildrenWindow = ({
   return renderedChildren;
 };
 
-type PaginationElementProps = RenderElementProps & {
-  debugFrames: boolean;
-  flowBlockPaths: ReadonlySet<string>;
-  usesVirtualizedLayout: boolean;
-};
-
 const getProjectedStyle = ({
   box,
   debugFrames,
@@ -1111,7 +1105,13 @@ const getProjectedStyle = ({
   width: Math.max(1, box.width),
 });
 
-const PaginationElement = (props: PaginationElementProps) => {
+const PaginationElement = (
+  props: RenderElementProps & {
+    debugFrames: boolean;
+    flowBlockPaths: ReadonlySet<string>;
+    usesVirtualizedLayout: boolean;
+  }
+) => {
   const {
     attributes,
     debugFrames,
@@ -1424,7 +1424,20 @@ const renderPaginationLeaf = ({
 
 type PagedEditableProps = ComponentProps<typeof PagedEditable>;
 
-type PaginationPageViewProps = {
+const PaginationPageView = ({
+  debugFrames,
+  decorate,
+  domStrategy,
+  layout,
+  onDOMStrategyMetrics,
+  onKeyDown,
+  pageGeometry,
+  pageLayoutMode,
+  pageScale,
+  renderElement,
+  renderLeaf,
+  viewportRef,
+}: {
   debugFrames: boolean;
   decorate: PagedEditableProps['decorate'];
   domStrategy: PagedEditableProps['domStrategy'];
@@ -1440,22 +1453,7 @@ type PaginationPageViewProps = {
   renderElement: PagedEditableProps['renderElement'];
   renderLeaf: PagedEditableProps['renderLeaf'];
   viewportRef: RefObject<HTMLDivElement | null>;
-};
-
-const PaginationPageView = ({
-  debugFrames,
-  decorate,
-  domStrategy,
-  layout,
-  onDOMStrategyMetrics,
-  onKeyDown,
-  pageGeometry,
-  pageLayoutMode,
-  pageScale,
-  renderElement,
-  renderLeaf,
-  viewportRef,
-}: PaginationPageViewProps) => (
+}) => (
   <div
     className="plite-pagination-viewport"
     data-testid="pagination-viewport"

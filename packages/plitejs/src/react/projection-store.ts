@@ -17,6 +17,7 @@ import {
   failInvariant,
   projectRangeInSnapshot,
 } from './editable/runtime-editor-api';
+import { readKeyedProjectionDelta } from './keyed-projection-delta';
 import {
   areMappedViewDataEqual,
   createMappedViewStoreKernel,
@@ -500,6 +501,14 @@ const mapProjection = <T>(
   projectedRangeCount: number;
 }> => {
   try {
+    if ((projection as { range: Range | null }).range === null) {
+      return {
+        invalidRangeDropCount: 0,
+        outputs: Object.freeze([]),
+        projectedRangeCount: 0,
+      };
+    }
+
     const scopedRanges = getScopedProjectionRanges(
       snapshot,
       projection.range,
@@ -584,6 +593,8 @@ export const createPliteProjectionStore = <T>(
   };
   const initialProjections =
     readSource(initialSnapshot, initialContext, initialRuntimeScope) ?? [];
+  let keyedProjectionRevision =
+    readKeyedProjectionDelta(initialProjections)?.revision ?? null;
   const createMappedSource = (projections: ReadonlyArray<PliteProjection<T>>) =>
     createStableIdMappedSource<
       PliteProjection<T>,
@@ -679,6 +690,13 @@ export const createPliteProjectionStore = <T>(
     const previousInvalidRangeDropCount = mappedInvalidRangeDropCount;
     const previousProjectedRangeCount = mappedProjectedRangeCount;
     const forceAll = context.forceInvalidate === true || runtimeScope !== null;
+    const keyedDelta = readKeyedProjectionDelta(nextProjections);
+    const changedIds =
+      !forceAll && !context.change && keyedDelta
+        ? keyedDelta.revision === keyedProjectionRevision
+          ? EMPTY_RUNTIME_IDS
+          : (keyedDelta.changedKeys ?? undefined)
+        : undefined;
     const forceIds = context.change
       ? Array.from(
           new Set([
@@ -698,6 +716,7 @@ export const createPliteProjectionStore = <T>(
           : 'projection-store.map-source',
         () =>
           mappedSource.refresh(nextProjections, {
+            changedIds,
             forceAll,
             forceIds,
           })
@@ -710,6 +729,8 @@ export const createPliteProjectionStore = <T>(
         context,
       });
     }
+
+    if (keyedDelta) keyedProjectionRevision = keyedDelta.revision;
 
     const nextSnapshot = mappedSource.getSnapshot()
       .byOutputKey as PliteProjectionStoreSnapshot<T>;

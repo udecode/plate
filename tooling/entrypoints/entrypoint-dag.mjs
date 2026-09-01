@@ -84,7 +84,6 @@ export const publicFeatureDependencies = Object.freeze({
   comment: [],
   date: [],
   details: [],
-  'find-replace': [],
   footnote: ['combobox'],
   layout: [],
   media: ['dom'],
@@ -112,10 +111,7 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'toc',
 ]);
 
-export const publicReactOnlyEntrypoints = Object.freeze([
-  'cursor',
-  'resizable',
-]);
+export const publicReactOnlyEntrypoints = Object.freeze(['resizable']);
 
 const standardReactDependencies = {
   table: ['dom'],
@@ -123,7 +119,6 @@ const standardReactDependencies = {
 
 const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
-  cursor: ['react'],
   list: ['react'],
   resizable: ['react'],
   table: ['react'],
@@ -240,7 +235,6 @@ export const entrypointDags = {
             'markdown',
             'react-core',
             'combobox',
-            'cursor/react',
             'suggestion',
             'suggestion/react',
             'table',
@@ -315,15 +309,6 @@ export const entrypointDags = {
       'excalidraw/react': client(
         directory('excalidraw/react', ['core', 'excalidraw', 'react-core'])
       ),
-      'floating/react': client(
-        directory('floating/react', ['core', 'react-core'], [], {
-          peerDependencies: [
-            '@floating-ui/core',
-            '@floating-ui/react',
-            'react',
-          ],
-        })
-      ),
       history: headless(directory('history', [], ['plitejs/history'])),
       hyperscript: headless(
         directory('hyperscript', [], ['plitejs/hyperscript'])
@@ -353,13 +338,13 @@ export const entrypointDags = {
         directory('math/react', ['core', 'math', 'react-core'])
       ),
       migrations: headless(directory('migrations', ['core', 'dom', 'history'])),
-      'page-layout': headless(
-        directory('page-layout', [], ['plitejs/page-layout'], {
+      pagination: headless(
+        directory('pagination', [], ['plitejs/pagination'], {
           peerDependencies: ['@chenglou/pretext'],
         })
       ),
-      'page-layout/react': client(
-        directory('page-layout/react', [], ['plitejs/page-layout/react'])
+      'pagination/react': client(
+        directory('pagination/react', [], ['plitejs/pagination/react'])
       ),
       'react-core': client(
         privateDirectory(
@@ -431,8 +416,8 @@ export const entrypointDags = {
         'dom',
         'history',
         'hyperscript',
-        'page-layout',
-        'page-layout/react',
+        'pagination',
+        'pagination/react',
       ],
       react: ['react'],
       'react-core': ['react-core'],
@@ -457,7 +442,6 @@ export const entrypointDags = {
         'emoji/react',
         'excalidraw',
         'excalidraw/react',
-        'floating/react',
         'juice',
         'markdown',
         'math',
@@ -480,13 +464,13 @@ export const entrypointDags = {
       dom: client(directory('dom', ['root'])),
       history: headless(directory('history', ['root'])),
       hyperscript: headless(directory('hyperscript', ['root'])),
-      'page-layout': headless(
-        directory('page-layout', ['root'], [], {
+      pagination: headless(
+        directory('pagination', ['root'], [], {
           peerDependencies: ['@chenglou/pretext'],
         })
       ),
-      'page-layout/react': client(
-        file('page-layout/react', ['root', 'page-layout', 'react'], [], {
+      'pagination/react': client(
+        file('pagination/react', ['root', 'pagination', 'react'], [], {
           peerDependencies: ['react', 'react-dom'],
         })
       ),
@@ -505,7 +489,7 @@ export const entrypointDags = {
       diff: ['diff'],
       dom: ['dom'],
       history: ['history'],
-      layout: ['page-layout', 'page-layout/react'],
+      pagination: ['pagination', 'pagination/react'],
       react: ['react'],
       testing: ['hyperscript', 'testing'],
     },

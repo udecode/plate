@@ -58,7 +58,7 @@ describe('composed toolbar registry', () => {
     [
       'floating-toolbar',
       'FloatingToolbarButtons',
-      'type FloatingToolbarOptions',
+      'export function FloatingToolbar(',
     ],
   ] as const)(
     'keeps %s subscribed only to the read-only context',

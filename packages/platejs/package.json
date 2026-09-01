@@ -89,11 +89,6 @@
       "import": "./dist/csv/index.js",
       "default": "./dist/csv/index.js"
     },
-    "./cursor/react": {
-      "types": "./dist/react/features/cursor/index.d.ts",
-      "import": "./dist/react/features/cursor/index.js",
-      "default": "./dist/react/features/cursor/index.js"
-    },
     "./date": {
       "types": "./dist/features/date/index.d.ts",
       "import": "./dist/features/date/index.js",
@@ -143,16 +138,6 @@
       "types": "./dist/excalidraw/react/index.d.ts",
       "import": "./dist/excalidraw/react/index.js",
       "default": "./dist/excalidraw/react/index.js"
-    },
-    "./floating/react": {
-      "types": "./dist/floating/react/index.d.ts",
-      "import": "./dist/floating/react/index.js",
-      "default": "./dist/floating/react/index.js"
-    },
-    "./find-replace": {
-      "types": "./dist/features/find-replace/index.d.ts",
-      "import": "./dist/features/find-replace/index.js",
-      "default": "./dist/features/find-replace/index.js"
     },
     "./footnote": {
       "types": "./dist/features/footnote/index.d.ts",
@@ -229,15 +214,15 @@
       "import": "./dist/migrations/index.js",
       "default": "./dist/migrations/index.js"
     },
-    "./page-layout": {
-      "types": "./dist/page-layout/index.d.ts",
-      "import": "./dist/page-layout/index.js",
-      "default": "./dist/page-layout/index.js"
+    "./pagination": {
+      "types": "./dist/pagination/index.d.ts",
+      "import": "./dist/pagination/index.js",
+      "default": "./dist/pagination/index.js"
     },
-    "./page-layout/react": {
-      "types": "./dist/page-layout/react/index.d.ts",
-      "import": "./dist/page-layout/react/index.js",
-      "default": "./dist/page-layout/react/index.js"
+    "./pagination/react": {
+      "types": "./dist/pagination/react/index.d.ts",
+      "import": "./dist/pagination/react/index.js",
+      "default": "./dist/pagination/react/index.js"
     },
     "./react": {
       "types": "./dist/react/index.d.ts",
@@ -359,8 +344,8 @@
     "lint:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs history",
     "lint:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs hyperscript",
     "lint:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs migrations",
-    "lint:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs page-layout",
-    "lint:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs page-layout/react",
+    "lint:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs pagination",
+    "lint:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs pagination/react",
     "lint:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react",
     "lint:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs root",
     "lint:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs static",
@@ -376,7 +361,6 @@
     "lint:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comment-react",
     "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs core",
     "lint:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs csv",
-    "lint:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs cursor-react",
     "lint:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date",
     "lint:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date-react",
     "lint:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details",
@@ -387,8 +371,6 @@
     "lint:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji-react",
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
     "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
-    "lint:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find-replace",
-    "lint:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs floating-react",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
     "lint:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs juice",
@@ -441,8 +423,8 @@
     "test:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs history",
     "test:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs hyperscript",
     "test:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
-    "test:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs page-layout",
-    "test:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs page-layout/react",
+    "test:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs pagination",
+    "test:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs pagination/react",
     "test:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react",
     "test:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs root",
     "test:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
@@ -454,7 +436,6 @@
     "test:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comment",
     "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs core",
     "test:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs csv",
-    "test:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs cursor-react",
     "test:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs date",
     "test:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details",
     "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
@@ -462,8 +443,6 @@
     "test:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx",
     "test:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs emoji",
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
-    "test:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find-replace",
-    "test:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs floating-react",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",
     "test:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs juice",
@@ -505,8 +484,8 @@
     "typecheck:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs history",
     "typecheck:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs hyperscript",
     "typecheck:entrypoint:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs migrations",
-    "typecheck:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs page-layout",
-    "typecheck:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs page-layout/react",
+    "typecheck:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs pagination",
+    "typecheck:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs pagination/react",
     "typecheck:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react",
     "typecheck:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs root",
     "typecheck:entrypoint:static": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs static",
@@ -521,7 +500,6 @@
     "typecheck:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comment-react",
     "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs core",
     "typecheck:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs csv",
-    "typecheck:partition:cursor-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs cursor-react",
     "typecheck:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date",
     "typecheck:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date-react",
     "typecheck:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details",
@@ -532,8 +510,6 @@
     "typecheck:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji-react",
     "typecheck:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw",
     "typecheck:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw-react",
-    "typecheck:partition:find-replace": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs find-replace",
-    "typecheck:partition:floating-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs floating-react",
     "typecheck:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote",
     "typecheck:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote-react",
     "typecheck:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs juice",
@@ -607,8 +583,6 @@
     "@chenglou/pretext": "^0.0.7",
     "@emoji-mart/data": "^1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
-    "@floating-ui/core": "^1.6.7",
-    "@floating-ui/react": "^0.26.23",
     "@testing-library/react": "16.3.0",
     "@types/katex": "0.16.7",
     "@types/lodash": "^4.17.13",
@@ -658,8 +632,6 @@
     "@chenglou/pretext": "^0.0.7",
     "@emoji-mart/data": ">=1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
-    "@floating-ui/core": "^1.6.7",
-    "@floating-ui/react": "^0.26.23",
     "@types/papaparse": "^5.3.16",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
@@ -703,12 +675,6 @@
       "optional": true
     },
     "@excalidraw/excalidraw": {
-      "optional": true
-    },
-    "@floating-ui/core": {
-      "optional": true
-    },
-    "@floating-ui/react": {
       "optional": true
     },
     "@types/papaparse": {

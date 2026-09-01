@@ -50,7 +50,7 @@ const createGraph = (
       defineExtension(`${prefix}-${index}`, {
         ...(lifecycle
           ? {
-              activate(_editor, context) {
+              activate(context) {
                 lifecycle.activations += 1;
                 context.onCleanup(() => {
                   lifecycle.cleanups += 1;
@@ -139,7 +139,12 @@ const rows = cohorts.map(
         removedRegistry.extensions.size,
         removedRegistry.extensionsByDescriptor.size,
         removedRegistry.dependencyOrder.length,
-        removedRegistry.outputs.size,
+        removedRegistry.apiGroups.size,
+        removedRegistry.contributions.size,
+        removedRegistry.commands.byDescriptor.size,
+        removedRegistry.commands.byId.size,
+        removedRegistry.reads.byDescriptor.size,
+        removedRegistry.reads.byId.size,
         removedRegistry.stateGroups.size,
         removedRegistry.txGroups.size
       );

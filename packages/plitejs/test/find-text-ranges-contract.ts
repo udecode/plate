@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 
-import { type Element, NodeApi, type NodeTextRangeRoot } from 'plitejs';
+import {
+  createEditor,
+  defineExtension,
+  type Element,
+  NodeApi,
+  type NodeTextRangeRoot,
+  schema,
+} from 'plitejs';
 
 const root = (children: Element['children']): Element => ({
   type: 'root',
@@ -42,6 +49,42 @@ it('does not join separate text runs', () => {
     ),
     []
   );
+});
+
+it('joins text through schema inline descendants for live editor roots', () => {
+  const editor = createEditor({
+    extensions: [
+      defineExtension('links', {
+        schema: {
+          elements: {
+            link: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              inline: true,
+            },
+          },
+        },
+      }),
+    ],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'hello ' },
+          { type: 'link', children: [{ text: 'world' }] },
+          { text: ' again' },
+        ],
+      },
+      { type: 'paragraph', children: [{ text: 'outside' }] },
+    ],
+  });
+
+  assert.deepEqual(NodeApi.findTextRanges(editor, 'hello world again'), [
+    {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 2], offset: 6 },
+    },
+  ]);
+  assert.deepEqual(NodeApi.findTextRanges(editor, 'againoutside'), []);
 });
 
 it('accepts snapshot roots with children only', () => {

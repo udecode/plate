@@ -7,8 +7,6 @@
     "@ai-sdk/react@^3.0.0",
     "@emoji-mart/data@>=1.2.0",
     "@excalidraw/excalidraw@0.18.0",
-    "@floating-ui/core@^1.6.7",
-    "@floating-ui/react@^0.26.23",
     "@tanstack/react-virtual@^3.13.25",
     "@types/papaparse@^5.3.16",
     "ai@^6.0.0",

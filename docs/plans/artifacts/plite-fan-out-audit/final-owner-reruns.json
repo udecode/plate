@@ -1,0 +1,825 @@
+{
+  "source": "docs/plans/artifacts/plite-fan-out-audit/final-source-membership-before.json",
+  "status": "29 pass; complete schema target deferred for separate Plate compiler budget. Its exact unchanged rerun passes runtime guards; earlier clipboard timing misses remain recorded.",
+  "targets": [
+    {
+      "id": "core-node-transforms",
+      "command": "PLITE_NODE_TRANSFORMS_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_node_replacement_locality_failures=0",
+        "METRIC plite_node_replacement_worst_p95_ms=41.89",
+        "METRIC plite_node_split_locality_failures=0",
+        "METRIC plite_node_split_worst_p95_ms=0.01",
+        "METRIC plite_node_split_full_token_reads=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-node-transform-benchmark.json",
+          "sha256": "441d1c2a8261b02b3166c9d9ca60fc444ca845fe55e3b99aa6d396300999d46f",
+          "bytes": 9068,
+          "mtime": "2026-08-31T19:46:58.311Z",
+          "config": {
+            "blockCount": 120,
+            "selectionBlocks": 24
+          }
+        }
+      ]
+    },
+    {
+      "id": "collab-readiness",
+      "command": "PLITE_COLLAB_READINESS_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC collab_replacement_max_ms=2982.58",
+        "METRIC collab_replacement_max_node_reads_per_block=28.9999",
+        "METRIC collab_readiness_guard_failures=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-collab-readiness-benchmark.json",
+          "sha256": "4eeaa6352bbaf241e2cc50974a4dd5456912265a7576d25df47c41843bafb03a",
+          "bytes": 16847,
+          "mtime": "2026-08-31T19:49:18.424Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "core-anchors-projection",
+      "command": "PLITE_ANCHORS_PROJECTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs --output=tmp/plite-anchors-projection-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_anchor_state_distributed_10000_p95_ms=55.941375",
+        "METRIC plite_anchor_state_pathological_10000_p95_ms=27.812541",
+        "METRIC plite_anchor_state_max_unrelated_change_visits=0",
+        "METRIC plite_anchor_state_max_cold_creation_ms=19.282125",
+        "METRIC plite_anchor_state_max_bulk_release_ms=23.028417",
+        "METRIC plite_anchor_state_correctness_failures=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-anchors-projection-benchmark.json",
+          "sha256": "abc25545b533b15e2e06567a851180b8c1013765ce0a1e394a08089dfbc1e925",
+          "bytes": 14313,
+          "mtime": "2026-08-31T19:49:27.278Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "core-query-anchor-observation",
+      "command": "PLITE_QUERY_ANCHOR_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_commit_query_guard_failures=0",
+        "METRIC plite_commit_query_worst_p95_ms=0.23",
+        "METRIC plite_selection_query_worst_p95_ms=0.04",
+        "METRIC plite_structural_query_worst_p95_ms=0.45",
+        "METRIC plite_immutable_index_cached_reads_p95_ms=0.01",
+        "METRIC plite_cold_snapshot_index_lookup_p95_ms=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-query-anchor-observation-benchmark.json",
+          "sha256": "c2d183c431d03fa02e556317db3e7f5d5c7301f13be44ba5a60fd4145726df1c",
+          "bytes": 17501,
+          "mtime": "2026-08-31T19:49:55.052Z",
+          "config": {
+            "blockCount": 200,
+            "queryOps": 200,
+            "anchorCount": 50,
+            "writeOps": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "dom-phase-scheduler",
+      "command": "PLITE_DOM_PHASE_SCHEDULER_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/dom-phase-scheduler.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_dom_phase_scheduler_guard_failures=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-dom-phase-scheduler-benchmark.json",
+          "sha256": "c4f4eb378ff2520dc6e2fed1a3a058438ebc3952a9173e2abfdb11b5d44735b6",
+          "bytes": 9090,
+          "mtime": "2026-08-31T19:49:56.737Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "react-stable-id-overlay-source",
+      "command": "PLITE_OVERLAY_SOURCE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_mapped_source_trusted_one_id_p95_ms=0.16",
+        "METRIC plite_mapped_source_work_pass=1",
+        "METRIC plite_composed_source_worst_p95_ms=0.02"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-stable-id-overlay-source-benchmark.json",
+          "sha256": "5963f54325dc0726b94f571431f931e6cefcb698f48b07bfffba3ef07c72dbc6",
+          "bytes": 33128,
+          "mtime": "2026-08-31T19:49:59.669Z",
+          "config": {
+            "sampleCount": 15,
+            "sizes": [
+              100,
+              1000,
+              10000,
+              100000
+            ],
+            "warmupCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "transient-projection-scalability",
+      "command": "TRANSIENT_PROJECTION_BENCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts packages/platejs/scripts/transient-projection/benchmark-scalability.ts --output=docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC transient_projection_hard_guard_failures=0",
+        "METRIC transient_projection_worst_current_p95_ms=6.797",
+        "METRIC transient_projection_yjs_keyed_stress_runtime_wakes=1",
+        "METRIC transient_projection_find_pathological_current_p95_ms=5.885333",
+        "METRIC transient_projection_find_pathological_baseline_p95_ms=735.03375",
+        "METRIC transient_projection_teardown_retained_registrations=0"
+      ],
+      "artifacts": [
+        {
+          "path": "docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+          "sha256": "9c9204341851dee157f2f92cf22996433441b87ae4ba81f57c16206c7ff62cc4",
+          "bytes": 154520,
+          "mtime": "2026-08-31T19:50:24.027Z",
+          "config": {
+            "cursorCohorts": [
+              1,
+              10,
+              100,
+              1000
+            ],
+            "findCohorts": [
+              {
+                "blocks": 100,
+                "id": "normal",
+                "matches": 100,
+                "pathological": false,
+                "textPerBlock": 100
+              },
+              {
+                "blocks": 1000,
+                "id": "large",
+                "matches": 1000,
+                "pathological": false,
+                "textPerBlock": 100
+              },
+              {
+                "blocks": 1,
+                "id": "stress-single-leaf",
+                "matches": 10000,
+                "pathological": false,
+                "textPerBlock": 100000
+              },
+              {
+                "blocks": 10000,
+                "id": "pathological-leaf-fanout",
+                "matches": 10000,
+                "pathological": true,
+                "textPerBlock": 10
+              }
+            ],
+            "frameBudgetMs": 16.67,
+            "packetCount": 5,
+            "samplesPerPacket": 20,
+            "warmupCount": 20,
+            "widgetCohorts": [
+              1,
+              10,
+              100,
+              1000,
+              10000
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "core-document-change-current",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/document-change.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_document_change_guard_failures=0",
+        "METRIC plite_document_change_text_batch_p95_ms=6.42"
+      ],
+      "artifacts": [
+        {
+          "path": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
+          "sha256": "4b1099872020b8e6446e768c1af79a36082e1c76d76d76b83b7dc63687a79468",
+          "bytes": 124320,
+          "mtime": "2026-08-31T19:52:02.905Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-yjs-event-change-bridge",
+      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_yjs_event_change_local_distance_ratio=1.1660062082032427",
+        "METRIC plite_yjs_event_change_sync_distance_ratio=1.1765088171959437",
+        "METRIC plite_yjs_event_change_runtime_ids_p95_ms=0.25558300000011513",
+        "METRIC plite_yjs_event_change_batch_detached_transactions=0",
+        "METRIC plite_yjs_event_change_batch_sync_p95_ms=193.43466699999954",
+        "METRIC plite_yjs_event_change_property_context_failures=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-yjs-event-change-bridge-benchmark.json",
+          "sha256": "f512a43301e739543847f1c573ac2d53f989e6558882f287f7b9d041852f9ea7",
+          "bytes": 68275,
+          "mtime": "2026-08-31T19:52:21.641Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "core-yjs-collaboration-current",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC yjs_multi_editor_sync_p95_ms=74.72",
+        "METRIC yjs_multi_editor_sync_work_p95_ms=72.44",
+        "METRIC yjs_multi_editor_sync_verification_p95_ms=4.7",
+        "METRIC yjs_awareness_updates_p95_ms=37.16",
+        "METRIC yjs_awareness_updates_work_p95_ms=37.13",
+        "METRIC yjs_awareness_updates_verification_p95_ms=0.04",
+        "METRIC yjs_reconnect_p95_ms=103.14",
+        "METRIC yjs_reconnect_work_p95_ms=101.65",
+        "METRIC yjs_reconnect_verification_p95_ms=1.56",
+        "METRIC yjs_large_doc_sync_p95_ms=215.2",
+        "METRIC yjs_large_doc_sync_work_p95_ms=199.08",
+        "METRIC yjs_large_doc_local_edit_p95_ms=66.55",
+        "METRIC yjs_large_doc_remote_apply_p95_ms=133.33",
+        "METRIC yjs_large_doc_remote_encode_p95_ms=0.36",
+        "METRIC yjs_large_doc_remote_sync_p95_ms=133.64",
+        "METRIC yjs_large_doc_sync_verification_p95_ms=22.4",
+        "METRIC yjs_sparse_top_level_move_p95_ms=16.15",
+        "METRIC yjs_sparse_top_level_move_work_p95_ms=16.11",
+        "METRIC yjs_sparse_top_level_move_verification_p95_ms=0.06",
+        "METRIC yjs_collaboration_worst_p95_ms=215.2",
+        "METRIC yjs_collaboration_worst_work_p95_ms=199.08",
+        "METRIC yjs_collaboration_worst_verification_p95_ms=22.4",
+        "METRIC yjs_correctness_failures=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-yjs-collaboration-benchmark.json",
+          "sha256": "46259a60330db980bf1f6fb9edcea31302f1835d04e49506fd937d85ccdc0c0d",
+          "bytes": 7720,
+          "mtime": "2026-08-31T19:52:34.772Z",
+          "config": {
+            "awarenessUpdates": 100,
+            "iterations": 5,
+            "largeBlocks": 1000,
+            "largeOps": 120,
+            "moveBlocks": 1000,
+            "peerCount": 4,
+            "reconnectOps": 40,
+            "syncBlocks": 100,
+            "syncOps": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "clipboard-large-payload",
+      "command": "PLITE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 PLITE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs --output=tmp/slate-clipboard-large-payload-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_clipboard_full_copy_identity_builds=0",
+        "METRIC plite_clipboard_full_copy_property_visits=0",
+        "METRIC plite_clipboard_correctness_failures=0",
+        "METRIC plite_clipboard_cut_edit_inspection_p95_ms=6.54",
+        "METRIC plite_clipboard_cut_edit_setup_p95_ms=1400.8",
+        "METRIC plite_clipboard_cut_changed_token_span_max=36",
+        "METRIC plite_clipboard_cut_changed_top_level_span_max=1",
+        "METRIC plite_clipboard_cut_retained_existing_block_ratio=0.99996",
+        "METRIC plite_clipboard_decode_p95_ms=3.1",
+        "METRIC plite_clipboard_encode_p95_ms=2.77",
+        "METRIC plite_clipboard_fit_p95_ms=61.52",
+        "METRIC plite_clipboard_gc_available=1",
+        "METRIC plite_clipboard_host_parse_p95_ms=2.82",
+        "METRIC plite_clipboard_host_serialize_p95_ms=0.7",
+        "METRIC plite_clipboard_issue_budget_failures=0",
+        "METRIC plite_clipboard_plain_text_paste_10000_p50_ms=46.39",
+        "METRIC plite_clipboard_plate_codec_compile_p95_ms=16.56",
+        "METRIC plite_clipboard_plate_codec_decode_10000_p95_ms=29.44",
+        "METRIC plite_clipboard_plate_codec_parse_insert_10000_p95_ms=662.47",
+        "METRIC plite_clipboard_plate_codec_reconfigure_p95_ms=1.42",
+        "METRIC plite_clipboard_plate_codec_serialize_10000_p95_ms=21.77",
+        "METRIC plite_clipboard_populated_full_selection_copy_10000_p50_ms=16.05",
+        "METRIC plite_clipboard_populated_plain_text_paste_10000_p50_ms=55.59",
+        "METRIC plite_clipboard_max_changed_token_span=608890",
+        "METRIC plite_clipboard_max_changed_top_level_span=9999",
+        "METRIC plite_clipboard_peak_heap_delta_bytes=205628284",
+        "METRIC plite_clipboard_peak_retained_heap_delta_bytes=52490356",
+        "METRIC plite_clipboard_populated_paste_inspection_p95_ms=2.06",
+        "METRIC plite_clipboard_populated_paste_setup_p95_ms=277.6",
+        "METRIC plite_clipboard_slice_commit_p95_ms=72.61",
+        "METRIC plite_clipboard_worst_issue_p95_ms=61.86"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-clipboard-large-payload-benchmark.json",
+          "sha256": "d11b8e9a8191bcd61eacc01cab1971f8b6b7188bc15d8857a6cbb03f1e595c2e",
+          "bytes": 109131,
+          "mtime": "2026-08-31T20:02:40.721Z",
+          "config": {
+            "authorityArtifact": true,
+            "hugeCutBlocks": 50000,
+            "hugeCutIterations": 3,
+            "iterations": 3,
+            "issueTargetIterations": 3,
+            "issueTargetStressLines": 10000,
+            "issueTargetsEnabled": true,
+            "processIsolation": "support-cut-issue",
+            "stressLineCount": 2000,
+            "stressIterations": 1,
+            "workerPids": {
+              "cut": 13207,
+              "issue": 13196,
+              "support": 13283
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "plite-schema-architecture",
+      "command": "PLITE_SCHEMA_ARCHITECTURE_STRICT=1 PLITE_SCHEMA_TYPECHECK_BUDGET=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts --output=tmp/plite-schema-architecture-benchmark.json",
+      "exitCode": 1,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/plite-schema-architecture-benchmark.json",
+          "sha256": "c41b6e9c2651c919c79f36d89509036083816703a7282421c104fd8ae4c81be2",
+          "bytes": 22146,
+          "mtime": "2026-08-31T20:11:15.254Z",
+          "config": null,
+          "runtimeClipboard": {
+            "documentWidthRatio": 0.5543071754563894,
+            "hostSerializationWidthRatio": 1.1301060244924797,
+            "iterations": 1,
+            "rows": [
+              {
+                "blocks": 1000,
+                "rootValidationPropertyReads": 0,
+                "fragmentNs": {
+                  "p50": 126208,
+                  "p95": 213542,
+                  "p99": 213542
+                },
+                "fragmentReads": 5,
+                "hostWriteNs": {
+                  "p50": 12167,
+                  "p95": 48875,
+                  "p99": 48875
+                },
+                "hostWrites": 5,
+                "openEnd": 1,
+                "openStart": 1,
+                "payloadBytes": 918,
+                "selectedNodes": 2
+              },
+              {
+                "blocks": 50000,
+                "rootValidationPropertyReads": 0,
+                "fragmentNs": {
+                  "p50": 69958,
+                  "p95": 120209,
+                  "p99": 120209
+                },
+                "fragmentReads": 5,
+                "hostWriteNs": {
+                  "p50": 13750,
+                  "p95": 29917,
+                  "p99": 29917
+                },
+                "hostWrites": 5,
+                "openEnd": 1,
+                "openStart": 1,
+                "payloadBytes": 918,
+                "selectedNodes": 2
+              }
+            ]
+          },
+          "typecheck": [
+            {
+              "checkMs": 1287,
+              "instantiations": 6707256,
+              "memoryBytes": 1043371008,
+              "totalMs": 1325,
+              "types": 1189042,
+              "plugins": 100
+            },
+            {
+              "checkMs": 2826,
+              "instantiations": 10468015,
+              "memoryBytes": 1406939136,
+              "totalMs": 2864,
+              "types": 1607871,
+              "plugins": 1000
+            }
+          ],
+          "strictValidation": {
+            "requested": true,
+            "status": "measured"
+          }
+        }
+      ]
+    },
+    {
+      "id": "plite-read-view-lifecycle",
+      "command": "PLITE_READ_VIEW_LIFECYCLE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.ts --output=tmp/plite-read-view-lifecycle-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_read_view_lifecycle_width_ratio=0.8996577397218685",
+        "METRIC plite_read_view_lifecycle_warm_factory_calls=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-read-view-lifecycle-benchmark.json",
+          "sha256": "af5e8252b6159701ccb3e0d773dfa32b5a6bfb864cb9f3123c8d7501dee2d535",
+          "bytes": 1050,
+          "mtime": "2026-08-31T20:05:11.901Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-fit-content-locality",
+      "command": "PLITE_FIT_CONTENT_LOCALITY_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-fit-content-locality-benchmark.ts --output=tmp/plite-fit-content-locality-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_fit_content_document_width_ratio=0.9226947521140124",
+        "METRIC plite_fit_content_schema_width_ratio=1.0065319977477871",
+        "METRIC plite_fit_content_50000_blocks_p50_ns=128335",
+        "METRIC plite_fit_content_100_schema_types_p50_ns=127536.832",
+        "METRIC plite_fit_content_100_slice_nodes_p50_ns=3247284",
+        "METRIC plite_fit_content_total_measured_calls=30000"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-fit-content-locality-benchmark.json",
+          "sha256": "4972022c1f528d64051acae6b127f8341d56717f95b1cf4911902e4cf9de6f85",
+          "bytes": 4790,
+          "mtime": "2026-08-31T20:05:28.298Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-correction-worklist",
+      "command": "PLITE_CORRECTION_WORKLIST_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-correction-worklist-benchmark.ts --output=tmp/plite-correction-worklist-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_correction_worklist_max_touched_targets=2",
+        "METRIC plite_correction_worklist_size_ratio=34.343554434309766"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-correction-worklist-benchmark.json",
+          "sha256": "5a747d82c40ebcd1652ef3bcc3277247558699a9cc1fdb3bbf850fcfd5c14e0c",
+          "bytes": 1882,
+          "mtime": "2026-08-31T20:05:30.645Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-schema-construction",
+      "command": "PLITE_SCHEMA_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts --output=tmp/plite-schema-construction-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_schema_construction_immutable_publication_diagnostic_ratio=245.75558947378505",
+        "METRIC plite_schema_construction_max_changed_span=2",
+        "METRIC plite_schema_construction_boundary_identity_preserved=1",
+        "METRIC plite_schema_construction_compiled_schema_active=1"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-schema-construction-benchmark.json",
+          "sha256": "20e7a20357e74267e3a9d9e3249937b0161aef098cfa371eda501feb8f62cfaa",
+          "bytes": 1834,
+          "mtime": "2026-08-31T20:05:45.397Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-content-slice-value",
+      "command": "PLITE_CONTENT_SLICE_VALUE_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-content-slice-value-benchmark.ts --output=tmp/plite-content-slice-value-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_content_slice_value_trusted_identity_reuse=1",
+        "METRIC plite_content_slice_value_trusted_preparation_reuse=1",
+        "METRIC plite_content_slice_value_source_alias_free=1",
+        "METRIC plite_content_slice_value_deeply_frozen=1",
+        "METRIC plite_content_slice_value_closed_10000_p50_ms=7.911749999999984",
+        "METRIC plite_content_slice_value_from_json_10000_p50_ms=7.7342499999999745",
+        "METRIC plite_content_slice_value_trusted_10000_p50_ns=3.5271",
+        "METRIC plite_content_slice_value_trusted_preparation_10000_p50_ns=6.1104",
+        "METRIC plite_content_slice_value_trusted_size_ratio=0.8503339039031799",
+        "METRIC plite_content_slice_value_trusted_preparation_size_ratio=1.1802860702523639"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-content-slice-value-benchmark.json",
+          "sha256": "5067f87ff9efe9f7a03331db77849e8fdae4ab32fc997a5f6cf1426ae15af9c2",
+          "bytes": 4479,
+          "mtime": "2026-08-31T20:05:46.165Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-command-dispatch",
+      "command": "PLITE_COMMAND_DISPATCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.ts --output=tmp/plite-command-dispatch-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_command_dispatch_worst_budget_ratio=0.381",
+        "METRIC plite_command_dispatch_simple_large_document_p50_ratio=1.131",
+        "METRIC plite_command_dispatch_continuation_failures=0",
+        "METRIC plite_command_dispatch_reference_parity=1"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-command-dispatch-benchmark.json",
+          "sha256": "c803124d1577808a3631fa7b0d4c554abcc1b4f4988d45af9bd347c8909f71f7",
+          "bytes": 42131,
+          "mtime": "2026-08-31T20:05:55.522Z",
+          "config": {
+            "blocks": [
+              100,
+              20000
+            ],
+            "continuationProofDispatches": 3,
+            "handlerDepths": [
+              0,
+              1,
+              8,
+              32
+            ],
+            "laneKinds": [
+              "simple",
+              "prefix"
+            ],
+            "prefixLargeBatch": 1,
+            "prefixSmallBatch": 10,
+            "referenceBatch": 5000,
+            "samples": 21,
+            "simpleBatch": 1000
+          }
+        }
+      ]
+    },
+    {
+      "id": "plite-extension-graph",
+      "command": "PLITE_EXTENSION_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-extension-graph-benchmark.ts --output=tmp/plite-extension-graph-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_extension_graph_worst_budget_ratio=0.10355191700000001",
+        "METRIC plite_extension_graph_removed_registry_records=0"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-extension-graph-benchmark.json",
+          "sha256": "16c7f051129a3a625dc92d5f4d2455151e74eb820b9fe2d8bcf40318166ee602",
+          "bytes": 3015,
+          "mtime": "2026-08-31T20:05:57.397Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-history-depth",
+      "command": "PLITE_HISTORY_DEPTH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts --output=tmp/plite-history-depth-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_history_depth_median_ratio=0.852422001803688",
+        "METRIC plite_history_depth_p95_ratio=0.6796798438262484"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-history-depth-benchmark.json",
+          "sha256": "ae6569796d2a9aac59626fb215b6f786ae4f3a0aeda9505aa35a4106d0c013ce",
+          "bytes": 1243,
+          "mtime": "2026-08-31T20:05:58.094Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "plite-history-retained-memory",
+      "command": "PLITE_HISTORY_RETAINED_MEMORY_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_history_retained_memory_json_ratio=2.0582337867444975",
+        "METRIC plite_history_retained_memory_gc_available=1"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-history-retained-memory-benchmark.json",
+          "sha256": "fac8b8e7ca3cab4cc9f74cd0e3590e7b1c4145cb5562dfa884363dc29f9343f1",
+          "bytes": 4432,
+          "mtime": "2026-08-31T20:06:06.714Z",
+          "config": {
+            "existingBlocks": 5000,
+            "replacementBlocks": 5000,
+            "textBytes": 96,
+            "iterations": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "plite-transaction-execution",
+      "command": "PLITE_TRANSACTION_EXECUTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/transaction-execution.mjs",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_transaction_mixed_batch_median_ratio=0.7789473684210526",
+        "METRIC plite_transaction_mixed_batch_p95_ratio=0.77"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-transaction-execution-benchmark.json",
+          "sha256": "29b378c638f66608c7fb18e854e0801b86a4b0116468ae60783bcc82001657ae",
+          "bytes": 49201,
+          "mtime": "2026-08-31T20:06:10.567Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "core-resolved-token-cursor",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/resolved-token-cursor.mjs --output=tmp/plite-resolved-token-cursor-benchmark.json",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_resolved_token_cursor_worst_large_stress_median_ratio=0.0051",
+        "METRIC plite_resolved_token_cursor_worst_large_stress_p95_ratio=0.0358"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/plite-resolved-token-cursor-benchmark.json",
+          "sha256": "0033785924fa843159cebd632be07b7a1b28b8083c24f4298e428269b76f503e",
+          "bytes": 66040,
+          "mtime": "2026-08-31T20:06:22.724Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "core-normalization-current",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/normalization.mjs",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/slate-normalization-benchmark.json",
+          "sha256": "e148337f735c5ffbdc89248ef7a068636437b6e1e69979d6704f6bdd334c2865",
+          "bytes": 985,
+          "mtime": "2026-08-31T20:06:27.806Z",
+          "config": {
+            "explicitBlocks": 250,
+            "observedBlocks": 500,
+            "observedOps": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "core-text-selection",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/text-selection.mjs",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/slate-text-selection-benchmark.json",
+          "sha256": "5aee0304c59f12e02d8d541d81ed37eda76c66939ce2eb88781e7b07e32434e3",
+          "bytes": 1965,
+          "mtime": "2026-08-31T20:06:28.844Z",
+          "config": {
+            "blockCount": 120,
+            "steps": 40
+          }
+        }
+      ]
+    },
+    {
+      "id": "core-editor-store",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/editor-store.mjs",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/slate-editor-store-benchmark.json",
+          "sha256": "0b62f416b436dcc03638971fce8859e202dc20a2f5295fe90e729df4096008d0",
+          "bytes": 1536,
+          "mtime": "2026-08-31T20:06:35.818Z",
+          "config": {
+            "blockCount": 120,
+            "steps": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "core-update-policy-current",
+      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/update-policy.mjs",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/bench-plite-update-policy.json",
+          "sha256": "279ee830608ad1405bbc4b15fcc2ca3173206dfd9fba9aaf32050a9288269e78",
+          "bytes": 18720,
+          "mtime": "2026-08-31T20:06:39.918Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "react-runtime-node-fanout",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/runtime-node-fanout.tsx",
+      "exitCode": 0,
+      "metrics": [
+        "METRIC plite_react_runtime_node_fanout_count=0",
+        "METRIC plite_react_runtime_node_local_root_order_fanout_count=1",
+        "METRIC plite_react_runtime_node_full_replace_fanout_count=1",
+        "METRIC plite_react_runtime_node_notify_count=1",
+        "METRIC plite_react_runtime_node_render_count=6",
+        "METRIC plite_react_runtime_node_max_elapsed_ms=44.84"
+      ],
+      "artifacts": [
+        {
+          "path": "tmp/slate-react-runtime-node-fanout-benchmark.json",
+          "sha256": "216dcc19531cc2c1ac88a6c46d1ab16f0317d87b8dcca2d593f3931f4c8c7589",
+          "bytes": 10936,
+          "mtime": "2026-08-31T20:06:41.183Z",
+          "config": null
+        }
+      ]
+    },
+    {
+      "id": "react-rerender-breadth",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/slate-react-rerender-breadth-benchmark.json",
+          "sha256": "aa0ff1422af8990319c483a7acf6f03a256bdefe9272358c478b9494526865a6",
+          "bytes": 14452,
+          "mtime": "2026-08-31T20:06:41.955Z",
+          "config": {
+            "iterations": 5,
+            "leafCount": 24,
+            "nestedDepth": 12,
+            "selectionOps": 20,
+            "targetLeafIndex": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx",
+      "exitCode": 0,
+      "metrics": [],
+      "artifacts": [
+        {
+          "path": "tmp/slate-react-huge-document-overlays-benchmark.json",
+          "sha256": "21ce415006e06d420b1e582f8c551499ef61658bd84ce948006fd100b7f8901f",
+          "bytes": 9148,
+          "mtime": "2026-08-31T20:06:43.654Z",
+          "config": {
+            "overscan": 1,
+            "blockCount": 200,
+            "farBlockIndex": 96,
+            "farSegmentIndex": 3,
+            "segmentSize": 32,
+            "iterations": 5
+          },
+          "archivePath": "docs/plans/artifacts/plite-fan-out-audit/react-overlays-final-200.json"
+        }
+      ]
+    }
+  ]
+}

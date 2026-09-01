@@ -33,7 +33,7 @@ Plate
 
 ## 文档
 
-您可以通过查看我们的[文档](https://platejs.org/cn/docs?locale=cn)了解更多关于Plate的信息。
+您可以通过查看我们的[文档](https://platejs.org/cn/docs)了解更多关于Plate的信息。
 
 ## 贡献
 

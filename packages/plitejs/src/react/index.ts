@@ -195,7 +195,19 @@ export {
   type UsePliteWidgetStoreOptions,
   usePliteWidgetStore,
 } from './hooks/use-plite-widget-store';
-export { usePliteWidget, usePliteWidgets } from './hooks/use-plite-widgets';
+export {
+  type UsePliteWidgetGeometryOptions,
+  usePliteWidgetGeometry,
+} from './hooks/use-plite-widget-geometry';
+export {
+  usePliteWidget,
+  usePliteWidgetIds,
+  usePliteWidgets,
+} from './hooks/use-plite-widgets';
+export {
+  type UseSelectionGeometryOptions,
+  useSelectionGeometry,
+} from './hooks/use-selection-geometry';
 export {
   type StateFieldSetter,
   type UseStateFieldValueOptions,
@@ -232,12 +244,13 @@ export { PliteReactUpdatePolicy } from './update-policy';
 export type {
   PliteResolvedWidget,
   PliteWidget,
-  PliteWidgetAnchor,
   PliteWidgetSnapshot,
   PliteWidgetStore,
   PliteWidgetStoreMetrics,
   PliteWidgetStoreOptions,
+  PliteWidgetTarget,
 } from './widget-store';
+export type { PliteViewportRect, PliteWidgetGeometry } from './widget-geometry';
 export type {
   PliteViewSourceError,
   PliteViewSourceErrorSink,

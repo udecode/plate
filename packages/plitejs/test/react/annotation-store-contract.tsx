@@ -187,6 +187,47 @@ const ProjectedAnnotationHarness = ({
 };
 
 describe('plite-react annotation store contract', () => {
+  test('document commits do not scan a stable annotation source', () => {
+    const count = 1000;
+    const editor = createEditor({
+      initialValue: Array.from({ length: count }, () => ({
+        type: 'paragraph',
+        children: [{ text: 'text' }],
+      })),
+    });
+    let idReads = 0;
+    const annotations = Array.from({ length: count }, (_, index) => ({
+      anchor: createRangeAnchor(editor, {
+        anchor: { path: [index, 0], offset: 0 },
+        focus: { path: [index, 0], offset: 4 },
+      }),
+      get id() {
+        idReads += 1;
+        return `annotation-${index}`;
+      },
+    }));
+    const store = createPliteAnnotationStore(editor, () => annotations);
+
+    idReads = 0;
+    editor.update.text.insert('x', { at: { path: [0, 0], offset: 0 } });
+    expect(idReads).toBeLessThanOrEqual(8);
+    expect(store.getAnnotation('annotation-999')?.range).toEqual({
+      anchor: { path: [999, 0], offset: 0 },
+      focus: { path: [999, 0], offset: 4 },
+    });
+
+    idReads = 0;
+    editor.update.text.insert('y', { at: { path: [999, 0], offset: 0 } });
+    expect(idReads).toBeLessThanOrEqual(8);
+    expect(store.getAnnotation('annotation-999')?.range).toEqual({
+      anchor: { path: [999, 0], offset: 1 },
+      focus: { path: [999, 0], offset: 5 },
+    });
+
+    store.destroy();
+    annotations.forEach((annotation) => annotation.anchor.release());
+  });
+
   test('one annotation entity drives inline projection and sidebar state from one store', async () => {
     const editor = createEditor();
 

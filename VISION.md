@@ -28,6 +28,7 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 - No fake aliases, no fake compatibility, no hidden migration story in docs.
 - Public docs describe the current API only.
 - Names, flags, config keys, output shapes, docs examples, and workflow conventions are API surface. Add fewer conventions, make them clearer, and do not churn them casually.
+- Public subpaths use the shortest truthful domain noun. Prefer one established word when it completely names the user job; never shorten into ambiguity.
 - Public API design starts from ideal call sites. Current code, compatibility, machinery, ecosystem precedent, and accepted plans are evidence and adoption cost, not requirements. Use `best-api` to choose or review the target before a layer plan turns it into implementation.
 - Do not hide latency behind debounce, delayed repair, or benchmark tricks.
 - Do not call browser/editor behavior correct from model-only proof.
@@ -44,6 +45,7 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 - Do not fix a Plate product concern by polluting Slate core.
 - Do not hide a Slate primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
+- Canonical editor state and mounted-view presentation have different owners. When an Editable can derive transient paint from its own DOM lifecycle, Plite React owns that behavior and a literal DOM protocol. Plate inherits it; copied product UI marks external focus targets and styles neutral output hooks. Add a controlled view input only when user intent cannot be derived from the mounted view or DOM. Never create editor-global plugin state or a parallel state carrier for a view-local presentation choice.
 
 ### Evidence Order
 
@@ -100,7 +102,7 @@ Plite is the raw editor substrate. It must stay unopinionated, precise, and bori
 - Extension-owned document capabilities are `read` and `update`; pure core-read policy is `readMiddleware`. One descriptor-owned `api` projects to `editor.api.<name>` and `editor.extension(Extension).api`; do not root-merge methods or add `getApi`. The `api` field is always a one-context-object factory, including for context-free values.
 - Lifecycle and host/DOM events share one root `on.*` family with prefixless child names. There is no second `handlers` bucket.
 - Behavior specs define law; ordinary plugin and extension arrays compose accepted capabilities. Name a reusable kit only after real reuse, and treat runtime control as a separate proven job. Do not add a behavior-profile DSL.
-- Page layout is not core editor truth. Active caret, selection, and composition stay on the native/browser editing path.
+- Pagination is not core editor truth. Active caret, selection, and composition stay on the native/browser editing path.
 - Browser editing claims require model, DOM, selection/caret where observable, focus owner, legal trace, replayability, and follow-up typing.
 - Explicit navigation scrolling is the final post-selection DOM write; selection preservation must never restore over it.
 - Behavior before perf. Visual proof before green visible-UI claims. Keep perf packets only when correctness stays green. Run measured diagnosis and optimization through `$benchmark`.

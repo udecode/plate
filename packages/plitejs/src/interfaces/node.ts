@@ -6,7 +6,7 @@ import {
   type Text,
   TextApi,
 } from '..';
-import { hasEditorRuntime } from '../core/editor-runtime';
+import { getEditorSchema, hasEditorRuntime } from '../core/editor-runtime';
 import { getDefined } from '../internal/get-defined';
 import { formatDebugValue } from '../utils/format-debug-value';
 import type { AnyEditor as EditorType, Value } from './editor';
@@ -256,9 +256,10 @@ export interface NodeInterface {
   fragment: (root: Ancestor, range: Range) => readonly Descendant[];
 
   /**
-   * Find ranges for a text query inside text leaves or text-only ancestor
-   * children. String queries are literal; use a regular expression or callback
-   * for custom matching.
+   * Find ranges for a text query inside text runs. Live editor roots use the
+   * compiled schema to join text through inline descendants without crossing
+   * block boundaries. String queries are literal; use a regular expression or
+   * callback for custom matching.
    */
   findTextRanges: (
     root: Node | NodeTextRangeRoot,
@@ -794,6 +795,24 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
     options: NodeFindTextRangesOptions = {}
   ): Range[] {
     const ranges: Range[] = [];
+    const schema = NodeApi.isEditor(root) ? getEditorSchema(root) : null;
+
+    const collectTextRun = (
+      node: Descendant,
+      path: Path,
+      entries: Array<NodeEntry<Text>>
+    ): boolean => {
+      if (NodeApi.isText(node)) {
+        entries.push([node, path]);
+
+        return true;
+      }
+      if (!schema?.isInline(node)) return false;
+
+      return getAncestorChildren(node).every((child, index) =>
+        collectTextRun(child, path.concat(index), entries)
+      );
+    };
 
     const visit = (node: Node | NodeTextRangeRoot, path: Path) => {
       if (NodeApi.isText(node as Node)) {
@@ -811,15 +830,16 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       const children = getTextRangeChildren(
         node as Ancestor | NodeTextRangeRoot
       );
+      const inlineEntries: Array<NodeEntry<Text>> = [];
 
-      if (children.every(NodeApi.isText)) {
+      if (
+        children.length > 0 &&
+        children.every((child, index) =>
+          collectTextRun(child, path.concat(index), inlineEntries)
+        )
+      ) {
         ranges.push(
-          ...getTextEntryRanges(
-            children.map((child, index) => [child, path.concat(index)]),
-            [node, path],
-            query,
-            options
-          )
+          ...getTextEntryRanges(inlineEntries, [node, path], query, options)
         );
         return;
       }

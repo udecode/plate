@@ -116,7 +116,7 @@ export function FontSizeToolbarButton() {
                 handleInputChange();
               }
             }}
-            data-plate-focus="true"
+            data-plite-keep-selection-visible="true"
             type="text"
           />
         </FloatingPopoverTrigger>

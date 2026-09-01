@@ -294,7 +294,7 @@ const CommentModePane = ({
   const widgets = useMemo(
     () =>
       comments.map((comment) => ({
-        anchor: {
+        target: {
           annotationId: comment.id,
           type: 'annotation' as const,
         },
@@ -561,7 +561,7 @@ const CommentModePane = ({
                 widgetSnapshot.byId.get(id) ??
                 failInvariant('Expected value to be defined');
 
-              return widget.visible ? (
+              return widget.available ? (
                 <span className="plite-comment-mode-code" key={widget.id}>
                   {widget.id}:{widget.data?.label ?? 'none'}
                 </span>

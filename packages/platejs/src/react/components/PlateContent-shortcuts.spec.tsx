@@ -1,7 +1,6 @@
 import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
-import { defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createEditor } from '../editor';
 import { PlateContent } from './PlateContent';
@@ -75,19 +74,8 @@ describe('PlateContent shortcuts', () => {
     });
 
     it('keeps decorate stable across rerenders with unchanged inputs', () => {
-      const decorate = mock();
-
-      const editor = createEditor({
-        plugins: [
-          defineBasePlugin('a', {
-            decorate: () => {
-              decorate();
-
-              return [];
-            },
-          }),
-        ],
-      });
+      const decorate = mock(() => []);
+      const editor = createEditor();
 
       let currentDecorate: any;
       const renderEditable = (editable: React.ReactElement) => {
@@ -97,7 +85,7 @@ describe('PlateContent shortcuts', () => {
       };
       const view = render(
         <Plate editor={editor}>
-          <PlateContent renderEditable={renderEditable} />
+          <PlateContent decorate={decorate} renderEditable={renderEditable} />
         </Plate>
       );
       const decorateProp = currentDecorate!;
@@ -112,7 +100,7 @@ describe('PlateContent shortcuts', () => {
 
       view.rerender(
         <Plate editor={editor}>
-          <PlateContent renderEditable={renderEditable} />
+          <PlateContent decorate={decorate} renderEditable={renderEditable} />
         </Plate>
       );
 

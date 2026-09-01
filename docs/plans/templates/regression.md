@@ -45,6 +45,14 @@ Completion threshold:
 - Every selected case records `unit-red: <test>` or
   `e2e-required: <lower-layer limitation>`. Unit/package RED stops new E2E test
   creation; Browser may remain final verification without permanent E2E coverage.
+- Every `unit-red:` case records `runtime-modes:` in `Exact environment` and
+  matches every route mode that changes mutation representation or schema
+  properties; a disabled preview, suggestion, history, or other material mode
+  keeps the lower-layer result proxy-only.
+- Every `unit-red:` case records `fixture-scope: complete <input>` or
+  `fixture-scope: minimal <invariant>` in `Exact environment`. Minimal input is
+  reproduction-only and cannot support kept, fixed, completed, or full-flow
+  status; deterministic generated actions replay their complete fixture.
 - Every case has positive and forbidden-state assertions for model, DOM/native,
   pointer feedback, focus, popup, geometry/paint, runtime errors, and follow-up
   input, with an N/A reason for observations that do not apply.
@@ -190,6 +198,11 @@ Work Checklist:
       `affordance-inventory: <accessible labels, selectors, or owners>` after
       source and exact-route discovery. Any excluded matching affordance cites
       explicit reporter or accepted-product authority.
+- [ ] Every focus-transfer case covers both a direct `relatedTarget` and null
+      `relatedTarget` followed by document `focusin`. Its positive assertion
+      records `focus-transfer: direct-related-target + null-related-target ->
+      focusin`; completion records `direct-related-target: pass`,
+      `null-related-target: pass`, and `focusin-resolution: pass`.
 - [ ] Every completed applicable `pointer-feedback` row records
       `interaction-trace: pass`, the actual pointer `target:`, delivered
       `event:`, and `buttons:` state from the same interaction path.
@@ -256,6 +269,15 @@ Work Checklist:
 - [ ] Every applicable popup/toolbar oracle after an action or release has an
       applicable `follow-up-input@follow-up` oracle proving the next owning-
       surface interaction still works.
+- [ ] Every applicable popup/toolbar focus oracle records
+      `focus-stability: settled + follow-up-key`, uses browser-native proof
+      after the named layout/render settling boundary, and completes with
+      `settled-focus: pass` plus `follow-up-key: pass`. Immediate focus samples
+      and locator-side refocus are support-only.
+- [ ] Every shortcut- or hotkey-opened popup focus oracle records
+      `trigger-path: pre-focused-surface + native-keyboard`, delivers the key
+      through the browser keyboard instead of locator-owned `press()`, and
+      completes with `native-trigger-key: pass`.
 - [ ] Every applicable popup close oracle at `after-action` or `after-release`
       accounts for `dom-native` and `focus` at the same phase; later follow-up
       input never substitutes for close-time selection/caret preservation.
@@ -341,6 +363,15 @@ Work Checklist:
 - [ ] Every case records one methodology delta.
 - [ ] Every failed claimed fix revoked prior completion, automatically repaired
       Regression with executable workflow proof, and restarted at attempt N+1.
+- [ ] Every failed popup/toolbar focus replay records native focus events,
+      focus owners at mount/positioned/settled/follow-up-key, the first divergent
+      phase, and a native `focus()` call trace with target, connected, display,
+      visibility, disabled, and active-after-call state before another product
+      attempt.
+- [ ] Every failed scheduled popup/toolbar focus replay records
+      `focus-scheduler-trace: request + cancel + run` and
+      `focus-scheduler-result: <ran-or-cancelled/target-readiness>` before
+      another scheduler or readiness predicate is selected.
 - [ ] Every second failed fix or architecture trigger passed Best API and the
       owning Plite/Plate plan before another Patch attempt.
 - [ ] Claim wording matches local, pushed, integration, and release evidence.
@@ -413,6 +444,11 @@ Reporter evidence inventory:
 | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Reporter oracle matrix:
+
+For an effect-owned disposable source, the `subscription-lifecycle` row records
+`strict-effect: mount + cleanup + remount` and closes with `mount: pass`,
+`cleanup: pass`, `remount: pass`, and `post-remount-publication: pass`.
+
 | Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
 |---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|
 | pending | model | pending | pending | pending | pending | pending | pending | pending |
@@ -421,6 +457,7 @@ Reporter oracle matrix:
 | pending | focus | pending | pending | pending | pending | pending | pending | pending |
 | pending | popup | pending | pending | pending | pending | pending | pending | pending |
 | pending | geometry-paint | pending | pending | pending | pending | pending | pending | pending |
+| pending | subscription-lifecycle | pending | pending | pending | pending | pending | pending | pending |
 | pending | runtime-errors | pending | pending | pending | pending | pending | pending | pending |
 | pending | follow-up-input | pending | pending | pending | pending | pending | pending | pending |
 

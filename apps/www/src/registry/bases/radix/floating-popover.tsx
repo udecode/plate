@@ -14,27 +14,14 @@ type FloatingAnchor =
     }
   | null;
 
-type FloatingPopoverProps = React.PropsWithChildren<{
-  defaultOpen?: boolean;
-  modal?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  open?: boolean;
-}>;
-
-type FloatingPopoverContentProps = Omit<
-  React.ComponentPropsWithoutRef<'div'>,
-  'onAbort'
-> & {
-  align?: 'center' | 'end' | 'start';
-  alignOffset?: number;
-  onFinalFocus?: (event: Event) => void;
-  onEscapeKeyDown?: (event: KeyboardEvent) => void;
-  onInitialFocus?: (event: Event) => void;
-  side?: 'bottom' | 'left' | 'right' | 'top';
-  sideOffset?: number;
-};
-
-export function FloatingPopover(props: FloatingPopoverProps) {
+export function FloatingPopover(
+  props: React.PropsWithChildren<{
+    defaultOpen?: boolean;
+    modal?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    open?: boolean;
+  }>
+) {
   return <PopoverPrimitive.Root {...props} />;
 }
 
@@ -73,7 +60,15 @@ export function FloatingPopoverContent({
   sideOffset = 4,
   style,
   ...props
-}: FloatingPopoverContentProps) {
+}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
+  align?: 'center' | 'end' | 'start';
+  alignOffset?: number;
+  onFinalFocus?: (event: Event) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
+  onInitialFocus?: (event: Event) => void;
+  side?: 'bottom' | 'left' | 'right' | 'top';
+  sideOffset?: number;
+}) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content

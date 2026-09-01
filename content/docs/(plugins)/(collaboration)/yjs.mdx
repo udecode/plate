@@ -80,16 +80,18 @@ const editor = createEditor({
   Plite/Yjs synchronization extension.
 </Callout>
 
-### Configure Provider And Cursors
+### Configure provider and cursors
 
 Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
-`initialState`. The Plate subpath exports the plugin; the React subpath exports
-remote cursor hooks.
+`initialState`. Configure the copied cursor renderers on `YjsPlugin`; its
+decoration and render slots own the complete remote-cursor path.
 
 ```tsx
 import { YjsPlugin } from "platejs/yjs/react";
-import { useYjsRemoteCursors } from "platejs/yjs/react";
-import { RemoteCursorOverlay } from "@/components/editor/remote-cursor-overlay";
+import {
+  RemoteCursorLeaf,
+  RemoteCursorOverlay,
+} from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -98,8 +100,16 @@ export const yjsPlugin = YjsPlugin.configure({
     provider,
     rootName: roomId,
   },
+  render: {
+    afterEditable: RemoteCursorOverlay,
+    leaf: RemoteCursorLeaf,
+  },
 });
 ```
+
+Do not render `RemoteCursorOverlay` beside `<Editor>` yourself. The plugin
+passes the exact mounted Editable ref into its `afterEditable` slot and paints
+remote selections through its `leaf` slot.
 
 - `provider`: A `YjsProviderLike` wrapper around app-owned transport code.
 - `doc`: The shared `Y.Doc`.
@@ -115,7 +125,7 @@ transaction. Plite History records that editor commit as one history batch.
 Named roots synchronize without a mounted `PlateContent`, and remote selections
 preserve their root key. A selection cannot span two roots.
 
-### Add Editor Container
+### Add editor container
 
 The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `platejs/react`:
 
@@ -132,7 +142,7 @@ return (
 );
 ```
 
-### Read And Control Connection State
+### Read and control connection state
 
 The plugin installs a `yjs` group in `editor.read` and `editor.update`.
 
@@ -149,7 +159,7 @@ editor.update((tx) => {
 The installed extension cleanup destroys editor-owned listeners. Provider destruction
 depends on whether the provider wrapper declares itself editor-owned.
 
-### Monitor Connection Status (Optional)
+### Monitor connection status (optional)
 
 Access provider states and add event handlers for connection monitoring:
 
@@ -245,8 +255,8 @@ cursors by itself.
 - Use `tx.yjs.disconnect()` for temporary disconnects and extension cleanup for
   unmount teardown.
 - If remote cursors are wrong, verify the app sends cursor metadata through
-  `tx.yjs.sendSelection(...)` and renders the React cursor hooks from
-  `platejs/yjs/react`.
+  `tx.yjs.sendSelection(...)` and configures both copied render slots on
+  `YjsPlugin`.
 
 ## Related
 

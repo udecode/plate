@@ -530,6 +530,7 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
+const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
 const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
 
 /**
@@ -1901,7 +1902,20 @@ export const createEditorSchema = <V extends Value = Value>(
   ) => {
     const schema = getDeclarativeSchema();
 
-    return schema
+    if (!schema) return children;
+    let hasCopyTransforms = SCHEMA_HAS_COPY_TRANSFORMS.get(schema);
+    if (hasCopyTransforms === undefined) {
+      hasCopyTransforms = false;
+      for (const lifecycle of schema.properties.lifecycle.values()) {
+        if (lifecycle.copy === 'drop') {
+          hasCopyTransforms = true;
+          break;
+        }
+      }
+      SCHEMA_HAS_COPY_TRANSFORMS.set(schema, hasCopyTransforms);
+    }
+
+    return hasCopyTransforms
       ? copyDeclarativeChildren(children, schema, root, ancestors)
       : children;
   };

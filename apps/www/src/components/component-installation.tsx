@@ -27,7 +27,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 type RegistryExample = Omit<RegistryItem, 'item'> &
   Partial<Pick<BlockViewerContext, 'highlightedFiles' | 'item' | 'tree'>>;
 
-type ComponentInstallationProps = {
+export function ComponentInstallation({
+  __dependencies__: __registryDependencies__ = '[]',
+  __highlightedFiles__: __highlightedFilesProp__ = '[]',
+  __item__: __itemProp__ = '[]',
+  __previewDependencies__ = '[]',
+  __previewFiles__ = '[]',
+  __tree__: __treeProp__ = '[]',
+  examples,
+  inline,
+  name,
+  usage,
+  ...props
+}: {
   __dependencies__?: string;
   __highlightedFiles__?: string;
   __item__?: string;
@@ -42,21 +54,7 @@ type ComponentInstallationProps = {
   name: string;
   tree?: BlockViewerContext['tree'];
   usage?: string[];
-};
-
-export function ComponentInstallation({
-  __dependencies__: __registryDependencies__ = '[]',
-  __highlightedFiles__: __highlightedFilesProp__ = '[]',
-  __item__: __itemProp__ = '[]',
-  __previewDependencies__ = '[]',
-  __previewFiles__ = '[]',
-  __tree__: __treeProp__ = '[]',
-  examples,
-  inline,
-  name,
-  usage,
-  ...props
-}: ComponentInstallationProps) {
+}) {
   const dependencies =
     props.dependencies ??
     parseGeneratedProp(

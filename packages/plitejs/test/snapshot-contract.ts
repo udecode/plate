@@ -14,6 +14,7 @@ import {
   type TextInsertFragmentOptions,
 } from 'plitejs';
 
+import { DocumentIndex } from '../src/core/change/document-index';
 import {
   applyTransactionSpec,
   runEditorTransaction as runInternalEditorTransaction,
@@ -59,6 +60,59 @@ type NestedTextElement = {
   }>;
   type: string;
 };
+
+it('maps replacement identities with work bounded by changed nodes', () => {
+  const blocks = 128;
+  const value = (prefix: string) =>
+    Array.from({ length: blocks }, (_, index) => ({
+      type: 'paragraph',
+      children: [{ text: `${prefix}-${index} same suffix` }],
+    }));
+  const editor = createPliteEditor();
+  editor.update((tx) =>
+    tx.value.replace({
+      children: value('before'),
+      marks: null,
+      selection: null,
+    })
+  );
+  const before = editorGetSnapshot(editor);
+  const beforeKey = before.index.keyAt([blocks - 1, 0]);
+  const children = value('after');
+  const readNode = DocumentIndex.prototype.node;
+  let reads = 0;
+  DocumentIndex.prototype.node = function node(...args) {
+    reads += 1;
+    return readNode.apply(this, args);
+  };
+  try {
+    editor.update((tx) =>
+      tx.value.replace({ children, marks: null, selection: null })
+    );
+  } finally {
+    DocumentIndex.prototype.node = readNode;
+  }
+  const after = editorGetSnapshot(editor);
+  assert.deepEqual(after.children, children);
+  assert.equal(before.index.keyAt([blocks - 1, 0]), beforeKey);
+  assert.equal(
+    before.children[blocks - 1].children[0].text,
+    'before-127 same suffix'
+  );
+  const key = after.index.keyAt([blocks - 1, 0]);
+  editor.update((tx) =>
+    tx.text.insert('!', { at: { path: [blocks - 1, 0], offset: 0 } })
+  );
+  assert.equal(editorGetSnapshot(editor).index.keyAt([blocks - 1, 0]), key);
+  assert.equal(
+    after.children[blocks - 1].children[0].text,
+    'after-127 same suffix'
+  );
+  assert.ok(
+    reads <= blocks * 64,
+    `replacement identity work must be linear; read ${reads} nodes`
+  );
+});
 
 type LegacySnapshotInput = Omit<
   Parameters<typeof editorReplaceBase>[1],
@@ -2914,6 +2968,67 @@ it('editorRemoveMark clears bold only inside an expanded subrange', () => {
     { text: 'a', bold: true },
   ]);
 });
+
+for (const backward of [false, true]) {
+  for (const mark of ['bold', 'italic']) {
+    it(`preserves a ${backward ? 'backward' : 'forward'} range through repeated ${mark} split and merge`, () => {
+      const children = [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'This is editable ' },
+            { text: 'rich', bold: true },
+            { text: ' text, ' },
+          ],
+        },
+        { type: 'paragraph', children: [{ text: 'unrelated' }] },
+      ];
+      const editor = createPliteEditor({ initialValue: children });
+      const start = { path: [0, 0], offset: 8 };
+      const end = { path: [0, 0], offset: 16 };
+      const selection = backward
+        ? { anchor: end, focus: start }
+        : { anchor: start, focus: end };
+      editor.update.selection.set(selection);
+      const before = editorGetSnapshot(editor);
+      const firstKey = before.index.keyAt([0, 0]);
+      const unrelatedKey = before.index.keyAt([1, 0]);
+
+      for (let iteration = 0; iteration < 3; iteration++) {
+        editor.update.marks.toggle(mark);
+        const markedStart = { path: [0, 1], offset: 0 };
+        const markedEnd = { path: [0, 1], offset: 8 };
+        assert.deepEqual(
+          editor.read.selection(),
+          backward
+            ? { anchor: markedEnd, focus: markedStart }
+            : { anchor: markedStart, focus: markedEnd }
+        );
+        editor.update.marks.toggle(mark);
+        assert.deepEqual(editor.read.selection(), selection);
+        assert.deepEqual(editor.read.children(), children);
+        assert.equal(editorGetSnapshot(editor).index.keyAt([0, 0]), firstKey);
+        assert.equal(
+          editorGetSnapshot(editor).index.keyAt([1, 0]),
+          unrelatedKey
+        );
+        assert.deepEqual(before.children, children);
+      }
+
+      editorCollapse(editor, { edge: 'end' });
+      editorInsertText(editor, 'W');
+      assert.deepEqual(getBlockTexts(editor.read.children()), [
+        'This is editableW rich text, ',
+        'unrelated',
+      ]);
+      assert.deepEqual(editor.read.selection(), {
+        anchor: { path: [0, 0], offset: 17 },
+        focus: { path: [0, 0], offset: 17 },
+      });
+      assert.deepEqual(before.children, children);
+    });
+  }
+}
 
 it('preserves custom node properties across replacement snapshots', () => {
   const editor = createEditor();
@@ -7242,6 +7357,124 @@ it('projects ranges against an explicit snapshot for internal projection stores'
       },
     ]
   );
+});
+
+it('projects only selected leaves in wide blocks and cross-block ranges', () => {
+  for (const wideBlock of [false, true]) {
+    const editor = createEditor();
+    editorReplace(editor, {
+      children: wideBlock
+        ? [
+            {
+              type: 'paragraph',
+              children: Array.from({ length: 1000 }, (_, index) => ({
+                text: 'text',
+                part: index,
+              })),
+            },
+          ]
+        : Array.from({ length: 1000 }, () => ({
+            type: 'paragraph',
+            children: [{ text: 'text' }],
+          })),
+      selection: null,
+    });
+    const original = editorGetSnapshot(editor);
+    let keyReads = 0;
+    const snapshot = {
+      ...original,
+      index: {
+        ...original.index,
+        keyAt: (path: number[]) => {
+          keyReads += 1;
+          return original.index.keyAt(path);
+        },
+      },
+    };
+    const start = { path: wideBlock ? [0, 998] : [998, 0], offset: 1 };
+    const end = { path: wideBlock ? [0, 999] : [999, 0], offset: 2 };
+    const expected = [
+      {
+        key: original.index.keyAt(start.path),
+        path: start.path,
+        start: 1,
+        end: 4,
+      },
+      { key: original.index.keyAt(end.path), path: end.path, start: 0, end: 2 },
+    ];
+    const projected = projectRangeInSnapshot(snapshot, {
+      anchor: start,
+      focus: end,
+    });
+    assert.deepEqual(projected, expected);
+    assert.equal(keyReads, 2);
+    assert.equal(Object.isFrozen(projected), true);
+    assert.equal(Object.isFrozen(projected[0].path), true);
+    assert.deepEqual(
+      projectRangeInSnapshot(snapshot, { anchor: end, focus: start }),
+      expected
+    );
+    assert.throws(() =>
+      projectRangeInSnapshot(snapshot, {
+        anchor: { ...start, offset: 5 },
+        focus: end,
+      })
+    );
+    editor.update.text.insert('x', { at: start });
+    assert.deepEqual(
+      projectRangeInSnapshot(snapshot, { anchor: start, focus: end }),
+      expected
+    );
+  }
+});
+
+it('reuses repeated snapshot projection work without caching mutable range inputs', () => {
+  const editor = createPliteEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+  });
+  const original = editorGetSnapshot(editor);
+  let keyReads = 0;
+  const snapshot = {
+    ...original,
+    index: {
+      ...original.index,
+      keyAt: (path: number[]) => {
+        keyReads += 1;
+        return original.index.keyAt(path);
+      },
+    },
+  };
+  const range = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 1 },
+  };
+  const first = projectRangeInSnapshot(snapshot, range);
+  for (let index = 0; index < 100; index += 1) {
+    assert.deepEqual(
+      projectRangeInSnapshot(snapshot, {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 1 },
+      }),
+      first
+    );
+  }
+  assert.equal(keyReads, 1);
+  range.focus.offset = 2;
+  assert.equal(projectRangeInSnapshot(snapshot, range)[0].end, 2);
+  assert.equal(first[0].end, 1);
+  range.focus.offset = 99;
+  assert.throws(
+    () => projectRangeInSnapshot(snapshot, range),
+    /outside text bounds/
+  );
+  editor.update.nodes.replace(
+    { type: 'paragraph', children: [{ text: 'new' }] },
+    { at: [0] }
+  );
+  range.focus.offset = 1;
+  const current = projectRangeInSnapshot(editorGetSnapshot(editor), range);
+  assert.notEqual(current[0].key, first[0].key);
+  assert.deepEqual(projectRangeInSnapshot(snapshot, range), first);
 });
 
 it('projects a collapsed range into a zero-width local segment', () => {

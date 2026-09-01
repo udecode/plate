@@ -138,7 +138,8 @@ plan or Patch packet:
 - red-test escalation as `unit-red: <test>` or
   `e2e-required: <why no exact unit/package RED is possible>`;
 - applicable model, DOM/native, pointer-feedback, focus, popup,
-  geometry/paint, runtime-error, and follow-up-input fields;
+  geometry/paint, subscription-lifecycle, runtime-error, and follow-up-input
+  fields;
 - tested ref, dirty-state boundary when applicable, and required stability.
 
 Before patching, build the template's cumulative reporter evidence inventory
@@ -185,6 +186,21 @@ held-pointer, drag-overlay, caret, popup, pointer affordance, or paint claim.
 Every applicable row needs both the positive assertion that must hold and the
 forbidden state that must not survive, plus an executable test anchor. Do not
 reduce a reporter sentence to the easiest neighboring assertion.
+
+For a subscription-backed keyed collection, `subscription-lifecycle` is
+applicable. Its executable owner test must exercise add, update, remove, and
+teardown through the same publication path. Completion records `add: pass`,
+`update: pass`, `remove: pass`, and `teardown: pass`; an item-update-only green
+cannot authorize the fix because membership removal may run before listener
+cleanup.
+
+An effect-owned disposable source also requires `subscription-lifecycle` proof
+under React Strict Mode. The owner test must run the exact
+`strict-effect: mount + cleanup + remount` rehearsal, then publish through the
+remounted source and finally unmount it. Completion records `mount: pass`,
+`cleanup: pass`, `remount: pass`, and `post-remount-publication: pass`. A normal
+single mount cannot prove that rehearsal cleanup did not permanently destroy
+the reused source.
 
 Pointer, mouse, cursor, hover, and resize/drag-handle cases require an
 applicable `pointer-feedback` row in the named interaction phase. Assert the
@@ -297,11 +313,33 @@ Any popup or toolbar lifecycle asserted after an action or release requires an
 applicable `follow-up-input@follow-up` oracle. Proving that an overlay closed is
 not enough; the next interaction on the owning surface must still work.
 
+When an applicable popup or toolbar oracle also claims focus, an immediate
+`activeElement` sample is support-only. The focus row's positive assertion must
+record `focus-stability: settled + follow-up-key`, use browser-native proof,
+wait through the popup's named layout/render settling boundary, and deliver the
+next real key without clicking or programmatically focusing the target.
+Completion records `settled-focus: pass` and `follow-up-key: pass`. A locator
+helper that refocuses its command target, an immediate `toBeFocused`, or a
+different runner's early green cannot overrule a later exact-route focus loss.
+When a shortcut or hotkey opens the popup, the positive assertion also records
+`trigger-path: pre-focused-surface + native-keyboard`. Deliver the key through
+the browser keyboard to the already focused surface; a locator-owned `press()`
+is support-only because its implicit focus can change event and focus ordering.
+Completion records `native-trigger-key: pass`.
+
 For every applicable popup close row at `after-action` or `after-release`, the
 matrix must also account for `dom-native` and `focus` at that same phase. Mark
 them applicable with exact selection/caret and focus assertions, or explicitly
 N/A with a reason. A later follow-up action cannot prove that close preserved
 the live pointer-created selection or caret.
+
+A focus-transfer case must not assume `FocusEvent.relatedTarget` identifies the
+next target. Its exact owner test covers both the direct sequence and a null
+`relatedTarget` followed by document `focusin`. The positive assertion records
+`focus-transfer: direct-related-target + null-related-target -> focusin`.
+Completion records `direct-related-target: pass`, `null-related-target: pass`,
+and `focusin-resolution: pass`. The null phase must not paint a pending owner;
+an unmarked `focusin` or window blur must clear it.
 
 Any required reporter evidence that names a caret, insertion point,
 caret-accessible line, editable blank line/row, or text cursor must map to
@@ -331,6 +369,21 @@ test that can express the reported invariant. When an exact owner-level unit or
 package test is RED, that test owns the durable regression. Do not add a new E2E
 test, expand E2E coverage for the case, or make E2E a completion gate. Record
 `unit-red: <test>` in `Red-test escalation` and stop test creation at that layer.
+
+An owner-level RED is exact only when its setup enables every runtime mode that
+changes the reported mutation, representation, or schema properties. Compare
+the route action with the test setup and record `runtime-modes:` in `Exact
+environment`, including active preview, suggestion, history, read-only, or
+other mode state and explicit inactive states that matter. A transform call
+with a route-owned mode missing is proxy evidence even when it throws the same
+first error.
+
+Input scope must match the claim too. Record `fixture-scope: complete <input>`
+when the reported action consumes a deterministic sample, recording, corpus,
+or generated fixture. `fixture-scope: minimal <invariant>` is allowed only
+while the case remains reproduced and the complete fixture replay stays open;
+it cannot support a kept, fixed, completed, or full-flow claim. A prefix that
+reproduces the first exception is not the exact generated action.
 
 E2E is the fallback only when the exact regression cannot be reproduced RED in
 an owner-level unit or package test. Record
@@ -512,6 +565,27 @@ An `exact-replay` or `final-verification` failure must also record
 Patch. The diagnostic reruns the actual failing assertion on frozen product
 bytes and distinguishes product nondeterminism from interaction, host, or
 oracle drift; repeated green alone is not a diagnosis.
+
+When that failed case has an applicable popup/toolbar focus oracle, the frozen-
+byte diagnostic must capture native `focusin` and `focusout`, then sample the
+focus owner at mount, Floating UI positioned readiness, settlement, and the
+no-click follow-up key. Record
+`focus-owner-trace: mount + positioned + settled + follow-up-key`,
+`native-focus-events: focusin + focusout capture`, and
+`first-divergence: <phase/owner>` in the failed-fix resume state. A second
+timer, effect phase, positioning guess, or focus manager cannot resume Patch
+without that trace. Intercept the native `focus()` boundary without changing
+product bytes and also record
+`focus-call-trace: target + connected + display + visibility + disabled + active-after-call`
+and `focus-call-result: <called-or-not-called/owner>`. Native focus events alone
+cannot distinguish a missing call from a rejected call on a hidden, detached,
+or disabled target.
+
+If the failed focus candidate uses a timer, animation frame, or another focus
+scheduler, trace whether that callback was requested, canceled, and run. Record
+`focus-scheduler-trace: request + cancel + run` and
+`focus-scheduler-result: <ran-or-cancelled/target-readiness>`. A named schedule
+boundary is not evidence that its target was focusable when the callback ran.
 
 Every failed claimed bug fix automatically repairs Regression. Do not wait for
 the user to ask and do not delegate another product patch first:

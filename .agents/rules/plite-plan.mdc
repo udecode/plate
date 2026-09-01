@@ -53,6 +53,12 @@ the same plan and repair the target before continuing.
 - Keep Plite unopinionated. Do not solve a Plate product concern in substrate.
 - Do not hide a missing Plite primitive behind Plate glue. Name the substrate
   gap and its Plate adoption pressure explicitly.
+- For canonical state whose presentation differs by mounted view, first test
+  whether the exact Plite React view can derive that choice from its runtime or
+  DOM lifecycle. If it can, plan private view state plus a literal DOM protocol;
+  Plate inherits the mechanics and product UI owns markers and styling. Add a
+  controlled view input only when user intent cannot be derived. Reject an
+  editor-global extension/store and any copied Range or parallel state carrier.
 
 ## Hard Policy
 
@@ -86,6 +92,10 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --template plite-plan \
   --title "<short Plite plan title>"
 ```
+
+Add `--with performance-observability` when the proposal can change repeated or
+hot runtime work. Resolve that applicability before target selection; do not
+wait until implementation.
 
 Use a short objective:
 
@@ -121,15 +131,18 @@ implementation bug with no architecture decision.
 - Read live source and current public teaching/proof surfaces.
 - Name the document/runtime/DOM/React/history/collaboration/browser owners
   involved.
-- Record baseline behavior or benchmark proof only when it affects the
-  decision.
+- Decide scale applicability from live source. When the proposal adds, retains,
+  or changes a runtime layer, cache, index, projection, store, subscription,
+  scheduler, geometry owner, repeated-unit fan-out, or other hot work,
+  materialize the performance pack and run Benchmark's embedded
+  pre-acceptance architecture probe.
 
 ### 2. Decide
 
 Use one concept-level decision ledger:
 
 | Surface | Current | Target | Owner | Reason | Adoption | Proof | Risk | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ------- | ------- | ------ | ----- | ------ | -------- | ----- | ---- | ------- |
 
 Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
 `gate`.
@@ -148,6 +161,11 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
   hard law and independent current job, the verdict is `cut`. Do not plan around
   rejected machinery; compatibility and implementation cost only order
   adoption.
+- A scale-sensitive row cannot lock as `keep`, `rearchitect`, `move`, `bridge`,
+  or `gate` without a passing executable current-owner versus target receipt.
+  Use the smallest disposable prototype when the target path does not exist.
+  Paper complexity, review scores, and deferred measurement leave the verdict
+  `defer` or `gate`, never ready.
 - Prefer direct substrate primitives and deep owners over wrappers and file
   churn.
 - Rank worthwhile changes by long-term architectural value. Order execution
@@ -160,6 +178,10 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
 - Name exact source audits and owner commands. Planning proof validates the
   decision; execution proof validates changed behavior, browser semantics, and
   performance claims.
+- For every scale-sensitive slice, carry the frozen cohorts, budget, benchmark
+  command/artifact, deterministic cost indicators, source identities, and
+  correctness guard into the execution exit condition. The final production
+  path must rerun the same contract.
 - Prepare the final handoff in the plan, run `check-complete`, then emit the
   handoff in chat. Do not make pre-checker completion depend on a response that
   has not been sent yet.
@@ -172,6 +194,11 @@ Add only what the scope triggers:
   React subscription, history, collaboration, browser, or generated-contract
   change: record three realistic failures, blast radius, rollback/hard-cut
   answer, and focused proof.
+- A controlled view of canonical selection must prove two Editables over one
+  editor and two independent editors, expanded and collapsed paint, root and
+  direction correctness, native-paint deduplication, SSR/unmounted behavior,
+  and zero mutation of DOM selection, focus, input, history, clipboard, or the
+  internal projected-view-selection runtime.
 - External editor architecture: consume the accepted `editor-audit` evidence,
   material candidates, and owner routing. Refresh only stale claims that can
   change the plan.
@@ -182,9 +209,11 @@ Add only what the scope triggers:
   device-specific, or release-ready claim. Otherwise keep the raw-device runner
   fail-closed, record that physical receipts are deferred, and do not block an
   unrelated source or API handoff on unavailable hardware.
-- Performance: consume a `benchmark` handoff when claiming performance or
-  choosing a hot-path architecture. If the causal owner is not measured, route
-  a scoped Benchmark packet first. Extremal proof must stay inside an
+- Performance: require Benchmark's embedded pre-acceptance receipt when
+  claiming performance or choosing a hot-path architecture. If the current
+  owner or target path is not executable and comparable, the plan remains
+  provisional; use a disposable target prototype when needed. Extremal proof
+  must stay inside an
   end-to-end supported input domain; one helper does not earn permanent
   machinery for a limit adjacent owners cannot carry.
 - Fast-path architecture: derive eligibility from evaluated material behavior,
@@ -205,6 +234,8 @@ A standard or deep plan is ready only when all are true:
 - execution slices and focused verification are concrete;
 - conditional risk/provenance/browser/benchmark/docs gates are resolved or
   explicitly inapplicable with a reason;
+- every scale-sensitive decision has a passing pre-acceptance receipt, or live
+  source proves the work is type-only/zero-runtime;
 - no decision-changing question or runnable planning owner remains;
 - `check-complete.mjs` passes after fresh verification evidence is recorded.
 
@@ -223,7 +254,9 @@ After explicit acceptance:
    browser proof, and benchmarks. Leave no compatibility path unless the
    accepted ledger contains a time-bounded private bridge.
 5. Run the applicable root `AGENTS.md` gates and applicable review skills.
-6. Update the plan with actual evidence and hand off the result.
+6. Rerun every scale-sensitive contract on the final production path with the
+   recorded correctness guard; a design prototype is not implementation proof.
+7. Update the plan with actual evidence and hand off the result.
 
 ## Handoff
 

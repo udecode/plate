@@ -1,0 +1,764 @@
+{
+  "lane": "plite-query-anchor-observation",
+  "iterations": 5,
+  "commitQueries": [
+    {
+      "count": 100,
+      "counters": {
+        "changedKeys": 100,
+        "membershipHits": 100,
+        "queriesPerSample": 100,
+        "snapshotChanges": 0
+      },
+      "membershipMs": {
+        "samples": [
+          0.02,
+          0.01,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.01,
+          0.06,
+          0.01,
+          0,
+          0,
+          0.03,
+          0.03,
+          0.01,
+          0.01,
+          0,
+          0
+        ],
+        "mean": 0.02,
+        "median": 0.02,
+        "p75": 0.02,
+        "p95": 0.03,
+        "p99": 0.06,
+        "min": 0,
+        "max": 0.06
+      },
+      "publicationMs": {
+        "samples": [
+          0.01,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.02,
+          0.04,
+          0,
+          0.01,
+          0,
+          0,
+          0,
+          0.01,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "mean": 0.01,
+        "median": 0.01,
+        "p75": 0.02,
+        "p95": 0.02,
+        "p99": 0.04,
+        "min": 0,
+        "max": 0.04
+      },
+      "pass": true
+    },
+    {
+      "count": 1000,
+      "counters": {
+        "changedKeys": 1000,
+        "membershipHits": 1000,
+        "queriesPerSample": 1000,
+        "snapshotChanges": 0
+      },
+      "membershipMs": {
+        "samples": [
+          0.04,
+          0.04,
+          0.04,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03,
+          0.03
+        ],
+        "mean": 0.03,
+        "median": 0.03,
+        "p75": 0.03,
+        "p95": 0.04,
+        "p99": 0.04,
+        "min": 0.03,
+        "max": 0.04
+      },
+      "publicationMs": {
+        "samples": [
+          0.01,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0.01,
+        "min": 0,
+        "max": 0.01
+      },
+      "pass": true
+    },
+    {
+      "count": 10000,
+      "counters": {
+        "changedKeys": 10000,
+        "membershipHits": 10000,
+        "queriesPerSample": 10000,
+        "snapshotChanges": 0
+      },
+      "membershipMs": {
+        "samples": [
+          0.56,
+          0.45,
+          0.49,
+          0.24,
+          0.19,
+          0.16,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15,
+          0.15
+        ],
+        "mean": 0.21,
+        "median": 0.15,
+        "p75": 0.16,
+        "p95": 0.49,
+        "p99": 0.56,
+        "min": 0.15,
+        "max": 0.56
+      },
+      "publicationMs": {
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0
+      },
+      "pass": true
+    }
+  ],
+  "selectionQueries": [
+    {
+      "count": 100,
+      "durationMs": {
+        "samples": [
+          0.07,
+          0.04,
+          0.03,
+          0.05,
+          0.08,
+          0.04,
+          0.06,
+          0.04,
+          0.05,
+          0.27,
+          0.04,
+          0.05,
+          0.11,
+          0.05,
+          0.03,
+          0.11,
+          0.04,
+          0.05,
+          0.03,
+          0.02
+        ],
+        "mean": 0.06,
+        "median": 0.05,
+        "p75": 0.06,
+        "p95": 0.11,
+        "p99": 0.27,
+        "min": 0.02,
+        "max": 0.27
+      },
+      "counters": {
+        "enumerated": 0,
+        "keyReads": 4
+      },
+      "pass": true
+    },
+    {
+      "count": 1000,
+      "durationMs": {
+        "samples": [
+          0.03,
+          0.04,
+          0.03,
+          0.04,
+          0.05,
+          0.02,
+          0.02,
+          0.07,
+          0.03,
+          0.03,
+          0.03,
+          0.05,
+          0.07,
+          0.04,
+          0.03,
+          0.03,
+          0.03,
+          0.02,
+          0.03,
+          0.04
+        ],
+        "mean": 0.04,
+        "median": 0.03,
+        "p75": 0.04,
+        "p95": 0.07,
+        "p99": 0.07,
+        "min": 0.02,
+        "max": 0.07
+      },
+      "counters": {
+        "enumerated": 0,
+        "keyReads": 4
+      },
+      "pass": true
+    },
+    {
+      "count": 10000,
+      "durationMs": {
+        "samples": [
+          0.07,
+          0.07,
+          0.06,
+          0.06,
+          0.06,
+          0.07,
+          0.11,
+          0.07,
+          0.06,
+          0.05,
+          0.05,
+          0.05,
+          0.06,
+          0.06,
+          0.05,
+          0.06,
+          0.05,
+          0.07,
+          0.05,
+          0.06
+        ],
+        "mean": 0.06,
+        "median": 0.06,
+        "p75": 0.07,
+        "p95": 0.07,
+        "p99": 0.11,
+        "min": 0.05,
+        "max": 0.11
+      },
+      "counters": {
+        "enumerated": 0,
+        "keyReads": 4
+      },
+      "pass": true
+    },
+    {
+      "count": 100000,
+      "durationMs": {
+        "samples": [
+          0.24,
+          0.1,
+          0.09,
+          0.1,
+          0.07,
+          0.25,
+          0.18,
+          0.12,
+          0.09,
+          0.13,
+          0.09,
+          0.1,
+          0.16,
+          0.25,
+          0.08,
+          0.09,
+          0.08,
+          0.09,
+          0.1,
+          0.08
+        ],
+        "mean": 0.13,
+        "median": 0.1,
+        "p75": 0.13,
+        "p95": 0.25,
+        "p99": 0.25,
+        "min": 0.07,
+        "max": 0.25
+      },
+      "counters": {
+        "enumerated": 0,
+        "keyReads": 4
+      },
+      "pass": true
+    }
+  ],
+  "structuralQueries": [
+    {
+      "count": 100,
+      "durationMs": {
+        "samples": [
+          1.35,
+          4.68,
+          1.57,
+          1.25,
+          1.43,
+          1.24,
+          1.09,
+          1.82,
+          0.96,
+          1.01,
+          1.19,
+          1.21,
+          1.39,
+          1.35,
+          1.88,
+          1.25,
+          0.9,
+          1.23,
+          1.05,
+          1.06
+        ],
+        "mean": 1.45,
+        "median": 1.25,
+        "p75": 1.39,
+        "p95": 1.88,
+        "p99": 4.68,
+        "min": 0.9,
+        "max": 4.68
+      },
+      "counters": {
+        "enumerated": 1206,
+        "keyReads": 4
+      },
+      "pass": false
+    },
+    {
+      "count": 1000,
+      "durationMs": {
+        "samples": [
+          10.35,
+          11.67,
+          10.58,
+          10.34,
+          11.6,
+          10.79,
+          10.45,
+          10.31,
+          10.29,
+          9.77,
+          9.12,
+          10.59,
+          10.79,
+          11.78,
+          13.33,
+          11.09,
+          10.12,
+          10.22,
+          11.38,
+          8.93
+        ],
+        "mean": 10.67,
+        "median": 10.52,
+        "p75": 11.09,
+        "p95": 11.78,
+        "p99": 13.33,
+        "min": 8.93,
+        "max": 13.33
+      },
+      "counters": {
+        "enumerated": 12006,
+        "keyReads": 4
+      },
+      "pass": false
+    },
+    {
+      "count": 10000,
+      "durationMs": {
+        "samples": [
+          110.44,
+          115.2,
+          152.27,
+          110.69,
+          107.59,
+          129.78,
+          117.44,
+          112.58,
+          100.25,
+          106.89,
+          146.65,
+          124.54,
+          122.39,
+          107.15,
+          184.67,
+          135.93,
+          150.84,
+          171.62,
+          205.34,
+          208.47
+        ],
+        "mean": 136.04,
+        "median": 123.46,
+        "p75": 150.84,
+        "p95": 205.34,
+        "p99": 208.47,
+        "min": 100.25,
+        "max": 208.47
+      },
+      "counters": {
+        "enumerated": 120006,
+        "keyReads": 4
+      },
+      "pass": false
+    }
+  ],
+  "sourceIdentity": {
+    "measuredInputs": {
+      "packages/plitejs/src/core/commit.ts": "f0a6475955f4a9e8b3e912be0a4ca3fcdef96809b5b42b487de8623b502c5aec",
+      "packages/plitejs/src/core/public-state.ts": "1457b08e4f6d172e062437e4d8719555dccecd9b8ee2ced52708f8850498893b",
+      "packages/plitejs/src/core/snapshot-index.ts": "49e04c92f53042a2a80ac869e7cd102160a3572a9c3c4d16d87b91b0085548f6",
+      "packages/plitejs/src/interfaces/editor.ts": "b2fb4816c7ce40f2d42f1729218c185995470e5e85dfa3e7a35468a130ba548d",
+      "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+      "benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs": "ba79b37ccaa8880ccc42f2bca90ff10ac4c2cc43be60816157b246fc3b52e3f1"
+    }
+  },
+  "config": {
+    "blockCount": 200,
+    "queryOps": 200,
+    "anchorCount": 50,
+    "writeOps": 40
+  },
+  "lanes": {
+    "writeOnlyInsertTextMs": {
+      "samples": [
+        20.37,
+        21.64,
+        20.01,
+        23.88,
+        21.46
+      ],
+      "mean": 21.47,
+      "median": 21.46,
+      "p75": 21.64,
+      "p95": 23.88,
+      "p99": 23.88,
+      "min": 20.01,
+      "max": 23.88
+    },
+    "nodesReadAfterWriteMs": {
+      "samples": [
+        66.19,
+        43.37,
+        43.62,
+        50.99,
+        49.44
+      ],
+      "mean": 50.72,
+      "median": 49.44,
+      "p75": 50.99,
+      "p95": 66.19,
+      "p99": 66.19,
+      "min": 43.37,
+      "max": 66.19
+    },
+    "firstMatchArrayMs": {
+      "samples": [
+        63.85,
+        55.7,
+        55.01,
+        52.19,
+        52.02
+      ],
+      "mean": 55.75,
+      "median": 55.01,
+      "p75": 55.7,
+      "p95": 63.85,
+      "p99": 63.85,
+      "min": 52.02,
+      "max": 63.85
+    },
+    "firstMatchToArrayMs": {
+      "samples": [
+        50.32,
+        51.46,
+        51.03,
+        54.47,
+        54.57
+      ],
+      "mean": 52.37,
+      "median": 51.46,
+      "p75": 54.47,
+      "p95": 54.57,
+      "p99": 54.57,
+      "min": 50.32,
+      "max": 54.57
+    },
+    "firstMatchFindMs": {
+      "samples": [
+        0.78,
+        0.55,
+        0.7,
+        0.59,
+        0.5
+      ],
+      "mean": 0.62,
+      "median": 0.59,
+      "p75": 0.7,
+      "p95": 0.78,
+      "p99": 0.78,
+      "min": 0.5,
+      "max": 0.78
+    },
+    "firstMatchSomeMs": {
+      "samples": [
+        0.67,
+        0.57,
+        0.58,
+        0.7,
+        0.58
+      ],
+      "mean": 0.62,
+      "median": 0.58,
+      "p75": 0.67,
+      "p95": 0.7,
+      "p99": 0.7,
+      "min": 0.57,
+      "max": 0.7
+    },
+    "allEntriesArrayMs": {
+      "samples": [
+        78.18,
+        73.41,
+        72.6,
+        79.17,
+        65.75
+      ],
+      "mean": 73.82,
+      "median": 73.41,
+      "p75": 78.18,
+      "p95": 79.17,
+      "p99": 79.17,
+      "min": 65.75,
+      "max": 79.17
+    },
+    "allEntriesToArrayMs": {
+      "samples": [
+        52.18,
+        64.45,
+        60.95,
+        59.82,
+        57.87
+      ],
+      "mean": 59.06,
+      "median": 59.82,
+      "p75": 60.95,
+      "p95": 64.45,
+      "p99": 64.45,
+      "min": 52.18,
+      "max": 64.45
+    },
+    "allEntriesMappedToArrayMs": {
+      "samples": [
+        57.21,
+        72.33,
+        66.31,
+        60.4,
+        58.99
+      ],
+      "mean": 63.05,
+      "median": 60.4,
+      "p75": 66.31,
+      "p95": 72.33,
+      "p99": 72.33,
+      "min": 57.21,
+      "max": 72.33
+    },
+    "lastMatchFindMs": {
+      "samples": [
+        48.01,
+        48.51,
+        48.97,
+        50.93,
+        49.52
+      ],
+      "mean": 49.19,
+      "median": 48.97,
+      "p75": 49.52,
+      "p95": 50.93,
+      "p99": 50.93,
+      "min": 48.01,
+      "max": 50.93
+    },
+    "noMatchFindMs": {
+      "samples": [
+        53.18,
+        51.04,
+        50.39,
+        45.37,
+        53.78
+      ],
+      "mean": 50.75,
+      "median": 51.04,
+      "p75": 53.18,
+      "p95": 53.78,
+      "p99": 53.78,
+      "min": 45.37,
+      "max": 53.78
+    },
+    "positionsReadAfterWriteMs": {
+      "samples": [
+        23.08,
+        30.48,
+        29.34,
+        33.55,
+        22.83
+      ],
+      "mean": 27.86,
+      "median": 29.34,
+      "p75": 30.48,
+      "p95": 33.55,
+      "p99": 33.55,
+      "min": 22.83,
+      "max": 33.55
+    },
+    "pathAnchorRebaseMs": {
+      "samples": [
+        115.96,
+        101.59,
+        108.47,
+        96.39,
+        91.9
+      ],
+      "mean": 102.86,
+      "median": 101.59,
+      "p75": 108.47,
+      "p95": 115.96,
+      "p99": 115.96,
+      "min": 91.9,
+      "max": 115.96
+    },
+    "rangeAnchorRebaseMs": {
+      "samples": [
+        38.18,
+        34.24,
+        31.91,
+        34.66,
+        35.92
+      ],
+      "mean": 34.98,
+      "median": 34.66,
+      "p75": 35.92,
+      "p95": 38.18,
+      "p99": 38.18,
+      "min": 31.91,
+      "max": 38.18
+    },
+    "rangeAnchorsInspectionMs": {
+      "samples": [
+        42.88,
+        43.58,
+        33.63,
+        34.45,
+        35.54
+      ],
+      "mean": 38.02,
+      "median": 35.54,
+      "p75": 42.88,
+      "p95": 43.58,
+      "p99": 43.58,
+      "min": 33.63,
+      "max": 43.58
+    }
+  },
+  "deltaFromWriteOnlyMeanMs": {
+    "nodesReadAfterWriteMs": 29.25,
+    "positionsReadAfterWriteMs": 6.39,
+    "pathAnchorRebaseMs": 81.39,
+    "rangeAnchorRebaseMs": 13.51,
+    "rangeAnchorsInspectionMs": 16.55
+  }
+}

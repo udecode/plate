@@ -2,24 +2,27 @@ import assert from 'node:assert/strict';
 import { after, describe, it } from 'node:test';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import React, { act, useEffect } from 'react';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-
-import { setEditorFocused } from '#platejs-test-internal';
 
 import type { Descendant, Range } from '../../src/core';
 import { BaseParagraphPlugin } from '../../src/core';
 import type {
-  PliteDecorationSource,
   Editor as ReactViewEditor,
+  PlateLeafProps,
 } from '../../src/react/core';
-import { createEditor } from '../../src/react/core';
-import type { YjsRemoteCursorDecorationData } from '../../src/yjs';
+import {
+  createEditor,
+  Plate,
+  PlateContent,
+  PlateLeaf,
+} from '../../src/react/core';
 import {
   useYjsProviderStatus,
   useYjsProviderSynced,
-  useYjsRemoteCursorDecorationSource,
-  useYjsRemoteCursorOverlayPositions,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
 } from '../../src/yjs/react';
 import { YjsPlugin } from '../../src/yjs/react/index';
 import {
@@ -29,10 +32,7 @@ import {
   paragraph,
   runYjsUpdate,
 } from './support/collaboration';
-import {
-  createYjsReactPeer,
-  setEditorDomApi,
-} from './support/react-collaboration';
+import { createYjsReactPeer } from './support/react-collaboration';
 
 const shouldUnregisterHappyDOM = !GlobalRegistrator.isRegistered;
 
@@ -63,18 +63,9 @@ const selection = (
   focus: { path, offset: offset + 2 },
 });
 
-type LabelDecorationData = {
-  readonly clientId: number;
-  readonly label: string;
-};
-
 type RenderedView = {
   readonly container: HTMLDivElement;
   readonly unmount: () => void;
-};
-
-type EditorProbeProps = {
-  readonly editor: ReactViewEditor;
 };
 
 const render = (element: React.ReactNode): RenderedView => {
@@ -112,6 +103,20 @@ const sendRemoteSelection = (
   });
 };
 
+const YjsLeaf = (props: PlateLeafProps<typeof YjsPlugin>) => {
+  const cursor = props.leaf.yjsRemoteCursor;
+
+  return (
+    <PlateLeaf
+      {...props}
+      attributes={{
+        ...props.attributes,
+        ...(cursor ? { 'data-yjs-client': cursor.clientId } : {}),
+      }}
+    />
+  );
+};
+
 void describe('platejs/yjs react contract', () => {
   void it('rerenders provider status hooks from provider lifecycle events', () => {
     const provider = new FakeProvider({
@@ -126,7 +131,9 @@ void describe('platejs/yjs react contract', () => {
 
     const ProviderProbe = ({
       editor,
-    }: EditorProbeProps): React.ReactElement => {
+    }: {
+      readonly editor: ReactViewEditor;
+    }): React.ReactElement => {
       const status = useYjsProviderStatus(editor);
       const synced = useYjsProviderSynced(editor);
 
@@ -190,115 +197,117 @@ void describe('platejs/yjs react contract', () => {
     view.unmount();
   });
 
-  void it('exposes remote cursors as a DOM-neutral decoration source', () => {
-    const awareness = new FakeAwareness(2);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'b',
-      numericClientId: 2,
+  void it('publishes YjsPlugin selections through its keyed decoration source', () => {
+    const provider = new FakeProvider({
+      awarenessClientId: 101,
+      status: 'connected',
+      synced: true,
     });
-
-    setEditorFocused(peer.editor, true);
-
-    let source: PliteDecorationSource<YjsRemoteCursorDecorationData> | null =
-      null;
-    let lastRefreshRequiresDOMSelectionExport: boolean | null = null;
-
-    const DecorationProbe = ({
-      editor,
-    }: EditorProbeProps): React.ReactElement | null => {
-      const cursorSource = useYjsRemoteCursorDecorationSource(editor);
-
-      useEffect(() => {
-        source = cursorSource;
-
-        return cursorSource.subscribeProjectionRefresh((result) => {
-          lastRefreshRequiresDOMSelectionExport =
-            result.requiresDOMSelectionExport;
-        });
-      }, [cursorSource]);
-
-      return null;
-    };
-
-    const view = render(<DecorationProbe editor={peer.editor} />);
+    const editor = createEditor({
+      initialValue: initialValue(),
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: { clientId: 'local', provider },
+          render: { leaf: YjsLeaf },
+        }),
+      ],
+      schema: { id: 'plate:yjs-keyed-decoration', version: 1 },
+    });
+    const view = render(
+      <Plate editor={editor}>
+        <PlateContent aria-label="Editor" />
+      </Plate>
+    );
 
     act(() => {
-      sendRemoteSelection(peer, awareness, selection([0, 0], 1));
-    });
-
-    assert.ok(source);
-    const slices = Object.values(source.getSnapshot()).flat();
-    const [slice] = slices;
-
-    assert.equal(lastRefreshRequiresDOMSelectionExport, true);
-    assert.equal(slices.length, 1);
-    assert.ok(slice);
-
-    const { data } = slice;
-
-    assert.equal(data.clientId, 101);
-    assert.deepEqual(data.data, { color: 'tomato', name: 'Ada' });
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('refreshes remote cursor decorations when their revision changes', () => {
-    const awareness = new FakeAwareness(4);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'd',
-      numericClientId: 4,
-    });
-    let source: PliteDecorationSource<LabelDecorationData> | null = null;
-    let setLabel: ((label: string) => void) | null = null;
-
-    const DecorationProbe = ({
-      editor,
-    }: EditorProbeProps): React.ReactElement | null => {
-      const [label, updateLabel] = React.useState('Ada');
-      const cursorSource = useYjsRemoteCursorDecorationSource(editor, {
-        decorate: (cursor) => ({ clientId: cursor.clientId, label }),
-        revision: label,
+      editor.update.selection.set(selection([0, 0], 1));
+      editor.update.yjs.sendSelection();
+      provider.awareness.setRemoteState(202, {
+        data: { name: 'Ada' },
+        selection: provider.awareness.getLocalState()?.selection,
       });
-
-      useEffect(() => {
-        setLabel = updateLabel;
-        source = cursorSource;
-      }, [cursorSource, updateLabel]);
-
-      return null;
-    };
-
-    const view = render(<DecorationProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([0, 0], 1));
     });
 
-    assert.ok(source);
     assert.equal(
-      Object.values(source.getSnapshot()).flat()[0]?.data.label,
-      'Ada'
+      view.container.querySelector('[data-yjs-client="202"]')?.textContent,
+      'lp'
     );
 
     act(() => {
-      setLabel?.('Grace');
+      editor.update.selection.set(selection([1, 0], 0));
+      editor.update.yjs.sendSelection();
+      provider.awareness.setRemoteState(202, {
+        data: { name: 'Ada' },
+        selection: provider.awareness.getLocalState()?.selection,
+      });
     });
 
     assert.equal(
-      Object.values(source.getSnapshot()).flat()[0]?.data.label,
-      'Grace'
+      view.container.querySelector('[data-yjs-client="202"]')?.textContent,
+      'be'
     );
 
     view.unmount();
-    peer.cleanup();
   });
 
-  void it('resolves remote cursor overlay rectangles through the editor DOM API', () => {
+  void it('removes and restores keyed YjsPlugin selections across reconnect', () => {
+    const provider = new FakeProvider({
+      awarenessClientId: 101,
+      status: 'connected',
+      synced: true,
+    });
+    const editor = createEditor({
+      initialValue: initialValue(),
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: { clientId: 'local', provider },
+          render: { leaf: YjsLeaf },
+        }),
+      ],
+      schema: { id: 'plate:yjs-keyed-decoration-reconnect', version: 1 },
+    });
+    const view = render(
+      <Plate editor={editor}>
+        <PlateContent aria-label="Editor" />
+      </Plate>
+    );
+
+    act(() => {
+      editor.update.selection.set(selection([0, 0], 1));
+      editor.update.yjs.sendSelection();
+      provider.awareness.setRemoteState(202, {
+        data: { name: 'Ada' },
+        selection: provider.awareness.getLocalState()?.selection,
+      });
+    });
+
+    assert.equal(
+      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      1
+    );
+
+    act(() => {
+      editor.update.yjs.disconnect();
+    });
+    assert.equal(
+      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      0
+    );
+
+    act(() => {
+      editor.update.yjs.connect();
+    });
+    assert.equal(
+      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      1
+    );
+
+    view.unmount();
+  });
+
+  void it('fans remote cursor React updates out by client id', () => {
     const awareness = new FakeAwareness(3);
     const peer = createYjsReactPeer({
       awareness,
@@ -306,176 +315,60 @@ void describe('platejs/yjs react contract', () => {
       clientId: 'c',
       numericClientId: 3,
     });
-    let rect = new DOMRect(10, 20, 20, 20);
+    const renders = new Map<number, number>();
 
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => rect });
+    const CursorProbe = ({
+      clientId,
+      editor,
+    }: {
+      readonly editor: ReactViewEditor;
+    } & { readonly clientId: number }) => {
+      const cursor = useYjsRemoteCursor(editor, clientId);
 
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor);
+      renders.set(clientId, (renders.get(clientId) ?? 0) + 1);
 
       return (
-        <output>
-          {positions.map(
-            (position) => `${position.clientId}:${position.rect?.x}`
-          )}
+        <output data-client-id={clientId}>
+          {typeof cursor?.data?.name === 'string' ? cursor.data.name : 'none'}
         </output>
       );
     };
 
-    const view = render(<OverlayProbe editor={peer.editor} />);
+    const CursorList = ({ editor }: { readonly editor: ReactViewEditor }) => {
+      const ids = useYjsRemoteCursorIds(editor);
+
+      return ids.map((clientId) => (
+        <CursorProbe clientId={clientId} editor={editor} key={clientId} />
+      ));
+    };
+
+    const view = render(<CursorList editor={peer.editor} />);
 
     act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
+      sendRemoteSelection(peer, awareness, selection([0, 0], 1), 101);
+      sendRemoteSelection(peer, awareness, selection([1, 0], 1), 102);
     });
 
-    assert.equal(view.container.textContent, '101:10');
+    const secondRenders = renders.get(102);
 
     act(() => {
-      rect = new DOMRect(25, 20, 20, 20);
-      peer.editor.update.text.insert('!', {
-        at: { path: [0, 0], offset: 'alpha'.length },
+      awareness.setRemoteState(101, {
+        data: { name: 'Grace' },
+        selection: awareness.getStates().get(101)?.selection,
       });
     });
 
-    assert.equal(view.container.textContent, '101:25');
+    assert.equal(
+      view.container.querySelector('[data-client-id="101"]')?.textContent,
+      'Grace'
+    );
+    assert.equal(renders.get(102), secondRenders);
 
     view.unmount();
     peer.cleanup();
   });
 
-  void it('remeasures remote cursor overlays after resize layout settles', () => {
-    const awareness = new FakeAwareness(12);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'l',
-      numericClientId: 12,
-    });
-    const originalCancelAnimationFrame = window.cancelAnimationFrame;
-    const originalRequestAnimationFrame = window.requestAnimationFrame;
-    let frame: FrameRequestCallback | null = null;
-    let rect = new DOMRect(10, 20, 20, 20);
-
-    window.cancelAnimationFrame = () => {};
-    window.requestAnimationFrame = (callback) => {
-      frame = callback;
-
-      return 1;
-    };
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => rect });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor);
-
-      return <output>{positions[0]?.rect?.x ?? 'none'}</output>;
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    try {
-      act(() => {
-        sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-      });
-      assert.equal(view.container.textContent, '10');
-
-      act(() => {
-        window.dispatchEvent(new Event('resize'));
-      });
-      rect = new DOMRect(25, 20, 20, 20);
-
-      act(() => {
-        frame?.(0);
-      });
-      assert.equal(view.container.textContent, '25');
-    } finally {
-      view.unmount();
-      peer.cleanup();
-      window.cancelAnimationFrame = originalCancelAnimationFrame;
-      window.requestAnimationFrame = originalRequestAnimationFrame;
-    }
-  });
-
-  void it('keeps overlay positions stable across unrelated editor updates', () => {
-    const awareness = new FakeAwareness(8);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'h',
-      numericClientId: 8,
-    });
-    let renders = 0;
-
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor);
-
-      renders += 1;
-
-      return <output>{positions.length}</output>;
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-    });
-
-    const rendersAfterRemoteSelection = renders;
-
-    act(() => {
-      peer.editor.update.text.insert('!', {
-        at: { path: [2, 0], offset: 'gamma'.length },
-      });
-    });
-
-    assert.equal(renders, rendersAfterRemoteSelection);
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('refreshes overlay positions when a remote cursor selection changes', () => {
-    const awareness = new FakeAwareness(10);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'j',
-      numericClientId: 10,
-    });
-
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor);
-      const anchor = positions[0]?.range.anchor;
-
-      return (
-        <output>
-          {anchor?.path.join('.') ?? 'none'}:{anchor?.offset}
-        </output>
-      );
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([0, 0], 1));
-    });
-
-    assert.equal(view.container.textContent, '0.0:1');
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([2, 0], 2));
-    });
-
-    assert.equal(view.container.textContent, '2.0:2');
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('refreshes remote cursor overlay data when its revision changes', () => {
+  void it('returns null geometry without the exact mounted Editable', () => {
     const awareness = new FakeAwareness(5);
     const peer = createYjsReactPeer({
       awareness,
@@ -483,132 +376,27 @@ void describe('platejs/yjs react contract', () => {
       clientId: 'e',
       numericClientId: 5,
     });
-    let setLabel: ((label: string) => void) | null = null;
 
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [label, updateLabel] = React.useState('Ada');
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
-        data: () => ({ label }),
-        revision: label,
+    const GeometryProbe = ({
+      editor,
+    }: {
+      readonly editor: ReactViewEditor;
+    }) => {
+      const editableRef = React.useRef<HTMLDivElement>(null);
+      const geometry = useYjsRemoteCursorGeometry(editor, 101, {
+        editableRef,
       });
 
-      useEffect(() => {
-        setLabel = updateLabel;
-      }, [updateLabel]);
-
-      return <output>{positions[0]?.data.label}</output>;
+      return <output>{geometry ? 'measured' : 'none'}</output>;
     };
 
-    const view = render(<OverlayProbe editor={peer.editor} />);
+    const view = render(<GeometryProbe editor={peer.editor} />);
 
     act(() => {
       sendRemoteSelection(peer, awareness, selection([1, 0], 1));
     });
 
-    assert.equal(view.container.textContent, 'Ada');
-
-    act(() => {
-      setLabel?.('Grace');
-    });
-
-    assert.equal(view.container.textContent, 'Grace');
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('refreshes custom overlay data when it has a cursor-named object', () => {
-    const awareness = new FakeAwareness(9);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'i',
-      numericClientId: 9,
-    });
-    let setLabel: ((label: string) => void) | null = null;
-
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [label, updateLabel] = React.useState('Ada');
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
-        data: (cursor) => ({
-          cursor: { clientId: cursor.clientId, label },
-        }),
-        revision: label,
-      });
-
-      useEffect(() => {
-        setLabel = updateLabel;
-      }, [updateLabel]);
-
-      return <output>{positions[0]?.data.cursor.label}</output>;
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-    });
-
-    assert.equal(view.container.textContent, 'Ada');
-
-    act(() => {
-      setLabel?.('Grace');
-    });
-
-    assert.equal(view.container.textContent, 'Grace');
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('keeps custom cursor-named overlay data stable across unrelated editor updates', () => {
-    const awareness = new FakeAwareness(11);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'k',
-      numericClientId: 11,
-    });
-    let renders = 0;
-
-    setEditorDomApi(peer.editor, { resolveRangeRect: () => null });
-
-    const OverlayProbe = ({ editor }: EditorProbeProps): React.ReactElement => {
-      const [positions] = useYjsRemoteCursorOverlayPositions(editor, {
-        data: (cursor) => ({
-          cursor: {
-            clientId: cursor.clientId,
-            label:
-              typeof cursor.data?.name === 'string' ? cursor.data.name : '',
-          },
-        }),
-      });
-
-      renders += 1;
-
-      return <output>{positions[0]?.data.cursor.label}</output>;
-    };
-
-    const view = render(<OverlayProbe editor={peer.editor} />);
-
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-    });
-
-    const rendersAfterRemoteSelection = renders;
-
-    act(() => {
-      peer.editor.update.text.insert('!', {
-        at: { path: [2, 0], offset: 'gamma'.length },
-      });
-    });
-
-    assert.equal(view.container.textContent, 'Ada');
-    assert.equal(renders, rendersAfterRemoteSelection);
+    assert.equal(view.container.textContent, 'none');
 
     view.unmount();
     peer.cleanup();

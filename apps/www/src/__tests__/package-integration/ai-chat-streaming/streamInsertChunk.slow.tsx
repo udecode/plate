@@ -260,6 +260,16 @@ describe('AIChatPlugin update.insertChunk', () => {
         ],
       ],
       [
+        'an MDX sample blockquote split across chunks',
+        [
+          '# MDX Sample\n\n',
+          'Intro paragraph.\n\n',
+          '## Quote\n\n',
+          '> Generated ',
+          'blockquote',
+        ],
+      ],
+      [
         'block and inline math content',
         [
           'Here is an example of Markdown with math:\n',

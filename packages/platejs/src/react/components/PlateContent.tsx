@@ -5,7 +5,7 @@ import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import React, { useRef } from 'react';
 
-import type { Element, RootKey } from '../../facade';
+import type { Element, NodeEntry, Range, RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,
@@ -13,7 +13,6 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps } from '../../lib/types/EditableProps';
-import { pipeDecorate } from '../../static/utils/pipeDecorate';
 import type { Editor } from '../editor/Editor';
 import { useHotkeysContext } from '../hotkeys';
 import {
@@ -73,6 +72,22 @@ const getPlateContentReadOnly = ({
   plateReadOnly?: boolean;
   readOnly?: boolean;
 }) => (disabled ? true : (readOnly ?? plateReadOnly ?? false));
+
+const pipePlateContentDecorate = (
+  editor: Editor,
+  decorateProp:
+    | ((context: { editor: Editor; entry: NodeEntry }) => Range[] | undefined)
+    | null
+    | undefined,
+  editableDecorate: PliteEditableProps['decorate']
+): PliteEditableProps['decorate'] => {
+  if (!decorateProp && !editableDecorate) return undefined;
+
+  return (entry) => [
+    ...(decorateProp?.({ editor, entry }) ?? []),
+    ...(editableDecorate?.([entry[0], entry[1]], editor) ?? []),
+  ];
+};
 
 /**
  * Editable with plugins.
@@ -159,9 +174,9 @@ function PlateContentBranch({
   const decorate = React.useMemo(() => {
     void modelRevision;
 
-    return pipeDecorate(
+    return pipePlateContentDecorate(
       editor,
-      storeDecorate as Parameters<typeof pipeDecorate>[1],
+      storeDecorate,
       editableInput.decorate
     );
   }, [editableInput.decorate, editor, modelRevision, storeDecorate]);
@@ -321,7 +336,7 @@ function PlateContentBranch({
     beforeEditable = (
       <>
         {beforeEditable}
-        <BeforeEditable {...editableProps} />
+        <BeforeEditable editableRef={editableRef} />
       </>
     );
   });
@@ -339,7 +354,7 @@ function PlateContentBranch({
     afterEditable = (
       <>
         {afterEditable}
-        <AfterEditable {...editableProps} />
+        <AfterEditable editableRef={editableRef} />
       </>
     );
   });

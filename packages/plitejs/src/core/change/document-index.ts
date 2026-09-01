@@ -376,19 +376,21 @@ export const updateIndexedNode = (
   });
 };
 
-type IndexedPropertyUpdate = Readonly<{
+type IndexedNodeUpdate = Readonly<{
   path: readonly number[];
-  props: JsonRecord;
+  props?: JsonRecord;
+  text?: string;
 }>;
 
-type IndexedPropertyUpdateBranch = {
-  children: Map<number, IndexedPropertyUpdateBranch>;
+type IndexedNodeUpdateBranch = {
+  children: Map<number, IndexedNodeUpdateBranch>;
   props?: JsonRecord;
+  text?: string;
 };
 
-const updateIndexedNodeProperties = (
+const updateIndexedNodes = (
   indexed: IndexedValue,
-  branch: IndexedPropertyUpdateBranch
+  branch: IndexedNodeUpdateBranch
 ): IndexedValue => {
   const nextValue = [...indexed.value];
   const nextIndexes = [...indexed.index.children];
@@ -408,7 +410,7 @@ const updateIndexedNodeProperties = (
       if (!isElementNode(nextNode) || !nextIndex.children) {
         throw new Error(`Cannot descend through text at child index ${index}.`);
       }
-      const nested = updateIndexedNodeProperties(
+      const nested = updateIndexedNodes(
         { index: nextIndex.children, value: nextNode.children },
         update
       );
@@ -431,6 +433,14 @@ const updateIndexedNodeProperties = (
             ...cloneFrozen(update.props),
             children: nextNode.children,
           });
+    }
+
+    if (update.text !== undefined) {
+      if (!isTextNode(nextNode)) {
+        throw new Error(`Cannot update element text at child index ${index}.`);
+      }
+      nextNode = Object.freeze({ ...nextNode, text: update.text });
+      nextIndex = { kind: 'text', length: update.text.length + 2 };
     }
 
     nextValue[index] = nextNode;
@@ -501,10 +511,6 @@ export class DocumentIndex {
   }
 
   static fromValue(value: readonly JsonNode[]) {
-    if (!Object.isFrozen(value)) {
-      return DocumentIndex.remember(new DocumentIndex(value));
-    }
-
     const cached = DocumentIndex.immutableCache.get(value);
 
     if (cached) return cached;
@@ -722,12 +728,12 @@ export class DocumentIndex {
     );
   }
 
-  withExactNodePropertiesBatch(updates: readonly IndexedPropertyUpdate[]) {
-    const root: IndexedPropertyUpdateBranch = { children: new Map() };
+  withNodeUpdates(updates: readonly IndexedNodeUpdate[]) {
+    const root: IndexedNodeUpdateBranch = { children: new Map() };
 
     for (const update of updates) {
       if (update.path.length === 0) {
-        throw new Error('Cannot update the document root properties.');
+        throw new Error('Cannot update the document root.');
       }
       let branch = root;
 
@@ -738,10 +744,11 @@ export class DocumentIndex {
         branch = child;
       }
       branch.props = update.props;
+      branch.text = update.text;
     }
 
     return DocumentIndex.fromIndexedValue(
-      updateIndexedNodeProperties({ index: this.tree, value: this.value }, root)
+      updateIndexedNodes({ index: this.tree, value: this.value }, root)
     );
   }
 

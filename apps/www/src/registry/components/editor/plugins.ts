@@ -13,7 +13,6 @@ import { CalloutKit } from './callout';
 import { CodeBlockKit } from './code-block';
 import { ColumnKit } from './column';
 import { CommentKit } from './comment';
-import { CursorOverlayKit } from './cursor-overlay';
 import { DateKit } from './date';
 import { DetailsKit } from './details';
 import { DiscussionKit } from './discussion';
@@ -72,7 +71,6 @@ export const EditorKit = [
   // Editing
   ...SlashKit,
   ...AutoformatKit,
-  ...CursorOverlayKit,
   ...DndKit,
   ...EmojiKit,
   ...ExitBreakKit,

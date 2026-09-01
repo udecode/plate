@@ -13,8 +13,6 @@ import { useMounted } from '@/registry/hooks/use-mounted';
 const SyntaxHighlighter =
   Prism as unknown as typeof React.Component<SyntaxHighlighterProps>;
 
-type ThemedSyntaxHighlighterProps = Omit<SyntaxHighlighterProps, 'style'>;
-
 const preSelector = 'pre[class*="language-"]';
 const codeSelector = 'code[class*="language-"]';
 
@@ -44,7 +42,7 @@ const darkTheme = normalizeTheme(coldarkDark);
 export function ThemedSyntaxHighlighter({
   children,
   ...props
-}: ThemedSyntaxHighlighterProps) {
+}: Omit<SyntaxHighlighterProps, 'style'>) {
   const mounted = useMounted();
   const { resolvedTheme } = useTheme();
   const theme = mounted && resolvedTheme === 'dark' ? darkTheme : lightTheme;

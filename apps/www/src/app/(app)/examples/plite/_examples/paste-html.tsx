@@ -205,13 +205,15 @@ const getElementStyle = (
 
 const allowedSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
-interface SafeLinkProps {
+const SafeLink = ({
+  children,
+  href,
+  attributes,
+}: {
   attributes: Record<string, unknown>;
   children: React.ReactNode;
   href: string;
-}
-
-const SafeLink = ({ children, href, attributes }: SafeLinkProps) => {
+}) => {
   const safeHref = useMemo(() => {
     let parsedUrl: URL | null = null;
     try {

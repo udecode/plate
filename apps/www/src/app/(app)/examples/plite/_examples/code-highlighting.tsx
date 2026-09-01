@@ -579,15 +579,12 @@ const isSamePath = (path: readonly number[], another: readonly number[]) =>
   path.length === another.length &&
   path.every((segment, index) => segment === another[index]);
 
-interface LanguageSelectProps extends Omit<
-  React.SelectHTMLAttributes<HTMLSelectElement>,
-  'size'
-> {
-  value?: string;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-}
-
-const LanguageSelect = (props: LanguageSelectProps) => (
+const LanguageSelect = (
+  props: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> & {
+    value?: string;
+    onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  }
+) => (
   <NativeSelect
     className="absolute top-[5px] right-[5px] z-10"
     contentEditable={false}

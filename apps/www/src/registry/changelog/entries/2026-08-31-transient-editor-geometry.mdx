@@ -1,0 +1,34 @@
+---
+id: 2026-08-31-transient-editor-geometry
+date: 2026-08-31
+status: draft
+kind: behavior
+summary: 'Use exact editor geometry for transient UI'
+change: { 'type': 'source', 'date': '2026-08-31', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-31-find-kit","kind":"new","migrationNotes":[]} -->
+
+- **`find`**, **`find-demo`**, **`editor-plugins`**: Search documents with a visible Find bar and transient, keyboard-navigable matches.
+
+<!-- entry: {"id":"2026-08-31-inactive-selection-demo","kind":"new","migrationNotes":[]} -->
+
+- **`inactive-selection-demo`**: Demonstrate native inactive-selection paint for expanded ranges and collapsed carets without an editor plugin.
+
+<!-- entry: {"id":"2026-08-31-inactive-selection-focus-markers","kind":"behavior","migrationNotes":[]} -->
+
+- **`editor`**, **`ai-menu`**, **`font-size-toolbar-button`**, **`link-toolbar-button`**, **`link`**: Keep the canonical selection visible while marked editor controls own focus, and clear it on every unmarked focus transition.
+
+<!-- entry: {"id":"2026-08-31-widget-floating-geometry","kind":"behavior","migrationNotes":[]} -->
+
+- **`use-widget-floating`**, **`floating-toolbar`**, **`link`**: Position floating controls from the exact mounted editor selection, reveal them only after placement resolves, and mount complete toolbar components with only the Editable ref. `FloatingToolbar` accepts optional custom children.
+
+<!-- entry: {"id":"2026-08-31-yjs-cursor-slots","kind":"wiring","migrationNotes":[]} -->
+
+- **`remote-cursor-overlay`**, **`collaboration-demo`**: Render remote Yjs selections and carets through `YjsPlugin` slots with per-cursor updates.
+
+<!-- entry: {"id":"2026-08-31-link-input-focus","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Focus the URL input when the floating form opens, including from an empty paragraph, and preserve keyboard navigation between its fields.

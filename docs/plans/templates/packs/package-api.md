@@ -21,6 +21,7 @@ Start Gates:
 | Release artifact path selected | pending | Choose one: `.changeset`, registry changelog, or `N/A: no published user-visible delta` |
 | `changeset` skill loaded when `.changeset` is required | pending | pending |
 | Barrel/export impact decision recorded | pending | pending |
+| Runtime scale applicability resolved | pending | If the public/package boundary changes repeated/hot work or introduces a runtime layer, also apply `performance-observability`; otherwise record a source-backed N/A |
 
 Work Checklist:
 - [ ] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
@@ -29,6 +30,9 @@ Work Checklist:
 - [ ] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
 - [ ] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
 - [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [ ] Package/API pack: a scale-sensitive runtime contract composes the
+      performance pack before target acceptance; type-only and zero-runtime
+      changes record the exact N/A reason.
 - [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
 - [ ] Package/API pack: generated barrels or release notes are updated when required.
 
@@ -36,6 +40,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
+| Runtime scale contract | pending | Close the materialized performance pack for scale-sensitive runtime work, including pre-acceptance probe and production rerun, or record a source-backed zero-runtime N/A | pending |
 | Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
 | Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
 | Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |

@@ -28,17 +28,6 @@ const stopScrolling = (
   }
 };
 
-type ScrollAreaProps = {
-  placement: 'bottom' | 'top';
-  containerRef?: React.RefObject<HTMLElement | Window | null>;
-  enabled?: boolean;
-  height?: number;
-  minStrength?: number;
-  scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
-  strengthMultiplier?: number;
-  zIndex?: number;
-};
-
 export function ScrollArea({
   containerRef,
   enabled = true,
@@ -48,7 +37,16 @@ export function ScrollArea({
   scrollAreaProps,
   strengthMultiplier = 25,
   zIndex = 10_000,
-}: ScrollAreaProps) {
+}: {
+  placement: 'bottom' | 'top';
+  containerRef?: React.RefObject<HTMLElement | Window | null>;
+  enabled?: boolean;
+  height?: number;
+  minStrength?: number;
+  scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
+  strengthMultiplier?: number;
+  zIndex?: number;
+}) {
   const ref = React.useRef<HTMLDivElement>(null);
   const scaleYRef = React.useRef(0);
   const frameRef = React.useRef<number | null>(null);
@@ -156,7 +154,19 @@ export function ScrollArea({
   );
 }
 
-export type DndScrollerOptions = Omit<ScrollAreaProps, 'placement'>;
+export type DndScrollerOptions = Omit<
+  {
+    placement: 'bottom' | 'top';
+    containerRef?: React.RefObject<HTMLElement | Window | null>;
+    enabled?: boolean;
+    height?: number;
+    minStrength?: number;
+    scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
+    strengthMultiplier?: number;
+    zIndex?: number;
+  },
+  'placement'
+>;
 
 export function Scroller(props: DndScrollerOptions) {
   return (

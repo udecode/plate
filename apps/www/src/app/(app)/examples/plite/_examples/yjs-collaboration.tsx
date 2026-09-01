@@ -1,5 +1,5 @@
 import { yjs, type YjsAwarenessChange } from 'platejs/yjs';
-import { useYjsRemoteCursors } from 'platejs/yjs/react';
+import { useYjsRemoteCursor, useYjsRemoteCursorIds } from 'platejs/yjs/react';
 import {
   type Editor as CoreEditor,
   createEditor,
@@ -1267,26 +1267,57 @@ const Leaf = ({
   return <span {...attributes}>{children}</span>;
 };
 
+const CursorStatusItem = ({
+  clientId,
+  editor,
+  index,
+}: {
+  clientId: number;
+  editor: YjsEditor;
+  index: number;
+}) => {
+  const cursor = useYjsRemoteCursor(editor, clientId);
+
+  if (!cursor) return null;
+
+  const { selection } = cursor;
+  const value = !selection
+    ? `${cursor.clientId}:null`
+    : [
+        cursor.clientId,
+        ':',
+        selection.anchor.path.join('.'),
+        ':',
+        selection.anchor.offset,
+        '-',
+        selection.focus.path.join('.'),
+        ':',
+        selection.focus.offset,
+      ].join('');
+
+  return (
+    <>
+      {index === 0 ? '' : ' | '}
+      {value}
+    </>
+  );
+};
+
 const CursorStatus = ({ editor }: { editor: YjsEditor }) => {
-  const cursors = useYjsRemoteCursors(editor);
+  const clientIds = useYjsRemoteCursorIds(editor);
 
   return (
     <span className="text-xs text-slate-500">
-      {cursors.length === 0
+      {clientIds.length === 0
         ? 'remote:none'
-        : cursors
-            .map((cursor) => {
-              const { selection } = cursor;
-
-              if (!selection) {
-                return `${cursor.clientId}:null`;
-              }
-
-              return `${cursor.clientId}:${selection.anchor.path.join('.')}:${
-                selection.anchor.offset
-              }-${selection.focus.path.join('.')}:${selection.focus.offset}`;
-            })
-            .join(' | ')}
+        : clientIds.map((clientId, index) => (
+            <CursorStatusItem
+              clientId={clientId}
+              editor={editor}
+              index={index}
+              key={clientId}
+            />
+          ))}
     </span>
   );
 };

@@ -1,0 +1,29 @@
+{
+  "appliedCaps": [
+    { "ceiling": 2, "key": "wrong-owner", "status": "final" },
+    { "ceiling": 2, "key": "duplicate-truth", "status": "final" },
+    { "ceiling": 3, "key": "wrong-lifetime", "status": "final" }
+  ],
+  "axisGrades": {
+    "api": 1,
+    "boundary": 2,
+    "correctness": 2,
+    "lifetime": 0,
+    "owner": 0,
+    "proof": 3,
+    "scale": 1
+  },
+  "confidence": 96,
+  "confidenceGrades": {
+    "consumers": 4,
+    "inventory": 4,
+    "runtime": 3,
+    "trace": 4
+  },
+  "displayScore": "2.0/10",
+  "finalScore": 2,
+  "rawScore": 2.5,
+  "schemaVersion": 1,
+  "scoreCeiling": 2,
+  "status": "final"
+}

@@ -11,13 +11,16 @@ import type {
   Selection,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { Editor } from '../editor/Editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
+import { PlatePluginDecorationSources } from '../internal/PlatePluginDecorationSources';
 import { PlateRuntimeContext } from '../internal/PlateRuntimeContext';
 import { Plite } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
+import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import {
   EditorReadOnlyProvider,
   type PliteAnnotationStore,
@@ -105,6 +108,9 @@ function PlateInner({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
+  const modelRevision = usePlateModelRevision(currentEditor);
+  const decorationPluginNames =
+    getPlateRuntime(currentEditor).pluginCache.decorate;
   const [initialReadOnly] = React.useState(() =>
     currentEditor.read.view.isReadOnly()
   );
@@ -218,35 +224,40 @@ function PlateInner({
     return unsubscribe;
   }, [editor, observerBaselineVersion]);
 
-  const content = (
-    <EditorReadOnlyProvider readOnly={plateReadOnly}>
-      <PlateStoreProvider
-        annotationStore={annotationStore}
-        containerRef={containerRef}
-        decorate={decorate}
-        decorationSources={decorationSources}
-        editor={currentEditor}
-        primary={primary}
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        scope={currentEditor.id}
-      >
-        {children}
-      </PlateStoreProvider>
-    </EditorReadOnlyProvider>
-  );
-
   return (
-    <PlateRuntimeContext value>
-      <Plite
-        annotationStore={annotationStore}
-        decorationSources={decorationSources}
-        editor={currentEditor}
-        readOnly={plateReadOnly}
-      >
-        {content}
-      </Plite>
-    </PlateRuntimeContext>
+    <PlatePluginDecorationSources
+      editor={currentEditor}
+      names={decorationPluginNames}
+      revision={modelRevision}
+      sources={decorationSources}
+    >
+      {(compiledDecorationSources) => (
+        <PlateRuntimeContext value>
+          <Plite
+            annotationStore={annotationStore}
+            decorationSources={compiledDecorationSources}
+            editor={currentEditor}
+            readOnly={plateReadOnly}
+          >
+            <EditorReadOnlyProvider readOnly={plateReadOnly}>
+              <PlateStoreProvider
+                annotationStore={annotationStore}
+                containerRef={containerRef}
+                decorate={decorate}
+                decorationSources={compiledDecorationSources}
+                editor={currentEditor}
+                primary={primary}
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                scope={currentEditor.id}
+              >
+                {children}
+              </PlateStoreProvider>
+            </EditorReadOnlyProvider>
+          </Plite>
+        </PlateRuntimeContext>
+      )}
+    </PlatePluginDecorationSources>
   );
 }
 

@@ -44,7 +44,7 @@ Copy:
 
 - [EventEditorPlugin.ts](../../../../packages/platejs/src/react/plugins/event-editor/EventEditorPlugin.ts)
 - [CopilotPlugin.tsx](../../../../packages/platejs/src/ai/react/CopilotPlugin.tsx)
-- [CursorOverlayPlugin.tsx](../../../../packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx)
+- [YjsPlugin.tsx](../../../../packages/platejs/src/yjs/react/YjsPlugin.tsx)
 
 Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file

@@ -90,24 +90,27 @@ The merged Plite projection store already owns:
 - changed-runtime and subscriber-wake metrics
 - a central DOM phase scheduler elsewhere in the mounted runtime
 
-This is enough to reject a second generic overlay store. It is not yet enough
-to claim changed-cursor work is keyed. `PliteProjectionStoreRefreshOptions`
-accepts editor change, reason, source id, and full invalidation, but no changed
-projection ids. A source refresh still reads the source array, while
-`forceInvalidate` remaps every item.
+This is enough to reject a second generic overlay store. It does not justify a
+public changed-id API. Plate attaches a private keyed-delta
+capability to its projection array. Plite consumes that capability inside the
+existing store, maps only the named projections, and publishes only their
+changed runtime buckets. Membership changes still take the honest full-list
+path.
 
 ### Yjs cursor path
 
-The awareness event already exposes `added`, `updated`, and `removed` client
-ids. The controller currently discards the event and publishes only a scalar
-revision. `remoteCursors()` then scans all awareness states.
+The awareness adapter consumes `added`, `updated`, and `removed` client ids,
+decodes one changed client, and publishes stable membership plus keyed cursor
+records. Aggregate `remoteCursors()` materializes lazily for imperative reads;
+ordinary React and decoration work never depends on it.
 
-`useYjsRemoteCursorDecorationSource` reacts to that revision by forcing a full
-Decoration refresh. The separate overlay-position hook scans all remote cursors
-again and reads DOM rectangles. The result is duplicate relative-position work,
-duplicate list work, and host React fan-out.
+`YjsPlugin` owns a private stable projection list. Membership changes rebuild
+the list and its per-id subscriptions. Cursor changes replace one projection
+and wake only its affected runtime bucket. Manual `decorate` consumers use the
+adapter's path index instead of scanning the broad cursor list for every text
+node.
 
-Required implementation:
+Proven owner contract:
 
 1. Route the private awareness event into the existing
    `YjsAwarenessAdapter`; keep public `subscribeAwareness(() => void)` scalar.
@@ -117,14 +120,14 @@ Required implementation:
 3. Map ordinary editor commits through root-aware Plite Anchors with zero Yjs
    endpoint conversions. Named lifecycle/error fallbacks re-resolve only the
    affected root bucket from retained raw endpoints.
-4. Let singular/broad data hooks, the Decoration source, and the Widget store
+4. Let keyed data hooks, the private Decoration source, and the Widget store
    read that same adapter cache. The copied cursor renderer uses Widget ids and
-   per-id reads rather than the broad list hook.
+   per-id reads.
 5. Keep client decode, cursor-resolution pass, endpoint conversion, item,
    id-list, geometry, fallback, and host-render counters distinct.
 
-The exact internal keyed-delta primitive remains an implementation-pressure
-question. It does not justify a public changed-id or geometry-store API.
+The internal keyed-delta primitive stays private. It does not justify a public
+changed-id or geometry-store API.
 
 ## External evidence ledger
 

@@ -109,6 +109,7 @@ const oracleRows = ({
       "pointer-feedback",
       "focus",
       "popup",
+      "subscription-lifecycle",
       "runtime-errors",
       "follow-up-input",
     ].map((observation) => {
@@ -139,10 +140,10 @@ const oracleRows = ({
           },
           focus: {
             forbidden: "the test starts from a different focus state",
-            positive: `initial-focus: editor-text-caret-before-date; before pointerdown${
+            positive: `initial-focus: editor-text-caret-before-date; before pointerdown; focus-stability: settled + follow-up-key${
               physicalHitPath ? "; selection-origin: physical-pointer" : ""
             }`,
-            result: `pass: initial-focus: pass${
+            result: `pass: initial-focus: pass; settled-focus: pass; follow-up-key: pass${
               physicalHitPath ? "; selection-origin: pass" : ""
             }`,
           },
@@ -171,7 +172,8 @@ const oracleRows = ({
                 ? `exact-chrome reporter-profile browser${
                     reporterProfileToolProof ? " computer-use" : ""
                   }`
-                : physicalHitPath ||
+                : observation === "focus" ||
+                    physicalHitPath ||
                     captureRoutingPath ||
                     externalInterceptorPath
                 ? "browser"
@@ -388,10 +390,13 @@ const fixture = ({
   missingAffectedCase = false,
   missingAffectedBaseline = false,
   missingExpectedOutcomeAuthority = false,
+  missingFixtureScope = false,
   missingForbidden = false,
   missingPixelControls = false,
   missingPopupFollowUp = false,
   missingReporterOracle = false,
+  missingRuntimeModes = false,
+  minimalFixtureScope = false,
   popupLifecycle = false,
   popupSamePhaseOracles = true,
   physicalHitPath = false,
@@ -431,6 +436,12 @@ const fixture = ({
 
   const escalated = architectureVerdict === "escalate";
 
+  const fixtureScope = missingFixtureScope
+    ? ""
+    : minimalFixtureScope
+      ? "; fixture-scope: minimal first invariant"
+      : "; fixture-scope: complete full selected input";
+
   return `
 Selected executable cases:
 | Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
@@ -449,7 +460,7 @@ Selected executable cases:
     missingExpectedOutcomeAuthority
       ? "pending"
       : "accepted-product-law: Regression semantic closure contract"
-  } | ${redTestEscalation} | ${
+  } | ${redTestEscalation} | ${missingRuntimeModes ? `browser: current-source Chromium route${fixtureScope}` :
     exactChrome
       ? `exact-chrome: installed Chrome 140 on the proof host${
           reporterProfile
@@ -457,10 +468,10 @@ Selected executable cases:
                 reporterProfileToolProof ? "; tool-proof: computer-use" : ""
               }`
             : ""
-        }`
+        }; runtime-modes: compositor interaction active${fixtureScope}`
       : browserCommand
-        ? "browser: current-source Chromium route"
-        : "N/A: deterministic Node workflow"
+        ? `browser: current-source Chromium route; runtime-modes: mounted command mode active${fixtureScope}`
+        : `N/A: deterministic Node workflow; runtime-modes: no optional product mode${fixtureScope}`
   } | ${selectedTestCommand} | ${
     preImplementation ? "reproduced" : "completed"
   } | commit:${"1".repeat(40)} | Regression |
@@ -589,6 +600,78 @@ test(semanticTestTitle, () => {
     validateRegressionPlan(fixture(), { complete: true, rootDir: root }),
     []
   );
+});
+
+test("selective invalidation cannot close from repeated edits to one target", () => {
+  const plan = fixture().replace(
+    "validate one complete plan",
+    "exercise affected-only publication"
+  );
+
+  assert.match(
+    validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"),
+    /selective invalidation requires applicable follow-up-input@follow-up/
+  );
+});
+
+test("selective invalidation proves unchanged reads and an unrelated-then-affected transition", () => {
+  const plan = fixture()
+    .replace("validate one complete plan", "exercise selective invalidation")
+    .replace(
+      /\| case-complete \| follow-up-input \| follow-up \|[^\n]+/,
+      `| case-complete | follow-up-input | follow-up | yes | unrelated-then-affected: edit a different target, then this target; unchanged-read: preserve an unedited value | stale positions or altered unchanged values survive | package | test: ${semanticTestPath}#${semanticTestTitle} | pass: transition contract; unrelated-then-affected: pass; unchanged-read: pass |`
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(plan, { complete: true, rootDir: root }),
+    []
+  );
+
+  for (const evidence of ["unrelated-then-affected", "unchanged-read"]) {
+    assert.match(
+      validateRegressionPlan(plan.replace(`${evidence}: pass`, `${evidence}: pending`), {
+        complete: true,
+        rootDir: root,
+      }).join("\n"),
+      new RegExp(`selective invalidation completion requires ${evidence}: pass`)
+    );
+  }
+});
+
+test("runtime identity mapping cannot close from value equality alone", () => {
+  const plan = fixture().replace(
+    "validate one complete plan",
+    "repair runtime identity mapping"
+  );
+
+  const errors = validateRegressionPlan(plan, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  for (const evidence of ["serialized-replay", "retained-identity", "deleted-identity", "split-merge-range"]) {
+    assert.match(errors, new RegExp(`runtime identity requires ${evidence}: assertion`));
+  }
+});
+
+test("runtime identity mapping proves serialized retained and deleted identities", () => {
+  const plan = fixture()
+    .replace("validate one complete plan", "repair runtime identity mapping")
+    .replace(
+      /\| case-complete \| model \| after-action \|[^\n]+/,
+      `| case-complete | model | after-action | yes | serialized-replay: round-trip the change; retained-identity: shifted siblings keep their keys; deleted-identity: the removed key resolves to null; split-merge-range: a formatting round-trip preserves selected text and direction across split and merge | a removed key transfers to a surviving sibling or a retained selection moves | package | test: ${semanticTestPath}#${semanticTestTitle} | pass: serialized-replay: pass; retained-identity: pass; deleted-identity: pass; split-merge-range: pass |`
+    );
+
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  for (const evidence of ["serialized-replay", "retained-identity", "deleted-identity", "split-merge-range"]) {
+    assert.match(
+      validateRegressionPlan(plan.replace(`${evidence}: pass`, `${evidence}: pending`), {
+        complete: true,
+        rootDir: root,
+      }).join("\n"),
+      new RegExp(`runtime identity completion requires ${evidence}: pass`)
+    );
+  }
 });
 
 test("pre-implementation validation permits final-proof placeholders", () => {
@@ -848,6 +931,36 @@ test("live-tab contradictions inventory external capture interceptors", () => {
   );
 });
 
+test("unit RED requires parity with route-owned runtime modes", () => {
+  assert.match(
+    validateRegressionPlan(fixture({ missingRuntimeModes: true }), {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /unit RED requires runtime-modes: in Exact environment/
+  );
+});
+
+test("unit RED requires explicit fixture scope", () => {
+  assert.match(
+    validateRegressionPlan(fixture({ missingFixtureScope: true }), {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /unit RED requires fixture-scope: complete or minimal in Exact environment/
+  );
+});
+
+test("minimal fixture scope cannot close the case", () => {
+  assert.match(
+    validateRegressionPlan(fixture({ minimalFixtureScope: true }), {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /minimal fixture scope cannot support completed, fixed, or kept status/
+  );
+});
+
 test("the four reporter-invalidated plans fail semantic validation", () => {
   for (const planPath of [
     "docs/plans/5091-fix-stale-font-size-selection-highlight.md",
@@ -978,6 +1091,116 @@ test("a completed popup lifecycle requires a usable follow-up interaction", () =
   );
 });
 
+test("a focus transfer covers direct and deferred next-target resolution", () => {
+  const focusCase = fixture()
+    .replace("validate one complete plan", "move focus to a marked control")
+    .replace("semantic closure is accepted", "the marked control owns focus")
+    .replace(
+      /^\| case-complete \| focus \| after-action \|.*$/m,
+      `| case-complete | focus | after-action | yes | the marked control owns focus | inactive paint never activates | browser and DOM focus sequence | test: ${semanticTestPath}#${semanticTestTitle} | pass: marked control focused |`
+    );
+  const errors = validateRegressionPlan(focusCase, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires focus-transfer: direct-related-target/);
+  assert.match(errors, /requires direct-related-target: pass/);
+  assert.match(errors, /requires null-related-target: pass/);
+  assert.match(errors, /requires focusin-resolution: pass/);
+
+  const resolved = focusCase
+    .replace(
+      "the marked control owns focus | inactive paint never activates",
+      "focus-transfer: direct-related-target + null-related-target -> focusin resolves the marked control | an unmarked target or pending null phase paints"
+    )
+    .replace(
+      "pass: marked control focused",
+      "pass: direct-related-target: pass; null-related-target: pass; focusin-resolution: pass"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
+test("a keyed subscription fix covers add, update, remove, and teardown", () => {
+  const lifecycleCase = fixture().replace(
+    "validate one complete plan",
+    "remove one member from a subscription-backed keyed collection"
+  );
+  const missingOracleErrors = validateRegressionPlan(lifecycleCase, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    missingOracleErrors,
+    /subscription-backed keyed collection requires an applicable subscription-lifecycle oracle/
+  );
+
+  const incompleteLifecycle = lifecycleCase.replace(
+    /^\| case-complete \| subscription-lifecycle \| after-action \|.*$/m,
+    `| case-complete | subscription-lifecycle | after-action | yes | the same keyed publication path releases removed members | a removed member reaches a stale item subscriber | package | test: ${semanticTestPath}#${semanticTestTitle} | pass: update: pass |`
+  );
+  const incompleteErrors = validateRegressionPlan(incompleteLifecycle, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(incompleteErrors, /requires add: pass/);
+  assert.match(incompleteErrors, /requires remove: pass/);
+  assert.match(incompleteErrors, /requires teardown: pass/);
+
+  const resolved = incompleteLifecycle.replace(
+    "pass: update: pass",
+    "pass: add: pass; update: pass; remove: pass; teardown: pass"
+  );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
+test("a disposable effect source survives StrictMode rehearsal", () => {
+  const lifecycleCase = fixture()
+    .replace(
+      "validate one complete plan",
+      "destroy an effect-owned disposable source during React StrictMode"
+    )
+    .replace(
+      /^\| case-complete \| subscription-lifecycle \| after-action \|.*$/m,
+      `| case-complete | subscription-lifecycle | after-action | yes | the disposable source publishes after setup | cleanup permanently destroys the remounted source | React package | test: ${semanticTestPath}#${semanticTestTitle} | pass: add: pass; update: pass; remove: pass; teardown: pass |`
+    );
+  const errors = validateRegressionPlan(lifecycleCase, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires strict-effect: mount \+ cleanup \+ remount/);
+  assert.match(errors, /requires mount: pass/);
+  assert.match(errors, /requires cleanup: pass/);
+  assert.match(errors, /requires remount: pass/);
+  assert.match(errors, /requires post-remount-publication: pass/);
+
+  const resolved = lifecycleCase
+    .replace(
+      "the disposable source publishes after setup",
+      "strict-effect: mount + cleanup + remount keeps the disposable source live after the rehearsal"
+    )
+    .replace(
+      "pass: add: pass; update: pass; remove: pass; teardown: pass",
+      "pass: add: pass; update: pass; remove: pass; teardown: pass; mount: pass; cleanup: pass; remount: pass; post-remount-publication: pass"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
 test("a popup close requires same-phase selection and focus accounting", () => {
   const errors = validateRegressionPlan(
     fixture({ popupLifecycle: true, popupSamePhaseOracles: false }),
@@ -992,6 +1215,78 @@ test("a popup close requires same-phase selection and focus accounting", () => {
     errors,
     /popup lifecycle at after-action requires focus@after-action/
   );
+});
+
+test("popup focus completion requires settled focus and a follow-up key", () => {
+  const immediateFocus = fixture({ popupLifecycle: true }).replace(
+    /^\| case-complete \| focus \| after-action \|.*$/m,
+    `| case-complete | focus | after-action | yes | the popup input owns focus | the editor root steals focus | Browser mounted focus lifecycle | test: ${semanticTestPath}#${semanticTestTitle} | pass: input focused immediately after open |`
+  );
+  const errors = validateRegressionPlan(immediateFocus, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /popup focus requires focus-stability: settled \+ follow-up-key/);
+  assert.match(errors, /popup focus completion requires settled-focus: pass/);
+  assert.match(errors, /popup focus completion requires follow-up-key: pass/);
+
+  const resolved = immediateFocus
+    .replace(
+      "the popup input owns focus | the editor root steals focus",
+      "focus-stability: settled + follow-up-key keeps the popup input focused | the editor root steals focus"
+    )
+    .replace(
+      "pass: input focused immediately after open",
+      "pass: settled-focus: pass; follow-up-key: pass"
+    );
+  const resolvedErrors = validateRegressionPlan(resolved, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.doesNotMatch(resolvedErrors, /popup focus/);
+});
+
+test("shortcut-opened popup focus requires a native keyboard trigger", () => {
+  const shortcutFocus = fixture({
+    browserCommand: true,
+    popupLifecycle: true,
+  })
+    .replace(
+      "type @ in the mounted editor",
+      "press the Meta+K shortcut in the focused editor"
+    )
+    .replace(
+      /^\| case-complete \| focus \| after-action \|.*$/m,
+      `| case-complete | focus | after-action | yes | focus-stability: settled + follow-up-key keeps the popup input focused | the editor root steals focus | Browser mounted focus lifecycle | test: ${semanticTestPath}#${semanticTestTitle} | pass: settled-focus: pass; follow-up-key: pass |`
+    );
+  const errors = validateRegressionPlan(shortcutFocus, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    errors,
+    /requires trigger-path: pre-focused-surface \+ native-keyboard/
+  );
+  assert.match(errors, /requires native-trigger-key: pass/);
+
+  const resolved = shortcutFocus
+    .replace(
+      "focus-stability: settled + follow-up-key keeps the popup input focused",
+      "focus-stability: settled + follow-up-key; trigger-path: pre-focused-surface + native-keyboard keeps the popup input focused"
+    )
+    .replace(
+      "pass: settled-focus: pass; follow-up-key: pass",
+      "pass: settled-focus: pass; follow-up-key: pass; native-trigger-key: pass"
+    );
+  const resolvedErrors = validateRegressionPlan(resolved, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.doesNotMatch(resolvedErrors, /native keyboard trigger/);
 });
 
 test("a caret-visible report requires native, focus, and follow-up oracles", () => {
@@ -1157,6 +1452,92 @@ test("replay and final-verification failures require an unchanged-bytes diagnost
       /requires diagnostic: <unchanged-bytes phase\/result>/,
       failureKind
     );
+  }
+});
+
+test("a failed popup focus fix requires a native focus-owner trace", () => {
+  const failedFocus = fixture({
+    failedCount: 1,
+    failureKind: "exact-replay",
+    popupLifecycle: true,
+  }).replace(
+    /^\| case-complete \| focus \| after-action \|.*$/m,
+    `| case-complete | focus | after-action | yes | focus-stability: settled + follow-up-key keeps the popup input focused | the editor root steals focus | Browser mounted focus lifecycle | test: ${semanticTestPath}#${semanticTestTitle} | pass: settled-focus: pass; follow-up-key: pass |`
+  );
+  const errors = validateRegressionPlan(failedFocus, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires focus-owner-trace: mount \+ positioned \+ settled \+ follow-up-key/);
+  assert.match(errors, /requires native-focus-events: focusin \+ focusout capture/);
+  assert.match(errors, /requires first-divergence: <phase\/owner>/);
+  assert.match(errors, /requires focus-call-trace: target \+ connected \+ display \+ visibility \+ disabled \+ active-after-call/);
+  assert.match(errors, /requires focus-call-result: <called-or-not-called\/owner>/);
+
+  const resolved = failedFocus.replace(
+    "; diagnostic: pass unchanged-bytes failing phase classified",
+    "; diagnostic: pass unchanged-bytes failing phase classified; focus-owner-trace: mount + positioned + settled + follow-up-key; native-focus-events: focusin + focusout capture; first-divergence: positioned/input-not-focused; focus-call-trace: target + connected + display + visibility + disabled + active-after-call; focus-call-result: not-called/url-input"
+  );
+  const resolvedErrors = validateRegressionPlan(resolved, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.doesNotMatch(resolvedErrors, /failed popup focus fix/);
+});
+
+test("a failed scheduled popup focus fix requires a scheduler trace", () => {
+  const failedFocus = fixture({
+    failedCount: 1,
+    failureKind: "exact-replay",
+    popupLifecycle: true,
+  })
+    .replace(
+      "reporter contradiction after claimed candidate",
+      "requestAnimationFrame popup focus candidate failed exact replay"
+    )
+    .replace(
+      /^\| case-complete \| focus \| after-action \|.*$/m,
+      `| case-complete | focus | after-action | yes | focus-stability: settled + follow-up-key keeps the popup input focused | the editor root steals focus | Browser mounted focus lifecycle | test: ${semanticTestPath}#${semanticTestTitle} | pass: settled-focus: pass; follow-up-key: pass |`
+    )
+    .replace(
+      "; diagnostic: pass unchanged-bytes failing phase classified",
+      "; diagnostic: pass unchanged-bytes failing phase classified; focus-owner-trace: mount + positioned + settled + follow-up-key; native-focus-events: focusin + focusout capture; first-divergence: positioned/input-not-focused; focus-call-trace: target + connected + display + visibility + disabled + active-after-call; focus-call-result: called/url-input-hidden"
+    );
+  const errors = validateRegressionPlan(failedFocus, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    errors,
+    /requires focus-scheduler-trace: request \+ cancel \+ run/
+  );
+  assert.match(
+    errors,
+    /requires focus-scheduler-result: <ran-or-cancelled\/target-readiness>/
+  );
+
+  const resolved = failedFocus.replace(
+    "focus-call-result: called/url-input-hidden",
+    "focus-call-result: called/url-input-hidden; focus-scheduler-trace: request + cancel + run; focus-scheduler-result: ran/not-cancelled/url-input-hidden"
+  );
+  const resolvedErrors = validateRegressionPlan(resolved, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.doesNotMatch(resolvedErrors, /focus-scheduler/);
+
+  for (const scheduler of ["setTimeout", "timer"]) {
+    const timerErrors = validateRegressionPlan(
+      failedFocus.replace("requestAnimationFrame", scheduler),
+      { complete: true, rootDir: root }
+    ).join("\n");
+
+    assert.match(timerErrors, /requires focus-scheduler-trace/);
+    assert.match(timerErrors, /requires focus-scheduler-result/);
   }
 });
 

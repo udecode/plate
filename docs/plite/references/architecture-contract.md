@@ -179,7 +179,7 @@ scope local commands without changing canonical ownership.
 awareness, offline, root, and history behavior. Yjs events translate into
 canonical changes, and local canonical changes translate into Yjs deltas.
 
-`plitejs/page-layout` consumes `commit.changed` range and node-key queries.
+`plitejs/pagination` consumes `commit.changed` range and node-key queries.
 Pagination and virtualization do not own a parallel document model.
 
 ## Package boundaries
@@ -189,7 +189,7 @@ Pagination and virtualization do not own a parallel document model.
 - `plitejs/dom`: DOM conversion and browser bridge
 - `plitejs/react`: React host, input, projection, and rendering
 - `plitejs/history`: inverse-change history
-- `plitejs/page-layout`: layout and pagination planning
+- `plitejs/pagination`: layout and pagination planning
 - `platejs/yjs`: Yjs collaboration adapter
 - `@platejs/test`: Node-safe fixtures plus React, DOM, Playwright, and proof helpers
 - `platejs`: Plate plugin conventions and product-facing composition

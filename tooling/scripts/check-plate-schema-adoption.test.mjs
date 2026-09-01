@@ -1775,15 +1775,6 @@ test('allows only exact audited production extend stages at their owner path', (
     )[0]?.reason ?? '',
     /found \[read\]/
   );
-
-  assert.deepEqual(
-    auditPlateSchemaSource(
-      `definePlatePlugin('cursorOverlay', { })
-        .extend(() => ({ on: {} }))`,
-      'packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx'
-    ),
-    []
-  );
 });
 
 test('matches opaque shared-factory stages by exact callee identity', () => {

@@ -6,6 +6,6 @@ Add `createPliteLayout(editor, options)` with atomic `runtime.reconfigure`, Reac
 
 Export strict versioned codecs for persisted page settings and page-break snapshots.
 
-Keep the headless root install independent from React. React pagination remains available from `plitejs/page-layout/react`.
+Keep the headless root install independent from React. React pagination remains available from `plitejs/pagination/react`.
 
-Install `@chenglou/pretext` when using either page-layout entrypoint.
+Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.

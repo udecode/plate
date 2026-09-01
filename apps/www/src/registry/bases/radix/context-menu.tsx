@@ -23,34 +23,22 @@ export {
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu';
 
-type ContextMenuProps = React.PropsWithChildren<{ modal?: boolean }>;
-
-type ContextMenuContentProps = Omit<
-  React.ComponentPropsWithoutRef<'div'>,
-  'onAbort'
-> & {
-  align?: 'center' | 'end' | 'start';
-  alignOffset?: number;
-  onFinalFocus?: (event: Event) => void;
-  side?: 'bottom' | 'left' | 'right' | 'top';
-  sideOffset?: number;
-};
-
-type ContextMenuTriggerProps = Omit<
-  React.ComponentPropsWithoutRef<'div'>,
-  'children'
-> & {
-  children: React.ReactElement;
-};
-
-export function ContextMenu(props: ContextMenuProps) {
+export function ContextMenu(
+  props: React.PropsWithChildren<{ modal?: boolean }>
+) {
   return <ShadcnContextMenu {...props} />;
 }
 
 export function ContextMenuContent({
   onFinalFocus,
   ...props
-}: ContextMenuContentProps) {
+}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
+  align?: 'center' | 'end' | 'start';
+  alignOffset?: number;
+  onFinalFocus?: (event: Event) => void;
+  side?: 'bottom' | 'left' | 'right' | 'top';
+  sideOffset?: number;
+}) {
   return (
     <ShadcnContextMenuContent {...props} onCloseAutoFocus={onFinalFocus} />
   );
@@ -59,7 +47,9 @@ export function ContextMenuContent({
 export function ContextMenuTrigger({
   children,
   ...props
-}: ContextMenuTriggerProps) {
+}: Omit<React.ComponentPropsWithoutRef<'div'>, 'children'> & {
+  children: React.ReactElement;
+}) {
   return (
     <ShadcnContextMenuTrigger {...props} asChild>
       {children}

@@ -117,6 +117,23 @@ export interface PliteAnnotationStore<
   subscribeAnnotation: (id: string, listener: () => void) => () => void;
 }
 
+const annotationChangeSubscriptions = new WeakMap<
+  object,
+  (listener: (ids: readonly string[]) => void) => () => void
+>();
+
+/** Private batched dependency notification; foreign stores require a full read. */
+export const subscribeAnnotationChanges = (
+  store: Pick<PliteAnnotationStore, 'subscribe'>,
+  listener: (ids: readonly string[] | null) => void
+) => {
+  const subscribe = annotationChangeSubscriptions.get(store);
+
+  return subscribe
+    ? subscribe(listener)
+    : store.subscribe(() => listener(null));
+};
+
 const EMPTY_PROJECTION_ENTRIES = Object.freeze([]) as ReadonlyArray<
   PliteProjectionEntry<PliteAnnotationProjectionData>
 >;
@@ -332,6 +349,10 @@ const createPliteAnnotationStoreInternal = <
   const mappedSource = initialMappedResult.ok
     ? initialMappedResult.value
     : createMappedSource([]);
+  let currentAnnotations =
+    initialMappedResult.ok && initialAnnotationsResult.ok
+      ? initialAnnotationsResult.value
+      : null;
   const toAnnotationSnapshot = () => {
     const snapshot = mappedSource.getSnapshot();
 
@@ -361,7 +382,8 @@ const createPliteAnnotationStoreInternal = <
 
   const refreshCandidates = (
     candidateAnnotationIds: readonly string[] | null = null,
-    forceAll = candidateAnnotationIds === null
+    forceAll = candidateAnnotationIds === null,
+    editorChange = false
   ) => {
     const annotationsResult = faultBoundary.run('read', getAnnotations);
 
@@ -371,12 +393,16 @@ const createPliteAnnotationStoreInternal = <
     const previousProjectCount = mappedProjectCount;
     const mappedResult = faultBoundary.run('resolve', () =>
       mappedSource.refresh(annotationsResult.value, {
-        forceAll,
-        forceIds: candidateAnnotationIds ?? undefined,
+        ...(editorChange &&
+        candidateAnnotationIds &&
+        annotationsResult.value === currentAnnotations
+          ? { changedIds: candidateAnnotationIds }
+          : { forceAll, forceIds: candidateAnnotationIds ?? undefined }),
       })
     );
 
     if (!mappedResult.ok) return;
+    currentAnnotations = annotationsResult.value;
 
     const annotationChangedIds = mappedResult.value.changedEntityIds;
     const projectionChangedNodeKeys = mappedResult.value
@@ -466,7 +492,8 @@ const createPliteAnnotationStoreInternal = <
 
       refreshCandidates(
         candidateAnnotationIds,
-        candidateAnnotationIds === null
+        candidateAnnotationIds === null,
+        true
       );
     });
   let unsubscribeEditor = activated ? subscribeToEditor() : null;
@@ -481,7 +508,7 @@ const createPliteAnnotationStoreInternal = <
     refreshCandidates(innerOptions.ids ?? null, innerOptions.ids === undefined);
   };
 
-  return {
+  const publicStore: ActivatablePliteAnnotationStore<TData, TProjection> = {
     activate() {
       if (activated || destroyed) return;
 
@@ -493,6 +520,7 @@ const createPliteAnnotationStoreInternal = <
       if (destroyed) return;
 
       destroyed = true;
+      annotationChangeSubscriptions.delete(publicStore);
       unsubscribeEditor?.();
       annotationsStore.destroy();
       projectionsStore.destroy();
@@ -539,6 +567,12 @@ const createPliteAnnotationStoreInternal = <
       return annotationsStore.subscribeKey(id, listener);
     },
   };
+
+  annotationChangeSubscriptions.set(
+    publicStore,
+    annotationsStore.subscribeChanges
+  );
+  return publicStore;
 };
 
 export function createPliteAnnotationStore<

@@ -18,6 +18,7 @@ export const REGRESSION_OBSERVATIONS = [
   "focus",
   "popup",
   "geometry-paint",
+  "subscription-lifecycle",
   "runtime-errors",
   "follow-up-input",
 ];
@@ -46,12 +47,21 @@ const EXPECTED_OUTCOME_AUTHORITY_PATTERN =
   /^(?:reporter|accepted-product-law|existing-contract|upstream-contract):\s*\S/i;
 const UNIT_RED_PATTERN = /^unit-red:\s*\S/i;
 const E2E_REQUIRED_PATTERN = /^e2e-required:\s*\S/i;
+const RUNTIME_MODES_PATTERN = /\bruntime-modes:\s*\S/i;
+const FIXTURE_SCOPE_PATTERN = /\bfixture-scope:\s*(?:complete|minimal)\b/i;
+const MINIMAL_FIXTURE_SCOPE_PATTERN = /\bfixture-scope:\s*minimal\b/i;
 const E2E_TEST_COMMAND_PATTERN =
   /(?:tooling\/e2e\/|apps\/plite\/tests\/plite-browser\/|\bplaywright\b|\b(?:test:)?e2e\b|\btest:plite(?::|-)?browser(?:\b|:)|--project=)/i;
 const POINTER_INTERACTION_PATTERN =
   /\b(?:cursor|pointer|mouse|hover)\b|\b(?:resize|drag)\s+handle\b/i;
 const BROWSER_COMMAND_PATTERN =
   /\b(?:command|keyboard|shortcut|text input|trigger|type|typing)\b/i;
+const SHORTCUT_TRIGGER_PATTERN =
+  /\b(?:hotkey|shortcut|cmd\+|command\+|ctrl\+|control\+|meta\+)\b/i;
+const FOCUS_SCHEDULER_PATTERN =
+  /\b(?:requestAnimationFrame|setTimeout|timer|animation[- ]frame|scheduled focus|focus scheduler)\b/i;
+const FOCUS_TRANSFER_PATTERN =
+  /\b(?:focus transfer|transfer(?:s|red|ring)? focus|focus (?:moves?|moved|moving)|move(?:s|d|ing)? focus)\b/i;
 const POINTER_BOUNDARY_PATTERN =
   /\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b[\s\S]{0,100}\b(?:browser|editor|scrollport|window|boundary)\b|\b(?:browser|editor|scrollport|window|boundary)\b[\s\S]{0,100}\b(?:outside|beyond|leave|leaves|leaving|exit|exits|exited)\b/i;
 const CONTINUOUS_POINTER_PATTERN =
@@ -94,6 +104,14 @@ const POSITIVE_REFERENCE_ROLE_PATTERN =
   /\b(?:positive(?:[-\s]+(?:authority|reference))|correct(?:[-\s]+reference))\b/i;
 const REFERENCE_GEOMETRY_PATTERN =
   /\b(?:align(?:ed|ment)?|center(?:ed|ing)?|compress(?:ed|ion)?|content[-\s]?width|full[-\s]?row|geometry|layout|position(?:ed|ing)?|size|spacing|width)\b/i;
+const SUBSCRIPTION_LIFECYCLE_PATTERN =
+  /\b(?:keyed (?:collection|projection|store)|listener|membership|per-id|subscriber|subscription)\b/i;
+const DISPOSABLE_EFFECT_LIFECYCLE_PATTERN =
+  /\b(?:effect-owned|effect rehearsal|strict\s*mode|strictmode|disposable (?:resource|source)|destroy(?:ed|ing)? (?:resource|source|store|listener))\b/i;
+const SELECTIVE_INVALIDATION_PATTERN =
+  /\b(?:selective[- ]invalidation|affected[- ]only|fan[- ]out)\b/i;
+const RUNTIME_IDENTITY_PATTERN =
+  /\b(?:runtime[- ]identity|identity[- ]mapping|node[- ]key (?:mapping|continuation))\b/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
 const isBrowserCommandCase = (selected) =>
@@ -415,6 +433,31 @@ export const validateRegressionPlan = (
     }
     if (unitRed && usesE2E) {
       errors.push(`${label} has unit RED and must not add a new E2E test`);
+    }
+    if (
+      unitRed &&
+      !RUNTIME_MODES_PATTERN.test(row.exact_environment ?? "")
+    ) {
+      errors.push(
+        `${label} unit RED requires runtime-modes: in Exact environment`
+      );
+    }
+    if (
+      unitRed &&
+      !FIXTURE_SCOPE_PATTERN.test(row.exact_environment ?? "")
+    ) {
+      errors.push(
+        `${label} unit RED requires fixture-scope: complete or minimal in Exact environment`
+      );
+    }
+    if (
+      unitRed &&
+      MINIMAL_FIXTURE_SCOPE_PATTERN.test(row.exact_environment ?? "") &&
+      /^(?:completed|fixed|kept)\b/i.test(row.status ?? "")
+    ) {
+      errors.push(
+        `${label} minimal fixture scope cannot support completed, fixed, or kept status`
+      );
     }
     if (e2eRequired && !usesE2E) {
       errors.push(
@@ -801,6 +844,10 @@ export const validateRegressionPlan = (
         row.claim,
       ]),
     ].join(" ");
+    const focusTransfer = FOCUS_TRANSFER_PATTERN.test(pointerCaseText);
+    const shortcutTrigger = SHORTCUT_TRIGGER_PATTERN.test(pointerCaseText);
+    const disposableEffectLifecycle =
+      DISPOSABLE_EFFECT_LIFECYCLE_PATTERN.test(pointerCaseText);
     const continuousBoundaryPointer =
       POINTER_BOUNDARY_PATTERN.test(pointerCaseText) &&
       CONTINUOUS_POINTER_PATTERN.test(pointerCaseText);
@@ -814,6 +861,40 @@ export const validateRegressionPlan = (
       )
     ) {
       errors.push(`${caseId} requires an applicable pointer-feedback oracle`);
+    }
+    if (focusTransfer) {
+      const focusRows = Array.from(rows?.values() ?? []).filter(
+        (row) =>
+          row.observation?.toLowerCase() === "focus" &&
+          row.applies?.toLowerCase() === "yes"
+      );
+
+      if (focusRows.length === 0) {
+        errors.push(`${caseId} focus transfer requires an applicable focus oracle`);
+      }
+
+      for (const row of focusRows) {
+        if (
+          !/\bfocus-transfer:\s*direct-related-target\s*\+\s*null-related-target\s*->\s*focusin\b/i.test(
+            row.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} focus transfer requires focus-transfer: direct-related-target + null-related-target -> focusin`
+          );
+        }
+        if (complete) {
+          for (const evidence of [
+            "direct-related-target",
+            "null-related-target",
+            "focusin-resolution",
+          ]) {
+            if (!new RegExp(`\\b${evidence}:\\s*pass\\b`, "i").test(row.result ?? "")) {
+              errors.push(`${caseId} focus transfer completion requires ${evidence}: pass`);
+            }
+          }
+        }
+      }
     }
     if (
       complete &&
@@ -881,6 +962,69 @@ export const validateRegressionPlan = (
       }
     }
 
+    if (SUBSCRIPTION_LIFECYCLE_PATTERN.test(pointerCaseText)) {
+      const lifecycleRows = Array.from(rows?.values() ?? []).filter(
+        (row) =>
+          row.observation?.toLowerCase() === "subscription-lifecycle" &&
+          row.applies?.toLowerCase() === "yes"
+      );
+
+      if (lifecycleRows.length === 0) {
+        errors.push(
+          `${caseId} subscription-backed keyed collection requires an applicable subscription-lifecycle oracle`
+        );
+      } else if (complete) {
+        const lifecycleResult = lifecycleRows.map((row) => row.result).join(" ");
+
+        for (const evidence of ["add", "update", "remove", "teardown"]) {
+          if (!new RegExp(`\\b${evidence}:\\s*pass\\b`, "i").test(lifecycleResult)) {
+            errors.push(
+              `${caseId} subscription-lifecycle completion requires ${evidence}: pass`
+            );
+          }
+        }
+      }
+    }
+    if (disposableEffectLifecycle) {
+      const lifecycleRows = Array.from(rows?.values() ?? []).filter(
+        (row) =>
+          row.observation?.toLowerCase() === "subscription-lifecycle" &&
+          row.applies?.toLowerCase() === "yes"
+      );
+
+      if (lifecycleRows.length === 0) {
+        errors.push(
+          `${caseId} disposable effect source requires an applicable subscription-lifecycle oracle`
+        );
+      }
+
+      for (const row of lifecycleRows) {
+        if (
+          !/\bstrict-effect:\s*mount\s*\+\s*cleanup\s*\+\s*remount\b/i.test(
+            row.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} disposable effect source requires strict-effect: mount + cleanup + remount`
+          );
+        }
+        if (complete) {
+          for (const evidence of [
+            "mount",
+            "cleanup",
+            "remount",
+            "post-remount-publication",
+          ]) {
+            if (!new RegExp(`\\b${evidence}:\\s*pass\\b`, "i").test(row.result ?? "")) {
+              errors.push(
+                `${caseId} disposable effect completion requires ${evidence}: pass`
+              );
+            }
+          }
+        }
+      }
+    }
+
     const completedPopupRows = Array.from(rows?.values() ?? []).filter(
       (row) =>
         row.observation?.toLowerCase() === "popup" &&
@@ -889,6 +1033,39 @@ export const validateRegressionPlan = (
     );
     const hasCompletedPopupPhase = completedPopupRows.length > 0;
     const followUpInput = rows?.get("follow-up-input@follow-up");
+
+    if (RUNTIME_IDENTITY_PATTERN.test(pointerCaseText)) {
+      const model = rows?.get("model@after-action");
+      if (model?.applies?.toLowerCase() !== "yes") {
+        errors.push(`${caseId} runtime identity requires applicable model@after-action`);
+      } else {
+        for (const evidence of ["serialized-replay", "retained-identity", "deleted-identity", "split-merge-range"]) {
+          if (!new RegExp(`\\b${evidence}:\\s*\\S`, "i").test(model.positive_assertion ?? "")) {
+            errors.push(`${caseId} runtime identity requires ${evidence}: assertion`);
+          }
+          if (complete && !new RegExp(`\\b${evidence}:\\s*pass\\b`, "i").test(model.result ?? "")) {
+            errors.push(`${caseId} runtime identity completion requires ${evidence}: pass`);
+          }
+        }
+      }
+    }
+
+    if (SELECTIVE_INVALIDATION_PATTERN.test(pointerCaseText)) {
+      if (followUpInput?.applies?.toLowerCase() !== "yes") {
+        errors.push(
+          `${caseId} selective invalidation requires applicable follow-up-input@follow-up`
+        );
+      } else {
+        for (const evidence of ["unrelated-then-affected", "unchanged-read"]) {
+          if (!new RegExp(`\\b${evidence}:\\s*\\S`, "i").test(followUpInput.positive_assertion ?? "")) {
+            errors.push(`${caseId} selective invalidation requires ${evidence}: assertion`);
+          }
+          if (complete && !new RegExp(`\\b${evidence}:\\s*pass\\b`, "i").test(followUpInput.result ?? "")) {
+            errors.push(`${caseId} selective invalidation completion requires ${evidence}: pass`);
+          }
+        }
+      }
+    }
 
     if (
       hasCompletedPopupPhase &&
@@ -907,6 +1084,58 @@ export const validateRegressionPlan = (
           errors.push(
             `${caseId} popup lifecycle at ${phase} requires ${observation}@${phase}`
           );
+        }
+      }
+
+      const focusRow = rows?.get(`focus@${phase}`);
+
+      if (focusRow?.applies?.toLowerCase() === "yes") {
+        if (
+          !/\bfocus-stability:\s*settled\s*\+\s*follow-up-key\b/i.test(
+            focusRow.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} popup focus requires focus-stability: settled + follow-up-key`
+          );
+        }
+        if (
+          !/\b(?:browser|exact-chrome|device)\b/i.test(
+            focusRow.proof_layer ?? ""
+          )
+        ) {
+          errors.push(`${caseId} popup focus requires browser-native proof`);
+        }
+        if (complete) {
+          if (!/\bsettled-focus:\s*pass\b/i.test(focusRow.result ?? "")) {
+            errors.push(
+              `${caseId} popup focus completion requires settled-focus: pass`
+            );
+          }
+          if (!/\bfollow-up-key:\s*pass\b/i.test(focusRow.result ?? "")) {
+            errors.push(
+              `${caseId} popup focus completion requires follow-up-key: pass`
+            );
+          }
+        }
+        if (shortcutTrigger) {
+          if (
+            !/\btrigger-path:\s*pre-focused-surface\s*\+\s*native-keyboard\b/i.test(
+              focusRow.positive_assertion ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} native keyboard trigger requires trigger-path: pre-focused-surface + native-keyboard`
+            );
+          }
+          if (
+            complete &&
+            !/\bnative-trigger-key:\s*pass\b/i.test(focusRow.result ?? "")
+          ) {
+            errors.push(
+              `${caseId} native keyboard trigger requires native-trigger-key: pass`
+            );
+          }
         }
       }
     }
@@ -1399,6 +1628,87 @@ export const validateRegressionPlan = (
         errors.push(
           `${label} requires diagnostic: <unchanged-bytes phase/result>`
         );
+      }
+
+      const caseOracles = oracleByCase.get(caseId);
+      const hasPopupFocus = Array.from(caseOracles?.values() ?? []).some(
+        (oracle) => {
+          if (
+            oracle.observation?.toLowerCase() !== "popup" ||
+            oracle.applies?.toLowerCase() !== "yes"
+          ) {
+            return false;
+          }
+
+          const focus = caseOracles?.get(
+            `focus@${oracle.phase?.toLowerCase()}`
+          );
+
+          return focus?.applies?.toLowerCase() === "yes";
+        }
+      );
+
+      if (
+        hasPopupFocus &&
+        ["exact-replay", "final-verification"].includes(failureKind)
+      ) {
+        if (
+          !/\bfocus-owner-trace:\s*mount\s*\+\s*positioned\s*\+\s*settled\s*\+\s*follow-up-key\b/i.test(
+            row.resume_state ?? ""
+          )
+        ) {
+          errors.push(
+            `${label} failed popup focus fix requires focus-owner-trace: mount + positioned + settled + follow-up-key`
+          );
+        }
+        if (
+          !/\bnative-focus-events:\s*focusin\s*\+\s*focusout\s+capture\b/i.test(
+            row.resume_state ?? ""
+          )
+        ) {
+          errors.push(
+            `${label} failed popup focus fix requires native-focus-events: focusin + focusout capture`
+          );
+        }
+        if (!/\bfirst-divergence:\s*\S/i.test(row.resume_state ?? "")) {
+          errors.push(
+            `${label} failed popup focus fix requires first-divergence: <phase/owner>`
+          );
+        }
+        if (
+          !/\bfocus-call-trace:\s*target\s*\+\s*connected\s*\+\s*display\s*\+\s*visibility\s*\+\s*disabled\s*\+\s*active-after-call\b/i.test(
+            row.resume_state ?? ""
+          )
+        ) {
+          errors.push(
+            `${label} failed popup focus fix requires focus-call-trace: target + connected + display + visibility + disabled + active-after-call`
+          );
+        }
+        if (!/\bfocus-call-result:\s*\S/i.test(row.resume_state ?? "")) {
+          errors.push(
+            `${label} failed popup focus fix requires focus-call-result: <called-or-not-called/owner>`
+          );
+        }
+        if (
+          FOCUS_SCHEDULER_PATTERN.test(
+            `${row.failure_signal ?? ""} ${row.resume_state ?? ""}`
+          )
+        ) {
+          if (
+            !/\bfocus-scheduler-trace:\s*request\s*\+\s*cancel\s*\+\s*run\b/i.test(
+              row.resume_state ?? ""
+            )
+          ) {
+            errors.push(
+              `${label} failed scheduled popup focus fix requires focus-scheduler-trace: request + cancel + run`
+            );
+          }
+          if (!/\bfocus-scheduler-result:\s*\S/i.test(row.resume_state ?? "")) {
+            errors.push(
+              `${label} failed scheduled popup focus fix requires focus-scheduler-result: <ran-or-cancelled/target-readiness>`
+            );
+          }
+        }
       }
 
       const attempts = attemptsByCase.get(caseId) ?? [];

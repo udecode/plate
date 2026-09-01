@@ -25,6 +25,7 @@ description: "Render the editable surface and configure browser events, renderin
 - [`renderSegment`](editable#rendersegment)
 - [`placeholder` And `renderPlaceholder`](editable#placeholder-and-renderplaceholder)
 - [Event Props](editable#event-props)
+- [Inactive Selection](editable#inactive-selection)
 - [Projection Sources](editable#projection-sources)
 - [DOM Strategy](editable#dom-strategy)
 - [DOM Coverage Boundaries](editable#dom-coverage-boundaries)
@@ -264,7 +265,7 @@ match or lightweight syntax highlight.
 `decorate` is a convenience adapter over the projection runtime. Use
 provider-owned `decorationSources` when the ranges are shared with other UI,
 come from external state, update frequently, or need source-scoped refreshes.
-Use [Projection And Overlays](../../concepts/18-projection-and-overlays) to
+Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets) to
 choose between local decorations, decoration sources, annotations, and widgets.
 
 Use `decorateDirtiness` and `decorateRuntimeScope` when a decoration callback
@@ -370,10 +371,48 @@ const markdown = defineExtension("markdown", {
 `onDOMBeforeInput` only when you need the raw native `InputEvent`. Returning
 `true` or calling `event.preventDefault()` marks the event handled.
 
+## Inactive Selection
+
+`Editable` keeps its live canonical selection visible when focus moves to an
+owned external control. Mark the focus target or any composed ancestor with
+`data-plite-keep-selection-visible`:
+
+```tsx
+<Plite editor={editor}>
+  <Editable />
+  <button data-plite-keep-selection-visible="" type="button">
+    Edit link
+  </button>
+</Plite>
+```
+
+The exact `Editable` that loses focus paints an expanded range with
+`data-plite-inactive-selection` or a collapsed caret with
+`data-plite-inactive-selection-caret`. Focus returning to the editor or moving
+to an unmarked target clears that paint.
+
+Style the output hooks in product CSS:
+
+```css
+[data-plite-inactive-selection] {
+  background: Highlight;
+}
+
+[data-plite-inactive-selection-caret] {
+  width: 2px;
+  background: currentColor;
+}
+```
+
+This is built-in view behavior, not a prop or plugin. `Editable` stores only
+private transition state and reads the current canonical selection for each
+paint. It never copies a `Range` or changes document, selection, history,
+clipboard, or collaboration state.
+
 ## Projection Sources
 
 Put decoration sources and the annotation store on `Plite`, not `Editable`. The provider owns editor-level projection sources so the editor surface, toolbar, and overlay UI read the same committed projection.
-Use [Projection And Overlays](../../concepts/18-projection-and-overlays) for the
+Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets) for the
 cross-package projection model.
 
 ```tsx

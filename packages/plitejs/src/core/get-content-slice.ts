@@ -1,7 +1,6 @@
 import type {
   ContentSlice as ContentSliceValue,
   AnyEditor as Editor,
-  EditorStateView,
   Value,
 } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
@@ -11,6 +10,7 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi, type NodeSelection } from '../interfaces/selection';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
+import { getEditorDocumentRoots } from './public-state';
 
 const getOpenDepth = (editor: Editor, point: Point) => {
   const ancestorPaths = point.path
@@ -54,7 +54,7 @@ export const getContentSlice = <V extends Value>(
       })
     : null;
   const fullRootContent = rangeSelection
-    ? editor.read((state: EditorStateView<V, any>) => {
+    ? editor.read((state) => {
         const [start, end] = RangeApi.edges(rangeSelection);
         const rootStart = state.points.start([]);
         const rootEnd = state.points.end([]);
@@ -83,9 +83,6 @@ export const getContentSlice = <V extends Value>(
   } else {
     return ContentSlice.empty;
   }
-  const document = editor.read((state: EditorStateView<V, any>) =>
-    state.value()
-  );
   const roots: Record<string, readonly Descendant[]> = {};
   const visitedRoots = new Set<string>();
   const collect = (children: readonly Descendant[]) => {
@@ -96,7 +93,7 @@ export const getContentSlice = <V extends Value>(
         editor.read.schema.getElementContentRoots(node)
       )) {
         if (visitedRoots.has(innerRoot)) continue;
-        const rootContent = document.roots?.[innerRoot];
+        const rootContent = getEditorDocumentRoots(editor)[innerRoot];
 
         if (!rootContent) continue;
         visitedRoots.add(innerRoot);

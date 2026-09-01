@@ -12,13 +12,6 @@ import {
 } from './ui/collapsible';
 import { Separator } from './ui/separator';
 
-interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
-  expandButtonTitle?: string;
-  full?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  open?: boolean;
-}
-
 export function CodeBlockWrapper({
   children,
   className,
@@ -27,7 +20,12 @@ export function CodeBlockWrapper({
   onOpenChange,
   open = false,
   ...props
-}: CodeBlockProps) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  expandButtonTitle?: string;
+  full?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+}) {
   const [internalOpen, setInternalOpen] = React.useState<boolean | null>(null);
   const isOpened = internalOpen ?? open;
   const triggerTitle = isOpened ? 'Collapse' : expandButtonTitle;

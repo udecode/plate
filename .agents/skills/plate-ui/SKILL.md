@@ -104,6 +104,11 @@ schema law, and application typing remain outside this skill.
     exact facade, proxy, or replacement leaves cross that boundary; React
     components and their specs, type tests, and fixtures dogfood the relative
     Plate React facade. Never exempt test globs from this rule.
+19. **View-local paint is not plugin state.** When the exact mounted Editable
+    derives canonical-state presentation from its DOM lifecycle, let
+    `PlateContent` inherit the behavior without another prop. Copied UI marks
+    owned focus targets and styles neutral output hooks; it does not install a
+    plugin, kit, store, parallel state payload, or redundant controlled input.
 
 ## Critical Rules
 
@@ -205,8 +210,17 @@ schema law, and application typing remain outside this skill.
   `PlateElementProps<typeof FooPlugin>` / `PlateLeafProps<typeof FooPlugin>`
   for live renderers and the matching `Plite*Props<typeof BaseFooPlugin>` for
   static renderers. Do not feed a derived node alias back into renderer props.
-  Keep bare props only for deliberately schema-agnostic shared wrappers.
+  Keep bare props only for deliberately schema-agnostic shared wrappers. This
+  descriptor-derived shape is specific to renderers whose schema or plugin
+  context changes their actual props; it is not a generic component-consistency
+  pattern.
 - Keep helpers inline when used once.
+- Inline each locally owned component prop shape at the component signature.
+  Same-file reuse does not earn a named `*Props` alias. Keep one only when it
+  is exported through a real cross-file or published entrypoint contract; do
+  not export it merely to avoid inlining. Honest state and domain types may be
+  selected inside an inline shape. Enforce this with
+  `node tooling/scripts/check-inline-component-props.mjs`.
 - Split kits only where the kit itself owns different static/base and live
   renderers or behavior. Share runtime-neutral policy kits across both
   consumers, and compose renderer-specific peer kits in the owning editor
@@ -289,6 +303,30 @@ where it teaches the affected pattern, regenerate its mirror, and audit copied
 examples for the rejected call shape. Do not ship a local registry workaround
 while package doctrine says something else, and do not wait for a later cleanup
 prompt.
+
+For copied UI mounted in a sibling render slot, accept only that slot's exact
+ref. If the component is the complete common composition, own its default
+children and register the component directly. A callback earns its place only
+when the caller supplies real alternative composition; it must not exist merely
+to forward the ref. Type the component with `EditableSiblingProps` or
+`ContainerSiblingProps`, never a plugin-derived prop extractor. Delete
+zero-caller option bags and `React.ComponentProps<typeof Primitive>`
+intersections; retain a local optional prop only when an active component
+consumer uses that composition.
+
+For selection-, cursor-, or range-positioned UI, consume the domain geometry
+hook with the exact Editable ref supplied by the plugin render slot. Keep
+Floating UI middleware and virtual-reference adaptation in copied UI, import
+the positioning library directly, and never recover geometry from the global
+DOM selection or an implicit active editor.
+
+For inactive canonical selection, mark only the owned external focus target or
+ancestor with `data-plite-keep-selection-visible`. `Editor`/`PlateContent`
+inherits the built-in lifecycle and copied UI styles
+`data-plite-inactive-selection` and
+`data-plite-inactive-selection-caret`. Do not add a boolean prop, mirror the
+Range, write internal projected view selection, or create a registry install
+item whose only artifact is that policy.
 
 ## Extraction Test
 

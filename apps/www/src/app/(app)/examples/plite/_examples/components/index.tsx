@@ -32,17 +32,6 @@ import ReactDOM from 'react-dom';
 import { Button as ShadcnButton } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 
-type ButtonProps = React.ComponentProps<typeof ShadcnButton> & {
-  active?: boolean;
-  reversed?: boolean;
-};
-
-type IconProps = Omit<React.ComponentPropsWithRef<'svg'>, 'children'> & {
-  children?: ReactNode;
-};
-
-type DivProps = React.ComponentPropsWithRef<'div'>;
-
 const iconComponents: Record<string, LucideIcon> = {
   add: Plus,
   code: Code,
@@ -103,7 +92,10 @@ export const Button = ({
   size = 'icon',
   variant,
   ...props
-}: ButtonProps) => (
+}: React.ComponentProps<typeof ShadcnButton> & {
+  active?: boolean;
+  reversed?: boolean;
+}) => (
   <ShadcnButton
     {...props}
     className={cn(
@@ -118,7 +110,14 @@ export const Button = ({
   />
 );
 
-export const Icon = ({ children, className, ref, ...props }: IconProps) => {
+export const Icon = ({
+  children,
+  className,
+  ref,
+  ...props
+}: Omit<React.ComponentPropsWithRef<'svg'>, 'children'> & {
+  children?: ReactNode;
+}) => {
   const iconName = typeof children === 'string' ? children : '';
   const IconComponent = iconComponents[iconName] ?? CircleHelp;
   const label = iconLabels[iconName] ?? iconName;
@@ -136,7 +135,11 @@ export const Icon = ({ children, className, ref, ...props }: IconProps) => {
   );
 };
 
-export const Instruction = ({ className, ref, ...props }: DivProps) => (
+export const Instruction = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'div'>) => (
   <div
     {...props}
     className={cn('plite-example-instruction', className)}
@@ -144,7 +147,11 @@ export const Instruction = ({ className, ref, ...props }: DivProps) => (
   />
 );
 
-export const Menu = ({ className, ref, ...props }: DivProps) => (
+export const Menu = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'div'>) => (
   <div
     {...props}
     className={cn('plite-example-menu', className)}
@@ -158,7 +165,11 @@ export const Portal = ({ children }: { children?: ReactNode }) =>
     ? ReactDOM.createPortal(children, document.body)
     : null;
 
-export const Toolbar = ({ className, ref, ...props }: DivProps) => (
+export const Toolbar = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'div'>) => (
   <Menu
     {...props}
     className={cn('plite-example-toolbar', className)}

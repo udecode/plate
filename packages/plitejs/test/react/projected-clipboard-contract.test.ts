@@ -133,7 +133,10 @@ const point = (
   offset,
 });
 
-const createFixture = (withSignificantProperties = false) => {
+const createFixture = (
+  withSignificantProperties = false,
+  unrelatedBlocks = 0
+) => {
   const mainParagraph = withSignificantProperties
     ? paragraph('Before', { blockTone: 'warm', emphasis: true })
     : paragraph('Before');
@@ -143,7 +146,14 @@ const createFixture = (withSignificantProperties = false) => {
   const runtime = createEditor({
     extensions: [contentRootExtension, projectedHostCodecs],
     initialValue: {
-      children: [mainParagraph, contentCard(), paragraph('After')],
+      children: [
+        mainParagraph,
+        contentCard(),
+        paragraph('After'),
+        ...Array.from({ length: unrelatedBlocks }, () =>
+          paragraph('Unrelated')
+        ),
+      ],
       roots: { [SHARED_ROOT]: [rootParagraph, paragraph('More')] },
     },
   });
@@ -269,6 +279,51 @@ const decodePliteFragment = (encoded: string) => {
 };
 
 describe('projected clipboard', () => {
+  it('reads a projected slice without revalidating immutable document arrays', () => {
+    const { editor } = createFixture(false, 128);
+    const before = editor.read.value();
+    const roots = new Map<object, object>();
+    let propertyReads = 0;
+    for (const children of [
+      before.children,
+      ...Object.values(before.roots ?? {}),
+    ]) {
+      roots.set(
+        children,
+        new Proxy(children, {
+          getOwnPropertyDescriptor(target, key) {
+            propertyReads += 1;
+            return Reflect.getOwnPropertyDescriptor(target, key);
+          },
+        })
+      );
+    }
+    const { isFrozen } = Object;
+    Object.isFrozen = (value) => isFrozen(roots.get(value) ?? value);
+    let slice;
+    try {
+      slice = getProjectedViewSelectionSlice(editor);
+      expect(editor.read.value()).toEqual(before);
+    } finally {
+      Object.isFrozen = isFrozen;
+    }
+    expect(slice).toEqual({
+      content: [paragraph('ore'), paragraph('In')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { path: [0, 0], offset: 4 } })
+    );
+    expect(getProjectedViewSelectionSlice(editor)?.content).toEqual([
+      paragraph('o!re'),
+      paragraph('In'),
+    ]);
+    expect(before.children[0]).toEqual(paragraph('Before'));
+    expect(slice?.content).toEqual([paragraph('ore'), paragraph('In')]);
+    expect(propertyReads).toBe(0);
+  });
+
   it('serializes projected selection fragments in visible order across roots', () => {
     const { editor } = createFixture();
 

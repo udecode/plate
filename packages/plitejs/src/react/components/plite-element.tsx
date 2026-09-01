@@ -21,14 +21,6 @@ type PliteElementComponentProps = HTMLAttributes<HTMLElement> & {
   ref?: Ref<HTMLElement>;
 };
 
-type PliteElementProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
-  as?: IntrinsicTag;
-  children?: ReactNode;
-  isInline?: boolean;
-  isVoid?: boolean;
-  ref?: Ref<HTMLElement>;
-};
-
 const assignRef = (
   ref: Ref<HTMLElement> | undefined,
   node: HTMLElement | null
@@ -59,7 +51,13 @@ export const PliteElement = ({
   ref,
   style,
   ...domProps
-}: PliteElementProps) => {
+}: Omit<HTMLAttributes<HTMLElement>, 'children'> & {
+  as?: IntrinsicTag;
+  children?: ReactNode;
+  isInline?: boolean;
+  isVoid?: boolean;
+  ref?: Ref<HTMLElement>;
+}) => {
   const Component = as as ElementType<PliteElementComponentProps>;
   const path = useContext(ElementPathContext);
   const pliteNode = useContext(ElementContext);

@@ -13,11 +13,12 @@ import {
 } from '../../src/react';
 import { createPageItemIndexesForPath } from '../../src/react/dom-strategy/use-virtualized-root-plan';
 
-type TestEditorSurfaceProps = React.ComponentProps<typeof Editable> & {
+const TestEditorSurface = ({
+  editor,
+  ...props
+}: React.ComponentProps<typeof Editable> & {
   editor: React.ComponentProps<typeof Plite>['editor'];
-};
-
-const TestEditorSurface = ({ editor, ...props }: TestEditorSurfaceProps) => (
+}) => (
   <Plite editor={editor}>
     <Editable {...props} />
   </Plite>

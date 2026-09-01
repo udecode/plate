@@ -13,6 +13,7 @@ import {
   createContentRootProjectionGraph,
   findContentRootOwners,
 } from '../../src/react/editable/content-root-navigation';
+import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
 import {
   createPliteViewSelection,
@@ -125,6 +126,67 @@ const keyEvent = (
   }) as any;
 
 describe('content root navigation', () => {
+  it.each(['none', 'model', 'projected'] as const)(
+    'replays deferred root focus only while its selection is current (superseded: %s)',
+    (superseded) => {
+      const { bodyEditor, mainEditor } = createFixture();
+      const element = document.createElement('div');
+      const domRuntime = new EditableDOMRuntime({ editor: bodyEditor });
+      const focusEditor = vi.fn();
+
+      document.body.appendChild(element);
+      domRuntime.setRoot(element);
+      domRuntime.connect();
+
+      try {
+        selectPoint(mainEditor, { path: [1, 0], offset: 0 });
+        const result = applyContentRootNavigation({
+          editor: mainEditor,
+          event: keyEvent('Enter'),
+          focusEditor,
+          getMountedViewEditor: (root) =>
+            root === 'card:body' ? bodyEditor : mainEditor,
+          isRTL: false,
+          selection: mainEditor.read((state) => state.selection()),
+        });
+
+        expect(result.handled).toBe(true);
+        expect(focusEditor).toHaveBeenCalledExactlyOnceWith(bodyEditor);
+
+        if (superseded === 'model') {
+          selectPoint(mainEditor, { path: [2, 0], offset: 0 });
+        } else if (superseded === 'projected') {
+          writePliteViewSelection(
+            mainEditor,
+            createPliteViewSelection(
+              createContentRootProjectionGraph(
+                mainEditor,
+                findContentRootOwners(mainEditor)
+              ),
+              {
+                anchor: { point: { path: [0, 0], offset: 0 } },
+                focus: { point: { path: [2, 0], offset: 0 } },
+              }
+            )
+          );
+        }
+        const selection = mainEditor.read((state) => state.selection());
+
+        domRuntime.domPhaseScheduler.flush();
+
+        expect(focusEditor).toHaveBeenCalledTimes(
+          superseded === 'none' ? 2 : 1
+        );
+        expect(mainEditor.read((state) => state.selection())).toEqual(
+          selection
+        );
+      } finally {
+        domRuntime.destroy();
+        element.remove();
+      }
+    }
+  );
+
   it('does not read editor state for unrelated keys', () => {
     const event = keyEvent('a');
     const read = vi.fn(() => {

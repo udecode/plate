@@ -10,6 +10,7 @@ import {
   shouldSkipSelectionFocus,
   shouldSkipSelectionScroll,
 } from '../../src/react/editable/selection-side-effect-policy';
+import { createPliteInactiveSelectionStore } from '../../src/react/inactive-selection';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
 
@@ -76,6 +77,24 @@ test('selection preservation policy skips DOM, scroll, and focus side effects', 
   expect(shouldSkipDOMSelection(editor)).toBe(true);
   expect(shouldSkipSelectionScroll(editor)).toBe(true);
   expect(shouldSkipSelectionFocus(editor)).toBe(true);
+});
+
+test('inactive selection focus blocks even forced model-to-DOM selection export', () => {
+  const editor = createEditor();
+  const store = createPliteInactiveSelectionStore(editor);
+
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(false);
+  expect(shouldSkipSelectionFocus(editor)).toBe(false);
+
+  store.setVisible(true);
+
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(true);
+  expect(shouldSkipSelectionFocus(editor)).toBe(true);
+
+  store.setVisible(false);
+
+  expect(shouldSkipDOMSelection(editor, { force: true })).toBe(false);
+  expect(shouldSkipSelectionFocus(editor)).toBe(false);
 });
 
 test('selection preservation policy suppresses repair focus without skipping selection sync', () => {

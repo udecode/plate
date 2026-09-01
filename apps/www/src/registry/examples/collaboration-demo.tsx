@@ -31,7 +31,10 @@ import {
 } from '@/components/ui/card';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
-import { RemoteCursorOverlay } from '@/registry/components/editor/remote-cursor-overlay';
+import {
+  RemoteCursorLeaf,
+  RemoteCursorOverlay,
+} from '@/registry/components/editor/remote-cursor-overlay';
 
 const ROOT_NAME = 'plate-collaboration-demo';
 const SCHEMA = {
@@ -449,19 +452,29 @@ class SchemaProbeProvider implements YjsProviderLike {
   }
 }
 
+const createCollaborationPlugin = (
+  provider: YjsProviderLike,
+  clientId: string
+) =>
+  YjsPlugin.configure({
+    initialState: {
+      clientId,
+      provider,
+      rootName: ROOT_NAME,
+    },
+    render: {
+      afterEditable: RemoteCursorOverlay,
+      leaf: RemoteCursorLeaf,
+    },
+  });
+
 const createPeerEditor = (
   provider: DemoProvider,
   schemaVersion = SCHEMA.version
 ) => {
   const plugins = [
     ...BasicNodesKit,
-    YjsPlugin.configure({
-      initialState: {
-        clientId: provider.peer.id,
-        provider,
-        rootName: ROOT_NAME,
-      },
-    }),
+    createCollaborationPlugin(provider, provider.peer.id),
   ] as const;
 
   return createEditor({
@@ -503,13 +516,7 @@ const testSchemaJoin = (room: DemoRoom, version: number) => {
   const provider = new SchemaProbeProvider(room.snapshot());
   const plugins = [
     ...BasicNodesKit,
-    YjsPlugin.configure({
-      initialState: {
-        clientId: `schema-probe-${version}`,
-        provider,
-        rootName: ROOT_NAME,
-      },
-    }),
+    createCollaborationPlugin(provider, `schema-probe-${version}`),
   ] as const;
 
   try {
@@ -597,7 +604,7 @@ function CollaborationRoom({ runtime }: { runtime: DemoRuntime }) {
 
   return (
     <div
-      className="flex flex-col gap-4 p-4"
+      className="flex min-w-0 flex-col gap-4 p-4"
       data-collaboration-demo="local-yjs-room"
       data-doc-count="3"
       data-editor-count="2"
@@ -612,7 +619,7 @@ function CollaborationRoom({ runtime }: { runtime: DemoRuntime }) {
         </AlertDescription>
       </Alert>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
         {runtime.editors.map((editor, index) => {
           const peer = PEERS[index];
 
@@ -667,7 +674,7 @@ function PeerCard({ editor, peer }: { editor: DemoEditor; peer: DemoPeer }) {
   const connected = providerStatus === 'connected';
 
   return (
-    <Card data-peer={peer.id}>
+    <Card className="min-w-0" data-peer={peer.id}>
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
@@ -689,7 +696,6 @@ function PeerCard({ editor, peer }: { editor: DemoEditor; peer: DemoPeer }) {
             className="px-6 py-4"
             variant="demo"
           />
-          <RemoteCursorOverlay />
         </EditorContainer>
       </CardContent>
       <PeerControls connected={connected} editor={editor} peer={peer} />

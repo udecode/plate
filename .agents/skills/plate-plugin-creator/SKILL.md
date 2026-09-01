@@ -43,7 +43,7 @@ for current repo examples. Plate foundation builders and type tests outrank prec
 | `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                  |
 | `patch`                     | one local behavior bug or regression repair/proof closure |
 | `plate-plugin-creator`      | implementation mechanics and owner-first topology         |
-| `plate-ui`                  | all Plate React/component shape and copied UI composition  |
+| `plate-ui`                  | all Plate React/component shape and copied UI composition |
 
 Continue here when the public target is already clear. Stop for `best-api` when
 the work invents or materially changes a reusable public shape. For a local
@@ -89,6 +89,12 @@ later migration pass or wait for the user to notice the drift.
 - Plite owns generic editor substrate: nodes, ranges, selection, reads,
   updates, transactions, schema, history, DOM/runtime primitives, and editor
   extensions.
+- A control that only changes how one mounted Editable paints canonical
+  selection is Plite React view behavior, not plugin state. Prefer private
+  lifecycle state plus a literal DOM marker when the view can derive the
+  transition. Do not author a descriptor, store, kit, copied Range, or redundant
+  controlled prop. Plate inherits the mechanics; route product markers and
+  styling to `plate-ui`.
 - Live descendant identity is Plite `NodeKey`. Resolve it with `editor.key`,
   coherent `state.key`, or active `tx.key`; reverse through `nodes.path`.
   Feature state and arguments use `key` / `keys`, never `id` / `ids`.
@@ -117,6 +123,20 @@ Colocation is the default.
   `define*Plugin` / `.extend()` chain. This includes one-use `with*`,
   `decorate*`, normalizers, parsers, commands, corrections, matchers, state,
   APIs, and tx callbacks.
+- Author transient feature paint through the owning plugin's `decorate` and
+  render slots. Plugin-store changes already invalidate that plugin's
+  decorations. Do not publish source registries, renderer registries, manual
+  refresh requirements, or carrier stores for the normal Plate path.
+- Give before/after Editable and container sibling components only their exact
+  slot ref. Never intersect those props with Editable props or container HTML
+  attributes, and never spread host props into the sibling invocation. Register
+  a complete component directly; use a render callback only for real caller
+  composition such as alternative children. Type the component with
+  `EditableSiblingProps` or `ContainerSiblingProps`, never a `typeof Plugin`
+  generic that only restates the fixed slot. Descriptor-derived props belong to
+  node renderers whose schema or plugin context changes the actual contract.
+  Delete sibling option bags and primitive-prop intersections without a current
+  consumer job.
 - A separate helper needs multiple production consumers that cannot reuse the
   owning scoped API, a real cross-plugin/cross-layer/transaction-composition
   algorithm, a standalone public owner, or dedicated proof tooling.
@@ -225,6 +245,20 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
   only dependencies proven by source/runtime imports or repo tooling convention;
   implementation libraries used only by opt-in entrypoints are optional peers.
 
+## Scale Gate
+
+Before source writes, decide whether the plugin or entrypoint adds, retains, or
+changes a runtime layer, cache, index, projection, store, subscription,
+scheduler, geometry owner, repeated-unit fan-out, or other hot work. If yes,
+the active goal must materialize `performance-observability` and contain a
+passing Benchmark pre-acceptance receipt for the selected target. Route an
+unresolved public/runtime owner through `best-api` and `plate-plan` first.
+
+Do not implement a scale-sensitive plugin from a complexity table, review
+score, future benchmark plan, or "measure after" promise. If live source proves
+the change is type-only or cannot change repeated/hot runtime cost, record that
+N/A explicitly.
+
 ## Workflow
 
 1. Read the two required rule files.
@@ -234,10 +268,14 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
    analog. Do not copy a stale file graph.
 4. Route reusable public forks to `best-api`; otherwise keep the inferred
    plugin chain inline.
-5. Define initial state, scoped store/API/update methods, relationships, flat
+5. Resolve the scale gate. A positive result consumes the accepted target
+   receipt and carries its cohorts, frozen budget, deterministic counters,
+   benchmark command/artifact, source identities, and correctness guard into
+   this packet.
+6. Define initial state, scoped store/API/update methods, relationships, flat
    Plite-native fields, and React behavior in their durable owners.
-6. Delete superseded helper/component/hook/spec files and regenerate barrels.
-7. Prove the smallest honest surface:
+7. Delete superseded helper/component/hook/spec files and regenerate barrels.
+8. Prove the smallest honest surface:
    - package typecheck and behavior tests;
    - Plate foundation type tests when builder/public inference changes;
    - compile/runtime proof that a required dependent sees staged capabilities;
@@ -246,12 +284,14 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
    - runtime proof when a native runtime callback consumes a staged API;
    - an active-transaction test when a query crosses a state-view boundary;
    - React tests when React behavior changes;
+   - the exact final production-path scale rerun and correctness guard when the
+     scale gate applies;
    - `pnpm brl` when exports or public files change.
-8. Audit for stale helper names, root option helpers, nested updates, explicit
+9. Audit for stale helper names, root option helpers, nested updates, explicit
    plugin annotations, empty config aliases, top-level plugin `config`,
    parameter-threaded `editor` / `api` / `read` / `tx` helpers, and one-use
    file taxonomies.
-9. When this packet changed a reusable public API or canonical plugin pattern,
+10. When this packet changed a reusable public API or canonical plugin pattern,
    run `best-api repair`, update only affected worker rules, bump Plate Next
    doctrine when its source set changed, regenerate mirrors, and prove the old
    teaching is gone before closeout.

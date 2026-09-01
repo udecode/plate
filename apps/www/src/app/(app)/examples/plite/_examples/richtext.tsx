@@ -588,12 +588,13 @@ const handleToolbarButtonPointerDown = (
   command();
 };
 
-interface BlockButtonProps {
+const BlockButton = ({
+  format,
+  icon,
+}: {
   format: RichTextElementFormat;
   icon: string;
-}
-
-const BlockButton = ({ format, icon }: BlockButtonProps) => {
+}) => {
   const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isBlockActive(innerEditor, format, isAlignType(format) ? 'align' : 'type')
@@ -638,12 +639,13 @@ const ClearFormattingButton = () => {
   );
 };
 
-interface MarkButtonProps {
+const MarkButton = ({
+  format,
+  icon,
+}: {
   format: RichTextTextKey;
   icon: string;
-}
-
-const MarkButton = ({ format, icon }: MarkButtonProps) => {
+}) => {
   const editor = useEditorContext();
   const active = useEditorSelector(
     (innerEditor2) => innerEditor2.read.marks()?.[format] === true

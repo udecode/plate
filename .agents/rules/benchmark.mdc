@@ -77,12 +77,48 @@ Do not delegate benchmark selection or causal ownership back to `auto`,
 `performance`, `regression`, or `slate-ar`. They may supply evidence or worker
 capacity without becoming a second supervisor.
 
+## Pre-Acceptance Architecture Probe
+
+Architecture and API owners invoke Benchmark before accepting a target when it
+adds, retains, or changes a runtime layer, cache, index, projection, store,
+subscription, scheduler, geometry owner, repeated-unit fan-out, or other hot
+work. This is an embedded worker probe in the active architecture goal, not a
+new public mode and not a second full Benchmark goal.
+
+Before the architecture owner may lock that target:
+
+1. Identify the user operation, current owner, proposed owner, independent
+   scale variables, repeated units, and applicable normal, large, stress, and
+   pathological cohorts.
+2. Freeze the absolute/relative budget and noise rule before reading the target
+   result. Reuse an honest existing budget when one exists.
+3. Capture a comparable current-owner baseline. If the proposed path is not
+   executable, build the smallest disposable prototype that can falsify its
+   claimed owner and scaling law; do not start production implementation.
+4. Run matched baseline/target cohorts and record source identity, fixture,
+   action, environment, sampling/noise, deterministic work indicators, timing,
+   and the correctness/native guard.
+5. Accept the target only when the result meets the frozen contract and the
+   evidence isolates the claimed owner. An inconclusive result leaves the
+   decision `defer` or `gate` with the next probe named.
+
+An asymptotic table, review score, profiler suspicion, future benchmark plan,
+or "measure during implementation" note cannot satisfy this probe. Record N/A
+only when live source proves the change is type-only or cannot change repeated
+or hot runtime work.
+
+After implementation, rerun the same contract on the final production path and
+source identity, then run the correctness guard. A disposable prototype proves
+the design decision only; it never proves the shipped implementation.
+
 ## Goal Contract
 
-Read-only explanation of existing artifacts does not create a goal. Any run
-that measures, repairs a harness, changes code, or iterates uses `autogoal`
-with `docs/plans/templates/benchmark.md` in one-shot execution mode unless the
-user explicitly asks for collaborative planning:
+Read-only explanation of existing artifacts does not create a goal. A
+pre-acceptance architecture probe records its contract and evidence in the
+matching active architecture goal; do not create a competing Benchmark goal.
+Any standalone run that measures, repairs a harness, changes code, or iterates
+uses `autogoal` with `docs/plans/templates/benchmark.md` in one-shot execution
+mode unless the user explicitly asks for collaborative planning:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \

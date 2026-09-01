@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 124,
+  "latestVersion": 135,
   "versions": [
     {
       "version": 0,
@@ -1461,6 +1461,128 @@
         "Route Plate specs, type tests, slow tests, and fixtures through relative Plate facade or entrypoint owners.",
         "Mirror lower-distribution test helpers through the Plate testing entrypoint when consumer tests need them.",
         "Reject broad test-glob raw Plite exemptions and prove the exact bridge allowlist against source and test module specifiers."
+      ]
+    },
+    {
+      "version": 125,
+      "date": "2026-08-30",
+      "doctrineFingerprint": "sha256:592417091ba92b113ade3c1404b1dae6f011b270c251211f7922505502764146",
+      "summary": "Public package subpaths prefer one truthful domain noun over compound implementation phrases.",
+      "migrationChecks": [
+        "Use one established domain noun when it completely names the public entrypoint job.",
+        "Reject compound implementation phrases when the shorter noun stays precise and discoverable.",
+        "Do not shorten public subpaths into vague or misleading nouns merely to save characters."
+      ]
+    },
+    {
+      "version": 126,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:62ad00f92460684c4b11d09f8d4e7c57da5836edbd4cafeae89b7f81bdc7f0b2",
+      "summary": "Transient editor UI reuses literal lifetimes and exact Editable geometry instead of a public overlay layer.",
+      "migrationChecks": [
+        "Use Decoration for inline transient paint, Annotation for durable logical ranges, and Widget for logical out-of-flow UI.",
+        "Install normal Plate behavior through the owning plugin decorate and render slots without caller-managed carriers or refresh calls.",
+        "Require the exact mounted Editable ref for reusable geometry and keep Floating UI middleware and presentation in copied UI."
+      ]
+    },
+    {
+      "version": 127,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:bd37648bf23be5bf421cad067070d03573be0d9dce89de23b123ec4dc2a6e4e7",
+      "summary": "Plugin authoring precedent follows live canonical owners after public entrypoint cuts.",
+      "migrationChecks": [
+        "Remove deleted plugins and entrypoints from plugin-authoring examples in the same hard cut.",
+        "Point direct React plugin precedent at a live canonical owner rather than a retired compatibility surface.",
+        "Regenerate skill mirrors and audit retired public names across source rules and generated resources."
+      ]
+    },
+    {
+      "version": 128,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:f2a56718aac64be227f59bec28061ccd0b6fe8fb776372585d8946ccecb979db",
+      "summary": "Canonical editor state stays singular while exact mounted views own controlled presentation.",
+      "migrationChecks": [
+        "Audit editor-global plugins, stores, kits, and copied payloads whose only job is toggling how one mounted Editable presents canonical state.",
+        "Move neutral view mechanics to the exact Plite React Editable, proxy the contract through Plate React, and keep activation, exclusions, markers, and styling in copied UI.",
+        "Prove multi-view and multi-editor isolation plus native selection, input, history, clipboard, SSR, and projected-view-selection non-interference before deleting the stale plugin or kit."
+      ]
+    },
+    {
+      "version": 129,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:083eedc889cde4a5718590f183b1725b5f06f8bd97bcb48c24a8b2727a783e85",
+      "summary": "Sibling render slots expose exact placement refs, complete UI components register directly, and focused feature work never fakes package attestation.",
+      "migrationChecks": [
+        "Cut sibling prop bags and runtime spreads that forward Editable or container DOM props beyond the exact slot ref.",
+        "Register complete sibling components directly and keep callbacks only when the caller supplies real alternative children or options.",
+        "Audit package types, copied registry composition, public docs, plans, source rules, and generated mirrors for stale forwarding wrappers.",
+        "Require full package evidence only when Plate Next attestation applies; focused work in an existing stale package records exact N/A status instead of mass-attesting it."
+      ]
+    },
+    {
+      "version": 130,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:ff4172c9e8b1d7b43ceb90e01e0b2e589b3a0594c8e6227a66ec65a528799826",
+      "summary": "Mounted views derive transient presentation from their runtime and DOM lifecycle before exposing controlled state.",
+      "migrationChecks": [
+        "Derive transient view presentation from canonical editor state plus exact mounted-view focus, geometry, and DOM lifecycle when those inputs fully determine it.",
+        "Reject public boolean props, plugin stores, kits, and copied model payloads that duplicate a view state the owner can derive without user intent.",
+        "Expose literal DOM input markers and neutral output hooks only when product UI must opt a focus target into the built-in lifecycle or style its result."
+      ]
+    },
+    {
+      "version": 131,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:aca5c672ca0046a41b1b433bd55d06ab7a8f2b775346c6ee6eb812c7d4290931",
+      "summary": "Descriptor-derived component props require descriptor-owned data; sibling slots keep exact placement props.",
+      "migrationChecks": [
+        "Type before/after Editable and container siblings from EditableSiblingProps or ContainerSiblingProps, never a descriptor generic that only restates fixed slot props.",
+        "Keep descriptor-derived PlateElementProps and PlateLeafProps for node renderers whose schema or plugin context changes the real prop contract.",
+        "Delete zero-caller sibling option bags and primitive prop passthroughs; retain only proven component composition such as optional custom children."
+      ]
+    },
+    {
+      "version": 132,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:a1288ef98afd6ccf16eb00444a263ed809a0d83d9126d0bd84bd2db341f85e64",
+      "summary": "Transient view presentation survives real focus transfer, Strict Mode rehearsal, and queued selection repair.",
+      "migrationChecks": [
+        "Replay both direct related-target and null-then-document-focus transitions through a hydrated native interaction with no artificial delay.",
+        "Give render-owned disposable sources a deferred-destroy lifecycle that survives Strict Mode effect rehearsal and still destroys real replacements and unmounts.",
+        "While one editor's marked inactive focus is visible, block even forced model-to-DOM selection and focus repair without exposing duplicate public state."
+      ]
+    },
+    {
+      "version": 133,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:50b2dbe689ddeb7c20a20b15fbf3b020779b75b118fde1b62b0ee26d1762d01f",
+      "summary": "Copied UI teaches the literal inactive-selection DOM protocol and never resurrects a controlled prop.",
+      "migrationChecks": [
+        "Mark only the owned external focus target or ancestor with data-plite-keep-selection-visible.",
+        "Inherit inactive-selection mechanics through PlateContent and style the neutral expanded and caret output hooks in copied UI.",
+        "Reject boolean props, copied ranges, plugins, kits, and registry items whose only job is toggling derived inactive-selection paint."
+      ]
+    },
+    {
+      "version": 134,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:2aa1c2650ed29d286272f98588e5dc32f6ceaa86831f42c7b547f16241be98a7",
+      "summary": "Component-owned prop shapes stay inline; only exported cross-file or published entrypoint contracts stay named.",
+      "migrationChecks": [
+        "Inline every locally owned component prop shape, including aliases reused only by same-file components or helpers.",
+        "Keep a named prop contract only when an actual cross-file consumer or reachable published source entrypoint requires its export; an orphan internal reexport is not enough.",
+        "Preserve honest state, domain, and descriptor-owned contracts inside inline prop expressions, and audit every authored TSX source while excluding generated and template output."
+      ]
+    },
+    {
+      "version": 135,
+      "date": "2026-08-31",
+      "doctrineFingerprint": "sha256:7b6af8337f79bb52835298b1a5ec0d73be872c9db70d9dace1a8a50bb19288c8",
+      "summary": "Commit queries and projection work follow the consumer's actual dependency and share immutable results without unrelated global reads.",
+      "migrationChecks": [
+        "Use the canonical presence query for added or removed node identities; do not compute all shifted paths for an existence check.",
+        "Reuse immutable query results and membership indexes; known absent identities must not trigger whole-document index construction.",
+        "Keep keyed composed reads and small range projections bounded to contributing sources and selected leaves, with affected, unchanged, and later-affected scale proof."
       ]
     }
   ],

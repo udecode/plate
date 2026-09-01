@@ -347,7 +347,6 @@ export const registryFeatures: Registry['items'] = [
     ],
     name: 'ai',
     registryDependencies: [
-      '@plate/cursor-overlay',
       '@plate/ai-menu',
       '@plate/ai-toolbar-button',
       '@plate/ai-api',
@@ -627,24 +626,22 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs'],
+    dependencies: ['platejs', 'lucide-react'],
     files: [
       {
-        path: 'components/editor/cursor-overlay.tsx',
+        path: 'components/editor/find.tsx',
         type: 'registry:component',
       },
     ],
-    name: 'cursor-overlay',
-    meta: {
-      docs: [
-        { route: '/docs/cursor-overlay' },
-        { route: 'https://pro.platejs.org/docs/components/cursor-overlay' },
-      ],
-      examples: ['ai-demo'],
-    },
-    registryDependencies: [],
-    title: 'Cursor Overlay',
+    name: 'find',
+    registryDependencies: ['input-group', 'tooltip'],
     type: 'registry:component',
+    description: 'A document find controller with transient match highlights.',
+    title: 'Find',
+    meta: {
+      docs: [{ route: '/docs/find' }],
+      examples: ['find-demo'],
+    },
   },
   {
     dependencies: ['platejs'],
@@ -760,7 +757,6 @@ export const registryFeatures: Registry['items'] = [
       '@plate/code-block',
       '@plate/column',
       '@plate/comment',
-      '@plate/cursor-overlay',
       '@plate/date',
       '@plate/discussion',
       '@plate/dnd',
@@ -872,6 +868,7 @@ export const registryFeatures: Registry['items'] = [
       '@plate/link',
       '@plate/toolbar',
       '@plate/use-on-click-outside',
+      '@plate/use-widget-floating',
       '@plate/tailwind-scrollbar-hide',
       '@plate/ai-toolbar-button',
       '@plate/comment-toolbar-button',
@@ -884,7 +881,6 @@ export const registryFeatures: Registry['items'] = [
     ],
     meta: {
       docs: [
-        { route: '/docs/api/floating' },
         {
           route: 'https://pro.platejs.org/docs/components/floating-toolbar',
         },
@@ -970,7 +966,6 @@ export const registryFeatures: Registry['items'] = [
     meta: {
       docs: [
         { route: '/docs/link' },
-        { route: '/docs/api/floating' },
         { route: 'https://pro.platejs.org/docs/components/link-toolbar' },
       ],
       examples: ['link-demo', 'link-pro'],
@@ -984,6 +979,7 @@ export const registryFeatures: Registry['items'] = [
       '@plate/suggestion',
       '@plate/suggestion-style',
       '@plate/use-on-click-outside',
+      '@plate/use-widget-floating',
     ],
     title: 'Link',
     type: 'registry:component',

@@ -7,17 +7,6 @@ import React, { type ReactNode, createContext } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
-type Item = {
-  children: ReactNode;
-  name: string;
-  type: string;
-  default?: boolean | string;
-  description?: string;
-  optional?: boolean;
-  required?: boolean;
-  value?: string;
-};
-
 const APIContext = createContext<{ listType?: string; name?: string }>({});
 
 const listTypeToId: Record<string, string> = {
@@ -59,7 +48,22 @@ export function API({ children, name }: { children: ReactNode; name: string }) {
   );
 }
 
-export function APIItem({ children, name, optional, required, type }: Item) {
+export function APIItem({
+  children,
+  name,
+  optional,
+  required,
+  type,
+}: {
+  children: ReactNode;
+  name: string;
+  type: string;
+  default?: boolean | string;
+  description?: string;
+  optional?: boolean;
+  required?: boolean;
+  value?: string;
+}) {
   const { listType, name: contextName } = React.useContext(APIContext);
 
   const id = contextName
@@ -109,7 +113,15 @@ export function APIItem({ children, name, optional, required, type }: Item) {
   );
 }
 
-export function APIAttributes({ children, ...props }: APIListProps) {
+export function APIAttributes({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="attributes" {...props}>
       {children}
@@ -117,7 +129,15 @@ export function APIAttributes({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIOptions({ children, ...props }: APIListProps) {
+export function APIOptions({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="options" {...props}>
       {children}
@@ -125,7 +145,15 @@ export function APIOptions({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIProps({ children, ...props }: APIListProps) {
+export function APIProps({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="props" {...props}>
       {children}
@@ -133,7 +161,15 @@ export function APIProps({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIState({ children, ...props }: APIListProps) {
+export function APIState({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="state" {...props}>
       {children}
@@ -141,7 +177,15 @@ export function APIState({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIReturns({ children, ...props }: APIListProps) {
+export function APIReturns({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="returns" {...props}>
       {children}
@@ -149,7 +193,15 @@ export function APIReturns({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIParameters({ children, ...props }: APIListProps) {
+export function APIParameters({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="parameters" {...props}>
       {children}
@@ -157,7 +209,15 @@ export function APIParameters({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIListAPI({ children, ...props }: APIListProps) {
+export function APIListAPI({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="api" {...props}>
       {children}
@@ -165,7 +225,15 @@ export function APIListAPI({ children, ...props }: APIListProps) {
   );
 }
 
-export function APITransforms({ children, ...props }: APIListProps) {
+export function APITransforms({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="transforms" {...props}>
       {children}
@@ -173,7 +241,15 @@ export function APITransforms({ children, ...props }: APIListProps) {
   );
 }
 
-export function APIMethods({ children, ...props }: APIListProps) {
+export function APIMethods({
+  children,
+  ...props
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   return (
     <APIList listType="methods" {...props}>
       {children}
@@ -181,18 +257,16 @@ export function APIMethods({ children, ...props }: APIListProps) {
   );
 }
 
-type APIListProps = {
-  children: ReactNode;
-  collapsed?: boolean;
-  listType?: string;
-  type?: string;
-};
-
 export function APIList({
   children,
   listType = 'parameters',
   type,
-}: APIListProps) {
+}: {
+  children: ReactNode;
+  collapsed?: boolean;
+  listType?: string;
+  type?: string;
+}) {
   const { name } = React.useContext(APIContext);
   const childCount = React.Children.count(children);
   const contextValue = React.useMemo(

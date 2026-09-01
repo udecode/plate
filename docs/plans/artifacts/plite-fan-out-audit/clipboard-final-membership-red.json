@@ -1,0 +1,196 @@
+{
+  "artifact": "tmp/slate-clipboard-large-payload-benchmark.json",
+  "sourceManifest": "docs/plans/artifacts/plite-fan-out-audit/final-source-membership-before.json",
+  "config": {
+    "authorityArtifact": true,
+    "hugeCutBlocks": 50000,
+    "hugeCutIterations": 3,
+    "iterations": 3,
+    "issueTargetIterations": 3,
+    "issueTargetStressLines": 10000,
+    "issueTargetsEnabled": true,
+    "processIsolation": "support-cut-issue",
+    "stressLineCount": 2000,
+    "stressIterations": 1,
+    "workerPids": {
+      "cut": 11157,
+      "issue": 11139,
+      "support": 11226
+    }
+  },
+  "issueBudgetFailures": [
+    "largePlainTextPaste10000P50",
+    "populatedFullSelectionCopy10000P50"
+  ],
+  "issueTargetThresholds": {
+    "commitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksEditMsP50": {
+      "actualMs": 28.96,
+      "limitMs": 150,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTokenSpan": {
+      "actual": 36,
+      "limit": 64,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTopLevelSpan": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksMsP50": {
+      "actualMs": 26.42,
+      "limitMs": 250,
+      "passed": true
+    },
+    "largePlainTextPaste10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "largePlainTextPaste10000P50": {
+      "actualMs": 61.09,
+      "baselineMs": 38.57,
+      "limitMs": 60,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": false
+    },
+    "populatedFullSelectionCopy10000P50": {
+      "actualMs": 22.83,
+      "baselineMs": 12.16,
+      "limitMs": 20,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": false
+    },
+    "populatedMiddlePlainTextPaste10000Into10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "populatedMiddlePlainTextPaste10000Into10000P50": {
+      "actualMs": 69.86,
+      "baselineMs": 185.49,
+      "limitMs": 280,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    }
+  },
+  "metrics": {
+    "plite_clipboard_full_copy_identity_builds": 0,
+    "plite_clipboard_full_copy_property_visits": 0,
+    "plite_clipboard_correctness_failures": 0,
+    "plite_clipboard_cut_edit_inspection_p95_ms": 9.33,
+    "plite_clipboard_cut_edit_setup_p95_ms": 1649.03,
+    "plite_clipboard_cut_changed_token_span_max": 36,
+    "plite_clipboard_cut_changed_top_level_span_max": 1,
+    "plite_clipboard_cut_retained_existing_block_ratio": 0.99996,
+    "plite_clipboard_decode_p95_ms": 2.92,
+    "plite_clipboard_encode_p95_ms": 2.35,
+    "plite_clipboard_fit_p95_ms": 55.89,
+    "plite_clipboard_gc_available": 1,
+    "plite_clipboard_host_parse_p95_ms": 2.88,
+    "plite_clipboard_host_serialize_p95_ms": 0.67,
+    "plite_clipboard_issue_budget_failures": 2,
+    "plite_clipboard_plain_text_paste_10000_p50_ms": 61.09,
+    "plite_clipboard_plate_codec_compile_p95_ms": 18.64,
+    "plite_clipboard_plate_codec_decode_10000_p95_ms": 32.69,
+    "plite_clipboard_plate_codec_parse_insert_10000_p95_ms": 828.17,
+    "plite_clipboard_plate_codec_reconfigure_p95_ms": 1.48,
+    "plite_clipboard_plate_codec_serialize_10000_p95_ms": 26.99,
+    "plite_clipboard_populated_full_selection_copy_10000_p50_ms": 22.83,
+    "plite_clipboard_populated_plain_text_paste_10000_p50_ms": 69.86,
+    "plite_clipboard_max_changed_token_span": 608890,
+    "plite_clipboard_max_changed_top_level_span": 9999,
+    "plite_clipboard_peak_heap_delta_bytes": 205615834,
+    "plite_clipboard_peak_retained_heap_delta_bytes": 0,
+    "plite_clipboard_populated_paste_inspection_p95_ms": 2.54,
+    "plite_clipboard_populated_paste_setup_p95_ms": 331.56,
+    "plite_clipboard_slice_commit_p95_ms": 67.07,
+    "plite_clipboard_worst_issue_p95_ms": 77.69
+  },
+  "correctnessFailures": [],
+  "samples": {
+    "largePlainTextPaste10000": {
+      "samples": [
+        61.09,
+        57.3,
+        66.41
+      ],
+      "setupSamples": [
+        1.16,
+        1.31,
+        1.08
+      ],
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0,
+        "retainedExistingBlocks": 0,
+        "topLevelRanges": [
+          [
+            0,
+            9999
+          ]
+        ],
+        "insertedBlocks": 10000,
+        "lineCount": 10000,
+        "textPlainBytes": 578889
+      }
+    },
+    "populatedFullSelectionCopy10000": {
+      "samples": [
+        22.83,
+        19.88,
+        26.73
+      ],
+      "setupSamples": [
+        326.09,
+        304.28,
+        234.85
+      ],
+      "metadata": {
+        "applicationBytes": 2171996,
+        "fragmentNodes": 10000,
+        "textHtmlBytes": 2750967,
+        "textPlainBytes": 578889
+      }
+    },
+    "populatedMiddlePlainTextPaste10000Into10000": {
+      "samples": [
+        64.19,
+        69.86,
+        77.69
+      ],
+      "setupSamples": [
+        288.2,
+        331.56,
+        265.67
+      ],
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0.9999,
+        "retainedExistingBlocks": 9999,
+        "topLevelRanges": [
+          [
+            5000,
+            14999
+          ]
+        ],
+        "existingBlockCount": 10000,
+        "insertedBlocks": 10000,
+        "nextBlockCount": 19999,
+        "textPlainBytes": 578889
+      }
+    }
+  }
+}

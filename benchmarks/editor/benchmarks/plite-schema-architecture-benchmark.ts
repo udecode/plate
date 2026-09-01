@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
@@ -40,11 +42,11 @@ import {
 } from '../../../packages/plitejs/src/internal/index';
 import {
   decodeProjectedClipboardFragment,
-  getProjectedViewSelectionFragment,
+  getProjectedViewSelectionSlice,
   writeProjectedViewSelectionClipboardData,
 } from '../../../packages/plitejs/src/react/editable/projected-clipboard';
 import { getEditorRuntimeOwner } from '../../../packages/plitejs/src/react/editable/runtime-editor-api';
-import { getSchemaInvalidatedRuntimeIds } from '../../../packages/plitejs/src/react/editable/schema-runtime-invalidation';
+import { getSchemaInvalidatedNodeKeys } from '../../../packages/plitejs/src/react/editable/schema-runtime-invalidation';
 import type { ReactRuntimeEditor } from '../../../packages/plitejs/src/react/plugin/react-editor';
 import {
   createPliteProjectionGraph,
@@ -82,6 +84,27 @@ const LEGACY_BASELINE = Object.freeze({
   typeP50Ns: 2970,
   wrapperP50Ns: 9921,
 });
+
+const measuredFiles = [
+  'packages/plitejs/src/core/public-state.ts',
+  'packages/plitejs/src/core/get-content-slice.ts',
+  'packages/plitejs/src/core/change/document-change.ts',
+  'packages/plitejs/src/core/snapshot-index.ts',
+  'packages/plitejs/src/core/schema-compiler.ts',
+  'packages/plitejs/src/core/editor-schema.ts',
+  'packages/plitejs/src/interfaces/node.ts',
+  'packages/plitejs/src/react/editable/projected-clipboard.ts',
+  'benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts',
+  'benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs',
+];
+const fingerprint = () =>
+  Object.fromEntries(
+    measuredFiles.map((file) => [
+      file,
+      createHash('sha256').update(readFileSync(file)).digest('hex'),
+    ])
+  );
+const sourceBefore = fingerprint();
 
 const argument = (name: string, fallback: number) => {
   const value = process.argv.find((candidate) =>
@@ -313,7 +336,6 @@ const createPlateDescriptorPlugins = (
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
-          type: `plate-descriptor-${cohort}-${count}-${index}`,
         },
       },
     })
@@ -333,7 +355,7 @@ const measurePlateDescriptorStartup = (
 
   assert.equal(
     editor.read.schema.element(getDefined(plugins.at(-1)))?.type,
-    getDefined(plugins.at(-1)).type
+    getDefined(plugins.at(-1)).name
   );
 
   return { editor, plugins, schemaId, startupMs };
@@ -354,10 +376,7 @@ const plateDescriptorStartupMeasurements = measureCohortsRoundRobin(
   },
   (count) => {
     const sampleIndex = plateDescriptorSampleOrdinals.get(count) ?? 0;
-    const measured = measurePlateDescriptorStartup(
-      count,
-      `cold-${sampleIndex}`
-    );
+    const measured = measurePlateDescriptorStartup(count, `cold${sampleIndex}`);
 
     plateDescriptorSampleOrdinals.set(count, sampleIndex + 1);
     plateDescriptorMeasured.set(count, measured);
@@ -392,7 +411,7 @@ const measurePlateDescriptorCohort = (
       const before = process.hrtime.bigint();
 
       for (const plugin of measured.plugins) {
-        if (measured.editor.read.schema.element(plugin)?.type === plugin.type) {
+        if (measured.editor.read.schema.element(plugin)?.type === plugin.name) {
           resolved += 1;
         }
       }
@@ -466,7 +485,7 @@ const measureConstructionPropertyCohort = (
   );
 
   assert.ok(compiledElement);
-  assert.equal(compiledElement.construction.defaultPropertyIds.size, 1);
+  assert.equal(compiledElement.construction.materializedPropertyIds.size, 1);
   assert.equal(compiledElement.construction.propertyIds.size, 1);
 
   let creations = 0;
@@ -475,7 +494,7 @@ const measureConstructionPropertyCohort = (
       const before = process.hrtime.bigint();
 
       for (let index = 0; index < constructionIterations; index += 1) {
-        const element = editor.read.schema.createAndFill('construction_target');
+        const element = editor.read.schema.create('construction_target');
 
         if (element.localDefault === 1 && Object.keys(element).length === 3) {
           creations += 1;
@@ -490,7 +509,7 @@ const measureConstructionPropertyCohort = (
 
   return {
     constructionDefaultPropertyIds:
-      compiledElement.construction.defaultPropertyIds.size,
+      compiledElement.construction.materializedPropertyIds.size,
     constructionPropertyIds: compiledElement.construction.propertyIds.size,
     creationNs,
     creations,
@@ -766,7 +785,7 @@ const coldFullValidationSamples = Array.from(
     const value = createFullValidationValue();
     const before = performance.now();
 
-    editor.read.schema.validateDocument(value);
+    editor.read.schema.assertDocument(value);
     const elapsed = performance.now() - before;
 
     assertFullValidationCorpus(value);
@@ -784,14 +803,14 @@ const repeatedFrozenValidationValue =
 
 assertFullValidationCorpus(repeatedFrozenValidationValue);
 assert.equal(Object.isFrozen(repeatedFrozenValidationValue.children), true);
-editor.read.schema.validateDocument(repeatedFrozenValidationValue);
+editor.read.schema.assertDocument(repeatedFrozenValidationValue);
 
 const repeatedFrozenFullValidationSamples = Array.from(
   { length: validationIterations },
   () => {
     const before = performance.now();
 
-    editor.read.schema.validateDocument(repeatedFrozenValidationValue);
+    editor.read.schema.assertDocument(repeatedFrozenValidationValue);
 
     return performance.now() - before;
   }
@@ -1151,7 +1170,7 @@ const prepareInvalidation = (
   assert.ok(commit);
   assert.deepEqual(delta?.elementTypes, [...changedTypes].sort());
   assert.equal(
-    getSchemaInvalidatedRuntimeIds(measured, commit).length,
+    getSchemaInvalidatedNodeKeys(measured, commit).length,
     INVALIDATION_AFFECTED_RUNTIME_IDS
   );
 
@@ -1165,8 +1184,8 @@ const measureSchemaInvalidationSample = (
 
   for (let index = 0; index < invalidationIterations; index += 1) {
     if (
-      getSchemaInvalidatedRuntimeIds(prepared.editor, prepared.commit)
-        .length === INVALIDATION_AFFECTED_RUNTIME_IDS
+      getSchemaInvalidatedNodeKeys(prepared.editor, prepared.commit).length ===
+      INVALIDATION_AFFECTED_RUNTIME_IDS
     ) {
       matches += 1;
     }
@@ -1205,7 +1224,7 @@ const invalidationMeasurements = measureCohortsRoundRobin(
   (prepared) => {
     for (let index = 0; index < INVALIDATION_WARMUP_ITERATIONS; index++) {
       assert.equal(
-        getSchemaInvalidatedRuntimeIds(prepared.editor, prepared.commit).length,
+        getSchemaInvalidatedNodeKeys(prepared.editor, prepared.commit).length,
         INVALIDATION_AFFECTED_RUNTIME_IDS
       );
     }
@@ -1239,7 +1258,7 @@ assert.deepEqual(propertyInvalidationDelta?.elementTypes, [
   'schema_delta_affected',
 ]);
 assert.equal(propertyInvalidationDelta?.propertyIds.length, 1);
-const propertyInvalidationRuntimeIds = getSchemaInvalidatedRuntimeIds(
+const propertyInvalidationRuntimeIds = getSchemaInvalidatedNodeKeys(
   propertyInvalidationEditor,
   propertyInvalidationCommit
 ).length;
@@ -1364,7 +1383,7 @@ const measureProjectedClipboardCohort = (
   );
 
   const slice = decodeProjectedClipboardFragment(measured, projectedData);
-  const fragment = getProjectedViewSelectionFragment(measured);
+  const fragment = getProjectedViewSelectionSlice(measured)?.content;
 
   assert.ok(slice);
   assert.deepEqual(fragment, [
@@ -1375,13 +1394,42 @@ const measureProjectedClipboardCohort = (
   assert.equal(slice.openStart, 1);
   assert.equal(slice.openEnd, 1);
 
+  const canonicalValue = measured.read.value();
+  const observedRoots = new Map<object, object>();
+  let rootValidationPropertyReads = 0;
+  for (const children of [
+    canonicalValue.children,
+    ...Object.values(canonicalValue.roots ?? {}),
+  ]) {
+    observedRoots.set(
+      children,
+      new Proxy(children, {
+        getOwnPropertyDescriptor(rootChildren, key) {
+          rootValidationPropertyReads += 1;
+          return Reflect.getOwnPropertyDescriptor(rootChildren, key);
+        },
+      })
+    );
+  }
+  const { isFrozen } = Object;
+  Object.isFrozen = (value) => isFrozen(observedRoots.get(value) ?? value);
+  try {
+    assert.deepEqual(
+      getProjectedViewSelectionSlice(measured)?.content,
+      fragment
+    );
+    assert.deepEqual(measured.read.value(), canonicalValue);
+  } finally {
+    Object.isFrozen = isFrozen;
+  }
+
   let fragmentReads = 0;
   const fragmentNs = summarize(
     Array.from({ length: architectureIterations }, () => {
       const before = process.hrtime.bigint();
 
       for (let index = 0; index < projectedClipboardIterations; index += 1) {
-        if (getProjectedViewSelectionFragment(measured)?.length === 2) {
+        if (getProjectedViewSelectionSlice(measured)?.content.length === 2) {
           fragmentReads += 1;
         }
       }
@@ -1426,6 +1474,7 @@ const measureProjectedClipboardCohort = (
 
   return {
     blocks,
+    rootValidationPropertyReads,
     fragmentNs,
     fragmentReads,
     hostWriteNs,
@@ -1555,12 +1604,10 @@ const createMinimalSchema = () =>
         { length: SCHEMA_ARCHITECTURE_CORPUS.namedRoots },
         (_value, index) => [
           `aux_${index + 1}`,
-          {
-            content: schema.content.type('minimal_block', {
-              default: { type: 'minimal_block' },
-              min: 1,
-            }),
-          },
+          schema.content.type('minimal_block', {
+            default: { type: 'minimal_block' },
+            min: 1,
+          }),
         ]
       )
     ),
@@ -1911,8 +1958,15 @@ const result = {
     planSearchesAfterFirst: wrapperPlanSearchesAfterFirst,
     warmNs: unknownWrapperWarmQueryNs,
   },
-  version: 6,
+  version: 7,
+  sourceBefore,
+  sourceAfter: fingerprint(),
 };
+assert.deepEqual(
+  result.sourceAfter,
+  result.sourceBefore,
+  'Measured source changed during benchmark'
+);
 
 const validateStrictBenchmark = () => {
   assert.ok(
@@ -2028,6 +2082,9 @@ const validateStrictBenchmark = () => {
   );
   assert.equal(projectedClipboardRows[0].selectedNodes, 2);
   assert.equal(projectedClipboardRows[1].selectedNodes, 2);
+  for (const row of projectedClipboardRows) {
+    assert.equal(row.rootValidationPropertyReads, 0);
+  }
   assert.equal(projectedClipboardRows[0].openStart, 1);
   assert.equal(projectedClipboardRows[0].openEnd, 1);
   assert.equal(projectedClipboardRows[1].openStart, 1);
@@ -2220,6 +2277,9 @@ process.stdout.write(
 );
 process.stdout.write(
   `METRIC plite_schema_architecture_projected_clipboard_width_ratio=${projectedClipboardDocumentWidthRatio}\n`
+);
+process.stdout.write(
+  `METRIC plite_schema_architecture_projected_clipboard_root_validation_property_reads=${Math.max(...projectedClipboardRows.map((row) => row.rootValidationPropertyReads))}\n`
 );
 process.stdout.write(
   `METRIC plite_schema_architecture_projected_clipboard_host_width_ratio=${projectedClipboardHostWidthRatio}\n`

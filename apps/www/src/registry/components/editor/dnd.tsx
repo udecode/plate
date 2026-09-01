@@ -93,13 +93,17 @@ export const BlockDraggable: RenderNodeWrapperDescriptor<typeof DndPlugin> = {
 };
 
 type DraggableContainer = 'column' | 'root' | 'table';
-type DraggableProps = RenderNodeWrapperProps & {
+
+function Draggable({
+  activate,
+  active,
+  container,
+  ...props
+}: RenderNodeWrapperProps & {
   activate: () => void;
   active: boolean;
   container: DraggableContainer;
-};
-
-function Draggable({ activate, active, container, ...props }: DraggableProps) {
+}) {
   const { children, editor, element } = props;
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
   const [dropLine, setDropLine] = React.useState<DropLineDirection>('');

@@ -9,8 +9,8 @@
       "plitejs/dom": ["./src/dom/index.ts"],
       "plitejs/history": ["./src/history/index.ts"],
       "plitejs/hyperscript": ["./src/hyperscript/index.ts"],
-      "plitejs/page-layout": ["./src/page-layout/index.ts"],
-      "plitejs/page-layout/react": ["./src/page-layout/react.tsx"],
+      "plitejs/pagination": ["./src/pagination/index.ts"],
+      "plitejs/pagination/react": ["./src/pagination/react.tsx"],
       "plitejs/react": ["./src/react/index.ts"],
       "plitejs/testing": ["./src/testing/index.ts"]
     },

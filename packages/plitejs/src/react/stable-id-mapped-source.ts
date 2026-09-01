@@ -1,3 +1,4 @@
+import { getDefined } from '../internal/get-defined';
 import { failInvariant } from './editable/runtime-editor-api';
 
 type StableIdMappedOutput<TValue> = Readonly<{
@@ -30,6 +31,11 @@ type StableIdMappedSourceSnapshot<TEntity, TValue> = Readonly<{
 }>;
 
 type StableIdMappedSourceRefreshOptions = Readonly<{
+  /**
+   * Private trusted delta from an instrumented projection source. The caller
+   * guarantees that source membership and order are unchanged.
+   */
+  changedIds?: readonly string[];
   forceAll?: boolean;
   forceIds?: readonly string[];
 }>;
@@ -45,6 +51,15 @@ export type StableIdMappedSourceRefreshResult<TMetadata> = Readonly<{
 export type StableIdMappedSource<TItem, TEntity, TValue, TMetadata> = Readonly<{
   getIdsForOutputKeys: (keys: readonly string[]) => readonly string[];
   getIdsWithoutOutputs: () => readonly string[];
+  getWork: () => Readonly<{
+    entityCopies: number;
+    inputVisits: number;
+    outputCandidateVisits: number;
+    outputVisits: number;
+    snapshotChildEntryCopies: number;
+    snapshotNodeCopies: number;
+    unprojectedVisits: number;
+  }>;
   getSnapshot: () => StableIdMappedSourceSnapshot<TEntity, TValue>;
   refresh: (
     items: readonly TItem[],
@@ -56,19 +71,265 @@ type InternalMappedValue<TEntity, TValue, TMetadata> = Readonly<{
   entity?: TEntity;
   metadata?: TMetadata;
   outputs: ReadonlyArray<StableIdMappedOutput<TValue>>;
+  outputsByKey: ReadonlyMap<string, readonly TValue[]>;
 }>;
+
+type PersistentReadonlyRecord<TValue> = {
+  getSnapshot: () => Readonly<Record<string, TValue>>;
+  publish: (
+    changes: ReadonlyMap<string, TValue | undefined>
+  ) => Readonly<Record<string, TValue>>;
+};
 
 type InternalState<TItem, TEntity, TValue, TMetadata> = {
   allIds: readonly string[];
   byId: ReadonlyMap<string, TEntity>;
   byOutputKey: Readonly<Record<string, readonly TValue[]>>;
+  entityRecord: PersistentReadonlyRecord<TEntity>;
   idsByOutputKey: Map<string, string[]>;
   indexById: Map<string, number>;
   inputs: TItem[];
   mappedById: Map<string, InternalMappedValue<TEntity, TValue, TMetadata>>;
+  outputRecord: PersistentReadonlyRecord<readonly TValue[]>;
+  unprojectedIds: Set<string>;
 };
 
 const EMPTY_OUTPUTS = Object.freeze([]) as readonly unknown[];
+
+const createPersistentReadonlyRecord = <TValue>(
+  initial: Readonly<Record<string, TValue>>,
+  onNodeCopy: () => void,
+  onChildEntriesCopy: (count: number) => void
+): PersistentReadonlyRecord<TValue> => {
+  type TrieNode = Readonly<{
+    children: ReadonlyMap<string, TrieNode>;
+    key?: string;
+    value?: TValue;
+  }>;
+
+  const EMPTY_NODE: TrieNode = Object.freeze({ children: new Map() });
+  const createNode = (
+    children: ReadonlyMap<string, TrieNode>,
+    value: TValue | undefined,
+    key: string | undefined
+  ): TrieNode => {
+    onNodeCopy();
+    return Object.freeze({
+      children,
+      ...(value === undefined ? {} : { key, value }),
+    });
+  };
+  type Update = {
+    assigned: boolean;
+    children: Map<string, Update>;
+    key?: string;
+    value?: TValue;
+  };
+  const createUpdate = (): Update => ({ assigned: false, children: new Map() });
+  const keyBytes = (key: string) => {
+    let bytes = '';
+    // Byte branches bound child-map copies even for divergent Unicode IDs.
+    for (let index = 0; index < key.length; index += 1) {
+      const unit = key.charCodeAt(index);
+      bytes += String.fromCharCode(unit >>> 8, unit & 255);
+    }
+    return bytes;
+  };
+  const setValues = (
+    base: TrieNode,
+    changes: Iterable<readonly [string, TValue | undefined]>
+  ): TrieNode => {
+    const updates = createUpdate();
+
+    for (const [key, value] of changes) {
+      let update = updates;
+
+      for (const part of keyBytes(key)) {
+        let child = update.children.get(part);
+
+        if (!child) {
+          child = createUpdate();
+          update.children.set(part, child);
+        }
+        update = child;
+      }
+      update.assigned = true;
+      update.key = key;
+      update.value = value;
+    }
+
+    type Frame = {
+      children?: Map<string, TrieNode>;
+      iterator: MapIterator<[string, Update]>;
+      node: TrieNode;
+      part: string;
+      update: Update;
+    };
+    const stack: Frame[] = [
+      {
+        iterator: updates.children.entries(),
+        node: base,
+        part: '',
+        update: updates,
+      },
+    ];
+
+    while (stack.length > 0) {
+      const frame = getDefined(stack.at(-1));
+      const entry = frame.iterator.next();
+
+      if (!entry.done) {
+        const [part, update] = entry.value;
+        stack.push({
+          iterator: update.children.entries(),
+          node: frame.node.children.get(part) ?? EMPTY_NODE,
+          part,
+          update,
+        });
+        continue;
+      }
+
+      const { children, node, update } = frame;
+      const value = update.assigned ? update.value : node.value;
+      const next =
+        !children && value === node.value
+          ? node
+          : createNode(
+              children ?? node.children,
+              value,
+              update.assigned ? update.key : node.key
+            );
+
+      stack.pop();
+      const parent = stack.at(-1);
+
+      if (!parent) return next;
+      if (node === next) continue;
+      if (!parent.children) {
+        parent.children = new Map(parent.node.children);
+        onChildEntriesCopy(parent.node.children.size);
+      }
+      if (next.value === undefined && next.children.size === 0) {
+        parent.children.delete(frame.part);
+      } else {
+        parent.children.set(frame.part, next);
+      }
+    }
+
+    return base;
+  };
+  const readValue = (root: TrieNode, key: string) => {
+    let node = root;
+
+    for (const part of keyBytes(key)) {
+      const child = node.children.get(part);
+
+      if (!child) return undefined;
+      node = child;
+    }
+
+    return node.value;
+  };
+  const readKeys = (root: TrieNode) => {
+    const keys: string[] = [];
+    const stack = [root.children.values()];
+
+    if (root.value !== undefined) keys.push(getDefined(root.key));
+    while (stack.length > 0) {
+      const entry = getDefined(stack.at(-1)).next();
+
+      if (entry.done) {
+        stack.pop();
+        continue;
+      }
+      const node = entry.value;
+
+      if (node.value !== undefined) keys.push(getDefined(node.key));
+      if (node.children.size > 0) stack.push(node.children.values());
+    }
+
+    return keys;
+  };
+  let root = setValues(EMPTY_NODE, Object.entries(initial));
+  let snapshot: Readonly<Record<string, TValue>>;
+  const createSnapshot = (snapshotRoot: TrieNode) =>
+    new Proxy(Object.create(null) as Record<string, TValue>, {
+      defineProperty: () => false,
+      deleteProperty: () => false,
+      get: (_target, key) =>
+        typeof key === 'string' ? readValue(snapshotRoot, key) : undefined,
+      getOwnPropertyDescriptor: (_target, key) => {
+        if (typeof key !== 'string') return undefined;
+
+        const value = readValue(snapshotRoot, key);
+
+        return value === undefined
+          ? undefined
+          : {
+              configurable: true,
+              enumerable: true,
+              value,
+              writable: false,
+            };
+      },
+      has: (_target, key) =>
+        typeof key === 'string' && readValue(snapshotRoot, key) !== undefined,
+      ownKeys: () => readKeys(snapshotRoot),
+      set: () => false,
+    });
+
+  snapshot = createSnapshot(root);
+
+  return {
+    getSnapshot: () => snapshot,
+    publish(changes) {
+      if (changes.size === 0) return snapshot;
+
+      root = setValues(root, changes);
+      snapshot = createSnapshot(root);
+
+      return snapshot;
+    },
+  };
+};
+
+const createReadonlyEntityMap = <TEntity>(
+  values: Readonly<Record<string, TEntity>>,
+  allIds: readonly string[],
+  size: number
+): ReadonlyMap<string, TEntity> => {
+  function* entries(): MapIterator<[string, TEntity]> {
+    for (const id of allIds) {
+      const value = values[id];
+
+      if (value !== undefined) yield [id, value];
+    }
+  }
+
+  const snapshot: ReadonlyMap<string, TEntity> & {
+    readonly [Symbol.toStringTag]: 'Map';
+  } = {
+    entries,
+    forEach(callback, thisArg) {
+      for (const [id, value] of entries()) {
+        callback.call(thisArg, value, id, snapshot);
+      }
+    },
+    get: (id) => values[id],
+    has: (id) => values[id] !== undefined,
+    *keys(): MapIterator<string> {
+      for (const [id] of entries()) yield id;
+    },
+    size,
+    *values(): MapIterator<TEntity> {
+      for (const [, value] of entries()) yield value;
+    },
+    [Symbol.iterator]: entries,
+    [Symbol.toStringTag]: 'Map',
+  };
+
+  return Object.freeze(snapshot);
+};
 
 const hasEntity = <TEntity, TValue, TMetadata>(
   value: InternalMappedValue<TEntity, TValue, TMetadata>
@@ -158,10 +419,36 @@ export const createStableIdMappedSource = <
   options: StableIdMappedSourceOptions<TItem, TEntity, TValue, TMetadata>
 ): StableIdMappedSource<TItem, TEntity, TValue, TMetadata> => {
   const isEntityEqual = options.isEntityEqual ?? Object.is;
+  const work = {
+    entityCopies: 0,
+    inputVisits: 0,
+    outputCandidateVisits: 0,
+    outputVisits: 0,
+    snapshotChildEntryCopies: 0,
+    snapshotNodeCopies: 0,
+    unprojectedVisits: 0,
+  };
+  const mapItem = (
+    item: TItem
+  ): InternalMappedValue<TEntity, TValue, TMetadata> => {
+    const mapped = options.map(item);
+    const outputsByKey = new Map<string, TValue[]>();
+
+    for (const output of mapped.outputs) {
+      work.outputVisits += 1;
+      const values = outputsByKey.get(output.key) ?? [];
+
+      values.push(output.value);
+      outputsByKey.set(output.key, values);
+    }
+
+    return { ...mapped, outputsByKey };
+  };
 
   const buildState = (
     items: readonly TItem[]
   ): InternalState<TItem, TEntity, TValue, TMetadata> => {
+    work.inputVisits += items.length;
     const ids = items.map(options.getId);
 
     if (new Set(ids).size !== ids.length) {
@@ -169,30 +456,36 @@ export const createStableIdMappedSource = <
     }
 
     const allIds = Object.freeze(ids);
-    const byId = new Map<string, TEntity>();
+    const entities: Record<string, TEntity> = Object.create(null);
     const byOutputKey: Record<string, TValue[]> = Object.create(null);
     const idsByOutputKey = new Map<string, string[]>();
     const mappedById = new Map<
       string,
       InternalMappedValue<TEntity, TValue, TMetadata>
     >();
+    const unprojectedIds = new Set<string>();
 
     items.forEach((item, index) => {
       const id = allIds[index];
-      const mapped = options.map(item);
+      const mapped = mapItem(item);
       mappedById.set(id, mapped);
 
       if (hasEntity(mapped)) {
-        byId.set(id, mapped.entity);
+        entities[id] = mapped.entity;
       }
+      if (mapped.outputs.length === 0) unprojectedIds.add(id);
 
+      const outputKeys = new Set<string>();
       for (const output of mapped.outputs) {
         const outputValues = byOutputKey[output.key] ?? [];
         outputValues.push(output.value);
         byOutputKey[output.key] = outputValues;
 
         const outputIds = idsByOutputKey.get(output.key) ?? [];
-        if (!outputIds.includes(id)) outputIds.push(id);
+        if (!outputKeys.has(output.key)) {
+          outputIds.push(id);
+          outputKeys.add(output.key);
+        }
         idsByOutputKey.set(output.key, outputIds);
       }
     });
@@ -204,14 +497,40 @@ export const createStableIdMappedSource = <
       frozenOutputs[key] = Object.freeze(values);
     });
 
+    const outputRecord = createPersistentReadonlyRecord(
+      Object.freeze(frozenOutputs),
+      () => {
+        work.snapshotNodeCopies += 1;
+      },
+      (count) => {
+        work.snapshotChildEntryCopies += count;
+      }
+    );
+    const entityRecord = createPersistentReadonlyRecord(
+      entities,
+      () => {
+        work.snapshotNodeCopies += 1;
+      },
+      (count) => {
+        work.snapshotChildEntryCopies += count;
+      }
+    );
+
     return {
       allIds,
-      byId,
-      byOutputKey: Object.freeze(frozenOutputs),
+      byId: createReadonlyEntityMap(
+        entityRecord.getSnapshot(),
+        allIds,
+        Object.keys(entities).length
+      ),
+      byOutputKey: outputRecord.getSnapshot(),
+      entityRecord,
       idsByOutputKey,
       indexById: new Map(allIds.map((id, index) => [id, index])),
       inputs: [...items],
       mappedById,
+      outputRecord,
+      unprojectedIds,
     };
   };
 
@@ -260,12 +579,16 @@ export const createStableIdMappedSource = <
       );
     },
     getIdsWithoutOutputs() {
+      work.unprojectedVisits += state.unprojectedIds.size;
       return Object.freeze(
-        state.allIds.filter(
-          (id) => state.mappedById.get(id)?.outputs.length === 0
+        [...state.unprojectedIds].sort(
+          (left, right) =>
+            getDefined(state.indexById.get(left)) -
+            getDefined(state.indexById.get(right))
         )
       );
     },
+    getWork: () => Object.freeze({ ...work }),
     getSnapshot() {
       return Object.freeze({
         allIds: state.allIds,
@@ -274,18 +597,43 @@ export const createStableIdMappedSource = <
       });
     },
     refresh(items, refreshOptions = {}) {
-      const nextIds = items.map(options.getId);
+      const { changedIds } = refreshOptions;
 
-      if (
-        nextIds.length !== state.allIds.length ||
-        nextIds.some((id, index) => id !== state.allIds[index])
-      ) {
-        return replaceAll(items);
+      if (changedIds) {
+        if (items.length !== state.allIds.length) {
+          return replaceAll(items);
+        }
+
+        for (const id of changedIds) {
+          work.inputVisits += 1;
+          const index = state.indexById.get(id);
+
+          if (index === undefined || options.getId(items[index]) !== id) {
+            return replaceAll(items);
+          }
+        }
+      } else {
+        work.inputVisits += items.length;
+        const nextIds = items.map(options.getId);
+
+        if (
+          nextIds.length !== state.allIds.length ||
+          nextIds.some((id, index) => id !== state.allIds[index])
+        ) {
+          return replaceAll(items);
+        }
       }
 
       const candidateIndexes = new Set<number>();
 
-      if (refreshOptions.forceAll) {
+      if (changedIds) {
+        changedIds.forEach((id) => {
+          candidateIndexes.add(
+            state.indexById.get(id) ??
+              failInvariant('Expected value to be defined')
+          );
+        });
+      } else if (refreshOptions.forceAll) {
         items.forEach((_, index) => {
           candidateIndexes.add(index);
         });
@@ -297,14 +645,17 @@ export const createStableIdMappedSource = <
         });
       }
 
-      items.forEach((item, index) => {
-        if (!options.isItemEqual(state.inputs[index], item)) {
-          candidateIndexes.add(index);
-        }
-      });
+      if (!changedIds) {
+        items.forEach((item, index) => {
+          work.inputVisits += 1;
+          if (!options.isItemEqual(state.inputs[index], item)) {
+            candidateIndexes.add(index);
+          }
+        });
+      }
 
       if (candidateIndexes.size === 0) {
-        state.inputs = [...items];
+        if (!changedIds) state.inputs = [...items];
 
         return {
           changedEntityIds: Object.freeze([]),
@@ -323,7 +674,7 @@ export const createStableIdMappedSource = <
           return {
             id,
             index,
-            next: options.map(items[index]),
+            next: mapItem(items[index]),
             previous:
               state.mappedById.get(id) ??
               failInvariant('Expected value to be defined'),
@@ -355,7 +706,13 @@ export const createStableIdMappedSource = <
       );
 
       if (changedCandidates.length === 0) {
-        state.inputs = [...items];
+        if (changedIds) {
+          candidates.forEach(({ index }) => {
+            state.inputs[index] = items[index];
+          });
+        } else {
+          state.inputs = [...items];
+        }
 
         return {
           changedEntityIds: Object.freeze([]),
@@ -368,7 +725,9 @@ export const createStableIdMappedSource = <
 
       const changedEntityIds: string[] = [];
       const dirtyOutputKeys = new Set<string>();
-      const nextById = new Map(state.byId);
+      const entityChanges = new Map<string, TEntity | undefined>();
+      let entityCount = state.byId.size;
+      const membershipChanges = new Map<string, Map<string, boolean>>();
       const nextMappedById = new Map(
         changedCandidates.map(({ id, next }) => [id, next] as const)
       );
@@ -384,69 +743,65 @@ export const createStableIdMappedSource = <
             !isEntityEqual(previous.entity, next.entity))
         ) {
           changedEntityIds.push(id);
-          if (nextHasEntity) nextById.set(id, next.entity);
-          else nextById.delete(id);
+          work.entityCopies += 1;
+          entityChanges.set(id, nextHasEntity ? next.entity : undefined);
+          entityCount += Number(nextHasEntity) - Number(previousHasEntity);
         }
 
-        const previousKeys = unique(
-          previous.outputs.map((output) => output.key)
-        );
-        const nextKeys = unique(next.outputs.map((output) => output.key));
-
-        previousKeys.forEach((key) => {
+        for (const key of previous.outputsByKey.keys()) {
+          work.outputCandidateVisits += 1;
           dirtyOutputKeys.add(key);
-        });
-        nextKeys.forEach((key) => {
+          if (next.outputsByKey.has(key)) continue;
+          const changes = membershipChanges.get(key) ?? new Map();
+          changes.set(id, false);
+          membershipChanges.set(key, changes);
+        }
+        for (const key of next.outputsByKey.keys()) {
+          if (previous.outputsByKey.has(key)) continue;
+          work.outputCandidateVisits += 1;
           dirtyOutputKeys.add(key);
-        });
+          const changes = membershipChanges.get(key) ?? new Map();
+          changes.set(id, true);
+          membershipChanges.set(key, changes);
+        }
       }
 
       const nextIdsByOutputKey = new Map<string, string[]>();
-      const nextOutputValuesByKey = new Map<string, readonly TValue[]>();
-      const nextByOutputKey: Record<string, readonly TValue[]> = Object.assign(
-        Object.create(null),
-        state.byOutputKey
-      );
+      const nextOutputValuesByKey = new Map<
+        string,
+        readonly TValue[] | undefined
+      >();
       const changedOutputKeys: string[] = [];
 
       dirtyOutputKeys.forEach((key) => {
-        const ids = [...(state.idsByOutputKey.get(key) ?? [])];
-
-        for (const { id, next, previous } of changedCandidates) {
-          const hadOutput = previous.outputs.some(
-            (output) => output.key === key
+        const changes = membershipChanges.get(key);
+        let ids = state.idsByOutputKey.get(key) ?? [];
+        if (changes) {
+          ids = ids.filter((id) => changes.get(id) !== false);
+          changes.forEach((included, id) => {
+            if (included) ids.push(id);
+          });
+          ids.sort(
+            (left, right) =>
+              (state.indexById.get(left) ??
+                failInvariant('Expected value to be defined')) -
+              (state.indexById.get(right) ??
+                failInvariant('Expected value to be defined'))
           );
-          const hasOutput = next.outputs.some((output) => output.key === key);
-
-          if (hadOutput === hasOutput) continue;
-
-          if (hasOutput) {
-            ids.push(id);
-          } else {
-            const index = ids.indexOf(id);
-
-            if (index !== -1) ids.splice(index, 1);
-          }
         }
-
-        ids.sort(
-          (left, right) =>
-            (state.indexById.get(left) ??
-              failInvariant('Expected value to be defined')) -
-            (state.indexById.get(right) ??
-              failInvariant('Expected value to be defined'))
-        );
         nextIdsByOutputKey.set(key, ids);
 
-        const nextValues = ids.flatMap((id) =>
-          (
-            nextMappedById.get(id) ??
-            state.mappedById.get(id) ??
-            failInvariant('Expected value to be defined')
-          ).outputs
-            .filter((output) => output.key === key)
-            .map((output) => output.value)
-        );
+        const nextValues = ids.flatMap((id) => {
+          const values =
+            (
+              nextMappedById.get(id) ??
+              state.mappedById.get(id) ??
+              failInvariant('Expected value to be defined')
+            ).outputsByKey.get(key) ?? (EMPTY_OUTPUTS as readonly TValue[]);
+
+          work.outputVisits += values.length;
+          return values;
+        });
         const previousValues =
           state.byOutputKey[key] ?? (EMPTY_OUTPUTS as readonly TValue[]);
 
@@ -455,11 +810,26 @@ export const createStableIdMappedSource = <
         }
 
         changedOutputKeys.push(key);
-        nextOutputValuesByKey.set(key, Object.freeze(nextValues));
+        nextOutputValuesByKey.set(
+          key,
+          nextValues.length > 0 ? Object.freeze(nextValues) : undefined
+        );
       });
 
-      state.inputs = [...items];
-      state.byId = nextById;
+      if (changedIds) {
+        candidates.forEach(({ index }) => {
+          state.inputs[index] = items[index];
+        });
+      } else {
+        state.inputs = [...items];
+      }
+      if (entityChanges.size > 0) {
+        state.byId = createReadonlyEntityMap(
+          state.entityRecord.publish(entityChanges),
+          state.allIds,
+          entityCount
+        );
+      }
 
       nextIdsByOutputKey.forEach((ids, key) => {
         if (ids.length === 0) state.idsByOutputKey.delete(key);
@@ -467,12 +837,10 @@ export const createStableIdMappedSource = <
       });
       changedCandidates.forEach(({ id, next }) => {
         state.mappedById.set(id, next);
+        if (next.outputs.length === 0) state.unprojectedIds.add(id);
+        else state.unprojectedIds.delete(id);
       });
-      nextOutputValuesByKey.forEach((values, key) => {
-        if (values.length === 0) delete nextByOutputKey[key];
-        else nextByOutputKey[key] = values;
-      });
-      state.byOutputKey = Object.freeze(nextByOutputKey);
+      state.byOutputKey = state.outputRecord.publish(nextOutputValuesByKey);
 
       return {
         changedEntityIds: Object.freeze(changedEntityIds),

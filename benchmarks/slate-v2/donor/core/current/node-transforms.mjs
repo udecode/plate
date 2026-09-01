@@ -1,4 +1,10 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
+import { RootChange, splitNodeChange } from '../../../../../packages/plitejs/src/core/change/root-change.ts';
+import { getSnapshotIndexMappingStats } from '../../../../../packages/plitejs/src/core/snapshot-index.ts';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
@@ -7,6 +13,17 @@ const blockCount = Number(process.env.PLITE_NODE_TRANSFORMS_BLOCKS || 120);
 const selectionBlocks = Number(
   process.env.PLITE_NODE_TRANSFORMS_SELECTION_BLOCKS || 24
 );
+const measuredFiles = [
+  'packages/plitejs/src/core/public-state.ts',
+  'packages/plitejs/src/core/snapshot-index.ts',
+  'packages/plitejs/src/core/commit.ts',
+  'packages/plitejs/src/core/change/root-change.ts',
+  'packages/plitejs/src/core/change/document-index.ts',
+  'packages/plitejs/src/interfaces/node.ts',
+  'benchmarks/slate-v2/donor/core/current/node-transforms.mjs',
+];
+const fingerprint = () => Object.fromEntries(measuredFiles.map((file) => [file, createHash('sha256').update(readFileSync(file)).digest('hex')]));
+const sourceBefore = fingerprint();
 
 const createParagraph = (index, text = `block-${index}`) => ({
   type: 'paragraph',
@@ -279,9 +296,88 @@ const liftNodesMs = measureLane(
   }
 );
 
+const replacementLocality = [100, 1000, 10_000].map((count) => {
+  const durations = [];
+  let materializedIndexes = 0;
+  for (let sample = 0; sample < 21; sample++) {
+    const editor = createEditorWithChildren(createChildren(count));
+    const original = Editor.getSnapshot(editor);
+    const replaced = original.index.keyAt([count - 1]);
+    const surviving = original.index.keyAt([1]);
+    assert.ok(replaced && surviving);
+    editor.update.nodes.remove({ at: [0] });
+    const before = Editor.getSnapshot(editor);
+    const lazy = getSnapshotIndexMappingStats(before.index);
+    assert.ok(lazy.segments > 0);
+    const start = performance.now();
+    editor.update.nodes.replace(createParagraph(sample, 'replacement'), { at: [count - 2] });
+    const duration = performance.now() - start;
+    if (getSnapshotIndexMappingStats(before.index).segments !== lazy.segments) materializedIndexes++;
+    const after = Editor.getSnapshot(editor);
+    assert.equal(after.index.keyAt([0]), surviving);
+    assert.notEqual(after.index.keyAt([count - 2]), replaced);
+    assert.equal(after.index.pathOf(replaced), null);
+    assert.deepEqual(before.index.pathOf(replaced), [count - 2]);
+    if (sample > 0) durations.push(duration);
+  }
+  const durationMs = summarize(durations);
+  return { count, durationMs, materializedIndexes, pass: materializedIndexes === 0 && durationMs.p95 <= 100 };
+});
+const splitLocality = [100, 1000, 10_000].flatMap((count) =>
+  ['text', 'element'].map((kind) => {
+    const document = DocumentIndex.fromValue(createChildren(count));
+    const at = Math.floor(count / 2);
+    const path = kind === 'text' ? [at, 0] : [at];
+    const position = kind === 'text' ? 3 : 1;
+    const props = kind === 'text' ? { bold: true } : { type: 'quote' };
+    const tokens = Object.getOwnPropertyDescriptor(DocumentIndex.prototype, 'tokens');
+    let fullTokenReads = 0;
+    Object.defineProperty(document, 'tokens', {
+      configurable: true,
+      get() {
+        fullTokenReads++;
+        return tokens.get.call(document);
+      },
+    });
+    try {
+      splitNodeChange(document, path, position, props);
+    } finally {
+      Reflect.deleteProperty(document, 'tokens');
+    }
+    const durations = [];
+    let change;
+    for (let sample = 0; sample < 21; sample++) {
+      const start = performance.now();
+      change = splitNodeChange(document, path, position, props);
+      const duration = performance.now() - start;
+      if (sample > 0) durations.push(duration);
+    }
+    const after = change.apply(document);
+    assert.deepEqual(RootChange.fromJSON(change.toJSON()).apply(document).value, after.value);
+    assert.deepEqual(change.invert(document).apply(after).value, document.value);
+    assert.equal(after.node([0]), document.node([0]));
+    if (kind === 'text') {
+      assert.deepEqual(after.node([at]), {
+        type: 'paragraph', children: [{ text: 'blo' }, { bold: true, text: `ck-${at}` }],
+      });
+    } else {
+      assert.deepEqual(after.node([at + 1]), { type: 'quote', children: [] });
+    }
+    const durationMs = summarize(durations);
+    return { count, kind, fullTokenReads, durationMs, pass: fullTokenReads === 0 && durationMs.p95 <= 16.67 };
+  })
+);
+const replacementLocalityFailures = replacementLocality.filter((row) => !row.pass).length;
+const splitLocalityFailures = splitLocality.filter((row) => !row.pass).length;
+const localityFailures = replacementLocalityFailures + splitLocalityFailures;
+const sourceAfter = fingerprint();
+assert.deepEqual(sourceAfter, sourceBefore, 'Measured source changed during the benchmark');
 const summary = {
   lane: 'plite-node-transforms',
   iterations,
+  replacementLocality,
+  splitLocality,
+  sourceIdentity: { measuredInputs: sourceAfter },
   config: {
     blockCount,
     selectionBlocks,
@@ -305,4 +401,11 @@ await writeBenchmarkArtifact(
   summary
 );
 
-console.log(JSON.stringify(summary, null, 2));
+console.log(`METRIC plite_node_replacement_locality_failures=${replacementLocalityFailures}`);
+console.log(`METRIC plite_node_replacement_worst_p95_ms=${Math.max(...replacementLocality.map((row) => row.durationMs.p95))}`);
+console.log(`METRIC plite_node_split_locality_failures=${splitLocalityFailures}`);
+console.log(`METRIC plite_node_split_worst_p95_ms=${Math.max(...splitLocality.map((row) => row.durationMs.p95))}`);
+console.log(`METRIC plite_node_split_full_token_reads=${Math.max(...splitLocality.map((row) => row.fullTokenReads))}`);
+if (process.env.PLITE_NODE_TRANSFORMS_STRICT === '1' && localityFailures > 0) {
+  throw new Error(`Node transforms missed ${localityFailures} locality guards`);
+}

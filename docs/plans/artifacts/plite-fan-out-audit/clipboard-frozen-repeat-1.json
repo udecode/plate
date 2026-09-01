@@ -1,0 +1,129 @@
+{
+  "config": {
+    "authorityArtifact": true,
+    "hugeCutBlocks": 50000,
+    "hugeCutIterations": 3,
+    "iterations": 3,
+    "issueTargetIterations": 3,
+    "issueTargetStressLines": 10000,
+    "issueTargetsEnabled": true,
+    "processIsolation": "support-cut-issue",
+    "stressLineCount": 2000,
+    "stressIterations": 1,
+    "workerPids": {
+      "cut": 13110,
+      "issue": 13093,
+      "support": 13180
+    }
+  },
+  "correctnessFailures": [],
+  "issueBudgetFailures": [],
+  "issueTargetThresholds": {
+    "commitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksEditMsP50": {
+      "actualMs": 25.81,
+      "limitMs": 150,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTokenSpan": {
+      "actual": 36,
+      "limit": 64,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTopLevelSpan": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksMsP50": {
+      "actualMs": 28.54,
+      "limitMs": 250,
+      "passed": true
+    },
+    "largePlainTextPaste10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "largePlainTextPaste10000P50": {
+      "actualMs": 45.95,
+      "baselineMs": 38.57,
+      "limitMs": 60,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    },
+    "populatedFullSelectionCopy10000P50": {
+      "actualMs": 15.49,
+      "baselineMs": 12.16,
+      "limitMs": 20,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    },
+    "populatedMiddlePlainTextPaste10000Into10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "populatedMiddlePlainTextPaste10000Into10000P50": {
+      "actualMs": 52.03,
+      "baselineMs": 185.49,
+      "limitMs": 280,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    }
+  },
+  "metrics": {
+    "plite_clipboard_full_copy_identity_builds": 0,
+    "plite_clipboard_full_copy_property_visits": 0,
+    "plite_clipboard_correctness_failures": 0,
+    "plite_clipboard_cut_edit_inspection_p95_ms": 6.14,
+    "plite_clipboard_cut_edit_setup_p95_ms": 1384.28,
+    "plite_clipboard_cut_changed_token_span_max": 36,
+    "plite_clipboard_cut_changed_top_level_span_max": 1,
+    "plite_clipboard_cut_retained_existing_block_ratio": 0.99996,
+    "plite_clipboard_decode_p95_ms": 2.83,
+    "plite_clipboard_encode_p95_ms": 2.41,
+    "plite_clipboard_fit_p95_ms": 58.41,
+    "plite_clipboard_gc_available": 1,
+    "plite_clipboard_host_parse_p95_ms": 2.86,
+    "plite_clipboard_host_serialize_p95_ms": 0.65,
+    "plite_clipboard_issue_budget_failures": 0,
+    "plite_clipboard_plain_text_paste_10000_p50_ms": 45.95,
+    "plite_clipboard_plate_codec_compile_p95_ms": 16.46,
+    "plite_clipboard_plate_codec_decode_10000_p95_ms": 29.07,
+    "plite_clipboard_plate_codec_parse_insert_10000_p95_ms": 650.05,
+    "plite_clipboard_plate_codec_reconfigure_p95_ms": 0.93,
+    "plite_clipboard_plate_codec_serialize_10000_p95_ms": 21.02,
+    "plite_clipboard_populated_full_selection_copy_10000_p50_ms": 15.49,
+    "plite_clipboard_populated_plain_text_paste_10000_p50_ms": 52.03,
+    "plite_clipboard_max_changed_token_span": 608890,
+    "plite_clipboard_max_changed_top_level_span": 9999,
+    "plite_clipboard_peak_heap_delta_bytes": 205627319,
+    "plite_clipboard_peak_retained_heap_delta_bytes": 0,
+    "plite_clipboard_populated_paste_inspection_p95_ms": 1.94,
+    "plite_clipboard_populated_paste_setup_p95_ms": 247.73,
+    "plite_clipboard_slice_commit_p95_ms": 72.7,
+    "plite_clipboard_worst_issue_p95_ms": 63.6
+  },
+  "samples": {
+    "largePlainTextPaste10000": [
+      46.5,
+      45.95,
+      43.5
+    ],
+    "populatedFullSelectionCopy10000": [
+      18.34,
+      15.49,
+      15.49
+    ],
+    "populatedMiddlePlainTextPaste10000Into10000": [
+      52.03,
+      48.36,
+      63.6
+    ]
+  }
+}

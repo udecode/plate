@@ -1,0 +1,291 @@
+{
+  "status": "audit-and-proven-fanout-repair-complete; broad-performance-clearance-not-green",
+  "closureValidation": {
+    "benchmarkPlanComplete": "pass",
+    "autogoalPlanComplete": "pass",
+    "artifactHashesChecked": 23,
+    "artifactHashMismatches": 0,
+    "autoreview": "N/A: forbidden on next"
+  },
+  "candidate": "377a77a537971b793a4ddbb34cc13797fdfeee15",
+  "pliteSource": {
+    "files": 412,
+    "digest": "8bd6a1f71a27c7de17b0484c7f025149e22e224adaf958bc4db2de66fd0b3b0c"
+  },
+  "plateSource": {
+    "files": 830,
+    "digest": "00f8fcab67ad28cdc18cb917eb27a6c9ca81aa6fe07e8f1ca0b2167b5b0e227c"
+  },
+  "baseline": {
+    "slateCommit": "945a484df2497e4c448b33f417b0de2a49840032",
+    "comparisonRuntime": {
+      "current": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      },
+      "legacy": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      }
+    }
+  },
+  "productionBrowserBuild": {
+    "fileCount": 371,
+    "digest": "645af9f0dc762029157544aefb58a4a0e9024fee9cfad6563ebe44ed4573b60a",
+    "buildId": "8f5jEpLAsX6J6UKjjWaa9"
+  },
+  "strict": {
+    "command": "pnpm check:plite",
+    "status": "pass",
+    "typecheckTasks": 86,
+    "browserPassed": 710,
+    "browserSkipped": 8,
+    "browserCoverageGaps": 0,
+    "runtimeSourceUnchangedAtCloseout": true,
+    "receipt": "docs/plans/artifacts/plite-fan-out-audit/final-strict-membership-proof.json"
+  },
+  "contracts": {
+    "command": "pnpm check:plite:contracts",
+    "exit_code": 0,
+    "nodeTests": 232,
+    "bunTests": 25,
+    "registryTargets": 46,
+    "publicPackageTypes": "pass",
+    "packageBuildTasks": "4/4 pass"
+  },
+  "lint": {
+    "status": "pass",
+    "command": "pnpm exec ultracite check <owned files>",
+    "formattedFileCount": 51,
+    "limitation": "Donor benchmark files are outside configured lint inclusion; their executable commands and runner contracts were exercised."
+  },
+  "doctrine": {
+    "version": 135,
+    "validation": "pass",
+    "sourceMirrorBodyMatches": 8,
+    "regressionValidatorTests": 108,
+    "resourceParity": "exact",
+    "publicAPILaw": "commit.changed.nodeKeys('presence'); no extra public layer"
+  },
+  "ownerTargets": {
+    "executed": 30,
+    "passed": 29,
+    "separateCompilerBudgetRed": 1
+  },
+  "finalHeadlineMetrics": [
+    {
+      "name": "selection query group",
+      "size": "100000 blocks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/selection-query-group-red.json",
+      "afterArtifact": "tmp/plite-query-anchor-observation-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 521.05,
+        "p75Ms": 585.07,
+        "p95Ms": 667.62,
+        "maxMs": 698.2,
+        "counters": {
+          "enumerated": 1600000,
+          "keyReads": 12
+        }
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 0.02,
+        "p75Ms": 0.02,
+        "p95Ms": 0.04,
+        "maxMs": 0.05,
+        "counters": {
+          "enumerated": 0,
+          "keyReads": 4
+        }
+      },
+      "finalPass": true
+    },
+    {
+      "name": "120 text edits",
+      "size": "10000 blocks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/batched-text-publication-red.json",
+      "afterArtifact": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 408.73,
+        "p75Ms": 449.69,
+        "p95Ms": 524.21,
+        "maxMs": 551.05,
+        "publications": 120
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 4.29,
+        "p75Ms": 4.58,
+        "p95Ms": 6.42,
+        "maxMs": 6.6,
+        "publications": 1
+      },
+      "finalPass": true
+    },
+    {
+      "name": "keyed DOM task replacement",
+      "size": "50000 tasks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/dom-queue-red.json",
+      "afterArtifact": "tmp/plite-dom-phase-scheduler-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 320.38,
+        "p75Ms": 321.73,
+        "p95Ms": 327.12,
+        "maxMs": 330.91,
+        "counters": {
+          "executedTasks": 50000,
+          "scheduledFrames": 1
+        }
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 13.94,
+        "p75Ms": 15.47,
+        "p95Ms": 20,
+        "maxMs": 20.71,
+        "counters": {
+          "executedTasks": 50000,
+          "scheduledFrames": 1
+        }
+      },
+      "finalPass": true
+    }
+  ],
+  "comments": {
+    "originalCommand": "bun --expose-gc --preload ./config/plite-source-aliases.ts docs/plans/artifacts/hard-cut-comments-ownership/benchmark-comments-ownership.ts --output=<recorded artifact>",
+    "colocated10000P95Ms": [
+      70.620125,
+      70.143125
+    ],
+    "frozenBudgetMs": 100,
+    "distributed10000EditP95Ms": 7.571583,
+    "unrelatedWork": 0,
+    "correctnessFailures": 0
+  },
+  "remaining": [
+    {
+      "id": "Plate-compiler-budget",
+      "status": "deferred-not-green",
+      "facts": "At 1000 plugins, 10468015 type instantiations and 1406939136 bytes exceed the existing compiler budgets. Runtime slice locality and public type correctness pass.",
+      "nextOwner": "best-api audit of Plate generic construction, with compiler-trace attribution before a type API cut."
+    },
+    {
+      "id": "core-ten-insertion-bursts",
+      "status": "deferred-not-green",
+      "facts": "The pinned full run records start/middle p75 5.24/11.16 ms against 5 ms; medians are 3.42/3.49 ms. This is a ten-insertion programmatic burst, not a key-to-paint measurement.",
+      "nextOwner": "benchmark: exact-engine sample-level allocation/GC and immutable publication attribution; preserve the original budget."
+    },
+    {
+      "id": "React-replacement-tail",
+      "status": "deferred-not-green",
+      "facts": "One of five built-in automatic-DOM replacement samples is 923.89 ms, four are 60.8-82.2 ms. Render and GC probes do not reproduce or attribute that tail. The original comparative ratio failure remains.",
+      "nextOwner": "benchmark: isolate per-lane lifecycle allocation from replacement work on the exact Node engine."
+    },
+    {
+      "id": "full-output-costs",
+      "status": "measured-not-constant",
+      "facts": "Canonical 10000-block replacement remains about 2983 ms despite a linear node-read guard; immutable ancestor-array publication and full pagination reflow can still be width-dependent. Pagination full-operation timing reaches 190.8 ms and 90 ms long tasks.",
+      "nextOwner": "Treat as explicit full-output latency work, not evidence of unrelated Anchor or observer dispatch."
+    }
+  ],
+  "artifacts": {
+    "docs/plans/artifacts/plite-fan-out-audit/final-source.json": {
+      "sha256": "986725ccf2e9c47c6319e899241581e9de47bbf45c967c1fdd88abe58c9dfb7c",
+      "bytes": 11044
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/final-source-membership-before.json": {
+      "sha256": "7a6c2934bbce39fc9e15b6987bf4484e38f340ac5baa9092422442e09453790e",
+      "bytes": 10076
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/final-strict-membership-proof.json": {
+      "sha256": "aee1ffc697eeb76e57ccbad5d0f02bee3ed1d2368e84d5dc977386dc23dba412",
+      "bytes": 2078
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/final-owner-reruns.json": {
+      "sha256": "e35afbd1a5b24300d6f0b23b839fd071b5e54f03e53251d98e424f7791b3e43e",
+      "bytes": 32691
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/final-metrics.json": {
+      "sha256": "a903e8b1be169c1078088b0e9811c8c2bd08844d519f82a246b0dca05e325d8a",
+      "bytes": 2381
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/target-coverage.json": {
+      "sha256": "896cef128f29c3db8d24745ab5e52eab091dcd58c26273b4fd197182cb32e684",
+      "bytes": 10941
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/integrated-pinned-red.json": {
+      "sha256": "39379f752f0359d47c135f9032e18d05fe55b40371b3f67b859a568765c1e654",
+      "bytes": 20837
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/pinned-comparison-source.json": {
+      "sha256": "e575dccf2e6e7588547ceb78f7f6ac96a752197b55c871c8f26050adf397b2a4",
+      "bytes": 11044
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/replacement-render-profile.json": {
+      "sha256": "e2d1fd44eeb5c96ba5aba7d8db40252dbfd935265ddc8f370952a40e84ff9829",
+      "bytes": 14669
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/replacement-gc-diagnostic.json": {
+      "sha256": "aab8ee2c62dc9fca953922f0fae75d424db8e96032be0d8b748e446030e3b699",
+      "bytes": 13997
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/normal-browser-proof.json": {
+      "sha256": "07b97b7efaa152f163b181a2446e0d9e6412c5fbec5504466043babe0afa8aa3",
+      "bytes": 19688
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/native-stress-final.json": {
+      "sha256": "a25811e2d950a13703d9220fb20155af90bbead4e77ed507ec0307618a604a53",
+      "bytes": 9091
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/pagination-char-burst-final.json": {
+      "sha256": "8e1aa9f090a9d98f37d1a07b0027da963d2121ca0f4780bbf0672914126fea0d",
+      "bytes": 1687
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/pagination-real-ops-final.json": {
+      "sha256": "9d5b584564ce89e356c82689c19206ff10c96930d1e0d645cfcce6dc48b200ef",
+      "bytes": 3527
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/manual-browser-final.json": {
+      "sha256": "9d3b0f5b5750a396d8db7ac61405fa0a4978b400c49067d2c176becbf6bd993f",
+      "bytes": 2368
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/selection-query-group-red.json": {
+      "sha256": "db4c668c08b26407b5ce663acd8937ec119a2e015e267089952c4fc321a93e98",
+      "bytes": 11719
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/batched-text-publication-red.json": {
+      "sha256": "d54634616d46460ed8e5060be895d5bd6c42eeb24b3e7b2624f367425b154be2",
+      "bytes": 124616
+    },
+    "docs/plans/artifacts/plite-fan-out-audit/dom-queue-red.json": {
+      "sha256": "5603fa71572da7ec253a25808e7f187688959a123d7c0e7a55c99f9bd9b56f6e",
+      "bytes": 9248
+    },
+    "docs/plans/artifacts/hard-cut-comments-ownership/benchmark-comments-ownership-membership-final.json": {
+      "sha256": "e056ae6c17f56b511bfc820974b35635f1a3a64e79344421a217454d5cc33655",
+      "bytes": 64887
+    },
+    "docs/plans/artifacts/hard-cut-comments-ownership/benchmark-comments-ownership-membership-repeat.json": {
+      "sha256": "4fd466642e9901e93d19ced68f2292b4702d21291284fbf92d3a95b5a7730fd9",
+      "bytes": 64808
+    },
+    "tmp/plite-query-anchor-observation-benchmark.json": {
+      "sha256": "c2d183c431d03fa02e556317db3e7f5d5c7301f13be44ba5a60fd4145726df1c",
+      "bytes": 17501
+    },
+    "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json": {
+      "sha256": "4b1099872020b8e6446e768c1af79a36082e1c76d76d76b83b7dc63687a79468",
+      "bytes": 124320
+    },
+    "tmp/plite-dom-phase-scheduler-benchmark.json": {
+      "sha256": "c4f4eb378ff2520dc6e2fed1a3a058438ebc3952a9173e2abfdb11b5d44735b6",
+      "bytes": 9090
+    }
+  }
+}

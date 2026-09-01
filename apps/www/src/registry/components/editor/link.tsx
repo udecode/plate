@@ -1,27 +1,23 @@
 'use client';
 
+import { flip, offset } from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 import { LinkRules } from 'platejs';
 import {
-  type UseVirtualFloatingOptions,
-  flip,
-  getDOMSelectionBoundingClientRect,
-  offset,
-  useVirtualFloating,
-} from 'platejs/floating/react';
-import {
+  type EditableSiblingProps,
   LinkPlugin,
   type PlateElementProps,
   PlateElement,
   useComposedRef,
-  useHotkeys,
   useEditor,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorSelection,
   useEditorSelector,
+  useHotkeys,
   usePluginStore,
+  useSelectionGeometry,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -32,6 +28,10 @@ import { cn } from '@/lib/utils';
 import { commentPlugin } from '@/registry/components/editor/comment';
 import { suggestionPlugin } from '@/registry/components/editor/suggestion';
 import { useOnClickOutside } from '@/registry/hooks/use-on-click-outside';
+import {
+  type UseWidgetFloatingOptions,
+  useWidgetFloating,
+} from '@/registry/hooks/use-widget-floating';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
@@ -57,7 +57,7 @@ export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
 }
 
 const popoverVariants = cva(
-  'cn-popover-content z-50 w-auto p-1 outline-hidden'
+  'cn-popover-content z-50 w-auto p-1 outline-hidden transition-none'
 );
 
 const percentEscapeCapture = /(%[\dA-Fa-f]{2})/;
@@ -66,10 +66,6 @@ const percentEscape = /^%[\dA-Fa-f]{2}$/;
 
 type FloatingLinkMode = '' | 'edit' | 'insert';
 
-type FloatingLinkOptions = {
-  floatingOptions?: UseVirtualFloatingOptions;
-};
-
 const transientState = {
   isEditing: false,
   mode: '' as FloatingLinkMode,
@@ -77,7 +73,6 @@ const transientState = {
   newTab: false,
   openEditorId: null as string | null,
   text: '',
-  updated: false,
   url: '',
 };
 
@@ -220,36 +215,13 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
   }));
 
 function FloatingLinkUrlInput({
-  ref,
   ...props
 }: React.ComponentPropsWithRef<'input'>) {
   const { api, store } = useEditorPlugin(linkPlugin);
-  const updated = usePluginStore(linkPlugin, 'updated');
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const focused = React.useRef(false);
-
-  React.useEffect(() => {
-    if (!inputRef.current || !updated) return undefined;
-
-    const timeout = setTimeout(() => {
-      const input = inputRef.current;
-
-      if (!input || focused.current) return;
-
-      focused.current = true;
-      input.focus();
-      input.value = store.get().url ? api.decodeUrl(store.get().url) : '';
-    }, 0);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [api, store, updated]);
 
   return (
     <Input
-      ref={useComposedRef(inputRef, ref)}
-      defaultValue={store.get().url}
+      defaultValue={api.decodeUrl(store.get().url)}
       onChange={(event) => {
         store.set({ url: api.encodeUrl(event.target.value) });
       }}
@@ -258,15 +230,11 @@ function FloatingLinkUrlInput({
   );
 }
 
-export function LinkFloatingToolbar({
-  options,
-}: {
-  options?: FloatingLinkOptions;
-}) {
+export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const activeCommentId = usePluginStore(commentPlugin, 'activeId');
   const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
 
-  const floatingOptions: UseVirtualFloatingOptions = React.useMemo(
+  const floatingOptions: UseWidgetFloatingOptions = React.useMemo(
     () => ({
       middleware: [
         offset(8),
@@ -309,45 +277,23 @@ export function LinkFloatingToolbar({
   const mode = usePluginStore(linkPlugin, 'mode');
   const open = usePluginStore(linkPlugin, 'isOpen', editor.id);
   const { api, store, update } = useEditorPlugin(linkPlugin);
-  const resolvedFloatingOptions = {
-    ...floatingOptions,
-    ...options?.floatingOptions,
-  };
-  const getBoundingClientRect = React.useCallback(() => {
-    const entry = editor.read.nodes.above({ type: linkPlugin });
-
-    if (entry) {
-      const range = editor.read.ranges.get(entry[1]);
-      const rect = range
-        ? editor.api.dom.resolveDOMRange(range)?.getBoundingClientRect()
-        : undefined;
-
-      if (rect) return rect;
-    }
-
-    return getDOMSelectionBoundingClientRect();
-  }, [editor]);
+  const geometry = useSelectionGeometry({ editableRef });
   const editOpen =
     !readOnly && open && mode === 'edit' && editor.read.selection.isCollapsed();
-  const editFloating = useVirtualFloating({
-    getBoundingClientRect,
+  const editFloating = useWidgetFloating(geometry, {
     onOpenChange: (nextOpen) => {
       store.set({ openEditorId: nextOpen ? editor.id : null });
     },
     open: editOpen,
-    ...resolvedFloatingOptions,
+    ...floatingOptions,
   });
-  const insertFloating = useVirtualFloating({
-    getBoundingClientRect: getDOMSelectionBoundingClientRect,
+  const insertFloating = useWidgetFloating(geometry, {
     onOpenChange: (nextOpen) => {
       store.set({ openEditorId: nextOpen ? editor.id : null });
     },
     open: !readOnly && open && mode === 'insert',
-    whileElementsMounted: () => () => {},
-    ...resolvedFloatingOptions,
+    ...floatingOptions,
   });
-  const updateEditFloating = editFloating.update;
-  const updateInsertFloating = insertFloating.update;
 
   React.useEffect(() => {
     if (readOnly) {
@@ -358,13 +304,10 @@ export function LinkFloatingToolbar({
 
     if (selectedLinkKey) {
       api.show('edit', editor.id);
-      updateEditFloating();
       return;
     }
     if (store.get().mode === 'edit') api.hide();
-    // `update` is stable; depending on the floating result object would rerun
-    // this effect on every render.
-  }, [api, editor, readOnly, selectedLinkKey, store, updateEditFloating]);
+  }, [api, editor, readOnly, selectedLinkKey, store]);
 
   useHotkeys(
     triggerHotkeys ?? 'meta+k, ctrl+k',
@@ -376,14 +319,6 @@ export function LinkFloatingToolbar({
       if (triggered) event.preventDefault();
     },
     { enabled: !readOnly, enableOnContentEditable: true },
-    []
-  );
-  useHotkeys(
-    '*',
-    (event) => {
-      if (event.key === 'Enter' && api.submit()) event.preventDefault();
-    },
-    { enabled: !readOnly && open, enableOnFormTags: ['INPUT'] },
     []
   );
   useHotkeys(
@@ -423,16 +358,7 @@ export function LinkFloatingToolbar({
     { disabled: !open }
   );
 
-  React.useEffect(() => {
-    if (open) {
-      updateInsertFloating();
-      store.set({ updated: true });
-    } else {
-      store.set({ updated: false });
-    }
-  }, [open, store, updateInsertFloating]);
-
-  const { text, updated } = store.get();
+  const { text } = store.get();
   const editButtonProps = { onClick: api.triggerEdit };
   const editProps = { style: { ...editFloating.style, zIndex: 50 } };
   const editRef = useComposedRef<HTMLElement | null>(
@@ -454,34 +380,50 @@ export function LinkFloatingToolbar({
     insertFloating.refs.setFloating,
     insertClickOutsideRef
   );
+  const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    api.submit();
+  };
+  const urlInputRef = React.useRef<HTMLInputElement>(null);
+  const shouldFocusUrlInput =
+    !readOnly &&
+    open &&
+    !!geometry &&
+    ((mode === 'insert' && insertFloating.isPositioned) ||
+      (mode === 'edit' && isEditing && editFloating.isPositioned));
+
+  React.useEffect(() => {
+    if (shouldFocusUrlInput) {
+      urlInputRef.current?.focus({ preventScroll: true });
+    }
+  }, [shouldFocusUrlInput]);
+
   const textInputProps = {
     defaultValue: text,
-    ref: (element: HTMLInputElement) => {
-      if (element && updated) element.value = store.get().text;
-    },
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
       store.set({ text: event.target.value });
     },
+    onKeyDown: onInputKeyDown,
   };
 
   if (readOnly || !open) return null;
 
   const input = (
-    <div
-      className="flex w-[330px] flex-col"
-      onKeyDownCapture={(event) => {
-        if (event.key === 'Enter') event.preventDefault();
-      }}
-    >
+    <div className="flex w-[330px] flex-col">
       <div className="flex items-center">
         <div className="flex items-center pr-1 pl-2 text-muted-foreground">
           <Link className="size-4" />
         </div>
 
         <FloatingLinkUrlInput
+          ref={urlInputRef}
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Paste link"
-          data-plate-focus
+          data-plite-keep-selection-visible
+          onKeyDown={onInputKeyDown}
         />
       </div>
       <Separator className="my-1" />
@@ -492,7 +434,7 @@ export function LinkFloatingToolbar({
         <Input
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Text to display"
-          data-plate-focus
+          data-plite-keep-selection-visible
           {...textInputProps}
         />
       </div>
@@ -519,8 +461,8 @@ export function LinkFloatingToolbar({
     </div>
   );
 
-  return (
-    <>
+  if (mode === 'insert') {
+    return (
       <div
         ref={insertRef}
         className={cn(popoverVariants(), 'p-0')}
@@ -528,15 +470,17 @@ export function LinkFloatingToolbar({
       >
         {input}
       </div>
+    );
+  }
 
-      <div
-        ref={editRef}
-        className={cn(popoverVariants(), isEditing && 'p-0')}
-        {...editProps}
-      >
-        {editContent}
-      </div>
-    </>
+  return (
+    <div
+      ref={editRef}
+      className={cn(popoverVariants(), isEditing && 'p-0')}
+      {...editProps}
+    >
+      {editContent}
+    </div>
   );
 }
 
@@ -579,7 +523,7 @@ export const LinkKit = [
       LinkRules.autolink({ variant: 'break' }),
     ],
     render: {
-      afterEditable: () => <LinkFloatingToolbar />,
+      afterEditable: LinkFloatingToolbar,
     },
   }),
 ] as const;

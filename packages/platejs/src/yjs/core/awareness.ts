@@ -1,10 +1,13 @@
 import * as Y from 'yjs';
 
 import type { Range } from '../../core';
-import { isRecord } from './record';
+import {
+  isYjsAwarenessSelectionValue,
+  readYjsAwarenessRelativeRange,
+  readYjsAwarenessRelativeSelection,
+} from './awareness-relative-selection';
 import {
   pliteRangeToYjsRelativeRange,
-  type YjsRelativeRange,
   yjsRelativeRangesEqual,
   yjsRelativeRangeToPliteRange,
 } from './selection';
@@ -28,25 +31,22 @@ export const readYjsAwarenessSelection = (
   rootFor: (root: string) => Y.XmlElement | null,
   value: unknown
 ): Range | null => {
-  if (!isYjsAwarenessSelection(value)) {
-    return null;
-  }
+  const relativeSelection = readYjsAwarenessRelativeSelection(value);
+
+  if (!relativeSelection) return null;
 
   try {
-    const root = rootFor(value.root);
+    const root = rootFor(relativeSelection.root);
 
     if (root === null) return null;
 
-    const range = yjsRelativeRangeToPliteRange(
-      root,
-      readYjsAwarenessRelativeRange(value)
-    );
+    const range = yjsRelativeRangeToPliteRange(root, relativeSelection.range);
 
-    if (range === null || value.root === 'main') return range;
+    if (range === null || relativeSelection.root === 'main') return range;
 
     return {
-      anchor: { ...range.anchor, root: value.root },
-      focus: { ...range.focus, root: value.root },
+      anchor: { ...range.anchor, root: relativeSelection.root },
+      focus: { ...range.focus, root: relativeSelection.root },
     };
   } catch {
     return null;
@@ -63,7 +63,7 @@ export const yjsAwarenessSelectionsEqual = (
   if (a === null || b === null) {
     return a === b;
   }
-  if (!isYjsAwarenessSelection(a)) {
+  if (!isYjsAwarenessSelectionValue(a)) {
     return false;
   }
 
@@ -78,18 +78,3 @@ export const yjsAwarenessSelectionsEqual = (
     return false;
   }
 };
-
-const readYjsAwarenessRelativeRange = (
-  value: YjsAwarenessSelection
-): YjsRelativeRange => ({
-  anchor: Y.createRelativePositionFromJSON(value.anchor),
-  focus: Y.createRelativePositionFromJSON(value.focus),
-});
-
-const isYjsAwarenessSelection = (
-  value: unknown
-): value is YjsAwarenessSelection =>
-  isRecord(value) &&
-  'anchor' in value &&
-  'focus' in value &&
-  typeof value.root === 'string';

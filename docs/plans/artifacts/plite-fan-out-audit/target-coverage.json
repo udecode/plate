@@ -1,0 +1,281 @@
+{
+  "scope": "Run-specific accounting of the existing 46-target registry, not a second registry. An uninvoked diagnostic or comparison is not a passed benchmark.",
+  "targets": [
+    {
+      "id": "plite-read-view-lifecycle",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-schema-construction",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-content-slice-value",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-schema-architecture",
+      "status": "measured-red",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Runtime locality passes; separate Plate compiler budget fails and complete-target acceptance is deferred."
+    },
+    {
+      "id": "plite-fit-content-locality",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-correction-worklist",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-command-dispatch",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-history-depth",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-yjs-event-change-bridge",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "react-huge-document-legacy-compare",
+      "status": "covered-by-integrated-run",
+      "evidence": "integrated-pinned-red.json",
+      "reason": "Exact 5k surface/iteration/operation setup executed as the full runner React step with matching absolute Node runtime."
+    },
+    {
+      "id": "react-huge-document-full",
+      "status": "measured-red",
+      "evidence": "integrated-pinned-red.json",
+      "reason": "All six steps execute; three frozen timing budgets fail. Runtime parity and behavior pass; no performance-clean claim."
+    },
+    {
+      "id": "react-rerender-breadth",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "react-runtime-node-fanout",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-resolved-token-cursor",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "react-stable-id-overlay-source",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "transient-projection-scalability",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "react-active-typing-breakdown",
+      "status": "diagnostic-not-invoked",
+      "evidence": "final-owner-reruns.json; integrated-pinned-red.json",
+      "reason": "More invasive diagnostic wrapper, not another independent behavior family. Current React fan-out and production input targets own this audit's acceptance."
+    },
+    {
+      "id": "react-pagination-virtualized-char-burst",
+      "status": "pass",
+      "evidence": "pagination-char-burst-final.json",
+      "reason": "Exact registered command, fresh production build, three existing browser cases and current artifact path."
+    },
+    {
+      "id": "react-pagination-virtualized-real-editor-ops",
+      "status": "behavior-pass",
+      "evidence": "pagination-real-ops-final.json",
+      "reason": "Exact registered command, 120 operations, zero behavior failures. Descriptive timings do not establish a universal latency-budget pass."
+    },
+    {
+      "id": "react-huge-document-browser-trace",
+      "status": "pass",
+      "evidence": "native-stress-final.json",
+      "reason": "Registered default/staged setup and repaired artifact path, fresh output reuse, plus one native delete/type/undo flow per surface. Also exercised in full integrated command."
+    },
+    {
+      "id": "react-huge-document-virtualized-type-to-paint",
+      "status": "pass",
+      "evidence": "native-stress-final.json",
+      "reason": "Registered virtualized setup and repaired artifact path, fresh output reuse, plus one native delete/type/undo flow. Five typing packets, zero timeouts."
+    },
+    {
+      "id": "react-huge-document-slate-browser-trace",
+      "status": "not-invoked",
+      "evidence": "integrated-pinned-red.json",
+      "reason": "No cross-engine native-browser speed claim. Pinned same-engine core/React comparison is recorded; current native browser behavior is proved separately."
+    },
+    {
+      "id": "browser-rich-text-replay-coverage",
+      "status": "covered-by-strict-browser-proof",
+      "evidence": "final-strict-membership-proof.json",
+      "reason": "Coverage-report wrapper not run; complete 710-case Chromium suite and exact rich-text stability own current behavior proof."
+    },
+    {
+      "id": "core-normalization-current",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-document-change-current",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-yjs-collaboration-current",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-query-anchor-observation",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "dom-phase-scheduler",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-node-transforms",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-text-selection",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-editor-store",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-anchors-projection",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "clipboard-large-payload",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "yjs-collaboration",
+      "status": "same-command-alias",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Identical command, runtime and artifact to core-yjs-collaboration-current; no duplicate timing run."
+    },
+    {
+      "id": "collab-readiness",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "issue-6038-transaction-execution",
+      "status": "not-invoked",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Slate issue-specific legacy adapter is not the Plite transaction owner. plite-transaction-execution, read-view and current store targets ran."
+    },
+    {
+      "id": "core-huge-document-compare",
+      "status": "covered-by-integrated-run",
+      "evidence": "integrated-pinned-red.json",
+      "reason": "Exact semantic workloads executed as full runner core step; 5k/10 samples/10 insertions; two burst budgets remain red."
+    },
+    {
+      "id": "core-normalization-compare",
+      "status": "not-invoked",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Legacy private-adapter comparison wrapper. No normalization-vs-Slate claim; current normalization/schema/correction targets prove Plite locality."
+    },
+    {
+      "id": "core-observation-compare",
+      "status": "not-invoked",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Legacy private-adapter comparison wrapper. No observation-vs-Slate claim; current query/store targets prove Plite locality."
+    },
+    {
+      "id": "core-rich-text-operations-compare",
+      "status": "not-invoked",
+      "evidence": "final-strict-membership-proof.json",
+      "reason": "Legacy private-adapter comparison wrapper. No rich-text-vs-Slate claim; current transform/selection/strict native laws are exercised."
+    },
+    {
+      "id": "history-compare",
+      "status": "not-invoked",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Legacy comparison wrapper not needed for a cross-editor history claim here. Current history depth, mapping/transaction, memory and strict undo laws run."
+    },
+    {
+      "id": "plite-transaction-execution",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "core-update-policy-current",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-extension-graph",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    },
+    {
+      "id": "plite-history-retained-memory",
+      "status": "pass",
+      "evidence": "final-owner-reruns.json",
+      "reason": "Final-runtime exact owner command and correctness guards."
+    }
+  ]
+}

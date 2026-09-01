@@ -919,7 +919,7 @@ const mdxChunks = [
     },
     {
       delay,
-      texts: '<callout> ',
+      texts: '<callout>\n',
     },
     {
       delay,
@@ -1007,7 +1007,7 @@ const mdxChunks = [
     },
     {
       delay,
-      texts: 'plugins. ',
+      texts: 'plugins.\n',
     },
     {
       delay,
@@ -1459,10 +1459,6 @@ const mdxChunks = [
     },
     {
       delay,
-      texts: 'align="center" ',
-    },
-    {
-      delay,
       texts:
         'src="https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf" width="80%" />\n\n',
     },
@@ -1520,7 +1516,7 @@ const mdxChunks = [
     },
     {
       delay,
-      texts: 'align="center" ',
+      texts: 'textAlign="center" ',
     },
     {
       delay,
@@ -1581,7 +1577,7 @@ const mdxChunks = [
     },
     {
       delay,
-      texts: 'align="center" ',
+      texts: 'textAlign="center" ',
     },
     {
       delay,

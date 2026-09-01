@@ -333,10 +333,6 @@ const intentionalProductionExtendStageChains = new Map([
     [[['api', 'corrections', 'on', 'selectors', 'update']]],
   ],
   [
-    'packages/platejs/src/react/features/cursor/CursorOverlayPlugin.tsx',
-    [[['on']]],
-  ],
-  [
     'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts',
     [[['read', 'update'], ['read']]],
   ],
@@ -447,10 +443,6 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/migrations/migratePlateV54.ts', 1],
   ['packages/platejs/src/migrations/migratePlateV55.ts', 1],
   ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
-  [
-    'packages/platejs/src/features/find-replace/lib/FindReplacePlugin.spec.ts',
-    1,
-  ],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
   ['packages/plitejs/test/schema-contract.ts', 10],

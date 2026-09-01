@@ -139,7 +139,7 @@ changes.
 </Plite>
 ```
 
-### Saving Mounted Root Changes
+### Saving mounted root changes
 
 Use `onValueChange` when you only need committed changes for the mounted root's
 block array. This is the single-root shortcut, not the full document
@@ -236,5 +236,6 @@ const annotationStore = usePliteAnnotationStore(editor, annotations);
 ```
 
 Widget stores are hook-owned. Create them with `usePliteWidgetStore` and pass
-the store directly to `usePliteWidgets` or `usePliteWidget`; `Plite` does not
-take a `widgetStore` prop.
+the store directly to `usePliteWidgetIds`, `usePliteWidget`,
+`usePliteWidgetGeometry`, or a deliberate aggregate `usePliteWidgets`
+consumer; `Plite` does not take a `widgetStore` prop.

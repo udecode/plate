@@ -1,0 +1,609 @@
+{
+  "config": {
+    "overscan": 1,
+    "blockCount": 200,
+    "farBlockIndex": 96,
+    "farSegmentIndex": 3,
+    "segmentSize": 32,
+    "iterations": 5
+  },
+  "lane": "plite-react-huge-document-overlays",
+  "activeEditAfterOverlay": {
+    "activeElementRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "activeProjectionRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "activeTextRenders": {
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "p75": 1,
+      "p95": 1,
+      "p99": 1,
+      "samples": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "editMs": {
+      "max": 3.89,
+      "mean": 2.04,
+      "median": 1.61,
+      "min": 1.47,
+      "p75": 1.62,
+      "p95": 3.89,
+      "p99": 3.89,
+      "samples": [
+        1.6,
+        1.62,
+        1.47,
+        1.61,
+        3.89
+      ]
+    },
+    "farElementRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "farProjectionRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "farTextRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "mountedTextAfter": {
+      "max": 64,
+      "mean": 64,
+      "median": 64,
+      "min": 64,
+      "p75": 64,
+      "p95": 64,
+      "p99": 64,
+      "samples": [
+        64,
+        64,
+        64,
+        64,
+        64
+      ]
+    },
+    "mountedTextBefore": {
+      "max": 64,
+      "mean": 64,
+      "median": 64,
+      "min": 64,
+      "p75": 64,
+      "p95": 64,
+      "p99": 64,
+      "samples": [
+        64,
+        64,
+        64,
+        64,
+        64
+      ]
+    },
+    "projectionRecomputeCount": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "partialDOMCountAfter": {
+      "max": 5,
+      "mean": 5,
+      "median": 5,
+      "min": 5,
+      "p75": 5,
+      "p95": 5,
+      "p99": 5,
+      "samples": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    "partialDOMCountBefore": {
+      "max": 5,
+      "mean": 5,
+      "median": 5,
+      "min": 5,
+      "p75": 5,
+      "p95": 5,
+      "p99": 5,
+      "samples": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    }
+  },
+  "overlayToggle": {
+    "activeProjectionCount": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "activeProjectionRenders": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "farProjectionCount": {
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "p75": 1,
+      "p95": 1,
+      "p99": 1,
+      "samples": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "farProjectionRenders": {
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "p75": 1,
+      "p95": 1,
+      "p99": 1,
+      "samples": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "mountedTextAfter": {
+      "max": 64,
+      "mean": 64,
+      "median": 64,
+      "min": 64,
+      "p75": 64,
+      "p95": 64,
+      "p99": 64,
+      "samples": [
+        64,
+        64,
+        64,
+        64,
+        64
+      ]
+    },
+    "mountedTextBefore": {
+      "max": 64,
+      "mean": 64,
+      "median": 64,
+      "min": 64,
+      "p75": 64,
+      "p95": 64,
+      "p99": 64,
+      "samples": [
+        64,
+        64,
+        64,
+        64,
+        64
+      ]
+    },
+    "overlayToggleMs": {
+      "max": 18.66,
+      "mean": 17.15,
+      "median": 16.69,
+      "min": 16.01,
+      "p75": 17.98,
+      "p95": 18.66,
+      "p99": 18.66,
+      "samples": [
+        16.01,
+        16.69,
+        17.98,
+        18.66,
+        16.42
+      ]
+    },
+    "projectionRecomputeCount": {
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "p75": 1,
+      "p95": 1,
+      "p99": 1,
+      "samples": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "partialDOMCountAfter": {
+      "max": 5,
+      "mean": 5,
+      "median": 5,
+      "min": 5,
+      "p75": 5,
+      "p95": 5,
+      "p99": 5,
+      "samples": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    "partialDOMCountBefore": {
+      "max": 5,
+      "mean": 5,
+      "median": 5,
+      "min": 5,
+      "p75": 5,
+      "p95": 5,
+      "p99": 5,
+      "samples": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    }
+  },
+  "partialDOMPromotion": {
+    "coldPromotionMs": {
+      "max": 14.35,
+      "mean": 12.11,
+      "median": 11.15,
+      "min": 10.25,
+      "p75": 13.72,
+      "p95": 14.35,
+      "p99": 14.35,
+      "samples": [
+        10.25,
+        11.07,
+        11.15,
+        14.35,
+        13.72
+      ]
+    },
+    "mountedTextAfter": {
+      "max": 8,
+      "mean": 8,
+      "median": 8,
+      "min": 8,
+      "p75": 8,
+      "p95": 8,
+      "p99": 8,
+      "samples": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "mountedTextBefore": {
+      "max": 8,
+      "mean": 8,
+      "median": 8,
+      "min": 8,
+      "p75": 8,
+      "p95": 8,
+      "p99": 8,
+      "samples": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "projectionRecomputeCount": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "promotionMs": {
+      "max": 7.12,
+      "mean": 5.86,
+      "median": 5.57,
+      "min": 5.41,
+      "p75": 5.65,
+      "p95": 7.12,
+      "p99": 7.12,
+      "samples": [
+        5.41,
+        5.65,
+        5.54,
+        7.12,
+        5.57
+      ]
+    },
+    "renderElementCount": {
+      "max": 0,
+      "mean": 0,
+      "median": 0,
+      "min": 0,
+      "p75": 0,
+      "p95": 0,
+      "p99": 0,
+      "samples": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "renderLeafCount": {
+      "max": 8,
+      "mean": 8,
+      "median": 8,
+      "min": 8,
+      "p75": 8,
+      "p95": 8,
+      "p99": 8,
+      "samples": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "renderRootPlanCount": {
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "p75": 1,
+      "p95": 1,
+      "p99": 1,
+      "samples": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "renderSelectorCount": {
+      "max": 41,
+      "mean": 41,
+      "median": 41,
+      "min": 41,
+      "p75": 41,
+      "p95": 41,
+      "p99": 41,
+      "samples": [
+        41,
+        41,
+        41,
+        41,
+        41
+      ]
+    },
+    "renderTextCount": {
+      "max": 8,
+      "mean": 8,
+      "median": 8,
+      "min": 8,
+      "p75": 8,
+      "p95": 8,
+      "p99": 8,
+      "samples": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    "renderTotalCount": {
+      "max": 18,
+      "mean": 18,
+      "median": 18,
+      "min": 18,
+      "p75": 18,
+      "p95": 18,
+      "p99": 18,
+      "samples": [
+        18,
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    "selectionAnchorPathLength": {
+      "max": 2,
+      "mean": 2,
+      "median": 2,
+      "min": 2,
+      "p75": 2,
+      "p95": 2,
+      "p99": 2,
+      "samples": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    "selectionAnchorTopLevel": {
+      "max": 96,
+      "mean": 96,
+      "median": 96,
+      "min": 96,
+      "p75": 96,
+      "p95": 96,
+      "p99": 96,
+      "samples": [
+        96,
+        96,
+        96,
+        96,
+        96
+      ]
+    },
+    "partialDOMCountAfter": {
+      "max": 7,
+      "mean": 7,
+      "median": 7,
+      "min": 7,
+      "p75": 7,
+      "p95": 7,
+      "p99": 7,
+      "samples": [
+        7,
+        7,
+        7,
+        7,
+        7
+      ]
+    },
+    "partialDOMCountBefore": {
+      "max": 6,
+      "mean": 6,
+      "median": 6,
+      "min": 6,
+      "p75": 6,
+      "p95": 6,
+      "p99": 6,
+      "samples": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ]
+    }
+  }
+}

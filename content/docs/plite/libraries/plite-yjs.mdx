@@ -250,13 +250,18 @@ Use the React subpath for provider state and remote cursors.
 import {
   useYjsProviderStatus,
   useYjsProviderSynced,
-  useYjsRemoteCursors,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
 } from "platejs/yjs/react";
 ```
 
-`useYjsRemoteCursorDecorationSource` converts remote selections into a Plite
-decoration source. `useYjsRemoteCursorOverlayPositions` resolves overlay
-geometry when the mounted editor can provide DOM rects.
+`YjsPlugin` owns remote-selection decorations and updates only the changed
+cursor. Advanced cursor UI reads stable membership with
+`useYjsRemoteCursorIds`, one cursor with `useYjsRemoteCursor`, and exact-view
+geometry with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })`.
+Keep selection paint on the plugin path so its projection lifecycle stays
+keyed and editor-owned.
 
 ## Provider Boundary
 

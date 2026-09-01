@@ -1,0 +1,22 @@
+{
+  "purpose": "Single-sample causal counterfactual, not a percentile. The preload removes only generic text-containment matching; canonical positional, explicit and relocation identities remain.",
+  "counterfactual": false,
+  "rows": [
+    {
+      "blocks": 100,
+      "nodeReads": 63099,
+      "durationMs": 24.61070799999999
+    },
+    {
+      "blocks": 1000,
+      "nodeReads": 6030999,
+      "durationMs": 435.105125
+    }
+  ],
+  "source": {
+    "packages/plitejs/src/core/snapshot-index.ts": "9050436e2fc1e5c0dc23feb088c47363519aa3848a05c270674875023d865d5c",
+    "packages/plitejs/src/core/change/document-index.ts": "6d1376a3a0bdbba224d0a5c1bdb4635a7015404838d6d03174a5c815b454b8fd",
+    "packages/plitejs/src/core/change/root-change.ts": "828318aed2125ba37518998fdfcec7d25332732658d9e204d1b149d0d85060bb",
+    "packages/plitejs/src/core/public-state.ts": "1457b08e4f6d172e062437e4d8719555dccecd9b8ee2ced52708f8850498893b"
+  }
+}

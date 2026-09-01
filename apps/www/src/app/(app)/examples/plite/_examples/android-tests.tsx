@@ -26,14 +26,12 @@ const TEST_CASE_IDS = [
 
 type AndroidTestCaseId = (typeof TEST_CASE_IDS)[number];
 
-interface AndroidTestCase {
+const TEST_CASES: Array<{
   id: AndroidTestCaseId;
   name: string;
   instructions: string;
   value: Value;
-}
-
-const TEST_CASES: AndroidTestCase[] = [
+}> = [
   {
     id: 'split-join',
     name: 'Split/Join',
@@ -257,7 +255,14 @@ const AndroidTestsExample = () => {
   );
 };
 
-const TestCase = ({ value }: AndroidTestCase) => {
+const TestCase = ({
+  value,
+}: {
+  id: AndroidTestCaseId;
+  name: string;
+  instructions: string;
+  value: Value;
+}) => {
   const editor = useEditor({
     initialValue: value,
   });

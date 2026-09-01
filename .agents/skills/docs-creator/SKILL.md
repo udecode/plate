@@ -124,6 +124,13 @@ Docs teach the verified shipped API; they do not choose it. When source exposes
 a materially bad, contradictory, or missing public shape, route the decision to
 `best-api` and keep docs work on the settled surface.
 
+When a React view derives conditional presentation of canonical editor state
+from its DOM lifecycle, teach the literal input marker and neutral output hooks
+as the reusable API. Teach copied `Editor` markers and styles as product
+composition. Never invent a controlled prop for derivable focus state, describe
+the paint as another selection model, accept a copied Range in examples, or
+require a plugin/kit whose only job is toggling that view.
+
 When the task is a docs gap review, read sideways before writing:
 
 - the likely target lane

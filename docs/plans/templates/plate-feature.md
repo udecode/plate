@@ -24,8 +24,8 @@ Completion threshold:
 
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
-- Selected packs, Plate Next attestation, P1 review, feature checker, and goal
-  checker are closed.
+- Selected packs, applicable Plate Next attestation, P1 review, feature
+  checker, and goal checker are closed.
 
 Verification surface:
 
@@ -62,6 +62,7 @@ Feature Manifest:
 | React adapter | pending | pending | pending | pending | pending | pending |
 | Registry UI | pending | pending | pending | pending | pending | pending |
 | Composition | pending | pending | pending | pending | pending | pending |
+| Scale proof | pending | benchmark | pending | users/maintainers | pending | pending |
 | Registry metadata/examples | pending | pending | pending | pending | pending | pending |
 | Docs | pending | pending | pending | pending | pending | pending |
 | Release artifacts | pending | pending | pending | pending | pending | pending |
@@ -102,6 +103,8 @@ Start Gates:
 | Feature Manifest complete before source writes | pending | pending |
 | Flow mode selected | pending | pending |
 | Public API decision owner selected | pending | pending |
+| Runtime scale applicability resolved | pending | Mark Scale proof yes and select `performance-observability` when runtime layers or repeated/hot work can change; otherwise record live-source N/A |
+| Pre-acceptance Benchmark receipt selected | pending | Name current baseline, target path or disposable prototype, frozen cohorts/budget, deterministic counters, timing/noise, source identities, and correctness guard, or N/A |
 | Manual package decision recorded | pending | pending |
 | Conditional packs selected | pending | pending |
 | Active goal checked or created | pending | pending |
@@ -110,6 +113,9 @@ Work Checklist:
 
 - [ ] Fill every Feature Manifest row before source writes.
 - [ ] Settle public shape and layer ownership.
+- [ ] Resolve Scale proof before source writes. A yes row links a passing
+      executable current-owner versus target receipt; a complexity table,
+      review score, or future benchmark plan does not satisfy it.
 - [ ] Create any new package manually from two current sibling patterns.
 - [ ] Resolve the package host, Plite ownership, external dependency ownership,
       headless/React direction, and Oxlint coverage rows for every applicable
@@ -130,6 +136,7 @@ Completion Gates:
 | Selected pack closure | yes | Close every selected pack | pending |
 | Package proof | pending | Run owner-selected package proof | pending |
 | Package boundary proof | pending | Run `pnpm test:manifests`, scoped lint, and the affected Oxlint override audit, or record N/A | pending |
+| Scale proof | pending | For a yes row, close `performance-observability` with the pre-acceptance receipt and exact final production-path cohort/budget rerun plus correctness guard; otherwise source-backed N/A | pending |
 | Registry/browser proof | pending | Verify runnable copied UI or record N/A | pending |
 | Docs/release proof | pending | Verify docs and release classification | pending |
 | Plate Next attestation | pending | Validate reviewed package version/evidence or record N/A | pending |
@@ -162,6 +169,7 @@ Final handoff contract:
 - Outcome: pending
 - Evidence: pending
 - Browser proof: pending
+- Scale receipt / N/A: pending
 - Release artifacts: pending
 - Residual risk: pending
 - Next owner: pending

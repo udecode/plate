@@ -222,7 +222,7 @@ export function DocContent({
                   (item) =>
                     item.route && (
                       <Link
-                        key={item.route}
+                        key={`${item.route}:${getDocTitle(item)}`}
                         className={cn(
                           badgeVariants({
                             variant: getItemVariant(item),

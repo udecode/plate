@@ -1,12 +1,14 @@
 import { cn } from '@/lib/utils';
 
-type TreeIconProps = {
+export function TreeIcon({
+  className,
+  isFirst,
+  isLast,
+}: {
   isFirst: boolean;
   isLast: boolean;
   className?: string;
-};
-
-export function TreeIcon({ className, isFirst, isLast }: TreeIconProps) {
+}) {
   return (
     <svg
       className={cn(

@@ -101,21 +101,19 @@ export const Warning = (props: React.ComponentProps<'div'>) => (
   <div {...props} className="example-warning" />
 )
 
-interface ExampleLayoutProps {
-  children: React.ReactNode
-  exampleName?: string
-  examplePath?: string
-  error?: Error | null
-  stackTrace?: ErrorInfo | null
-}
-
 export function ExampleLayout({
   children,
   exampleName,
   examplePath,
   error,
   stackTrace,
-}: ExampleLayoutProps) {
+}: {
+  children: React.ReactNode
+  exampleName?: string
+  examplePath?: string
+  error?: Error | null
+  stackTrace?: ErrorInfo | null
+}) {
   const [showTabs, setShowTabs] = useState<boolean>(false)
 
   return (

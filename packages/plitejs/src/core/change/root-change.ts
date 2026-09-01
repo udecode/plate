@@ -9,6 +9,7 @@ import {
 } from './document-index';
 import {
   claimPreparedNodeSlice,
+  closeToken,
   cloneFrozen,
   cloneJson,
   commonPrefixLength,
@@ -859,8 +860,8 @@ export const commonTextSuffixLength = (
 };
 
 /**
- * Build a structural diff only when one source node has a uniquely stronger
- * continuation later in its sibling list. Flat prefix/suffix diffs can
+ * Build a structural diff when unchanged siblings shift or one source node has
+ * a uniquely stronger continuation later in its sibling list. Flat diffs can
  * otherwise retain an opening token on one inserted sibling and that node's
  * content/closing token on another, splitting one node key in two.
  */
@@ -1082,6 +1083,60 @@ export const createStructurallyAlignedChanges = (
     const targetEnd = target.length - suffix;
     const sourceCount = sourceEnd - prefix;
     const targetCount = targetEnd - prefix;
+
+    if (
+      suffix > 0 &&
+      sourceCount !== targetCount &&
+      (sourceCount === 0 || targetCount === 0)
+    ) {
+      displaced = true;
+    }
+
+    if (
+      sourceCount > 0 &&
+      targetCount > 0 &&
+      sourceCount !== targetCount &&
+      (sourceCount === 1 || targetCount === 1)
+    ) {
+      const sourceRun = source.slice(prefix, sourceEnd);
+      const targetRun = target.slice(prefix, targetEnd);
+
+      if (
+        sourceRun.every(isTextNode) &&
+        targetRun.every(isTextNode) &&
+        sourceRun.map((node) => node.text).join('') ===
+          targetRun.map((node) => node.text).join('')
+      ) {
+        // Retain the characters: replacing the run would remap interior selections.
+        addPropertyChanges(sourceRun[0], targetRun[0], [...parentPath, prefix]);
+
+        if (targetCount === 1) {
+          for (let index = prefix + 1; index < sourceEnd; index++) {
+            const boundary = before.childPosition(parentPath, index);
+            changes.push({ from: boundary - 1, to: boundary + 1 });
+          }
+        } else {
+          let offset = targetRun[0].text.length;
+
+          for (let index = 1; index < targetRun.length; index++) {
+            changes.push({
+              from: before.positionAt({
+                path: [...parentPath, prefix],
+                offset,
+              }),
+              insert: PreparedTokenSlice.fromTokens([
+                closeToken('text'),
+                openToken('text', getProperties(targetRun[index])),
+              ]),
+            });
+            offset += targetRun[index].text.length;
+          }
+        }
+
+        displaced = true;
+        return true;
+      }
+    }
 
     if (sourceCount * targetCount > TREE_DIFF_MATRIX_LIMIT) return false;
 
@@ -2063,7 +2118,7 @@ export class RootChange {
         work.ancestorPaths.push([...entry.path]);
       }
 
-      return document.withExactNodePropertiesBatch(updates);
+      return document.withNodeUpdates(updates);
     }
 
     if (replacements.length === 2) {
@@ -2130,6 +2185,51 @@ export class RootChange {
         work.fallbackReason = 'overlapping-replacement-range';
 
         return null;
+      }
+    }
+
+    if (replacementsByPosition.length > 1) {
+      const updates = new Map<
+        string,
+        { path: readonly number[]; text: string }
+      >();
+      const paths: number[][] = [];
+
+      for (const replacement of replacementsByPosition.toReversed()) {
+        const entry = document.textAt(replacement.from);
+
+        if (
+          !entry ||
+          entry.contentFrom > replacement.from ||
+          replacement.to > entry.contentTo ||
+          !replacement.insert.tokens.every((token) => token.kind === 'text')
+        ) {
+          break;
+        }
+
+        const node = document.node(entry.path);
+
+        if (!isTextNode(node)) break;
+        const key = pathKey(entry.path);
+        const previous = updates.get(key)?.text ?? node.text;
+        const inserted = replacement.insert.tokens
+          .map((token) => (token.kind === 'text' ? token.text : ''))
+          .join('');
+
+        updates.set(key, {
+          path: entry.path,
+          text:
+            previous.slice(0, replacement.from - entry.contentFrom) +
+            inserted +
+            previous.slice(replacement.to - entry.contentFrom),
+        });
+        paths.push([...entry.path]);
+      }
+
+      if (paths.length === replacementsByPosition.length) {
+        for (const path of paths) work.ancestorPaths.push(path);
+        work.localizedReplacements += paths.length;
+        return document.withNodeUpdates([...updates.values()]);
       }
     }
 
@@ -3193,7 +3293,6 @@ export const splitNodeChange = (
   if (index === undefined) throw new Error('Cannot split the document root.');
 
   const node = document.node(path);
-  let before: JsonNode;
   let after: JsonNode;
 
   if (isTextNode(node)) {
@@ -3201,14 +3300,12 @@ export const splitNodeChange = (
       throw new Error(`Cannot split text at offset ${position}.`);
     }
 
-    before = { ...node, text: node.text.slice(0, position) };
-    after = { ...properties, text: node.text.slice(position) };
+    after = { ...properties, text: '' };
   } else {
     if (position < 0 || position > node.children.length) {
       throw new Error(`Cannot split element at child index ${position}.`);
     }
 
-    before = { ...node, children: node.children.slice(0, position) };
     after = {
       ...(typeof properties.type === 'string'
         ? { type: properties.type }
@@ -3216,14 +3313,22 @@ export const splitNodeChange = (
           ? { type: node.type }
           : {}),
       ...properties,
-      children: node.children.slice(position),
+      children: [],
     };
   }
 
-  const split = document.withSplicedNodes(path.slice(0, -1), index, 1, [
-    before,
-    after,
-  ]);
+  const nodeKind = isTextNode(node) ? 'text' : 'element';
+  const boundary = isTextNode(node)
+    ? document.positionAt({ path, offset: position })
+    : document.childPosition(path, position);
 
-  return RootChange.between(document, split);
+  // The split boundary preserves points on both sides and the left node's key.
+  // A whole-document diff can reinterpret that boundary as sibling insertion.
+  return RootChange.create(document, {
+    from: boundary,
+    insert: PreparedTokenSlice.fromTokens([
+      closeToken(nodeKind),
+      openToken(nodeKind, nodeProps(after)),
+    ]),
+  });
 };

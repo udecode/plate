@@ -199,7 +199,35 @@ When the ideal call site is blocked:
 Do not call a workaround "pragmatic" and quietly make it architecture. If the
 durable fix is large, report the real blast radius and still choose it.
 
+### Scale-Sensitive Target Gate
+
+Before accepting a public target that adds, retains, or changes a runtime
+layer, cache, index, projection, store, subscription, scheduler, geometry
+owner, repeated-unit fan-out, or other hot work, invoke Benchmark's embedded
+pre-acceptance architecture probe. Freeze the scale variables, cohorts, budget,
+baseline, target path or disposable prototype, deterministic cost indicators,
+timing/noise rule, source identities, and correctness guard before reading the
+target result.
+
+The target remains `provisional` until that executable comparison passes. An
+asymptotic argument, complexity table, review score, profiler suspicion,
+benchmark plan, or promise to measure during implementation cannot justify the
+runtime noun or owner. If the result is inconclusive, cut the machinery or hand
+off a `defer`/`gate` decision with the next probe; do not call it the best API.
+
+Best API may settle call syntax without this probe only when live source proves
+the competing call shapes share the same runtime law and the verdict explicitly
+does not retain or create runtime machinery. Type-only and zero-runtime work
+may record N/A with that source evidence.
+
 ### Canonical Read And Projection Gate
+
+Match invalidation queries to the consumer's dependency. Entity presence,
+payload, position, and geometry are different questions. Reuse the canonical
+change owner for a missing precise query; do not make an existence check build
+all shifted paths or introduce a second change store. An immutable result is
+shared across readers, and a known negative answer must not trigger a global
+search. Prove both affected and unchanged follow-up reads at scale.
 
 Do not confuse an internal canonical carrier with the best public read. A
 carrier may need tags, bookkeeping, or extension payloads to preserve runtime
@@ -241,6 +269,53 @@ lifecycle so children, selection, live identity, and allowed properties retain
 their canonical owners. Feature commands keep their guards and delegate this
 structural step. Reject feature-local default-node replacement, reset aliases,
 and type or mode knobs on this exact operation.
+
+### Transient View Lifetime Gate
+
+Choose an existing lifetime owner before naming a public view abstraction.
+Inline transient paint is a Decoration. A durable logical range is an
+Annotation. Logical out-of-flow UI is a Widget. Delete a proposed overlay,
+projection, view, layer, or manager API when it only renames one of those jobs
+or combines them for one product component.
+
+The normal Plate authoring path is the owning plugin's `decorate` callback and
+render slots. Plate lowers their carriers privately and invalidates that
+plugin's decorations from its store. Do not make ordinary callers construct a
+Decoration source, renderer registry, Widget store, manual refresh call, or
+parallel public plugin merely to install product behavior.
+
+A sibling render slot exposes only its placement-owned lifecycle input: the
+exact Editable ref or container ref. Never inherit or forward the host
+Editable props, container DOM props, or another broad prop bag into a sibling.
+Register a complete component directly. Keep a callback only when it performs
+real composition, such as supplying alternative children.
+
+Type sibling components from that exact slot contract, never from the plugin
+descriptor that installs them. A descriptor-derived component prop type is
+justified only when the descriptor changes the real props through its schema or
+plugin context, as it does for node renderers. Reject a descriptor generic that
+merely restates fixed placement props. Delete zero-caller option bags and
+primitive component-prop intersections; keep a local customization prop only
+for a proven component consumer job.
+
+Publish DOM geometry only for a reusable positioning law. Require the exact
+mounted Editable ref, return immutable viewport coordinates, and return `null`
+when that view cannot resolve the target or during SSR. Reject implicit active
+view selection, public schedulers or geometry stores, virtual-element adapters,
+and app presentation policy. Copied UI owns Floating UI middleware, styling,
+labels, focus policy, and feature composition.
+
+When canonical editor state is stable but its paint varies by mounted view,
+first ask whether that view can derive the choice from its own runtime or DOM
+lifecycle. If it can, keep the transition state private and publish only the
+smallest literal DOM protocol needed by external controls and product CSS. Add
+a controlled input only when user intent cannot be derived from the mounted
+view or DOM. Never accept a copied Range or state payload, and never create an
+editor-global plugin, store, kit, or second selection owner for that view-local
+choice. Internal view state with input, history, clipboard, or reconciliation
+semantics is not reusable presentation state. The lower React owner renders
+neutral mechanics; a facade inherits them by identity; copied UI owns markers,
+styling, labels, and feature composition.
 
 ## Bounded Exhaustiveness Gate
 
@@ -284,10 +359,19 @@ Optimize the whole surface, in this order:
    inspection, and runtime control appear only when requested.
 5. Stable composition and extension points that add capability without
    multiplying verbs, flags, or parallel APIs.
-6. Locality: colocate one-owner behavior and inline one-use declarations;
-   extract only for reuse or a durable independent owner.
+6. Locality: colocate one-owner behavior and inline one-use declarations.
+   Component-owned prop shapes stay inline even when same-file siblings or
+   helpers repeat them. Keep a named prop contract only when a real cross-file
+   or published entrypoint consumer requires its export; never export it just
+   to preserve the alias. Honest domain and state types may remain inputs to an
+   inline prop expression. Extract anything else only for reuse or a durable
+   independent owner.
 7. Ecosystem fit. Prefer Slate/Plate idiom when two designs are equally good;
    depart when a different shape is materially cleaner or more scalable.
+
+Prefer one established domain noun for a public subpath when it completely
+names the user job. Delete compound implementation phrases instead of making
+users memorize them. Brevity does not justify a vague or misleading noun.
 
 Do not confuse recomputable output with latent user intent. Delete derived
 state, but retain persisted intent that is currently inactive and can become
@@ -432,6 +516,9 @@ Ask:
   the scope boundary when its behavior could move into an existing authority?
 - Am I selecting a workaround because the durable owner repair is harder? If
   so, keep the long-term target and route the real repair instead.
+- Does the target add or retain scale-sensitive runtime machinery? If so, where
+  is the passing pre-acceptance Benchmark receipt rather than a paper budget or
+  future measurement promise?
 
 Do not preserve a weaker proposal because it is more elaborate, more generic,
 more observable, or already documented.
@@ -451,9 +538,10 @@ For `design` and `review`, return:
 5. machinery or alternatives rejected, plus retention evidence for every
    surviving public concept;
 6. ownership by layer and non-negotiable runtime/safety laws;
-7. breaking/adoption impact;
-8. verification performed or explicit N/A;
-9. exact next owner.
+7. pre-acceptance scale receipt or source-backed zero-runtime N/A;
+8. breaking/adoption impact;
+9. verification performed or explicit N/A;
+10. exact next owner.
 
 For `audit`, use:
 

@@ -1,0 +1,260 @@
+{
+  "purpose": "Production 5000-block native flow and repaired registry artifact binding. Normal trace sampling is three packets for default/staged and five for virtualized; select-all/delete/type/undo is one extra flow per surface, not a percentile distribution.",
+  "build": "Reuses the freshly rebuilt apps/plite production output from the immediately preceding pagination runs; production source unchanged.",
+  "results": [
+    {
+      "artifactPaths": {
+        "latest": "tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
+        "run": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedActiveDOMGroup-blocks-5000-iters-3-ops-10-after-delete-type-after-delete-text-fanout-proof-run-2026-08-31T20-52-11.629Z.json"
+      },
+      "meta": {
+        "blocks": 5000,
+        "browser": "chromium",
+        "externalBaseUrl": null,
+        "headless": true,
+        "iterations": 3,
+        "runLabel": null,
+        "runStartedAt": "2026-08-31T20:52:11.629Z",
+        "selectAllDelete": true,
+        "typeOps": 10
+      },
+      "surfaces": {
+        "defaultAuto": {
+          "path": "/examples/plite/huge-document?blocks=5000&content_visibility=none&strict=false&strategy=auto",
+          "timeoutCount": 0,
+          "mountedBlocks": {
+            "samples": [
+              32,
+              32,
+              32
+            ],
+            "mean": 32,
+            "median": 32,
+            "p75": 32,
+            "p95": 32,
+            "p99": 32,
+            "min": 32,
+            "max": 32
+          },
+          "typeToPaint": {
+            "startBlock": {
+              "samples": [
+                12.3,
+                16.1,
+                17.4
+              ],
+              "median": 16.1,
+              "p95": 17.4,
+              "domNodesMax": 1004,
+              "editorElementsMax": 32,
+              "longTaskMaxMs": 0
+            },
+            "middleBlock": {
+              "samples": [
+                17.7,
+                13.4,
+                18.5
+              ],
+              "median": 17.7,
+              "p95": 18.5,
+              "domNodesMax": 1004,
+              "editorElementsMax": 32,
+              "longTaskMaxMs": 0
+            }
+          },
+          "selectAllDelete": {
+            "afterDeleteDomNodes": 259,
+            "afterDeleteHeapMB": 31.566619873046875,
+            "afterSelectAllDomNodes": 1036,
+            "afterSelectAllHeapMB": 31.566619873046875,
+            "afterUndoDeleteDomNodes": 1004,
+            "afterUndoDeleteHeapMB": 31.566619873046875,
+            "deleteDispatchMs": 74.79999995231628,
+            "deleteReadyMs": 76.19999992847443,
+            "deleteToPaintMs": 84,
+            "selectAllDispatchMs": 32.59999990463257,
+            "selectAllReadyMs": 33.799999952316284,
+            "selectAllToPaintMs": 46.299999952316284,
+            "typeAfterDeleteDispatchMs": 30.200000047683716,
+            "typeAfterDeleteInputMode": "type",
+            "typeAfterDeleteReadyMs": 31.200000047683716,
+            "typeAfterDeleteToPaintMs": 42.700000047683716,
+            "typeAfterDeleteWaitForModelMs": 1,
+            "undoDeleteDispatchMs": 156.30000007152557,
+            "undoDeleteRestored": 1,
+            "undoDeleteReadyMs": 158.30000007152557,
+            "undoDeleteToPaintMs": 169.30000007152557,
+            "undoTypeDispatchMs": 6.600000023841858,
+            "undoTypeReadyMs": 7.5,
+            "undoTypeToPaintMs": 25.200000047683716
+          }
+        },
+        "stagedActiveDOMGroup": {
+          "path": "/examples/plite/huge-document?blocks=5000&content_visibility=none&strict=false&strategy=staged",
+          "timeoutCount": 0,
+          "mountedBlocks": {
+            "samples": [
+              16,
+              16,
+              16
+            ],
+            "mean": 16,
+            "median": 16,
+            "p75": 16,
+            "p95": 16,
+            "p99": 16,
+            "min": 16,
+            "max": 16
+          },
+          "typeToPaint": {
+            "startBlock": {
+              "samples": [
+                14.8,
+                15.7,
+                16.4
+              ],
+              "median": 15.7,
+              "p95": 16.4,
+              "domNodesMax": 320,
+              "editorElementsMax": 16,
+              "longTaskMaxMs": 0
+            },
+            "middleBlock": {
+              "samples": [
+                17.7,
+                16.5,
+                13.6
+              ],
+              "median": 16.5,
+              "p95": 17.7,
+              "domNodesMax": 385,
+              "editorElementsMax": 32,
+              "longTaskMaxMs": 0
+            }
+          },
+          "selectAllDelete": {
+            "afterDeleteDomNodes": 262,
+            "afterDeleteHeapMB": 19.550323486328125,
+            "afterSelectAllDomNodes": 376,
+            "afterSelectAllHeapMB": 19.550323486328125,
+            "afterUndoDeleteDomNodes": 288,
+            "afterUndoDeleteHeapMB": 19.550323486328125,
+            "deleteDispatchMs": 75.69999992847443,
+            "deleteReadyMs": 76.60000002384186,
+            "deleteToPaintMs": 85.5,
+            "selectAllDispatchMs": 30.899999976158142,
+            "selectAllReadyMs": 32,
+            "selectAllToPaintMs": 46.5,
+            "typeAfterDeleteDispatchMs": 31.600000023841858,
+            "typeAfterDeleteInputMode": "type",
+            "typeAfterDeleteReadyMs": 33,
+            "typeAfterDeleteToPaintMs": 47.5,
+            "typeAfterDeleteWaitForModelMs": 1.399999976158142,
+            "undoDeleteDispatchMs": 137.60000002384186,
+            "undoDeleteRestored": 1,
+            "undoDeleteReadyMs": 139.39999997615814,
+            "undoDeleteToPaintMs": 151.69999992847443,
+            "undoTypeDispatchMs": 6.399999976158142,
+            "undoTypeReadyMs": 7.199999928474426,
+            "undoTypeToPaintMs": 16.199999928474426
+          }
+        }
+      }
+    },
+    {
+      "artifactPaths": {
+        "latest": "tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json",
+        "run": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10-after-delete-type-after-delete-text-fanout-proof-run-2026-08-31T20-52-41.636Z.json"
+      },
+      "meta": {
+        "blocks": 5000,
+        "browser": "chromium",
+        "externalBaseUrl": null,
+        "headless": true,
+        "iterations": 5,
+        "runLabel": null,
+        "runStartedAt": "2026-08-31T20:52:41.636Z",
+        "selectAllDelete": true,
+        "typeOps": 10
+      },
+      "surfaces": {
+        "virtualized": {
+          "path": "/examples/plite/huge-document?blocks=5000&content_visibility=none&strict=false&strategy=virtualized&threshold=1&overscan=2&editor_height=600",
+          "timeoutCount": 0,
+          "mountedBlocks": {
+            "samples": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ],
+            "mean": 15,
+            "median": 15,
+            "p75": 15,
+            "p95": 15,
+            "p99": 15,
+            "min": 15,
+            "max": 15
+          },
+          "typeToPaint": {
+            "startBlock": {
+              "samples": [
+                32.8,
+                32.5,
+                28.6,
+                33.8,
+                28.4
+              ],
+              "median": 32.5,
+              "p95": 33.8,
+              "domNodesMax": 357,
+              "editorElementsMax": 15,
+              "longTaskMaxMs": 0
+            },
+            "middleBlock": {
+              "samples": [
+                29,
+                35.8,
+                27.4,
+                29.9,
+                29.9
+              ],
+              "median": 29.9,
+              "p95": 35.8,
+              "domNodesMax": 370,
+              "editorElementsMax": 17,
+              "longTaskMaxMs": 0
+            }
+          },
+          "selectAllDelete": {
+            "afterDeleteDomNodes": 275,
+            "afterDeleteHeapMB": 19.550323486328125,
+            "afterSelectAllDomNodes": 380,
+            "afterSelectAllHeapMB": 19.550323486328125,
+            "afterUndoDeleteDomNodes": 364,
+            "afterUndoDeleteHeapMB": 19.550323486328125,
+            "deleteDispatchMs": 75,
+            "deleteReadyMs": 76,
+            "deleteToPaintMs": 87.30000007152557,
+            "selectAllDispatchMs": 27.799999952316284,
+            "selectAllReadyMs": 28.899999976158142,
+            "selectAllToPaintMs": 44,
+            "typeAfterDeleteDispatchMs": 31.90000009536743,
+            "typeAfterDeleteInputMode": "type",
+            "typeAfterDeleteReadyMs": 32.90000009536743,
+            "typeAfterDeleteToPaintMs": 46.700000047683716,
+            "typeAfterDeleteWaitForModelMs": 1,
+            "undoDeleteDispatchMs": 133.39999997615814,
+            "undoDeleteRestored": 1,
+            "undoDeleteReadyMs": 135.60000002384186,
+            "undoDeleteToPaintMs": 151.79999995231628,
+            "undoTypeDispatchMs": 5.800000071525574,
+            "undoTypeReadyMs": 6.5,
+            "undoTypeToPaintMs": 22.200000047683716
+          }
+        }
+      }
+    }
+  ]
+}

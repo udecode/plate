@@ -24,7 +24,7 @@ Good Plite contributions improve one of these surfaces:
 - React editor behavior in `plitejs/react`;
 - history behavior in `plitejs/history`;
 - Yjs adapter behavior in `platejs/yjs`;
-- layout proof in `plitejs/page-layout`;
+- layout proof in `plitejs/pagination`;
 - browser proof in `@platejs/test`;
 - docs and examples under `content/docs/plite/**` and `/examples/plite/*`.
 
@@ -99,7 +99,7 @@ pnpm check:plite
 | History                                                | `pnpm --filter plitejs/history test`                      |
 | DOM bridge or browser harness                          | `pnpm --filter @platejs/test test`                            |
 | Yjs adapter                                            | `pnpm --filter platejs/yjs test`                                |
-| Layout                                                 | `pnpm --filter plitejs/page-layout test`                       |
+| Pagination                                             | `pnpm --filter plitejs test:partition:pagination`             |
 | Docs source                                            | `pnpm --filter www check:docs`                                   |
 | Example browser behavior                               | `pnpm --filter plite test:plite-browser:chromium <file-or-grep>` |
 | Full browser matrix                                    | `pnpm check:plite:browser-matrix`                                |

@@ -29,6 +29,7 @@ import {
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
 import { usePliteProjectionEntries } from '../hooks/use-plite-projection-entries';
+import { hasVisiblePliteInactiveSelectionDecoration } from '../inactive-selection';
 import type { PliteProjectionSlice } from '../projection-store';
 import { hasVisiblePliteViewSelectionDecoration } from '../view-selection-decoration';
 import { PliteLeaf } from './plite-leaf';
@@ -133,8 +134,58 @@ const samePathOrRuntimeStable = ({
     leftPliteNode === rightPliteNode);
 
 const sameZeroWidth = (
-  left: EditableTextProps['zeroWidth'],
-  right: EditableTextProps['zeroWidth']
+  left: {
+    marks?: Omit<PliteTextNode, 'text'>;
+    path?: Path;
+    placeholder?: ReactNode;
+    placeholderAs?: PlaceholderIntrinsicTag;
+    placeholderDir?: 'rtl';
+    placeholderRef?: React.RefCallback<HTMLElement>;
+    placeholderStyle?: CSSProperties;
+    ref?: Ref<HTMLSpanElement>;
+    renderLeaf?: (props: RenderLeafProps) => ReactNode;
+    renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+    renderSegment?: (
+      segment: EditableTextSegment,
+      children: ReactNode
+    ) => ReactNode;
+    renderText?: (props: RenderTextProps) => ReactNode;
+    nodeKey?: NodeKey | null;
+    pliteNode?: PliteTextNode | null;
+    text?: string;
+    zeroWidth?: {
+      includeSentinel?: boolean;
+      isLineBreak?: boolean;
+      isMarkPlaceholder?: boolean;
+      length?: number;
+    };
+  }['zeroWidth'],
+  right: {
+    marks?: Omit<PliteTextNode, 'text'>;
+    path?: Path;
+    placeholder?: ReactNode;
+    placeholderAs?: PlaceholderIntrinsicTag;
+    placeholderDir?: 'rtl';
+    placeholderRef?: React.RefCallback<HTMLElement>;
+    placeholderStyle?: CSSProperties;
+    ref?: Ref<HTMLSpanElement>;
+    renderLeaf?: (props: RenderLeafProps) => ReactNode;
+    renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+    renderSegment?: (
+      segment: EditableTextSegment,
+      children: ReactNode
+    ) => ReactNode;
+    renderText?: (props: RenderTextProps) => ReactNode;
+    nodeKey?: NodeKey | null;
+    pliteNode?: PliteTextNode | null;
+    text?: string;
+    zeroWidth?: {
+      includeSentinel?: boolean;
+      isLineBreak?: boolean;
+      isMarkPlaceholder?: boolean;
+      length?: number;
+    };
+  }['zeroWidth']
 ) =>
   left === right ||
   (left != null &&
@@ -339,33 +390,6 @@ const getTextMarks = (
   return nextMarks;
 };
 
-type EditableTextProps<T = unknown> = {
-  marks?: Omit<PliteTextNode, 'text'>;
-  path?: Path;
-  placeholder?: ReactNode;
-  placeholderAs?: PlaceholderIntrinsicTag;
-  placeholderDir?: 'rtl';
-  placeholderRef?: React.RefCallback<HTMLElement>;
-  placeholderStyle?: CSSProperties;
-  ref?: Ref<HTMLSpanElement>;
-  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
-  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
-  renderSegment?: (
-    segment: EditableTextSegment<T>,
-    children: ReactNode
-  ) => ReactNode;
-  renderText?: (props: RenderTextProps) => ReactNode;
-  nodeKey?: NodeKey | null;
-  pliteNode?: PliteTextNode | null;
-  text?: string;
-  zeroWidth?: {
-    includeSentinel?: boolean;
-    isLineBreak?: boolean;
-    isMarkPlaceholder?: boolean;
-    length?: number;
-  };
-};
-
 const assignRef = (
   ref: Ref<HTMLSpanElement> | undefined,
   node: HTMLSpanElement | null
@@ -378,13 +402,6 @@ const assignRef = (
   if (ref) {
     ref.current = node;
   }
-};
-
-type RenderEditableTextProps<T> = EditableTextProps<T> & {
-  projections: ReadonlyArray<PliteProjectionSlice<T>>;
-  resolvedMarks: Omit<PliteTextNode, 'text'>;
-  resolvedText: string;
-  renderRevision?: number | string;
 };
 
 const getLeafAttributes = <T,>(
@@ -413,7 +430,37 @@ const RenderEditableText = <T,>({
   resolvedText,
   nodeKey,
   zeroWidth,
-}: RenderEditableTextProps<T>) => {
+}: {
+  marks?: Omit<PliteTextNode, 'text'>;
+  path?: Path;
+  placeholder?: ReactNode;
+  placeholderAs?: PlaceholderIntrinsicTag;
+  placeholderDir?: 'rtl';
+  placeholderRef?: React.RefCallback<HTMLElement>;
+  placeholderStyle?: CSSProperties;
+  ref?: Ref<HTMLSpanElement>;
+  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  renderSegment?: (
+    segment: EditableTextSegment<T>,
+    children: ReactNode
+  ) => ReactNode;
+  renderText?: (props: RenderTextProps) => ReactNode;
+  nodeKey?: NodeKey | null;
+  pliteNode?: PliteTextNode | null;
+  text?: string;
+  zeroWidth?: {
+    includeSentinel?: boolean;
+    isLineBreak?: boolean;
+    isMarkPlaceholder?: boolean;
+    length?: number;
+  };
+} & {
+  projections: ReadonlyArray<PliteProjectionSlice<T>>;
+  resolvedMarks: Omit<PliteTextNode, 'text'>;
+  resolvedText: string;
+  renderRevision?: number | string;
+}) => {
   const editableRoot = useContext(PliteEditableRootContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
@@ -479,20 +526,23 @@ const RenderEditableText = <T,>({
           ) : (
             baseContent
           );
-          const decoratedSegmentContent =
-            hasVisiblePliteViewSelectionDecoration(segment.slices, {
+          const hasInactiveSelection =
+            hasVisiblePliteInactiveSelectionDecoration(
+              segment.slices,
+              editableRoot
+            );
+          const decoratedSegmentContent = hasInactiveSelection ? (
+            <span data-plite-inactive-selection="">{segmentContent}</span>
+          ) : hasVisiblePliteViewSelectionDecoration(segment.slices, {
               owner: contentRootOwner,
               root: editableRoot,
             }) ? (
-              <span
-                data-plite-view-selection="true"
-                style={VIEW_SELECTION_STYLE}
-              >
-                {segmentContent}
-              </span>
-            ) : (
-              segmentContent
-            );
+            <span data-plite-view-selection="true" style={VIEW_SELECTION_STYLE}>
+              {segmentContent}
+            </span>
+          ) : (
+            segmentContent
+          );
           const leafNode = segment.marks;
           const leafSegment = {
             marks: segment.marks,
@@ -641,7 +691,37 @@ const RevisionedProjectedEditableText = <T,>({
   editor,
   nodeKey,
   ...props
-}: RenderEditableTextProps<T> & {
+}: ({
+  marks?: Omit<PliteTextNode, 'text'>;
+  path?: Path;
+  placeholder?: ReactNode;
+  placeholderAs?: PlaceholderIntrinsicTag;
+  placeholderDir?: 'rtl';
+  placeholderRef?: React.RefCallback<HTMLElement>;
+  placeholderStyle?: CSSProperties;
+  ref?: Ref<HTMLSpanElement>;
+  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  renderSegment?: (
+    segment: EditableTextSegment<T>,
+    children: ReactNode
+  ) => ReactNode;
+  renderText?: (props: RenderTextProps) => ReactNode;
+  nodeKey?: NodeKey | null;
+  pliteNode?: PliteTextNode | null;
+  text?: string;
+  zeroWidth?: {
+    includeSentinel?: boolean;
+    isLineBreak?: boolean;
+    isMarkPlaceholder?: boolean;
+    length?: number;
+  };
+} & {
+  projections: ReadonlyArray<PliteProjectionSlice<T>>;
+  resolvedMarks: Omit<PliteTextNode, 'text'>;
+  resolvedText: string;
+  renderRevision?: number | string;
+}) & {
   editor: ReturnType<typeof useEditorContext>;
 }) => {
   const selectProjectedText = useCallback(
@@ -697,7 +777,32 @@ const BoundEditableText = <T,>({
   nodeKey = null,
   text,
   ...props
-}: EditableTextProps<T>) => {
+}: {
+  marks?: Omit<PliteTextNode, 'text'>;
+  path?: Path;
+  placeholder?: ReactNode;
+  placeholderAs?: PlaceholderIntrinsicTag;
+  placeholderDir?: 'rtl';
+  placeholderRef?: React.RefCallback<HTMLElement>;
+  placeholderStyle?: CSSProperties;
+  ref?: Ref<HTMLSpanElement>;
+  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  renderSegment?: (
+    segment: EditableTextSegment<T>,
+    children: ReactNode
+  ) => ReactNode;
+  renderText?: (props: RenderTextProps) => ReactNode;
+  nodeKey?: NodeKey | null;
+  pliteNode?: PliteTextNode | null;
+  text?: string;
+  zeroWidth?: {
+    includeSentinel?: boolean;
+    isLineBreak?: boolean;
+    isMarkPlaceholder?: boolean;
+    length?: number;
+  };
+}) => {
   const editor = useEditorContext();
   const selectorNodeKey = path ? editorGetNodeKey(editor, path) : nodeKey;
   const selectBoundText = useCallback(
@@ -771,7 +876,32 @@ const ProjectedEditableText = <T,>({
   pliteNode = null,
   text = '',
   ...props
-}: EditableTextProps<T>) => {
+}: {
+  marks?: Omit<PliteTextNode, 'text'>;
+  path?: Path;
+  placeholder?: ReactNode;
+  placeholderAs?: PlaceholderIntrinsicTag;
+  placeholderDir?: 'rtl';
+  placeholderRef?: React.RefCallback<HTMLElement>;
+  placeholderStyle?: CSSProperties;
+  ref?: Ref<HTMLSpanElement>;
+  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  renderSegment?: (
+    segment: EditableTextSegment<T>,
+    children: ReactNode
+  ) => ReactNode;
+  renderText?: (props: RenderTextProps) => ReactNode;
+  nodeKey?: NodeKey | null;
+  pliteNode?: PliteTextNode | null;
+  text?: string;
+  zeroWidth?: {
+    includeSentinel?: boolean;
+    isLineBreak?: boolean;
+    isMarkPlaceholder?: boolean;
+    length?: number;
+  };
+}) => {
   const editor = useEditorContext();
   const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
   const projections = usePliteProjectionEntries(nodeKey) as ReadonlyArray<
@@ -794,7 +924,37 @@ const ProjectedEditableText = <T,>({
     resolvedMarks: marks,
     resolvedText: text,
     nodeKey,
-  } satisfies RenderEditableTextProps<T>;
+  } satisfies {
+    marks?: Omit<PliteTextNode, 'text'>;
+    path?: Path;
+    placeholder?: ReactNode;
+    placeholderAs?: PlaceholderIntrinsicTag;
+    placeholderDir?: 'rtl';
+    placeholderRef?: React.RefCallback<HTMLElement>;
+    placeholderStyle?: CSSProperties;
+    ref?: Ref<HTMLSpanElement>;
+    renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+    renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+    renderSegment?: (
+      segment: EditableTextSegment<T>,
+      children: ReactNode
+    ) => ReactNode;
+    renderText?: (props: RenderTextProps) => ReactNode;
+    nodeKey?: NodeKey | null;
+    pliteNode?: PliteTextNode | null;
+    text?: string;
+    zeroWidth?: {
+      includeSentinel?: boolean;
+      isLineBreak?: boolean;
+      isMarkPlaceholder?: boolean;
+      length?: number;
+    };
+  } & {
+    projections: ReadonlyArray<PliteProjectionSlice<T>>;
+    resolvedMarks: Omit<PliteTextNode, 'text'>;
+    resolvedText: string;
+    renderRevision?: number | string;
+  };
   const requiresModelRender = !getDOMTextSyncCapability({
     hasText: text.length > 0,
     marks,
@@ -812,8 +972,58 @@ const ProjectedEditableText = <T,>({
 };
 
 const sameEditableTextProps = <T,>(
-  left: EditableTextProps<T>,
-  right: EditableTextProps<T>
+  left: {
+    marks?: Omit<PliteTextNode, 'text'>;
+    path?: Path;
+    placeholder?: ReactNode;
+    placeholderAs?: PlaceholderIntrinsicTag;
+    placeholderDir?: 'rtl';
+    placeholderRef?: React.RefCallback<HTMLElement>;
+    placeholderStyle?: CSSProperties;
+    ref?: Ref<HTMLSpanElement>;
+    renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+    renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+    renderSegment?: (
+      segment: EditableTextSegment<T>,
+      children: ReactNode
+    ) => ReactNode;
+    renderText?: (props: RenderTextProps) => ReactNode;
+    nodeKey?: NodeKey | null;
+    pliteNode?: PliteTextNode | null;
+    text?: string;
+    zeroWidth?: {
+      includeSentinel?: boolean;
+      isLineBreak?: boolean;
+      isMarkPlaceholder?: boolean;
+      length?: number;
+    };
+  },
+  right: {
+    marks?: Omit<PliteTextNode, 'text'>;
+    path?: Path;
+    placeholder?: ReactNode;
+    placeholderAs?: PlaceholderIntrinsicTag;
+    placeholderDir?: 'rtl';
+    placeholderRef?: React.RefCallback<HTMLElement>;
+    placeholderStyle?: CSSProperties;
+    ref?: Ref<HTMLSpanElement>;
+    renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+    renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+    renderSegment?: (
+      segment: EditableTextSegment<T>,
+      children: ReactNode
+    ) => ReactNode;
+    renderText?: (props: RenderTextProps) => ReactNode;
+    nodeKey?: NodeKey | null;
+    pliteNode?: PliteTextNode | null;
+    text?: string;
+    zeroWidth?: {
+      includeSentinel?: boolean;
+      isLineBreak?: boolean;
+      isMarkPlaceholder?: boolean;
+      length?: number;
+    };
+  }
 ) =>
   left.placeholder === right.placeholder &&
   left.placeholderAs === right.placeholderAs &&
@@ -844,7 +1054,32 @@ const EditableTextInner = <T,>({
   ref,
   nodeKey,
   ...props
-}: EditableTextProps<T>) => {
+}: {
+  marks?: Omit<PliteTextNode, 'text'>;
+  path?: Path;
+  placeholder?: ReactNode;
+  placeholderAs?: PlaceholderIntrinsicTag;
+  placeholderDir?: 'rtl';
+  placeholderRef?: React.RefCallback<HTMLElement>;
+  placeholderStyle?: CSSProperties;
+  ref?: Ref<HTMLSpanElement>;
+  renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  renderSegment?: (
+    segment: EditableTextSegment<T>,
+    children: ReactNode
+  ) => ReactNode;
+  renderText?: (props: RenderTextProps) => ReactNode;
+  nodeKey?: NodeKey | null;
+  pliteNode?: PliteTextNode | null;
+  text?: string;
+  zeroWidth?: {
+    includeSentinel?: boolean;
+    isLineBreak?: boolean;
+    isMarkPlaceholder?: boolean;
+    length?: number;
+  };
+}) => {
   if (nodeKey && props.text !== undefined && props.marks !== undefined) {
     return (
       <ProjectedEditableText

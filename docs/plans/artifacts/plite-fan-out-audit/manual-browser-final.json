@@ -1,0 +1,70 @@
+{
+  "purpose": "Fresh manual behavior replay on final source; not latency measurement.",
+  "host": "http://127.0.0.1:3103",
+  "productionBuild": {
+    "fileCount": 371,
+    "digest": "645af9f0dc762029157544aefb58a4a0e9024fee9cfad6563ebe44ed4573b60a",
+    "buildId": "8f5jEpLAsX6J6UKjjWaa9"
+  },
+  "source": "final-source.json",
+  "surfaces": [
+    {
+      "surface": "persistent-annotation-anchors",
+      "browser": "Browser",
+      "result": "pass",
+      "checks": [
+        "range followed structure and prefix from 1-4 to 9-12",
+        "clear removed the annotation and visible widget"
+      ]
+    },
+    {
+      "surface": "comment-mode",
+      "browser": "Browser",
+      "result": "pass",
+      "checks": [
+        "range moved to 1.0:1-25 through structural and prefix edits",
+        "metadata and resolved state updated",
+        "read-only document writes stayed zero",
+        "clear removed comments and widgets"
+      ]
+    },
+    {
+      "surface": "yjs-collaboration",
+      "browser": "Browser",
+      "result": "pass",
+      "checks": [
+        "native key x in Peer A converged across all four peers",
+        "only Peer A recorded local undo",
+        "Undo restored all four documents"
+      ]
+    },
+    {
+      "surface": "mentions-native-cut",
+      "browser": "Chrome",
+      "result": "pass",
+      "checks": [
+        "Meta+X removed only R2-D2",
+        "one Meta+Z restored R2-D2 while Mace Windu stayed unchanged",
+        "native clipboard pasted @R2-D2 into the local searchbox"
+      ]
+    },
+    {
+      "surface": "richtext-formatting-round-trip",
+      "browser": "Chrome",
+      "result": "pass",
+      "checks": [
+        "native arrows selected editable with offsets 8-16 before the first action",
+        "Bold on retained editable at offsets 0-8 in the bold text node",
+        "Bold off retained editable at offsets 8-16",
+        "ArrowRight then W produced This is editableW and kept following rich text bold"
+      ]
+    }
+  ],
+  "discardedProof": [
+    {
+      "surface": "richtext",
+      "browser": "Browser",
+      "reason": "The first key sequence had no independent selected-word assertion and ended at the wrong insertion boundary. It is not accepted as a formatting proof. Chrome replay verified native selection before and after both toggles and passed. No runtime edit was made from this sequence."
+    }
+  ]
+}

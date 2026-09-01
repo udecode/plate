@@ -75,11 +75,43 @@ test('accepts a full new-package flow', () => {
   assert.deepEqual(validate(makePlan('new package')), []);
 });
 
+test('accepts a source-backed scale N/A and still requires the surface', () => {
+  assert.deepEqual(validate(makePlan('new package', ['Scale proof'])), []);
+
+  const missing = makePlan('new package').replace(/^\| Scale proof .*\n/m, '');
+  assert.match(
+    validate(missing).join('\n'),
+    /Missing manifest surface: Scale proof/
+  );
+});
+
 test('accepts an existing-package React and registry flow', () => {
   assert.deepEqual(
     validate(makePlan('existing package plus React/registry')),
     []
   );
+});
+
+test('accepts focused existing-package proof without mass attestation', () => {
+  const plan = makePlan('existing package plus React/registry', [
+    'Plate Next attestation',
+  ])
+    .replace('[Package file evidence](#package-file-evidence)', 'artifact')
+    .replace(
+      /\nPackage file evidence:[\s\S]*?\nCompletion Gates:/,
+      '\nCompletion Gates:'
+    );
+
+  assert.deepEqual(validate(plan), []);
+});
+
+test('accepts the template blank line before a flow-mode bullet', () => {
+  const plan = makePlan('existing package plus React/registry').replace(
+    'Flow mode:\n- existing package plus React/registry',
+    'Flow mode:\n\n- existing package plus React/registry'
+  );
+
+  assert.deepEqual(validate(plan), []);
 });
 
 test('accepts a headless package with explicit exclusions', () => {

@@ -8,11 +8,11 @@ docs:
     title: Highlight Leaf
   - route: /docs/components/mark-toolbar-button
     title: Mark Toolbar Button
-  - route: /docs/examples/find-replace
-    title: Find Replace Demo
+  - route: /docs/examples/find
+    title: Find Demo
 ---
 
-Highlight applies the `highlight` leaf mark to selected text. It is the authoring mark; [Find Replace](/docs/examples/find-replace) uses a separate search highlight leaf for transient search results.
+Highlight applies the `highlight` leaf mark to selected text. It is the authoring mark; [Find](/docs/examples/find) uses transient decorations for search results.
 
 <ComponentPreview name="basic-marks-demo" />
 
@@ -33,7 +33,7 @@ Highlight applies the `highlight` leaf mark to selected text. It is the authorin
 
 <Steps>
 
-### Add Basic Marks
+### Add basic marks
 
 `BasicMarksKit` includes `HighlightPlugin`, `HighlightLeaf`, `==` and `≡` input rules, and a `mod+shift+h` shortcut.
 
@@ -49,7 +49,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add A Toolbar Button
+### Add a toolbar button
 
 Pass `HighlightPlugin` to `MarkToolbarButton` so the button uses the configured mark key.
 

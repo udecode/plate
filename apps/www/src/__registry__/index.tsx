@@ -905,19 +905,6 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
-  "search-highlight": {
-    name: "search-highlight",
-    description: "A component that highlights search results in text.",
-    type: "registry:component",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/components/editor/search-highlight.tsx",
-      type: "registry:component",
-      target: "@components/editor/search-highlight.tsx"
-    }],
-    component: null,
-    meta: {"docs":[{"route":"/docs/highlight"}]},
-  },
   "tag": {
     name: "tag",
     description: "A tag element component with selection states and styling.",
@@ -1247,7 +1234,7 @@ export const Index: Record<string, any> = {
     name: "ai",
     description: "A text highlighter for AI-generated content.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/cursor-overlay.json","https://platejs.org/r/ai-menu.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/ai-api.json","https://platejs.org/r/use-chat.json"],
+    registryDependencies: ["https://platejs.org/r/ai-menu.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/ai-api.json","https://platejs.org/r/use-chat.json"],
     files: [{
       path: "src/registry/components/editor/ai.tsx",
       type: "registry:component",
@@ -1425,18 +1412,18 @@ export const Index: Record<string, any> = {
     component: null,
     meta: {"docs":[{"route":"/docs/copilot"},{"route":"https://pro.platejs.org/docs/components/copilot"}],"examples":["copilot-demo","copilot-pro"]},
   },
-  "cursor-overlay": {
-    name: "cursor-overlay",
-    description: "",
+  "find": {
+    name: "find",
+    description: "A document find controller with transient match highlights.",
     type: "registry:component",
-    registryDependencies: [],
+    registryDependencies: ["input-group","tooltip"],
     files: [{
-      path: "src/registry/components/editor/cursor-overlay.tsx",
+      path: "src/registry/components/editor/find.tsx",
       type: "registry:component",
-      target: "@components/editor/cursor-overlay.tsx"
+      target: "@components/editor/find.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/cursor-overlay"},{"route":"https://pro.platejs.org/docs/components/cursor-overlay"}],"examples":["ai-demo"]},
+    meta: {"docs":[{"route":"/docs/find"}],"examples":["find-demo"]},
   },
   "date": {
     name: "date",
@@ -1507,7 +1494,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/cursor-overlay.json","https://platejs.org/r/date.json","https://platejs.org/r/discussion.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/details.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/date.json","https://platejs.org/r/discussion.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/details.json"],
     files: [{
       path: "src/registry/components/editor/plugins.ts",
       type: "registry:component",
@@ -1559,14 +1546,14 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A set of formatting buttons for the floating toolbar.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
+    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/use-widget-floating.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/floating-toolbar.tsx",
       type: "registry:component",
       target: "@components/editor/floating-toolbar.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/api/floating"},{"route":"https://pro.platejs.org/docs/components/floating-toolbar"}],"examples":["floating-toolbar-demo","floating-toolbar-pro"]},
+    meta: {"docs":[{"route":"https://pro.platejs.org/docs/components/floating-toolbar"}],"examples":["floating-toolbar-demo","floating-toolbar-pro"]},
   },
   "footnote": {
     name: "footnote",
@@ -1624,14 +1611,14 @@ export const Index: Record<string, any> = {
     name: "link",
     description: "A component for rendering hyperlinks with hover states.",
     type: "registry:component",
-    registryDependencies: ["button","input","separator","https://platejs.org/r/comment.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/suggestion-style.json","https://platejs.org/r/use-on-click-outside.json"],
+    registryDependencies: ["button","input","separator","https://platejs.org/r/comment.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/suggestion-style.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/use-widget-floating.json"],
     files: [{
       path: "src/registry/components/editor/link.tsx",
       type: "registry:component",
       target: "@components/editor/link.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/link"},{"route":"/docs/api/floating"},{"route":"https://pro.platejs.org/docs/components/link-toolbar"}],"examples":["link-demo","link-pro"]},
+    meta: {"docs":[{"route":"/docs/link"},{"route":"https://pro.platejs.org/docs/components/link-toolbar"}],"examples":["link-demo","link-pro"]},
   },
   "list": {
     name: "list",
@@ -2096,6 +2083,19 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
+  "use-widget-floating": {
+    name: "use-widget-floating",
+    description: "",
+    type: "registry:hook",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/hooks/use-widget-floating.ts",
+      type: "registry:hook",
+      target: ""
+    }],
+    component: null,
+    meta: undefined,
+  },
   "use-on-click-outside": {
     name: "use-on-click-outside",
     description: "",
@@ -2515,22 +2515,39 @@ export const Index: Record<string, any> = {
     }),
     meta: {"registry":false},
   },
-  "find-replace-demo": {
-    name: "find-replace-demo",
-    description: "Find and replace functionality in text.",
+  "find-demo": {
+    name: "find-demo",
+    description: "Find text with keyboard navigation and transient highlights.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/fixed-toolbar.json","input","https://platejs.org/r/search-highlight.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/find.json"],
     files: [{
-      path: "src/registry/examples/find-replace-demo.tsx",
+      path: "src/registry/examples/find-demo.tsx",
       type: "registry:example",
       target: ""
     },{
-      path: "src/registry/examples/values/find-replace-value.tsx",
+      path: "src/registry/examples/values/find-value.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/find-replace-demo.tsx")
+      const mod = await import("@/registry/examples/find-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
+  "inactive-selection-demo": {
+    name: "inactive-selection-demo",
+    description: "Shows the live editor selection while an owned control has focus.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/basic-nodes.json","https://platejs.org/r/editor.json","button"],
+    files: [{
+      path: "src/registry/examples/inactive-selection-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/inactive-selection-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2795,27 +2812,6 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/discussion","title":"Discussion"}],"registry":false},
-  },
-  "cursor-overlay-demo": {
-    name: "cursor-overlay-demo",
-    description: "Visual indicator for cursor position within the editor.",
-    type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/cursor-overlay.json","https://platejs.org/r/editor.json"],
-    files: [{
-      path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/examples/values/cursor-overlay-value.tsx",
-      type: "registry:example",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/demo.tsx")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: {"registry":false},
   },
   "date-demo": {
     name: "date-demo",

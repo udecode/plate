@@ -4,7 +4,7 @@ import React, { act, memo, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   Descendant,
   EditorSnapshot,
-  RuntimeId,
+  NodeKey,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plitejs/src/internal/index.ts';
 import { createDecorationSource } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
@@ -174,11 +174,11 @@ const ProjectionCountSlice = memo(
     slot,
   }: {
     counts: Record<string, number>;
-    runtimeId: RuntimeId | null;
+    runtimeId: NodeKey | null;
     slot: string;
   }) => {
     const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
-      runtimeId ?? ''
+      runtimeId
     ) as readonly unknown[];
 
     increment(counts, slot);
@@ -285,11 +285,11 @@ const RenderingStrategyOverlayInner = ({
 }) => {
   const activeLeafId = useEditorSelector(
     (editorValue) =>
-      editorGetSnapshot(editorValue).index.idAt([0, 0]) ?? null
+      editorGetSnapshot(editorValue).index.keyAt([0, 0]) ?? null
   );
   const farLeafId = useEditorSelector(
     (editorValue) =>
-      editorGetSnapshot(editorValue).index.idAt([getFarBlockIndex(), 0])
+      editorGetSnapshot(editorValue).index.keyAt([getFarBlockIndex(), 0])
   );
 
   return (
@@ -442,6 +442,14 @@ const measureOverlayToggle = async () =>
     const baseline = cloneCounts(counts);
     const recomputeBaseline =
       getProjectionMetricCounts(projectionStore).recomputeCount;
+    const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const renderCounter =
+      process.env.REACT_HUGE_DOC_DEBUG_PROFILE === '1'
+        ? createPliteReactRenderCounter()
+        : null;
+    if (renderCounter) {
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = renderCounter.profiler;
+    }
     const start = now();
 
     await act(async () => {
@@ -453,6 +461,8 @@ const measureOverlayToggle = async () =>
     });
 
     const overlayToggleMs = now() - start;
+    const renderProfile = renderCounter?.snapshot();
+    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousRenderProfiler;
     const delta = deltaCounts(counts, baseline);
     const partialDOMCountAfter = countShells(mounted.container);
     const mountedTextAfter = countMountedTextNodes(mounted.container);
@@ -474,6 +484,16 @@ const measureOverlayToggle = async () =>
       mountedTextAfter,
       mountedTextBefore,
       overlayToggleMs,
+      ...(renderProfile
+        ? {
+            renderElementCount: renderProfile.byKind.element ?? 0,
+            renderLeafCount: renderProfile.byKind.leaf ?? 0,
+            renderRootPlanCount: renderProfile.byKind['root-plan'] ?? 0,
+            renderSelectorCount: renderProfile.byKind.selector ?? 0,
+            renderTextCount: renderProfile.byKind.text ?? 0,
+            renderTotalCount: renderProfile.total,
+          }
+        : {}),
       projectionRecomputeCount:
         getProjectionMetricCounts(projectionStore).recomputeCount -
         recomputeBaseline,

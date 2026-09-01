@@ -1,370 +1,69 @@
 import type {
-  Descendant,
   EditorSnapshot,
-  Path,
-  Point,
   ProjectedRangeSegment,
   Range,
-  NodeKey,
-  Text,
 } from './interfaces';
+import { NodeApi } from './interfaces/node';
+import { PathApi } from './interfaces/path';
+import { RangeApi } from './interfaces/range';
 
-type TextEntry = {
-  readonly path: Path;
-  readonly key: NodeKey;
-  readonly text: string;
-};
-
-type RangeProjectionIndex = {
-  readonly textEntries: readonly TextEntry[];
-  readonly textIndexByPath: Readonly<Record<string, number>>;
-};
-
-const pathKey = (path: Path) => path.join('.');
-
-const isText = (value: Descendant): value is Text =>
-  typeof (value as Text).text === 'string';
-
-const clonePath = (path: Path): Path => Object.freeze([...path]);
-
-const comparePaths = (left: Path, right: Path): number => {
-  const length = Math.min(left.length, right.length);
-
-  for (let index = 0; index < length; index += 1) {
-    if (left[index] !== right[index]) {
-      return left[index] < right[index] ? -1 : 1;
-    }
-  }
-
-  if (left.length === right.length) {
-    return 0;
-  }
-
-  return left.length < right.length ? -1 : 1;
-};
-
-const comparePoints = (left: Point, right: Point): number => {
-  const pathComparison = comparePaths(left.path, right.path);
-
-  if (pathComparison !== 0) {
-    return pathComparison;
-  }
-
-  if (left.offset === right.offset) {
-    return 0;
-  }
-
-  return left.offset < right.offset ? -1 : 1;
-};
-
-const getRangeEdges = (range: Range): [Point, Point] =>
-  comparePoints(range.anchor, range.focus) <= 0
-    ? [range.anchor, range.focus]
-    : [range.focus, range.anchor];
-
-const rangeProjectionIndexCache = new WeakMap<
+// One result bounds retained queries per immutable historical snapshot.
+const lastProjection = new WeakMap<
   EditorSnapshot,
-  RangeProjectionIndex
+  { range: Range; segments: readonly ProjectedRangeSegment[] }
 >();
-
-const collectTextEntries = (
-  snapshot: EditorSnapshot,
-  children: readonly Descendant[] = snapshot.children,
-  parentPath: Path = []
-): TextEntry[] => {
-  const entries: TextEntry[] = [];
-
-  children.forEach((node, index) => {
-    const path = [...parentPath, index] as Path;
-
-    if (isText(node)) {
-      const key = snapshot.index.keyAt(path);
-
-      if (!key) {
-        throw new Error(`Missing node key for text path ${pathKey(path)}`);
-      }
-
-      entries.push({
-        path: clonePath(path),
-        key,
-        text: node.text,
-      });
-      return;
-    }
-
-    entries.push(...collectTextEntries(snapshot, node.children, path));
-  });
-
-  return entries;
-};
-
-const getTextEntryAtPath = (
-  snapshot: EditorSnapshot,
-  path: Path
-): TextEntry | null => {
-  let current: Descendant | undefined;
-  let children: readonly Descendant[] = snapshot.children;
-
-  for (const segment of path) {
-    current = children[segment];
-
-    if (!current) {
-      return null;
-    }
-
-    if (isText(current)) {
-      children = [];
-      continue;
-    }
-
-    ({ children } = current);
-  }
-
-  if (!current || !isText(current)) {
-    return null;
-  }
-
-  const key = snapshot.index.keyAt(path);
-
-  if (!key) {
-    throw new Error(`Missing node key for text path ${pathKey(path)}`);
-  }
-
-  return {
-    path: clonePath(path),
-    key,
-    text: current.text,
-  };
-};
-
-const getTopLevelBlockTextEntries = (
-  snapshot: EditorSnapshot,
-  blockIndex: number
-): readonly TextEntry[] => {
-  const block = snapshot.children[blockIndex];
-
-  if (!block) {
-    return Object.freeze([]);
-  }
-
-  if (isText(block)) {
-    const key = snapshot.index.keyAt([blockIndex]);
-
-    if (!key) {
-      throw new Error(`Missing node key for text path ${blockIndex}`);
-    }
-
-    return Object.freeze([
-      {
-        path: Object.freeze([blockIndex]),
-        key,
-        text: block.text,
-      },
-    ]);
-  }
-
-  return Object.freeze(
-    collectTextEntries(snapshot, block.children, [blockIndex])
-  );
-};
-
-const getRangeProjectionIndex = (
-  snapshot: EditorSnapshot
-): RangeProjectionIndex => {
-  const cached = rangeProjectionIndexCache.get(snapshot);
-
-  if (cached) {
-    return cached;
-  }
-
-  const textEntries = Object.freeze(collectTextEntries(snapshot));
-  const textIndexByPath = Object.freeze(
-    textEntries.reduce<Record<string, number>>((acc, entry, index) => {
-      acc[pathKey(entry.path)] = index;
-      return acc;
-    }, Object.create(null))
-  );
-  const index = Object.freeze({
-    textEntries,
-    textIndexByPath,
-  });
-
-  rangeProjectionIndexCache.set(snapshot, index);
-
-  return index;
-};
-
-const assertValidPoint = (entry: TextEntry, point: Point) => {
-  if (point.offset < 0 || point.offset > entry.text.length) {
-    throw new Error(
-      `Point offset ${point.offset} is outside text bounds for ${pathKey(entry.path)}`
-    );
-  }
-};
 
 export const projectRangeInSnapshot = (
   snapshot: EditorSnapshot,
   range: Range
 ): readonly ProjectedRangeSegment[] => {
-  const [start, end] = getRangeEdges(range);
+  const cached = lastProjection.get(snapshot);
+  if (cached && RangeApi.equals(cached.range, range)) return cached.segments;
+  const [start, end] = RangeApi.edges(range);
+  const root = { children: snapshot.children, type: '' };
 
-  if (comparePaths(start.path, end.path) === 0) {
-    const entry = getTextEntryAtPath(snapshot, start.path);
+  for (const point of [start, end]) {
+    const node = NodeApi.getIf(root, point.path);
 
-    if (!entry) {
+    if (!NodeApi.isText(node)) {
       throw new Error('Cannot project a range outside the committed snapshot');
     }
-
-    assertValidPoint(entry, start);
-    assertValidPoint(entry, end);
-
-    return Object.freeze([
-      Object.freeze({
-        key: entry.key,
-        path: entry.path,
-        start: start.offset,
-        end: end.offset,
-      }),
-    ]);
+    if (point.offset < 0 || point.offset > node.text.length) {
+      throw new Error(
+        `Point offset ${point.offset} is outside text bounds for ${point.path.join('.')}`
+      );
+    }
   }
 
-  if (start.path[0] != null && start.path[0] === end.path[0]) {
-    const entries = getTopLevelBlockTextEntries(snapshot, start.path[0]);
-    const startEntry = entries.find(
-      (entry) => comparePaths(entry.path, start.path) === 0
-    );
-    const endEntry = entries.find(
-      (entry) => comparePaths(entry.path, end.path) === 0
-    );
+  const segments: ProjectedRangeSegment[] = [];
 
-    if (!startEntry || !endEntry) {
-      throw new Error('Cannot project a range outside the committed snapshot');
+  for (const [node, path] of NodeApi.texts(root, {
+    from: start.path,
+    to: end.path,
+  })) {
+    const key = snapshot.index.keyAt(path);
+
+    if (!key) {
+      throw new Error(`Missing node key for text path ${path.join('.')}`);
     }
 
-    assertValidPoint(startEntry, start);
-    assertValidPoint(endEntry, end);
-
-    return Object.freeze(
-      entries.flatMap<ProjectedRangeSegment>((entry) => {
-        const comparedToStart = comparePaths(entry.path, start.path);
-        const comparedToEnd = comparePaths(entry.path, end.path);
-
-        if (comparedToStart < 0 || comparedToEnd > 0) {
-          return [];
-        }
-
-        if (comparedToStart === 0 && comparedToEnd === 0) {
-          return [
-            Object.freeze({
-              key: entry.key,
-              path: entry.path,
-              start: start.offset,
-              end: end.offset,
-            }),
-          ];
-        }
-
-        if (comparedToStart === 0) {
-          return [
-            Object.freeze({
-              key: entry.key,
-              path: entry.path,
-              start: start.offset,
-              end: entry.text.length,
-            }),
-          ];
-        }
-
-        if (comparedToEnd === 0) {
-          return [
-            Object.freeze({
-              key: entry.key,
-              path: entry.path,
-              start: 0,
-              end: end.offset,
-            }),
-          ];
-        }
-
-        return [
-          Object.freeze({
-            key: entry.key,
-            path: entry.path,
-            start: 0,
-            end: entry.text.length,
-          }),
-        ];
+    segments.push(
+      Object.freeze({
+        key,
+        path: Object.freeze([...path]),
+        start: PathApi.equals(path, start.path) ? start.offset : 0,
+        end: PathApi.equals(path, end.path) ? end.offset : node.text.length,
       })
     );
   }
 
-  const index = getRangeProjectionIndex(snapshot);
-  const startIndex = index.textIndexByPath[pathKey(start.path)];
-  const endIndex = index.textIndexByPath[pathKey(end.path)];
-  const startEntry =
-    startIndex == null ? null : (index.textEntries[startIndex] ?? null);
-  const endEntry =
-    endIndex == null ? null : (index.textEntries[endIndex] ?? null);
-
-  if (!startEntry || !endEntry) {
-    throw new Error('Cannot project a range outside the committed snapshot');
-  }
-
-  assertValidPoint(startEntry, start);
-  assertValidPoint(endEntry, end);
-
-  const segments = index.textEntries
-    .slice(startIndex, endIndex + 1)
-    .flatMap<ProjectedRangeSegment>((entry) => {
-      const comparedToStart = comparePaths(entry.path, start.path);
-      const comparedToEnd = comparePaths(entry.path, end.path);
-
-      if (comparedToStart < 0 || comparedToEnd > 0) {
-        return [];
-      }
-
-      if (comparedToStart === 0 && comparedToEnd === 0) {
-        return [
-          Object.freeze({
-            key: entry.key,
-            path: entry.path,
-            start: start.offset,
-            end: end.offset,
-          }),
-        ];
-      }
-
-      if (comparedToStart === 0) {
-        return [
-          Object.freeze({
-            key: entry.key,
-            path: entry.path,
-            start: start.offset,
-            end: entry.text.length,
-          }),
-        ];
-      }
-
-      if (comparedToEnd === 0) {
-        return [
-          Object.freeze({
-            key: entry.key,
-            path: entry.path,
-            start: 0,
-            end: end.offset,
-          }),
-        ];
-      }
-
-      return [
-        Object.freeze({
-          key: entry.key,
-          path: entry.path,
-          start: 0,
-          end: entry.text.length,
-        }),
-      ];
-    });
-
-  return Object.freeze(segments);
+  const projected = Object.freeze(segments);
+  lastProjection.set(snapshot, {
+    range: {
+      anchor: { ...range.anchor, path: [...range.anchor.path] },
+      focus: { ...range.focus, path: [...range.focus.path] },
+    },
+    segments: projected,
+  });
+  return projected;
 };

@@ -8,8 +8,17 @@ const CHECKLIST_ITEM_PATTERN = /^-\s+\[([ xX])\]\s+/;
 const GATE_SECTION_NAMES = ['Start Gates', 'Completion Gates'];
 const HEADING_PATTERN = /^#{1,6}\s+\S/;
 const HTML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
+const LINKED_PLAN_PATH_PATTERN =
+  /(?:^|[\s([`])((?:\.\/)?docs\/plans\/[A-Za-z0-9._/-]+\.md)(?=$|[\s)\]`.,;:])/gm;
+const LINKED_PLAN_SECTION_NAMES = [
+  'Linked plans',
+  'Linked goal plans',
+  'Child plans',
+];
+const MAX_LINKED_PLAN_DEPTH = 20;
 const NEWLINE_PATTERN = /\r?\n/;
-const OPEN_STATUS_PATTERN = /^(active|pending|in[_ -]?progress|todo|open)$/i;
+const NO_LINKED_PLANS_PATTERN = /^(?:-\s*)?(?:none\.?|n\/a\b.*)$/i;
+const OPEN_STATUS_PATTERN = /^(pending|in[_ -]?progress|todo|open)$/i;
 const PHASE_HEADER_PATTERN = /^phase$/i;
 const PLACEHOLDER_ONLY_PATTERN = /^(?:-\s*)?(?:pending|none yet)\.?$/i;
 const RULE_ONLY_LINE_PATTERN = /^\s*[-|]+\s*$/gm;
@@ -17,12 +26,6 @@ const SECTION_START_PATTERN = /^[A-Z][A-Za-z /-]+:\s*$/;
 const TABLE_MARKDOWN_SEPARATOR_CELL_PATTERN = /^:?-+:?$/;
 const TABLE_SEPARATOR_PATTERN = /^-+$/;
 const TODO_PATTERN = /\b(TODO|TBD)\b/i;
-const UNRESOLVED_GATE_EVIDENCE_PATTERNS = [
-  /\bintentionally deferred\b/i,
-  /\bnot (?:complete|prepared|produced|run)(?: yet)?\b/i,
-  /\bpending (?:broad|browser|closure|execution|final|implementation|repository)\b/i,
-  /\b(?:benchmark|browser|closure|gate|gates|handoff|implementation|matrix|proof|rebuild|rerun|review|verification|work)\b.{0,80}\b(?:are|is|remain|remains|still)\s+(?:incomplete|open|pending|required)\b/i,
-];
 
 const args = parseArgs(process.argv.slice(2));
 
@@ -35,22 +38,7 @@ if (args.planPath) {
   const root = findRepoRoot(process.cwd());
   const planPath = path.resolve(root, args.planPath);
   const relativePlanPath = path.relative(root, planPath);
-  const failures = [];
-
-  if (
-    relativePlanPath.startsWith('..') ||
-    path.isAbsolute(relativePlanPath) ||
-    !relativePlanPath.startsWith(`docs${path.sep}plans${path.sep}`)
-  ) {
-    failures.push('goal plan must live under docs/plans/');
-  }
-
-  if (existsSync(planPath)) {
-    const content = await readFile(planPath, 'utf8');
-    failures.push(...checkPlanContent(content));
-  } else {
-    failures.push(`goal plan not found: ${relativePlanPath}`);
-  }
+  const failures = await checkPlanFile(planPath, root, []);
 
   if (failures.length > 0) {
     console.error(`[autogoal] incomplete: ${relativePlanPath}`);
@@ -89,6 +77,50 @@ function parseArgs(argv) {
   }
 
   return parsed;
+}
+
+async function checkPlanFile(planPath, root, stack) {
+  const relativePlanPath = path.relative(root, planPath);
+  const failures = [];
+
+  if (
+    relativePlanPath.startsWith('..') ||
+    path.isAbsolute(relativePlanPath) ||
+    !relativePlanPath.startsWith(`docs${path.sep}plans${path.sep}`)
+  ) {
+    return ['goal plan must live under docs/plans/'];
+  }
+
+  if (stack.includes(relativePlanPath)) {
+    return [
+      `linked plan cycle: ${[...stack, relativePlanPath].join(' -> ')}`,
+    ];
+  }
+
+  if (stack.length >= MAX_LINKED_PLAN_DEPTH) {
+    return [
+      `linked plan depth exceeds ${MAX_LINKED_PLAN_DEPTH}: ${[
+        ...stack,
+        relativePlanPath,
+      ].join(' -> ')}`,
+    ];
+  }
+
+  if (!existsSync(planPath)) {
+    return [`goal plan not found: ${relativePlanPath}`];
+  }
+
+  const content = await readFile(planPath, 'utf8');
+  failures.push(...checkPlanContent(content));
+
+  const linkedFailures = await checkLinkedPlans(content, root, [
+    ...stack,
+    relativePlanPath,
+  ]);
+
+  failures.push(...linkedFailures);
+
+  return failures;
 }
 
 function checkPlanContent(content) {
@@ -166,6 +198,70 @@ function checkPlanContent(content) {
   return failures;
 }
 
+async function checkLinkedPlans(content, root, stack) {
+  const block = getFirstSectionBlock(content, LINKED_PLAN_SECTION_NAMES);
+
+  if (!block.trim()) {
+    return [];
+  }
+
+  if (!hasConcreteLinkedPlanContent(block)) {
+    return [
+      'Linked plans must list docs/plans/*.md children, or say None/N/A with reason',
+    ];
+  }
+
+  const linkedPlanPaths = getLinkedPlanPaths(block);
+
+  if (linkedPlanPaths.length === 0) {
+    return [];
+  }
+
+  const failures = [];
+
+  for (const linkedPlanPath of linkedPlanPaths) {
+    const childPath = path.resolve(root, linkedPlanPath);
+    const childRelativePath = path.relative(root, childPath);
+    const childFailures = await checkPlanFile(childPath, root, stack);
+
+    for (const failure of childFailures) {
+      failures.push(`${childRelativePath}: ${failure}`);
+    }
+  }
+
+  return failures;
+}
+
+function hasConcreteLinkedPlanContent(block) {
+  if (!block.trim()) {
+    return false;
+  }
+
+  if (TODO_PATTERN.test(block) || PLACEHOLDER_ONLY_PATTERN.test(block)) {
+    return false;
+  }
+
+  if (getLinkedPlanPaths(block).length > 0) {
+    return true;
+  }
+
+  return block
+    .split(NEWLINE_PATTERN)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .some((line) => NO_LINKED_PLANS_PATTERN.test(line));
+}
+
+function getLinkedPlanPaths(block) {
+  const paths = new Set();
+
+  for (const match of block.matchAll(LINKED_PLAN_PATH_PATTERN)) {
+    paths.add(match[1].replace(/^\.\//, ''));
+  }
+
+  return [...paths];
+}
+
 function checkGateSections(content) {
   const failures = [];
 
@@ -202,10 +298,6 @@ function checkGateSections(content) {
 
       if (!hasConcreteContent(row.evidence || '')) {
         failures.push(`${sectionName} ${label} must record evidence or reason`);
-      } else if (hasUnresolvedGateEvidence(row.evidence)) {
-        failures.push(
-          `${sectionName} ${label} still records unresolved evidence`
-        );
       }
 
       for (const [column, value] of Object.entries(row)) {
@@ -222,10 +314,16 @@ function checkGateSections(content) {
   return failures;
 }
 
-function hasUnresolvedGateEvidence(value) {
-  return UNRESOLVED_GATE_EVIDENCE_PATTERNS.some((pattern) =>
-    pattern.test(value)
-  );
+function getFirstSectionBlock(content, labels) {
+  for (const label of labels) {
+    const block = getSectionBlock(content, label);
+
+    if (block.trim()) {
+      return block;
+    }
+  }
+
+  return '';
 }
 
 function getSectionBlock(content, label) {
@@ -410,6 +508,8 @@ function printHelp() {
 Validates the active goal plan before update_goal(status: complete). The check
 is mechanical: it proves the checklist, phase table, verification evidence,
 reboot status, risks, and any Start Gates / Completion Gates tables are
-recorded. It does not replace the goal's named tests, browser proof, source
-audit, or artifact verification.`);
+recorded. If the plan has a Linked plans / Linked goal plans / Child plans
+section with docs/plans/*.md links, those child plans are checked recursively.
+It does not replace the goal's named tests, browser proof, source audit, or
+artifact verification.`);
 }

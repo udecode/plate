@@ -135,12 +135,13 @@ const Leaf = ({
   return <span {...attributes}>{children}</span>;
 };
 
-interface MarkButtonProps {
+const MarkButton = ({
+  format,
+  icon,
+}: {
   format: CustomTextKey;
   icon: string;
-}
-
-const MarkButton = ({ format, icon }: MarkButtonProps) => {
+}) => {
   const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)
@@ -160,11 +161,12 @@ const MarkButton = ({ format, icon }: MarkButtonProps) => {
   );
 };
 
-interface IFrameProps extends React.IframeHTMLAttributes<HTMLIFrameElement> {
+const IFrame = ({
+  children,
+  ...props
+}: React.IframeHTMLAttributes<HTMLIFrameElement> & {
   children: React.ReactNode;
-}
-
-const IFrame = ({ children, ...props }: IFrameProps) => {
+}) => {
   const [iframeBody, setIframeBody] = useState<HTMLElement | null>(null);
   const handleLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
     const iframe = e.target as HTMLIFrameElement;

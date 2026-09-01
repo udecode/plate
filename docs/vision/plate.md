@@ -70,7 +70,7 @@ Current priorities:
   examples unless source proves they own the behavior.
 - Never document plugin APIs or transforms the source does not actually ship.
 
-## Plugin And Component Doctrine
+## Plugin and component doctrine
 
 - Core stays lean. Keep invariants in their owner, plugin runtime values in
   `initialState` and its scoped store, and product policy app- or kit-owned;
@@ -89,8 +89,8 @@ Current priorities:
   not parity.
 - Plite, Base, and Plate use the sole public factory grammar
   `define*(name, definition)`, with no caller generics. Their private types may
-  infer a small environment—Plite
-  dependencies, or Plate dependencies plus initial state—beside the author
+  infer a small environment, meaning Plite dependencies or Plate dependencies
+  plus initial state, beside the author
   input when TypeScript needs that split for contextual callbacks. Do not
   expose that environment or pretend one self-referential generic can infer the
   whole definition. Reject excess fields, normalize once, and preserve the
@@ -180,7 +180,9 @@ Current priorities:
   require one descriptor generic and expose no default, raw node input, or
   second context generic. Presentation-only families may use unions of
   descriptor-owned props; components that forward full plugin context keep one
-  exact owner. Generic
+  exact owner. Descriptor-derived component props exist only when the descriptor
+  changes the real prop contract through schema or plugin context; they are not
+  a universal consistency layer. Generic
   renderer infrastructure uses the node-level `Render*Props`, inferred wrapper
   callbacks, or named wrapper prop contracts instead. One type parameter never
   switches between plugin ownership and raw node shape.
@@ -197,6 +199,31 @@ Current priorities:
   descriptor for component props, avoiding a self-referential configured
   descriptor; consumer-local capabilities remain available through scoped
   hooks.
+- Transient product rendering uses the owning plugin's `decorate` callback and
+  render slots. Plate privately combines installed contributions and refreshes
+  only the plugin whose store changed. Ordinary callers never assemble
+  Decoration sources, renderer registries, Widget stores, or manual decoration
+  refreshes to install a feature.
+- Sibling render slots expose only the lifecycle input owned by their placement:
+  the exact Editable ref or the exact container ref. They never inherit the
+  host Editable or container DOM props. Register a complete component directly;
+  use a callback only when the caller performs real composition such as
+  supplying alternative children. Type each sibling from its exact slot
+  contract, never from the plugin descriptor that installs it. Delete a
+  descriptor generic that only restates fixed placement props, zero-caller
+  option bags, and primitive component-prop intersections.
+- When Plite React can derive neutral presentation from one mounted Editable's
+  DOM lifecycle, `PlateContent` inherits that behavior without a Plate prop,
+  plugin, store, or kit. Copied `Editor` source marks owned focus targets with
+  `data-plite-keep-selection-visible` and styles Plite's inactive-selection
+  output hooks. Canonical editor state and rendering mechanics remain in Plite.
+- Plite keeps the lifetime split literal: Decoration for inline transient
+  paint, Annotation for durable logical ranges, and Widget for logical
+  out-of-flow UI. Reuse those owners instead of publishing an overlay,
+  projection, view, or manager layer. Reusable geometry hooks require the exact
+  mounted Editable ref, return immutable viewport coordinates or `null`, and
+  expose no implicit active-view policy or public scheduler. Copied registry UI
+  owns Floating UI middleware and product presentation.
 - Element component and node-wrapper props carry stable node identity but never
   a live `path`. Resolve position from the element at interaction time, or call
   `usePath()` only when rendered output must react as that element moves.
@@ -582,6 +609,12 @@ Current priorities:
 - Keep feature React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
+- Inline a locally owned component prop shape at its component signature.
+  Same-file reuse does not earn a named prop alias. Keep one only when a real
+  cross-file or published entrypoint consumer requires its export, and never
+  export it merely to avoid inlining. Honest domain and state contracts may be
+  selected inside the inline shape; do not flatten them into duplicated prop
+  structures.
 - Treat each registry item as a source-distribution owner. Colocate integration
   behavior with the component or kit it modifies, even when that requires an
   explicit optional package or registry dependency. Never create a shared
@@ -622,7 +655,7 @@ Current priorities:
 - Core UI additions should be rare and require broad demand, clear reuse, or a
   real API reason.
 
-## Public API And Plugin Doctrine
+## Public API and plugin doctrine
 
 - If work touches a reusable public/editor-platform API, use root `VISION.md`
   and this file first, then use `best-api` to choose or review the call shape.
@@ -663,7 +696,7 @@ Owner map:
 | UI/component registry shape                          | `plate-ui`                              |
 | Plate Next migration/adoption audit                  | `plate-next`                            |
 
-## Matcher Extraction Heuristic
+## Matcher extraction heuristic
 
 When scanning a reusable API family, aggressively inspect repeated `resolve()`
 and `apply()` bodies before inventing more package-level wrappers.
@@ -738,7 +771,7 @@ migration example may teach the complete advanced path. Generated contracts
 derive current schema types without turning that derived schema into persisted
 application identity.
 
-## What We Will Not Merge For Now
+## What we will not merge for now
 
 - Refactor-only PRs with no concrete user, API, or docs value.
 - Fixes for bugs that reproduce in plain Plite without Plate-specific code.

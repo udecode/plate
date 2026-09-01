@@ -2,6 +2,7 @@ import type {
   AnyEditor as Editor,
   EditorCommit,
   EditorDocumentValue,
+  NodeKey,
 } from '../interfaces/editor';
 import {
   type DocumentChange,
@@ -9,12 +10,16 @@ import {
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import type { JsonEditorValue } from './change/tokens';
+import { toPublicRoot } from './public-root';
 
 export type AnchorStateListener = {
   begin: () => void;
   change: (context: AnchorChangeContext) => void;
   commit: (value?: EditorDocumentValue, commit?: EditorCommit) => void;
   discard: (value: EditorDocumentValue) => void;
+  fallback: () => boolean;
+  nodeKeys: () => readonly NodeKey[];
+  root: string;
 };
 
 export type AnchorChangeContext = Readonly<{
@@ -23,20 +28,137 @@ export type AnchorChangeContext = Readonly<{
   change: DocumentChange;
   afterRoot: (root: string) => DocumentIndex;
   beforeRoot: (root: string) => DocumentIndex;
+  memoize: <T>(key: string, read: () => T) => T;
   replace: boolean;
 }>;
 
+export type AnchorStateWork = Readonly<{
+  phase: 'begin' | 'change' | 'commit' | 'discard';
+  visitedAnchors: number;
+}>;
+
 type ActiveAnchorState = {
+  activeTransaction: Set<AnchorStateListener> | null;
+  fallbackListeners: Map<string, Set<AnchorStateListener>>;
   indexes: Map<string, DocumentIndex>;
+  listenerNodeKeys: Map<AnchorStateListener, readonly NodeKey[]>;
   listeners: Set<AnchorStateListener>;
+  listenersByNodeKey: Map<NodeKey, Set<AnchorStateListener>>;
+  listenersByRoot: Map<string, Set<AnchorStateListener>>;
   value: EditorDocumentValue;
 };
 
 const ACTIVE_ANCHORS = new WeakMap<Editor, ActiveAnchorState>();
 const ANCHOR_SCOPES = new WeakMap<Editor, ActiveAnchorState[]>();
+const ANCHOR_STATE_WORK_OBSERVERS = new WeakMap<
+  Editor,
+  (work: AnchorStateWork) => void
+>();
+
+export const observeAnchorStateWork = (
+  editor: Editor,
+  observer: (work: AnchorStateWork) => void
+) => {
+  ANCHOR_STATE_WORK_OBSERVERS.set(editor, observer);
+
+  return () => {
+    if (ANCHOR_STATE_WORK_OBSERVERS.get(editor) === observer) {
+      ANCHOR_STATE_WORK_OBSERVERS.delete(editor);
+    }
+  };
+};
+
+const recordAnchorStateWork = (
+  editor: Editor,
+  phase: AnchorStateWork['phase'],
+  visitedAnchors: number
+) => {
+  ANCHOR_STATE_WORK_OBSERVERS.get(editor)?.({ phase, visitedAnchors });
+};
 
 const getActiveAnchorState = (editor: Editor) =>
   ANCHOR_SCOPES.get(editor)?.at(-1) ?? ACTIVE_ANCHORS.get(editor);
+
+const createActiveAnchorState = (
+  value: EditorDocumentValue
+): ActiveAnchorState => ({
+  activeTransaction: null,
+  fallbackListeners: new Map(),
+  indexes: new Map(),
+  listenerNodeKeys: new Map(),
+  listeners: new Set(),
+  listenersByNodeKey: new Map(),
+  listenersByRoot: new Map(),
+  value,
+});
+
+const addToIndex = <TKey>(
+  index: Map<TKey, Set<AnchorStateListener>>,
+  key: TKey,
+  listener: AnchorStateListener
+) => {
+  const listeners = index.get(key) ?? new Set<AnchorStateListener>();
+
+  listeners.add(listener);
+  index.set(key, listeners);
+};
+
+const removeFromIndex = <TKey>(
+  index: Map<TKey, Set<AnchorStateListener>>,
+  key: TKey,
+  listener: AnchorStateListener
+) => {
+  const listeners = index.get(key);
+
+  listeners?.delete(listener);
+  if (listeners?.size === 0) index.delete(key);
+};
+
+const unindexAnchorListener = (
+  state: ActiveAnchorState,
+  listener: AnchorStateListener
+) => {
+  for (const nodeKey of state.listenerNodeKeys.get(listener) ?? []) {
+    removeFromIndex(state.listenersByNodeKey, nodeKey, listener);
+  }
+  state.listenerNodeKeys.delete(listener);
+  removeFromIndex(state.fallbackListeners, listener.root, listener);
+};
+
+const indexAnchorListener = (
+  state: ActiveAnchorState,
+  listener: AnchorStateListener
+) => {
+  unindexAnchorListener(state, listener);
+  const nodeKeys = Object.freeze([...new Set(listener.nodeKeys())]);
+
+  state.listenerNodeKeys.set(listener, nodeKeys);
+  for (const nodeKey of nodeKeys) {
+    addToIndex(state.listenersByNodeKey, nodeKey, listener);
+  }
+  if (nodeKeys.length === 0 && listener.fallback()) {
+    addToIndex(state.fallbackListeners, listener.root, listener);
+  }
+};
+
+const addAnchorListener = (
+  state: ActiveAnchorState,
+  listener: AnchorStateListener
+) => {
+  state.listeners.add(listener);
+  addToIndex(state.listenersByRoot, listener.root, listener);
+  indexAnchorListener(state, listener);
+};
+
+const removeAnchorListener = (
+  state: ActiveAnchorState,
+  listener: AnchorStateListener
+) => {
+  state.activeTransaction?.delete(listener);
+  state.listeners.delete(listener);
+  removeFromIndex(state.listenersByRoot, listener.root, listener);
+  unindexAnchorListener(state, listener);
+};
 
 /** Temporarily hide every draft anchor scope from an ambient editor read. */
 export const suspendAnchorScopes = (editor: Editor) => {
@@ -63,11 +185,7 @@ export const enterAnchorScope = (
   value: EditorDocumentValue
 ) => {
   const scopes = ANCHOR_SCOPES.get(editor) ?? [];
-  const state: ActiveAnchorState = {
-    indexes: new Map(),
-    listeners: new Set(),
-    value,
-  };
+  const state = createActiveAnchorState(value);
 
   scopes.push(state);
   ANCHOR_SCOPES.set(editor, scopes);
@@ -113,14 +231,37 @@ const createAnchorChangeContext = (
   beforeIndexes: Map<string, DocumentIndex>,
   afterIndexes: Map<string, DocumentIndex>,
   replace: boolean
-): AnchorChangeContext => ({
-  after,
-  afterRoot: (root) => indexRoot(after, afterIndexes, root),
-  before,
-  beforeRoot: (root) => indexRoot(before, beforeIndexes, root),
-  change,
-  replace,
-});
+): AnchorChangeContext => {
+  const memo = new Map<string, unknown>();
+
+  return {
+    after,
+    afterRoot: (root) => indexRoot(after, afterIndexes, root),
+    before,
+    beforeRoot: (root) => indexRoot(before, beforeIndexes, root),
+    change,
+    memoize: <T>(key: string, read: () => T) => {
+      if (memo.has(key)) return memo.get(key) as T;
+      const value = read();
+
+      memo.set(key, value);
+      return value;
+    },
+    replace,
+  };
+};
+
+export const getAnchorRootIndex = (
+  editor: Editor,
+  value: EditorDocumentValue,
+  root: string
+) => {
+  const state = getActiveAnchorState(editor);
+
+  return state?.value === value
+    ? indexRoot(value, state.indexes, root)
+    : DocumentIndex.fromValue(rootNodes(value, root));
+};
 
 const applyAnchorChange = (
   state: ActiveAnchorState,
@@ -185,13 +326,9 @@ export const subscribeAnchorState = (
   const state =
     scoped ??
     ACTIVE_ANCHORS.get(editor) ??
-    ({
-      indexes: new Map(),
-      listeners: new Set(),
-      value: getInitialValue(),
-    } satisfies ActiveAnchorState);
+    createActiveAnchorState(getInitialValue());
 
-  state.listeners.add(listener);
+  addAnchorListener(state, listener);
   if (!scoped) ACTIVE_ANCHORS.set(editor, state);
 
   return {
@@ -199,7 +336,7 @@ export const subscribeAnchorState = (
       return !scoped && (ANCHOR_SCOPES.get(editor)?.length ?? 0) > 0;
     },
     unsubscribe() {
-      state.listeners.delete(listener);
+      removeAnchorListener(state, listener);
 
       if (!scoped && state.listeners.size === 0) ACTIVE_ANCHORS.delete(editor);
     },
@@ -207,17 +344,61 @@ export const subscribeAnchorState = (
   };
 };
 
-export const beginAnchorTransaction = (editor: Editor) => {
-  for (const listener of getActiveAnchorState(editor)?.listeners ?? []) {
-    listener.begin();
+const addIndexedListeners = (
+  target: Set<AnchorStateListener>,
+  listeners: ReadonlySet<AnchorStateListener> | undefined
+) => {
+  for (const listener of listeners ?? []) target.add(listener);
+};
+
+const getAffectedAnchorListeners = (
+  state: ActiveAnchorState,
+  change: DocumentChange,
+  commit: EditorCommit | undefined,
+  replace: boolean
+) => {
+  if (!commit) return state.listeners;
+  const affected = new Set<AnchorStateListener>();
+  const changedRoots = new Set([
+    ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
+    ...change.createRoots,
+    ...change.deleteRoots,
+  ]);
+
+  for (const root of changedRoots) {
+    const resetsRoot =
+      replace || change.createRoots.has(root) || change.deleteRoots.has(root);
+
+    if (resetsRoot) {
+      addIndexedListeners(affected, state.listenersByRoot.get(root));
+      continue;
+    }
+
+    const publicRoot = toPublicRoot(root);
+
+    for (const nodeKey of commit.changed.nodeKeys('projection', publicRoot)) {
+      addIndexedListeners(affected, state.listenersByNodeKey.get(nodeKey));
+    }
+    if (commit.changed.has('structure', publicRoot)) {
+      addIndexedListeners(affected, state.fallbackListeners.get(root));
+    }
   }
+
+  return affected;
+};
+
+export const beginAnchorTransaction = (editor: Editor) => {
+  const state = getActiveAnchorState(editor);
+
+  if (state) state.activeTransaction = new Set();
+  recordAnchorStateWork(editor, 'begin', 0);
 };
 
 export const notifyAnchorChanges = (
   editor: Editor,
   change: DocumentChange,
   indexedAfter?: ReadonlyMap<string, DocumentIndex>,
-  options: Readonly<{ replace?: boolean }> = {}
+  options: Readonly<{ commit?: EditorCommit; replace?: boolean }> = {}
 ) => {
   const state = getActiveAnchorState(editor);
 
@@ -240,8 +421,21 @@ export const notifyAnchorChanges = (
   state.value = after;
   state.indexes = afterIndexes;
 
-  for (const listener of state.listeners) {
+  const listeners = getAffectedAnchorListeners(
+    state,
+    change,
+    options.commit,
+    options.replace === true
+  );
+
+  recordAnchorStateWork(editor, 'change', listeners.size);
+  for (const listener of listeners) {
+    if (state.activeTransaction && !state.activeTransaction.has(listener)) {
+      listener.begin();
+      state.activeTransaction.add(listener);
+    }
     listener.change(context);
+    indexAnchorListener(state, listener);
   }
 };
 
@@ -257,9 +451,13 @@ export const commitAnchorTransaction = (
     state.indexes = new Map();
   }
 
-  for (const listener of state?.listeners ?? []) {
+  const listeners = state?.activeTransaction;
+
+  recordAnchorStateWork(editor, 'commit', listeners?.size ?? 0);
+  for (const listener of listeners ?? []) {
     listener.commit(value, commit);
   }
+  if (state) state.activeTransaction = null;
 };
 
 export const discardAnchorTransaction = (
@@ -273,7 +471,11 @@ export const discardAnchorTransaction = (
     state.indexes = new Map();
   }
 
-  for (const listener of state?.listeners ?? []) {
+  const listeners = state?.activeTransaction ?? state?.listeners;
+
+  recordAnchorStateWork(editor, 'discard', listeners?.size ?? 0);
+  for (const listener of listeners ?? []) {
     listener.discard(value);
   }
+  if (state) state.activeTransaction = null;
 };

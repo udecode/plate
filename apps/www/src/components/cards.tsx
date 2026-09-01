@@ -49,14 +49,6 @@ export function Cards(props: HTMLAttributes<HTMLDivElement>) {
   );
 }
 
-export type CardProps = Omit<HTMLAttributes<HTMLElement>, 'title'> & {
-  title: ReactNode;
-  description?: ReactNode;
-  external?: boolean;
-  href?: string;
-  icon?: ReactNode | string;
-};
-
 export function Card({
   children,
   className,
@@ -65,7 +57,13 @@ export function Card({
   icon,
   title,
   ...props
-}: CardProps) {
+}: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
+  title: ReactNode;
+  description?: ReactNode;
+  external?: boolean;
+  href?: string;
+  icon?: ReactNode | string;
+}) {
   // Resolve icon if it's a string
   let IconComponent: React.ReactNode = null;
   if (typeof icon === 'string') {

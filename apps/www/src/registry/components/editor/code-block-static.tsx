@@ -12,12 +12,6 @@ import {
 } from 'platejs/static';
 import * as React from 'react';
 
-type CodeBlockElementStaticProps = PliteElementProps<
-  typeof BaseCodeBlockPlugin
-> & {
-  showLanguageLabel?: boolean;
-};
-
 const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
@@ -124,7 +118,9 @@ function getCodeBlockLanguageLabel(lang?: string | null) {
 export function CodeBlockElementStatic({
   showLanguageLabel = true,
   ...props
-}: CodeBlockElementStaticProps) {
+}: PliteElementProps<typeof BaseCodeBlockPlugin> & {
+  showLanguageLabel?: boolean;
+}) {
   const languageLabel = getCodeBlockLanguageLabel(props.element.language);
 
   return (

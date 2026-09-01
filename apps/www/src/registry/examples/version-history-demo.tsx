@@ -304,12 +304,7 @@ function VersionHistoryPlate<E extends Editor>(
   );
 }
 
-type DiffProps = {
-  current: Value;
-  previous: Value;
-};
-
-function Diff({ current, previous }: DiffProps) {
+function Diff({ current, previous }: { current: Value; previous: Value }) {
   const diffValue = React.useMemo(() => {
     const editor = createEditor({
       plugins: diffPlugins,

@@ -11,13 +11,18 @@ import {
   property,
   schema,
   target,
+  TextApi,
   valueCodecs,
   evaluateCommand,
 } from '../../core';
 import { defineBasePlugin } from '../../lib';
 import { createEditor } from '../editor';
 import { useEditorViewState, useStateFieldValue } from '../plite-react';
-import { definePlatePlugin } from '../plugin';
+import {
+  type ContainerSiblingProps,
+  definePlatePlugin,
+  type EditableSiblingProps,
+} from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useEditor } from '../stores';
 import { Plate } from './Plate';
@@ -63,6 +68,88 @@ const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
   }),
 }));
 
+let storeDecorationReadCount = 0;
+
+const StoreDecorationPlugin = definePlatePlugin('storeDecoration', {
+  decorate: ({ entry, store }) => {
+    storeDecorationReadCount += 1;
+
+    if (!store.get('active') || !TextApi.isText(entry[0])) return [];
+
+    return [
+      {
+        anchor: { offset: 0, path: entry[1] },
+        focus: { offset: entry[0].text.length, path: entry[1] },
+        storeDecoration: true,
+      },
+    ];
+  },
+  initialState: {
+    active: false,
+  },
+  render: {
+    leaf: ({ children }) => (
+      <mark data-testid="store-decoration">{children}</mark>
+    ),
+  },
+});
+
+let idleDecorationReadCount = 0;
+
+const IdleDecorationPlugin = definePlatePlugin('idleDecoration', {
+  decorate: () => {
+    idleDecorationReadCount += 1;
+
+    return [];
+  },
+  initialState: {
+    revision: 0,
+  },
+});
+
+const EditableRefProbe = (props: EditableSiblingProps) => {
+  const { editableRef } = props;
+  const [isEditable, setIsEditable] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsEditable(editableRef.current?.dataset.pliteEditor === 'true');
+  }, [editableRef]);
+
+  return (
+    <>
+      <span data-testid="editable-ref-probe">{String(isEditable)}</span>
+      <span data-testid="editable-prop-keys">
+        {Object.keys(props).join(',')}
+      </span>
+    </>
+  );
+};
+
+const ContainerRefProbe = (props: ContainerSiblingProps) => {
+  const { containerRef } = props;
+  const [isContainer, setIsContainer] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsContainer(containerRef.current?.dataset.testid === 'plate-container');
+  }, [containerRef]);
+
+  return (
+    <>
+      <span data-testid="container-ref-probe">{String(isContainer)}</span>
+      <span data-testid="container-prop-keys">
+        {Object.keys(props).join(',')}
+      </span>
+    </>
+  );
+};
+
+const RefScopePlugin = definePlatePlugin('refScope', {
+  render: {
+    beforeContainer: ContainerRefProbe,
+    beforeEditable: EditableRefProbe,
+  },
+});
+
 const ReadOnlyProbe = () => {
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
@@ -85,6 +172,82 @@ const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
 };
 
 describe('PlateContent', () => {
+  it('invalidates a plugin decoration when its own store changes', async () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [StoreDecorationPlugin],
+    });
+    const { queryByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+
+    expect(queryByTestId('store-decoration')).not.toBeInTheDocument();
+
+    await act(async () => {
+      editor.plugin(StoreDecorationPlugin).store.set({ active: true });
+    });
+
+    await waitFor(() => {
+      expect(queryByTestId('store-decoration')).toBeInTheDocument();
+    });
+  });
+
+  it('invalidates only the decoration source owned by the changed plugin', async () => {
+    storeDecorationReadCount = 0;
+    idleDecorationReadCount = 0;
+
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [StoreDecorationPlugin, IdleDecorationPlugin],
+    });
+
+    render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+
+    const storeBaseline = storeDecorationReadCount;
+    const idleBaseline = idleDecorationReadCount;
+
+    await act(async () => {
+      editor.plugin(StoreDecorationPlugin).store.set({ active: true });
+    });
+
+    await waitFor(() => {
+      expect(storeDecorationReadCount).toBeGreaterThan(storeBaseline);
+    });
+    expect(idleDecorationReadCount).toBe(idleBaseline);
+  });
+
+  it('passes exact editable and container refs to their sibling slots', async () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [RefScopePlugin],
+    });
+
+    const view = render(
+      <Plate editor={editor}>
+        <PlateContainer data-testid="plate-container">
+          <PlateContent />
+        </PlateContainer>
+      </Plate>
+    );
+
+    await waitFor(() => {
+      expect(view.getByTestId('editable-ref-probe')).toHaveTextContent('true');
+      expect(view.getByTestId('container-ref-probe')).toHaveTextContent('true');
+    });
+    expect(view.getByTestId('editable-prop-keys')).toHaveTextContent(
+      'editableRef'
+    );
+    expect(view.getByTestId('container-prop-keys')).toHaveTextContent(
+      'containerRef'
+    );
+  });
+
   it('provides the Plite runtime for state-field-only extensions', () => {
     const title = defineStateField({
       initial: 'Untitled',

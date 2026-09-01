@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
 import type { Descendant, EditorSnapshot, Path, Range, RootKey } from '..';
 import { RangeApi } from '..';
@@ -9,6 +9,7 @@ import {
   type PliteDecorationSourceReadContext,
 } from './decoration-source';
 import { useIsomorphicLayoutEffect } from './hooks/use-isomorphic-layout-effect';
+import { useDecorationSourceLifecycle } from './hooks/use-plite-decoration-source';
 import type { ReactRuntimeEditor } from './plugin/react-editor';
 import type {
   PliteProjectionRuntimeScope,
@@ -51,6 +52,16 @@ export type PliteViewSelectionDecorationData = Readonly<{
 
 export type PliteViewSelectionDecorationSourceOptions = Readonly<{
   runtimeScope?: PliteProjectionRuntimeScope;
+}>;
+
+export type PliteViewSelectionDecorationScope = Readonly<{
+  owner: PliteViewSelectionDecorationOwner | null;
+  root: RootKey;
+}>;
+
+type PliteViewSelectionDecorationOptions<T> = Readonly<{
+  data: (scope: PliteViewSelectionDecorationScope) => T;
+  sourceId: string;
 }>;
 
 const EMPTY_DECORATIONS = Object.freeze([]) as ReadonlyArray<
@@ -119,8 +130,11 @@ export const hasVisiblePliteViewSelectionDecoration = (
   });
 };
 
-const getRangeKey = (segment: PliteViewBoundaryRangeSegment, index: number) =>
-  `${PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID}:${segment.root}:${segment.ownerKey ?? 'main'}:${index}`;
+const getRangeKey = (
+  sourceId: string,
+  segment: PliteViewBoundaryRangeSegment,
+  index: number
+) => `${sourceId}:${segment.root}:${segment.ownerKey ?? 'main'}:${index}`;
 
 const rootPointForSegment = (
   point: Range['anchor'],
@@ -143,18 +157,18 @@ const resolvePliteViewSelectionDecorationEndpoint = (
   return resolvePliteViewBoundarySegmentEndpoint(roots(), segment, endpoint);
 };
 
-const createPliteViewSelectionDecoration = (
+const createPliteViewSelectionDecoration = <T>(
   segment: PliteViewBoundaryRangeSegment,
   index: number,
   range: Range,
+  options: PliteViewSelectionDecorationOptions<T>,
   keySuffix = ''
-): PliteDecoration<PliteViewSelectionDecorationData> => ({
-  data: {
-    pliteViewSelection: true,
+): PliteDecoration<T> => ({
+  data: options.data({
     owner: cloneOwner(segment.owner),
     root: segment.root,
-  },
-  key: `${getRangeKey(segment, index)}${keySuffix}`,
+  }),
+  key: `${getRangeKey(options.sourceId, segment, index)}${keySuffix}`,
   range,
 });
 
@@ -177,18 +191,18 @@ const getScopedNodeRange = (
   return anchor && focus ? { anchor, focus } : null;
 };
 
-const readScopedPliteViewSelectionDecorations = (
+const readScopedPliteViewSelectionDecorations = <T>(
   segment: PliteViewBoundaryRangeSegment,
   index: number,
   range: Range,
-  context: PliteDecorationSourceReadContext
-): ReadonlyArray<PliteDecoration<PliteViewSelectionDecorationData>> | null => {
+  context: PliteDecorationSourceReadContext,
+  options: PliteViewSelectionDecorationOptions<T>
+): ReadonlyArray<PliteDecoration<T>> | null => {
   if (!context.runtimeScope || !isScopedSegment(segment)) {
     return null;
   }
 
-  const decorations: Array<PliteDecoration<PliteViewSelectionDecorationData>> =
-    [];
+  const decorations: Array<PliteDecoration<T>> = [];
   const visitedPathKeys = new Set<string>();
   const scopedPaths: Path[] = [];
 
@@ -233,6 +247,7 @@ const readScopedPliteViewSelectionDecorations = (
         segment,
         index,
         intersection,
+        options,
         `:${pathKey}`
       )
     );
@@ -241,14 +256,14 @@ const readScopedPliteViewSelectionDecorations = (
   return decorations;
 };
 
-const readPliteViewSelectionDecorations = (
+export const createPliteViewSelectionDecorations = <T>(
   editor: ReactRuntimeEditor<any>,
-  context: PliteDecorationSourceReadContext
-): ReadonlyArray<PliteDecoration<PliteViewSelectionDecorationData>> => {
-  const viewSelection = readPliteViewSelection(editor);
-
+  viewSelection: ReturnType<typeof readPliteViewSelection>,
+  context: PliteDecorationSourceReadContext,
+  options: PliteViewSelectionDecorationOptions<T>
+): ReadonlyArray<PliteDecoration<T>> => {
   if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
-    return EMPTY_DECORATIONS;
+    return EMPTY_DECORATIONS as ReadonlyArray<PliteDecoration<T>>;
   }
 
   let roots: Readonly<Record<string, readonly Descendant[]>> | null = null;
@@ -259,8 +274,7 @@ const readPliteViewSelectionDecorations = (
 
     return roots;
   };
-  const decorations: Array<PliteDecoration<PliteViewSelectionDecorationData>> =
-    [];
+  const decorations: Array<PliteDecoration<T>> = [];
 
   viewSelection.segments.parts.forEach((segment, index) => {
     const anchor = resolvePliteViewSelectionDecorationEndpoint(
@@ -288,7 +302,8 @@ const readPliteViewSelectionDecorations = (
       segment,
       index,
       range,
-      context
+      context,
+      options
     );
 
     if (scopedDecorations) {
@@ -296,10 +311,14 @@ const readPliteViewSelectionDecorations = (
       return;
     }
 
-    decorations.push(createPliteViewSelectionDecoration(segment, index, range));
+    decorations.push(
+      createPliteViewSelectionDecoration(segment, index, range, options)
+    );
   });
 
-  return decorations.length === 0 ? EMPTY_DECORATIONS : decorations;
+  return decorations.length === 0
+    ? (EMPTY_DECORATIONS as ReadonlyArray<PliteDecoration<T>>)
+    : decorations;
 };
 
 export const createPliteViewSelectionDecorationSource = (
@@ -309,7 +328,20 @@ export const createPliteViewSelectionDecorationSource = (
   createDecorationSource(editor, {
     dirtiness: PLITE_VIEW_SELECTION_DECORATION_DIRTINESS,
     id: PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID,
-    read: (context) => readPliteViewSelectionDecorations(editor, context),
+    read: (context) =>
+      createPliteViewSelectionDecorations(
+        editor,
+        readPliteViewSelection(editor),
+        context,
+        {
+          data: ({ owner, root }) => ({
+            pliteViewSelection: true,
+            owner,
+            root,
+          }),
+          sourceId: PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID,
+        }
+      ),
     runtimeScope: options.runtimeScope,
   });
 
@@ -336,7 +368,7 @@ export const usePliteViewSelectionDecorationSource = (
     });
   }, [editor, enabled, runtimeScope]);
 
-  useEffect(() => () => source?.destroy(), [source]);
+  useDecorationSourceLifecycle(source);
   useIsomorphicLayoutEffect(() => {
     if (!source) {
       return undefined;

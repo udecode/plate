@@ -6,19 +6,19 @@ import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
 
-test('find-replace: decorated input keeps exact history and follow-up typing', async ({
+test('find: decorated input keeps exact history and follow-up typing', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
   const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 
   try {
-    await page.goto('/blocks/find-replace-demo', { waitUntil: 'commit' });
+    await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
     const editor = createPliteBrowserEditorHarness(
       page,
-      'find-replace:decorated-history',
+      'find:decorated-history',
       root
     );
 

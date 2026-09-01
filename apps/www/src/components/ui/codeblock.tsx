@@ -32,11 +32,6 @@ const lineNumberStyle: React.CSSProperties = {
 
 type languageMap = Record<string, string | undefined>;
 
-type Props = {
-  language: string;
-  value: string;
-};
-
 export const programmingLanguages: languageMap = {
   c: '.c',
   'c#': '.cs',
@@ -76,7 +71,10 @@ export const generateRandomString = (length: number, lowercase = false) => {
   return lowercase ? result.toLowerCase() : result;
 };
 
-const CodeBlock: FC<Props> = ({ language, value }) => {
+const CodeBlock: FC<{
+  language: string;
+  value: string;
+}> = ({ language, value }) => {
   const { copyToClipboard, isCopied } = useCopyToClipboard({ timeout: 2000 });
 
   const downloadAsFile = () => {

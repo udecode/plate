@@ -107,6 +107,7 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 | Implementation authority decided | pending | pending |
 | Proof strategy selected | pending | pending |
+| Runtime scale applicability resolved | pending | Identify packets that touch per-node/plugin/subscriber/listener/render/query/DOM-unit or other growing work; apply `performance-observability`, or record source-backed N/A |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -131,6 +132,9 @@ Work Checklist:
       `sync-vision`.
 - [ ] Implementation packets are behavior-neutral, public-API-neutral, narrow,
       reversible, and have focused proof.
+- [ ] Every hot-owner packet has a frozen pre-packet scale receipt and exact
+      post-packet production rerun plus correctness guard; paper complexity or
+      "benchmark later" cannot justify keep.
 - [ ] Each implementation packet ends keep, revert, or quarantine.
 - [ ] Source-owner oracle is added or repaired when ownership moves, or N/A
       reason is recorded.
@@ -154,6 +158,7 @@ Completion Gates:
 | Delete / merge / inline gate | pending | Record considered simplifications and why accepted/rejected | pending |
 | VISION fit gate | pending | Confirm fit to VISION.md or record sync-vision/stop decision | pending |
 | Implementation packet gate | pending | For every code packet, record keep/revert/quarantine and focused proof | pending |
+| Hot-owner scale preservation | pending | For every applicable packet, compare matched pre/post normal/large/stress cohorts with frozen budget, deterministic cost, timing/noise, source identities, and correctness guard; otherwise source-backed zero-runtime N/A | pending |
 | Source-owner oracle gate | pending | Repair or add tests/oracles when ownership moves, or N/A | pending |
 | Public API / behavior safety gate | pending | Prove no public API/product behavior changed, or route to plan owner | pending |
 | Package/API proof | pending | Run relevant package/export/type/build proof when package boundaries changed, or N/A | pending |
@@ -181,9 +186,9 @@ Candidate matrix:
 | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Packet ledger:
-| Packet | Action | Owner | Files | Proof | Result | Next |
-|--------|--------|-------|-------|-------|--------|------|
-| pending | pending | pending | pending | pending | pending | pending |
+| Packet | Action | Owner | Files | Proof | Scale receipt / N/A | Result | Next |
+|--------|--------|-------|-------|-------|---------------------|--------|------|
+| pending | pending | pending | pending | pending | pending | pending | pending |
 
 Cleanup counts:
 - delete: pending
@@ -216,6 +221,7 @@ Final handoff contract:
 - Agent-navigation score changes: pending
 - Packets applied with keep/revert/quarantine result: pending
 - Proof commands/source audits: pending
+- Hot-owner pre/post scale receipts or source-backed zero-runtime N/A: pending
 - Rejected/deferred candidates: pending
 - Needs-review list: pending
 - Residual risks: pending

@@ -88,7 +88,9 @@ Handle $ARGUMENTS. Use this for architectural, comparative, migration, or propos
    ```
 
    Add touched-surface packs as needed: `--with docs`, `--with browser`,
-   `--with package-api`, or `--with agent-native`.
+   `--with package-api`, `--with performance-observability`, or
+   `--with agent-native`. A runtime/API architecture that can change repeated
+   or hot work selects the performance pack before target acceptance.
 
 8. When the work needs a real implementation plan, phased rollout, or plan
    artifact, make the active `major-task` goal plan the durable planning
@@ -215,12 +217,21 @@ Apply this section only when the task source is a tracker item.
 4. Run the maximum-value hard-cut gate across every touched public concept and
    the owner above it. Lead with the largest justified deletion cone, not the
    easiest compatible patch.
-5. Find what already exists before proposing new structure.
-6. Prefer changing the ownership boundary over papering around it at each call site.
-7. Call out blast radius explicitly when the recommendation changes public API or package contracts.
-8. If recommending migration, include adoption and rollback. Add compatibility
+5. Decide scale applicability from live source before proposing new structure.
+   If the target adds, retains, or changes a runtime layer, cache, index,
+   projection, store, subscription, scheduler, geometry owner, repeated-unit
+   fan-out, or other hot work, run Benchmark's embedded pre-acceptance probe
+   against the current owner. Use a disposable target prototype when needed.
+6. Do not accept a scale-sensitive target from asymptotics, a review score, an
+   explicit future measurement plan, or "benchmark during implementation".
+   Passing executable baseline/target evidence unlocks the target; an
+   inconclusive probe leaves it provisional.
+7. Find what already exists before proposing new structure.
+8. Prefer changing the ownership boundary over papering around it at each call site.
+9. Call out blast radius explicitly when the recommendation changes public API or package contracts.
+10. If recommending migration, include adoption and rollback. Add compatibility
    only when it wins after the ideal target is selected.
-9. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now. Implementation size cannot make the smaller target win.
+11. If a smaller boundary change and a broader architecture reset are both viable, say why one wins now. Implementation size cannot make the smaller target win.
 
 ### Performance Architecture After Benchmark
 
@@ -303,7 +314,9 @@ Apply this section only when the task source is a tracker item.
 Keep verification mandatory but proportional.
 
 - Verify claims with repo evidence, official docs, or targeted measurements.
-- Benchmark claims need measured scenarios or an explicit measurement plan.
+- Scale-sensitive architecture claims need an executable current-owner versus
+  target receipt before acceptance and an exact production-path rerun after
+  implementation. A measurement plan alone is not evidence.
 - Comparison claims need criteria-backed reasoning, not vibes.
 - For analytical tasks, show where the recommendation came from and what remains uncertain.
 - Run targeted tests for changed behavior when code changed.
@@ -368,8 +381,12 @@ Apply this section only when the task came from a tracker item and reached a mea
 - Major-work lane was classified explicitly.
 - `autogoal` was loaded and the `docs/plans` goal plan used
   `--template major-task` before the work sprawled.
-- Touched docs, browser, package/API, or agent-native surfaces added the
-  matching pack rows instead of inheriting another primary template.
+- Touched docs, browser, package/API, performance/observability, or agent-native
+  surfaces added the matching pack rows instead of inheriting another primary
+  template.
+- Scale-sensitive architecture was not accepted until Benchmark's embedded
+  probe passed with a frozen budget, comparable cohorts, deterministic work,
+  timing/noise, source identities, and correctness evidence.
 - Editor-framework source comparison was routed through `editor-audit` when
   relevant.
 - Local clones/source were checked before external docs when third-party behavior mattered.

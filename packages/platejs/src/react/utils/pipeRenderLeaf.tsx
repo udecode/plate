@@ -12,6 +12,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { PlateLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
+import { PLATE_PLUGIN_DECORATION_SOURCE } from '../internal/PlatePluginDecorationSources';
 import { setDOMTextSyncRendererCapability } from '../plite-react';
 import type { AnyResolvedPlatePlugin } from '../plugin';
 import { getRenderNodeProps } from './getRenderNodeProps';
@@ -72,7 +73,11 @@ const getDecoratedLeaf = (
       decoratedLeaf = { ...leaf };
     }
 
-    const { merge, ...decoration } = slice.data as Record<string, unknown>;
+    const {
+      merge,
+      [PLATE_PLUGIN_DECORATION_SOURCE]: _pluginName,
+      ...decoration
+    } = slice.data as Record<string, unknown>;
 
     if (typeof merge === 'function') {
       merge(decoratedLeaf, decoration);
@@ -84,17 +89,35 @@ const getDecoratedLeaf = (
   return decoratedLeaf;
 };
 
+const getDecorationPluginNames = (segment?: {
+  slices?: ReadonlyArray<{ data?: unknown }>;
+}) => {
+  const names = new Set<string>();
+
+  for (const slice of segment?.slices ?? []) {
+    if (typeof slice.data !== 'object' || slice.data === null) continue;
+
+    const name = (slice.data as Record<string, unknown>)[
+      PLATE_PLUGIN_DECORATION_SOURCE
+    ];
+
+    if (typeof name === 'string') names.add(name);
+  }
+
+  return names;
+};
+
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = (
   editor: Editor,
   renderLeafProp?: EditableProps['renderLeaf']
 ): EditableProps['renderLeaf'] => {
   const complexRenderLeafEntries: Array<{
-    key: string;
+    key?: string;
+    pluginName: string;
     requiresModelTextSync: boolean;
     renderLeaf: RenderLeaf;
   }> = [];
-  const complexRenderLeafEntryByKey = new Map<string, RenderLeaf>();
   const renderLeafEntries: Array<{
     className?: string;
     editOnly?: boolean | EditOnlyConfig;
@@ -146,16 +169,24 @@ export const pipeRenderLeaf = (
     }
   );
 
-  plateRuntime.pluginCache.node.decoratedMarks.forEach((name) => {
+  const renderLeafPluginNames = new Set([
+    ...plateRuntime.pluginCache.node.decoratedMarks,
+    ...plateRuntime.pluginCache.decorate,
+  ]);
+
+  renderLeafPluginNames.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
 
     if (plugin) {
-      const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
+      const leafKey =
+        getCompiledPlateModelBinding(editor, plugin)?.propertyKey ?? undefined;
+      const hasTransientLeaf = Boolean(plugin.decorate && plugin.render.leaf);
 
-      if (!leafKey) return;
+      if (!leafKey && !hasTransientLeaf) return;
       const canUseSimpleLeaf =
+        Boolean(leafKey) &&
         plateRuntime.pluginCache.inject.nodeProps.length === 0 &&
         !plugin.render?.leaf &&
         !plugin.render?.node &&
@@ -163,7 +194,7 @@ export const pipeRenderLeaf = (
         (!plugin.rules.selection?.affinity ||
           plugin.rules.selection?.affinity === 'hard');
 
-      if (canUseSimpleLeaf) {
+      if (canUseSimpleLeaf && leafKey) {
         const entry = {
           className: plugin.name ? `plite-${plugin.name}` : undefined,
           editOnly: plugin.editOnly,
@@ -177,17 +208,19 @@ export const pipeRenderLeaf = (
       } else {
         const entry = {
           key: leafKey,
+          pluginName: plugin.name,
           requiresModelTextSync: Boolean(
             (plugin as { component?: unknown }).component ||
             plugin.render.leaf ||
             plugin.render.node ||
             plugin.render.nodeProps
           ),
-          renderLeaf: pluginRenderLeaf(editor, plugin as any),
+          renderLeaf: pluginRenderLeaf(editor, plugin as any, {
+            assumeActive: true,
+          }),
         };
 
         complexRenderLeafEntries.push(entry);
-        complexRenderLeafEntryByKey.set(leafKey, entry.renderLeaf);
       }
     }
   });
@@ -231,8 +264,10 @@ export const pipeRenderLeaf = (
       let attributes = initialAttributes;
       const readOnly = editor.read.view.isReadOnly();
       const leaf = getDecoratedLeaf(props.leaf, (props as any).segment);
+      const decorationPluginNames = getDecorationPluginNames(
+        (props as any).segment
+      );
       let hasActiveSimpleRenderLeaf = false;
-      let hasActiveComplexRenderLeaf = false;
 
       props.leaf = leaf;
 
@@ -243,15 +278,14 @@ export const pipeRenderLeaf = (
           hasActiveSimpleRenderLeaf = true;
         }
 
-        if (
-          !hasActiveComplexRenderLeaf &&
-          complexRenderLeafEntryByKey.has(key)
-        ) {
-          hasActiveComplexRenderLeaf = true;
-        }
-
-        if (hasActiveSimpleRenderLeaf && hasActiveComplexRenderLeaf) break;
+        if (hasActiveSimpleRenderLeaf) break;
       }
+
+      const hasActiveComplexRenderLeaf = complexRenderLeafEntries.some(
+        ({ key, pluginName }) =>
+          (key ? Boolean(leaf[key]) : false) ||
+          decorationPluginNames.has(pluginName)
+      );
 
       if (hasActiveSimpleRenderLeaf) {
         for (const {
@@ -311,9 +345,15 @@ export const pipeRenderLeaf = (
       if (hasActiveComplexRenderLeaf) {
         for (const {
           key,
+          pluginName,
           renderLeaf: RenderLeaf,
         } of complexRenderLeafEntries) {
-          if (!leaf[key]) continue;
+          if (
+            !(key ? leaf[key] : false) &&
+            !decorationPluginNames.has(pluginName)
+          ) {
+            continue;
+          }
 
           props.children = (
             <RenderLeaf {...(props as any)}>{props.children}</RenderLeaf>
@@ -359,6 +399,9 @@ export const pipeRenderLeaf = (
     },
     ({ marks, projections }) => {
       const decoratedMarks = getDecoratedLeaf(marks, { slices: projections });
+      const decorationPluginNames = getDecorationPluginNames({
+        slices: projections,
+      });
       const hasActiveTextInjectionTransform = textInjectionTransformScopes.some(
         ({ keys, wildcard }) =>
           wildcard || keys.some((key) => Boolean(decoratedMarks[key]))
@@ -368,8 +411,10 @@ export const pipeRenderLeaf = (
         !renderLeafProp &&
         !hasActiveTextInjectionTransform &&
         !complexRenderLeafEntries.some(
-          ({ key, requiresModelTextSync }) =>
-            requiresModelTextSync && Boolean(decoratedMarks[key])
+          ({ key, pluginName, requiresModelTextSync }) =>
+            requiresModelTextSync &&
+            ((key ? Boolean(decoratedMarks[key]) : false) ||
+              decorationPluginNames.has(pluginName))
         ) &&
         !leafPropsEntries.some(({ key }) => Boolean(decoratedMarks[key]))
       );

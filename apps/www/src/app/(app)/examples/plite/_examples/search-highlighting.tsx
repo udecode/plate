@@ -121,9 +121,11 @@ SearchHighlightingEditor.displayName = 'SearchHighlightingEditor';
 
 type HighlightLeaf = Omit<CustomText, 'text'>;
 
-type SearchLeafProps = Parameters<NonNullable<EditableProps['renderLeaf']>>[0];
-
-const Leaf = ({ attributes, children, leaf }: SearchLeafProps) => {
+const Leaf = ({
+  attributes,
+  children,
+  leaf,
+}: Parameters<NonNullable<EditableProps['renderLeaf']>>[0]) => {
   const highlightLeaf = leaf as HighlightLeaf;
   return (
     <span

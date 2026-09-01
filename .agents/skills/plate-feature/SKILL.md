@@ -40,17 +40,18 @@ React or registry surface, use `plate-ui`. For public call-shape design, use
 
 Every worker owns its own law:
 
-| Concern                                                          | Owner                  |
-| ---------------------------------------------------------------- | ---------------------- |
-| reusable public call shape                                       | `best-api`             |
-| cross-layer or breaking adoption plan                            | `plate-plan`           |
+| Concern                                                           | Owner                  |
+| ----------------------------------------------------------------- | ---------------------- |
+| reusable public call shape                                        | `best-api`             |
+| cross-layer or breaking adoption plan                             | `plate-plan`           |
 | entrypoint semantics, plugin mechanics, colocation, package proof | `plate-plugin-creator` |
 | React adapters, copied UI, kits, metadata, browser proof          | `plate-ui`             |
-| current-state public teaching                                    | `docs-creator`         |
-| package release notes                                            | `changeset`            |
-| registry release notes                                           | `registry-changelog`   |
-| final adoption/version audit                                     | `plate-next`           |
-| closure review                                                   | `autoreview`           |
+| current-state public teaching                                     | `docs-creator`         |
+| package release notes                                             | `changeset`            |
+| registry release notes                                            | `registry-changelog`   |
+| final adoption/version audit                                      | `plate-next`           |
+| pre-acceptance and final runtime scale proof                      | `benchmark`            |
+| closure review                                                    | `autoreview`           |
 
 ## Goal
 
@@ -70,6 +71,9 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
 
 Omit packs for rows marked `no`. Add `agent-native` only when the workflow,
 skill, command, template, or generated agent surface changes.
+Add `performance-observability` when the Feature Manifest's Scale proof row is
+`yes`. That row must resolve before source writes when the feature changes a
+runtime layer or repeated/hot work.
 
 Read [manifest.md](./rules/manifest.md) before starting. Read
 [phases.md](./rules/phases.md) as each phase becomes active. Read
@@ -190,14 +194,26 @@ Advance one phase at a time:
 
 1. classify the flow and complete every manifest row;
 2. settle public shape and layer ownership;
-3. create the package shell manually when needed;
-4. implement and prove package semantics;
-5. add a thin React adapter when needed;
-6. author copied registry component families when needed;
-7. wire app-owned kits, static variants, metadata, and examples when needed;
-8. write current-state docs and release artifacts;
-9. run package, type, registry, browser, and stale-surface proof;
-10. reuse the same manifest for Plate Next attestation, P1 review, and handoff.
+   before calling a flow registry-only, test whether it exposes a neutral law
+   of one mounted Editable. If the view can derive the behavior from its runtime
+   or DOM lifecycle, include the Plite React primitive and literal DOM protocol;
+   Plate inherits it, while registry UI owns markers and styling. Add a
+   controlled input only when user intent cannot be derived. Never add a
+   view-toggle plugin or kit.
+3. resolve Scale proof before source writes. A positive row runs Benchmark's
+   embedded current-owner versus target probe, using a disposable target
+   prototype when necessary. Paper complexity, a review score, or deferred
+   measurement cannot accept the target;
+4. create the package shell manually when needed;
+5. implement and prove package semantics;
+6. add a thin React adapter when needed;
+7. author copied registry component families when needed;
+8. wire app-owned kits, static variants, metadata, and examples when needed;
+9. write current-state docs and release artifacts;
+10. run package, type, registry, browser, stale-surface, and applicable final
+    production-path scale proof;
+11. resolve Plate Next attestation in the same manifest, then run P1 review and
+    handoff. Attest only after a full current package review.
 
 A row may be skipped only as `no` with a concrete N/A reason. Headless and
 registry-only flows are first-class modes, not incomplete full flows.

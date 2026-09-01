@@ -159,7 +159,7 @@ Pass `options.root` to bind history controls to one root. Pass
 DOM focus should stay outside the editor. `history.root` is `undefined` for the
 primary document and the root key for an extra root.
 
-## Runtime And Root Hooks
+## Runtime and root hooks
 
 Use these when one editor owns multiple roots or external chrome.
 
@@ -277,7 +277,7 @@ const insertTitle = React.useCallback(() => {
 }, [editor]);
 ```
 
-## Element And Node Hooks
+## Element and node hooks
 
 Use these inside rendered editor content or node-local UI.
 
@@ -386,7 +386,7 @@ const searchSource = usePliteRangeDecorationSource(editor, {
 });
 ```
 
-## DOM Strategy Hooks
+## DOM strategy hooks
 
 Use these only when writing DOM-strategy-aware renderers.
 
@@ -452,9 +452,9 @@ external source changes without producing a new array.
 ```tsx
 const widgets = [
   {
-    anchor: { annotationId: commentId, type: "annotation" },
     data: { label: "Comment" },
     id: "comment-widget",
+    target: { annotationId: commentId, type: "annotation" },
   },
 ];
 
@@ -465,8 +465,26 @@ const widgetStore = usePliteWidgetStore(editor, widgets, {
 
 #### `usePliteWidgets<TWidget, TAnnotation>(store): PliteWidgetSnapshot<TWidget, TAnnotation>`
 
-Read every widget in a widget store.
+Read every widget in a widget store. Reserve this for deliberate aggregate
+consumers because any resolved widget change publishes a new snapshot.
+
+#### `usePliteWidgetIds<TWidget, TAnnotation>(store): readonly string[]`
+
+Read ordered widget membership. Item-only changes preserve the ids snapshot, so
+list owners do not re-render when one widget's range or data changes.
 
 #### `usePliteWidget<TWidget, TAnnotation>(store, id): PliteResolvedWidget<TWidget, TAnnotation> | null`
 
 Read one widget by id.
+
+#### `usePliteWidgetGeometry<TWidget, TAnnotation>(store, id, { editableRef }): PliteWidgetGeometry | null`
+
+Read immutable viewport rects for one resolved widget in one exact mounted
+Editable. The hook returns `null` for SSR, an unavailable target, a wrong
+editor/root ref, or an unmounted view.
+
+#### `useSelectionGeometry({ editableRef }): PliteWidgetGeometry | null`
+
+Read the current editor selection geometry without constructing a Widget store.
+Use this direct domain hook for toolbars, link controls, and retained carets.
+Pass the exact Editable ref received by the render slot.

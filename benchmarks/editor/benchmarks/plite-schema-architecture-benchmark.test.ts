@@ -165,7 +165,7 @@ describe('compiled schema architecture benchmark authority', () => {
       targets[0].thresholds.promotion,
       /schema_invalidation_property_affected_runtime_ids=64/u
     );
-    assert.match(source, /getSchemaInvalidatedRuntimeIds/u);
+    assert.match(source, /getSchemaInvalidatedNodeKeys/u);
     assert.match(source, /INVALIDATION_AFFECTED_RUNTIME_IDS = 64/u);
     assert.match(source, /INVALIDATION_LARGE_DOCUMENT_BLOCKS = 50_000/u);
     assert.match(source, /invalidation-samples', 10/u);

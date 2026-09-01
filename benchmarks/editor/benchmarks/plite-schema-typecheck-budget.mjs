@@ -18,7 +18,6 @@ const Plugin${index} = defineBasePlugin('schemaTypeBudget${index}', {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  type: 'schema-type-budget-${index}',
 });`
   ).join('\n');
   const names = Array.from(

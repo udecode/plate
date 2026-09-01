@@ -19,7 +19,7 @@ const observedOps = Number(process.env.NORMALIZATION_BENCH_OBSERVED_OPS || 50);
 
 const InlineNormalizationSchema = defineEditorSchema("schema:normalization-benchmark-inline", {
   elements: {
-    inline: { content: schema.content.open(), inline: true },
+    inline: { content: schema.content.text(), inline: true },
     paragraph: { content: schema.content.open() },
   },
   id: 'normalization-benchmark-inline',
@@ -101,9 +101,8 @@ const explicitInlineFlattenNormalizeMs = measureLane(
     return createEditor({ extensions: [InlineNormalizationSchema] });
   },
   (editor) => {
-    Editor.replace(editor, {
-      children: createInlineFlattenChildren(explicitBlocks),
-      selection: null,
+    editor.update(() => {
+      Editor.setEditorChildren(editor, createInlineFlattenChildren(explicitBlocks));
     });
     const firstInline = Editor.getSnapshot(editor).children[0]?.children[1];
     assert.deepEqual(firstInline?.children, [{ text: 'onetwothreefour' }]);

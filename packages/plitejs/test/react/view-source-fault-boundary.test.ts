@@ -63,7 +63,7 @@ test('optional view sources isolate failures and retry from the last good snapsh
     () => {
       if (widgetFails) throw new Error('widget failed');
 
-      return [{ anchor: { type: 'selection' }, id: 'toolbar' }];
+      return [{ id: 'toolbar', target: { type: 'selection' } }];
     },
     null,
     {
@@ -95,7 +95,7 @@ test('optional view sources isolate failures and retry from the last good snapsh
   });
   expect(decoration.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
   expect(annotations.getAnnotation('comment')?.range).toEqual(range);
-  expect(widgets.getWidget('toolbar')?.visible).toBe(true);
+  expect(widgets.getWidget('toolbar')?.available).toBe(true);
 
   healthy.destroy();
   decoration.destroy();

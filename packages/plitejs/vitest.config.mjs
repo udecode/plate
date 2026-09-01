@@ -15,13 +15,13 @@ export default defineConfig({
         import.meta.dirname,
         './src/hyperscript/index.ts'
       ),
-      'plitejs/page-layout': path.resolve(
+      'plitejs/pagination': path.resolve(
         import.meta.dirname,
-        './src/page-layout/index.ts'
+        './src/pagination/index.ts'
       ),
-      'plitejs/page-layout/react': path.resolve(
+      'plitejs/pagination/react': path.resolve(
         import.meta.dirname,
-        './src/page-layout/react.tsx'
+        './src/pagination/react.tsx'
       ),
       'plitejs/react': path.resolve(
         import.meta.dirname,

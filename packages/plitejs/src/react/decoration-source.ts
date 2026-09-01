@@ -10,6 +10,7 @@ import {
   type PliteProjectionStoreMetrics,
   type PliteProjectionStoreOptions,
   type PliteProjectionStoreRefreshOptions,
+  type PliteProjectionStoreSnapshot,
 } from './projection-store';
 import type { PliteViewSourceStatus } from './view-source';
 
@@ -105,9 +106,9 @@ const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
 ) as readonly PliteProjectionSlice[];
 
 const mergeSnapshots = <T>(
-  sources: ReadonlyArray<PliteOverlayProjectionStore<T>>
+  snapshots: ReadonlyArray<PliteProjectionStoreSnapshot<T>>
 ): Readonly<Record<string, ReadonlyArray<PliteProjectionSlice<T>>>> => {
-  if (sources.length === 0) {
+  if (snapshots.length === 0) {
     return EMPTY_SNAPSHOT as Readonly<
       Record<string, ReadonlyArray<PliteProjectionSlice<T>>>
     >;
@@ -117,11 +118,11 @@ const mergeSnapshots = <T>(
     null
   );
 
-  for (const source of sources) {
-    const snapshot = source.getSnapshot();
-
+  for (const snapshot of snapshots) {
     for (const [nodeKey, slices] of Object.entries(snapshot)) {
-      merged[nodeKey] = [...(merged[nodeKey] ?? []), ...slices];
+      merged[nodeKey] ??= [];
+      const bucket = merged[nodeKey];
+      for (const slice of slices) bucket.push(slice);
     }
   }
 
@@ -246,55 +247,61 @@ export const composeProjectionSources = <T = unknown>(
     return sources[0];
   }
 
-  let sourceSnapshots = sources.map((source) => source.getSnapshot());
-  let snapshot = mergeSnapshots(sources);
-  const runtimeSnapshots = new Map<
-    NodeKey,
-    ReadonlyArray<PliteProjectionSlice<T>>
-  >();
+  let sourceSnapshots:
+    | ReadonlyArray<PliteProjectionStoreSnapshot<T>>
+    | undefined;
+  let snapshot = EMPTY_SNAPSHOT as PliteProjectionStoreSnapshot<T>;
+  type CachedInputs = {
+    next: WeakMap<ReadonlyArray<PliteProjectionSlice<T>>, CachedInputs>;
+    value?: ReadonlyArray<PliteProjectionSlice<T>>;
+  };
+  const runtimeSnapshots: CachedInputs = { next: new WeakMap() };
 
   const synchronizeSnapshot = () => {
     const nextSourceSnapshots = sources.map((source) => source.getSnapshot());
 
     if (
+      sourceSnapshots &&
       nextSourceSnapshots.every(
-        (nextSnapshot, index) => nextSnapshot === sourceSnapshots[index]
+        (nextSnapshot, index) => nextSnapshot === sourceSnapshots?.[index]
       )
     ) {
       return;
     }
 
+    snapshot = mergeSnapshots(nextSourceSnapshots);
     sourceSnapshots = nextSourceSnapshots;
-    snapshot = mergeSnapshots(sources);
-    runtimeSnapshots.clear();
-  };
-
-  const invalidate = (listener: () => void) => () => {
-    synchronizeSnapshot();
-    listener();
   };
 
   return {
     getRuntimeSnapshot(nodeKey: NodeKey) {
-      synchronizeSnapshot();
-      const cached = runtimeSnapshots.get(nodeKey);
-
-      if (cached) {
-        return cached;
-      }
-
-      const slices = sources.flatMap(
-        (source) =>
+      const inputs = sources.map((source) => {
+        const slices =
           source.getRuntimeSnapshot?.(nodeKey) ??
           source.getSnapshot()[nodeKey] ??
-          []
-      );
+          (EMPTY_RUNTIME_SNAPSHOT as ReadonlyArray<PliteProjectionSlice<T>>);
+        return slices.length === 0
+          ? (EMPTY_RUNTIME_SNAPSHOT as ReadonlyArray<PliteProjectionSlice<T>>)
+          : slices;
+      });
+      let cached = runtimeSnapshots;
+      for (const input of inputs) {
+        let next = cached.next.get(input);
+        if (!next) {
+          next = { next: new WeakMap() };
+          cached.next.set(input, next);
+        }
+        cached = next;
+      }
+      if (cached.value) return cached.value;
+      const slices = inputs.flat();
       const nextSnapshot =
         slices.length === 0
           ? (EMPTY_RUNTIME_SNAPSHOT as ReadonlyArray<PliteProjectionSlice<T>>)
           : Object.freeze(slices);
 
-      runtimeSnapshots.set(nodeKey, nextSnapshot);
+      // Weak input ownership preserves bucket identity without retaining old node IDs.
+      cached.value = nextSnapshot;
 
       return nextSnapshot;
     },
@@ -303,9 +310,7 @@ export const composeProjectionSources = <T = unknown>(
       return snapshot;
     },
     subscribe(listener: () => void) {
-      return subscribeAll(sources, (source) =>
-        source.subscribe(invalidate(listener))
-      );
+      return subscribeAll(sources, (source) => source.subscribe(listener));
     },
     subscribeProjectionRefresh(listener: PliteProjectionRefreshListener) {
       return subscribeAll(sources, (source) =>
@@ -317,15 +322,15 @@ export const composeProjectionSources = <T = unknown>(
     subscribeNodeKey(nodeKey: NodeKey, listener: () => void) {
       return subscribeAll(sources, (source) =>
         source.subscribeNodeKey
-          ? source.subscribeNodeKey(nodeKey, invalidate(listener))
-          : source.subscribe(invalidate(listener))
+          ? source.subscribeNodeKey(nodeKey, listener)
+          : source.subscribe(listener)
       );
     },
     subscribeSourceId(sourceId: string, listener: () => void) {
       return subscribeAll(sources, (source) =>
         source.subscribeSourceId
-          ? source.subscribeSourceId(sourceId, invalidate(listener))
-          : source.subscribe(invalidate(listener))
+          ? source.subscribeSourceId(sourceId, listener)
+          : source.subscribe(listener)
       );
     },
   };

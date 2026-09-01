@@ -19,11 +19,10 @@ const retainedPolicies = Number.parseInt(
   10
 );
 
-const historyCapability = defineExtension('benchmark-history', {
+// Isolate policy dispatch from history recording while providing its required namespace.
+const historyCapability = defineExtension('history', {
   update: () => ({
-    history() {
-      return {};
-    },
+    noop() {},
   }),
 });
 

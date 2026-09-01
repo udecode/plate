@@ -14,7 +14,6 @@ import { basicNodesValue as basicNodesValueCn } from '@/registry/examples/values
 import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/cn/block-menu-value';
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
-import { cursorOverlayValue as cursorOverlayValueCn } from '@/registry/examples/values/cn/cursor-overlay-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
 import { deserializeCsvValue as deserializeCsvValueCn } from '@/registry/examples/values/cn/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examples/values/cn/deserialize-docx-value';
@@ -31,7 +30,6 @@ import {
   exitBreakValue as exitBreakValueCn,
   trailingBlockValue as trailingBlockValueCn,
 } from '@/registry/examples/values/cn/exit-break-value';
-import { findReplaceValue as findReplaceValueCn } from '@/registry/examples/values/cn/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueCn } from '@/registry/examples/values/cn/floating-toolbar-value';
 import { fontValue as fontValueCn } from '@/registry/examples/values/cn/font-value';
 import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/iframe-value';
@@ -51,7 +49,6 @@ import { tableValue as tableValueCn } from '@/registry/examples/values/cn/table-
 import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value';
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
-import { cursorOverlayValue as cursorOverlayValueEn } from '@/registry/examples/values/cursor-overlay-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
 import { deserializeCsvValue as deserializeCsvValueEn } from '@/registry/examples/values/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examples/values/deserialize-docx-value';
@@ -68,7 +65,6 @@ import {
   exitBreakValue as exitBreakValueEn,
   trailingBlockValue as trailingBlockValueEn,
 } from '@/registry/examples/values/exit-break-value';
-import { findReplaceValue as findReplaceValueEn } from '@/registry/examples/values/find-replace-value';
 import { floatingToolbarValue as floatingToolbarValueEn } from '@/registry/examples/values/floating-toolbar-value';
 import { fontValue as fontValueEn } from '@/registry/examples/values/font-value';
 import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-value';
@@ -99,7 +95,6 @@ const i18n = {
     nodeSelection: nodeSelectionValueCn,
     column: columnValueCn,
     copilot: copilotValueCn,
-    cursorOverlay: cursorOverlayValueCn,
     date: dateValueCn,
     deserializeCsv: deserializeCsvValueCn,
     deserializeDocx: deserializeDocxValueCn,
@@ -112,7 +107,6 @@ const i18n = {
     equation: equationValueCn,
     excalidraw: excalidrawValueCn,
     exitBreak: exitBreakValueCn,
-    findReplace: findReplaceValueCn,
     floatingToolbar: floatingToolbarValueCn,
     font: fontValueCn,
     iframe: iframeValueCn,
@@ -144,7 +138,6 @@ const i18n = {
     column: columnValueEn,
     comment: commentValueEn,
     copilot: copilotValueEn,
-    cursorOverlay: cursorOverlayValueEn,
     date: dateValueEn,
     deserializeCsv: deserializeCsvValueEn,
     deserializeDocx: deserializeDocxValueEn,
@@ -156,7 +149,6 @@ const i18n = {
     equation: equationValueEn,
     excalidraw: excalidrawValueEn,
     exitBreak: exitBreakValueEn,
-    findReplace: findReplaceValueEn,
     floatingToolbar: floatingToolbarValueEn,
     font: fontValueEn,
     iframe: iframeValueEn,

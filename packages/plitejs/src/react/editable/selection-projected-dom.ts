@@ -71,12 +71,12 @@ const getDescendantEdgePoint = (
     path?: number[];
   }
 ): Point | null => {
-  const orderedEntries =
-    edge === 'start'
-      ? Array.from(nodes.entries())
-      : Array.from(nodes.entries()).reverse();
-
-  for (const [index, node] of orderedEntries) {
+  for (
+    let index = edge === 'start' ? 0 : nodes.length - 1;
+    index >= 0 && index < nodes.length;
+    index += edge === 'start' ? 1 : -1
+  ) {
+    const node = nodes[index];
     const currentPath = path.concat(index);
 
     if (TextApi.isText(node)) {

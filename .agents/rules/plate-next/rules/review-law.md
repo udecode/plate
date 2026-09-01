@@ -345,6 +345,11 @@ editor.read.selection.nodes()` is a regression: it
   Plate UI doctrine. The accepted family shape is one `<Family>.tsx` plus zero
   or one semantic `use<Family>.ts[x]` controller. Direct component behavior
   stays direct; complex siblings may consume one private family context.
+- Cut sibling render prop bags that inherit Editable or container DOM props,
+  runtime spreads of those host props, and callbacks whose only job is
+  forwarding the exact slot ref. Keep only `editableRef` or `containerRef`,
+  register complete components directly, and retain callbacks only for real
+  custom composition.
 - Cut state-hook/prop-hook pipelines, public prop-bag hooks used by one
   renderer, one custom hook per subcomponent, hooks defined in plugin
   descriptors, speculative public providers/stores, small component factories

@@ -150,6 +150,64 @@ test('reporter follow-ups extend a cumulative phase-aware oracle', () => {
   assert.match(template, /\| Case ID \| Observation \| Phase \| Applies \|/);
 });
 
+test('focus transfers cover null relatedTarget before document focusin', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+  const validator = read(
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs'
+  );
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /direct-related-target/);
+    assert.match(source, /null-related-target/);
+    assert.match(source, /focusin-resolution/);
+  }
+  assert.match(validator, /FOCUS_TRANSFER_PATTERN/);
+  assert.match(validator, /focus transfer completion requires/);
+});
+
+test('keyed subscriptions require full membership lifecycle proof', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+  const validator = read(
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs'
+  );
+
+  for (const source of [regressionRule, methodology]) {
+    assert.match(
+      source,
+      /subscription-lifecycle[\s\S]*add:[\s\S]*update:[\s\S]*remove:[\s\S]*teardown:/
+    );
+  }
+  assert.match(template, /\| pending \| subscription-lifecycle \|/);
+  assert.match(validator, /SUBSCRIPTION_LIFECYCLE_PATTERN/);
+  assert.match(validator, /\["add", "update", "remove", "teardown"\]/);
+});
+
+test('disposable effect sources survive StrictMode rehearsal', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+  const validator = read(
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs'
+  );
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /strict-effect: mount \+ cleanup \+ remount/);
+    assert.match(source, /post-remount-publication: pass/);
+  }
+  assert.match(validator, /DISPOSABLE_EFFECT_LIFECYCLE_PATTERN/);
+  assert.match(validator, /disposable effect completion requires/);
+});
+
 test('reporter rerender claims require a route-wide repeated-component oracle', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(

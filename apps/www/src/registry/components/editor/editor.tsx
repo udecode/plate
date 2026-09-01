@@ -62,7 +62,7 @@ const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100! **:data-plite-drop-cursor:z-20 **:data-plite-drop-cursor:rounded-full **:data-plite-drop-cursor:bg-brand',
+    '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100! **:data-plite-drop-cursor:z-20 **:data-plite-drop-cursor:rounded-full **:data-plite-drop-cursor:bg-brand **:data-plite-inactive-selection:bg-brand/25 **:data-plite-inactive-selection-caret:z-20 **:data-plite-inactive-selection-caret:w-0.5 **:data-plite-inactive-selection-caret:bg-primary',
     '[&_strong]:font-bold'
   ),
   {
@@ -92,9 +92,6 @@ const editorVariants = cva(
   }
 );
 
-export type EditorProps = PlateContentProps &
-  VariantProps<typeof editorVariants>;
-
 export function Editor({
   className,
   disabled,
@@ -102,7 +99,9 @@ export function Editor({
   variant,
   ref,
   ...props
-}: EditorProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
+}: (PlateContentProps & VariantProps<typeof editorVariants>) & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <>
       <PlateContent

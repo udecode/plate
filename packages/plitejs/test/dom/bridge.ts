@@ -26,6 +26,7 @@ import {
   getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '../../src/internal';
+import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
 
 const createParagraphEditor = (text = 'alpha beta') => {
   const editor = createEditor({ extensions: [dom()] });
@@ -427,6 +428,48 @@ describe('plite-dom bridge', () => {
     expect(() => editor.api.dom.assertDOMRange(range)).toThrow();
     expect(editor.api.dom.resolveDOMRange(range)).toBeNull();
     expect(editor.api.dom.resolvePath({ text: 'detached' })).toBeNull();
+  });
+
+  it('does not materialize node identities for a missing or disconnected DOM root', () => {
+    withDom(({ document }) => {
+      for (const disconnected of [false, true]) {
+        const editor = createEditor({
+          extensions: [dom()],
+          initialValue: Array.from({ length: 128 }, (_, index) => ({
+            type: 'paragraph',
+            children: [{ text: `line ${index}` }],
+          })),
+        });
+        if (disconnected) {
+          EDITOR_TO_ELEMENT.set(editor, document.createElement('div'));
+        }
+        const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+        const range = {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 4 },
+        };
+        const counter = createPliteReactRenderCounter();
+        const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+        globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+        try {
+          expect(editor.api.dom.resolveDOMNode(textNode)).toBeNull();
+          expect(editor.api.dom.resolveDOMRange(range)).toBeNull();
+          expect(
+            counter.snapshot().byKey['core-time:runtime-index-full-build'] ?? 0
+          ).toBe(0);
+        } finally {
+          globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+        }
+
+        const root = mountEditorRoot(editor, document);
+        const owner = document.createElement('span');
+        root.appendChild(owner);
+        bindTextOwner(editor, [0, 0], owner);
+        expect(editor.api.dom.resolveDOMNode(textNode)).toBe(owner);
+        root.remove();
+        expect(editor.api.dom.resolveDOMNode(textNode)).toBeNull();
+      }
+    });
   });
 
   it('resolves a removed Plite node to null', () => {

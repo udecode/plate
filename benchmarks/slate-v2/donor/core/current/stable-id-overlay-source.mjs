@@ -1,494 +1,244 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { cpus, platform } from 'node:os';
 
-import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
-import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
-import { createPliteAnnotationStore } from '../../../../../packages/plitejs/src/react/annotation-store.ts';
-import { createDecorationSource } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
-import { createPliteWidgetStore } from '../../../../../packages/plitejs/src/react/widget-store.ts';
 import { createStableIdMappedSource } from '../../../../../packages/plitejs/src/react/stable-id-mapped-source.ts';
+import { composeProjectionSources } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
-const DEFAULT_SIZES = [10_000, 100_000];
-const sizes = (process.env.PLITE_OVERLAY_SOURCE_BENCH_SIZES ?? '')
-  .split(',')
-  .map(Number)
-  .filter((value) => Number.isSafeInteger(value) && value > 0);
-const sourceSizes = sizes.length > 0 ? sizes : DEFAULT_SIZES;
-const blockCount = Number(
-  process.env.PLITE_OVERLAY_SOURCE_BENCH_BLOCKS ?? 2_048
-);
-const sampleCount = Number(
-  process.env.PLITE_OVERLAY_SOURCE_BENCH_SAMPLES ?? 7
-);
-const warmupCount = Number(
-  process.env.PLITE_OVERLAY_SOURCE_BENCH_WARMUPS ?? 2
-);
-const sourceChurnModes = ['stable-reference', 'recreated'];
+const sizes = (process.env.PLITE_OVERLAY_SOURCE_BENCH_SIZES ?? '100,1000,10000,100000')
+  .split(',').map(Number);
+assert.ok(sizes.every((size) => Number.isSafeInteger(size) && size > 0));
+const sampleCount = Number(process.env.PLITE_OVERLAY_SOURCE_BENCH_SAMPLES ?? 15);
+const warmupCount = Number(process.env.PLITE_OVERLAY_SOURCE_BENCH_WARMUPS ?? 3);
+const strict = process.env.PLITE_OVERLAY_SOURCE_BENCH_STRICT === '1';
+const frameBudgetMs = 16.67;
+const wideBudgetMs = 100;
+const measuredFiles = [
+  'benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs',
+  'packages/plitejs/src/react/stable-id-mapped-source.ts',
+  'packages/plitejs/src/react/mapped-view-store.ts',
+  'packages/plitejs/src/react/annotation-store.ts',
+  'packages/plitejs/src/react/widget-store.ts',
+  'packages/plitejs/src/react/decoration-source.ts',
+  'pnpm-lock.yaml',
+];
+const fingerprints = () => Object.fromEntries(measuredFiles.map((file) => [
+  file, createHash('sha256').update(readFileSync(file)).digest('hex'),
+]));
+const beforeFingerprints = fingerprints();
 
-const rangeAt = (index) => {
-  const path = [index % blockCount, 0];
-  const start = index % 4;
-
-  return {
-    anchor: { path, offset: start },
-    focus: { path, offset: start + 3 },
-    kind: 'text',
-  };
-};
-
-const samePoint = (left, right) =>
-  left.offset === right.offset &&
-  left.path.length === right.path.length &&
-  left.path.every((segment, index) => segment === right.path[index]);
-
-const sameRange = (left, right) =>
-  samePoint(left.anchor, right.anchor) && samePoint(left.focus, right.focus);
-
-const createEditorFixture = () => {
-  const editor = createEditor();
-
-  Editor.replace(editor, {
-    children: Array.from({ length: blockCount }, (_, index) => ({
-      children: [{ text: `abcdefghij-${index}` }],
-      type: 'paragraph',
-    })),
-    selection: null,
-  });
-
-  return editor;
-};
-
-const projectRange = (editor, range) => Editor.projectRange(editor, range);
-
-const updateSource = (items, index, churnMode, update) =>
-  items.map((item, itemIndex) => {
-    const next = itemIndex === index ? update(item) : item;
-
-    return churnMode === 'recreated' ? { ...next } : next;
-  });
-
-const measurePair = ({
-  currentRefresh,
-  indexedRefresh,
-  size,
-  updateCurrent,
-  updateIndexed,
-  validate,
-}) => {
-  const currentSamples = [];
-  const indexedSamples = [];
-  const iterations = warmupCount + sampleCount;
-
-  for (let iteration = 0; iteration < iterations; iteration += 1) {
-    const itemIndex = (iteration * 7_919 + 17) % size;
-    updateCurrent(itemIndex);
-    updateIndexed(itemIndex);
-
-    const currentStartedAt = performance.now();
-    currentRefresh();
-    const currentDuration = performance.now() - currentStartedAt;
-
-    const indexedStartedAt = performance.now();
-    indexedRefresh();
-    const indexedDuration = performance.now() - indexedStartedAt;
-
-    validate(itemIndex);
-
-    if (iteration >= warmupCount) {
-      currentSamples.push(currentDuration);
-      indexedSamples.push(indexedDuration);
-    }
-  }
-
-  const current = summarize(currentSamples);
-  const indexed = summarize(indexedSamples);
-
-  return {
-    current,
-    indexed,
-    medianSpeedup: Number((current.median / indexed.median).toFixed(2)),
-    p95Speedup: Number((current.p95 / indexed.p95).toFixed(2)),
-  };
-};
-
-const countBucketEntries = (snapshot) =>
-  Object.values(snapshot).reduce((count, entries) => count + entries.length, 0);
-
-const benchmarkDecorations = (editor, size, churnMode) => {
-  const createItems = () =>
-    Array.from({ length: size }, (_, index) => ({
-      data: { revision: 0 },
-      key: `decoration-${index}`,
-      range: rangeAt(index),
-    }));
-  let currentItems = createItems();
-  let indexedItems = createItems();
-  let currentRevision = 0;
-  let indexedRevision = 0;
-  const current = createDecorationSource(editor, {
-    id: 'stable-id-overlay-benchmark',
-    read: () => currentItems,
-  });
-  const indexed = createStableIdMappedSource(indexedItems, {
-    getId: (item) => item.key,
-    isItemEqual: (left, right) =>
-      sameRange(left.range, right.range) &&
-      left.data.revision === right.data.revision,
-    isOutputEqual: (left, right) =>
-      left.key === right.key &&
-      left.start === right.start &&
-      left.end === right.end &&
-      left.data.revision === right.data.revision,
-    map: (item) => ({
-      outputs: projectRange(editor, item.range).map((segment) => ({
-        key: segment.runtimeId,
-        value: Object.freeze({
-          data: item.data,
-          end: segment.end,
-          key: item.key,
-          start: segment.start,
-        }),
-      })),
-    }),
-  });
-
-  let indexedRefreshResult = null;
-  const result = measurePair({
-    currentRefresh: () =>
-      current.refresh({ forceInvalidate: true, reason: 'external' }),
-    indexedRefresh: () => {
-      indexedRefreshResult = indexed.refresh(indexedItems);
-    },
-    size,
-    updateCurrent(index) {
-      currentRevision += 1;
-      currentItems = updateSource(currentItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: currentRevision },
-      }));
-    },
-    updateIndexed(index) {
-      indexedRevision += 1;
-      indexedItems = updateSource(indexedItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: indexedRevision },
-      }));
-    },
-    validate(index) {
-      assert.equal(indexedRefreshResult.fullFallback, false);
-      assert.deepEqual(indexedRefreshResult.changedEntityIds, []);
-      assert.deepEqual(
-        indexedRefreshResult.mapped.map(({ id }) => id),
-        [`decoration-${index}`]
-      );
-    },
-  });
-
-  assert.equal(countBucketEntries(current.getSnapshot()), size);
-  assert.equal(
-    countBucketEntries(indexed.getSnapshot().byOutputKey),
-    size
-  );
-  current.destroy();
-
-  return result;
-};
-
-const createAnnotationItems = (size) =>
-  Array.from({ length: size }, (_, index) => {
-    const range = rangeAt(index);
-    const anchor = Object.freeze({
-      release: () => {},
-      resolve: () => range,
-    });
-
-    return {
-      anchor,
-      data: { revision: 0 },
-      id: `annotation-${index}`,
-      projection: { revision: 0 },
-    };
-  });
-
-const benchmarkAnnotations = (editor, size, churnMode) => {
-  let currentItems = createAnnotationItems(size);
-  let indexedItems = createAnnotationItems(size);
-  let currentRevision = 0;
-  let indexedRevision = 0;
-  const current = createPliteAnnotationStore(editor, () => currentItems);
-  const indexed = createStableIdMappedSource(indexedItems, {
-    getId: (item) => item.id,
-    isEntityEqual: (left, right) =>
-      left.id === right.id &&
-      sameRange(left.range, right.range) &&
-      left.data.revision === right.data.revision &&
-      left.projection.revision === right.projection.revision,
-    isItemEqual: (left, right) =>
-      left.anchor === right.anchor &&
-      left.data.revision === right.data.revision &&
-      left.projection.revision === right.projection.revision,
-    isOutputEqual: (left, right) =>
-      left.key === right.key &&
-      left.start === right.start &&
-      left.end === right.end &&
-      left.data.annotationId === right.data.annotationId &&
-      left.data.revision === right.data.revision,
-    map: (item) => {
-      const range = item.anchor.resolve();
-      const resolved = Object.freeze({
-        data: item.data,
-        id: item.id,
-        projection: item.projection,
-        range,
-      });
-
-      return {
-        entity: resolved,
-        outputs: range
-          ? projectRange(editor, range).map((segment) => ({
-              key: segment.runtimeId,
-              value: Object.freeze({
-                data: Object.freeze({
-                  ...item.projection,
-                  annotationId: item.id,
-                }),
-                end: segment.end,
-                key: item.id,
-                start: segment.start,
-              }),
-            }))
-          : [],
-      };
-    },
-  });
-
-  let indexedRefreshResult = null;
-  const result = measurePair({
-    currentRefresh: () => current.refresh(),
-    indexedRefresh: () => {
-      indexedRefreshResult = indexed.refresh(indexedItems);
-    },
-    size,
-    updateCurrent(index) {
-      currentRevision += 1;
-      currentItems = updateSource(currentItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: currentRevision },
-        projection: { revision: currentRevision },
-      }));
-    },
-    updateIndexed(index) {
-      indexedRevision += 1;
-      indexedItems = updateSource(indexedItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: indexedRevision },
-        projection: { revision: indexedRevision },
-      }));
-    },
-    validate(index) {
-      assert.equal(
-        current.getAnnotation(`annotation-${index}`).data.revision,
-        currentRevision
-      );
-      assert.equal(
-        indexed
-          .getSnapshot()
-          .byId
-          .get(`annotation-${index}`).data.revision,
-        indexedRevision
-      );
-      assert.equal(indexedRefreshResult.fullFallback, false);
-      assert.deepEqual(indexedRefreshResult.changedEntityIds, [
-        `annotation-${index}`,
-      ]);
-    },
-  });
-
-  assert.equal(current.getSnapshot().allIds.length, size);
-  assert.equal(indexed.getSnapshot().allIds.length, size);
-  assert.equal(countBucketEntries(current.projectionStore.getSnapshot()), size);
-  assert.equal(
-    countBucketEntries(indexed.getSnapshot().byOutputKey),
-    size
-  );
-  current.destroy();
-
-  return result;
-};
-
-const createWidgetItems = (size, runtimeIds) =>
-  Array.from({ length: size }, (_, index) => ({
-    anchor: {
-      runtimeId: runtimeIds[index % runtimeIds.length],
-      type: 'node',
-    },
-    data: { revision: 0 },
-    id: `widget-${index}`,
+const measure = (size, layout, update) => {
+  let revision = 0;
+  let items = Array.from({ length: layout === 'wide-item' ? 1 : size }, (_, index) => ({
+    id: layout === 'divergent-unicode' ? String.fromCodePoint(0x10000 + index) : 'item-' + index,
+    value: 0,
   }));
-
-const benchmarkWidgets = (editor, size, churnMode, runtimeIds) => {
-  let currentItems = createWidgetItems(size, runtimeIds);
-  let indexedItems = createWidgetItems(size, runtimeIds);
-  let currentRevision = 0;
-  let indexedRevision = 0;
-  const current = createPliteWidgetStore(editor, () => currentItems);
-  const snapshot = Editor.getSnapshot(editor);
-  const indexed = createStableIdMappedSource(indexedItems, {
+  const start = performance.now();
+  const source = createStableIdMappedSource(items, {
     getId: (item) => item.id,
-    isEntityEqual: (left, right) =>
-      left.id === right.id &&
-      left.visible === right.visible &&
-      left.data.revision === right.data.revision,
-    isItemEqual: (left, right) =>
-      left.anchor.type === right.anchor.type &&
-      left.anchor.runtimeId === right.anchor.runtimeId &&
-      left.data.revision === right.data.revision,
+    isEntityEqual: (left, right) => left.value === right.value,
+    isItemEqual: (left, right) => left.value === right.value,
     isOutputEqual: Object.is,
     map: (item) => ({
-      entity: Object.freeze({
-        ...item,
-        annotation: null,
-        range: null,
-        visible: Boolean(snapshot.index.pathOf(item.anchor.runtimeId)),
-      }),
-      outputs: [],
+      entity: item,
+      outputs: layout === 'wide-item'
+        ? Array.from({ length: size }, (_, index) => ({ key: 'bucket-' + index, value: item.value }))
+        : [{ key: layout === 'shared' ? 'shared' : item.id, value: item.value }],
     }),
   });
+  const coldMs = performance.now() - start;
+  const samples = [];
+  const maxWork = {};
 
-  let indexedRefreshResult = null;
-  const result = measurePair({
-    currentRefresh: () => current.retry(),
-    indexedRefresh: () => {
-      indexedRefreshResult = indexed.refresh(indexedItems);
-    },
+  for (let iteration = 0; iteration < warmupCount + sampleCount; iteration += 1) {
+    const index = (iteration * 7919) % items.length;
+    const changed = update === 'all' ? items.map((item) => item.id) : [items[index].id];
+    const previous = source.getSnapshot();
+    const previousValue = previous.byId.get(items[index].id).value;
+    revision += 1;
+    if (update === 'all') {
+      items = items.map((item) => ({ ...item, value: revision }));
+    } else if (update === 'external') {
+      items = items.map((item, itemIndex) => ({
+        ...item, value: itemIndex === index ? revision : item.value,
+      }));
+    } else {
+      items[index] = { ...items[index], value: revision };
+    }
+    const before = source.getWork();
+    const startedAt = performance.now();
+    const result = source.refresh(items, update === 'external' ? {} : { changedIds: changed });
+    const duration = performance.now() - startedAt;
+    assert.deepEqual(source.getIdsWithoutOutputs(), []);
+    const after = source.getWork();
+
+    for (const key of Object.keys(after)) {
+      maxWork[key] = Math.max(maxWork[key] ?? 0, after[key] - before[key]);
+    }
+    assert.equal(result.fullFallback, false);
+    assert.equal(result.changedEntityIds.length, changed.length);
+    assert.equal(source.getSnapshot().byId.get(items[index].id).value, revision);
+    assert.equal(previous.byId.get(items[index].id).value, previousValue);
+    assert.equal(previous.allIds, source.getSnapshot().allIds);
+    if (layout === 'wide-item') {
+      assert.deepEqual(source.getSnapshot().byOutputKey['bucket-' + (size - 1)], [revision]);
+    }
+    if (iteration >= warmupCount) samples.push(duration);
+  }
+
+  let copiedOutputMemberships = 0;
+  if (layout === 'shared' && update === 'all') {
+    const NativeSet = globalThis.Set;
+    const next = items.map(item => ({ ...item, value: revision + 1 }));
+    globalThis.Set = new Proxy(NativeSet, {
+      construct(target, args, constructor) {
+        const input = args[0];
+        if (Array.isArray(input) && input.length > 0 && input.every(key => key === 'shared')) copiedOutputMemberships += input.length;
+        return Reflect.construct(target, args, constructor);
+      },
+    });
+    try {
+      source.refresh(next, { changedIds: next.map(item => item.id) });
+    } finally {
+      globalThis.Set = NativeSet;
+    }
+    assert.deepEqual(source.getSnapshot().byOutputKey.shared, Array(size).fill(revision + 1));
+  }
+  const changedCount = update === 'all' ? items.length : 1;
+  const affectedOutputCount = layout === 'wide-item' || layout === 'shared' || update === 'all'
+    ? size : 1;
+  const summary = summarize(samples);
+  const budgetMs = update === 'external' ? null
+    : affectedOutputCount >= 10_000 ? wideBudgetMs : frameBudgetMs;
+  const workPass = maxWork.entityCopies === changedCount &&
+    maxWork.inputVisits === (update === 'external' ? size * 2 : changedCount) &&
+    maxWork.unprojectedVisits === 0 &&
+    maxWork.outputCandidateVisits <= affectedOutputCount * 2 &&
+    maxWork.outputVisits <= affectedOutputCount * 2 &&
+    maxWork.snapshotChildEntryCopies <= affectedOutputCount * 32 + 4096 &&
+    maxWork.snapshotNodeCopies <= affectedOutputCount * 3 + 128 && copiedOutputMemberships === 0;
+
+  return {
+    affectedOutputCount,
+    budgetMs,
+    changedCount,
+    coldBudgetMs: size >= 100_000 ? 2500 : 250,
+    coldMs,
+    copiedOutputMemberships,
+    expectedComplexity: update === 'external'
+      ? 'O(source items) comparison for an opaque recreated external snapshot; O(changed entities) publication'
+      : 'O(changed ID bytes plus affected output memberships); bounded child-map copies and no unrelated entity copy or unresolved-ID scan',
+    layout,
+    maxWork,
+    pass: workPass && (budgetMs === null || summary.p95 <= budgetMs) && coldMs <= (size >= 100_000 ? 2500 : 250),
     size,
-    updateCurrent(index) {
-      currentRevision += 1;
-      currentItems = updateSource(currentItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: currentRevision },
-      }));
-    },
-    updateIndexed(index) {
-      indexedRevision += 1;
-      indexedItems = updateSource(indexedItems, index, churnMode, (item) => ({
-        ...item,
-        data: { revision: indexedRevision },
-      }));
-    },
-    validate(index) {
-      assert.equal(current.getWidget(`widget-${index}`).data.revision, currentRevision);
-      assert.equal(
-        indexed.getSnapshot().byId.get(`widget-${index}`).data.revision,
-        indexedRevision
-      );
-      assert.equal(indexedRefreshResult.fullFallback, false);
-      assert.deepEqual(indexedRefreshResult.changedEntityIds, [
-        `widget-${index}`,
-      ]);
-    },
-  });
-
-  assert.equal(current.getSnapshot().allIds.length, size);
-  assert.equal(indexed.getSnapshot().allIds.length, size);
-  current.destroy();
-
-  return result;
+    summary,
+    update,
+    workPass,
+  };
 };
 
-const editor = createEditorFixture();
-const runtimeIds = Array.from({ length: blockCount }, (_, index) =>
-  Editor.getRuntimeId(editor, [index, 0])
-);
-assert.equal(runtimeIds.every(Boolean), true);
-
-const results = [];
-
-for (const size of sourceSizes) {
-  for (const churnMode of sourceChurnModes) {
-    for (const [concept, run] of [
-      ['decoration', () => benchmarkDecorations(editor, size, churnMode)],
-      ['annotation', () => benchmarkAnnotations(editor, size, churnMode)],
-      [
-        'widget',
-        () => benchmarkWidgets(editor, size, churnMode, runtimeIds),
-      ],
-    ]) {
-      const measured = run();
-      results.push({ churnMode, concept, size, ...measured });
-      Bun.gc(true);
-    }
+const rows = [];
+for (const size of sizes) {
+  rows.push(measure(size, 'divergent-unicode', 'one'));
+  Bun.gc(true);
+  for (const update of ['one', 'external']) {
+    rows.push(measure(size, 'distributed', update));
+    Bun.gc(true);
+  }
+  if (size <= 10_000) {
+    rows.push(measure(size, 'distributed', 'all'));
+    rows.push(measure(size, 'wide-item', 'one'));
+    rows.push(measure(size, 'shared', 'one'));
+    rows.push(measure(size, 'shared', 'all'));
+    Bun.gc(true);
   }
 }
 
-const largestSize = Math.max(...sourceSizes);
-const promotionRows = results.filter((row) => row.size === largestSize);
-const sharedBottleneck = promotionRows.every(
-  (row) => row.current.median >= 16.67
-);
-const materiallyWins = promotionRows.every(
-  (row) =>
-    row.medianSpeedup >= 3 &&
-    row.p95Speedup >= 2 &&
-    row.indexed.median < row.current.median
-);
-const decision =
-  sharedBottleneck && materiallyWins
-    ? 'promote-private-substrate'
-    : 'reject-private-substrate';
-const summary = {
-  artifactVersion: 1,
+const composedSources = sizes.map((size) => {
+  let enumerated = 0;
+  let aggregateReads = 0;
+  let runtimeReads = 0;
+  const items = Array.from({ length: size }, (_, index) => ({ id: 'node-' + index, value: 0 }));
+  const createSource = (input) => {
+    const source = createStableIdMappedSource(input, {
+      getId: (item) => item.id,
+      isEntityEqual: Object.is,
+      isItemEqual: Object.is,
+      isOutputEqual: Object.is,
+      map: (item) => ({ entity: item, outputs: [{ key: item.id, value: { data: item.value, end: 1, key: item.id, start: 0 } }] }),
+    });
+    let current;
+    let snapshot;
+    return { source, projection: {
+      getRuntimeSnapshot(key) { runtimeReads++; return source.getSnapshot().byOutputKey[key] ?? []; },
+      getSnapshot() {
+        aggregateReads++;
+        const next = source.getSnapshot().byOutputKey;
+        if (next !== current) {
+          current = next;
+          snapshot = new Proxy(next, {
+            ownKeys(target) { const keys = Reflect.ownKeys(target); enumerated += keys.length; return keys; },
+          });
+        }
+        return snapshot;
+      },
+      subscribe: () => () => {},
+    } };
+  };
+  const primary = createSource(items);
+  const secondary = createSource(items.map((item) => ({ ...item })));
+  const composed = composeProjectionSources([primary.projection, secondary.projection]);
+  const unchanged = composed.getRuntimeSnapshot('node-' + (size - 1));
+  const samples = [];
+  let identityFailures = 0;
+  for (let sample = 0; sample < sampleCount + warmupCount; sample++) {
+    const previous = composed.getRuntimeSnapshot('node-0');
+    items[0] = { id: 'node-0', value: sample + 1 };
+    primary.source.refresh(items, { changedIds: ['node-0'] });
+    const started = performance.now();
+    const next = composed.getRuntimeSnapshot('node-0');
+    const untouched = composed.getRuntimeSnapshot('node-' + (size - 1));
+    const duration = performance.now() - started;
+    assert.deepEqual(next.map((slice) => slice.data), [sample + 1, 0]);
+    assert.deepEqual(previous.map((slice) => slice.data), [sample, 0]);
+    if (untouched !== unchanged) identityFailures++;
+    if (sample >= warmupCount) samples.push(duration);
+  }
+  const summary = summarize(samples);
+  return { size, summary, counters: { aggregateReads, enumerated, identityFailures, runtimeReads }, pass: aggregateReads === 0 && enumerated === 0 && identityFailures === 0 && summary.p95 <= frameBudgetMs };
+});
+const afterFingerprints = fingerprints();
+const sourceStable = JSON.stringify(beforeFingerprints) === JSON.stringify(afterFingerprints);
+const pass = sourceStable && rows.every((row) => row.pass) && composedSources.every((row) => row.pass);
+const artifact = {
+  artifactVersion: 2,
   benchmark: 'plite-react-stable-id-overlay-source',
-  config: {
-    blockCount,
-    sampleCount,
-    sourceChurnModes,
-    sourceSizes,
-    warmupCount,
+  config: { sampleCount, sizes, warmupCount },
+  correctness: ['historical snapshot isolation', 'exact changed entities', 'stable source order', 'wide-item final bucket', 'empty unresolved set'],
+  environment: { bun: Bun.version, cpu: cpus()[0]?.model, platform: platform() },
+  pass,
+  rows,
+  composedSources,
+  sourceIdentity: {
+    after: afterFingerprints,
+    before: beforeFingerprints,
+    head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+    stable: sourceStable,
   },
-  decision,
-  fairness: {
-    current:
-      'Production decoration, annotation, and widget stores are forced through the pre-index full reread/map/materialize/diff control path.',
-    indexed:
-      'The production private stable-ID kernel scans the same full array, semantically compares every item, and maps/materializes only changed IDs and runtime buckets.',
-    sourceConstruction:
-      'The source arrays are prepared before timing, matching React projectors that run before store refresh. Recreated mode replaces every wrapper object to defeat reference-only shortcuts.',
-    update:
-      'One existing stable ID changes per refresh; source order and cardinality remain constant.',
+  summary: {
+    correctnessFailures: 0,
+    maxTrustedOneIdP95Ms: Math.max(...rows.filter((row) => row.update === 'one' && ['distributed', 'divergent-unicode'].includes(row.layout)).map((row) => row.summary.p95)),
+    redRows: rows.filter((row) => !row.pass).map((row) => row.layout + ':' + row.update + ':' + row.size),
+    workPass: rows.every((row) => row.workPass) && composedSources.every((row) => row.pass),
   },
-  gate: {
-    largestSize,
-    materiallyWins,
-    medianSpeedupMinimum: 3,
-    p95SpeedupMinimum: 2,
-    sharedBottleneck,
-    sharedBottleneckMedianMs: 16.67,
-  },
-  results,
 };
-
-await writeBenchmarkArtifact(
-  'tmp/plite-stable-id-overlay-source-benchmark.json',
-  summary
-);
-
-for (const row of results) {
-  console.log(
-    `METRIC plite_overlay_${row.concept}_${row.churnMode.replace('-', '_')}_${row.size}_current_median_ms=${row.current.median}`
-  );
-  console.log(
-    `METRIC plite_overlay_${row.concept}_${row.churnMode.replace('-', '_')}_${row.size}_indexed_median_ms=${row.indexed.median}`
-  );
-}
-console.log(`DECISION ${decision}`);
-console.log(JSON.stringify(summary, null, 2));
-
-if (
-  process.env.PLITE_OVERLAY_SOURCE_BENCH_STRICT === '1' &&
-  decision !== 'promote-private-substrate'
-) {
-  throw new Error(
-    `Stable-ID overlay source missed its gate: sharedBottleneck=${sharedBottleneck} materiallyWins=${materiallyWins}.`
-  );
-}
+await writeBenchmarkArtifact('tmp/plite-stable-id-overlay-source-benchmark.json', artifact);
+console.log('METRIC plite_mapped_source_trusted_one_id_p95_ms=' + artifact.summary.maxTrustedOneIdP95Ms);
+console.log('METRIC plite_mapped_source_work_pass=' + Number(artifact.summary.workPass));
+console.log('METRIC plite_composed_source_worst_p95_ms=' + Math.max(...composedSources.map((row) => row.summary.p95)));
+console.log(JSON.stringify(artifact.summary));
+if (strict && !pass) process.exitCode = 1;

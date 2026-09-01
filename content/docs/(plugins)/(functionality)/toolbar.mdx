@@ -18,9 +18,9 @@ docs:
 
 - **Fixed Toolbar**: Persistent toolbar that sticks to the top of the editor
 - **Floating Toolbar**: Contextual toolbar that appears on text selection
-- **Customizable Buttons**: Easily add, remove, and reorder toolbar buttons
+- **Customizable Buttons**: Add, remove, and reorder toolbar buttons
 - **Responsive Design**: Adapts to different screen sizes and content
-- **Plugin Integration**: Seamless integration with Plate plugins and UI components
+- **Plugin Integration**: Uses Plate plugins and copied UI components
 
 </PackageInfo>
 
@@ -69,7 +69,6 @@ import { definePlatePlugin } from 'platejs/react';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbar } from '@/components/editor/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
   render: {
@@ -83,11 +82,7 @@ const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
 
 const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
   render: {
-    afterEditable: () => (
-      <FloatingToolbar>
-        <FloatingToolbarButtons />
-      </FloatingToolbar>
-    ),
+    afterEditable: FloatingToolbar,
   },
 });
 
@@ -116,7 +111,6 @@ To customize it, you can edit `components/editor/fixed-toolbar.tsx`.
 Similarly, you can customize the floating toolbar by editing `components/editor/floating-toolbar.tsx`.
 
 <ComponentSource name="floating-toolbar" />
-
 
 ### Creating Custom Button
 
@@ -232,7 +226,7 @@ Plugin that renders a fixed toolbar above the editor content.
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="render.beforeEditable" type="() => ReactNode">
+  <APIItem name="render.beforeEditable" type="EditableSiblingComponent">
     Renders the fixed toolbar before the editor content. Contains FixedToolbarButtons by default.
   </APIItem>
 </APIOptions>
@@ -244,7 +238,7 @@ Plugin that renders a floating toolbar that appears on text selection.
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="render.afterEditable" type="() => ReactNode">
+  <APIItem name="render.afterEditable" type="EditableSiblingComponent">
     Renders the floating toolbar as an overlay after the editor. Contains FloatingToolbarButtons by default.
   </APIItem>
 </APIOptions>

@@ -1,4 +1,12 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
 import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import { createEditorCommit } from '../../../../../packages/plitejs/src/core/commit.ts';
+import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
+import { buildSnapshotIndex } from '../../../../../packages/plitejs/src/core/snapshot-index.ts';
+import { seedNodeKeys } from '../../../../../packages/plitejs/src/utils/node-keys.ts';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
   round,
@@ -13,6 +21,19 @@ const queryOps = Number(process.env.PLITE_QUERY_ANCHOR_BENCH_QUERY_OPS || 200);
 const anchorCount = Number(
   process.env.PLITE_QUERY_ANCHOR_BENCH_ANCHORS || 50
 );
+const measuredFiles = [
+  'packages/plitejs/src/core/commit.ts',
+  'packages/plitejs/src/core/change/document-index.ts',
+  'packages/plitejs/src/core/public-state.ts',
+  'packages/plitejs/src/core/snapshot-index.ts',
+  'packages/plitejs/src/interfaces/editor.ts',
+  'packages/plitejs/src/interfaces/node.ts',
+  'benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs',
+];
+const fingerprint = () => Object.fromEntries(measuredFiles.map((file) => [
+  file, createHash('sha256').update(readFileSync(file)).digest('hex'),
+]));
+const sourceBefore = fingerprint();
 
 const createChildren = (count) =>
   Array.from({ length: count }, (_, index) => ({
@@ -412,9 +433,216 @@ const rangeAnchorsInspectionMs = measureLane(
   }
 );
 
+const commitQueries = [100, 1000, 10_000].map((count) => {
+  const editor = createEditor({ initialValue: createChildren(count) });
+  const previous = Editor.getSnapshot(editor);
+  const missingKey = previous.index.keyAt([0]);
+
+  Editor.replace(editor, {
+    children: createChildren(count).map((node) => ({ ...node, updated: true })),
+    selection: null,
+  });
+  const commit = Editor.getLastCommit(editor);
+  assert.ok(commit && missingKey);
+  const ids = commit.changed.nodeKeysAll('node');
+  const queryIds = ids.slice(0, count);
+  const membership = [];
+  const publication = [];
+  let snapshotChanges = 0;
+  let membershipHits = 0;
+
+  for (let sample = 0; sample < 21; sample++) {
+    let hits = 0;
+    let start = performance.now();
+    for (const id of queryIds) hits += Number(commit.changed.hasNodeKey(id, 'node'));
+    const duration = performance.now() - start;
+    assert.equal(hits, queryIds.length);
+    membershipHits = hits;
+    start = performance.now();
+    for (let query = 0; query < 100; query++) {
+      if (commit.changed.nodeKeysAll('node') !== ids) snapshotChanges++;
+    }
+    const publicationDuration = performance.now() - start;
+    if (sample > 0) {
+      membership.push(duration);
+      publication.push(publicationDuration);
+    }
+  }
+
+  assert.equal(commit.changed.hasNodeKey('missing-runtime-key', 'node'), false);
+  assert.equal(previous.index.keyAt([0]), missingKey);
+  const membershipMs = summarize(membership);
+  const publicationMs = summarize(publication);
+  return {
+    count,
+    counters: { changedKeys: ids.length, membershipHits, queriesPerSample: queryIds.length, snapshotChanges },
+    membershipMs,
+    publicationMs,
+    pass: membershipMs.p95 <= 16.67 && publicationMs.p95 <= 16.67 && snapshotChanges === 0,
+  };
+});
+const selectionQueries = [100, 1000, 10_000, 100_000].map((count) => {
+  const editor = createEditor({ initialValue: createChildren(count) });
+  const samples = [];
+  let enumerated = 0;
+  let keyReads = 0;
+  const boundedIndex = (index) => ({
+    entries: () => { const entries = index.entries(); enumerated += entries.length; return entries; },
+    keyAt: (path) => { keyReads++; return index.keyAt(path); },
+    pathOf: (key) => index.pathOf(key),
+  });
+
+  for (let sample = 0; sample < 21; sample++) {
+    const before = Editor.getSnapshot(editor);
+    editor.update.selection.set({
+      anchor: { path: [count - 1, 0], offset: 0 },
+      focus: { path: [count - 1, 0], offset: 1 + sample % 2 },
+    });
+    const actual = Editor.getLastCommit(editor);
+    assert.ok(actual);
+    const commit = createEditorCommit({
+      after: { ...actual.after, index: boundedIndex(actual.after.index) },
+      afterValue: { children: actual.after.children },
+      annotations: {},
+      before: { ...before, index: boundedIndex(before.index) },
+      beforeValue: { children: before.children },
+      changes: actual.changes,
+      dirtyStateKeys: [],
+      editor,
+      effects: [],
+      selectionAfter: actual.selectionAfter,
+      selectionAfterRoot: 'main',
+      selectionBefore: actual.selectionBefore,
+      selectionBeforeRoot: 'main',
+      selectionChanged: true,
+      tags: [],
+    }, { previousVersion: sample, version: sample + 1 });
+    enumerated = 0;
+    keyReads = 0;
+    const start = performance.now();
+    const ids = commit.changed.nodeKeysAll('selection');
+    for (const kind of ['node', 'path', 'text', 'presence']) {
+      assert.equal(commit.changed.nodeKeysAll(kind).length, 0);
+    }
+    assert.equal(commit.changed.hasAny('root-order'), false);
+    const elapsed = performance.now() - start;
+    assert.deepEqual(new Set(ids), new Set([
+      actual.after.index.keyAt([count - 1]),
+      actual.after.index.keyAt([count - 1, 0]),
+    ]));
+    if (sample > 0) samples.push(elapsed);
+  }
+  const durationMs = summarize(samples);
+  return { count, durationMs, counters: { enumerated, keyReads }, pass: enumerated === 0 && keyReads <= 8 && durationMs.p95 <= 16.67 };
+});
+const structuralQueries = [100, 1000, 10_000].map((count) => {
+  const samples = [];
+  let enumerated = 0;
+  let keyReads = 0;
+  const boundedIndex = (index) => ({
+    entries: () => { const entries = index.entries(); enumerated += entries.length; return entries; },
+    keyAt: (path) => { keyReads++; return index.keyAt(path); },
+    pathOf: (key) => index.pathOf(key),
+  });
+  for (let sample = 0; sample < 21; sample++) {
+    const editor = createEditor({ initialValue: createChildren(count) });
+    const before = Editor.getSnapshot(editor);
+    editor.update.nodes.insert({ type: 'paragraph', children: [{ text: 'appended' }] }, { at: [count] });
+    const actual = Editor.getLastCommit(editor);
+    assert.ok(actual);
+    const commit = createEditorCommit({
+      after: { ...actual.after, index: boundedIndex(actual.after.index) },
+      afterValue: { children: actual.after.children },
+      annotations: {},
+      before: { ...before, index: boundedIndex(before.index) },
+      beforeValue: { children: before.children },
+      changes: actual.changes,
+      dirtyStateKeys: [],
+      editor,
+      effects: [],
+      selectionAfter: null,
+      selectionAfterRoot: 'main',
+      selectionBefore: null,
+      selectionBeforeRoot: 'main',
+      selectionChanged: false,
+      tags: [],
+    }, { previousVersion: 0, version: 1 });
+    enumerated = 0;
+    keyReads = 0;
+    const start = performance.now();
+    const ids = commit.changed.nodeKeysAll('path');
+    assert.equal(commit.changed.hasAny('root-order'), true);
+    assert.equal(commit.changed.hasAny('structure'), true);
+    const duration = performance.now() - start;
+    assert.deepEqual(new Set(ids), new Set([actual.after.index.keyAt([count]), actual.after.index.keyAt([count, 0])]));
+    if (sample > 0) samples.push(duration);
+  }
+  const durationMs = summarize(samples);
+  return { count, durationMs, counters: { enumerated, keyReads }, pass: enumerated === 0 && keyReads <= 64 && durationMs.p95 <= 16.67 };
+});
+const immutableIndexCache = [100, 1000, 10_000, 100_000].map((count) => {
+  const document = DocumentIndex.fromValue(createChildren(count));
+  const children = document.value;
+  let enumerations = 0;
+  const input = new Proxy(children, {
+    ownKeys(value) { enumerations++; return Reflect.ownKeys(value); },
+  });
+  const instrumented = DocumentIndex.fromValue(input);
+  enumerations = 0;
+  assert.equal(DocumentIndex.fromValue(input), instrumented);
+  const samples = [];
+  for (let sample = 0; sample <= iterations; sample++) {
+    const start = performance.now();
+    for (let read = 0; read < 100; read++) {
+      assert.equal(DocumentIndex.fromValue(children), document);
+    }
+    const duration = performance.now() - start;
+    if (sample > 0) samples.push(duration);
+  }
+  const durationMs = summarize(samples);
+  return { count, reads: 100, enumerations, durationMs, pass: enumerations === 0 && durationMs.p95 <= 16.67 };
+});
+const coldSnapshotIndex = [100, 1000, 10_000, 100_000].map((count) => {
+  const children = DocumentIndex.fromValue(createChildren(count)).value;
+  const owner = {};
+  seedNodeKeys(children, owner);
+  let nodeReads = 0;
+  const input = new Proxy(children, {
+    get(value, property, receiver) {
+      if (typeof property === 'string' && /^\d+$/.test(property)) nodeReads++;
+      return Reflect.get(value, property, receiver);
+    },
+  });
+  const observed = buildSnapshotIndex(owner, input);
+  const constructionReads = nodeReads;
+  nodeReads = 0;
+  const key = observed.keyAt([count - 1, 0]);
+  assert.ok(key);
+  assert.deepEqual(observed.pathOf(key), [count - 1, 0]);
+  const samples = [];
+  for (let sample = 0; sample <= 20; sample++) {
+    const start = performance.now();
+    const index = buildSnapshotIndex(owner, children);
+    assert.equal(index.keyAt([count - 1, 0]), key);
+    const elapsed = performance.now() - start;
+    if (sample > 0) samples.push(elapsed);
+  }
+  const durationMs = summarize(samples);
+  return { count, constructionReads, lookupReads: nodeReads, durationMs, pass: constructionReads === 0 && nodeReads === 1 && durationMs.p95 <= 16.67 };
+});
+const sourceAfter = fingerprint();
+assert.deepEqual(sourceAfter, sourceBefore, 'Measured source changed during the benchmark');
+const queryFailures = [...commitQueries, ...selectionQueries, ...structuralQueries, ...immutableIndexCache, ...coldSnapshotIndex].filter((row) => !row.pass).length;
+
 const summary = {
   lane: 'plite-query-anchor-observation',
   iterations,
+  commitQueries,
+  selectionQueries,
+  structuralQueries,
+  immutableIndexCache,
+  coldSnapshotIndex,
+  sourceIdentity: { measuredInputs: sourceAfter },
   config: {
     blockCount,
     queryOps,
@@ -462,4 +690,13 @@ await writeBenchmarkArtifact(
   summary
 );
 
-console.log(JSON.stringify(summary, null, 2));
+console.log(`METRIC plite_commit_query_guard_failures=${queryFailures}`);
+console.log(`METRIC plite_commit_query_worst_p95_ms=${Math.max(...commitQueries.map((row) => row.membershipMs.p95))}`);
+console.log(`METRIC plite_selection_query_worst_p95_ms=${Math.max(...selectionQueries.map((row) => row.durationMs.p95))}`);
+console.log(`METRIC plite_structural_query_worst_p95_ms=${Math.max(...structuralQueries.map((row) => row.durationMs.p95))}`);
+console.log(`METRIC plite_immutable_index_cached_reads_p95_ms=${Math.max(...immutableIndexCache.map((row) => row.durationMs.p95))}`);
+console.log(`METRIC plite_cold_snapshot_index_lookup_p95_ms=${Math.max(...coldSnapshotIndex.map((row) => row.durationMs.p95))}`);
+console.log('ARTIFACT tmp/plite-query-anchor-observation-benchmark.json');
+if (process.env.PLITE_QUERY_ANCHOR_BENCH_STRICT === '1' && queryFailures > 0) {
+  throw new Error(`Commit queries missed ${queryFailures} locality guards`);
+}

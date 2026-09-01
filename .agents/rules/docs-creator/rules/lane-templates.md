@@ -201,6 +201,9 @@ Required shape:
    - put lifecycle and host/DOM events in one root `on` family with prefixless
      child names: `keyDown`, `paste`, `nodeChange`, `textChange`, and capture
      variants; never teach a `handlers` bucket
+   - register a complete before/after Editable or container component directly;
+     show a callback only for real custom composition, and pass only the exact
+     `editableRef` or `containerRef` supplied by that slot
    - teach clipboard ingress only as a direct `clipboardHandler(...)` entry in
      `contributions`, never as a root `clipboard` field; teach only
      `clipboardHandler(handler)`, with the handler transaction contextually

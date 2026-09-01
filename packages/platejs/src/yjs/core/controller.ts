@@ -239,7 +239,8 @@ export class YjsController<
     this.awarenessSelectionField =
       options.awarenessSelectionField ?? 'selection';
     this.autoSendSelection = options.autoSendSelection ?? true;
-    this.awarenessObserver = () => {
+    this.awarenessObserver = (event) => {
+      this.awarenessAdapter.handleAwarenessChange(event);
       this.updateAwarenessRevision();
     };
     this.providerLifecycle = createYjsProviderLifecycleAdapter({
@@ -247,6 +248,7 @@ export class YjsController<
         if (!connected) {
           this.awarenessAdapter.clearSelection();
         }
+        this.awarenessAdapter.rebuild();
         this.updateAwarenessRevision();
       },
       onProviderSyncedChange: () => {
@@ -437,6 +439,11 @@ export class YjsController<
     ) {
       this.provider?.destroy?.();
     }
+    this.awarenessAdapter.destroy();
+  }
+
+  cursorCache(): YjsAwarenessAdapter<TCursorData> {
+    return this.awarenessAdapter;
   }
 
   private bindExternalEvents(): void {
@@ -572,7 +579,10 @@ export class YjsController<
     const after = committedValue;
     const before = previousCommittedValue;
     const removedBindings: string[] = [];
-    const fallbacks = new Set<string>();
+    const fallbacks = new Set<string>([
+      ...commit.changes.createRoots,
+      ...commit.changes.deleteRoots,
+    ]);
 
     this.doc.transact(() => {
       for (const root of changedRoots) {
@@ -694,6 +704,9 @@ export class YjsController<
         binding.synchronizedChildren = this.editorAdapter.readChildren(root);
       }
     }
+    this.awarenessAdapter.publishMappedRoots(changedRoots, {
+      fallbackRoots: fallbacks,
+    });
     if (shouldSendSelection) {
       this.awarenessAdapter.sendSelection();
     }
@@ -1136,6 +1149,11 @@ export class YjsController<
     });
     binding.synchronizedChildren = children;
     binding.bridge.reset(children);
+    const changedRoots = new Set([MAIN_ROOT_KEY]);
+
+    this.awarenessAdapter.publishMappedRoots(changedRoots, {
+      fallbackRoots: changedRoots,
+    });
   }
 
   private importDocumentFromYjs(
@@ -1213,6 +1231,9 @@ export class YjsController<
     this.resetBindingsFromYjs({
       main: changed?.main ?? true,
       named: namedRoots,
+    });
+    this.awarenessAdapter.publishMappedRoots(roots, {
+      fallbackRoots: roots,
     });
   }
 
@@ -1378,5 +1399,6 @@ export class YjsController<
     });
     binding.synchronizedChildren = result.import.children;
     result.import.accept(binding.synchronizedChildren);
+    this.awarenessAdapter.publishMappedRoots(new Set([root]));
   }
 }

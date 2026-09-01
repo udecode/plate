@@ -1,0 +1,51 @@
+{
+  "purpose": "One-sample causal probe, not a percentile. The target publishes one root but deliberately rebuilds its complete index; the durable target should reuse the existing grouped path-update owner.",
+  "rows": [
+    {
+      "blocks": 1000,
+      "edits": 1,
+      "rootPublications": 1,
+      "currentMs": 0.22666699999999906,
+      "targetMs": 5.809750000000001
+    },
+    {
+      "blocks": 1000,
+      "edits": 30,
+      "rootPublications": 30,
+      "currentMs": 4.883415999999997,
+      "targetMs": 4.694667000000003
+    },
+    {
+      "blocks": 1000,
+      "edits": 120,
+      "rootPublications": 120,
+      "currentMs": 17.713291999999996,
+      "targetMs": 5.001832999999991
+    },
+    {
+      "blocks": 10000,
+      "edits": 1,
+      "rootPublications": 1,
+      "currentMs": 3.2620000000000005,
+      "targetMs": 60.38891699999999
+    },
+    {
+      "blocks": 10000,
+      "edits": 30,
+      "rootPublications": 30,
+      "currentMs": 78.89362500000004,
+      "targetMs": 57.285541999999964
+    },
+    {
+      "blocks": 10000,
+      "edits": 120,
+      "rootPublications": 120,
+      "currentMs": 353.3414579999999,
+      "targetMs": 55.7806250000001
+    }
+  ],
+  "source": {
+    "packages/plitejs/src/core/change/root-change.ts": "91a21da28e2b14dd450e2419e9bf286bbb6992a6cee59166153271ca1066eac9",
+    "packages/plitejs/src/core/change/document-index.ts": "0e9d7f53820d7a615cc229ef4975dd08ea8bca64a423d5f3abd0cf254d3ef69a"
+  }
+}

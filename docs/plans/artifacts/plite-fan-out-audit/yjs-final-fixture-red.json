@@ -1,0 +1,6 @@
+{
+  "classification": "benchmark fixture, not production",
+  "command": "PLITE_YJS_EVENT_CHANGE_BENCH_BLOCKS=100 PLITE_YJS_EVENT_CHANGE_BENCH_SAMPLES=1 PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark-repro.json",
+  "exitCode": 1,
+  "output": "1294 |   let current: Y.AbstractType<unknown> | YjsNode = target;\n1295 |   let { parent } = current;\n1296 | \n1297 |   while (parent !== null && parent !== root) {\n1298 |     current = parent;\n1299 |     ({ parent } = current);\n                         ^\nTypeError: Cannot destructure property 'parent' from null or undefined value\n      at getTopLevelNode (/Users/zbeyens/git/plate-2/packages/platejs/src/yjs/core/event-change-bridge.ts:1299:19)\n      at translate (/Users/zbeyens/git/plate-2/packages/platejs/src/yjs/core/event-change-bridge.ts:2721:23)\n      at <anonymous> (/Users/zbeyens/git/plate-2/packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts:379:27)\n      at map (1:11)\n      at /Users/zbeyens/git/plate-2/packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts:319:3\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.12 (macOS arm64)\n"
+}

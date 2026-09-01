@@ -1,0 +1,81 @@
+{
+  "command": "pnpm check:plite",
+  "exitCode": 0,
+  "sourceManifest": "docs/plans/artifacts/plite-fan-out-audit/final-source-membership-before.json",
+  "pliteSource": {
+    "files": 412,
+    "digest": "8bd6a1f71a27c7de17b0484c7f025149e22e224adaf958bc4db2de66fd0b3b0c"
+  },
+  "plateSource": {
+    "files": 830,
+    "digest": "00f8fcab67ad28cdc18cb917eb27a6c9ca81aa6fe07e8f1ca0b2167b5b0e227c"
+  },
+  "unchangedInputs": true,
+  "strict": {
+    "mode": "strict",
+    "steps": [
+      {
+        "command": "pnpm plite:typecheck",
+        "id": "typecheck"
+      },
+      {
+        "command": "pnpm plite:test",
+        "id": "package-tests"
+      },
+      {
+        "command": "pnpm check:plite:contracts",
+        "id": "contracts"
+      },
+      {
+        "command": "pnpm --filter plite test:plite-browser:chromium",
+        "id": "browser-chromium"
+      }
+    ],
+    "durationMs": 396577,
+    "status": "passed",
+    "timings": [
+      {
+        "durationMs": 10047,
+        "id": "typecheck",
+        "status": 0
+      },
+      {
+        "durationMs": 37571,
+        "id": "package-tests",
+        "status": 0
+      },
+      {
+        "durationMs": 20052,
+        "id": "contracts",
+        "status": 0
+      },
+      {
+        "durationMs": 328908,
+        "id": "browser-chromium",
+        "status": 0
+      }
+    ]
+  },
+  "browser": {
+    "artifact": "apps/plite/test-results/plite-browser-runner/summary-chromium-e3b0c44298fc-1-of-1.json",
+    "status": "passed",
+    "coverage": {
+      "duplicatePlanned": [],
+      "duplicates": [],
+      "missing": [],
+      "ok": true,
+      "unexpected": [],
+      "applicable": 718,
+      "excluded": 1,
+      "executed": 718,
+      "passed": 710,
+      "selected": 718,
+      "skipped": 8
+    },
+    "durationMs": 323705,
+    "sourceFingerprint": "28fe692f45d1d2916559486a9ecc44c1bddb6c57b3cb44f00de3d6631c09a3bf",
+    "proofFingerprint": "28fe692f45d1d2916559486a9ecc44c1bddb6c57b3cb44f00de3d6631c09a3bf",
+    "planFingerprint": "d4555024a6ba508d0d5a08a9c61b01deea906f34fcc0397bb7c92bf126c627e9",
+    "completedUnits": 79
+  }
+}

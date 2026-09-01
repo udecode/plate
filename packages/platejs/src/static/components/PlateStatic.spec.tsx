@@ -378,3 +378,29 @@ describe('PlateStatic Memoization', () => {
     expect(view.queryByText('First caption')).not.toBeInTheDocument();
   });
 });
+
+describe('PlateStatic render slots', () => {
+  it('does not invoke dynamic editable sibling slots', () => {
+    let siblingRenderCount = 0;
+    const DynamicSibling = () => {
+      siblingRenderCount += 1;
+
+      return <span data-testid="dynamic-sibling" />;
+    };
+    const editor = createHeadlessEditor({
+      initialValue: [{ children: [{ text: 'static' }], type: 'paragraph' }],
+      plugins: [
+        defineBasePlugin('dynamicSibling', {
+          render: {
+            afterEditable: DynamicSibling,
+            beforeEditable: DynamicSibling,
+          },
+        }),
+      ],
+    });
+    const view = render(<PlateStatic editor={editor} />);
+
+    expect(view.queryByTestId('dynamic-sibling')).not.toBeInTheDocument();
+    expect(siblingRenderCount).toBe(0);
+  });
+});

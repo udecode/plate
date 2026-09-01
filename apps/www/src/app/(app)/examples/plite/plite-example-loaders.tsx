@@ -27,9 +27,6 @@ export const pliteExampleComponents = {
   'comment-mode': createPliteExampleLoader(
     () => import('./_examples/comment-mode')
   ),
-  'cursor-overlay-ordering': createPliteExampleLoader(
-    () => import('./_examples/cursor-overlay-ordering')
-  ),
   'cross-editor-drag': createPliteExampleLoader(
     () => import('./_examples/cross-editor-drag')
   ),

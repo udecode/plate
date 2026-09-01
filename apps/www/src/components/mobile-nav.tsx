@@ -232,22 +232,20 @@ export function MobileNav({
   );
 }
 
-interface MobileLinkProps extends Omit<LinkProps<string>, 'href'> {
-  children: React.ReactNode;
-  className?: string;
-  href: Route;
-  onOpenChange?: (open: boolean) => void;
-  rel?: string;
-  target?: string;
-}
-
 function MobileLink({
   children,
   className,
   href,
   onOpenChange,
   ...props
-}: MobileLinkProps) {
+}: Omit<LinkProps<string>, 'href'> & {
+  children: React.ReactNode;
+  className?: string;
+  href: Route;
+  onOpenChange?: (open: boolean) => void;
+  rel?: string;
+  target?: string;
+}) {
   const router = useRouter();
   const external = isExternalHref(href);
 

@@ -10,6 +10,7 @@ import {
   type NamedRootKey,
   NodeApi,
   type Path,
+  RangeApi,
   type RootKey,
   type NodeKey,
   type Element as PliteElementNode,
@@ -71,15 +72,25 @@ import { readRuntimeNode } from '../editable/runtime-live-state';
 import { writeRuntimeSelection } from '../editable/runtime-mutation-state';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
+import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { usePliteContentRoot } from '../hooks/use-plite-content-root';
+import { useDecorationSourceLifecycle } from '../hooks/use-plite-decoration-source';
 import {
   getDOMTextRenderRevision,
   usePliteNodeKeyDOMValue,
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
+import { useSelectionGeometry } from '../hooks/use-selection-geometry';
+import {
+  createPliteInactiveSelectionDecorationSource,
+  createPliteInactiveSelectionStore,
+  registerPliteInactiveSelectionFocus,
+  resolvePliteInactiveSelectionBlur,
+  setPliteInactiveSelectionVisible,
+} from '../inactive-selection';
 import { ReactEditor } from '../plugin/react-editor';
 import { ProjectionContext } from '../projection-context';
 import type {
@@ -854,7 +865,9 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
 
     return (
       <EditableText
-        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [childNodeKey])}`}
+        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
+          childNodeKey,
+        ])}`}
         marks={marks}
         path={childPath}
         placeholder={placeholder}
@@ -877,7 +890,9 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
   const renderChild = (childNodeKey: NodeKey, index: number) =>
     renderDirectTextChild(childNodeKey, node.children[index], index) ?? (
       <EditableDescendantNode
-        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [childNodeKey])}`}
+        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
+          childNodeKey,
+        ])}`}
         placeholder={placeholder}
         placeholderRef={placeholderRef}
         renderElement={renderElement}
@@ -1098,7 +1113,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   ignoreBlankEditableRootClicks = false,
   domStrategy,
   onBeforeInput,
+  onBlurCapture,
   onDOMBeforeInput,
+  onFocusCapture,
   onKeyDown,
   onDOMStrategyMetrics,
   onPaste,
@@ -1126,6 +1143,10 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   const inheritedReadOnly = useEditorReadOnly();
   const effectiveReadOnly = readOnly || inheritedReadOnly;
   const upstreamProjectionStore = React.useContext(ProjectionContext);
+  const inactiveSelectionStore = React.useMemo(
+    () => createPliteInactiveSelectionStore(editor),
+    [editor]
+  );
   const [decorateCell] = React.useState(() => createCommittedValue(decorate));
   const [autoDecorateRuntimeScopeCell] = React.useState(() =>
     createCommittedValue<readonly NodeKey[] | null>(null)
@@ -1139,6 +1160,15 @@ const EditableInner = <T, TElement extends PliteElementNode>({
         autoDecorateRuntimeScopeCell.read()
       ),
     [autoDecorateRuntimeScopeCell, decorateRuntimeScope]
+  );
+  const activeMountedRuntimeScope = React.useCallback(
+    (context: PliteSourceDirtinessContext) =>
+      mergeMountedRuntimeScope(
+        context.snapshot,
+        null,
+        autoDecorateRuntimeScopeCell.read()
+      ),
+    [autoDecorateRuntimeScopeCell]
   );
   const readDecorations = React.useCallback(
     (context: PliteDecorationSourceReadContext) =>
@@ -1172,6 +1202,18 @@ const EditableInner = <T, TElement extends PliteElementNode>({
       runtimeScope: activeDecorateRuntimeScope,
     }
   );
+  const inactiveSelectionDecorationSource = React.useMemo(
+    () =>
+      createPliteInactiveSelectionDecorationSource(
+        editor,
+        inactiveSelectionStore,
+        {
+          root: editableRoot,
+          runtimeScope: activeMountedRuntimeScope,
+        }
+      ),
+    [activeMountedRuntimeScope, editableRoot, editor, inactiveSelectionStore]
+  );
   const projectionStore = React.useMemo(
     () =>
       composeProjectionSources<any>([
@@ -1181,12 +1223,20 @@ const EditableInner = <T, TElement extends PliteElementNode>({
         ...(decorateSource
           ? [decorateSource as PliteOverlayProjectionStore<any>]
           : []),
+        inactiveSelectionDecorationSource as PliteOverlayProjectionStore<any>,
         ...(viewSelectionDecorationSource
           ? [viewSelectionDecorationSource as PliteOverlayProjectionStore<any>]
           : []),
       ]),
-    [decorateSource, upstreamProjectionStore, viewSelectionDecorationSource]
+    [
+      decorateSource,
+      inactiveSelectionDecorationSource,
+      upstreamProjectionStore,
+      viewSelectionDecorationSource,
+    ]
   );
+  useDecorationSourceLifecycle(decorateSource);
+  useDecorationSourceLifecycle(inactiveSelectionDecorationSource);
   const [promotedSegmentIndex, setPromotedSegmentIndex] = React.useState<
     number | null
   >(null);
@@ -1200,6 +1250,9 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   >(null);
   const [domStrategyRootElement, setDOMStrategyRootElement] =
     React.useState<HTMLDivElement | null>(null);
+  const inactiveSelectionEditableRef = React.useRef<HTMLDivElement | null>(
+    null
+  );
   const [
     promotedVirtualizedTopLevelIndex,
     setPromotedVirtualizedTopLevelIndex,
@@ -1264,6 +1317,8 @@ const EditableInner = <T, TElement extends PliteElementNode>({
   );
   const editableRootRef = React.useCallback(
     (node: HTMLDivElement | null) => {
+      inactiveSelectionEditableRef.current = node;
+
       if (virtualizedDOMStrategyConfig) {
         setDOMStrategyRootElement(node);
       }
@@ -1644,15 +1699,25 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     },
     [editor]
   );
-  React.useEffect(() => {
-    if (!decorateSource) {
-      return undefined;
-    }
+  useIsomorphicLayoutEffect(
+    () =>
+      inactiveSelectionStore.subscribe(() => {
+        inactiveSelectionDecorationSource.refresh({ reason: 'external' });
+      }),
+    [inactiveSelectionDecorationSource, inactiveSelectionStore]
+  );
+  useIsomorphicLayoutEffect(() => {
+    const document =
+      inactiveSelectionEditableRef.current?.ownerDocument ??
+      globalThis.document;
 
-    return () => {
-      decorateSource.destroy();
-    };
-  }, [decorateSource]);
+    if (!document) return undefined;
+
+    return registerPliteInactiveSelectionFocus(
+      document,
+      inactiveSelectionStore
+    );
+  }, [inactiveSelectionStore]);
   React.useEffect(() => {
     const unregisterDecorateSource = decorateSource
       ? registerEditorDecorationRefreshSource(editor, decorateSource)
@@ -1663,12 +1728,23 @@ const EditableInner = <T, TElement extends PliteElementNode>({
           viewSelectionDecorationSource
         )
       : null;
+    const unregisterInactiveSelectionSource =
+      registerEditorDecorationRefreshSource(
+        editor,
+        inactiveSelectionDecorationSource
+      );
 
     return () => {
       unregisterDecorateSource?.();
+      unregisterInactiveSelectionSource();
       unregisterViewSelectionSource?.();
     };
-  }, [decorateSource, editor, viewSelectionDecorationSource]);
+  }, [
+    decorateSource,
+    editor,
+    inactiveSelectionDecorationSource,
+    viewSelectionDecorationSource,
+  ]);
   React.useLayoutEffect(() => {
     decorateCell.commit(decorate);
     decorateSource?.refresh({
@@ -1695,6 +1771,32 @@ const EditableInner = <T, TElement extends PliteElementNode>({
     placeholderHeight && !disableDefaultStyles
       ? { minHeight: placeholderHeight, ...style }
       : style;
+  const handleBlurCapture = React.useCallback<
+    React.FocusEventHandler<HTMLDivElement>
+  >(
+    (event) => {
+      resolvePliteInactiveSelectionBlur(
+        event.currentTarget.ownerDocument,
+        inactiveSelectionStore,
+        event.relatedTarget
+      );
+      onBlurCapture?.(event);
+    },
+    [inactiveSelectionStore, onBlurCapture]
+  );
+  const handleFocusCapture = React.useCallback<
+    React.FocusEventHandler<HTMLDivElement>
+  >(
+    (event) => {
+      setPliteInactiveSelectionVisible(
+        event.currentTarget.ownerDocument,
+        inactiveSelectionStore,
+        false
+      );
+      onFocusCapture?.(event);
+    },
+    [inactiveSelectionStore, onFocusCapture]
+  );
   const domStrategyMetrics = React.useMemo(() => {
     const documentSize = topLevelNodeKeys.length;
     const mountedTopLevelCount = virtualizedPlan
@@ -1837,16 +1939,14 @@ const EditableInner = <T, TElement extends PliteElementNode>({
             virtualizedDOMStrategyOptions?.layout != null
           }
           onBeforeInput={onBeforeInput}
+          onBlurCapture={handleBlurCapture}
           onDOMBeforeInput={onDOMBeforeInput}
           onDOMStrategyMetrics={onDOMStrategyMetrics}
+          onFocusCapture={handleFocusCapture}
           onKeyDown={onKeyDown}
           onPaste={onPaste}
           readOnly={effectiveReadOnly}
-          ref={
-            virtualizedDOMStrategyConfig || forwardedRef
-              ? editableRootRef
-              : undefined
-          }
+          ref={editableRootRef}
           scrollSelectionIntoView={scrollSelectionIntoView}
           spellCheck={spellCheck}
           style={rootStyle}
@@ -2074,9 +2174,71 @@ const EditableInner = <T, TElement extends PliteElementNode>({
               />
             ))
           )}
+          <PliteInactiveSelectionCaret
+            editableRef={inactiveSelectionEditableRef}
+            store={inactiveSelectionStore}
+          />
         </EditableDOMRoot>
       </PliteEditableRootContext>
     </ProjectionContext>
+  );
+};
+
+const PliteInactiveSelectionCaret = ({
+  editableRef,
+  store,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+  store: ReturnType<typeof createPliteInactiveSelectionStore>;
+}) => {
+  const visible = React.useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    () => false
+  );
+
+  if (!visible) return null;
+
+  return <PliteInactiveSelectionCaretSelection editableRef={editableRef} />;
+};
+
+const PliteInactiveSelectionCaretSelection = ({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const selection = useEditorSelection();
+
+  if (!selection || !RangeApi.isCollapsed(selection)) return null;
+
+  return <PliteInactiveSelectionCaretGeometry editableRef={editableRef} />;
+};
+
+const PliteInactiveSelectionCaretGeometry = ({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const geometry = useSelectionGeometry({ editableRef });
+
+  if (!geometry?.focusRect) return null;
+
+  const rect = geometry.focusRect;
+
+  return (
+    <span
+      aria-hidden="true"
+      contentEditable={false}
+      data-plite-inactive-selection-caret=""
+      data-plite-root-chrome-ignore="true"
+      style={{
+        height: Math.max(rect.height, 1),
+        left: rect.left,
+        pointerEvents: 'none',
+        position: 'fixed',
+        top: rect.top,
+      }}
+    />
   );
 };
 
@@ -2093,6 +2255,10 @@ const EditableNonVirtualized = <T, TElement extends PliteElementNode>(
  *
  * `Editable` owns DOM strategy, renderers, events, selection sync, and optional
  * root scoping. Pass `root` to mount the editor surface for a specific root.
+ * When focus moves to an element or composed ancestor with
+ * `data-plite-keep-selection-visible`, that exact Editable paints its live
+ * canonical selection through `data-plite-inactive-selection` or
+ * `data-plite-inactive-selection-caret` until focus returns or moves elsewhere.
  */
 export const Editable = <
   T,

@@ -9,7 +9,7 @@ const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
 const FRAME_BUDGET_MS = 16.67;
 const MEASURED_TEXT = 'qwertyuiopasdfghjklz';
 const CASES = [
-  { offset: 'This is editable '.length, route: 'find-replace-demo' },
+  { offset: 'This is editable '.length, route: 'find-demo' },
   { offset: 0, route: 'list-demo' },
   { offset: 0, route: 'code-drawing-demo' },
   { offset: 0, route: 'copilot-demo' },

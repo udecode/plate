@@ -38,8 +38,10 @@ export type {
 export type { KeyboardHandler } from './plugin/KeyboardHandler';
 export type {
   ConfiguredPlatePlugin,
+  ContainerSiblingProps,
   Decorate,
   EditableSiblingComponent,
+  EditableSiblingProps,
   InjectNodeProps,
   LeafNodeProps,
   NodeProps,

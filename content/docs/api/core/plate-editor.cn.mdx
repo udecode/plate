@@ -88,12 +88,15 @@ editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
 ```ts title="Plugin state access"
-import { FindReplacePlugin } from 'platejs/find-replace';
+import { definePlatePlugin } from 'platejs/react';
 
-const findReplace = editor.plugin(FindReplacePlugin);
+const PanelPlugin = definePlatePlugin('panel', {
+  initialState: { open: false },
+});
+const panel = editor.plugin(PanelPlugin);
 
-const search = findReplace.store.get("search");
-findReplace.store.set({ search: search.trim() });
+const open = panel.store.get('open');
+panel.store.set({ open: !open });
 ```
 
 下表中的 `P` 是精确插件 descriptor type，`DefinitionOf<P>` 是其 normalized

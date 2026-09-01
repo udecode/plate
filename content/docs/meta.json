@@ -57,7 +57,7 @@
     "[History](/docs/plite/libraries/plite-history/history)",
     "[Plite History](/docs/plite/libraries/plite-history)",
     "[Plite Hyperscript](/docs/plite/libraries/plite-hyperscript)",
-    "[Plite Layout](/docs/plite/libraries/plite-layout)",
+    "[Plite Pagination](/docs/plite/libraries/plite-pagination)",
     "[Annotations](/docs/plite/libraries/plite-react/annotations)",
     "[DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries)",
     "[Editable Component](/docs/plite/libraries/plite-react/editable)",
@@ -91,6 +91,7 @@
     "[Editing Behavior](/docs/editing-behavior)",
     "[Plugin Input Rules](/docs/plugin-input-rules)",
     "[Editor](/docs/editor)",
+    "[Selection](/docs/selection)",
     "[Document Model](/docs/document-model)",
     "[Editor Methods](/docs/editor-methods)",
     "[Controlled Value](/docs/controlled)",
@@ -151,7 +152,6 @@
     "[Combobox](/docs/combobox)",
     "[Emoji](/docs/emoji)",
     "[Slash Command](/docs/slash-command)",
-    "[Cursor Overlay](/docs/cursor-overlay)",
     "[Drag & Drop](/docs/dnd)",
     "[Navigation Feedback](/docs/navigation-feedback)",
     "[Tabbable](/docs/tabbable)",
@@ -172,7 +172,6 @@
     "[Font Color Toolbar Button](/docs/components/font-color-toolbar-button)",
     "[Comment Toolbar Button](/docs/components/comment-toolbar-button)",
     "[Block Discussion](/docs/components/block-discussion)",
-    "[Cursor Overlay](/docs/components/cursor-overlay)",
     "[Block Draggable](/docs/components/dnd)",
     "[Editor](/docs/components/editor)",
     "[Select Editor](/docs/components/select-editor)",
@@ -235,7 +234,7 @@
     "[Media Video Element](/docs/components/media-video)",
     "[Mention Nodes](/docs/components/mention)",
     "[Paragraph Element](/docs/components/paragraph)",
-    "[Search Highlight Leaf](/docs/components/search-highlight)",
+    "[Find](/docs/components/find)",
     "[Slash Input Element](/docs/components/slash)",
     "[Table Element](/docs/components/table)",
     "[Tag Element](/docs/components/tag)",
@@ -257,7 +256,7 @@
     "[Excalidraw Demo](/docs/examples/excalidraw)",
     "[Code Drawing Demo](/docs/examples/code-drawing)",
     "[Single Block Demo](/docs/examples/single-block)",
-    "[Find Replace Demo](/docs/examples/find-replace)",
+    "[Find Demo](/docs/examples/find)",
     "[AI Demo](/docs/examples/ai)",
     "[Align Demo](/docs/examples/align)",
     "[Autoformat Demo](/docs/examples/autoformat)",
@@ -268,7 +267,6 @@
     "[Code Block Demo](/docs/examples/code-block)",
     "[Callout Demo](/docs/examples/callout)",
     "[Discussion Demo](/docs/examples/discussion)",
-    "[Cursor Overlay Demo](/docs/examples/cursor-overlay)",
     "[Date Demo](/docs/examples/date)",
     "[Footnote Demo](/docs/examples/footnote)",
     "[Drag & Drop Demo](/docs/examples/dnd)",
@@ -317,7 +315,6 @@
     "[Plate Store](/docs/api/core/plate-store)",
     "[Plate Controller](/docs/api/core/plate-controller)",
     "[Plate Utils](/docs/api/utils)",
-    "[Floating](/docs/api/floating)",
     "[Resizable](/docs/api/resizable)"
   ],
   "_plate": {
@@ -626,13 +623,6 @@
               "titleCn": "Plate 工具"
             },
             {
-              "description": "API reference for platejs/floating/react",
-              "headings": [],
-              "href": "/docs/api/floating",
-              "title": "Floating",
-              "titleCn": "Floating"
-            },
-            {
               "description": "API reference for platejs/react",
               "headings": [],
               "href": "/docs/api/resizable",
@@ -705,12 +695,6 @@
               "href": "/docs/components/block-discussion",
               "title": "Block Discussion",
               "titleCn": "Block Discussion"
-            },
-            {
-              "description": "A visual overlay for cursors and selections.",
-              "href": "/docs/components/cursor-overlay",
-              "title": "Cursor Overlay",
-              "titleCn": "Cursor Overlay"
             },
             {
               "description": "A block wrapper with a drag handle for moving editor blocks.",
@@ -1086,10 +1070,10 @@
               "titleCn": "Paragraph"
             },
             {
-              "description": "A component that highlights search results in text.",
-              "href": "/docs/components/search-highlight",
-              "title": "Search Highlight",
-              "titleCn": "Search Highlight"
+              "description": "Search editable text with transient highlights and keyboard navigation.",
+              "href": "/docs/components/find",
+              "title": "Find",
+              "titleCn": "查找"
             },
             {
               "description": "A command input component for inserting various elements.",
@@ -1213,10 +1197,10 @@
               "titleCn": "Single Block"
             },
             {
-              "description": "Find and replace functionality in text.",
-              "href": "/docs/examples/find-replace",
-              "title": "Find Replace Demo",
-              "titleCn": "Find Replace"
+              "description": "Find text with keyboard navigation and transient highlights.",
+              "href": "/docs/examples/find",
+              "title": "Find Demo",
+              "titleCn": "查找"
             },
             {
               "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
@@ -1281,12 +1265,6 @@
               "href": "/docs/examples/discussion",
               "title": "Discussion Demo",
               "titleCn": "Discussion"
-            },
-            {
-              "description": "Visual indicator for cursor position within the editor.",
-              "href": "/docs/examples/cursor-overlay",
-              "title": "Cursor Overlay Demo",
-              "titleCn": "Cursor Overlay"
             },
             {
               "description": "Inline date elements with calendar selection interface.",
@@ -2036,12 +2014,6 @@
                   "titleCn": "Combobox"
                 },
                 {
-                  "description": "A visual overlay for cursors and selections.",
-                  "href": "/docs/cursor-overlay",
-                  "title": "Cursor Overlay",
-                  "titleCn": "Cursor Overlay"
-                },
-                {
                   "description": "Allows movement of blocks, such as paragraph or tables, within the editor.",
                   "href": "/docs/dnd",
                   "title": "Drag & Drop",
@@ -2603,10 +2575,10 @@
         "description": "Slash command menu for quick insertion of various content types.",
         "title": "Slash Command"
       },
-      "/docs/cursor-overlay": {
-        "description": "A visual overlay for cursors and selections.",
-        "title": "Cursor Overlay",
-        "titleCn": "Cursor Overlay"
+      "/docs/selection": {
+        "description": "Read, update, focus, and render text and node selections in Plate.",
+        "title": "Selection",
+        "titleCn": "选择"
       },
       "/docs/dnd": {
         "description": "Allows movement of blocks, such as paragraph or tables, within the editor.",
@@ -2702,11 +2674,6 @@
         "description": "A popover interface for managing discussions: comments, replies, suggestions.",
         "title": "Block Discussion",
         "titleCn": "Block Discussion"
-      },
-      "/docs/components/cursor-overlay": {
-        "description": "A visual overlay for cursors and selections.",
-        "title": "Cursor Overlay",
-        "titleCn": "Cursor Overlay"
       },
       "/docs/components/dnd": {
         "description": "A block wrapper with a drag handle for moving editor blocks.",
@@ -3002,10 +2969,10 @@
         "title": "Paragraph",
         "titleCn": "Paragraph"
       },
-      "/docs/components/search-highlight": {
-        "description": "A component that highlights search results in text.",
-        "title": "Search Highlight",
-        "titleCn": "Search Highlight"
+      "/docs/components/find": {
+        "description": "Search editable text with transient highlights and keyboard navigation.",
+        "title": "Find",
+        "titleCn": "查找"
       },
       "/docs/components/slash": {
         "description": "A command input component for inserting various elements.",
@@ -3104,10 +3071,10 @@
         "title": "Single Block Demo",
         "titleCn": "Single Block"
       },
-      "/docs/examples/find-replace": {
-        "description": "Find and replace functionality in text.",
-        "title": "Find Replace Demo",
-        "titleCn": "Find Replace"
+      "/docs/examples/find": {
+        "description": "Find text with keyboard navigation and transient highlights.",
+        "title": "Find Demo",
+        "titleCn": "查找"
       },
       "/docs/examples/ai": {
         "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
@@ -3162,11 +3129,6 @@
         "description": "Adding and displaying comments within content.",
         "title": "Discussion Demo",
         "titleCn": "Discussion"
-      },
-      "/docs/examples/cursor-overlay": {
-        "description": "Visual indicator for cursor position within the editor.",
-        "title": "Cursor Overlay Demo",
-        "titleCn": "Cursor Overlay"
       },
       "/docs/examples/date": {
         "description": "Inline date elements with calendar selection interface.",
@@ -3370,11 +3332,6 @@
         "description": "Additional utilities for Plate.",
         "title": "Plate Utils",
         "titleCn": "Plate 工具"
-      },
-      "/docs/api/floating": {
-        "description": "API reference for platejs/floating/react",
-        "title": "Floating",
-        "titleCn": "Floating"
       },
       "/docs/api/resizable": {
         "description": "API reference for platejs/react",

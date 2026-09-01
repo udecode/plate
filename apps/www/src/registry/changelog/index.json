@@ -38,6 +38,75 @@
       "diagnostics": []
     },
     {
+      "id": "2026-08-31-inline-component-props",
+      "href": "/registry/changelog/2026-08-31-inline-component-props.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Inline local registry component prop shapes",
+      "change": {
+        "type": "source",
+        "date": "2026-08-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "context-menu",
+        "dropdown-menu",
+        "floating-popover",
+        "toolbar",
+        "mdx-plate-components",
+        "block-list-static",
+        "block-list",
+        "code-block-static",
+        "code-block",
+        "dnd",
+        "editor",
+        "emoji-picker",
+        "floating-toolbar",
+        "heading-static",
+        "inline-combobox",
+        "mark-toolbar-button",
+        "select-command",
+        "version-history-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-08-31-transient-editor-geometry",
+      "href": "/registry/changelog/2026-08-31-transient-editor-geometry.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use exact editor geometry for transient UI",
+      "change": {
+        "type": "source",
+        "date": "2026-08-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "find",
+        "find-demo",
+        "editor-plugins",
+        "inactive-selection-demo",
+        "editor",
+        "ai-menu",
+        "font-size-toolbar-button",
+        "link-toolbar-button",
+        "link",
+        "use-widget-floating",
+        "floating-toolbar",
+        "remote-cursor-overlay",
+        "collaboration-demo"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-30-fix-annotation-hover-scroll",
       "href": "/registry/changelog/2026-08-30-fix-annotation-hover-scroll.json",
       "status": "draft",

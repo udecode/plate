@@ -252,6 +252,9 @@ importers:
       '@faker-js/faker':
         specifier: 9.8.0
         version: 9.8.0
+      '@floating-ui/react':
+        specifier: ^0.26.23
+        version: 0.26.28(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@hocuspocus/provider':
         specifier: 2.15.2
         version: 2.15.2(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30)
@@ -774,12 +777,6 @@ importers:
       '@excalidraw/excalidraw':
         specifier: 0.18.0
         version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@floating-ui/core':
-        specifier: ^1.6.7
-        version: 1.7.5
-      '@floating-ui/react':
-        specifier: ^0.26.23
-        version: 0.26.28(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@testing-library/react':
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

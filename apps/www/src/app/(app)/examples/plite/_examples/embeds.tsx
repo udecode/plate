@@ -139,12 +139,13 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
   );
 };
 
-interface UrlInputProps {
+const UrlInput = ({
+  url,
+  onChange,
+}: {
   url: string;
   onChange: (url: string) => void;
-}
-
-const UrlInput = ({ url, onChange }: UrlInputProps) => {
+}) => {
   const [value, setValue] = React.useState(url);
   return (
     <Input

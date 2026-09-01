@@ -357,24 +357,38 @@ export const demoExamples: Registry['items'] = (
     },
     {
       dependencies: ['platejs', '@platejs/test'],
-      description: 'Find and replace functionality in text.',
+      description:
+        'Find text with keyboard navigation and transient highlights.',
       files: [
         {
-          path: 'examples/find-replace-demo.tsx',
+          path: 'examples/find-demo.tsx',
           type: 'registry:example',
         },
         {
-          path: 'examples/values/find-replace-value.tsx',
+          path: 'examples/values/find-value.tsx',
           type: 'registry:example',
         },
       ],
-      name: 'find-replace-demo',
+      name: 'find-demo',
       registryDependencies: [
-        '@plate/fixed-toolbar',
-        'input',
-        '@plate/search-highlight',
         '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/find',
       ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['platejs'],
+      description:
+        'Shows the live editor selection while an owned control has focus.',
+      files: [
+        {
+          path: 'examples/inactive-selection-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'inactive-selection-demo',
+      registryDependencies: ['@plate/basic-nodes', '@plate/editor', 'button'],
       type: 'registry:example',
     },
     {
@@ -640,21 +654,6 @@ export const demoExamples: Registry['items'] = (
         '@plate/editor',
         '@plate/editor-plugins',
       ],
-      type: 'registry:example',
-    },
-    {
-      dependencies: ['@platejs/test'],
-      description: 'Visual indicator for cursor position within the editor.',
-      files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
-        {
-          path: 'examples/values/cursor-overlay-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      name: 'cursor-overlay-demo',
-      registryDependencies: ['@plate/cursor-overlay', '@plate/editor'],
-      title: 'Cursor Overlay',
       type: 'registry:example',
     },
     {

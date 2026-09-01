@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 
 import {
@@ -6,6 +8,7 @@ import {
   defineExtension,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { ChangeDraft } from '../../../../../packages/plitejs/src/core/change/builder.ts';
+import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 import { history as historyExtension } from '../../../../../packages/plitejs/src/history/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
@@ -18,10 +21,22 @@ const textBytes = Number.parseInt(
   process.env.PLITE_COLLAB_READINESS_TEXT_BYTES ?? '24',
   10
 );
-const benchmarkMode =
-  process.env.PLITE_COLLAB_READINESS_MODE === 'anchors'
-    ? 'anchors'
-    : 'complete';
+const benchmarkMode = ['anchors', 'replacement'].includes(process.env.PLITE_COLLAB_READINESS_MODE)
+  ? process.env.PLITE_COLLAB_READINESS_MODE
+  : 'complete';
+const measuredFiles = [
+  'packages/plitejs/src/core/snapshot-index.ts',
+  'packages/plitejs/src/core/change/root-change.ts',
+  'packages/plitejs/src/core/change/document-index.ts',
+  'packages/plitejs/src/core/anchor-state.ts',
+  'packages/plitejs/src/core/anchor.ts',
+  'packages/plitejs/src/core/public-state.ts',
+  'benchmarks/slate-v2/donor/core/current/collab-readiness.mjs',
+];
+const fingerprint = () => Object.fromEntries(measuredFiles.map((file) => [
+  file, createHash('sha256').update(readFileSync(file)).digest('hex'),
+]));
+const sourceBefore = fingerprint();
 
 const requestedCohorts = new Set(
   (process.env.PLITE_COLLAB_READINESS_COHORTS ?? '')
@@ -151,27 +166,20 @@ const assertRemoteCommit = (editor, options = remoteOptions) => {
 
 const createFakeCollabAdapter = () => {
   let listenerCalls = 0;
+  let state = { connected: true, exports: [], paused: false };
 
   return {
     extension: defineExtension('benchmark-fake-collab-adapter', {
-      setup(context) {
-        const state = context.runtimeState({
-          connected: true,
-          exports: [],
-          paused: false,
+      activate(context) {
+        state = { connected: true, exports: [], paused: false };
+        context.onCleanup(() => {
+          state = { ...state, connected: false, paused: true };
         });
-
-        return {
-          cleanup() {
-            state.set((current) => ({
-              ...current,
-              connected: false,
-              paused: true,
-            }));
-          },
-          onCommit({ commit }) {
+      },
+      on: {
+          commit({ commit }) {
             listenerCalls += 1;
-            const current = state.get();
+            const current = state;
 
             if (
               !current.connected ||
@@ -183,15 +191,14 @@ const createFakeCollabAdapter = () => {
               return;
             }
 
-            state.set({
+            state = {
               ...current,
               exports: [
                 ...current.exports,
                 commit.changes?.toJSON() ?? null,
               ],
-            });
+            };
           },
-        };
       },
     }),
     listenerCalls: () => listenerCalls,
@@ -219,7 +226,8 @@ const measureLocalExportCommit = (cohort) =>
     const editor = createEditorWithDocument(cohort.blocks);
     const adapter = createFakeCollabAdapter();
 
-    editor.extend(adapter.extension);
+    editor.install(adapter.extension);
+    const callsBefore = adapter.listenerCalls();
     editor.update((tx) => {
       tx.text.insert('L', { at: { path: [0, 0], offset: 0 } });
     });
@@ -227,7 +235,7 @@ const measureLocalExportCommit = (cohort) =>
     const state = Editor.getLastCommit(editor);
 
     assert(state);
-    assert.equal(adapter.listenerCalls(), 1);
+    assert.equal(adapter.listenerCalls() - callsBefore, 1);
   });
 
 const runRemoteChangeBatch = (cohort, change) => {
@@ -338,6 +346,36 @@ const measureCanonicalReplace = (cohort) =>
     assert.equal(commit.changed.has('replace'), true);
   });
 
+const canonicalReplacementWork = (cohort) => {
+  const editor = createEditorWithDocument(cohort.blocks);
+  const before = Editor.getSnapshot(editor);
+  const path = [cohort.blocks - 1, 0];
+  const oldKey = before.index.keyAt(path);
+  const children = createDocument(cohort.blocks, 'canonical');
+  const readNode = DocumentIndex.prototype.node;
+  let nodeReads = 0;
+
+  DocumentIndex.prototype.node = function (...args) {
+    nodeReads += 1;
+    return readNode.apply(this, args);
+  };
+  try {
+    editor.update(remoteOptions, (tx) => tx.value.replace({ children, marks: null, selection: null }));
+  } finally {
+    DocumentIndex.prototype.node = readNode;
+  }
+  const after = Editor.getSnapshot(editor);
+  assert.deepEqual(after.children, children);
+  assert.equal(before.index.keyAt(path), oldKey);
+  const currentKey = after.index.keyAt(path);
+  editor.update((tx) => tx.text.insert('!', { at: { path, offset: 0 } }));
+  const followUp = Editor.getSnapshot(editor);
+  assert.equal(followUp.index.keyAt(path), currentKey);
+  assert.equal(followUp.children[cohort.blocks - 1].children[0].text, '!' + children[cohort.blocks - 1].children[0].text);
+
+  return { nodeReads, maximumNodeReads: 64 * cohort.blocks, historicalAndFollowUpChecked: true };
+};
+
 const measureHistorySkip = (cohort, change) =>
   measure(() => {
     const editor = createEditorWithDocument(cohort.blocks, true);
@@ -359,9 +397,9 @@ const measureConnectDisconnectHeap = (cohort) => {
     const heapBefore = heapUsed();
     const editor = createEditorWithDocument(cohort.blocks);
     const adapter = createFakeCollabAdapter();
-    const unextend = editor.extend(adapter.extension);
+    const uninstall = editor.install(adapter.extension);
 
-    unextend();
+    uninstall();
 
     const listenerCallsBefore = adapter.listenerCalls();
 
@@ -385,7 +423,18 @@ const measureConnectDisconnectHeap = (cohort) => {
 };
 
 const measureCohort = (cohort) => {
-  const compiled = compileRemoteChanges(cohort);
+  const phase = (name, run) => {
+    console.error(`COLLAB_PHASE ${cohort.id} ${name}`);
+    return run();
+  };
+  if (benchmarkMode === 'replacement') {
+    return {
+      config: cohort,
+      canonicalReplaceMs: phase('replace', () => measureCanonicalReplace(cohort)),
+      canonicalReplacementWork: phase('replacement-work', () => canonicalReplacementWork(cohort)),
+    };
+  }
+  const compiled = phase('compile', () => compileRemoteChanges(cohort));
 
   if (benchmarkMode === 'anchors') {
     return {
@@ -399,11 +448,11 @@ const measureCohort = (cohort) => {
     };
   }
 
-  const batchSnapshot = runRemoteChangeBatch(cohort, compiled.batch);
-  const separateSnapshot = runRemoteChangesSeparately(
+  const batchSnapshot = phase('verify-batch', () => runRemoteChangeBatch(cohort, compiled.batch));
+  const separateSnapshot = phase('verify-separate', () => runRemoteChangesSeparately(
     cohort,
     compiled.changes
-  );
+  ));
 
   if (batchSnapshot !== separateSnapshot) {
     throw new Error(
@@ -415,16 +464,17 @@ const measureCohort = (cohort) => {
     config: cohort,
     commandCount: compiled.commandCount,
     commandTypes: compiled.commandTypes,
-    localExportCommitMs: measureLocalExportCommit(cohort),
-    remoteChangeBatchMs: measureRemoteChangeBatch(cohort, compiled.batch),
-    remoteChangesSeparateMs: measureRemoteChangesSeparately(
+    localExportCommitMs: phase('export', () => measureLocalExportCommit(cohort)),
+    remoteChangeBatchMs: phase('batch', () => measureRemoteChangeBatch(cohort, compiled.batch)),
+    remoteChangesSeparateMs: phase('separate', () => measureRemoteChangesSeparately(
       cohort,
       compiled.changes
-    ),
-    ...measureAnchors(cohort, compiled.batch),
-    canonicalReplaceMs: measureCanonicalReplace(cohort),
-    historySkipMs: measureHistorySkip(cohort, compiled.batch),
-    connectDisconnectHeapDeltaBytes: measureConnectDisconnectHeap(cohort),
+    )),
+    ...phase('anchors', () => measureAnchors(cohort, compiled.batch)),
+    canonicalReplaceMs: phase('replace', () => measureCanonicalReplace(cohort)),
+    canonicalReplacementWork: phase('replacement-work', () => canonicalReplacementWork(cohort)),
+    historySkipMs: phase('history-skip', () => measureHistorySkip(cohort, compiled.batch)),
+    connectDisconnectHeapDeltaBytes: phase('cleanup', () => measureConnectDisconnectHeap(cohort)),
     invariants: {
       batchAndSeparateConverge: true,
       canonicalChangesOnly: true,
@@ -454,22 +504,32 @@ const redFlags = Object.fromEntries(
 
 const result = {
   benchmark: 'plite-collab-readiness',
-  artifactVersion: 2,
+  artifactVersion: 3,
   mode: benchmarkMode,
   iterations,
   thresholdPolicy: {
-    mode: 'calibration-only',
-    releaseGate: false,
+    mode: 'deterministic-work-guard; broad timings remain diagnostic',
+    releaseGate: process.env.PLITE_COLLAB_READINESS_STRICT === '1',
     repeatRunsRequiredBeforeEnforcement: 3,
   },
   cohorts,
   lanes,
   redFlags,
+  sourceBefore,
+  sourceAfter: fingerprint(),
+  guards: Object.values(lanes).flatMap((lane) => lane.canonicalReplacementWork &&
+    lane.canonicalReplacementWork.nodeReads > lane.canonicalReplacementWork.maximumNodeReads
+    ? [`${lane.config.id}: canonical replacement exceeds linear node-read budget`]
+    : []),
 };
+assert.deepEqual(result.sourceAfter, result.sourceBefore, 'Measured source changed during benchmark');
 
 await writeBenchmarkArtifact(
   'tmp/slate-collab-readiness-benchmark.json',
   result
 );
 
-console.log(JSON.stringify(result, null, 2));
+console.log(`METRIC collab_replacement_max_ms=${Math.max(0, ...Object.values(lanes).map((lane) => lane.canonicalReplaceMs?.max ?? 0))}`);
+console.log(`METRIC collab_replacement_max_node_reads_per_block=${Math.max(0, ...Object.values(lanes).map((lane) => (lane.canonicalReplacementWork?.nodeReads ?? 0) / lane.config.blocks))}`);
+console.log(`METRIC collab_readiness_guard_failures=${result.guards.length}`);
+if (process.env.PLITE_COLLAB_READINESS_STRICT === '1') assert.deepEqual(result.guards, []);

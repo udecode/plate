@@ -1549,11 +1549,21 @@ export const applyContentRootNavigation = ({
     const domPhaseScheduler =
       getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??
       getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+    const { version } = editor.read.runtime.snapshot();
+    const viewSelection = readPliteViewSelection(editor);
 
     domPhaseScheduler?.schedule(
       'dom-write',
       'focus-content-root-editor',
-      () => focusEditor?.(targetEditor),
+      () => {
+        // A settled native event must not reclaim focus from a later selection.
+        if (
+          editor.read.runtime.snapshot().version === version &&
+          readPliteViewSelection(editor) === viewSelection
+        ) {
+          focusEditor?.(targetEditor);
+        }
+      },
       { timing: 'animation-frame' }
     );
   }

@@ -41,7 +41,7 @@ export function LinkToolbarButton(
           api.trigger({ focused: true });
         }
       }}
-      data-plate-focus
+      data-plite-keep-selection-visible
       tooltip="Link"
     >
       <Link />

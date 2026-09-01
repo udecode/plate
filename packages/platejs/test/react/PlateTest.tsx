@@ -9,21 +9,16 @@ import {
   PlateContent,
 } from '../../src/react';
 
-type PlateTestProps<E extends EditorReference = Editor> = Omit<
-  PlateProps<E>,
-  'children' | 'editor'
-> & {
-  editableProps?: PlateContentProps;
-  editor: E;
-  variant?: 'comment' | 'wordProcessor';
-};
-
 export function PlateTest<E extends EditorReference = Editor>({
   editableProps,
   editor,
   variant = 'wordProcessor',
   ...props
-}: PlateTestProps<E>) {
+}: Omit<PlateProps<E>, 'children' | 'editor'> & {
+  editableProps?: PlateContentProps;
+  editor: E;
+  variant?: 'comment' | 'wordProcessor';
+}) {
   return (
     <Plate {...props} editor={editor}>
       <PlateContent

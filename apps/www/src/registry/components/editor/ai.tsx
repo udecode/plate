@@ -15,7 +15,6 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { AILoadingBar, AIMenu } from '@/registry/components/editor/ai-menu';
 
-import { CursorOverlayKit } from './cursor-overlay';
 import { AIChatTransportPlugin, useEditorChat } from './use-chat';
 
 export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
@@ -114,8 +113,4 @@ export const aiChatPlugin = AIChatTransportPlugin.extend({
   },
 }).configure({ component: AIAnchorElement });
 
-export const AIKit = [
-  ...CursorOverlayKit,
-  AIPlugin.configure({ component: AILeaf }),
-  aiChatPlugin,
-];
+export const AIKit = [AIPlugin.configure({ component: AILeaf }), aiChatPlugin];

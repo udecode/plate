@@ -154,9 +154,8 @@ const exactPublicPackageRuntimeExportExpectations = {
     'useYjsProviderStatus',
     'useYjsProviderSynced',
     'useYjsRemoteCursor',
-    'useYjsRemoteCursorDecorationSource',
-    'useYjsRemoteCursorOverlayPositions',
-    'useYjsRemoteCursors',
+    'useYjsRemoteCursorGeometry',
+    'useYjsRemoteCursorIds',
   ],
   '@platejs/test/browser': [
     'inspectZeroWidthPlaceholder',
@@ -319,7 +318,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'createText',
     'jsx',
   ],
-  'plitejs/page-layout': [
+  'plitejs/pagination': [
     'createEstimatedPageLayoutEngine',
     'createPliteLayout',
     'createPlitePage',
@@ -337,7 +336,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'plitePageSettingsCodec',
     'pretextPageLayoutEngine',
   ],
-  'plitejs/page-layout/react': [
+  'plitejs/pagination/react': [
     'createEstimatedPageLayoutEngine',
     'createPliteLayout',
     'createPlitePage',

@@ -191,6 +191,96 @@ const findTextRangesByText = (
   });
 
 describe('plite-react projections and selection contract', () => {
+  test('reuses composed buckets when another source has no matching slices', () => {
+    const slices = Object.freeze([{ end: 1, key: 'match', start: 0 }]);
+    const composed = composeProjectionSources([
+      {
+        getRuntimeSnapshot: () => [],
+        getSnapshot: () => ({}),
+        subscribe: () => () => {},
+      },
+      { getSnapshot: () => ({ node: slices }), subscribe: () => () => {} },
+    ])!;
+    expect(composed.getRuntimeSnapshot!('node')).toBe(
+      composed.getRuntimeSnapshot!('node')
+    );
+    expect(composed.getRuntimeSnapshot!('node')).toEqual(slices);
+    expect(composed.getRuntimeSnapshot!('missing')).toBe(
+      composed.getRuntimeSnapshot!('missing')
+    );
+  });
+
+  test('keeps composed keyed reads local and stable without eager aggregate reads', () => {
+    let aggregateReads = 0;
+    let enumerated = 0;
+    const createSource = () => {
+      let values = Object.fromEntries(
+        Array.from({ length: 1000 }, (_, index) => [
+          `node-${index}`,
+          Object.freeze([{ data: 0, end: 1, key: `match-${index}`, start: 0 }]),
+        ])
+      );
+      const listeners = new Set<() => void>();
+      const wrap = () =>
+        new Proxy(Object.freeze(values), {
+          ownKeys(target) {
+            const keys = Reflect.ownKeys(target);
+            enumerated += keys.length;
+            return keys;
+          },
+        });
+      let snapshot = wrap();
+      return {
+        getRuntimeSnapshot: (key: string) => values[key] ?? [],
+        getSnapshot() {
+          aggregateReads += 1;
+          return snapshot;
+        },
+        publish() {
+          values = {
+            ...values,
+            'node-0': Object.freeze([
+              { data: 1, end: 1, key: 'match-0', start: 0 },
+            ]),
+          };
+          snapshot = wrap();
+          listeners.forEach((listener) => listener());
+        },
+        subscribe(listener: () => void) {
+          listeners.add(listener);
+          return () => {
+            listeners.delete(listener);
+          };
+        },
+      };
+    };
+    const primary = createSource();
+    const secondary = createSource();
+    const composed = composeProjectionSources([primary, secondary])!;
+    const before = composed.getRuntimeSnapshot!('node-0');
+    const unchanged = composed.getRuntimeSnapshot!('node-999');
+    let wakes = 0;
+    const unsubscribe = composed.subscribe(() => {
+      wakes += 1;
+    });
+    primary.publish();
+    expect(
+      composed.getRuntimeSnapshot!('node-0').map((slice) => slice.data)
+    ).toEqual([1, 0]);
+    expect(composed.getRuntimeSnapshot!('node-999')).toBe(unchanged);
+    expect(before.map((slice) => slice.data)).toEqual([0, 0]);
+    expect(wakes).toBe(1);
+    expect(aggregateReads).toBe(0);
+    expect(enumerated).toBe(0);
+    const aggregate = composed.getSnapshot();
+    expect(Object.keys(aggregate)).toHaveLength(1000);
+    expect(aggregate['node-0'].map((slice) => slice.data)).toEqual([1, 0]);
+    expect(composed.getSnapshot()).toBe(aggregate);
+    unsubscribe();
+    primary.publish();
+    expect(wakes).toBe(1);
+  });
+
   test('reads source updates published before a composed store subscribes', () => {
     const createSource = () => {
       let snapshot = Object.freeze({});

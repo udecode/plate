@@ -3,15 +3,13 @@ import type * as React from 'react';
 
 import { cn } from '@/utils/cn';
 
-type NativeSelectProps = Omit<React.ComponentProps<'select'>, 'size'> & {
-  size?: 'default' | 'sm';
-};
-
 function NativeSelect({
   className,
   size = 'default',
   ...props
-}: NativeSelectProps) {
+}: Omit<React.ComponentProps<'select'>, 'size'> & {
+  size?: 'default' | 'sm';
+}) {
   return (
     <div
       className={cn(

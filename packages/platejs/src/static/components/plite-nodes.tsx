@@ -109,26 +109,20 @@ export type PliteHTMLProps<
   style?: React.CSSProperties;
 };
 
-type PliteElementComponentProps<
-  N extends Element = Element,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-  T extends keyof HTMLElementTagNameMap = 'div',
-> = Omit<RenderElementProps<N>, 'attributes'> &
-  Pick<PliteNodeProps<C>, 'ref'> & {
-    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
-      UnknownObject;
-    as?: T;
-    className?: string;
-    path: Path;
-    style?: React.CSSProperties;
-  };
-
 export const PliteElement = function PliteElement({
   as: Tag = 'div',
   children,
   ref,
   ...props
-}: PliteElementComponentProps<Element, any>) {
+}: Omit<RenderElementProps, 'attributes'> &
+  Pick<PliteNodeProps<any>, 'ref'> & {
+    attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements['div']> &
+      UnknownObject;
+    as?: 'div';
+    className?: string;
+    path: Path;
+    style?: React.CSSProperties;
+  }) {
   const attributes = getNodeAttributes<HTMLDivElement>(
     props,
     ref as React.Ref<HTMLDivElement>
@@ -153,42 +147,48 @@ export const PliteElement = function PliteElement({
     C extends AnyBasePluginDefinition = BasePluginDefinition,
     T extends keyof HTMLElementTagNameMap = 'div',
   >(
-    props: PliteElementComponentProps<N, C, T>
+    props: Omit<RenderElementProps<N>, 'attributes'> &
+      Pick<PliteNodeProps<C>, 'ref'> & {
+        attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+          UnknownObject;
+        as?: T;
+        className?: string;
+        path: Path;
+        style?: React.CSSProperties;
+      }
   ): React.ReactElement;
   <T extends keyof HTMLElementTagNameMap = 'div'>(
-    props: PliteElementComponentProps<Element, never, T>
+    props: Omit<RenderElementProps, 'attributes'> &
+      Pick<PliteNodeProps<never>, 'ref'> & {
+        attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
+          UnknownObject;
+        as?: T;
+        className?: string;
+        path: Path;
+        style?: React.CSSProperties;
+      }
   ): React.ReactElement;
 };
-
-type PliteTextRenderProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = PliteNodeProps<C> &
-  RenderTextProps<N> & {
-    attributes: UnknownObject;
-  };
 
 /** Props for the static text component owned by a plugin descriptor. */
 export type PliteTextProps<TPlugin extends PliteNodePropsDescriptor> =
   TPlugin extends PliteNodePropsDescriptor
-    ? PliteTextRenderProps<
-        PliteTextPropsNode<TPlugin>,
-        PliteTextPropsConfig<TPlugin>
-      >
+    ? PliteNodeProps<PliteTextPropsConfig<TPlugin>> &
+        RenderTextProps<PliteTextPropsNode<TPlugin>> & {
+          attributes: UnknownObject;
+        }
     : never;
-
-type PliteTextComponentProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PliteTextRenderProps<N, C> & PliteHTMLProps<C, T>;
 
 export const PliteText = function PliteText({
   as: Tag = 'span',
   children,
   ref,
   ...props
-}: PliteTextComponentProps<Text, any>) {
+}: (PliteNodeProps<any> &
+  RenderTextProps & {
+    attributes: UnknownObject;
+  }) &
+  PliteHTMLProps<any, 'span'>) {
   const attributes = getNodeAttributes(props, ref);
 
   return <Tag {...attributes}>{children}</Tag>;
@@ -197,7 +197,11 @@ export const PliteText = function PliteText({
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
-  props: PliteTextComponentProps<N, C, T>
+  props: (PliteNodeProps<C> &
+    RenderTextProps<N> & {
+      attributes: UnknownObject;
+    }) &
+    PliteHTMLProps<C, T>
 ) => React.ReactElement;
 
 type PliteLeafRenderProps<
@@ -218,12 +222,6 @@ export type PliteLeafProps<TPlugin extends PliteNodePropsDescriptor> =
       >
     : never;
 
-type PliteLeafComponentProps<
-  N extends Text = Text,
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-  T extends keyof HTMLElementTagNameMap = 'span',
-> = PliteLeafRenderProps<N, C> & PliteHTMLProps<C, T>;
-
 const NonBreakingSpace = () => (
   <span style={{ fontSize: 0, lineHeight: 0 }} contentEditable={false}>
     {String.fromCodePoint(160)}
@@ -236,7 +234,12 @@ export const PliteLeaf = function PliteLeaf({
   inset,
   ref,
   ...props
-}: PliteLeafComponentProps<Text, any>) {
+}: (PliteNodeProps<any> &
+  RenderLeafProps<Text, Text & Partial<InferPluginDecoration<NoInfer<any>>>> & {
+    attributes: UnknownObject;
+    inset?: boolean;
+  }) &
+  PliteHTMLProps<any, 'span'>) {
   const attributes = getNodeAttributes(props, ref);
 
   if (inset) {
@@ -259,4 +262,9 @@ export const PliteLeaf = function PliteLeaf({
 >({
   className,
   ...props
-}: PliteLeafComponentProps<N, C, T>) => React.ReactElement;
+}: (PliteNodeProps<C> &
+  RenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>> & {
+    attributes: UnknownObject;
+    inset?: boolean;
+  }) &
+  PliteHTMLProps<C, T>) => React.ReactElement;

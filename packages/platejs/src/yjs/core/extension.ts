@@ -6,6 +6,11 @@ import {
   readEditorSelection,
 } from '../../core';
 import { YjsController } from './controller';
+import {
+  deleteActiveYjsController,
+  getActiveYjsController,
+  setActiveYjsController,
+} from './controller-registry';
 import type { YjsEditor } from './editor-types';
 import type {
   YjsCursorDataSchema,
@@ -21,8 +26,6 @@ type YjsCursorDataOfOptions<TOptions> =
   }>
     ? TCursorData
     : YjsRemoteCursorData;
-
-const activeControllers = new WeakMap<YjsEditor, YjsController<any>>();
 
 const createDeferredYjsState = <TCursorData extends YjsRemoteCursorData>(
   getController: () => YjsController<TCursorData>
@@ -111,7 +114,7 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
     activate(context) {
       const { editor } = context;
       const owner = getEditorRuntimeOwner(editor);
-      const previousActiveController = activeControllers.get(owner);
+      const previousActiveController = getActiveYjsController(owner);
       const previousLocalController = controllers.get(owner);
       const compiledSchema = getCompiledEditorSchemaFromApi(context.schema);
       const emptyValueFor = (root: string): readonly Descendant[] => {
@@ -180,7 +183,7 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
       })();
 
       controllers.set(owner, controller);
-      activeControllers.set(owner, controller);
+      setActiveYjsController(owner, controller);
       activationErrors.delete(owner);
       try {
         controller.initializeCanonicalState();
@@ -194,16 +197,16 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
             controllers.delete(owner);
           }
           if (previousActiveController) {
-            activeControllers.set(owner, previousActiveController);
+            setActiveYjsController(owner, previousActiveController);
           } else {
-            activeControllers.delete(owner);
+            deleteActiveYjsController(owner, controller);
           }
           activationErrors.set(owner, error);
         }
         throw error;
       }
       context.onCleanup(({ reason }) => {
-        const active = activeControllers.get(owner);
+        const active = getActiveYjsController(owner);
         const replacement =
           active === controller
             ? reason === 'rollback'
@@ -219,11 +222,11 @@ const createYjsExtension = <TCursorData extends YjsRemoteCursorData>(
             controllers.delete(owner);
           }
         }
-        if (activeControllers.get(owner) === controller) {
+        if (getActiveYjsController(owner) === controller) {
           if (reason === 'rollback' && previousActiveController) {
-            activeControllers.set(owner, previousActiveController);
+            setActiveYjsController(owner, previousActiveController);
           } else {
-            activeControllers.delete(owner);
+            deleteActiveYjsController(owner, controller);
           }
         }
       });

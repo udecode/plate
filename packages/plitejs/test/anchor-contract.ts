@@ -5,6 +5,7 @@ import {
   type Anchor,
   createEditor,
   createEditorView,
+  DocumentChange,
   type Element,
   NodeApi,
   type Path,
@@ -18,6 +19,95 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('canonical anchor contract', () => {
+  it('maps repeated endpoints once per change without sharing handle values', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('abcdefghijk'), paragraph('unrelated')],
+    });
+    const anchors = Array.from({ length: 100 }, () =>
+      editor.anchor(
+        {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 8 },
+        },
+        { association: 'inward', deletion: 'drop' }
+      )
+    );
+    const original = DocumentChange.prototype.mapPosition;
+    let mappings = 0;
+    DocumentChange.prototype.mapPosition = function mapPosition(...args) {
+      mappings += 1;
+      return original.apply(this, args);
+    };
+    try {
+      editor.update.text.insert('x', { at: { path: [0, 0], offset: 0 } });
+      assert.ok(mappings <= 4, `Repeated endpoints mapped ${mappings} times`);
+      const saved = anchors[0].resolve();
+      assert.deepEqual(saved, {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 9 },
+      });
+      for (const anchor of anchors.slice(1)) {
+        assert.deepEqual(anchor.resolve(), saved);
+        assert.notEqual(anchor.resolve()?.anchor, saved?.anchor);
+        assert.notEqual(anchor.resolve()?.anchor.path, saved?.anchor.path);
+      }
+      editor.update.text.insert('x', { at: { path: [1, 0], offset: 0 } });
+      assert.equal(anchors[0].resolve(), saved);
+      mappings = 0;
+      editor.update.text.insert('y', { at: { path: [0, 0], offset: 0 } });
+      assert.ok(mappings <= 4, `Follow-up endpoints mapped ${mappings} times`);
+      assert.deepEqual(anchors[0].resolve(), {
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 10 },
+      });
+      assert.equal(saved?.anchor.offset, 1);
+    } finally {
+      DocumentChange.prototype.mapPosition = original;
+      anchors.forEach((anchor) => anchor.release());
+    }
+  });
+
+  it('keeps memoized endpoint associations and named roots independent', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('abcdefghijk')],
+        roots: { header: [paragraph('abcdefghijk')] },
+      },
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 8 },
+    };
+    const inward = editor.anchor(range, { association: 'inward' });
+    const outward = editor.anchor(range, { association: 'outward' });
+    const backward = editor.anchor(
+      { anchor: range.focus, focus: range.anchor },
+      { association: 'inward' }
+    );
+    const header = editor.anchor(range, {
+      association: 'inward',
+      root: 'header',
+    });
+    editor.update((tx) => {
+      tx.text.insert('x', { at: { path: [0, 0], offset: 0 } });
+      tx.text.insert('y', { at: { path: [0, 0], offset: 8, root: 'header' } });
+    });
+    assert.deepEqual(inward.resolve(), {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 9 },
+    });
+    assert.deepEqual(outward.resolve(), {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 9 },
+    });
+    assert.deepEqual(backward.resolve(), {
+      anchor: { path: [0, 0], offset: 9 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    assert.deepEqual(header.resolve(), range);
+    [inward, outward, backward, header].forEach((anchor) => anchor.release());
+  });
+
   it('rejects an explicit primary root key', () => {
     const editor = createEditor({ initialValue: [paragraph('one')] });
 
@@ -360,5 +450,95 @@ describe('canonical anchor contract', () => {
 
     assert.deepEqual(mapped.release(), { path: [0, 0], offset: 2 });
     assert.equal(deleted.release(), null);
+  });
+
+  it('maps an unread point and range after an unrelated earlier text edit', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('abc'), paragraph('hello')],
+    });
+    const point = editor.anchor(
+      { path: [1, 0], offset: 2 },
+      { association: 'forward', deletion: 'nearest' }
+    );
+    const range = editor.anchor(
+      {
+        anchor: { path: [1, 0], offset: 1 },
+        focus: { path: [1, 0], offset: 4 },
+      },
+      { association: 'inward', deletion: 'drop' }
+    );
+
+    editor.update.text.insert('abcabcabc', {
+      at: { path: [0, 0], offset: 0 },
+    });
+    editor.update.text.insert('X', { at: { path: [1, 0], offset: 0 } });
+
+    assert.deepEqual(point.release(), { path: [1, 0], offset: 3 });
+    assert.deepEqual(range.release(), {
+      anchor: { path: [1, 0], offset: 2 },
+      focus: { path: [1, 0], offset: 5 },
+    });
+  });
+
+  it('maps an unread child boundary after an unrelated text edit', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('abc'), paragraph('hello')],
+    });
+    const end = editor.anchor([2], {
+      association: 'forward',
+      deletion: 'nearest',
+    });
+
+    editor.update.text.insert('abcabcabc', {
+      at: { path: [0, 0], offset: 0 },
+    });
+    editor.update.nodes.insert(paragraph('last'), { at: [2] });
+
+    assert.deepEqual(end.release(), [3]);
+  });
+
+  it('maps a named-root anchor after skipped edits and a structural shift', () => {
+    const runtime = createEditor({
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('abc'), paragraph('hello')] },
+      },
+    });
+    const header = createEditorView(runtime, { root: 'header' });
+    const point = header.anchor(
+      { path: [1, 0], offset: 2 },
+      { association: 'forward', deletion: 'nearest' }
+    );
+
+    runtime.update.text.insert('unrelated', {
+      at: { path: [0, 0], offset: 0 },
+    });
+    header.update.text.insert('abcabcabc', {
+      at: { path: [0, 0], offset: 0 },
+    });
+    header.update.nodes.insert(paragraph('first'), { at: [0] });
+    header.update.text.insert('X', { at: { path: [2, 0], offset: 0 } });
+
+    assert.deepEqual(point.release(), { path: [2, 0], offset: 3 });
+  });
+
+  it('keeps an unchanged range shape across skipped edits and reads', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('abc'), paragraph('hello')],
+    });
+    const value = {
+      kind: 'text' as const,
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 4 },
+    };
+    const range = editor.anchor(value, { deletion: 'drop' });
+
+    editor.update.text.insert('abcabcabc', {
+      at: { path: [0, 0], offset: 0 },
+    });
+
+    assert.deepEqual(range.resolve(), value);
+    assert.deepEqual(range.release(), value);
+    assert.equal(range.resolve(), null);
   });
 });

@@ -17,7 +17,7 @@ import type {
   Descendant,
   EditorSnapshot,
   Range,
-  RuntimeId,
+  NodeKey,
 } from '../../../../../packages/plitejs/src/index.ts';
 import {
   getSnapshot as editorGetSnapshot,
@@ -60,7 +60,7 @@ const select = (editor: ReturnType<typeof createEditor>, target: Range) => {
 const insertText = (
   editor: ReturnType<typeof createEditor>,
   text: string,
-  options: Parameters<ReturnType<typeof createEditor>['insertText']>[1]
+  options: Parameters<ReturnType<typeof createEditor>['update']['text']['insert']>[1]
 ) => {
   editor.update((tx) => {
     tx.text.insert(text, options);
@@ -329,7 +329,7 @@ const ProjectionSlice = memo(
     slot,
   }: {
     counts: Record<string, number>;
-    runtimeId: RuntimeId | null;
+    runtimeId: NodeKey | null;
     slot: string;
   }) => {
     const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
@@ -350,7 +350,7 @@ const StoreProjectionSlice = memo(
     store,
   }: {
     counts: Record<string, number>;
-    runtimeId: RuntimeId | null;
+    runtimeId: NodeKey | null;
     slot: string;
     store: PliteProjectionStore<{
       highlight?: boolean;
@@ -429,7 +429,7 @@ const assertSingleElementHosts = (
     container.querySelectorAll<HTMLElement>('[data-plite-node="element"]')
   );
   const runtimeIds = elementHosts.map(
-    (elementHost) => elementHost.dataset.pliteRuntimeId
+    (elementHost) => elementHost.dataset.pliteNodeKey
   );
 
   assert.equal(
@@ -579,10 +579,10 @@ const DecorationSourceToggleSlices = ({
   counts: Record<string, number>;
 }) => {
   const leftLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.idAt([0, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null
   );
   const rightLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.idAt([1, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([1, 0]) ?? null
   );
 
   return (
@@ -703,7 +703,7 @@ const AnnotationProjectionSlice = memo(
     runtimeId,
   }: {
     counts: Record<string, number>;
-    runtimeId: RuntimeId | null;
+    runtimeId: NodeKey | null;
   }) => {
     usePliteProjectionEntries<{
       annotationId: string;
@@ -767,7 +767,7 @@ const AnnotationWidgetBreadthSlices = ({
   >;
 }) => {
   const leftLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.idAt([0, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null
   );
 
   return (
@@ -849,8 +849,8 @@ const SourceScopedInvalidationApp = ({
     highlight?: boolean;
     source?: string;
   }>;
-  leftLeafId: RuntimeId | null;
-  rightLeafId: RuntimeId | null;
+  leftLeafId: NodeKey | null;
+  rightLeafId: NodeKey | null;
   selectionStore: PliteProjectionStore<{
     highlight?: boolean;
     source?: string;
@@ -1365,8 +1365,8 @@ const measureSourceScopedInvalidation = async () =>
     });
 
     const snapshot = editorGetSnapshot(editor);
-    const leftLeafId = snapshot.index.idAt([0, 0]) ?? null;
-    const rightLeafId = snapshot.index.idAt([1, 0]) ?? null;
+    const leftLeafId = snapshot.index.keyAt([0, 0]) ?? null;
+    const rightLeafId = snapshot.index.keyAt([1, 0]) ?? null;
     const selectionStore = createPliteProjectionStore(
       editor,
       deriveSelectionRanges,

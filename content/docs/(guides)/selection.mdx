@@ -1,0 +1,153 @@
+---
+title: Selection
+description: Read, update, focus, and render text and node selections in Plate.
+---
+
+Plate stores selection in the editor model and projects text selection to the browser through the mounted editor. Use this guide for normal Plate reads, updates, focus, and rendering; use [Selection And DOM](/docs/plite/concepts/16-selection-and-dom) for low-level DOM coverage and browser repair behavior.
+
+## Ownership
+
+The editor model is the single selection state. Each rendering layer derives
+its presentation from that state.
+
+| Job | Owner |
+| --- | --- |
+| Selection state, mapping, validation, reads, and updates | Plite core, reexported by `platejs` |
+| Native DOM selection, focus synchronization, and inactive paint | Plite React, inherited by `PlateContent` |
+| Exact node-selection highlighting and pointer-drag input | `NodeSelectionHighlight` and `NodeSelectionDrag` from `platejs/react` |
+| Focus markers, colors, borders, and stacking | Copied registry UI |
+
+## Quick Start
+
+`editor.read.selection()` returns the active representative `Range` or `null`.
+For an exact node selection, use `selection.nodes()` or `selection.ranges()`
+instead of treating that representative range as exact membership.
+
+```tsx title="selection.ts" showLineNumbers
+const range = editor.read.selection();
+const expanded = editor.read.selection.isExpanded();
+const selectedNodes = editor.read.selection.nodes();
+const exactRanges = editor.read.selection.ranges();
+
+editor.update.selection.set({
+  anchor: { path: [0, 0], offset: 0 },
+  focus: { path: [0, 0], offset: 5 },
+});
+
+editor.update.selection.setNodes([[0], [2]]);
+editor.update.selection.collapse({ edge: 'end' });
+editor.update.selection.set(null);
+```
+
+| Model state | `selection()` | Exact membership | Browser presentation |
+| --- | --- | --- | --- |
+| Text selection | One `Range` | `ranges()` returns that range | Native browser selection while the mounted editor is focused |
+| Node selection | One representative `Range` | `nodes()` and `ranges()` return every selected node | Plate node-selection primitives; the native selection stays empty |
+| No selection | `null` | Empty arrays | None |
+
+Use [Editor Methods](/docs/editor-methods) for editor access inside React and
+[Selection API](/docs/plite/api/locations/selection) for the complete query and
+validation contracts.
+
+## Focus and Native Selection
+
+Updating the model selection does not require direct DOM selection writes. When
+an action should return input to the editor, set the selection and focus the
+mounted editor explicitly:
+
+```tsx
+editor.update.selection.set(range);
+editor.api.dom.focus();
+```
+
+Mouse, keyboard, touch, composition, and native input can move the browser
+selection. The mounted editor imports those changes into the model and exports
+model updates back to the DOM. Application code should not patch
+`window.getSelection()` for normal editor behavior.
+
+## Inactive Selection
+
+<ComponentPreview name="inactive-selection-demo" />
+
+Plite `Editable` renders an inactive selection when focus moves to a marked
+control. The behavior is built in; it does not require a prop, plugin, kit, or
+copied selection state.
+
+### Mark a Focus Target
+
+Add `data-plite-keep-selection-visible` to a focusable control or any composed
+ancestor:
+
+```tsx
+<div data-plite-keep-selection-visible="">
+  <button type="button">Edit link</button>
+</div>
+```
+
+The exact `Editable` that loses focus reads its live canonical selection. An
+expanded range renders a highlight. A collapsed range renders a caret. Focus
+returning to the editor or moving to an unmarked target removes the inactive
+paint.
+
+### Style the Paint
+
+Plite publishes neutral output hooks. Product CSS owns their appearance:
+
+```css
+[data-plite-inactive-selection] {
+  background: color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+[data-plite-inactive-selection-caret] {
+  width: 2px;
+  background: var(--primary);
+}
+```
+
+The copied `Editor` registry component already styles both hooks.
+
+### Focus Behavior
+
+| Focus target | Inactive paint |
+| --- | --- |
+| Marked control or composed ancestor | One highlight or caret from the originating `Editable` |
+| The editor | None; the browser owns the active selection |
+| Any unmarked control | None |
+| Window blur or missing focus target | None |
+
+The marker controls presentation only. It does not modify the document,
+selection, history, clipboard, or collaboration state.
+
+## Node Selection Rendering
+
+Exact node selection is model state, not a native browser range. The copied
+`Editor` composes `NodeSelectionHighlight` and `NodeSelectionDrag` after
+`PlateContent` to render selected blocks and support blank-space pointer drag.
+
+Use the [Node Selection components](/docs/api/core/plate-components#node-selection)
+for the DOM contract and the [Node Selection demo](/docs/examples/node-selection)
+for the copied Editor composition. Feature UI such as Block Menu reads the same
+exact node membership instead of maintaining another selected-node store.
+
+## Related Selection Features
+
+Keep feature-specific behavior with the feature that owns it:
+
+| Need | Guide |
+| --- | --- |
+| Configure mark and inline boundary affinity | [Editing Behavior](/docs/editing-behavior#selection-behavior) and [Plugin Rules](/docs/plugin-rules#rulesselection) |
+| Apply context-menu actions to selected blocks | [Block Menu](/docs/block-menu) |
+| Search text with transient match highlights | [Find](/docs/find) |
+| Preserve selection while editing a link | [Link](/docs/link) |
+| Publish and render remote selections | [Collaboration](/docs/yjs) |
+| Build a tag-oriented select editor | [Multi Select](/docs/multi-select) |
+
+## API Reference
+
+- [Selection API](/docs/plite/api/locations/selection)
+- [Selection methods](/docs/plite/api/transforms#selection-methods)
+- [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)
+- [Node Selection components](/docs/api/core/plate-components#node-selection)
+
+Done. Plate code writes model selection; the mounted editor owns browser
+projection and presentation.

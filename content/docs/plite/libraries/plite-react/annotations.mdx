@@ -5,7 +5,7 @@ description: "Attach durable range identities to editor text and project them in
 
 Annotations attach durable ranges to editor text and publish them to React
 rendering, sidebars, and widgets.
-Use [Projection And Overlays](../../concepts/18-projection-and-overlays) for the
+Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets) for the
 broader choice between decorations, annotation stores, widgets, and projected
 text rendering.
 
@@ -201,15 +201,15 @@ annotation. Use them for floating buttons, comment popovers, review toolbars,
 or side-panel rows that need resolved visibility.
 
 ```ts
-type PliteWidgetAnchor =
+type PliteWidgetTarget =
   | { annotationId: string; type: "annotation" }
   | { nodeKey: NodeKey; type: "node" }
   | { type: "selection" };
 
 type PliteWidget<TData> = {
-  anchor: PliteWidgetAnchor;
   data?: TData;
   id: string;
+  target: PliteWidgetTarget;
 };
 ```
 
@@ -217,9 +217,9 @@ Create widget stores from the current widget array.
 
 ```tsx
 const widgets = comments.map((comment) => ({
-  anchor: { annotationId: comment.id, type: "annotation" },
   data: { label: comment.label },
   id: `comment-widget:${comment.id}`,
+  target: { annotationId: comment.id, type: "annotation" },
 }));
 
 const widgetStore = usePliteWidgetStore(editor, widgets, {
@@ -227,8 +227,15 @@ const widgetStore = usePliteWidgetStore(editor, widgets, {
 });
 ```
 
-Use `usePliteWidgets(store)` for panels that render every widget. Use
-`usePliteWidget(store, id)` when one component watches one widget.
+Resolved widgets expose `available`, `range`, and the original `target`. Widget
+stores expose their owning `editor`, so exact-view geometry can reject a ref
+from another editor.
+
+Use `usePliteWidgetIds(widgetStore)` for stable list membership,
+`usePliteWidget(widgetStore, id)` when one component watches one widget, and
+`usePliteWidgets(widgetStore)` only for a complete aggregate snapshot. Use
+`usePliteWidgetGeometry(widgetStore, id, { editableRef })` to position one
+available widget in one exact Editable.
 
 ## External Anchor Adapter
 

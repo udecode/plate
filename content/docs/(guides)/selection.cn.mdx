@@ -1,0 +1,143 @@
+---
+title: 选择
+description: 在 Plate 中读取、更新、聚焦并渲染文本选择和节点选择。
+---
+
+Plate 将选择保存在编辑器模型中，并由已挂载的编辑器把文本选择投射到浏览器。本文介绍 Plate 中常用的选择读取、更新、聚焦和渲染；底层 DOM 覆盖与浏览器修复规则参见 [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)。
+
+## 所有权
+
+编辑器模型是唯一的选择状态。每个渲染层都从该状态派生自己的显示。
+
+| 工作 | 所有者 |
+| --- | --- |
+| 选择状态、映射、校验、读取和更新 | Plite 核心，由 `platejs` 重新导出 |
+| 浏览器原生选择、焦点同步和非活动绘制 | Plite React，由 `PlateContent` 继承 |
+| 精确节点选择的高亮和指针拖选 | `platejs/react` 的 `NodeSelectionHighlight` 和 `NodeSelectionDrag` |
+| 焦点标记、颜色、边框和层叠 | 复制的注册表 UI |
+
+## 快速开始
+
+`editor.read.selection()` 返回当前代表性 `Range` 或 `null`。对于精确节点
+选择，应使用 `selection.nodes()` 或 `selection.ranges()`，不要把代表范围
+当成精确成员列表。
+
+```tsx title="selection.ts" showLineNumbers
+const range = editor.read.selection();
+const expanded = editor.read.selection.isExpanded();
+const selectedNodes = editor.read.selection.nodes();
+const exactRanges = editor.read.selection.ranges();
+
+editor.update.selection.set({
+  anchor: { path: [0, 0], offset: 0 },
+  focus: { path: [0, 0], offset: 5 },
+});
+
+editor.update.selection.setNodes([[0], [2]]);
+editor.update.selection.collapse({ edge: 'end' });
+editor.update.selection.set(null);
+```
+
+| 模型状态 | `selection()` | 精确成员 | 浏览器显示 |
+| --- | --- | --- | --- |
+| 文本选择 | 一个 `Range` | `ranges()` 返回该范围 | 已挂载编辑器获得焦点时的浏览器原生选择 |
+| 节点选择 | 一个代表性 `Range` | `nodes()` 和 `ranges()` 返回所有已选节点 | Plate 节点选择组件；原生选择保持为空 |
+| 无选择 | `null` | 空数组 | 无 |
+
+React 中如何取得编辑器参见[编辑器方法](/docs/editor-methods)，完整查询和校验
+契约参见 [Selection API](/docs/plite/api/locations/selection)。
+
+## 焦点与原生选择
+
+更新模型选择不需要直接写入 DOM 选择。如果某个操作还需要把输入焦点交还给
+编辑器，请显式设置选择并聚焦已挂载的编辑器：
+
+```tsx
+editor.update.selection.set(range);
+editor.api.dom.focus();
+```
+
+鼠标、键盘、触摸、输入法和原生输入都可能移动浏览器选择。已挂载的编辑器会
+把这些变化导入模型，也会把模型更新导出到 DOM。普通编辑器行为不应直接修改
+`window.getSelection()`。
+
+## 非活动选择
+
+<ComponentPreview name="inactive-selection-demo" />
+
+当焦点移到带标记的控件时，Plite `Editable` 会绘制非活动选择。此行为内置
+于 `Editable`，不需要属性、插件、套件或复制的选择状态。
+
+### 标记焦点目标
+
+在可聚焦控件或其任意组合树祖先上添加
+`data-plite-keep-selection-visible`：
+
+```tsx
+<div data-plite-keep-selection-visible="">
+  <button type="button">编辑链接</button>
+</div>
+```
+
+失去焦点的确切 `Editable` 会读取其实时规范选择。展开范围显示高亮，折叠
+范围显示光标。焦点返回编辑器或移到未标记目标时，非活动绘制会被清除。
+
+### 设置绘制样式
+
+Plite 提供中性的输出标记，产品 CSS 决定外观：
+
+```css
+[data-plite-inactive-selection] {
+  background: color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+[data-plite-inactive-selection-caret] {
+  width: 2px;
+  background: var(--primary);
+}
+```
+
+复制的 `Editor` 注册表组件已为两个标记提供样式。
+
+### 焦点行为
+
+| 焦点目标 | 非活动绘制 |
+| --- | --- |
+| 带标记的控件或组合树祖先 | 来自原始 `Editable` 的一个高亮或光标 |
+| 编辑器 | 无；浏览器绘制活动选择 |
+| 任意未标记控件 | 无 |
+| 窗口失焦或没有焦点目标 | 无 |
+
+该标记只控制显示，不会修改文档、选择、历史记录、剪贴板或协作状态。
+
+## 节点选择渲染
+
+精确节点选择是模型状态，不是浏览器原生范围。复制的 `Editor` 在
+`PlateContent` 后组合 `NodeSelectionHighlight` 和 `NodeSelectionDrag`，
+用于绘制已选区块并支持空白区域指针拖选。
+
+DOM 契约参见[节点选择组件](/docs/api/core/plate-components#node-selection)，
+复制的 Editor 组合参见[节点选择示例](/docs/examples/node-selection)。Block
+Menu 等功能 UI 读取同一份精确节点成员，不维护第二份已选节点状态。
+
+## 相关选择功能
+
+功能特有行为保留在各自的所有者页面中：
+
+| 需求 | 指南 |
+| --- | --- |
+| 配置标记和行内边界亲和性 | [编辑行为](/docs/editing-behavior#selection-behavior)和[插件规则](/docs/plugin-rules#rulesselection) |
+| 对已选区块执行上下文菜单操作 | [Block Menu](/docs/block-menu) |
+| 用临时匹配高亮搜索文本 | [Find](/docs/find) |
+| 编辑链接时继续显示选择 | [Link](/docs/link) |
+| 发布和渲染远程选择 | [协作](/docs/yjs) |
+| 构建标签式选择编辑器 | [Multi Select](/docs/multi-select) |
+
+## API 参考
+
+- [Selection API](/docs/plite/api/locations/selection)
+- [选择方法](/docs/plite/api/transforms#selection-methods)
+- [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)
+- [节点选择组件](/docs/api/core/plate-components#node-selection)
+
+完成。Plate 代码写入模型选择；已挂载的编辑器负责浏览器投射和显示。

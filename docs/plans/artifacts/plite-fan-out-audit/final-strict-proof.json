@@ -1,0 +1,106 @@
+{
+  "mode": "strict",
+  "steps": [
+    {
+      "command": "pnpm plite:typecheck",
+      "id": "typecheck"
+    },
+    {
+      "command": "pnpm plite:test",
+      "id": "package-tests"
+    },
+    {
+      "command": "pnpm check:plite:contracts",
+      "id": "contracts"
+    },
+    {
+      "command": "pnpm --filter plite test:plite-browser:chromium",
+      "id": "browser-chromium"
+    }
+  ],
+  "durationMs": 392754,
+  "status": "passed",
+  "timings": [
+    {
+      "durationMs": 10275,
+      "id": "typecheck",
+      "status": 0
+    },
+    {
+      "durationMs": 36904,
+      "id": "package-tests",
+      "status": 0
+    },
+    {
+      "durationMs": 19609,
+      "id": "contracts",
+      "status": 0
+    },
+    {
+      "durationMs": 325966,
+      "id": "browser-chromium",
+      "status": 0
+    }
+  ],
+  "browser": {
+    "canonicalArtifact": "apps/plite/test-results/plite-browser-runner/summary-chromium-e3b0c44298fc-1-of-1.json",
+    "status": "passed",
+    "coverage": {
+      "duplicatePlanned": [],
+      "duplicates": [],
+      "missing": [],
+      "ok": true,
+      "unexpected": [],
+      "applicable": 718,
+      "excluded": 1,
+      "executed": 718,
+      "passed": 710,
+      "selected": 718,
+      "skipped": 8
+    },
+    "durationMs": 325037,
+    "project": "chromium",
+    "reused": false,
+    "planFingerprint": "d4555024a6ba508d0d5a08a9c61b01deea906f34fcc0397bb7c92bf126c627e9",
+    "proofFingerprint": "0eefeba88fbae65ac411b3648a4f882f256c6273bf96a94d076601dae1ed357c",
+    "sourceFingerprint": "0eefeba88fbae65ac411b3648a4f882f256c6273bf96a94d076601dae1ed357c",
+    "selectedUnits": 79,
+    "completedUnits": 79,
+    "skippedTests": [
+      {
+        "id": "7cbb46f2d0d4956fdbae-89a2318f3dd6b66e9aa2",
+        "reason": "Quarantined from full gates: native pagination drag autoscroll is load-sensitive in Playwright; run the opt-in single-worker pagination lane instead"
+      },
+      {
+        "id": "64dfe47373cd2c89489b-4d0e74365491aa0b86a7",
+        "reason": "Focused synthetic mobile WebKit transport proof only"
+      },
+      {
+        "id": "64dfe47373cd2c89489b-f09ebdd69d27fb7dbff8",
+        "reason": "Focused synthetic mobile WebKit transport proof only"
+      },
+      {
+        "id": "56333a21bfa97514cc31-309060debefe4d2fa459",
+        "reason": "WebKit compositionend proof"
+      },
+      {
+        "id": "56333a21bfa97514cc31-b7d1d363b2ab0d6df27b",
+        "reason": "WebKit compositionend proof"
+      },
+      {
+        "id": "56333a21bfa97514cc31-cef0bb6a33a9eaf8ded1",
+        "reason": "Mobile proof"
+      },
+      {
+        "id": "259893ca08539f15ae10-6995c72a0ee4ea551cc1",
+        "reason": "mobile touch proof only"
+      },
+      {
+        "id": "b999f552873d82e98aac-68c2146ac928de973117",
+        "reason": "Desktop WebKit hard-line-delete proof"
+      }
+    ]
+  },
+  "sourceManifest": "docs/plans/artifacts/plite-fan-out-audit/final-source-integrated-before.json",
+  "manualProof": "docs/plans/artifacts/plite-fan-out-audit/manual-browser-proof.json"
+}

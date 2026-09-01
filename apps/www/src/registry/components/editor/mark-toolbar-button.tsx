@@ -17,8 +17,6 @@ import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-type ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;
-
 type BooleanMarkPlugin =
   | typeof BoldPlugin
   | typeof CodePlugin
@@ -28,7 +26,11 @@ type BooleanMarkPlugin =
   | typeof StrikethroughPlugin
   | typeof UnderlinePlugin;
 
-type MarkToolbarButtonProps = ToolbarButtonProps &
+export function MarkToolbarButton({
+  plugin,
+  value,
+  ...props
+}: React.ComponentProps<typeof ToolbarButton> &
   (
     | {
         plugin: BooleanMarkPlugin;
@@ -38,13 +40,7 @@ type MarkToolbarButtonProps = ToolbarButtonProps &
         plugin: typeof ScriptPlugin;
         value: ScriptValue;
       }
-  );
-
-export function MarkToolbarButton({
-  plugin,
-  value,
-  ...props
-}: MarkToolbarButtonProps) {
+  )) {
   const editor = useEditor();
   const pressed = useEditorSelector((innerEditor) =>
     innerEditor.plugin(plugin).read.isActive(value)

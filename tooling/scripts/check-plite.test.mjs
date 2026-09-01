@@ -119,7 +119,7 @@ test('a core source change invalidates every dependent Plite package', () => {
 
 test('a leaf test change stays package-local and skips browser preparation', () => {
   const plan = createAffectedPlan([
-    'packages/plitejs/test/page-layout/layout-contract.test.ts',
+    'packages/plitejs/test/pagination/layout-contract.test.ts',
   ]);
   const steps = createCheckSteps('dev', plan);
 

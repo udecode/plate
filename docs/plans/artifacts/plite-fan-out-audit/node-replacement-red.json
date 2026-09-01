@@ -1,0 +1,289 @@
+{
+  "lane": "plite-node-transforms",
+  "iterations": 5,
+  "replacementLocality": [
+    {
+      "count": 100,
+      "durationMs": {
+        "samples": [
+          0.43,
+          0.4,
+          0.36,
+          0.37,
+          0.33,
+          0.34,
+          0.44,
+          0.4,
+          0.37,
+          0.32,
+          0.34,
+          0.6,
+          0.38,
+          0.38,
+          0.47,
+          0.43,
+          0.33,
+          0.37,
+          0.48,
+          0.45
+        ],
+        "mean": 0.4,
+        "median": 0.38,
+        "p75": 0.43,
+        "p95": 0.48,
+        "p99": 0.6,
+        "min": 0.32,
+        "max": 0.6
+      },
+      "materializedIndexes": 21,
+      "pass": false
+    },
+    {
+      "count": 1000,
+      "durationMs": {
+        "samples": [
+          2.49,
+          1.98,
+          2.15,
+          2.3,
+          2.12,
+          2.12,
+          1.95,
+          5.4,
+          2,
+          2.25,
+          2.13,
+          2.24,
+          2.06,
+          2.05,
+          2.18,
+          1.99,
+          2.17,
+          2.13,
+          5.28,
+          2.11
+        ],
+        "mean": 2.46,
+        "median": 2.13,
+        "p75": 2.24,
+        "p95": 5.28,
+        "p99": 5.4,
+        "min": 1.95,
+        "max": 5.4
+      },
+      "materializedIndexes": 21,
+      "pass": false
+    },
+    {
+      "count": 10000,
+      "durationMs": {
+        "samples": [
+          32.88,
+          31.19,
+          32.04,
+          29.68,
+          33,
+          32.06,
+          28.62,
+          29.7,
+          29.22,
+          28.69,
+          29.23,
+          29.5,
+          28.66,
+          37.66,
+          53.34,
+          28.99,
+          33.89,
+          67.5,
+          29.31,
+          32.15
+        ],
+        "mean": 33.87,
+        "median": 30.45,
+        "p75": 32.88,
+        "p95": 53.34,
+        "p99": 67.5,
+        "min": 28.62,
+        "max": 67.5
+      },
+      "materializedIndexes": 21,
+      "pass": false
+    }
+  ],
+  "sourceIdentity": {
+    "measuredInputs": {
+      "packages/plitejs/src/core/public-state.ts": "e3d36401a68e1e581fafd71ef12cbbea0ec41eedb3d411f4331137c31beaafef",
+      "packages/plitejs/src/core/snapshot-index.ts": "49e04c92f53042a2a80ac869e7cd102160a3572a9c3c4d16d87b91b0085548f6",
+      "packages/plitejs/src/core/commit.ts": "f0a6475955f4a9e8b3e912be0a4ca3fcdef96809b5b42b487de8623b502c5aec",
+      "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+      "benchmarks/slate-v2/donor/core/current/node-transforms.mjs": "0f5ff9bc74894c424200c7a309da5f30411cfc20f7b752471cf7c369f2eb4c54"
+    }
+  },
+  "config": {
+    "blockCount": 120,
+    "selectionBlocks": 24
+  },
+  "lanes": {
+    "replaceFragmentMs": {
+      "samples": [
+        2.48,
+        3.47,
+        3.02,
+        2.68,
+        2.73
+      ],
+      "mean": 2.88,
+      "median": 2.73,
+      "p75": 3.02,
+      "p95": 3.47,
+      "p99": 3.47,
+      "min": 2.48,
+      "max": 3.47
+    },
+    "insertNodesMs": {
+      "samples": [
+        1.8,
+        1.98,
+        1.7,
+        1.89,
+        1.62
+      ],
+      "mean": 1.8,
+      "median": 1.8,
+      "p75": 1.89,
+      "p95": 1.98,
+      "p99": 1.98,
+      "min": 1.62,
+      "max": 1.98
+    },
+    "setNodesMs": {
+      "samples": [
+        5.85,
+        5.91,
+        8.94,
+        5.75,
+        5.39
+      ],
+      "mean": 6.37,
+      "median": 5.85,
+      "p75": 5.91,
+      "p95": 8.94,
+      "p99": 8.94,
+      "min": 5.39,
+      "max": 8.94
+    },
+    "moveNodesMs": {
+      "samples": [
+        23.51,
+        22.82,
+        25.83,
+        21.09,
+        21.76
+      ],
+      "mean": 23,
+      "median": 22.82,
+      "p75": 23.51,
+      "p95": 25.83,
+      "p99": 25.83,
+      "min": 21.09,
+      "max": 25.83
+    },
+    "splitNodesMs": {
+      "samples": [
+        42,
+        40.83,
+        44.98,
+        40.76,
+        42.1
+      ],
+      "mean": 42.13,
+      "median": 42,
+      "p75": 42.1,
+      "p95": 44.98,
+      "p99": 44.98,
+      "min": 40.76,
+      "max": 44.98
+    },
+    "mergeNodesMs": {
+      "samples": [
+        25.24,
+        23.67,
+        21.89,
+        20.52,
+        21.89
+      ],
+      "mean": 22.64,
+      "median": 21.89,
+      "p75": 23.67,
+      "p95": 25.24,
+      "p99": 25.24,
+      "min": 20.52,
+      "max": 25.24
+    },
+    "removeNodesMs": {
+      "samples": [
+        17.89,
+        18.61,
+        14.07,
+        14.03,
+        13.59
+      ],
+      "mean": 15.64,
+      "median": 14.07,
+      "p75": 17.89,
+      "p95": 18.61,
+      "p99": 18.61,
+      "min": 13.59,
+      "max": 18.61
+    },
+    "wrapNodesMs": {
+      "samples": [
+        8.48,
+        8.49,
+        7.83,
+        9.93,
+        10.02
+      ],
+      "mean": 8.95,
+      "median": 8.49,
+      "p75": 9.93,
+      "p95": 10.02,
+      "p99": 10.02,
+      "min": 7.83,
+      "max": 10.02
+    },
+    "unwrapNodesMs": {
+      "samples": [
+        105.06,
+        106.29,
+        99.65,
+        107.7,
+        91.17
+      ],
+      "mean": 101.97,
+      "median": 105.06,
+      "p75": 106.29,
+      "p95": 107.7,
+      "p99": 107.7,
+      "min": 91.17,
+      "max": 107.7
+    },
+    "liftNodesMs": {
+      "samples": [
+        10.34,
+        10.68,
+        10.18,
+        13.34,
+        9.82
+      ],
+      "mean": 10.87,
+      "median": 10.34,
+      "p75": 10.68,
+      "p95": 13.34,
+      "p99": 13.34,
+      "min": 9.82,
+      "max": 13.34
+    }
+  }
+}

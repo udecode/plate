@@ -1,0 +1,86 @@
+{
+  "failureCount": 2,
+  "failures": [
+    {
+      "artifactExists": false,
+      "artifactParseError": null,
+      "exitCode": 1,
+      "id": "core-huge-document-compare"
+    },
+    {
+      "artifactExists": false,
+      "artifactParseError": null,
+      "exitCode": 1,
+      "id": "react-huge-document-legacy-compare"
+    }
+  ],
+  "budgetFailures": [
+    {
+      "budget": 50,
+      "metric": "overlayToggleP95Ms",
+      "ratio": 1.6,
+      "value": 80.17
+    }
+  ],
+  "steps": [
+    {
+      "id": "core-huge-document-compare",
+      "exitCode": 1,
+      "artifactPath": "tmp/slate-core-huge-document-benchmark.json",
+      "summary": {}
+    },
+    {
+      "id": "react-huge-document-legacy-compare",
+      "exitCode": 1,
+      "artifactPath": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
+      "summary": {}
+    },
+    {
+      "id": "react-huge-document-browser-trace",
+      "exitCode": 0,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "typeToPaintP95Ms": 18.3,
+        "domNodesP95": 1004,
+        "editorElementsP95": 32,
+        "nativeSurfaceTimeoutCount": 0
+      }
+    },
+    {
+      "id": "react-huge-document-staged-diagnostic-trace",
+      "exitCode": 0,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "typeToPaintP95Ms": 20.1,
+        "domNodesP95": 385,
+        "editorElementsP95": 32,
+        "nativeSurfaceTimeoutCount": 0
+      }
+    },
+    {
+      "id": "react-huge-document-virtualized-type-to-paint",
+      "exitCode": 0,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "typeToPaintP95Ms": 39.6,
+        "domNodesP95": 370,
+        "editorElementsP95": 17,
+        "nativeSurfaceTimeoutCount": 0
+      }
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "exitCode": 0,
+      "artifactPath": "tmp/slate-react-huge-document-overlays-benchmark.json",
+      "summary": {
+        "activeEditP95Ms": 6.62,
+        "blocks": 5000,
+        "overlayToggleP95Ms": 80.17,
+        "partialDOMPromotionColdP95Ms": 211.75,
+        "partialDOMPromotionSteadyP75Ms": 48.74,
+        "partialDOMPromotionSteadyP95Ms": 52.12,
+        "partialDOMPromotionTextAfterP95": 8
+      }
+    }
+  ]
+}

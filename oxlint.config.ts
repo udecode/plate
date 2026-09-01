@@ -62,8 +62,8 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/history/index.ts',
   'packages/platejs/src/history/plite-history.internal.ts',
   'packages/platejs/src/hyperscript/index.ts',
-  'packages/platejs/src/page-layout/index.ts',
-  'packages/platejs/src/page-layout/react/index.ts',
+  'packages/platejs/src/pagination/index.ts',
+  'packages/platejs/src/pagination/react/index.ts',
   'packages/platejs/src/react/internal/plite-components.ts',
   'packages/platejs/src/react/internal/plite-types.ts',
   'packages/platejs/src/react/plite-react.ts',
@@ -82,7 +82,7 @@ const isPlateReactOwnedEntrypoint = (
 
   return (
     entrypoint.externalDependencies.some((dependency) =>
-      /^(?:plitejs\/(?:react|page-layout\/react))$/u.test(dependency)
+      /^(?:plitejs\/(?:react|pagination\/react))$/u.test(dependency)
     ) ||
     entrypoint.dependencies.some((dependency) =>
       isPlateReactOwnedEntrypoint(dependency, nextVisiting)
@@ -236,7 +236,7 @@ export default defineConfig({
                 message: 'The platejs root cannot depend on React.',
               },
               {
-                regex: '^plitejs/(?:react|page-layout/react)(?:/|$)',
+                regex: '^plitejs/(?:react|pagination/react)(?:/|$)',
                 message:
                   'The platejs root cannot depend on a Plite React entrypoint.',
               },
@@ -283,7 +283,7 @@ export default defineConfig({
       files: ['packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
       excludeFiles: [
         'packages/plitejs/src/react/**',
-        'packages/plitejs/src/page-layout/react.tsx',
+        'packages/plitejs/src/pagination/react.tsx',
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
         'packages/plitejs/src/**/*.slow.*',

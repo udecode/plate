@@ -1,8 +1,9 @@
 import { runInNewContext } from 'node:vm';
 
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { createEditor } from 'plitejs';
 import React, { startTransition, Suspense, useLayoutEffect } from 'react';
+import { renderToString } from 'react-dom/server';
 
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -10,13 +11,19 @@ import {
   replace as editorReplace,
 } from '../../src/internal';
 import {
+  Editable,
   Plite,
   type PliteWidget,
+  type PliteWidgetStore,
   usePliteAnnotationStore,
   usePliteWidget,
+  usePliteWidgetGeometry,
+  usePliteWidgetIds,
   usePliteWidgetStore,
   usePliteWidgets,
+  useSelectionGeometry,
 } from '../../src/react';
+import { createPliteAnnotationStore } from '../../src/react/annotation-store';
 import { createPliteWidgetStore } from '../../src/react/widget-store';
 import {
   createRenderCounts,
@@ -60,7 +67,7 @@ const WidgetHarness = ({
       <span id="widget-state">
         {toolbarWidget
           ? `${toolbarWidget.id}:${
-              toolbarWidget.visible ? 'visible' : 'hidden'
+              toolbarWidget.available ? 'visible' : 'hidden'
             }:${toolbarWidget.data?.label ?? 'none'}`
           : 'none'}
       </span>
@@ -80,7 +87,7 @@ const ProjectedWidgetHarness = ({
   const widgetStore = usePliteWidgetStore(
     editor,
     labels.map((label) => ({
-      anchor: {
+      target: {
         type: 'selection' as const,
       },
       data: {
@@ -98,7 +105,7 @@ const ProjectedWidgetHarness = ({
       <span id="widget-state">
         {toolbarWidget
           ? `${toolbarWidget.id}:${
-              toolbarWidget.visible ? 'visible' : 'hidden'
+              toolbarWidget.available ? 'visible' : 'hidden'
             }:${toolbarWidget.data?.label ?? 'none'}`
           : 'none'}
       </span>
@@ -116,7 +123,7 @@ const ProjectedWidgetSnapshotHarness = ({
   const widgetStore = usePliteWidgetStore(
     editor,
     labels.map((label) => ({
-      anchor: {
+      target: {
         type: 'selection' as const,
       },
       data: {
@@ -136,7 +143,7 @@ const ProjectedWidgetSnapshotHarness = ({
               .map((id) => {
                 const widget = widgetSnapshot.byId.get(id)!;
 
-                return `${widget.id}:${widget.visible ? 'visible' : 'hidden'}:${
+                return `${widget.id}:${widget.available ? 'visible' : 'hidden'}:${
                   widget.data?.label ?? 'none'
                 }`;
               })
@@ -172,7 +179,7 @@ const ProjectedAnnotationWidgetHarness = ({
   const widgetStore = usePliteWidgetStore(
     editor,
     labels.map((label) => ({
-      anchor: {
+      target: {
         annotationId: 'comment-1',
         type: 'annotation' as const,
       },
@@ -194,7 +201,7 @@ const ProjectedAnnotationWidgetHarness = ({
               .map((id) => {
                 const widget = widgetSnapshot.byId.get(id)!;
 
-                return `${widget.id}:${widget.visible ? 'visible' : 'hidden'}:${
+                return `${widget.id}:${widget.available ? 'visible' : 'hidden'}:${
                   widget.data?.label ?? 'none'
                 }`;
               })
@@ -204,8 +211,683 @@ const ProjectedAnnotationWidgetHarness = ({
   );
 };
 
+const WidgetIdsProbe = React.memo(
+  ({
+    onRender,
+    store,
+  }: {
+    onRender: () => void;
+    store: ReturnType<typeof usePliteWidgetStore>;
+  }) => {
+    onRender();
+    const ids = usePliteWidgetIds(store);
+
+    return <span id="widget-ids">{ids.join('|')}</span>;
+  }
+);
+
+const WidgetIdsHarness = ({
+  editor,
+  ids,
+  label,
+  onRender,
+}: {
+  editor: ReturnType<typeof createEditor>;
+  ids: readonly string[];
+  label: string;
+  onRender: () => void;
+}) => {
+  const store = usePliteWidgetStore(
+    editor,
+    ids.map((id) => ({
+      data: { label },
+      id,
+      target: { type: 'selection' as const },
+    }))
+  );
+
+  return (
+    <Plite editor={editor}>
+      <WidgetIdsProbe onRender={onRender} store={store} />
+    </Plite>
+  );
+};
+
+const SelectionGeometryProbe = ({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const geometry = useSelectionGeometry({ editableRef });
+
+  return (
+    <span id="selection-geometry">
+      {geometry
+        ? `${geometry.boundingRect.left},${geometry.boundingRect.top},${geometry.rects.length}`
+        : 'none'}
+    </span>
+  );
+};
+
+const SelectionGeometryHarness = ({
+  editor,
+}: {
+  editor: ReturnType<typeof createEditor>;
+}) => {
+  const editableRef = React.useRef<HTMLDivElement>(null);
+
+  return (
+    <Plite editor={editor}>
+      <Editable ref={editableRef} />
+      <SelectionGeometryProbe editableRef={editableRef} />
+    </Plite>
+  );
+};
+
+const CrossEditorSelectionGeometryHarness = ({
+  editor,
+  foreignEditor,
+}: {
+  editor: ReturnType<typeof createEditor>;
+  foreignEditor: ReturnType<typeof createEditor>;
+}) => {
+  const foreignEditableRef = React.useRef<HTMLDivElement>(null);
+
+  return (
+    <>
+      <Plite editor={foreignEditor}>
+        <Editable ref={foreignEditableRef} />
+      </Plite>
+      <Plite editor={editor}>
+        <SelectionGeometryProbe editableRef={foreignEditableRef} />
+      </Plite>
+    </>
+  );
+};
+
+const WidgetGeometryProbe = ({
+  editableRef,
+  store,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+  store: PliteWidgetStore<{ label: string }>;
+}) => {
+  const geometry = usePliteWidgetGeometry(store, 'node-widget', {
+    editableRef,
+  });
+
+  return (
+    <span id="node-widget-geometry">
+      {geometry
+        ? `${geometry.boundingRect.left},${geometry.boundingRect.top},${geometry.rects.length}`
+        : 'none'}
+    </span>
+  );
+};
+
+const NodeWidgetGeometryHarness = ({
+  editor,
+  nodeKey,
+}: {
+  editor: ReturnType<typeof createEditor>;
+  nodeKey: NonNullable<ReturnType<typeof editorGetNodeKey>>;
+}) => {
+  const editableRef = React.useRef<HTMLDivElement>(null);
+  const store = usePliteWidgetStore(editor, [
+    {
+      data: { label: 'Node' },
+      id: 'node-widget',
+      target: { nodeKey, type: 'node' },
+    },
+  ]);
+
+  return (
+    <Plite editor={editor}>
+      <Editable ref={editableRef} />
+      <WidgetGeometryProbe editableRef={editableRef} store={store} />
+    </Plite>
+  );
+};
+
 describe('plite-react widget layer contract', () => {
-  test('selection widgets toggle without rerendering text slices', async () => {
+  test('node widget commits visit only targets whose availability changes', () => {
+    const count = 1000;
+    const editor = createEditor({
+      initialValue: Array.from({ length: count }, () => ({
+        type: 'paragraph',
+        children: [{ text: 'text' }],
+      })),
+    });
+    let targetReads = 0;
+    const widgets = Array.from({ length: count }, (_, index) => {
+      const nodeKey = editorGetNodeKey(editor, [index]);
+
+      if (!nodeKey) throw new Error('Expected a node key');
+
+      return {
+        id: `widget-${index}`,
+        get target() {
+          targetReads += 1;
+          return { nodeKey, type: 'node' as const };
+        },
+      };
+    });
+    const store = createPliteWidgetStore(editor, () => widgets);
+    let before = store.getMetrics();
+    const snapshot = store.getSnapshot();
+
+    targetReads = 0;
+    editor.update.text.insert('x', { at: { path: [0, 0], offset: 0 } });
+    expect(
+      store.getMetrics().widgetResolveCount - before.widgetResolveCount
+    ).toBe(0);
+    expect(targetReads).toBe(0);
+    expect(store.getSnapshot()).toBe(snapshot);
+
+    before = store.getMetrics();
+    editor.update.nodes.remove({ at: [0] });
+    expect(
+      store.getMetrics().widgetResolveCount - before.widgetResolveCount
+    ).toBe(1);
+    expect(targetReads).toBeLessThanOrEqual(12);
+    expect(store.getWidget('widget-0')?.available).toBe(false);
+    expect(store.getWidget('widget-999')?.available).toBe(true);
+    expect(snapshot.byId.get('widget-0')?.available).toBe(true);
+
+    before = store.getMetrics();
+    editor.update.nodes.remove({ at: [998] });
+    expect(
+      store.getMetrics().widgetResolveCount - before.widgetResolveCount
+    ).toBe(1);
+    expect(store.getWidget('widget-999')?.available).toBe(false);
+    store.destroy();
+  });
+
+  test('one annotation publication resolves only its widget targets in one batch', () => {
+    const editor = createEditor({ initialValue: createChildren() });
+    const range = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 4 },
+    };
+    const annotations = Array.from({ length: 1000 }, (_, index) => ({
+      anchor: { release: () => null, resolve: () => range },
+      data: { revision: 0 },
+      id: `annotation-${index}`,
+    }));
+    const annotationStore = createPliteAnnotationStore(
+      editor,
+      () => annotations
+    );
+    const widgets = annotations.map((annotation, index) => ({
+      id: `widget-${index}`,
+      target: { annotationId: annotation.id, type: 'annotation' as const },
+    }));
+    const store = createPliteWidgetStore(
+      editor,
+      () => widgets,
+      annotationStore
+    );
+    let wakes = 0;
+    store.subscribe(() => {
+      wakes += 1;
+    });
+    const before = store.getMetrics();
+
+    annotations[0] = { ...annotations[0], data: { revision: 1 } };
+    annotations[999] = { ...annotations[999], data: { revision: 1 } };
+    annotationStore.refresh({ ids: ['annotation-0', 'annotation-999'] });
+
+    expect(
+      store.getMetrics().widgetResolveCount - before.widgetResolveCount
+    ).toBe(2);
+    expect(wakes).toBe(1);
+    expect(store.getWidget('widget-0')?.annotation?.data?.revision).toBe(1);
+    expect(store.getWidget('widget-1')?.annotation?.data?.revision).toBe(0);
+    expect(store.getWidget('widget-999')?.annotation?.data?.revision).toBe(1);
+
+    store.destroy();
+    annotationStore.destroy();
+  });
+
+  test('widget stores expose the canonical editor they resolve', () => {
+    const editor = createEditor();
+    const store = createPliteWidgetStore(editor, () => []);
+
+    expect(store.editor).toBe(editor);
+
+    store.destroy();
+  });
+
+  test('widget id subscribers wake only for membership or order changes', async () => {
+    const editor = createEditor();
+    const onRender = vi.fn();
+    const mounted = render(
+      <WidgetIdsHarness
+        editor={editor}
+        ids={['a']}
+        label="first"
+        onRender={onRender}
+      />
+    );
+
+    expect(mounted.container.querySelector('#widget-ids')?.textContent).toBe(
+      'a'
+    );
+    const initialRenderCount = onRender.mock.calls.length;
+
+    await act(async () => {
+      mounted.rerender(
+        <WidgetIdsHarness
+          editor={editor}
+          ids={['a']}
+          label="updated"
+          onRender={onRender}
+        />
+      );
+    });
+
+    expect(onRender).toHaveBeenCalledTimes(initialRenderCount);
+
+    await act(async () => {
+      mounted.rerender(
+        <WidgetIdsHarness
+          editor={editor}
+          ids={['a', 'b']}
+          label="updated"
+          onRender={onRender}
+        />
+      );
+    });
+
+    expect(mounted.container.querySelector('#widget-ids')?.textContent).toBe(
+      'a|b'
+    );
+    expect(onRender).toHaveBeenCalledTimes(initialRenderCount + 1);
+  });
+
+  test('selection geometry reads the current selection in the exact Editable', async () => {
+    const editor = createEditor();
+    const rangePrototype = window.Range.prototype;
+    const previousBoundingRect = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getBoundingClientRect'
+    );
+    const previousClientRects = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getClientRects'
+    );
+    const rect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number
+    ) => ({
+      bottom: top + height,
+      height,
+      left,
+      right: left + width,
+      top,
+      width,
+      x: left,
+      y: top,
+    });
+
+    Object.defineProperties(rangePrototype, {
+      getBoundingClientRect: {
+        configurable: true,
+        value: () => rect(30, 40, 1, 18),
+      },
+      getClientRects: {
+        configurable: true,
+        value(this: Range) {
+          return this.collapsed
+            ? []
+            : [rect(10, 20, 40, 18), rect(10, 40, 20, 18)];
+        },
+      },
+    });
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+
+    try {
+      const mounted = render(<SelectionGeometryHarness editor={editor} />);
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#selection-geometry')?.textContent
+        ).toBe('10,20,2');
+      });
+
+      await act(async () => {
+        editor.update((tx) => {
+          tx.selection.collapse({ edge: 'end' });
+        });
+      });
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#selection-geometry')?.textContent
+        ).toBe('30,40,0');
+      });
+    } finally {
+      if (previousBoundingRect) {
+        Object.defineProperty(
+          rangePrototype,
+          'getBoundingClientRect',
+          previousBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getBoundingClientRect');
+      }
+      if (previousClientRects) {
+        Object.defineProperty(
+          rangePrototype,
+          'getClientRects',
+          previousClientRects
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getClientRects');
+      }
+    }
+  });
+
+  test('selection geometry anchors a collapsed empty paragraph to its line break', async () => {
+    const editor = createEditor();
+    const rangePrototype = window.Range.prototype;
+    const elementPrototype = window.HTMLElement.prototype;
+    const previousRangeBoundingRect = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getBoundingClientRect'
+    );
+    const previousClientRects = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getClientRects'
+    );
+    const previousElementBoundingRect = Object.getOwnPropertyDescriptor(
+      elementPrototype,
+      'getBoundingClientRect'
+    );
+    const rect = (
+      left: number,
+      top: number,
+      width: number,
+      height: number
+    ) => ({
+      bottom: top + height,
+      height,
+      left,
+      right: left + width,
+      top,
+      width,
+      x: left,
+      y: top,
+    });
+
+    Object.defineProperties(rangePrototype, {
+      getBoundingClientRect: {
+        configurable: true,
+        value: () => rect(0, 0, 0, 0),
+      },
+      getClientRects: {
+        configurable: true,
+        value: () => [],
+      },
+    });
+    Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
+      configurable: true,
+      value(this: HTMLElement) {
+        return this.hasAttribute('data-plite-zero-width')
+          ? rect(30, 40, 0, 18)
+          : rect(0, 0, 0, 0);
+      },
+    });
+
+    editorReplace(editor, {
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+
+    try {
+      const mounted = render(<SelectionGeometryHarness editor={editor} />);
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#selection-geometry')?.textContent
+        ).toBe('30,40,0');
+      });
+    } finally {
+      if (previousRangeBoundingRect) {
+        Object.defineProperty(
+          rangePrototype,
+          'getBoundingClientRect',
+          previousRangeBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getBoundingClientRect');
+      }
+      if (previousClientRects) {
+        Object.defineProperty(
+          rangePrototype,
+          'getClientRects',
+          previousClientRects
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getClientRects');
+      }
+      if (previousElementBoundingRect) {
+        Object.defineProperty(
+          elementPrototype,
+          'getBoundingClientRect',
+          previousElementBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(elementPrototype, 'getBoundingClientRect');
+      }
+    }
+  });
+
+  test('selection geometry updates after viewport scroll', async () => {
+    const editor = createEditor();
+    const rangePrototype = window.Range.prototype;
+    const previousBoundingRect = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getBoundingClientRect'
+    );
+    const previousClientRects = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getClientRects'
+    );
+    let left = 10;
+    const rect = (top: number, width: number, height: number) => ({
+      bottom: top + height,
+      height,
+      left,
+      right: left + width,
+      top,
+      width,
+      x: left,
+      y: top,
+    });
+
+    Object.defineProperties(rangePrototype, {
+      getBoundingClientRect: {
+        configurable: true,
+        value: () => rect(40, 1, 18),
+      },
+      getClientRects: {
+        configurable: true,
+        value(this: Range) {
+          return this.collapsed ? [] : [rect(20, 40, 18)];
+        },
+      },
+    });
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+
+    try {
+      const mounted = render(<SelectionGeometryHarness editor={editor} />);
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#selection-geometry')?.textContent
+        ).toBe('10,20,1');
+      });
+
+      left = 25;
+      act(() => {
+        document.dispatchEvent(new Event('scroll'));
+      });
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#selection-geometry')?.textContent
+        ).toBe('25,20,1');
+      });
+    } finally {
+      if (previousBoundingRect) {
+        Object.defineProperty(
+          rangePrototype,
+          'getBoundingClientRect',
+          previousBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getBoundingClientRect');
+      }
+      if (previousClientRects) {
+        Object.defineProperty(
+          rangePrototype,
+          'getClientRects',
+          previousClientRects
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getClientRects');
+      }
+    }
+  });
+
+  test('selection geometry rejects an Editable owned by another editor', () => {
+    const editor = createEditor();
+    const foreignEditor = createEditor();
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+    editorReplace(foreignEditor, {
+      children: createChildren(),
+      selection: null,
+    });
+
+    const mounted = render(
+      <CrossEditorSelectionGeometryHarness
+        editor={editor}
+        foreignEditor={foreignEditor}
+      />
+    );
+
+    expect(
+      mounted.container.querySelector('#selection-geometry')?.textContent
+    ).toBe('none');
+  });
+
+  test('selection geometry has a null server snapshot', () => {
+    const editor = createEditor();
+    const editableRef = React.createRef<HTMLDivElement>();
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+
+    const html = renderToString(
+      <Plite editor={editor}>
+        <SelectionGeometryProbe editableRef={editableRef} />
+      </Plite>
+    );
+
+    expect(html).toContain('>none</span>');
+  });
+
+  test('generic Widget geometry measures a node target', async () => {
+    const editor = createEditor();
+    const elementPrototype = window.HTMLElement.prototype;
+    const previousBoundingRect = Object.getOwnPropertyDescriptor(
+      elementPrototype,
+      'getBoundingClientRect'
+    );
+
+    editorReplace(editor, {
+      children: createChildren(),
+      selection: null,
+    });
+    const nodeKey = editorGetNodeKey(editor, [1]);
+
+    if (!nodeKey) throw new Error('Expected a node key');
+
+    Object.defineProperty(elementPrototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        bottom: 32,
+        height: 20,
+        left: 12,
+        right: 52,
+        top: 12,
+        width: 40,
+        x: 12,
+        y: 12,
+      }),
+    });
+
+    try {
+      const mounted = render(
+        <NodeWidgetGeometryHarness editor={editor} nodeKey={nodeKey} />
+      );
+
+      await waitFor(() => {
+        expect(
+          mounted.container.querySelector('#node-widget-geometry')?.textContent
+        ).toBe('12,12,1');
+      });
+    } finally {
+      if (previousBoundingRect) {
+        Object.defineProperty(
+          elementPrototype,
+          'getBoundingClientRect',
+          previousBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(elementPrototype, 'getBoundingClientRect');
+      }
+    }
+  });
+
+  test('selection widgets remain available when collapsed without rerendering text slices', async () => {
     const editor = createEditor();
     const counts = createRenderCounts();
 
@@ -216,7 +898,7 @@ describe('plite-react widget layer contract', () => {
 
     const widgets = [
       {
-        anchor: {
+        target: {
           type: 'selection' as const,
         },
         data: {
@@ -270,7 +952,7 @@ describe('plite-react widget layer contract', () => {
       selection: 0,
     });
     expect(mounted.container.querySelector('#widget-state')?.textContent).toBe(
-      'toolbar-widget:hidden:Toolbar'
+      'toolbar-widget:visible:Toolbar'
     );
 
     mounted.unmount();
@@ -336,7 +1018,7 @@ describe('plite-react widget layer contract', () => {
       label: string
     ): ReadonlyArray<PliteWidget<{ label: string }>> => [
       {
-        anchor: { type: 'selection' },
+        target: { type: 'selection' },
         get data() {
           if (label === 'abandoned') abandonedDataReadCount += 1;
           if (shouldThrow) throw new Error('widget source failed');
@@ -434,7 +1116,7 @@ describe('plite-react widget layer contract', () => {
       label: string
     ): ReadonlyArray<PliteWidget<{ label: string }>> => [
       {
-        anchor: { type: 'selection' },
+        target: { type: 'selection' },
         get data() {
           if (shouldThrow) throw new Error('widget source failed');
 
@@ -602,7 +1284,7 @@ describe('plite-react widget layer contract', () => {
 
     const store = createPliteWidgetStore(editor, () => [
       {
-        anchor: {
+        target: {
           type: 'selection' as const,
         },
         data: {
@@ -636,7 +1318,9 @@ describe('plite-react widget layer contract', () => {
     });
 
     expect(notifications).toBe(1);
-    expect(store.getSnapshot().byId.get('toolbar-widget')?.visible).toBe(true);
+    expect(store.getSnapshot().byId.get('toolbar-widget')?.available).toBe(
+      true
+    );
 
     unsubscribe();
     store.destroy();
@@ -671,7 +1355,7 @@ describe('plite-react widget layer contract', () => {
 
     const store = createPliteWidgetStore(editor, () => [
       {
-        anchor: {
+        target: {
           type: 'selection' as const,
         },
         id: 'toolbar-widget',
@@ -701,7 +1385,7 @@ describe('plite-react widget layer contract', () => {
 
     const widgets = [
       {
-        anchor: {
+        target: {
           nodeKey,
           type: 'node' as const,
         },
@@ -719,7 +1403,7 @@ describe('plite-react widget layer contract', () => {
 
     expect(store.getWidget('node-widget')).toMatchObject({
       id: 'node-widget',
-      visible: true,
+      available: true,
     });
 
     await act(async () => {
@@ -731,7 +1415,7 @@ describe('plite-react widget layer contract', () => {
     expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([0]);
     expect(store.getWidget('node-widget')).toMatchObject({
       id: 'node-widget',
-      visible: true,
+      available: true,
     });
     expect(notifications).toBe(0);
 
@@ -743,7 +1427,7 @@ describe('plite-react widget layer contract', () => {
 
     expect(store.getWidget('node-widget')).toMatchObject({
       id: 'node-widget',
-      visible: false,
+      available: false,
     });
     expect(notifications).toBe(1);
 
@@ -773,7 +1457,7 @@ describe('plite-react widget layer contract', () => {
     };
     const store = createPliteWidgetStore(editor, () => [
       {
-        anchor: {
+        target: {
           type: 'selection' as const,
         },
         data: metadata,
@@ -824,7 +1508,7 @@ describe('plite-react widget layer contract', () => {
 
     const store = createPliteWidgetStore(editor, () => [
       {
-        anchor: {
+        target: {
           type: 'selection' as const,
         },
         data: {

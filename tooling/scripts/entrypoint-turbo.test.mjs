@@ -224,12 +224,12 @@ test('allowed import edges do not become task dependencies until imported', () =
     generatedByPackage.get('platejs').config.tasks['typecheck:partition:react'];
 
   assert.ok(
-    entrypointDags.platejs.entrypoints[
-      'react-core'
-    ].externalDependencies.includes('plitejs/history')
+    entrypointDags.platejs.entrypoints['react-core'].dependencies.includes(
+      'history'
+    )
   );
   assert.equal(
-    plateReactCore.dependsOn.includes('plitejs#typecheck:partition:history'),
+    plateReactCore.dependsOn.includes('typecheck:partition:proxies'),
     false
   );
 });

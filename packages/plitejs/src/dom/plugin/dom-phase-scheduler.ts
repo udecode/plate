@@ -125,8 +125,9 @@ export const createDOMPhaseScheduler = ({
     throw new RangeError('DOM phase scheduler maxPasses must be at least 1.');
   }
 
-  const tasks: ScheduledDOMPhaseTask[] = [];
+  const tasks = new Set<ScheduledDOMPhaseTask>();
   const keyedTasks = new Map<string, ScheduledDOMPhaseTask>();
+  let animationFrameTasks = 0;
   let animationFrameHandle: number | null = null;
   let animationFrameUsesTimeout = false;
   let animationFrameWindow: SchedulerWindow | null = null;
@@ -143,9 +144,9 @@ export const createDOMPhaseScheduler = ({
   };
 
   const removeTask = (task: ScheduledDOMPhaseTask) => {
-    const index = tasks.indexOf(task);
-
-    if (index !== -1) tasks.splice(index, 1);
+    if (tasks.delete(task) && task.timing === 'animation-frame') {
+      animationFrameTasks -= 1;
+    }
     if (task.key && keyedTasks.get(task.key) === task) {
       keyedTasks.delete(task.key);
     }
@@ -167,13 +168,7 @@ export const createDOMPhaseScheduler = ({
     task.cancelled = true;
     clearTaskTimeout(task);
     removeTask(task);
-    if (
-      animationFrameHandle !== null &&
-      !tasks.some(
-        (candidate) =>
-          !candidate.cancelled && candidate.timing === 'animation-frame'
-      )
-    ) {
+    if (animationFrameHandle !== null && animationFrameTasks === 0) {
       if (animationFrameUsesTimeout) {
         globalThis.clearTimeout(animationFrameHandle);
       } else {
@@ -277,7 +272,7 @@ export const createDOMPhaseScheduler = ({
 
     try {
       while (passes < maxPasses) {
-        const ready = tasks
+        const ready = [...tasks]
           .filter((task) => task.ready && !task.cancelled)
           .sort(
             (left, right) =>
@@ -303,7 +298,9 @@ export const createDOMPhaseScheduler = ({
         }
       }
 
-      const stillReady = tasks.filter((task) => task.ready && !task.cancelled);
+      const stillReady = [...tasks].filter(
+        (task) => task.ready && !task.cancelled
+      );
 
       if (stillReady.length > 0) {
         mutableDiagnostics.loopLimitHits += 1;
@@ -316,6 +313,7 @@ export const createDOMPhaseScheduler = ({
         onDiagnostic?.(diagnostic);
         for (const task of stillReady) {
           task.ready = false;
+          if (task.timing !== 'animation-frame') animationFrameTasks += 1;
           task.timing = 'animation-frame';
         }
         scheduleAnimationFrameFlush();
@@ -361,7 +359,7 @@ export const createDOMPhaseScheduler = ({
     flush: () => {
       flushReady(true);
     },
-    pending: () => tasks.length,
+    pending: () => tasks.size,
     schedule(phase, label, callback, options = {}) {
       if (destroyed) return () => {};
 
@@ -386,7 +384,8 @@ export const createDOMPhaseScheduler = ({
         timing: options.timing ?? 'animation-frame',
       };
 
-      tasks.push(task);
+      tasks.add(task);
+      if (task.timing === 'animation-frame') animationFrameTasks += 1;
       if (task.key) keyedTasks.set(task.key, task);
       armTask(task);
 

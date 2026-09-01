@@ -10,6 +10,7 @@ import { createEditor } from 'platejs/react';
 import * as Y from 'yjs';
 
 import { FakeProvider } from '../../test/yjs/support/provider';
+import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
 import { yjs } from './core/extension';
 import { YjsPlugin } from './react/YjsPlugin';
@@ -162,6 +163,71 @@ describe('BaseYjsPlugin', () => {
     });
 
     assert.notEqual(provider.awareness.getLocalState()?.selection, undefined);
+  });
+
+  it('decorates expanded remote selections without decorating remote carets', () => {
+    const provider = new FakeProvider({
+      awarenessClientId: 101,
+      status: 'connected',
+      synced: true,
+    });
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'react' }], type: 'paragraph' }],
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: {
+            clientId: 'react-user',
+            provider,
+          },
+        }),
+      ],
+      schema: TestSchema,
+    });
+    const plugin = getCompiledPlatePlugin(editor, YjsPlugin);
+    const entry = [{ text: 'react' }, [0, 0]] as const;
+
+    if (typeof plugin?.decorate !== 'function') {
+      assert.fail('YjsPlugin must publish its decoration adapter.');
+    }
+
+    const readDecorations = () =>
+      Reflect.apply(plugin.decorate, undefined, [{ editor, entry }]);
+
+    editor.update.selection.set({
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 2, path: [0, 0] },
+    });
+    provider.awareness.setRemoteState(202, {
+      selection: provider.awareness.getLocalState()?.selection,
+    });
+
+    assert.deepEqual(readDecorations(), []);
+
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    });
+    provider.awareness.setRemoteState(202, {
+      selection: provider.awareness.getLocalState()?.selection,
+    });
+
+    assert.deepEqual(readDecorations(), [
+      {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+        yjsRemoteCursor: {
+          clientId: 202,
+          cursor: {
+            clientId: 202,
+            selection: {
+              anchor: { offset: 1, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            },
+          },
+        },
+      },
+    ]);
   });
 
   it('resolves Yjs state while a seeded document initializes', () => {

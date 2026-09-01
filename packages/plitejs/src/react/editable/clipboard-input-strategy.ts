@@ -54,7 +54,6 @@ import {
   before as editorBefore,
   after as editorAfter,
   range as editorRange,
-  dispatchCommand,
   editorCommands,
   getSelection as getEditorSelection,
   getSelectionDOMRange,
@@ -575,24 +574,19 @@ export const applyEditableCut = ({
             ? null
             : editorPoint(editor, PathApi.previous(voidPath), { edge: 'end' });
 
-        dispatchCommand(editor, editorCommands.removeNodes, {
-          options: {
-            at: voidPath,
-            voids: true,
-          },
-        });
-        if (previousPoint) {
-          applyEditableCommand({
-            command: {
-              kind: 'select',
-              selection: {
+        editor.update((tx) => {
+          tx.command(editorCommands.removeNodes, {
+            options: { at: voidPath, voids: true },
+          });
+          if (previousPoint) {
+            tx.command(editorCommands.select, {
+              target: {
                 anchor: previousPoint,
                 focus: previousPoint,
               },
-            },
-            editor,
-          });
-        }
+            });
+          }
+        });
 
         return clipboardResult({
           command,

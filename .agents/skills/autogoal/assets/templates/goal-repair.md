@@ -9,6 +9,9 @@ Goal plan:
 Template:
 {{TEMPLATE_PATH}}
 
+Linked plans:
+- None.
+
 Expected behavior:
 - TODO: State the user expectation or governing workflow rule.
 
@@ -78,7 +81,6 @@ Completion Gates:
 | Root cause recorded | pending | Explain why the miss happened | pending |
 | Canonical source repaired | pending | Patch the real source of truth | pending |
 | Verification proof | pending | Run named proof or record blocker | pending |
-| Autoreview | pending | Review repair against expected behavior, observed miss, and newest user request | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

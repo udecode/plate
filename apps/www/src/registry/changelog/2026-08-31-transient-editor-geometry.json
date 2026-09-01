@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-31-transient-editor-geometry",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-31-transient-editor-geometry.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use exact editor geometry for transient UI",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find-demo",
+      "files": [
+        "apps/www/src/registry/examples/find-demo.tsx",
+        "apps/www/src/registry/examples/values/find-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inactive-selection-demo",
+      "files": ["apps/www/src/registry/examples/inactive-selection-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/link-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-widget-floating",
+      "files": ["apps/www/src/registry/hooks/use-widget-floating.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-31-find-kit",
+      "kind": "new",
+      "summary": "Search documents with a visible Find bar and transient, keyboard-navigable matches.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find", "find-demo", "editor-plugins"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-31-inactive-selection-demo",
+      "kind": "new",
+      "summary": "Demonstrate native inactive-selection paint for expanded ranges and collapsed carets without an editor plugin.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inactive-selection-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-31-inactive-selection-focus-markers",
+      "kind": "behavior",
+      "summary": "Keep the canonical selection visible while marked editor controls own focus, and clear it on every unmarked focus transition.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor",
+        "ai-menu",
+        "font-size-toolbar-button",
+        "link-toolbar-button",
+        "link"
+      ],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-31-widget-floating-geometry",
+      "kind": "behavior",
+      "summary": "Position floating controls from the exact mounted editor selection, reveal them only after placement resolves, and mount complete toolbar components with only the Editable ref. `FloatingToolbar` accepts optional custom children.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["use-widget-floating", "floating-toolbar", "link"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-31-yjs-cursor-slots",
+      "kind": "wiring",
+      "summary": "Render remote Yjs selections and carets through `YjsPlugin` slots with per-cursor updates.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["remote-cursor-overlay", "collaboration-demo"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-08-31-link-input-focus",
+      "kind": "fix",
+      "summary": "Focus the URL input when the floating form opens, including from an empty paragraph, and preserve keyboard navigation between its fields.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 34,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-transient-editor-geometry",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

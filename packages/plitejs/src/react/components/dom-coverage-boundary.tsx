@@ -20,28 +20,11 @@ import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commi
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 
-type DOMCoverageBoundaryBaseProps = {
-  boundaryId: string;
-  children?: React.ReactNode;
-  content?: React.ReactNode;
-  copyPolicy?: DOMCoverageCopyPolicy;
-  findPolicy?: DOMCoverageFindPolicy;
-  hidden?: boolean;
-  onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
-  reason?: DOMCoverageReason;
-  selectionPolicy?: DOMCoverageSelectionPolicy;
-};
-
 export type DOMCoverageBoundaryMaterializePayload = {
   boundary: DOMCoverageBoundary;
   range?: PliteRange;
   rangeRole?: DOMCoverageMaterializeRangeRole;
   reason: DOMCoverageMaterializeReason;
-};
-
-export type DOMCoverageBoundaryRangeProps = DOMCoverageBoundaryBaseProps & {
-  from: number;
-  to?: number;
 };
 
 export const DOMCoverageBoundaryRange = ({
@@ -56,7 +39,20 @@ export const DOMCoverageBoundaryRange = ({
   reason = 'app-collapse',
   selectionPolicy = 'skip',
   to = from,
-}: DOMCoverageBoundaryRangeProps) => {
+}: {
+  boundaryId: string;
+  children?: React.ReactNode;
+  content?: React.ReactNode;
+  copyPolicy?: DOMCoverageCopyPolicy;
+  findPolicy?: DOMCoverageFindPolicy;
+  hidden?: boolean;
+  onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
+  reason?: DOMCoverageReason;
+  selectionPolicy?: DOMCoverageSelectionPolicy;
+} & {
+  from: number;
+  to?: number;
+}) => {
   const editor = useEditorContext();
   const ownerPath = React.useContext(ElementPathContext);
   const ownerNodeKey = React.useContext(NodeKeyContext);
@@ -153,7 +149,17 @@ export const DOMCoverageSelfBoundary = ({
   onMaterialize,
   reason = 'app-hidden',
   selectionPolicy = 'skip',
-}: DOMCoverageBoundaryBaseProps) => {
+}: {
+  boundaryId: string;
+  children?: React.ReactNode;
+  content?: React.ReactNode;
+  copyPolicy?: DOMCoverageCopyPolicy;
+  findPolicy?: DOMCoverageFindPolicy;
+  hidden?: boolean;
+  onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
+  reason?: DOMCoverageReason;
+  selectionPolicy?: DOMCoverageSelectionPolicy;
+}) => {
   const editor = useEditorContext();
   const ownerPath = React.useContext(ElementPathContext);
   const ownerNodeKey = React.useContext(NodeKeyContext);

@@ -173,6 +173,12 @@ Prefer source facts over vibes. A candidate needs concrete friction:
 - one behavior spread across too many files;
 - perf or behavior work blocked by poor locality.
 
+Classify scale applicability before ranking a candidate as safe to implement.
+If the owner runs per node, plugin, subscriber, listener, render, query, DOM
+unit, or other growing collection, materialize `performance-observability` and
+use Benchmark's embedded probe to capture the current-owner cost before the
+packet. A behavior-neutral label does not prove scale neutrality.
+
 ## Candidate Output
 
 Record candidates in the active plan or a `docs/analysis/**` artifact:
@@ -220,11 +226,18 @@ This skill may implement a small cleanup only when all are true:
 - no product UX change;
 - narrow source-backed owner;
 - focused proof exists;
+- repeated/hot runtime work is source-backed N/A or has a frozen pre-packet
+  scale receipt and exact post-packet production rerun plus correctness guard;
 - source-owner oracle is added or repaired when ownership moves;
 - packet can end keep, revert, or quarantine in the same loop.
 
 Focused proof comes before broad proof. After multiple packets or import churn,
 run the relevant broad gate. Never leave speculative cleanup dirty.
+
+An asymptotic argument, review score, or promise to benchmark later cannot keep
+a packet that touches a scale-sensitive owner. If the post-packet receipt is
+slower, nonlinear, or inconclusive, revert or quarantine it instead of calling
+the cleanup complete.
 
 For public call shape, stop at ranked recommendation and route to `best-api`.
 For behavior, runtime boundary, product UX, or large-blast-radius adoption,
@@ -292,6 +305,8 @@ Report:
 - agent-navigation score changes;
 - small packets applied with keep/revert/quarantine result;
 - proof commands/source audits run;
+- scale applicability plus pre/post receipts for every hot-owner packet, or
+  source-backed zero-runtime N/A;
 - candidates rejected or deferred;
 - needs-review list;
 - next owner and exact first command or file to inspect.

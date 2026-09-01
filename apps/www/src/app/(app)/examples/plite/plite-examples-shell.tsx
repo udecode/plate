@@ -16,21 +16,6 @@ import {
   NON_HIDDEN_EXAMPLES,
 } from './plite-example-registry';
 
-type PliteExamplesShellProps = {
-  activeExample?: string;
-  children: React.ReactNode;
-};
-
-type PliteExamplesNavLinksProps = {
-  activeExample?: string;
-  backHref?: LinkProps<string>['href'];
-  backLabel?: string;
-  indexActive?: boolean;
-  indexHref?: LinkProps<string>['href'];
-  indexLabel?: string;
-  showIndex?: boolean;
-};
-
 const PLITE_DOCS_HREF = {
   pathname: '/docs/plite',
 } satisfies LinkProps<string>['href'];
@@ -41,11 +26,14 @@ const PLITE_EXAMPLES_HREF = {
 export function PliteExamplesShell({
   activeExample,
   children,
-}: PliteExamplesShellProps) {
+}: {
+  activeExample?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="container-wrapper flex flex-1 flex-col px-2">
       <SidebarProvider
-        className="min-h-min flex-1 items-start px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)] 3xl:fixed:container 3xl:fixed:px-3"
+        className="min-h-min flex-1 flex-col items-start px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)] 3xl:fixed:container 3xl:fixed:px-3"
         style={
           {
             '--sidebar-width': 'calc(var(--spacing) * 72)',
@@ -69,7 +57,15 @@ export function PliteExamplesSidebarNav({
   indexHref,
   indexLabel,
   showIndex,
-}: PliteExamplesNavLinksProps) {
+}: {
+  activeExample?: string;
+  backHref?: LinkProps<string>['href'];
+  backLabel?: string;
+  indexActive?: boolean;
+  indexHref?: LinkProps<string>['href'];
+  indexLabel?: string;
+  showIndex?: boolean;
+}) {
   return (
     <nav
       className="flex min-w-0 flex-col gap-5"
@@ -140,7 +136,15 @@ function PliteExamplesNavLinks({
   indexHref = PLITE_EXAMPLES_HREF,
   indexLabel = 'Examples',
   showIndex = false,
-}: PliteExamplesNavLinksProps) {
+}: {
+  activeExample?: string;
+  backHref?: LinkProps<string>['href'];
+  backLabel?: string;
+  indexActive?: boolean;
+  indexHref?: LinkProps<string>['href'];
+  indexLabel?: string;
+  showIndex?: boolean;
+}) {
   const isIndexActive = indexActive ?? activeExample === undefined;
 
   return (

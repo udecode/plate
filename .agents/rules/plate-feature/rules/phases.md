@@ -14,6 +14,11 @@ Load `best-api` when the public shape is unresolved. Load `plate-plan` only for
 a cross-layer, breaking, or runtime-boundary adoption decision. Record the
 accepted call sites and owner before implementation.
 
+Resolve the Feature Manifest's Scale proof row here. When runtime layers or
+repeated/hot work can change, materialize `performance-observability` and run
+Benchmark's embedded current-owner versus target probe before source writes.
+Use a disposable target prototype when needed; planning prose is not proof.
+
 ## 3. Manual Package Shell
 
 Editor features live in `platejs`; do not create another editor-facing package.
@@ -66,13 +71,20 @@ explicit N/A reason when neither applies.
 Run only the proof selected by the manifest, then widen at handoff. Update each
 row after its evidence exists, not before.
 
+For Scale proof `yes`, rerun the frozen cohort/budget contract on the final
+production path and source identity, then run the selected correctness guard.
+The pre-acceptance prototype cannot close this phase.
+
 ## 10. Attestation And Review
 
 Load `plate-next` for a completed package review. Reuse the Feature Manifest as
 the attestation input and keep required per-file review rows in the same plan's
-`Package file evidence` section. The Package and Plate Next manifest rows are
-the only cross-layer completion status. Advance only that package's version
-after full current proof, with the registry entry pointing to this exact plan
-and authoritative fingerprint at the latest doctrine version. Run P1
-`autoreview`, close accepted findings, then run both the feature checker and
-goal checker.
+`Package file evidence` section. Advance only that package's version after full
+current proof, with the registry entry pointing to this exact plan and
+authoritative fingerprint at the latest doctrine version.
+
+For focused work in an existing stale or unreviewed package, mark Plate Next
+attestation `no` with its exact status and reason. Record changed-file review
+and package fingerprint evidence without inventing a whole-package score or
+advancing the package. Run P1 `autoreview`, close accepted findings, then run
+both the feature checker and goal checker.

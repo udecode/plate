@@ -51,15 +51,15 @@
       "import": "./dist/hyperscript/index.js",
       "default": "./dist/hyperscript/index.js"
     },
-    "./page-layout": {
-      "types": "./dist/page-layout/index.d.ts",
-      "import": "./dist/page-layout/index.js",
-      "default": "./dist/page-layout/index.js"
+    "./pagination": {
+      "types": "./dist/pagination/index.d.ts",
+      "import": "./dist/pagination/index.js",
+      "default": "./dist/pagination/index.js"
     },
-    "./page-layout/react": {
-      "types": "./dist/page-layout/react.d.ts",
-      "import": "./dist/page-layout/react.js",
-      "default": "./dist/page-layout/react.js"
+    "./pagination/react": {
+      "types": "./dist/pagination/react.d.ts",
+      "import": "./dist/pagination/react.js",
+      "default": "./dist/pagination/react.js"
     },
     "./react": {
       "types": "./dist/react/index.d.ts",
@@ -90,8 +90,8 @@
     "lint:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs dom",
     "lint:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs history",
     "lint:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs hyperscript",
-    "lint:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs page-layout",
-    "lint:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs page-layout/react",
+    "lint:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs pagination",
+    "lint:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs pagination/react",
     "lint:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
     "lint:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs root",
     "lint:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
@@ -100,7 +100,7 @@
     "lint:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs diff",
     "lint:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs dom",
     "lint:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs history",
-    "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs layout",
+    "lint:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs pagination",
     "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs test",
@@ -109,8 +109,8 @@
     "test:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs dom",
     "test:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs history",
     "test:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs hyperscript",
-    "test:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs page-layout",
-    "test:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs page-layout/react",
+    "test:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs pagination",
+    "test:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs pagination/react",
     "test:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
     "test:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs root",
     "test:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
@@ -118,7 +118,7 @@
     "test:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
     "test:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs dom",
     "test:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs history",
-    "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs layout",
+    "test:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs pagination",
     "test:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
     "test:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
     "test:react": "vitest run --config ./vitest.config.mjs",
@@ -128,8 +128,8 @@
     "typecheck:entrypoint:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs dom",
     "typecheck:entrypoint:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs history",
     "typecheck:entrypoint:hyperscript": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs hyperscript",
-    "typecheck:entrypoint:page-layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs page-layout",
-    "typecheck:entrypoint:page-layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs page-layout/react",
+    "typecheck:entrypoint:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs pagination",
+    "typecheck:entrypoint:pagination-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs pagination/react",
     "typecheck:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
     "typecheck:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs root",
     "typecheck:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
@@ -137,7 +137,7 @@
     "typecheck:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs diff",
     "typecheck:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs dom",
     "typecheck:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs history",
-    "typecheck:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs layout",
+    "typecheck:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs pagination",
     "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
     "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
     "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests plitejs core"

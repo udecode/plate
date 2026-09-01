@@ -20,6 +20,7 @@ import {
   removeTextChange,
   replaceChildrenChange,
   setNodeChange,
+  splitNodeChange,
   updateNodePropertiesChange,
 } from '../src/core/change/root-change';
 import {
@@ -33,6 +34,7 @@ import {
 import {
   advancePathStableSnapshotIndex,
   buildSnapshotIndex,
+  getSnapshotIndexElementEntries,
   getSnapshotIndexMappingStats,
   mapSnapshotIndexThroughChange,
 } from '../src/core/snapshot-index';
@@ -274,6 +276,29 @@ const withGeneratedTrace = (
 };
 
 describe('JSON document change algebra', () => {
+  it('reuses a known immutable index without inspecting array properties', () => {
+    const children = Object.freeze([paragraph('one'), paragraph('two')]);
+    let enumerations = 0;
+    const input = new Proxy(children, {
+      ownKeys(value) {
+        enumerations += 1;
+        return Reflect.ownKeys(value);
+      },
+    });
+    const document = DocumentIndex.fromValue(asJsonNodes(input));
+    enumerations = 0;
+    assert.equal(DocumentIndex.fromValue(asJsonNodes(input)), document);
+    assert.equal(enumerations, 0);
+
+    const mutable = [paragraph('before')];
+    const before = DocumentIndex.fromValue(asJsonNodes(mutable));
+    mutable[0] = paragraph('after');
+    const after = DocumentIndex.fromValue(asJsonNodes(mutable));
+    assert.notEqual(after, before);
+    assert.deepEqual(before.value, [paragraph('before')]);
+    assert.deepEqual(after.value, [paragraph('after')]);
+  });
+
   it('validates document changes without constructor identity', () => {
     const change = DocumentChange.between(
       { children: asJsonNodes([paragraph('before')]) },
@@ -686,6 +711,48 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(builder.change.apply(before), builder.value);
   });
 
+  it('publishes common ancestors once for a batch of text replacements', () => {
+    const before = DocumentIndex.fromValue(
+      asJsonNodes(Array.from({ length: 128 }, () => paragraph('abcdef')))
+    );
+    const changes = Array.from({ length: 24 }, (_, index) => ({
+      from: before.nodeRange([index, 0]).from + 2,
+      insert: PreparedTokenSlice.text('!'),
+    }));
+    changes.push({
+      from: before.nodeRange([0, 0]).from + 5,
+      insert: PreparedTokenSlice.text('?'),
+    });
+    const change = RootChange.create(before, changes);
+    const { fromIndexedValue } = DocumentIndex;
+    let publications = 0;
+    DocumentIndex.fromIndexedValue = (indexed) => {
+      if (indexed.value.length === 128) publications += 1;
+      return fromIndexedValue(indexed);
+    };
+    let after: DocumentIndex;
+    try {
+      after = change.apply(before);
+    } finally {
+      DocumentIndex.fromIndexedValue = fromIndexedValue;
+    }
+    assert.equal(publications, 1);
+    assert.deepEqual(after.value[0], paragraph('a!bcd?ef'));
+    assert.deepEqual(after.value[23], paragraph('a!bcdef'));
+    assert.equal(after.value[127], before.value[127]);
+    assert.deepEqual(before.value[0], paragraph('abcdef'));
+    assert.deepEqual(change.invert(before).apply(after).value, before.value);
+    assert.deepEqual(
+      RootChange.fromJSON(change.toJSON()).apply(before).value,
+      after.value
+    );
+    assert.deepEqual(applyByTokenReference(change, before).value, after.value);
+    assert.deepEqual(
+      insertTextChange(after, [127, 0], 0, '$').apply(after).value[127],
+      paragraph('$abcdef')
+    );
+  });
+
   it('keeps multi-child replacement sparse through apply, inverse, compose, serialization, and transform', () => {
     const children = [
       paragraph('a'),
@@ -913,6 +980,56 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(mapped.pathOf(lastNodeKey!), [3]);
     assert.equal(mapped.pathOf(removedNodeKey!), null);
     assert.equal(mapped.entries().length, 8);
+  });
+
+  it('builds the element catalog only when an element query requests it', () => {
+    const owner = {} as Editor;
+    const document = DocumentIndex.fromValue(
+      asJsonNodes(
+        Array.from({ length: 100 }, (_, index) => paragraph(`line ${index}`))
+      )
+    );
+    const children = document.value as unknown as readonly Descendant[];
+    seedNodeKeys(children, owner);
+    let nodeReads = 0;
+    const observed = new Proxy(children, {
+      get(value, property, receiver) {
+        if (typeof property === 'string' && /^\d+$/.test(property)) {
+          nodeReads += 1;
+        }
+        return Reflect.get(value, property, receiver);
+      },
+    });
+    const index = buildSnapshotIndex(owner, observed);
+    assert.equal(nodeReads, 0);
+    assert.deepEqual(getSnapshotIndexElementEntries(index, []), []);
+    assert.equal(nodeReads, 0);
+    const nodeKey = index.keyAt([50, 0]);
+    assert.ok(nodeKey);
+    assert.deepEqual(index.pathOf(nodeKey), [50, 0]);
+    assert.equal(nodeReads, 1);
+
+    const entries = getSnapshotIndexElementEntries(index, ['paragraph']);
+    assert.deepEqual(
+      entries.map((entry) => entry.path),
+      children.map((_, childIndex) => [childIndex])
+    );
+    assert.ok(
+      entries.every((entry) => index.keyAt(entry.path) === entry.nodeKey)
+    );
+    nodeReads = 0;
+    assert.equal(
+      getSnapshotIndexElementEntries(index, ['paragraph', 'paragraph']),
+      entries
+    );
+    assert.equal(nodeReads, 0);
+
+    const materializedFirst = buildSnapshotIndex(owner, observed);
+    materializedFirst.entries();
+    assert.deepEqual(
+      getSnapshotIndexElementEntries(materializedFirst, ['paragraph']),
+      entries
+    );
   });
 
   it('keeps seeded base snapshot lookups sparse until enumeration', () => {
@@ -1644,6 +1761,131 @@ describe('JSON document change algebra', () => {
     }
   });
 
+  it('constructs splits from the local boundary without encoding the whole document', () => {
+    const before = DocumentIndex.fromValue(
+      asJsonNodes(
+        Array.from({ length: 128 }, (_, index) => paragraph(`line-${index}`))
+      )
+    );
+    const tokens = Object.getOwnPropertyDescriptor(
+      DocumentIndex.prototype,
+      'tokens'
+    )!;
+    let tokenReads = 0;
+    Object.defineProperty(before, 'tokens', {
+      configurable: true,
+      get() {
+        tokenReads += 1;
+        return tokens.get!.call(before);
+      },
+    });
+    let textSplit: RootChange;
+    let blockSplit: RootChange;
+    try {
+      textSplit = splitNodeChange(before, [63, 0], 3, { bold: true });
+      blockSplit = splitNodeChange(before, [63], 1, { type: 'quote' });
+    } finally {
+      Reflect.deleteProperty(before, 'tokens');
+    }
+    assert.equal(tokenReads, 0);
+    const textAfter = textSplit.apply(before);
+    assert.deepEqual(textAfter.node([63]), {
+      type: 'paragraph',
+      children: [{ text: 'lin' }, { bold: true, text: 'e-63' }],
+    });
+    const blockAfter = blockSplit.apply(before);
+    assert.deepEqual(blockAfter.node([63]), paragraph('line-63'));
+    assert.deepEqual(blockAfter.node([64]), { type: 'quote', children: [] });
+    for (const change of [textSplit, blockSplit]) {
+      assert.deepEqual(
+        RootChange.fromJSON(change.toJSON()).apply(before).value,
+        change.apply(before).value
+      );
+      assert.deepEqual(
+        change.invert(before).apply(change.apply(before)).value,
+        before.value
+      );
+    }
+  });
+
+  it('keeps whole sibling identities through serialized insertion and deletion', () => {
+    for (const nested of [false, true]) {
+      for (const at of [0, 1, 2]) {
+        for (const operation of ['insert', 'delete'] as const) {
+          const owner = {} as Editor;
+          const children = ['one', 'two', 'three'].map((text) =>
+            paragraph(text)
+          );
+          const changed = [...children];
+          if (operation === 'delete') changed.splice(at, 1);
+          else changed.splice(at, 0, paragraph('twilight'));
+          const wrap = (nodes: readonly Element[]) =>
+            nested ? [{ type: 'section', children: nodes }] : nodes;
+          const before = DocumentIndex.fromValue(asJsonNodes(wrap(children)));
+          const expected = DocumentIndex.fromValue(asJsonNodes(wrap(changed)));
+          const source = buildSnapshotIndex(
+            owner,
+            before.value as unknown as readonly Element[]
+          );
+          const prefix = nested ? [0] : [];
+          const paths = children.flatMap((_, index) => [
+            [...prefix, index],
+            [...prefix, index, 0],
+          ]);
+          const keys = paths.map((path) => source.keyAt(path)!);
+          const change = RootChange.fromJSON(
+            RootChange.between(before, expected).toJSON()
+          );
+          const after = change.apply(before);
+          const mapped = mapSnapshotIndexThroughChange(
+            before,
+            after,
+            change,
+            source,
+            owner
+          );
+          assert.deepEqual(after.value, expected.value);
+          assert.deepEqual(
+            change.invert(before).apply(after).value,
+            before.value
+          );
+          paths.forEach((path, index) => {
+            const oldIndex = path[prefix.length];
+            const removed = operation === 'delete' && oldIndex === at;
+            const nextIndex =
+              oldIndex < at
+                ? oldIndex
+                : oldIndex + (operation === 'insert' ? 1 : -1);
+            const nextPath = [
+              ...prefix,
+              nextIndex,
+              ...path.slice(prefix.length + 1),
+            ];
+            assert.deepEqual(
+              mapped.pathOf(keys[index]),
+              removed ? null : nextPath
+            );
+            if (!removed) assert.equal(mapped.keyAt(nextPath), keys[index]);
+            assert.deepEqual(source.pathOf(keys[index]), path);
+          });
+          const followUpPath = [...prefix, changed.length - 1, 0];
+          const retainedKey = mapped.keyAt(followUpPath);
+          const followUp = insertTextChange(after, followUpPath, 0, '!');
+          const final = followUp.apply(after);
+          const finalIndex = mapSnapshotIndexThroughChange(
+            after,
+            final,
+            followUp,
+            mapped,
+            owner
+          );
+          assert.equal(finalIndex.keyAt(followUpPath), retainedKey);
+          assert.deepEqual(mapped.pathOf(retainedKey!), followUpPath);
+        }
+      }
+    }
+  });
+
   it('keeps unchanged token prefixes and suffixes out of changed ranges', () => {
     const before = DocumentIndex.fromValue([paragraph('one')]);
     const after = DocumentIndex.fromValue([paragraph('onX')]);
@@ -1770,6 +2012,71 @@ describe('JSON document change algebra', () => {
       const change = moveNodeChange(document, path, newPath);
 
       assert.deepEqual(change.apply(document).value, expected);
+    }
+  });
+
+  it('maps every retained character through serialized text-run merges and splits', () => {
+    for (const parts of [
+      ['This is ', 'editable', ' '],
+      ['', 'same', '', 'same', ''],
+      ['a😀', 'e\u0301', 'end'],
+    ]) {
+      const splitValue = [
+        {
+          type: 'paragraph',
+          children: [
+            ...parts.map((text, index) => ({
+              text,
+              ...(index % 2 ? { bold: true } : {}),
+            })),
+            { text: 'tail', italic: true },
+          ],
+        },
+      ];
+      const mergedValue = [
+        {
+          type: 'paragraph',
+          children: [{ text: parts.join('') }, { text: 'tail', italic: true }],
+        },
+      ];
+      const split = DocumentIndex.fromValue(splitValue);
+      const merged = DocumentIndex.fromValue(mergedValue);
+      for (const merging of [true, false]) {
+        const before = merging ? split : merged;
+        const after = merging ? merged : split;
+        const change = RootChange.fromJSON(
+          JSON.parse(JSON.stringify(RootChange.between(before, after).toJSON()))
+        );
+        assert.deepEqual(change.apply(before).value, after.value);
+        assert.deepEqual(
+          change.invert(before).apply(after).value,
+          before.value
+        );
+        let offset = 0;
+        for (let index = 0; index < parts.length; index++) {
+          for (let local = 0; local <= parts[index].length; local++) {
+            const splitPoint = { path: [0, index], offset: local };
+            const mergedPoint = { path: [0, 0], offset: offset + local };
+            for (const association of [-1, 1] as const) {
+              const position = before.positionAt(
+                merging ? splitPoint : mergedPoint
+              );
+              const mapped = change.mapPos(position, association);
+              assert.notEqual(mapped, null);
+              const point = after.pointAt(mapped!, association)!;
+              const characterOffset =
+                point.offset +
+                (merging
+                  ? 0
+                  : parts
+                      .slice(0, point.path[1])
+                      .reduce((sum, text) => sum + text.length, 0));
+              assert.equal(characterOffset, offset + local);
+            }
+          }
+          offset += parts[index].length;
+        }
+      }
     }
   });
 

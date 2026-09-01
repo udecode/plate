@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-31-inline-component-props",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-31-inline-component-props.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Inline local registry component prop shapes",
+  "targets": [
+    {
+      "name": "context-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/context-menu.tsx",
+        "apps/www/src/registry/bases/radix/context-menu.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mdx-plate-components",
+      "files": [
+        "apps/www/src/registry/blocks/fumadocs/mdx-plate-components.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-static",
+      "files": ["apps/www/src/registry/components/editor/heading-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mark-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mark-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-command",
+      "files": ["apps/www/src/registry/components/editor/select-command.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-31-context-menu-keep-local-registry-props-abca8e6e",
+      "kind": "wiring",
+      "summary": "Define component-owned prop shapes at their component signatures and reserve named prop contracts for exported reuse.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "context-menu",
+        "dropdown-menu",
+        "floating-popover",
+        "toolbar",
+        "mdx-plate-components",
+        "block-list-static",
+        "block-list",
+        "code-block-static",
+        "code-block",
+        "dnd",
+        "editor",
+        "emoji-picker",
+        "floating-toolbar",
+        "heading-static",
+        "inline-combobox",
+        "mark-toolbar-button",
+        "select-command",
+        "version-history-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-inline-component-props",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

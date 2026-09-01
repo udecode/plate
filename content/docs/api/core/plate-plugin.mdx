@@ -383,11 +383,21 @@ Create a function that generates a parent React node for all other plugins' node
 <APISubListItem parent="render" name="abovePlite" type="Component" optional>
 Component rendered above the Plite wrapper.
 </APISubListItem>
+<APISubListItem parent="render" name="afterContainer" type="ContainerSiblingComponent" optional>
+Renders a component after `PlateContainer`. It receives only `{ containerRef }`,
+the exact mounted container ref.
+</APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
-Renders a component after the Editable component.
+Renders a component after the Editable component. It receives only
+`{ editableRef }`, the exact mounted Editable ref.
+</APISubListItem>
+<APISubListItem parent="render" name="beforeContainer" type="ContainerSiblingComponent" optional>
+Renders a component before `PlateContainer`. It receives only
+`{ containerRef }`, the exact mounted container ref.
 </APISubListItem>
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
-Renders a component before the Editable component.
+Renders a component before the Editable component. It receives only
+`{ editableRef }`, the exact mounted Editable ref.
 </APISubListItem>
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 Create a function that generates a React node below all other plugins' node React node, but above their children.

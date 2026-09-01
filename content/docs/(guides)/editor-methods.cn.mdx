@@ -166,7 +166,7 @@ const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
 读取插件的 state 字段或命名 selector：
 
 ```ts
-const search = editor.plugin(FindReplacePlugin).store.get('search');
+const open = editor.plugin(PanelPlugin).store.get('open');
 ```
 
 使用 `usePluginStore` 订阅变化。
@@ -184,7 +184,7 @@ const linkState = editor.plugin(LinkPlugin).store.get();
 合并插件 state 字段：
 
 ```ts
-editor.plugin(FindReplacePlugin).store.set({ search: 'hello' });
+editor.plugin(PanelPlugin).store.set({ open: true });
 ```
 
 ### `store.set(recipe)`
@@ -192,7 +192,7 @@ editor.plugin(FindReplacePlugin).store.set({ search: 'hello' });
 通过 draft 更新 state：
 
 ```ts
-editor.plugin(FindReplacePlugin).store.set((draft) => {
-  draft.search = 'hello';
+editor.plugin(PanelPlugin).store.set((draft) => {
+  draft.open = !draft.open;
 });
 ```

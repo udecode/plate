@@ -15,7 +15,6 @@ import { nodeSelectionValue } from './node-selection-value';
 import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
 import { copilotValue } from './copilot-value';
-import { cursorOverlayValue } from './cursor-overlay-value';
 import { dateValue } from './date-value';
 import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
@@ -28,7 +27,7 @@ import { emojiValue } from './emoji-value';
 import { equationValue } from './equation-value';
 import { excalidrawValue } from './excalidraw-value';
 import { exitBreakValue } from './exit-break-value';
-import { findReplaceValue } from './find-replace-value';
+import { findValue } from './find-value';
 import { floatingToolbarValue } from './floating-toolbar-value';
 import { fontValue } from './font-value';
 import { footnoteValue } from './footnote-value';
@@ -63,7 +62,6 @@ const values = {
   column: columnValue,
   copilot: copilotValue,
   csv: deserializeCsvValue,
-  'cursor-overlay': cursorOverlayValue,
   date: dateValue,
   discussion: discussionValue,
   dnd: dndValue,
@@ -75,7 +73,7 @@ const values = {
   // equation: equationValue,
   excalidraw: excalidrawValue,
   'exit-break': exitBreakValue,
-  'find-replace': findReplaceValue,
+  find: findValue,
   'floating-toolbar': floatingToolbarValue,
   font: fontValue,
   footnote: footnoteValue,

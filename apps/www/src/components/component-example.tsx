@@ -7,13 +7,6 @@ import { cn } from '@/lib/utils';
 import { CopyButton, CopyWithClassNames } from './copy-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-interface ComponentExampleProps extends React.HTMLAttributes<HTMLDivElement> {
-  align?: 'center' | 'end' | 'start';
-  extractClassname?: boolean;
-  extractedClassNames?: string;
-  src?: string;
-}
-
 export function ComponentExample({
   align = 'start',
   children,
@@ -22,7 +15,12 @@ export function ComponentExample({
   extractedClassNames,
   src: _,
   ...props
-}: ComponentExampleProps) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  align?: 'center' | 'end' | 'start';
+  extractClassname?: boolean;
+  extractedClassNames?: string;
+  src?: string;
+}) {
   const [Example, Code, ...Children] = React.Children.toArray(
     children
   ) as Array<React.ReactElement<any>>;

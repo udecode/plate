@@ -6,6 +6,16 @@ import type {
   PliteWidgetStore,
 } from '../widget-store';
 
+/** Read the ordered widget ids from a widget store. */
+export function usePliteWidgetIds<
+  T extends Record<string, unknown>,
+  TAnnotation extends Record<string, unknown>,
+>(store: PliteWidgetStore<T, TAnnotation>): readonly string[] {
+  const getSnapshot = useCallback(() => store.getSnapshot().allIds, [store]);
+
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
+}
+
 /** Read one resolved widget by id. */
 export function usePliteWidget<
   T extends Record<string, unknown>,

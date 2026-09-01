@@ -243,3 +243,7 @@ Before writing code, answer:
 3. Which one file owns each single-owner behavior?
 4. Which proposed extraction has a real independent consumer graph?
 5. Which public shape needs a `best-api` verdict?
+6. Which path grows with nodes, plugins, subscribers, listeners, renders,
+   queries, DOM units, or another repeated unit?
+7. Where is the passing pre-acceptance Benchmark receipt for that path, or the
+   live-source proof that runtime scale is N/A?

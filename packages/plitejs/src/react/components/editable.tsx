@@ -36,28 +36,6 @@ import { recordPliteReactRender } from '../render-profiler';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
 import { EditableDOMCommitFence } from './editable-dom-commit-fence';
 
-/**
- * `EditableProps` are passed to the `<Editable>` component.
- */
-
-export type EditableDOMRootProps = {
-  children?: React.ReactNode;
-  deferNativeTextInputRepair?: boolean;
-  domStrategyRuntime?: EditableDOMStrategyRuntime | null;
-  domStrategyMetrics?: EditableDOMStrategyMetricsBase | null;
-  ignoreBlankEditableRootClicks?: boolean;
-  onDOMBeforeInput?: EditableDOMBeforeInputHandler;
-  onKeyDown?: EditableKeyDownHandler;
-  onDOMStrategyMetrics?: (metrics: EditableDOMStrategyMetrics) => void;
-  readOnly?: boolean;
-  scrollSelectionIntoView?: (
-    editor: ReactRuntimeEditor,
-    domRange: DOMRange
-  ) => void;
-  as?: React.ElementType;
-  disableDefaultStyles?: boolean;
-} & Omit<React.ComponentPropsWithRef<'div'>, 'children' | 'onKeyDown'>;
-
 export type EditableDOMStrategyScrollAlign =
   | 'auto'
   | 'center'
@@ -407,7 +385,25 @@ export type EditableKeyDownHandler = (
  * Editable.
  */
 
-export const EditableDOMRoot = (props: EditableDOMRootProps) => {
+export const EditableDOMRoot = (
+  props: {
+    children?: React.ReactNode;
+    deferNativeTextInputRepair?: boolean;
+    domStrategyRuntime?: EditableDOMStrategyRuntime | null;
+    domStrategyMetrics?: EditableDOMStrategyMetricsBase | null;
+    ignoreBlankEditableRootClicks?: boolean;
+    onDOMBeforeInput?: EditableDOMBeforeInputHandler;
+    onKeyDown?: EditableKeyDownHandler;
+    onDOMStrategyMetrics?: (metrics: EditableDOMStrategyMetrics) => void;
+    readOnly?: boolean;
+    scrollSelectionIntoView?: (
+      editor: ReactRuntimeEditor,
+      domRange: DOMRange
+    ) => void;
+    as?: React.ElementType;
+    disableDefaultStyles?: boolean;
+  } & Omit<React.ComponentPropsWithRef<'div'>, 'children' | 'onKeyDown'>
+) => {
   const { ref: forwardedRef, ...editableProps } = props;
   recordPliteReactRender({ kind: 'editable' });
 
@@ -722,9 +718,13 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
 };
 
 /**
- * The props that get passed to renderPlaceholder
+ * The default placeholder element
  */
-export type RenderPlaceholderProps = {
+
+export const DefaultPlaceholder = ({
+  attributes,
+  children,
+}: {
   children: any;
   attributes: {
     'data-plite-placeholder': boolean;
@@ -733,16 +733,7 @@ export type RenderPlaceholderProps = {
     ref: React.RefCallback<any>;
     style: React.CSSProperties;
   };
-};
-
-/**
- * The default placeholder element
- */
-
-export const DefaultPlaceholder = ({
-  attributes,
-  children,
-}: RenderPlaceholderProps) => {
+}) => {
   const isAndroid = useEditableDOMHostFact(
     (runtime) => runtime.isAndroidHost,
     false

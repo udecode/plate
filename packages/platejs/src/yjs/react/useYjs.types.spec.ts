@@ -1,25 +1,18 @@
 import type { Value } from '../../core';
 import type {
-  PliteDecorationSource,
+  PliteWidgetGeometry,
   Editor as ReactViewEditor,
 } from '../../react/core';
 import { yjs } from '../core';
 import { getEditorYjsTx } from '../core/editor-yjs';
-import type {
-  YjsRemoteCursorDecorationData,
-  YjsRemoteCursorOverlayPosition,
-} from './useYjs';
 import {
-  useYjsRemoteCursorDecorationSource,
-  useYjsRemoteCursorOverlayPositions,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
 } from './useYjs';
 
 type CursorData = {
   readonly name: string;
-};
-
-type LabelData = {
-  readonly label: string;
 };
 
 const CursorYjs = yjs({
@@ -34,6 +27,8 @@ const CursorYjs = yjs({
 
 type CursorEditor = ReactViewEditor<Value, readonly [typeof CursorYjs]>;
 
+const editableRef = { current: null as HTMLDivElement | null };
+
 const useVerifyCursorOutputTypes = (editor: CursorEditor) => {
   editor.update((tx) => {
     const yjsTx = getEditorYjsTx(tx);
@@ -43,44 +38,19 @@ const useVerifyCursorOutputTypes = (editor: CursorEditor) => {
     yjsTx.sendCursorData({ color: 'red' });
   });
 
-  const defaultSource: PliteDecorationSource<
-    YjsRemoteCursorDecorationData<CursorData>
-  > = useYjsRemoteCursorDecorationSource(editor);
-  const customSource: PliteDecorationSource<LabelData> =
-    useYjsRemoteCursorDecorationSource(editor, {
-      decorate: (cursor) => ({ label: String(cursor.clientId) }),
-    });
-  const [defaultPositions]: readonly [
-    ReadonlyArray<
-      YjsRemoteCursorOverlayPosition<
-        CursorData,
-        YjsRemoteCursorDecorationData<CursorData>
-      >
-    >,
-    () => void,
-  ] = useYjsRemoteCursorOverlayPositions(editor);
-  const [customPositions]: readonly [
-    ReadonlyArray<YjsRemoteCursorOverlayPosition<CursorData, LabelData>>,
-    () => void,
-  ] = useYjsRemoteCursorOverlayPositions(editor, {
-    data: (cursor) => ({ label: String(cursor.clientId) }),
-  });
+  const cursor = useYjsRemoteCursor(editor, 101);
+  const ids: readonly number[] = useYjsRemoteCursorIds(editor);
+  const geometry: PliteWidgetGeometry | null = useYjsRemoteCursorGeometry(
+    editor,
+    101,
+    { editableRef }
+  );
 
-  // @ts-expect-error Default decoration data cannot become a custom result.
-  const invalidSource: PliteDecorationSource<LabelData> =
-    useYjsRemoteCursorDecorationSource(editor);
-  // @ts-expect-error Default overlay data cannot become a custom result.
-  const invalidPositions: ReadonlyArray<
-    YjsRemoteCursorOverlayPosition<CursorData, LabelData>
-  > = useYjsRemoteCursorOverlayPositions(editor)[0];
+  cursor?.data?.name;
 
   return {
-    customPositions,
-    customSource,
-    defaultPositions,
-    defaultSource,
-    invalidPositions,
-    invalidSource,
+    geometry,
+    ids,
   };
 };
 

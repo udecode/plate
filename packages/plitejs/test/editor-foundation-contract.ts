@@ -227,6 +227,8 @@ describe('editor foundation contract', () => {
 
     const targetEditor = createFoundationEditor();
     const removedKey = editorGetNodeKey(targetEditor, [1]);
+    const retainedKey = editorGetNodeKey(targetEditor, [2]);
+    const historical = editorGetSnapshot(targetEditor);
 
     assert.ok(removedKey);
 
@@ -250,6 +252,14 @@ describe('editor foundation contract', () => {
 
     assert.ok(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
+    assert.equal(editorGetPathByNodeKey(targetEditor, removedKey), null);
+    assert.deepEqual(editorGetPathByNodeKey(targetEditor, retainedKey!), [1]);
+    assert.equal(editorGetNodeKey(targetEditor, [1]), retainedKey);
+    assert.deepEqual(historical.index.pathOf(removedKey), [1]);
+    assert.deepEqual(historical.index.pathOf(retainedKey!), [2]);
+    targetEditor.update.text.insert('!', { at: { path: [1, 0], offset: 0 } });
+    assert.equal(editorString(targetEditor, [1]), '!three');
+    assert.equal(editorGetNodeKey(targetEditor, [1]), retainedKey);
     assert.equal(editorGetPathByNodeKey(targetEditor, removedKey), null);
   });
 });

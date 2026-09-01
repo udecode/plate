@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-08-31T20:05:11.576Z",
+  "projectedClipboardLocality": {
+    "documentWidthRatio": 0.5042573320719016,
+    "hostSerializationWidthRatio": 2.4963572469358017,
+    "iterations": 1,
+    "rows": [
+      {
+        "blocks": 1000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 132125,
+          "p95": 188125,
+          "p99": 188125
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 11667,
+          "p95": 53250,
+          "p99": 53250
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 918,
+        "selectedNodes": 2
+      },
+      {
+        "blocks": 50000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 66625,
+          "p95": 78667,
+          "p99": 78667
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 29125,
+          "p95": 31833,
+          "p99": 31833
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 918,
+        "selectedNodes": 2
+      }
+    ]
+  },
+  "typecheck": {
+    "checkTimeRatio": 2.2101284958427816,
+    "instantiationRatio": 1.560700083610943,
+    "rows": [
+      {
+        "checkMs": 1323,
+        "instantiations": 6707256,
+        "memoryBytes": 1043261440,
+        "totalMs": 1364,
+        "types": 1189042,
+        "plugins": 100
+      },
+      {
+        "checkMs": 2924,
+        "instantiations": 10468015,
+        "memoryBytes": 1407215616,
+        "totalMs": 2966,
+        "types": 1607871,
+        "plugins": 1000
+      }
+    ],
+    "wideningBoundary": "The 100-plugin fixture preserves a literal tuple. The 1,000-plugin fixture explicitly widens to readonly AnyBasePlugin[] so editor inference stays bounded while every descriptor still typechecks."
+  },
+  "strictValidation": {
+    "requested": true,
+    "status": "measured"
+  },
+  "sourceBefore": {
+    "packages/plitejs/src/core/public-state.ts": "6d99b81c2f2f0dc46b548b2b5016f25f3cd837ff400f230e3aff5af0a2bf3db4",
+    "packages/plitejs/src/core/get-content-slice.ts": "f07ac943c0c9be799cb2e826b7677c45082a729c6a47ace791bc1e8592826817",
+    "packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "packages/plitejs/src/core/snapshot-index.ts": "c164eb9ae91a194f8b36017463967f878a343751cf2f78718c4950e9a7c3c826",
+    "packages/plitejs/src/core/schema-compiler.ts": "ecefd96432f12fc2ef52efe1f16f842379660f75302e2680811e1de8c6f76d6f",
+    "packages/plitejs/src/core/editor-schema.ts": "2f3a6824188548685c4617f9e45118bf2d2de7a87a9d72e48b32c430a6faa526",
+    "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "5f870518895f714791b92fbe04cc723f8ed3bcade923db3e581eb4f6454143c5",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "7b724d8b7702af60ad2f24e6547fe669144551db55aa459fbee906a30eceb1aa",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "1bdde902fd27ddb50a0cba07877689a5ab817dafb5a70720e078d10944bf771c"
+  },
+  "sourceAfter": {
+    "packages/plitejs/src/core/public-state.ts": "6d99b81c2f2f0dc46b548b2b5016f25f3cd837ff400f230e3aff5af0a2bf3db4",
+    "packages/plitejs/src/core/get-content-slice.ts": "f07ac943c0c9be799cb2e826b7677c45082a729c6a47ace791bc1e8592826817",
+    "packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "packages/plitejs/src/core/snapshot-index.ts": "c164eb9ae91a194f8b36017463967f878a343751cf2f78718c4950e9a7c3c826",
+    "packages/plitejs/src/core/schema-compiler.ts": "ecefd96432f12fc2ef52efe1f16f842379660f75302e2680811e1de8c6f76d6f",
+    "packages/plitejs/src/core/editor-schema.ts": "2f3a6824188548685c4617f9e45118bf2d2de7a87a9d72e48b32c430a6faa526",
+    "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "5f870518895f714791b92fbe04cc723f8ed3bcade923db3e581eb4f6454143c5",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "7b724d8b7702af60ad2f24e6547fe669144551db55aa459fbee906a30eceb1aa",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "1bdde902fd27ddb50a0cba07877689a5ab817dafb5a70720e078d10944bf771c"
+  }
+}

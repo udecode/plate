@@ -10,6 +10,8 @@ import {
   disconnectYjsPeer,
   FakeAwareness,
   getYjsAwarenessRevision,
+  getYjsRemoteCursorCacheMetrics,
+  getYjsRemoteCursorIds,
   getYjsRemoteCursors,
   getYjsTrace,
   type Peer,
@@ -17,6 +19,7 @@ import {
   readEditorYjsState,
   runYjsUpdate,
   subscribeYjsAwareness,
+  subscribeYjsRemoteCursor,
 } from './support/collaboration';
 
 type AwarePeer = {
@@ -94,6 +97,69 @@ describe('platejs/yjs awareness contract', () => {
         selection: range,
       },
     ]);
+  });
+
+  it('reuses decoded endpoints for metadata-only awareness updates', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+
+    sendRemoteSelection(peer, awareness, range);
+
+    const selectionBefore = getYjsRemoteCursors(peer)[0]?.selection;
+    const idsBefore = getYjsRemoteCursorIds(peer);
+    const metricsBefore = getYjsRemoteCursorCacheMetrics(peer);
+    const remoteSelection = awareness.getStates().get(101)?.selection;
+
+    awareness.setRemoteState(101, {
+      data: { name: 'Grace' },
+      selection: remoteSelection,
+    });
+
+    const metricsAfter = getYjsRemoteCursorCacheMetrics(peer);
+    const cursor = getYjsRemoteCursors(peer)[0];
+
+    assert.equal(cursor?.selection, selectionBefore);
+    assert.equal(getYjsRemoteCursorIds(peer), idsBefore);
+    assert.deepEqual(cursor?.data, { name: 'Grace' });
+    assert.equal(
+      metricsAfter.clientDecodeCount,
+      metricsBefore.clientDecodeCount + 1
+    );
+    assert.equal(
+      metricsAfter.cursorResolutionPassCount,
+      metricsBefore.cursorResolutionPassCount
+    );
+    assert.equal(
+      metricsAfter.endpointConversionCount,
+      metricsBefore.endpointConversionCount
+    );
+  });
+
+  it('notifies only the changed remote cursor subscriber', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    sendRemoteSelection(peer, awareness, selection(), 101);
+    sendRemoteSelection(peer, awareness, selection([1, 0], 1), 102);
+
+    let firstNotifications = 0;
+    let secondNotifications = 0;
+    const unsubscribeFirst = subscribeYjsRemoteCursor(peer, 101, () => {
+      firstNotifications += 1;
+    });
+    const unsubscribeSecond = subscribeYjsRemoteCursor(peer, 102, () => {
+      secondNotifications += 1;
+    });
+
+    awareness.setRemoteState(101, {
+      data: { name: 'Grace' },
+      selection: awareness.getStates().get(101)?.selection,
+    });
+
+    assert.equal(firstNotifications, 1);
+    assert.equal(secondNotifications, 0);
+
+    unsubscribeFirst();
+    unsubscribeSecond();
   });
 
   it('ignores non-record remote cursor data', () => {
@@ -308,12 +374,20 @@ describe('platejs/yjs awareness contract', () => {
 
     sendRemoteSelection(peer, awareness, selection([0, 0], 2));
 
+    const metricsBefore = getYjsRemoteCursorCacheMetrics(peer);
+
     peer.editor.update.nodes.move({ at: [0], to: [2] });
+
+    const metricsAfter = getYjsRemoteCursorCacheMetrics(peer);
 
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, {
       anchor: { path: [2, 0], offset: 2 },
       focus: { path: [2, 0], offset: 2 },
     });
+    assert.equal(
+      metricsAfter.endpointConversionCount,
+      metricsBefore.endpointConversionCount
+    );
   });
 
   it('clears the local awareness selection without clearing cursor data', () => {

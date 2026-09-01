@@ -1,0 +1,595 @@
+{
+  "classification": "diagnostic-not-a-budget-rerun",
+  "command": "REACT_HUGE_COMPARE_MODE=current-only REACT_HUGE_COMPARE_SKIP_BUILD=1 REACT_HUGE_COMPARE_PROFILE_GC=1 REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2AutoExplicit REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 /opt/homebrew/Cellar/node@24/24.14.1_1/bin/node benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs",
+  "forcedGC": false,
+  "renderProfiler": false,
+  "conclusion": "The 923.89ms replacement tail did not recur. GC overlap explains some mount tails but does not establish the cause of the earlier replacement tail. Preserve the strict integrated red.",
+  "config": {
+    "overscan": 0,
+    "blocks": 5000,
+    "disposeDelayMs": 0,
+    "segmentSize": 32,
+    "includeSyntheticBeforeInput": false,
+    "isolateCurrentSurfaces": true,
+    "iterations": 5,
+    "measureNativeSurfaceCompletion": false,
+    "profile": false,
+    "readyOnly": false,
+    "rootGroupSize": 16,
+    "splitSelectionLanes": true,
+    "typeOps": 10
+  },
+  "runtime": {
+    "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+    "node": "v24.14.1",
+    "v8": "13.6.233.17-node.44"
+  },
+  "artifactPaths": {
+    "latest": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
+    "run": "tmp/slate-react-huge-document-legacy-compare-benchmark-current-only-v2DefaultRenderAuto-v2A-e44d29f7-blocks-5000-iters-5-ops-10-chunk-1000-segment-32-radius-0-dispose-0-full-run-native-beforeinput-isolated-surfaces-split-selection-no-profile.json"
+  },
+  "surfaces": {
+    "v2DefaultRenderAuto": {
+      "readyMs": {
+        "samples": [
+          113.24,
+          52.93,
+          50.78,
+          142.87,
+          45.95
+        ],
+        "median": 52.93,
+        "p95": 142.87,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              1,
+              1,
+              0,
+              1,
+              1
+            ],
+            "mean": 0.8,
+            "median": 1,
+            "p75": 1,
+            "p95": 1,
+            "p99": 1,
+            "min": 0,
+            "max": 1
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              37.82,
+              3.49,
+              0,
+              85.84,
+              2.96
+            ],
+            "mean": 26.02,
+            "median": 3.49,
+            "p75": 37.82,
+            "p95": 85.84,
+            "p99": 85.84,
+            "min": 0,
+            "max": 85.84
+          },
+          "gcOverlapMs": {
+            "samples": [
+              37.82,
+              3.49,
+              0,
+              85.84,
+              2.96
+            ],
+            "mean": 26.02,
+            "median": 3.49,
+            "p75": 37.82,
+            "p95": 85.84,
+            "p99": 85.84,
+            "min": 0,
+            "max": 85.84
+          },
+          "heapAfterMB": {
+            "samples": [
+              118.4,
+              198.93,
+              307.35,
+              179.12,
+              252.28
+            ],
+            "mean": 211.22,
+            "median": 198.93,
+            "p75": 252.28,
+            "p95": 307.35,
+            "p99": 307.35,
+            "min": 118.4,
+            "max": 307.35
+          },
+          "heapBeforeMB": {
+            "samples": [
+              192.93,
+              203.3,
+              268.57,
+              381.11,
+              259.72
+            ],
+            "mean": 261.13,
+            "median": 259.72,
+            "p75": 268.57,
+            "p95": 381.11,
+            "p99": 381.11,
+            "min": 192.93,
+            "max": 381.11
+          }
+        }
+      },
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          68.33,
+          57.3,
+          68.57,
+          65.16,
+          68.34
+        ],
+        "median": 68.33,
+        "p95": 68.57,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              2,
+              1,
+              2,
+              2,
+              1
+            ],
+            "mean": 1.6,
+            "median": 2,
+            "p75": 2,
+            "p95": 2,
+            "p99": 2,
+            "min": 1,
+            "max": 2
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              3.54,
+              2.7,
+              4.28,
+              3.65,
+              3.32
+            ],
+            "mean": 3.5,
+            "median": 3.54,
+            "p75": 3.65,
+            "p95": 4.28,
+            "p99": 4.28,
+            "min": 2.7,
+            "max": 4.28
+          },
+          "gcOverlapMs": {
+            "samples": [
+              6.73,
+              2.7,
+              8.09,
+              5.16,
+              3.32
+            ],
+            "mean": 5.2,
+            "median": 5.16,
+            "p75": 6.73,
+            "p95": 8.09,
+            "p99": 8.09,
+            "min": 2.7,
+            "max": 8.09
+          },
+          "heapAfterMB": {
+            "samples": [
+              1412.85,
+              1567.8,
+              1653.45,
+              1794.23,
+              426.1
+            ],
+            "mean": 1370.89,
+            "median": 1567.8,
+            "p75": 1653.45,
+            "p95": 1794.23,
+            "p99": 1794.23,
+            "min": 426.1,
+            "max": 1794.23
+          },
+          "heapBeforeMB": {
+            "samples": [
+              1418.97,
+              1513.09,
+              1651.65,
+              1742.19,
+              371.62
+            ],
+            "mean": 1339.5,
+            "median": 1513.09,
+            "p75": 1651.65,
+            "p95": 1742.19,
+            "p99": 1742.19,
+            "min": 371.62,
+            "max": 1742.19
+          }
+        }
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          59.41,
+          58.06,
+          57.01,
+          50.12,
+          54.84
+        ],
+        "median": 57.01,
+        "p95": 59.41,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              1,
+              1,
+              2,
+              1,
+              1
+            ],
+            "mean": 1.2,
+            "median": 1,
+            "p75": 1,
+            "p95": 2,
+            "p99": 2,
+            "min": 1,
+            "max": 2
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              3.73,
+              3.42,
+              3.45,
+              2.54,
+              3.14
+            ],
+            "mean": 3.26,
+            "median": 3.42,
+            "p75": 3.45,
+            "p95": 3.73,
+            "p99": 3.73,
+            "min": 2.54,
+            "max": 3.73
+          },
+          "gcOverlapMs": {
+            "samples": [
+              3.73,
+              3.42,
+              6.59,
+              2.54,
+              3.14
+            ],
+            "mean": 3.88,
+            "median": 3.42,
+            "p75": 3.73,
+            "p95": 6.59,
+            "p99": 6.59,
+            "min": 2.54,
+            "max": 6.59
+          },
+          "heapAfterMB": {
+            "samples": [
+              407.98,
+              510.04,
+              610.3,
+              757.01,
+              854.21
+            ],
+            "mean": 627.91,
+            "median": 610.3,
+            "p75": 757.01,
+            "p95": 854.21,
+            "p99": 854.21,
+            "min": 407.98,
+            "max": 854.21
+          },
+          "heapBeforeMB": {
+            "samples": [
+              374.01,
+              473.79,
+              625.78,
+              723.19,
+              819.38
+            ],
+            "mean": 603.23,
+            "median": 625.78,
+            "p75": 723.19,
+            "p95": 819.38,
+            "p99": 819.38,
+            "min": 374.01,
+            "max": 819.38
+          }
+        }
+      }
+    },
+    "v2AutoExplicit": {
+      "readyMs": {
+        "samples": [
+          104.96,
+          47.99,
+          44.03,
+          200.9,
+          71.72
+        ],
+        "median": 71.72,
+        "p95": 200.9,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              1,
+              1,
+              0,
+              1,
+              1
+            ],
+            "mean": 0.8,
+            "median": 1,
+            "p75": 1,
+            "p95": 1,
+            "p99": 1,
+            "min": 0,
+            "max": 1
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              39.41,
+              1.76,
+              0,
+              131.3,
+              3.83
+            ],
+            "mean": 35.26,
+            "median": 3.83,
+            "p75": 39.41,
+            "p95": 131.3,
+            "p99": 131.3,
+            "min": 0,
+            "max": 131.3
+          },
+          "gcOverlapMs": {
+            "samples": [
+              39.41,
+              1.76,
+              0,
+              131.3,
+              3.83
+            ],
+            "mean": 35.26,
+            "median": 3.83,
+            "p75": 39.41,
+            "p95": 131.3,
+            "p99": 131.3,
+            "min": 0,
+            "max": 131.3
+          },
+          "heapAfterMB": {
+            "samples": [
+              117.28,
+              200.68,
+              306.01,
+              179.36,
+              252.22
+            ],
+            "mean": 211.11,
+            "median": 200.68,
+            "p75": 252.22,
+            "p95": 306.01,
+            "p99": 306.01,
+            "min": 117.28,
+            "max": 306.01
+          },
+          "heapBeforeMB": {
+            "samples": [
+              195.37,
+              209.59,
+              267.13,
+              381.53,
+              260.03
+            ],
+            "mean": 262.73,
+            "median": 260.03,
+            "p75": 267.13,
+            "p95": 381.53,
+            "p99": 381.53,
+            "min": 195.37,
+            "max": 381.53
+          }
+        }
+      },
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          78.32,
+          59.04,
+          66.49,
+          67.46,
+          65.9
+        ],
+        "median": 66.49,
+        "p95": 78.32,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              2,
+              2,
+              1,
+              2,
+              2
+            ],
+            "mean": 1.8,
+            "median": 2,
+            "p75": 2,
+            "p95": 2,
+            "p99": 2,
+            "min": 1,
+            "max": 2
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              4.52,
+              4.65,
+              3.97,
+              4.55,
+              3.64
+            ],
+            "mean": 4.27,
+            "median": 4.52,
+            "p75": 4.55,
+            "p95": 4.65,
+            "p99": 4.65,
+            "min": 3.64,
+            "max": 4.65
+          },
+          "gcOverlapMs": {
+            "samples": [
+              8.52,
+              7.52,
+              3.97,
+              8.22,
+              7.11
+            ],
+            "mean": 7.07,
+            "median": 7.52,
+            "p75": 8.22,
+            "p95": 8.52,
+            "p99": 8.52,
+            "min": 3.97,
+            "max": 8.52
+          },
+          "heapAfterMB": {
+            "samples": [
+              1472.46,
+              1589.38,
+              1749.04,
+              1836.88,
+              1919.6
+            ],
+            "mean": 1713.47,
+            "median": 1749.04,
+            "p75": 1836.88,
+            "p95": 1919.6,
+            "p99": 1919.6,
+            "min": 1472.46,
+            "max": 1919.6
+          },
+          "heapBeforeMB": {
+            "samples": [
+              1470.04,
+              1595.59,
+              1693.22,
+              1835.17,
+              1927.19
+            ],
+            "mean": 1704.24,
+            "median": 1693.22,
+            "p75": 1835.17,
+            "p95": 1927.19,
+            "p99": 1927.19,
+            "min": 1470.04,
+            "max": 1927.19
+          }
+        }
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          55.85,
+          55.5,
+          47.72,
+          51,
+          44.88
+        ],
+        "median": 51,
+        "p95": 55.85,
+        "tags": {
+          "gcCount": {
+            "samples": [
+              1,
+              1,
+              2,
+              1,
+              1
+            ],
+            "mean": 1.2,
+            "median": 1,
+            "p75": 1,
+            "p95": 2,
+            "p99": 2,
+            "min": 1,
+            "max": 2
+          },
+          "gcMaxOverlapMs": {
+            "samples": [
+              3.3,
+              3.56,
+              2.91,
+              3.15,
+              3.11
+            ],
+            "mean": 3.21,
+            "median": 3.15,
+            "p75": 3.3,
+            "p95": 3.56,
+            "p99": 3.56,
+            "min": 2.91,
+            "max": 3.56
+          },
+          "gcOverlapMs": {
+            "samples": [
+              3.3,
+              3.56,
+              5.59,
+              3.15,
+              3.11
+            ],
+            "mean": 3.74,
+            "median": 3.3,
+            "p75": 3.56,
+            "p95": 5.59,
+            "p99": 5.59,
+            "min": 3.11,
+            "max": 5.59
+          },
+          "heapAfterMB": {
+            "samples": [
+              689.13,
+              790.13,
+              881.28,
+              1032.32,
+              1133.62
+            ],
+            "mean": 905.29,
+            "median": 881.28,
+            "p75": 1032.32,
+            "p95": 1133.62,
+            "p99": 1133.62,
+            "min": 689.13,
+            "max": 1133.62
+          },
+          "heapBeforeMB": {
+            "samples": [
+              654.77,
+              754.89,
+              898.81,
+              998.46,
+              1098.83
+            ],
+            "mean": 881.15,
+            "median": 898.81,
+            "p75": 998.46,
+            "p95": 1098.83,
+            "p99": 1098.83,
+            "min": 654.77,
+            "max": 1098.83
+          }
+        }
+      }
+    }
+  }
+}

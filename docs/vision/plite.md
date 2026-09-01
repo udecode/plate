@@ -107,7 +107,7 @@ donor checkout as proof after the transplant.
   presence. The owning runtime publishes internal capability, unknown behavior
   fails closed, and ordinary applications never opt into correctness with a
   performance flag.
-- Page layout is not core editor truth. Pagination, deterministic measurement,
+- Pagination is not core editor truth. Deterministic measurement,
   occlusion, and scroll stability live above document semantics; active caret,
   selection, and composition stay on the native/browser editing path.
 
@@ -135,6 +135,20 @@ donor checkout as proof after the transplant.
   and one built-in directional `NodeSelection`; extensions cannot add selection
   kinds or parallel selection state. Feature owners write exact nodes and
   derive feature geometry from core selection.
+- Each mounted Editable derives inactive canonical-selection paint from its own
+  focus transition. When focus moves to an element or composed ancestor marked
+  with `data-plite-keep-selection-visible`, that exact Editable paints its live
+  expanded selection or collapsed caret. Focus returning to the Editable or
+  moving to any unmarked target clears the paint. The behavior accepts no Range
+  or selection payload, creates no public toggle or second selection state, and
+  never changes model selection, native DOM selection, input, history,
+  clipboard, or collaboration. It stays null-safe under SSR and unmounted or
+  virtualized targets and exposes `data-plite-inactive-selection` and
+  `data-plite-inactive-selection-caret` for product styling. Plate React
+  inherits the behavior by identity.
+- Internal projected view selection is input-engine state. Its keyboard,
+  clipboard, history, mutation, reconciliation, and navigation semantics make
+  it ineligible as a public carrier for presentation-only inactive selection.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
   `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
   persistence, history, marks, slices, and collaboration preserve that state.
@@ -215,6 +229,11 @@ donor checkout as proof after the transplant.
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
 - Overlay architecture is split into Decoration, Annotation, and Widget lanes.
+- Commit consumers invalidate by their actual dependency: node presence,
+  payload, path, selection, or projection. `commit.changed.nodeKeys('presence')`
+  reports identities entering or leaving one root without enumerating shifted
+  paths. Immutable query results are shared across readers; a known deleted
+  identity resolves to `null` without rebuilding the document index.
 - `editor.anchor` creates a persistent Path, Point, or Range handle that its
   owner releases. `tx.anchor` creates the same mapped value from draft state,
   auto-releases it at the transaction boundary, and exposes only `resolve`.

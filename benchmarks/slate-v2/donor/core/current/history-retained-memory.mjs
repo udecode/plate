@@ -115,6 +115,8 @@ const getHistoryShape = (editor) => {
   const effectBytes = byteLength(serializedUndoBatch?.effects ?? []);
   const selectionBeforeBytes = byteLength(undoBatch?.selectionBefore ?? null);
   const selectionAfterBytes = byteLength(undoBatch?.selectionAfter ?? null);
+  const retainedChangeRoots = new Set();
+  undoBatch?.change.iterChangedRanges((root) => retainedChangeRoots.add(root));
 
   return {
     historyEntryCount: historyState.undos.length,
@@ -124,9 +126,7 @@ const getHistoryShape = (editor) => {
     restoredHistoryEntryCount: restoredHistory.undos.length,
     retainedBatchChangeCount: undoBatch ? 1 : 0,
     retainedBatchEffectCount: undoBatch?.effects.length ?? 0,
-    retainedChangeRoots: undoBatch
-      ? [...undoBatch.change.changes.keys()].sort()
-      : [],
+    retainedChangeRoots: [...retainedChangeRoots].sort(),
     retainedEffectKeys: undoBatch?.effects.map((effect) => effect.type.key) ?? [],
     retainedPayloadTags: [
       'history.undos',
@@ -236,7 +236,7 @@ const measureFullDocumentReplace = () =>
       if (
         shape.historyEntryCount !== 1 ||
         shape.restoredHistoryEntryCount !== 1 ||
-        shape.serializedVersion !== 2
+        shape.serializedVersion !== 4
       ) {
         throw new Error(
           `Expected one retained and reloaded versioned history entry, got ${JSON.stringify(
@@ -286,7 +286,7 @@ const measureRangeDelete = () =>
       if (
         shape.historyEntryCount !== 1 ||
         shape.restoredHistoryEntryCount !== 1 ||
-        shape.serializedVersion !== 2
+        shape.serializedVersion !== 4
       ) {
         throw new Error(
           `Expected one retained and reloaded versioned history entry, got ${JSON.stringify(

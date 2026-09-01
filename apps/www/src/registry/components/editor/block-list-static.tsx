@@ -10,18 +10,26 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
-type BlockListProps = Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-  indent?: number;
-  listStart?: number;
-  listStyle?: string;
-  listType: ListType;
-};
 
 const config: Record<
   string,
   {
-    Li: React.FC<BlockListProps>;
-    Marker: React.FC<BlockListProps>;
+    Li: React.FC<
+      Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+        indent?: number;
+        listStart?: number;
+        listStyle?: string;
+        listType: ListType;
+      }
+    >;
+    Marker: React.FC<
+      Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+        indent?: number;
+        listStart?: number;
+        listStyle?: string;
+        listType: ListType;
+      }
+    >;
   }
 > = {
   task: {
@@ -50,7 +58,14 @@ export const BlockListStatic: ListWrapper = (props) => {
   };
 };
 
-function List(props: BlockListProps) {
+function List(
+  props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+    indent?: number;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   const { indent, listStart, listStyle, listType } = props;
   const { Li, Marker } = config[listType] ?? {};
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
@@ -72,7 +87,14 @@ function List(props: BlockListProps) {
   );
 }
 
-function TodoMarkerStatic(props: BlockListProps) {
+function TodoMarkerStatic(
+  props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+    indent?: number;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   const checked = props.element.checked === true;
 
   return (
@@ -93,7 +115,14 @@ function TodoMarkerStatic(props: BlockListProps) {
   );
 }
 
-function TodoLiStatic(props: BlockListProps) {
+function TodoLiStatic(
+  props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
+    indent?: number;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   return (
     <li
       className={cn(

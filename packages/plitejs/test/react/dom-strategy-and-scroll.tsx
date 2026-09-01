@@ -47,17 +47,15 @@ type InternalPartialDOMStrategyForTest = {
   type: 'partial-dom';
 };
 
-type TestEditorSurfaceProps = Omit<
-  React.ComponentProps<typeof Editable>,
-  'domStrategy'
-> & {
+const TestEditorSurface = ({
+  editor,
+  ...props
+}: Omit<React.ComponentProps<typeof Editable>, 'domStrategy'> & {
   domStrategy?:
     | React.ComponentProps<typeof Editable>['domStrategy']
     | InternalPartialDOMStrategyForTest;
   editor: React.ComponentProps<typeof Plite>['editor'];
-};
-
-const TestEditorSurface = ({ editor, ...props }: TestEditorSurfaceProps) => (
+}) => (
   <Plite editor={editor}>
     <Editable {...(props as React.ComponentProps<typeof Editable>)} />
   </Plite>

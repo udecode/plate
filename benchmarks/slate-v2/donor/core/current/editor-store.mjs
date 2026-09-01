@@ -80,10 +80,12 @@ const setChildrenAndGetChildrenMs = measureLane(
   createEditorWithChildren,
   (editor) => {
     for (let index = 0; index < steps; index += 1) {
-      setEditorChildren(
-        editor,
-        createChildren(blockCount, `children-${index}`)
-      );
+      editor.update(() => {
+        setEditorChildren(
+          editor,
+          createChildren(blockCount, `children-${index}`)
+        );
+      });
       const children = Editor.getSnapshot(editor).children;
 
       if (children.length !== blockCount) {

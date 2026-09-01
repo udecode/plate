@@ -104,10 +104,12 @@ const createDecorationSourceLifecycle = <T>() => {
   let effectVersion = 0;
 
   return {
-    mount(source: PliteDecorationSource<T>) {
+    mount(source: PliteDecorationSource<T> | null) {
       currentSource = source;
       effectVersion += 1;
       const mountedVersion = effectVersion;
+
+      if (!source) return undefined;
 
       return () => {
         queueMicrotask(() => {
@@ -120,7 +122,9 @@ const createDecorationSourceLifecycle = <T>() => {
   };
 };
 
-const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
+export const useDecorationSourceLifecycle = <T>(
+  source: PliteDecorationSource<T> | null
+) => {
   const [lifecycle] = useState(createDecorationSourceLifecycle<T>);
 
   useEffect(() => lifecycle.mount(source), [lifecycle, source]);

@@ -27,7 +27,19 @@ const loadingPreview = (
   </div>
 );
 
-interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
+export function ComponentPreview({
+  align = 'start',
+  children,
+  className,
+  description,
+  extractClassname,
+  extractedClassNames,
+  height,
+  name,
+  padding,
+  type,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
   name: string;
   __dependencies__?: string;
   __highlightedFiles__?: string;
@@ -45,21 +57,7 @@ interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: 'md';
   tree?: BlockViewerContext['tree'];
   type?: 'block' | 'component' | 'example';
-}
-
-export function ComponentPreview({
-  align = 'start',
-  children,
-  className,
-  description,
-  extractClassname,
-  extractedClassNames,
-  height,
-  name,
-  padding,
-  type,
-  ...props
-}: ComponentPreviewProps) {
+}) {
   const registryEntry: unknown = Index[name];
   const Component = Index[name]?.component;
 

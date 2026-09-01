@@ -27,6 +27,38 @@ status advances as one ordered prefix: completed rows, at most one active row,
 then pending rows. A named later-lane symptom is exercised inside lane 2's
 product smoke; it does not authorize skipping the ordered attribution lanes.
 
+## Embedded Architecture Probe
+
+When `best-api`, `major-task`, `plate-plan`, `plite-plan`,
+`plate-plugin-creator`, `plate-feature`, or `architecture-cleanup` needs scale
+evidence before accepting a target, run the smallest decisive subset of this
+methodology inside that owner's active plan. This is a design falsification
+probe, not a comprehensive Benchmark completion claim.
+
+The probe contract is:
+
+1. name the user operation, current/proposed owners, repeated units, and
+   independent size, fan-out, concurrency, or subscription variables;
+2. select normal, large, stress, and pathological cohorts where each is
+   meaningful;
+3. freeze the budget and materiality/noise rule before target measurement;
+4. identify the current baseline and proposed executable path; if the latter
+   does not exist, use a disposable prototype containing only the disputed
+   cost/ownership law;
+5. keep source identity, fixture, action, build, browser/runtime, machine, and
+   sampling comparable;
+6. record deterministic work indicators before timing: visited units,
+   iterations, renders, wakes, listeners, queries, bytes, or another direct
+   cost counter owned by the path;
+7. run the selected correctness/native guard against both compared paths;
+8. return `pass`, `fail`, or `inconclusive`; only `pass` may unlock target
+   acceptance, while `inconclusive` names the next isolating probe.
+
+After implementation, rerun the same cohort and budget contract on the final
+production source. The architecture probe does not replace the default ordered
+inventory when the user asked for a performance diagnosis, regression search,
+or broad Benchmark completion.
+
 ## Default Lane Order
 
 Every Benchmark plan contains these rows in this order. A scoped or explicit

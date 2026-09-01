@@ -11,15 +11,6 @@ import { cn } from '@/lib/utils';
 
 import { CodeBlockWrapper } from './code-block-wrapper';
 
-interface ComponentSourceProps extends React.HTMLAttributes<HTMLDivElement> {
-  full?: boolean;
-  internal?: boolean;
-  name?: string;
-  open?: boolean;
-  src?: string;
-  title?: string;
-}
-
 export function ComponentSource({
   children,
   className,
@@ -29,7 +20,14 @@ export function ComponentSource({
   src,
   title,
   ...props
-}: ComponentSourceProps) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  full?: boolean;
+  internal?: boolean;
+  name?: string;
+  open?: boolean;
+  src?: string;
+  title?: string;
+}) {
   let full = initialFull;
   if (!isDefined(full) && !internal) {
     full = true;

@@ -9,7 +9,6 @@ type ExpectedEditorApiKeys =
   | 'audio'
   | 'comment'
   | 'csv'
-  | 'cursorOverlay'
   | 'debug'
   | 'details'
   | 'dom'

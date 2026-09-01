@@ -271,8 +271,11 @@ const expectedPliteReactRuntimeRootExports = [
   'usePliteRuntime',
   'usePliteRuntimeState',
   'usePliteWidget',
+  'usePliteWidgetGeometry',
+  'usePliteWidgetIds',
   'usePliteWidgetStore',
   'usePliteWidgets',
+  'useSelectionGeometry',
   'useStateFieldValue',
   'useTextSelector',
 ];
@@ -715,7 +718,7 @@ describe('plitejs/react surface contract', () => {
     }
   });
 
-  test('plite-react overlay docs expose simple and scalable public paths', () => {
+  test('Plite React transient rendering docs expose simple and scalable public paths', () => {
     const docFiles = [
       'content/docs/plite/libraries/plite-react/annotations.mdx',
       'content/docs/plite/libraries/plite-react/editable.mdx',
@@ -779,11 +782,13 @@ describe('plitejs/react surface contract', () => {
     expect(docs.annotations).toContain(
       'usePliteAnnotationStore(editor, annotations)'
     );
-    expect(docs.annotations).toMatch(/\btype PliteWidgetAnchor\b/);
+    expect(docs.annotations).toMatch(/\btype PliteWidgetTarget\b/);
     expect(docs.annotations).toMatch(/\busePliteWidgetStore\b/);
-    expect(docs.annotations).toMatch(/\busePliteWidgets\(store\)/);
+    expect(docs.annotations).toMatch(/\busePliteWidgetIds\(widgetStore\)/);
+    expect(docs.annotations).toMatch(/\busePliteWidgetGeometry\b/);
     expect(docs.hooks).toMatch(/\busePliteWidgetStore\b/);
     expect(docs.hooks).toMatch(/\busePliteWidgets\b/);
+    expect(docs.hooks).toMatch(/\buseSelectionGeometry\b/);
     expect(docs.hooks).toContain('revision: mutableAnnotationsRevision');
     expect(docs.hooks).toContain('usePliteWidgetStore(editor, widgets, {');
     expect(joinedDocs).not.toMatch(

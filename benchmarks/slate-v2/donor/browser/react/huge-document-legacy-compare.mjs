@@ -29,6 +29,7 @@ const overscan = Number(process.env.REACT_HUGE_COMPARE_ACTIVE_RADIUS || 0);
 const rootGroupSize = 16;
 const typeOps = Number(process.env.REACT_HUGE_COMPARE_TYPE_OPS || 20);
 const profile = process.env.REACT_HUGE_COMPARE_PROFILE === '1';
+const gcProfile = process.env.REACT_HUGE_COMPARE_PROFILE_GC === '1';
 const compareMode = process.env.REACT_HUGE_COMPARE_MODE || 'compare';
 const readyOnly = process.env.REACT_HUGE_COMPARE_READY_ONLY === '1';
 const measureNativeSurfaceCompletion =
@@ -108,9 +109,11 @@ const getRunArtifactPath = ({ mode }) =>
     isolateCurrentSurfaces ? 'isolated-surfaces' : 'combined-surfaces',
     splitSelectionLanes ? 'split-selection' : 'combined-selection',
     profile ? 'profile' : 'no-profile',
+    ...(gcProfile ? ['gc-profile'] : []),
   ].join('-')}.json`;
 
 const writeHugeDocumentArtifact = async ({ path, summary }) => {
+  summary.config.gcProfile = gcProfile;
   summary.artifactPaths = {
     latest: latestArtifactPath,
     run: path,
@@ -204,6 +207,7 @@ const logProgress = (message) => {
 const sharedSource = `
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
+import { PerformanceObserver } from 'node:perf_hooks'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import TestUtils from 'react-dom/test-utils'
@@ -255,6 +259,28 @@ const act = React.act ?? TestUtils.act
 const now = () => performance.now()
 const round = (value) => Number(value.toFixed(2))
 const settleBenchmark = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+const observeGC = process.env.REACT_HUGE_COMPARE_PROFILE_GC === '1'
+const gcEntries = []
+const gcObserver = observeGC
+  ? new PerformanceObserver((list) => gcEntries.push(...list.getEntries()))
+  : null
+gcObserver?.observe({ entryTypes: ['gc'] })
+
+const gcTraceTags = (start, end, heapBeforeMB, heapAfterMB) => {
+  if (!gcObserver) return {}
+  gcEntries.push(...gcObserver.takeRecords())
+  const overlaps = gcEntries
+    .map((entry) => Math.max(0, Math.min(end, entry.startTime + entry.duration) - Math.max(start, entry.startTime)))
+    .filter((duration) => duration > 0)
+  return {
+    gcCount: overlaps.length,
+    gcOverlapMs: overlaps.reduce((sum, duration) => sum + duration, 0),
+    gcMaxOverlapMs: Math.max(0, ...overlaps),
+    heapBeforeMB,
+    heapAfterMB,
+  }
+}
 
 const forceBenchmarkGC = () => {
   const gc = globalThis.Bun?.gc
@@ -346,7 +372,7 @@ const insertFragment = (editor, fragment) => {
   if (typeof editor.update === 'function') {
     profileBenchmarkDuration('editor-update-fragment-insert', () => {
       editor.update((tx) => {
-        tx.fragment.insert(fragment)
+        tx.fragment.replace(fragment)
       })
     })
     return
@@ -755,7 +781,7 @@ const renderChunk = ({ attributes, children }) =>
 const currentSharedSource = sharedSource
   .replace(
     "import * as SlateCore from 'slate'",
-    "import * as SlateCore from 'platejs'"
+    "import * as SlateCore from 'plitejs'"
   )
   .replace(
     'const { createEditor, Editor } = SlateCore',
@@ -763,7 +789,7 @@ const currentSharedSource = sharedSource
   )
   .replace(
     "import { withReact } from 'slate-react'",
-    "import { createEditor as createReactViewEditor } from '../../packages/plitejs/dist/react.js'"
+    "import { createEditor as createReactViewEditor } from 'plitejs/react'"
   )
   .replaceAll('withReact(createEditor())', 'createReactViewEditor()')
   .replaceAll('__SLATE_REACT_RENDER_PROFILER__', '__PLITE_REACT_RENDER_PROFILER__')
@@ -858,16 +884,19 @@ const measureLane = async (setup, run) => {
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
     const context = await setup()
     await settleBenchmark()
+    const heapBeforeMB = observeGC ? process.memoryUsage().heapUsed / 1024 / 1024 : 0
     const start = now()
     const metrics = await run(context)
-    const duration = now() - start
+    const end = now()
+    const duration = end - start
+    const heapAfterMB = observeGC ? process.memoryUsage().heapUsed / 1024 / 1024 : 0
     await dispose(context)
     await settleBenchmark()
 
     if (iteration > 0) {
       samples.push(duration)
-      if (metrics && typeof metrics === 'object') {
-        traceTags.push(metrics)
+      if ((metrics && typeof metrics === 'object') || observeGC) {
+        traceTags.push({ ...metrics, ...gcTraceTags(start, end, heapBeforeMB, heapAfterMB) })
       }
     }
   }
@@ -1127,6 +1156,8 @@ console.log(JSON.stringify({
   config: {
     blocks,
     chunkSize,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
+    reactVersion: React.version,
     disposeDelayMs,
     includeSyntheticBeforeInput,
     iterations,
@@ -1141,7 +1172,7 @@ console.log(JSON.stringify({
 
 const currentBenchmarkSource = `
 ${currentSharedSource}
-import { Editable, Plite as Slate } from '../../packages/plitejs/dist/react.js'
+import { Editable, Plite as Slate } from 'plitejs/react'
 
 const segmentSize = Number(process.env.REACT_HUGE_COMPARE_ISLAND_SIZE || 32)
 const overscan = Number(process.env.REACT_HUGE_COMPARE_ACTIVE_RADIUS || 0)
@@ -1647,9 +1678,12 @@ const measureLane = async (setup, run) => {
       await settleBenchmark()
       forceBenchmarkGC()
       counter?.reset()
+      const heapBeforeMB = observeGC ? process.memoryUsage().heapUsed / 1024 / 1024 : 0
       const start = now()
       const metrics = await run(context)
-      const duration = now() - start
+      const end = now()
+      const duration = end - start
+      const heapAfterMB = observeGC ? process.memoryUsage().heapUsed / 1024 / 1024 : 0
       const profile = counter?.snapshot()
       const domStrategyTraceTags =
         typeof context.getDOMStrategyMetrics === 'function'
@@ -1661,10 +1695,12 @@ const measureLane = async (setup, run) => {
 
       if (iteration > 0) {
         samples.push(duration)
-        const laneTraceTags =
-          metrics && typeof metrics === 'object'
+        const laneTraceTags = {
+          ...(metrics && typeof metrics === 'object'
             ? { ...domStrategyTraceTags, ...metrics }
-            : domStrategyTraceTags
+            : domStrategyTraceTags),
+          ...gcTraceTags(start, end, heapBeforeMB, heapAfterMB),
+        }
         if (Object.keys(laneTraceTags).length > 0) {
           traceTags.push(laneTraceTags)
         }
@@ -2490,6 +2526,8 @@ console.log(JSON.stringify({
   config: {
     overscan,
     blocks,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
+    reactVersion: React.version,
     disposeDelayMs,
     segmentSize,
     includeSyntheticBeforeInput,
@@ -2554,6 +2592,8 @@ const current =
   isolateCurrentSurfaces && currentSurfaceNamesToRun.length > 1
     ? await (async () => {
         const surfaceEntries = [];
+        let runtime;
+        let reactVersion;
 
         for (const surfaceName of currentSurfaceNamesToRun) {
           logProgress(
@@ -2569,12 +2609,19 @@ const current =
             repo: currentRepo,
           });
           logProgress(`current surface ${surfaceName} done`);
+          if (runtime && JSON.stringify(runtime) !== JSON.stringify(result.config.runtime)) {
+            throw new Error('Current React surfaces require the same JavaScript runtime');
+          }
+          runtime = result.config.runtime;
+          reactVersion = result.config.reactVersion;
 
           surfaceEntries.push([surfaceName, result.surfaces[surfaceName]]);
         }
 
         return {
           config: {
+            runtime,
+            reactVersion,
             overscan,
             blocks,
             disposeDelayMs,
@@ -2614,6 +2661,8 @@ if (compareMode === 'current-only') {
     lane: 'slate-react-huge-document-legacy-compare',
     mode: compareMode,
     currentRepo,
+    runtime: current.config.runtime,
+    reactVersion: current.config.reactVersion,
     config: {
       overscan,
       blocks,
@@ -2658,6 +2707,9 @@ const legacy = await benchmarkRepo({
   repo: legacyRepo,
 });
 logProgress('legacy benchmark done');
+if (JSON.stringify(current.config.runtime) !== JSON.stringify(legacy.config.runtime)) {
+  throw new Error('React comparison requires the same JavaScript runtime');
+}
 
 const legacyChunkOn = legacy.surfaces.legacyChunkOn;
 
@@ -2753,6 +2805,8 @@ const summary = {
   lane: 'slate-react-huge-document-legacy-compare',
   currentRepo,
   legacyRepo,
+  runtimes: { current: current.config.runtime, legacy: legacy.config.runtime },
+  reactVersions: { current: current.config.reactVersion, legacy: legacy.config.reactVersion },
   config: {
     overscan,
     blocks,

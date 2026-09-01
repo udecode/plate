@@ -10,12 +10,6 @@ import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
 import type { NpmCommands } from '@/types/unist';
 
-type CodeBlockCommandProps = React.HTMLAttributes<HTMLDivElement> &
-  NpmCommands & {
-    'data-language'?: string;
-    'data-theme'?: string;
-  };
-
 export function CodeBlockCommand({
   __bunCommand__,
   __npmCommand__,
@@ -23,7 +17,11 @@ export function CodeBlockCommand({
   __yarnCommand__,
   className,
   ...props
-}: CodeBlockCommandProps) {
+}: React.HTMLAttributes<HTMLDivElement> &
+  NpmCommands & {
+    'data-language'?: string;
+    'data-theme'?: string;
+  }) {
   const [config, setConfig] = useConfig();
   const [hasCopied, setHasCopied] = React.useState(false);
   React.useEffect(() => {

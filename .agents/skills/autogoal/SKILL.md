@@ -62,9 +62,11 @@ Goal plans are composable, but only through static materialization.
 The model is:
 
 1. one active goal
-2. one concrete `docs/plans` plan file
+2. one root `docs/plans` plan file
 3. one primary template
 4. optional materialized packs
+5. optional linked child `docs/plans` plan files for independently owned
+   sub-tasks
 
 The primary template is chosen by dominant risk: `task` for normal execution,
 `docs` for docs-dominant work, `major-task` for heavyweight architecture or
@@ -80,16 +82,36 @@ parents:
   interaction proof is required
 - `package-api`: package exports, public API, release artifacts, package
   boundaries, or package-level checks changed
+- `performance-observability`: user-facing latency, payload size, query count,
+  database access, cache/index behavior, runtime pooling, repeated-unit work,
+  subscription fan-out, or throughput can change
 
-Core execution and review gates belong in the primary template. Every primary
-template must include `Autoreview` as the last human-readable gate before
-`Goal plan complete`. Packs are only for optional touched surfaces that would
-otherwise be absent from that template.
+A public API or architecture that adds, retains, or changes a runtime layer,
+cache, index, projection, store, subscription, scheduler, geometry owner, or
+other repeated hot work must materialize `performance-observability` before the
+target is accepted. The plan needs an executable comparison against the current
+owner, using a disposable target prototype when the proposed path does not yet
+exist. An asymptotic table, review score, future benchmark plan, or "measure
+during implementation" note is not pre-acceptance evidence.
+
+Core execution and proof gates belong in the primary template. `Autoreview` is
+never a universal goal or completion gate. Only after a complete end-to-end
+feature is already verified may the final handoff recommend it as an optional
+second pass; run it only when the user explicitly requests or accepts it.
+Packs are only for optional touched surfaces that would otherwise be absent
+from that template.
 
 Do not create runtime inheritance between templates. The helper copies pack rows
 into the generated plan's `Start Gates`, `Work Checklist`, and
 `Completion Gates`. After creation, the generated plan is the truth; the checker
 validates that materialized plan only.
+
+Linked child plans are different from packs. Use them when one parent goal
+supervises multiple independently owned task plans, such as one PRD/full-loop
+plan linking one task plan per issue. The parent records the child links and
+rollup status; each child owns its own source, proof, review, and closeout
+packet. `check-complete.mjs` on the parent must fail while any linked child plan
+is missing or incomplete.
 
 The generated plan is the dedicated plan shell. Fill that exact file
 immediately after generation: replace placeholders, resolve every gate row, and
@@ -124,7 +146,11 @@ Examples:
 - agent workflow task: `--template task --with agent-native`
 - browser behavior task: `--template task --with browser`
 - public app/API or package-boundary task: `--template task --with package-api`
+- query, cache, database, or runtime performance task:
+  `--template task --with performance-observability`
 - major architecture task: `--template major-task`
+- scale-sensitive architecture task:
+  `--template major-task --with performance-observability`
 - major architecture task that also changes docs and package API:
   `--template major-task --with docs --with package-api`
 
@@ -410,13 +436,14 @@ Use the hybrid rule for every goal:
 2. The `docs/plans` goal plan records the verification surface, constraints,
    boundaries, blocked condition, fresh evidence, and completion threshold.
 3. `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` is
-   the final mechanical gate before `update_goal(status: complete)`.
+   the final mechanical gate before `update_goal(status: complete)`. If that
+   plan links child plans, the checker recursively validates them too.
 
 The checker validates that the goal plan has no unchecked required checklist
 items, no unresolved gate rows, no open phase/pass rows, concrete verification
-evidence, current reboot status, and recorded risks. It does not replace tests,
-browser proof, source audits, benchmark output, or other named verification
-evidence.
+evidence, current reboot status, recorded risks, and no incomplete linked child
+plans. It does not replace tests, browser proof, source audits, benchmark
+output, or other named verification evidence.
 
 ## Evidence Type Contract
 
@@ -713,6 +740,43 @@ autogoal template. The helper lives
 under `.agents/skills/autogoal/` because it is generic rule tooling; generated
 `SKILL.md` files are not edited by hand.
 
+## Linked Plan Trees
+
+Use linked child plans when one root goal coordinates multiple independent
+task-sized plans. This is the right shape for a PRD/full-loop parent plan that
+delegates one child plan per Linear issue or implementation packet.
+
+Format the parent section as:
+
+```md
+Linked plans:
+- [DEV-123 task closeout](docs/plans/DEV-123-auth-invites.md) - owns invite acceptance.
+- [DEV-124 task closeout](docs/plans/DEV-124-password-reset.md) - owns reset flow.
+```
+
+If there are no child plans, write:
+
+```md
+Linked plans:
+- None.
+```
+
+Rules:
+
+- Link only `docs/plans/*.md` files. Do not link scratch files, generated
+  artifacts, issue URLs, PR URLs, or external docs as child plans.
+- Each child plan must be a normal autogoal-compatible plan with concrete
+  objective, threshold, verification, checklist, gates, phase table,
+  verification evidence, reboot status, and open risks.
+- The parent plan tracks orchestration and rollup decisions; the child plan
+  owns task-level proof. Do not duplicate child gates in the parent.
+- Run `check-complete.mjs` on the root parent plan before completing the goal.
+  The checker follows `Linked plans`, `Linked goal plans`, or `Child plans`
+  sections recursively and fails on missing, incomplete, out-of-tree, or cyclic
+  child plans.
+- Use child plans for independent task packets, not for pass-gated phases that
+  should stay rows in one plan.
+
 Do not pass objective, threshold, verification, constraints, boundaries, or
 blocked condition through CLI flags. The CLI only creates the static plan shell.
 After creation, edit the generated `docs/plans` file and write the active goal
@@ -819,8 +883,9 @@ Template quality bar:
   facts.
 - No template may let a goal finish from polished prose, score alone, or a
   completed phase table without fresh evidence.
-- Every primary template must include an `Autoreview` completion gate before
-  the final `Goal plan complete` check.
+- No primary template may require `Autoreview`. A complete end-to-end feature
+  may end with an optional recommendation after normal proof, but declining it
+  never blocks `Goal plan complete`.
 - Every required checklist item must map to evidence, an explicit N/A reason,
   or a blocker.
 - Every required section is either present in the template or omitted with a
@@ -831,6 +896,12 @@ Template quality bar:
   public API, runtime, package-boundary, browser, agent-action, or command
   contract changes. Do not copy a major planning lane's scorecard, issue
   ledger, or full pass schedule into generic execution templates.
+- Architecture and API templates must decide scale applicability before target
+  acceptance. When repeated or hot runtime work can change, materialize the
+  performance pack, require an executable baseline-versus-target probe before
+  accepting the design, and require the same production-path rerun plus a
+  correctness guard after implementation. Only source-backed type-only or
+  zero-runtime work may record N/A.
 - The template should prefer concrete commands, file paths, issue rows,
   browser routes, screenshots, benchmark names, or source-audit rows over vague
   "review" wording.
@@ -886,6 +957,9 @@ Primary template:
 
 Applied packs:
 - <pack or none>
+
+Linked plans:
+- <child docs/plans path or None>
 
 Completion threshold:
 - <quantitative or auditable done row>
@@ -1038,6 +1112,8 @@ Mark a goal complete only when:
 - every required goal-plan checklist item is checked or marked N/A with reason
 - `node .agents/skills/autogoal/scripts/check-complete.mjs <docs/plans/path>` passes
   after the final evidence is recorded
+- every linked child plan is complete when the root plan has `Linked plans`,
+  `Linked goal plans`, or `Child plans` entries
 - constraints and boundaries were respected, or deviations were explicitly
   accepted
 - required artifacts were created or updated

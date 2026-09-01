@@ -987,15 +987,6 @@
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
         },
-        "./find-replace": {
-          "exclude": [
-            "FindReplaceDefinition",
-            "FindReplacePlugin",
-            "FindReplacePluginState"
-          ],
-          "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
-        },
         "./footnote": {
           "exclude": [
             "BaseFootnoteDefinitionPlugin",

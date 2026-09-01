@@ -3420,6 +3420,8 @@ export type EditorCommitRuntimeChangeKind =
   | 'decoration'
   | 'node'
   | 'path'
+  /** Runtime node identities added to or removed from a document root. */
+  | 'presence'
   | 'projection'
   | 'selection'
   | 'text';

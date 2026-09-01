@@ -13,7 +13,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `124`.
+Current doctrine version: `135`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -242,8 +242,13 @@ When no target is provided, inspect in this order:
 5. First-party Plate plugins, features, components, specs, type tests, or
    fixtures importing `plitejs` instead of the relative facade or matching
    Plate entrypoint owner, including imports hidden by test-glob exemptions.
-6. Docs/examples teaching old APIs.
-7. Tests with fake compatibility assertions instead of current behavior.
+6. Editor-global plugins, stores, kits, or controlled props whose only job is
+   toggling derivable paint for one mounted Editable. Move neutral lifecycle
+   mechanics and the literal DOM protocol to Plite React, let Plate React
+   inherit them, and keep product markers/styling in copied UI without parallel
+   state.
+7. Docs/examples teaching old APIs.
+8. Tests with fake compatibility assertions instead of current behavior.
 
 ## Proof
 

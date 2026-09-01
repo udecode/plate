@@ -1,0 +1,625 @@
+{
+  "benchmark": "plite-collab-readiness",
+  "artifactVersion": 2,
+  "mode": "complete",
+  "iterations": 1,
+  "thresholdPolicy": {
+    "mode": "calibration-only",
+    "releaseGate": false,
+    "repeatRunsRequiredBeforeEnforcement": 3
+  },
+  "cohorts": [
+    {
+      "id": "normal",
+      "blocks": 100,
+      "remoteOps": 50,
+      "anchors": 25
+    },
+    {
+      "id": "large",
+      "blocks": 1000,
+      "remoteOps": 100,
+      "anchors": 100
+    },
+    {
+      "id": "stress",
+      "blocks": 10000,
+      "remoteOps": 250,
+      "anchors": 250
+    },
+    {
+      "id": "pathological",
+      "blocks": 1,
+      "remoteOps": 1000,
+      "anchors": 50
+    }
+  ],
+  "lanes": {
+    "normal": {
+      "config": {
+        "id": "normal",
+        "blocks": 100,
+        "remoteOps": 50,
+        "anchors": 25
+      },
+      "commandCount": 50,
+      "commandTypes": [
+        "insertText"
+      ],
+      "localExportCommitMs": {
+        "samples": [
+          18.13
+        ],
+        "mean": 18.13,
+        "median": 18.13,
+        "p75": 18.13,
+        "p95": 18.13,
+        "p99": 18.13,
+        "min": 18.13,
+        "max": 18.13
+      },
+      "remoteChangeBatchMs": {
+        "samples": [
+          18.07
+        ],
+        "mean": 18.07,
+        "median": 18.07,
+        "p75": 18.07,
+        "p95": 18.07,
+        "p99": 18.07,
+        "min": 18.07,
+        "max": 18.07
+      },
+      "remoteChangesSeparateMs": {
+        "samples": [
+          62.01
+        ],
+        "mean": 62.01,
+        "median": 62.01,
+        "p75": 62.01,
+        "p95": 62.01,
+        "p99": 62.01,
+        "min": 62.01,
+        "max": 62.01
+      },
+      "anchorCreateMs": {
+        "samples": [
+          0.19
+        ],
+        "mean": 0.19,
+        "median": 0.19,
+        "p75": 0.19,
+        "p95": 0.19,
+        "p99": 0.19,
+        "min": 0.19,
+        "max": 0.19
+      },
+      "anchorRebaseMs": {
+        "samples": [
+          4.48
+        ],
+        "mean": 4.48,
+        "median": 4.48,
+        "p75": 4.48,
+        "p95": 4.48,
+        "p99": 4.48,
+        "min": 4.48,
+        "max": 4.48
+      },
+      "anchorResolveMs": {
+        "samples": [
+          0.04
+        ],
+        "mean": 0.04,
+        "median": 0.04,
+        "p75": 0.04,
+        "p95": 0.04,
+        "p99": 0.04,
+        "min": 0.04,
+        "max": 0.04
+      },
+      "anchorSetupMs": {
+        "samples": [
+          16.19
+        ],
+        "mean": 16.19,
+        "median": 16.19,
+        "p75": 16.19,
+        "p95": 16.19,
+        "p99": 16.19,
+        "min": 16.19,
+        "max": 16.19
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          34.67
+        ],
+        "mean": 34.67,
+        "median": 34.67,
+        "p75": 34.67,
+        "p95": 34.67,
+        "p99": 34.67,
+        "min": 34.67,
+        "max": 34.67
+      },
+      "historySkipMs": {
+        "samples": [
+          20.38
+        ],
+        "mean": 20.38,
+        "median": 20.38,
+        "p75": 20.38,
+        "p95": 20.38,
+        "p99": 20.38,
+        "min": 20.38,
+        "max": 20.38
+      },
+      "connectDisconnectHeapDeltaBytes": {
+        "samples": [
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "gcAvailable": true,
+        "unit": "bytes"
+      },
+      "invariants": {
+        "batchAndSeparateConverge": true,
+        "canonicalChangesOnly": true,
+        "remoteCommitMetadataChecked": true,
+        "historySkipChecked": true,
+        "anchorResolutionChecked": true,
+        "cleanupListenerChecked": true
+      }
+    },
+    "large": {
+      "config": {
+        "id": "large",
+        "blocks": 1000,
+        "remoteOps": 100,
+        "anchors": 100
+      },
+      "commandCount": 100,
+      "commandTypes": [
+        "insertText"
+      ],
+      "localExportCommitMs": {
+        "samples": [
+          158.18
+        ],
+        "mean": 158.18,
+        "median": 158.18,
+        "p75": 158.18,
+        "p95": 158.18,
+        "p99": 158.18,
+        "min": 158.18,
+        "max": 158.18
+      },
+      "remoteChangeBatchMs": {
+        "samples": [
+          176.51
+        ],
+        "mean": 176.51,
+        "median": 176.51,
+        "p75": 176.51,
+        "p95": 176.51,
+        "p99": 176.51,
+        "min": 176.51,
+        "max": 176.51
+      },
+      "remoteChangesSeparateMs": {
+        "samples": [
+          643.63
+        ],
+        "mean": 643.63,
+        "median": 643.63,
+        "p75": 643.63,
+        "p95": 643.63,
+        "p99": 643.63,
+        "min": 643.63,
+        "max": 643.63
+      },
+      "anchorCreateMs": {
+        "samples": [
+          0.37
+        ],
+        "mean": 0.37,
+        "median": 0.37,
+        "p75": 0.37,
+        "p95": 0.37,
+        "p99": 0.37,
+        "min": 0.37,
+        "max": 0.37
+      },
+      "anchorRebaseMs": {
+        "samples": [
+          14.53
+        ],
+        "mean": 14.53,
+        "median": 14.53,
+        "p75": 14.53,
+        "p95": 14.53,
+        "p99": 14.53,
+        "min": 14.53,
+        "max": 14.53
+      },
+      "anchorResolveMs": {
+        "samples": [
+          0.1
+        ],
+        "mean": 0.1,
+        "median": 0.1,
+        "p75": 0.1,
+        "p95": 0.1,
+        "p99": 0.1,
+        "min": 0.1,
+        "max": 0.1
+      },
+      "anchorSetupMs": {
+        "samples": [
+          121.85
+        ],
+        "mean": 121.85,
+        "median": 121.85,
+        "p75": 121.85,
+        "p95": 121.85,
+        "p99": 121.85,
+        "min": 121.85,
+        "max": 121.85
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          576.19
+        ],
+        "mean": 576.19,
+        "median": 576.19,
+        "p75": 576.19,
+        "p95": 576.19,
+        "p99": 576.19,
+        "min": 576.19,
+        "max": 576.19
+      },
+      "historySkipMs": {
+        "samples": [
+          189.23
+        ],
+        "mean": 189.23,
+        "median": 189.23,
+        "p75": 189.23,
+        "p95": 189.23,
+        "p99": 189.23,
+        "min": 189.23,
+        "max": 189.23
+      },
+      "connectDisconnectHeapDeltaBytes": {
+        "samples": [
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "gcAvailable": true,
+        "unit": "bytes"
+      },
+      "invariants": {
+        "batchAndSeparateConverge": true,
+        "canonicalChangesOnly": true,
+        "remoteCommitMetadataChecked": true,
+        "historySkipChecked": true,
+        "anchorResolutionChecked": true,
+        "cleanupListenerChecked": true
+      }
+    },
+    "stress": {
+      "config": {
+        "id": "stress",
+        "blocks": 10000,
+        "remoteOps": 250,
+        "anchors": 250
+      },
+      "commandCount": 250,
+      "commandTypes": [
+        "insertText"
+      ],
+      "localExportCommitMs": {
+        "samples": [
+          2031.94
+        ],
+        "mean": 2031.94,
+        "median": 2031.94,
+        "p75": 2031.94,
+        "p95": 2031.94,
+        "p99": 2031.94,
+        "min": 2031.94,
+        "max": 2031.94
+      },
+      "remoteChangeBatchMs": {
+        "samples": [
+          1768.66
+        ],
+        "mean": 1768.66,
+        "median": 1768.66,
+        "p75": 1768.66,
+        "p95": 1768.66,
+        "p99": 1768.66,
+        "min": 1768.66,
+        "max": 1768.66
+      },
+      "remoteChangesSeparateMs": {
+        "samples": [
+          18829.49
+        ],
+        "mean": 18829.49,
+        "median": 18829.49,
+        "p75": 18829.49,
+        "p95": 18829.49,
+        "p99": 18829.49,
+        "min": 18829.49,
+        "max": 18829.49
+      },
+      "anchorCreateMs": {
+        "samples": [
+          2.76
+        ],
+        "mean": 2.76,
+        "median": 2.76,
+        "p75": 2.76,
+        "p95": 2.76,
+        "p99": 2.76,
+        "min": 2.76,
+        "max": 2.76
+      },
+      "anchorRebaseMs": {
+        "samples": [
+          97.08
+        ],
+        "mean": 97.08,
+        "median": 97.08,
+        "p75": 97.08,
+        "p95": 97.08,
+        "p99": 97.08,
+        "min": 97.08,
+        "max": 97.08
+      },
+      "anchorResolveMs": {
+        "samples": [
+          0.22
+        ],
+        "mean": 0.22,
+        "median": 0.22,
+        "p75": 0.22,
+        "p95": 0.22,
+        "p99": 0.22,
+        "min": 0.22,
+        "max": 0.22
+      },
+      "anchorSetupMs": {
+        "samples": [
+          1454.88
+        ],
+        "mean": 1454.88,
+        "median": 1454.88,
+        "p75": 1454.88,
+        "p95": 1454.88,
+        "p99": 1454.88,
+        "min": 1454.88,
+        "max": 1454.88
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          56183.27
+        ],
+        "mean": 56183.27,
+        "median": 56183.27,
+        "p75": 56183.27,
+        "p95": 56183.27,
+        "p99": 56183.27,
+        "min": 56183.27,
+        "max": 56183.27
+      },
+      "historySkipMs": {
+        "samples": [
+          2118.06
+        ],
+        "mean": 2118.06,
+        "median": 2118.06,
+        "p75": 2118.06,
+        "p95": 2118.06,
+        "p99": 2118.06,
+        "min": 2118.06,
+        "max": 2118.06
+      },
+      "connectDisconnectHeapDeltaBytes": {
+        "samples": [
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "gcAvailable": true,
+        "unit": "bytes"
+      },
+      "invariants": {
+        "batchAndSeparateConverge": true,
+        "canonicalChangesOnly": true,
+        "remoteCommitMetadataChecked": true,
+        "historySkipChecked": true,
+        "anchorResolutionChecked": true,
+        "cleanupListenerChecked": true
+      }
+    },
+    "pathological": {
+      "config": {
+        "id": "pathological",
+        "blocks": 1,
+        "remoteOps": 1000,
+        "anchors": 50
+      },
+      "commandCount": 1000,
+      "commandTypes": [
+        "insertText"
+      ],
+      "localExportCommitMs": {
+        "samples": [
+          2.22
+        ],
+        "mean": 2.22,
+        "median": 2.22,
+        "p75": 2.22,
+        "p95": 2.22,
+        "p99": 2.22,
+        "min": 2.22,
+        "max": 2.22
+      },
+      "remoteChangeBatchMs": {
+        "samples": [
+          1.24
+        ],
+        "mean": 1.24,
+        "median": 1.24,
+        "p75": 1.24,
+        "p95": 1.24,
+        "p99": 1.24,
+        "min": 1.24,
+        "max": 1.24
+      },
+      "remoteChangesSeparateMs": {
+        "samples": [
+          147.68
+        ],
+        "mean": 147.68,
+        "median": 147.68,
+        "p75": 147.68,
+        "p95": 147.68,
+        "p99": 147.68,
+        "min": 147.68,
+        "max": 147.68
+      },
+      "anchorCreateMs": {
+        "samples": [
+          0.02
+        ],
+        "mean": 0.02,
+        "median": 0.02,
+        "p75": 0.02,
+        "p95": 0.02,
+        "p99": 0.02,
+        "min": 0.02,
+        "max": 0.02
+      },
+      "anchorRebaseMs": {
+        "samples": [
+          0.42
+        ],
+        "mean": 0.42,
+        "median": 0.42,
+        "p75": 0.42,
+        "p95": 0.42,
+        "p99": 0.42,
+        "min": 0.42,
+        "max": 0.42
+      },
+      "anchorResolveMs": {
+        "samples": [
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0
+      },
+      "anchorSetupMs": {
+        "samples": [
+          0.97
+        ],
+        "mean": 0.97,
+        "median": 0.97,
+        "p75": 0.97,
+        "p95": 0.97,
+        "p99": 0.97,
+        "min": 0.97,
+        "max": 0.97
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          1.86
+        ],
+        "mean": 1.86,
+        "median": 1.86,
+        "p75": 1.86,
+        "p95": 1.86,
+        "p99": 1.86,
+        "min": 1.86,
+        "max": 1.86
+      },
+      "historySkipMs": {
+        "samples": [
+          1.54
+        ],
+        "mean": 1.54,
+        "median": 1.54,
+        "p75": 1.54,
+        "p95": 1.54,
+        "p99": 1.54,
+        "min": 1.54,
+        "max": 1.54
+      },
+      "connectDisconnectHeapDeltaBytes": {
+        "samples": [
+          0
+        ],
+        "mean": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 0,
+        "p99": 0,
+        "min": 0,
+        "max": 0,
+        "gcAvailable": true,
+        "unit": "bytes"
+      },
+      "invariants": {
+        "batchAndSeparateConverge": true,
+        "canonicalChangesOnly": true,
+        "remoteCommitMetadataChecked": true,
+        "historySkipChecked": true,
+        "anchorResolutionChecked": true,
+        "cleanupListenerChecked": true
+      }
+    }
+  },
+  "redFlags": {
+    "normal": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": 0
+    },
+    "large": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": 0
+    },
+    "stress": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": 0
+    },
+    "pathological": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": 0
+    }
+  }
+}

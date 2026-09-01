@@ -55,7 +55,7 @@ export const PlateContainer = ({
     beforeContainer = (
       <>
         {beforeContainer}
-        <BeforeContainer {...props} />
+        <BeforeContainer containerRef={containerRef} />
       </>
     );
   });
@@ -73,7 +73,7 @@ export const PlateContainer = ({
     afterContainer = (
       <>
         {afterContainer}
-        <AfterContainer {...props} />
+        <AfterContainer containerRef={containerRef} />
       </>
     );
   });

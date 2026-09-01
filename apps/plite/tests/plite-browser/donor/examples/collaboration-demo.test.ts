@@ -67,7 +67,7 @@ test.describe('Plate collaboration registry example', () => {
       await expect(remoteSelection).toHaveCount(1);
       await expect(remoteSelection).toHaveCSS(
         'background-color',
-        'rgb(124, 58, 237)'
+        'rgba(124, 58, 237, 0.2)'
       );
       expect((await remoteSelection.boundingBox())?.width).toBeGreaterThan(0);
 
@@ -164,6 +164,7 @@ test.describe('Plate collaboration registry example', () => {
 
       const [caretBeforeScroll, labelBeforeScroll, overlayBeforeScroll] =
         await readOverlayBoxes();
+      const scrollYBefore = await page.evaluate(() => window.scrollY);
       const rootSize = await root.evaluate((element) => ({
         clientWidth: element.clientWidth,
         scrollWidth: element.scrollWidth,
@@ -202,21 +203,34 @@ test.describe('Plate collaboration registry example', () => {
 
       await page.evaluate(() => window.scrollTo(0, 400));
 
-      const caretAfterScroll = await remoteCaret.boundingBox();
-      const overlayAfterScroll = await linOverlay.boundingBox();
+      await expect
+        .poll(async () => {
+          const caretAfterScroll = await remoteCaret.boundingBox();
+          const overlayAfterScroll = await linOverlay.boundingBox();
+          const scrollYAfter = await page.evaluate(() => window.scrollY);
 
-      expect(
-        (caretAfterScroll?.x ?? 0) - (overlayAfterScroll?.x ?? 0)
-      ).toBeCloseTo(
-        (caretBeforeScroll?.x ?? 0) - (overlayBeforeScroll?.x ?? 0),
-        0
-      );
-      expect(
-        (caretAfterScroll?.y ?? 0) - (overlayAfterScroll?.y ?? 0)
-      ).toBeCloseTo(
-        (caretBeforeScroll?.y ?? 0) - (overlayBeforeScroll?.y ?? 0),
-        0
-      );
+          if (
+            !caretAfterScroll ||
+            !caretBeforeScroll ||
+            !overlayAfterScroll ||
+            !overlayBeforeScroll ||
+            scrollYAfter <= scrollYBefore
+          ) {
+            return false;
+          }
+
+          const scrollDelta = scrollYAfter - scrollYBefore;
+
+          return (
+            Math.abs(caretAfterScroll.x - caretBeforeScroll.x) < 0.5 &&
+            Math.abs(
+              caretAfterScroll.y - (caretBeforeScroll.y - scrollDelta)
+            ) < 0.5 &&
+            Math.abs(overlayAfterScroll.x - overlayBeforeScroll.x) < 0.5 &&
+            Math.abs(overlayAfterScroll.y - overlayBeforeScroll.y) < 0.5
+          );
+        })
+        .toBe(true);
 
       await page.goto('/examples/plite/plaintext');
       await expect(

@@ -9,6 +9,7 @@ The plan owns one table with these exact rows:
 | React adapter              | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
 | Registry UI                | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
 | Composition                | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
+| Scale proof                | yes/no  | benchmark | baseline/target/final artifacts or N/A reason | users/maintainers | pre-acceptance and final production rerun or N/A reason | pending/complete/N/A: reason |
 | Registry metadata/examples | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
 | Docs                       | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
 | Release artifacts          | yes/no  | owner | paths or N/A reason                 | consumer    | command/audit or N/A reason | pending/complete/N/A: reason |
@@ -31,8 +32,22 @@ Rules:
   with one unique score-100 review row per file. The Feature Manifest remains
   the sole cross-layer status source and becomes complete only after those file
   rows close.
+- A focused change to an existing package does not imply a full package review.
+  Keep `Package` as `yes`, mark `Plate Next attestation` as `no` with the
+  package's current stale status and exact reason, and record focused
+  changed-file proof. Never manufacture a whole-package score or advance the
+  package version to make the feature checker pass.
 - Status stays `pending` while work remains and becomes `complete` only after
   its proof is recorded.
+- `Scale proof` is `yes` when the feature adds, retains, or changes a runtime
+  layer, cache, index, projection, store, subscription, scheduler, geometry
+  owner, or repeated/hot work. Before source writes, link a passing embedded
+  Benchmark receipt with frozen cohorts/budget, current baseline, target path
+  or disposable prototype, deterministic cost, timing/noise, source identity,
+  and correctness guard. Completion links the exact final production-path
+  rerun. A paper budget or future benchmark plan cannot close the row.
+- `Scale proof` may be `no` only with live-source evidence that the work is
+  type-only or cannot change repeated/hot runtime cost.
 
 When `Package` applies, add one subordinate `Package boundary contract`
 section to the same plan with these resolved rows:
@@ -53,10 +68,15 @@ Flow presets are classification aids, not generated schemas:
 
 | Flow                                 | Normally applies                                                                   |
 | ------------------------------------ | ---------------------------------------------------------------------------------- |
-| new public feature entrypoint        | all rows                                                                           |
-| existing package plus React/registry | all rows except manual package shell                                               |
+| new public feature entrypoint        | all structural rows; Scale proof is yes unless live source proves zero runtime impact |
+| existing package plus React/registry | structural rows; Plate Next attestation only after a full current package review   |
 | headless package                     | API, Package, Docs, Release, Proof, Attestation, Review                            |
 | registry-only                        | Registry UI, Composition, Metadata/examples, Docs, Registry release, Proof, Review |
 
 Choose the mode that matches the structural rows. API, docs, and release rows
 may vary in non-new-package flows when their explicit evidence explains why.
+Before selecting `registry-only`, prove that the feature does not expose a
+neutral reusable contract of one mounted Editable. Derivable runtime or DOM
+behavior makes `API` and `React adapter` applicable even when the public
+contract is a literal marker and neutral output hooks instead of a prop.
+Registry rows own only product markers, exclusions, and styling.

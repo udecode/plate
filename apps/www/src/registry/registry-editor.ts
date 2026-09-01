@@ -1309,24 +1309,6 @@ export const editorNodes: Registry['items'] = [
   },
   {
     dependencies: ['platejs'],
-    description: 'A component that highlights search results in text.',
-    files: [
-      {
-        path: 'components/editor/search-highlight.tsx',
-        type: 'registry:component',
-      },
-    ],
-    meta: {
-      // examples: ['find-replace-demo'],
-      docs: [{ route: '/docs/highlight' }],
-    },
-    name: 'search-highlight',
-    registryDependencies: [],
-    title: 'Search Highlight',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
     description: 'A tag element component with selection states and styling.',
     files: [{ path: 'components/editor/tag.tsx', type: 'registry:component' }],
     meta: {

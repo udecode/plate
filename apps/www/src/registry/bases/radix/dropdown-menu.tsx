@@ -23,28 +23,16 @@ export {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type DropdownMenuContentProps = Omit<
-  React.ComponentPropsWithoutRef<'div'>,
-  'onAbort'
-> & {
+export function DropdownMenuContent({
+  onFinalFocus,
+  ...props
+}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
   onFinalFocus?: (event: Event) => void;
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
-};
-
-type DropdownMenuTriggerProps = Omit<
-  React.ComponentPropsWithoutRef<'button'>,
-  'children'
-> & {
-  children: React.ReactElement;
-};
-
-export function DropdownMenuContent({
-  onFinalFocus,
-  ...props
-}: DropdownMenuContentProps) {
+}) {
   return (
     <ShadcnDropdownMenuContent {...props} onCloseAutoFocus={onFinalFocus} />
   );
@@ -53,7 +41,9 @@ export function DropdownMenuContent({
 export function DropdownMenuTrigger({
   children,
   ...props
-}: DropdownMenuTriggerProps) {
+}: Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
+  children: React.ReactElement;
+}) {
   return (
     <ShadcnDropdownMenuTrigger {...props} asChild>
       {children}

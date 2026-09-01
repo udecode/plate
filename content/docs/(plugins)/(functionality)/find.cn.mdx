@@ -1,0 +1,81 @@
+---
+title: 查找
+description: 使用临时高亮和键盘导航搜索可编辑文本。
+docs:
+  - route: /docs/components/find
+    title: 查找组件
+  - route: /docs/examples/find
+    title: 查找演示
+---
+
+<ComponentPreview name="find-demo" />
+
+<PackageInfo>
+
+## 功能
+
+- 使用 `Mod+F` 打开，并可从当前文本选择填充查询。
+- 使用临时装饰高亮结果，不向文档或历史记录写入标记。
+- 搜索相邻文本叶和行内元素中的文本。
+- 使用 `Enter`、`Shift+Enter` 或按钮切换结果。
+- 文档提交后重新扫描，并保持一个活动结果可见。
+- 通过 `useFindController` 支持自定义产品控件。
+
+</PackageInfo>
+
+## 安装
+
+```bash
+npx shadcn@latest add @plate/find
+```
+
+## 使用
+
+把 `FindKit` 加入编辑器插件：
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { FindKit } from '@/components/editor/find';
+import { EditorKit } from '@/components/editor/plugins';
+
+const editor = createEditor({
+  plugins: [...EditorKit, ...FindKit],
+});
+```
+
+`FindKit` 提供快捷键、临时装饰、活动结果样式和可访问的搜索栏。查询状态
+位于编辑器文档之外，因此搜索不会创建编辑器操作。
+
+<ComponentSource name="find" />
+
+## 自定义控件
+
+在对应的 `<Plate>` 树中使用 `useFindController`：
+
+```tsx
+import { useFindController } from '@/components/editor/find';
+
+export function FindButton() {
+  const find = useFindController();
+
+  return (
+    <button onClick={() => find.open()} type="button">
+      查找
+    </button>
+  );
+}
+```
+
+控制器提供 `open`、`close`、`setQuery`、`next`、`previous` 和
+`commitActiveMatch`，以及查询、结果数、活动索引、等待和错误状态。
+
+## 键盘行为
+
+| 按键 | 行为 |
+| --- | --- |
+| `Mod+F` | 打开查找；展开的文本选择会成为初始查询。 |
+| `Enter` | 移到下一个结果。 |
+| `Shift+Enter` | 移到上一个结果。 |
+| `Escape` | 关闭查找并把焦点交还编辑器。 |
+

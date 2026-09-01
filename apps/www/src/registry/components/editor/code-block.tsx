@@ -33,10 +33,6 @@ import {
   FloatingPopoverTrigger,
 } from '@/registry/components/editor/floating-popover';
 
-type CodeBlockElementProps = PlateElementProps<typeof CodeBlockPlugin> & {
-  showLanguageLabel?: boolean;
-};
-
 const codeBlockLanguages: Array<{ label: string; value: string }> = [
   { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
@@ -143,7 +139,9 @@ function getCodeBlockLanguageLabel(lang?: string | null) {
 export function CodeBlockElement({
   showLanguageLabel = true,
   ...props
-}: CodeBlockElementProps) {
+}: PlateElementProps<typeof CodeBlockPlugin> & {
+  showLanguageLabel?: boolean;
+}) {
   const { editor, element } = props;
 
   return (

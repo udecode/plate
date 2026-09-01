@@ -13,7 +13,6 @@ import {
 import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
-import { CursorOverlayPlugin } from '../../react/features/cursor';
 import { SuggestionPlugin } from '../../react/features/suggestion';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -29,7 +28,6 @@ const createEditor = (
       BaseAIPlugin,
       MarkdownPlugin,
       SuggestionPlugin,
-      CursorOverlayPlugin,
       AIChatPlugin,
     ],
     selection,
@@ -281,7 +279,6 @@ describe('AIChatPlugin suggestions', () => {
         BaseAIPlugin,
         MarkdownPlugin,
         SuggestionPlugin,
-        CursorOverlayPlugin,
         AIChatPlugin,
         RootHolderPlugin,
       ],
@@ -354,7 +351,6 @@ describe('AIChatPlugin suggestions', () => {
         BaseAIPlugin,
         MarkdownPlugin,
         SuggestionPlugin,
-        CursorOverlayPlugin,
         AIChatPlugin,
         RootHolderPlugin,
       ],

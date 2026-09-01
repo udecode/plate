@@ -21,6 +21,10 @@ export type { TxReadMethod } from '../core/tx-only';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
+export {
+  observeAnchorStateWork,
+  type AnchorStateWork,
+} from '../core/anchor-state';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
 
 export {

@@ -1,0 +1,86 @@
+{
+  "note": "Owner microbenchmarks, not keyboard latency. Raw sample arrays remain in the linked artifacts; observed p95 is not a production tail guarantee.",
+  "metrics": [
+    {
+      "name": "selection query group",
+      "size": "100000 blocks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/selection-query-group-red.json",
+      "afterArtifact": "tmp/plite-query-anchor-observation-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 521.05,
+        "p75Ms": 585.07,
+        "p95Ms": 667.62,
+        "maxMs": 698.2,
+        "counters": {
+          "enumerated": 1600000,
+          "keyReads": 12
+        }
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 0.02,
+        "p75Ms": 0.02,
+        "p95Ms": 0.04,
+        "maxMs": 0.05,
+        "counters": {
+          "enumerated": 0,
+          "keyReads": 4
+        }
+      },
+      "finalPass": true
+    },
+    {
+      "name": "120 text edits",
+      "size": "10000 blocks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/batched-text-publication-red.json",
+      "afterArtifact": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 408.73,
+        "p75Ms": 449.69,
+        "p95Ms": 524.21,
+        "maxMs": 551.05,
+        "publications": 120
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 4.29,
+        "p75Ms": 4.58,
+        "p95Ms": 6.42,
+        "maxMs": 6.6,
+        "publications": 1
+      },
+      "finalPass": true
+    },
+    {
+      "name": "keyed DOM task replacement",
+      "size": "50000 tasks",
+      "beforeArtifact": "docs/plans/artifacts/plite-fan-out-audit/dom-queue-red.json",
+      "afterArtifact": "tmp/plite-dom-phase-scheduler-benchmark.json",
+      "before": {
+        "sampleCount": 20,
+        "medianMs": 320.38,
+        "p75Ms": 321.73,
+        "p95Ms": 327.12,
+        "maxMs": 330.91,
+        "counters": {
+          "executedTasks": 50000,
+          "scheduledFrames": 1
+        }
+      },
+      "after": {
+        "sampleCount": 20,
+        "medianMs": 13.94,
+        "p75Ms": 15.47,
+        "p95Ms": 20,
+        "maxMs": 20.71,
+        "counters": {
+          "executedTasks": 50000,
+          "scheduledFrames": 1
+        }
+      },
+      "finalPass": true
+    }
+  ]
+}

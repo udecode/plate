@@ -6,6 +6,7 @@ import {
   createEditor,
   defineExtension,
   defineEditorSchema,
+  defineExtensionSlot,
   DocumentChange,
   ElementApi,
   property,
@@ -1649,6 +1650,85 @@ describe('editor schema', () => {
         },
       ])
     );
+  });
+
+  it('does not inspect selected node properties when the schema preserves every copied property', () => {
+    const editor = createEditor({
+      initialValue: Array.from({ length: 128 }, (_, index) => ({
+        type: 'paragraph',
+        children: [{ text: `line ${index}` }],
+      })),
+    });
+    const children = editor.read.children();
+    const nodes = new WeakSet<object>(
+      children.flatMap((node) =>
+        ElementApi.isElement(node) ? [node, ...node.children] : [node]
+      )
+    );
+    const originalEntries = Object.entries;
+    let inspectedNodes = 0;
+    Object.entries = (value) => {
+      if (nodes.has(value)) inspectedNodes += 1;
+      return originalEntries(value);
+    };
+    try {
+      const slice = editor.read.slice.export({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [127, 0], offset: 8 },
+        },
+      });
+      assert.equal(slice.content.length, 128);
+      assert.equal(slice.content[0], children[0]);
+      assert.equal(slice.content[127], children[127]);
+      assert.equal(inspectedNodes, 0);
+    } finally {
+      Object.entries = originalEntries;
+    }
+  });
+
+  it('applies the current copy policy after schema reconfiguration without changing historical slices', () => {
+    const slot = defineExtensionSlot('copy-policy');
+    const definition = (version: number, copy: 'drop' | 'preserve') =>
+      defineEditorSchema('schema:copy-document', {
+        id: 'copy-document',
+        version,
+        elements: { paragraph: { content: schema.content.text() } },
+        root: schema.content.type('paragraph'),
+        properties: [
+          schema.elementProperty('ephemeral', property.string(), {
+            copy,
+            target: target.type('paragraph'),
+          }),
+          schema.textProperty('marker', property.string(), { copy }),
+          schema.textProperty('bold', property.boolean()),
+        ],
+      });
+    const editor = createEditor({
+      extensions: [slot.of(definition(1, 'preserve'))],
+      initialValue: [
+        {
+          type: 'paragraph',
+          ephemeral: 'element-secret',
+          children: [{ text: 'alpha', marker: 'text-secret', bold: true }],
+        },
+      ],
+    });
+    const copy = () =>
+      editor.read.slice.export({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+      });
+    const before = copy();
+    editor.update.extensions.reconfigure(slot, definition(2, 'drop'));
+    assert.deepEqual(copy().content, [
+      { type: 'paragraph', children: [{ text: 'alpha', bold: true }] },
+    ]);
+    assert.deepEqual(editor.read.children(), before.content);
+    editor.update.extensions.reconfigure(slot, definition(3, 'preserve'));
+    assert.deepEqual(copy().content, before.content);
   });
 
   it('materializes generated properties during local construction', () => {

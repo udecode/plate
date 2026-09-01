@@ -29,7 +29,7 @@
         "lint:partition:diff",
         "lint:partition:dom",
         "lint:partition:history",
-        "lint:partition:layout",
+        "lint:partition:pagination",
         "lint:partition:react",
         "lint:partition:testing"
       ],
@@ -50,8 +50,8 @@
         "!src/dom/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/page-layout/**",
-        "!src/page-layout/react.*",
+        "!src/pagination/**",
+        "!src/pagination/react.*",
         "!src/react/**",
         "!src/testing/**",
         "test/**",
@@ -59,8 +59,8 @@
         "!test/dom/**",
         "!test/history/**",
         "!test/hyperscript/**",
-        "!test/page-layout/**",
-        "!test/page-layout/react*",
+        "!test/pagination/**",
+        "!test/pagination/react*",
         "!test/react/**",
         "!test/testing/**",
         "$TURBO_ROOT$/oxlint.config.ts",
@@ -117,14 +117,14 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "lint:partition:layout": {
+    "lint:partition:pagination": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
-        "src/page-layout/**",
-        "src/page-layout/react.*",
-        "test/page-layout/**",
-        "test/page-layout/react*",
+        "src/pagination/**",
+        "src/pagination/react.*",
+        "test/pagination/**",
+        "test/pagination/react*",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -173,7 +173,7 @@
         "test:partition:diff",
         "test:partition:dom",
         "test:partition:history",
-        "test:partition:layout",
+        "test:partition:pagination",
         "test:partition:react",
         "test:partition:testing"
       ],
@@ -194,8 +194,8 @@
         "!src/dom/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/page-layout/**",
-        "!src/page-layout/react.*",
+        "!src/pagination/**",
+        "!src/pagination/react.*",
         "!src/react/**",
         "!src/testing/**",
         "test/**",
@@ -203,8 +203,8 @@
         "!test/dom/**",
         "!test/history/**",
         "!test/hyperscript/**",
-        "!test/page-layout/**",
-        "!test/page-layout/react*",
+        "!test/pagination/**",
+        "!test/pagination/react*",
         "!test/react/**",
         "!test/testing/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
@@ -277,18 +277,18 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "test:partition:layout": {
+    "test:partition:pagination": {
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:layout",
+        "typecheck:partition:pagination",
         "typecheck:partition:react"
       ],
       "inputs": [
-        "src/page-layout/**",
-        "src/page-layout/react.*",
-        "test/page-layout/**",
-        "test/page-layout/react*",
+        "src/pagination/**",
+        "src/pagination/react.*",
+        "test/pagination/**",
+        "test/pagination/react*",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -355,7 +355,7 @@
         "typecheck:partition:diff",
         "typecheck:partition:dom",
         "typecheck:partition:history",
-        "typecheck:partition:layout",
+        "typecheck:partition:pagination",
         "typecheck:partition:react",
         "typecheck:partition:testing",
         "typecheck:contracts",
@@ -399,8 +399,8 @@
         "!src/dom/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/page-layout/**",
-        "!src/page-layout/react.*",
+        "!src/pagination/**",
+        "!src/pagination/react.*",
         "!src/react/**",
         "!src/testing/**",
         "!src/**/*.spec.*",
@@ -502,12 +502,12 @@
         ".turbo/entrypoint-types/history.tsbuildinfo"
       ]
     },
-    "typecheck:partition:layout": {
+    "typecheck:partition:pagination": {
       "cache": true,
       "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
       "inputs": [
-        "src/page-layout/**",
-        "src/page-layout/react.*",
+        "src/pagination/**",
+        "src/pagination/react.*",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -521,12 +521,12 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
         "$TURBO_ROOT$/tsconfig.json",
         "tsconfig.json",
-        "tsconfig.entrypoints/layout.json"
+        "tsconfig.entrypoints/pagination.json"
       ],
       "outputLogs": "errors-only",
       "outputs": [
-        ".turbo/entrypoint-types/layout/**",
-        ".turbo/entrypoint-types/layout.tsbuildinfo"
+        ".turbo/entrypoint-types/pagination/**",
+        ".turbo/entrypoint-types/pagination.tsbuildinfo"
       ]
     },
     "typecheck:partition:react": {

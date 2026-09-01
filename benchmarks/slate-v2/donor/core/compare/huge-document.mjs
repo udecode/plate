@@ -31,37 +31,13 @@ const replacementText = 'replacement marker';
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
-let Core;
-let CoreInternal = {};
-let isPlite = false;
-
-try {
-  Core = await import('platejs');
-  CoreInternal = await import('@platejs/test');
-  isPlite = true;
-} catch {
-  try {
-    Core = await import('../../packages/slate/src/index.ts');
-    CoreInternal = await import('../../packages/slate/src/internal/index.ts');
-  } catch {
-    Core = await import('slate');
-  }
-}
-
-let History = {};
-
-try {
-  History = await import('platejs/history');
-} catch {
-  try {
-    History = await import('../../packages/slate-history/src/index.ts');
-  } catch {
-    History = await import('slate-history');
-  }
-}
+const implementation = process.env.CORE_HUGE_BENCH_IMPLEMENTATION;
+assert.ok(implementation === 'plite' || implementation === 'slate');
+const isPlite = implementation === 'plite';
+const Core = await import(isPlite ? 'plitejs' : 'slate');
+const History = await import(isPlite ? 'plitejs/history' : 'slate-history');
 
 const { createEditor } = Core;
-const Editor = Core.Editor ?? CoreInternal.Editor ?? CoreInternal;
 const legacyTransforms = Core.Transforms;
 const historyExtension = History.history;
 const legacyWithHistory = History.withHistory;
@@ -166,8 +142,8 @@ const createFragment = () => [
 ];
 
 const replaceEditor = (editor, input) => {
-  if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, input);
+  if (isPlite) {
+    editor.update((tx) => tx.value.replace(input));
     return;
   }
 
@@ -177,45 +153,29 @@ const replaceEditor = (editor, input) => {
 };
 
 const createHistoryEditor = () => {
-  if (typeof historyExtension === 'function') {
+  if (isPlite) {
     return createEditor({ extensions: [historyExtension()] });
   }
 
   const editor = createEditor();
 
-  return typeof legacyWithHistory === 'function'
-    ? legacyWithHistory(editor)
-    : editor;
+  return legacyWithHistory(editor);
 };
 
 const subscribeSnapshot = (editor) => {
-  if (typeof Editor.subscribe !== 'function') {
-    return () => {};
-  }
-
-  return Editor.subscribe(editor, () => {});
+  return isPlite ? editor.subscribe(() => {}) : () => {};
 };
 
 const getChildren = (editor) =>
-  typeof Editor.getChildren === 'function'
-      ? Editor.getChildren(editor)
-      : typeof Editor.getSnapshot === 'function'
-        ? Editor.getSnapshot(editor).children
-        : editor.children;
+  isPlite ? editor.read.children() : editor.children;
 
 const getSelection = (editor) =>
-  typeof Editor.getSelection === 'function'
-    ? Editor.getSelection(editor)
-    : typeof editor.getSelection === 'function'
-      ? editor.getSelection()
-      : typeof Editor.getSnapshot === 'function'
-        ? Editor.getSnapshot(editor).selection
-        : editor.selection;
+  isPlite ? editor.read.selection() : editor.selection;
 
 const select = (editor, target) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
-      tx.selection.set(isPlite ? { ...target, kind: 'text' } : target);
+      tx.selection.set({ ...target, kind: 'text' });
     });
     return;
   }
@@ -224,7 +184,7 @@ const select = (editor, target) => {
 };
 
 const deleteFragment = (editor) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
       tx.fragment.delete({ direction: 'backward' });
     });
@@ -235,7 +195,7 @@ const deleteFragment = (editor) => {
 };
 
 const insertText = (editor, text, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
       tx.text.insert(text, options);
     });
@@ -246,9 +206,9 @@ const insertText = (editor, text, options) => {
 };
 
 const insertFragment = (editor, fragment) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
-      tx.fragment.insert(fragment);
+      tx.fragment.replace(fragment);
     });
     return;
   }
@@ -257,7 +217,7 @@ const insertFragment = (editor, fragment) => {
 };
 
 const undo = (editor) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
       tx.history.undo();
     });
@@ -444,6 +404,8 @@ console.log(JSON.stringify({
   iterations,
   config: {
     blocks,
+    implementation,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
     typeOps,
   },
   lanes: {
@@ -464,7 +426,6 @@ const legacyPackageManager = currentOnly
 
 if (!skipBuild) {
   await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite-history');
   if (legacyPackageManager) {
     await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
   }
@@ -479,24 +440,36 @@ const env = {
 
 const current = await benchmarkRepo({
   benchmarkSource,
-  env,
+  env: { ...env, CORE_HUGE_BENCH_IMPLEMENTATION: 'plite' },
   packageManager: currentPackageManager,
   repo: currentRepo,
 });
 const legacy = legacyPackageManager
   ? await benchmarkRepo({
       benchmarkSource,
-      env,
+      env: { ...env, CORE_HUGE_BENCH_IMPLEMENTATION: 'slate' },
       packageManager: legacyPackageManager,
       repo: legacyRepo,
     })
   : null;
+
+if (
+  current.config.implementation !== 'plite' ||
+  (legacy && legacy.config.implementation !== 'slate')
+) {
+  throw new Error('Core comparison did not execute its declared editor owners');
+}
+if (legacy && JSON.stringify(current.config.runtime) !== JSON.stringify(legacy.config.runtime)) {
+  throw new Error('Core comparison requires the same JavaScript runtime');
+}
 
 const summary = {
   lane: 'core-huge-document-compare-local',
   currentRepo,
   legacyRepo,
   iterations,
+  implementations: { current: 'plite', legacy: legacy ? 'slate' : null },
+  runtimes: { current: current.config.runtime, legacy: legacy?.config.runtime ?? null },
   config: {
     blocks,
     currentOnly,

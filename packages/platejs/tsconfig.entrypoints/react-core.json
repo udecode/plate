@@ -32,7 +32,6 @@
     "../src/react/features/table/**/*",
     "../src/react/features/tag/**/*",
     "../src/react/features/toc/**/*",
-    "../src/react/features/cursor/**/*",
     "../src/react/features/resizable/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",

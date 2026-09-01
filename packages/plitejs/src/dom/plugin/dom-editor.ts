@@ -1472,6 +1472,8 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMNode: (editor, nodeOrKey) => {
+    if (nodeOrKey === editor) return DOMEditor.editable(editor);
+    if (EDITOR_TO_ELEMENT.get(editor)?.isConnected !== true) return null;
     let node: Node;
 
     if (typeof nodeOrKey === 'string') {
@@ -1490,7 +1492,6 @@ export const DOMEditor: DOMEditorInterface = {
       node = nodeOrKey;
     }
 
-    if (node === editor) return DOMEditor.editable(editor);
     if (NodeApi.isEditor(node)) return null;
     let key: Key;
 

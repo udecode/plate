@@ -97,7 +97,7 @@ const editor = createEditor({
     LinkPlugin.configure({
       component: LinkElement,
       render: {
-        afterEditable: () => <LinkFloatingToolbar />,
+        afterEditable: LinkFloatingToolbar,
       },
     }),
   ],

@@ -151,9 +151,10 @@ const setSelectionMs = measureLane(createEditorWithChildren, (editor) => {
         kind: 'text',
       });
 
-      tx.selection.setRange({
+      tx.selection.set({
         anchor: { path: [0, 0], offset: index % 4 },
         focus: { path: [0, 0], offset: 4 + (index % 4) },
+        kind: 'text',
       });
     });
   }

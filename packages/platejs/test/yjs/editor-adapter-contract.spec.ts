@@ -10,9 +10,77 @@ import {
   SelectionApi,
 } from '../../src/core';
 import { createYjsEditorAdapter } from '../../src/yjs/core/editor-adapter';
-import { createYjsTestEditor } from './support/collaboration';
+import {
+  createSeededYjsPeers,
+  createYjsTestEditor,
+  paragraph,
+  syncConnectedPeers,
+} from './support/collaboration';
 
 describe('platejs/yjs editor adapter', () => {
+  it('fits changed blocks without per-block live-document transactions', () => {
+    const [source, target] = createSeededYjsPeers({
+      children: Array.from({ length: 128 }, (_, index) =>
+        paragraph(`block-${index}`)
+      ),
+      clientIds: ['source', 'target'],
+    });
+    assert.ok(source);
+    assert.ok(target);
+    const before = target.editor.read.value();
+    const unchanged = before.children[127];
+    source.editor.update((tx) => {
+      for (let index = 0; index < 24; index++) {
+        tx.text.insert('!', { at: { path: [index, 0], offset: 0 } });
+      }
+    });
+    const profilerGlobal = globalThis as typeof globalThis & {
+      __PLITE_REACT_RENDER_PROFILER__?: {
+        acceptsCoreDuration?: (id: string) => boolean;
+        record?: (event: { id?: string | null; kind: string }) => void;
+      };
+    };
+    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    let detachedTransactions = 0;
+    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      acceptsCoreDuration: (id) => id === 'transaction-spec-callback',
+      record(event) {
+        if (
+          event.kind === 'core-time' &&
+          event.id === 'transaction-spec-callback'
+        ) {
+          detachedTransactions += 1;
+        }
+      },
+    };
+    try {
+      syncConnectedPeers([source, target]);
+    } finally {
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    }
+    assert.deepEqual(
+      target.editor.read.children(),
+      source.editor.read.children()
+    );
+    assert.equal(target.editor.read.children()[127], unchanged);
+    assert.deepEqual(before.children[0], paragraph('block-0'));
+    assert.equal(detachedTransactions, 0);
+
+    source.editor.update.text.insert('?', {
+      at: { path: [127, 0], offset: 0 },
+    });
+    syncConnectedPeers([source, target]);
+    assert.deepEqual(
+      target.editor.read.children()[127],
+      paragraph('?block-127')
+    );
+    assert.deepEqual(unchanged, paragraph('block-127'));
+    source.cleanup();
+    target.cleanup();
+    source.doc.destroy();
+    target.doc.destroy();
+  });
+
   it('reads 10k and 50k published roots without copying them', () => {
     for (const size of [10_000, 50_000]) {
       const children: readonly Descendant[] = Object.freeze(

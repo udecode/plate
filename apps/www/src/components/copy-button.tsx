@@ -22,12 +22,6 @@ import { Icons } from './icons';
 const codeCopyButtonClassName =
   'relative z-10 size-6 bg-code text-code-foreground opacity-70 hover:bg-muted-foreground/15 hover:text-code-foreground hover:opacity-100 focus-visible:opacity-100 [&_svg]:!size-3';
 
-interface CopyButtonProps extends ComponentProps<typeof Button> {
-  value: string;
-  event?: Event['name'];
-  src?: string;
-}
-
 function legacyCopyToClipboard(value: string) {
   if (!document.body) {
     return false;
@@ -95,7 +89,11 @@ export function CopyButton({
   value,
   variant = 'ghost',
   ...props
-}: CopyButtonProps) {
+}: ComponentProps<typeof Button> & {
+  value: string;
+  event?: Event['name'];
+  src?: string;
+}) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -140,16 +138,15 @@ export function CopyButton({
   );
 }
 
-interface CopyNpmCommandButtonProps extends DropdownMenuTriggerProps {
-  commands: Required<NpmCommands>;
-  icon?: React.ReactNode;
-}
-
 export function CopyWithClassNames({
   className,
   classNames,
   value,
-}: CopyWithClassNamesProps) {
+}: DropdownMenuTriggerProps & {
+  classNames: string;
+  value: string;
+  className?: string;
+}) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -202,17 +199,14 @@ export function CopyWithClassNames({
   );
 }
 
-interface CopyWithClassNamesProps extends DropdownMenuTriggerProps {
-  classNames: string;
-  value: string;
-  className?: string;
-}
-
 export function CopyNpmCommandButton({
   className,
   commands,
   icon,
-}: CopyNpmCommandButtonProps) {
+}: DropdownMenuTriggerProps & {
+  commands: Required<NpmCommands>;
+  icon?: React.ReactNode;
+}) {
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {

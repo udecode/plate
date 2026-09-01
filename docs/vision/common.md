@@ -23,6 +23,8 @@ common doctrine after the lane is selected.
 - Conventions are API surface: names, flags, config keys, persisted fields,
   output shapes, docs examples, and workflow keywords must be intentional,
   stable, and worth their long-term compatibility cost.
+- Public subpaths use the shortest truthful domain noun. Prefer one established
+  word when it completely names the user job; never shorten into ambiguity.
 - Commit intentional generated outputs. Keep tool-private scratch, locks,
   journals, staging, and recovery data out of tracked source without requiring
   product-specific ignore rules; use OS temp storage for disposable compiler

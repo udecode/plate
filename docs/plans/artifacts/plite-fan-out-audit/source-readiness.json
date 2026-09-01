@@ -1,0 +1,26 @@
+{
+  "artifactVersion": 1,
+  "candidateCommit": "377a77a537971b793a4ddbb34cc13797fdfeee15",
+  "originMainCommit": "cce36d378b2f1e5c775dafe1a67c2215165c982c",
+  "slate": {
+    "commit": "945a484df2497e4c448b33f417b0de2a49840032",
+    "remote": "https://github.com/zbeyens/slate.git"
+  },
+  "fingerprints": {
+    "pnpm-lock.yaml": "33212641194d67a871af70e344aa21382811f6ae099ad6b875d690e69f906a65",
+    "packages/plitejs/src/core/anchor-state.ts": "0b484a711c2449ca5377af7de1d98d143f55f8958408b9aaa2ed762874309c62",
+    "packages/plitejs/src/core/anchor.ts": "1384d220dde139c781258645544e681f2804c3f2bd75a3123109da7a26e62bbe",
+    "docs/plans/artifacts/hard-cut-comments-ownership/benchmark-comments-ownership.ts": "e8c1edba3afacb577c2b2c4c9e113dabeffec4afd625cbe2c618c5cb9cd7e80f"
+  },
+  "environment": {
+    "os": "macOS 26.3.1",
+    "arch": "arm64",
+    "cpu": "Apple M5 Max",
+    "memoryBytes": 137438953472,
+    "node": "v22.22.1",
+    "pnpm": "9.15.0",
+    "bun": "1.3.12"
+  },
+  "registeredScopedTargetCount": 31,
+  "firstPacket": "docs/plans/artifacts/hard-cut-comments-ownership/benchmark-comments-ownership-owner-isolation.json"
+}

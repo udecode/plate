@@ -115,8 +115,8 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/history/index.ts',
     'packages/platejs/src/history/plite-history.internal.ts',
     'packages/platejs/src/hyperscript/index.ts',
-    'packages/platejs/src/page-layout/index.ts',
-    'packages/platejs/src/page-layout/react/index.ts',
+    'packages/platejs/src/pagination/index.ts',
+    'packages/platejs/src/pagination/react/index.ts',
     'packages/platejs/src/react/internal/plite-components.ts',
     'packages/platejs/src/react/internal/plite-types.ts',
     'packages/platejs/src/react/plite-react.ts',
@@ -277,7 +277,6 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
     'comment',
     'date',
     'details',
-    'find-replace',
     'footnote',
     'layout',
     'media',
@@ -412,7 +411,7 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    14
+    13
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')

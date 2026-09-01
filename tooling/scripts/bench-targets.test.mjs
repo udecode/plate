@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
+import { benchmarkRepo } from '../../benchmarks/slate-v2/donor/shared/repo-compare.mjs';
 import {
   buildTargetHistory,
   renderMarkdownReport,
@@ -30,6 +33,153 @@ const target = ({ id, path: innerPath, required = true }) => ({
   artifacts: [{ path: innerPath, required }],
   timeouts: { benchmarkMs: 5000, correctnessMs: 5000 },
 });
+
+for (const scenario of [
+  { name: 'complete', status: 0, attachments: true, expected: 0 },
+  {
+    name: 'relative report path',
+    status: 0,
+    attachments: true,
+    expected: 0,
+    relative: true,
+  },
+  { name: 'failed', status: 7, attachments: true, expected: 7 },
+  { name: 'missing', status: 0, attachments: false, expected: 1 },
+]) {
+  test(`pagination burst runner preserves ${scenario.name} proof`, async (t) => {
+    const directory = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'pagination-proof-')
+    );
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const repo = path.resolve(import.meta.dirname, '../..');
+    const report = path.join(directory, 'report.json');
+    const artifact = path.join(directory, 'artifact.json');
+    const attachments = [
+      'pagination-staged-burst-metrics',
+      'pagination-staged-500-row-burst-metrics',
+      'pagination-virtualized-rows800-perf-metrics',
+    ].map((name) => ({
+      name,
+      body: Buffer.from(JSON.stringify({ burstSettledMs: 1 })).toString(
+        'base64'
+      ),
+    }));
+    fs.writeFileSync(report, JSON.stringify({ attachments }));
+    fs.writeFileSync(
+      path.join(directory, 'pnpm'),
+      `#!/usr/bin/env node
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const args = process.argv.slice(2);
+assert.deepEqual(args.slice(0, 3), ['exec', 'playwright', 'test']);
+assert.ok(args.includes('--config=apps/plite/playwright.config.ts'));
+assert.ok(args.includes('tests/plite-browser/donor/examples/pagination.test.ts'));
+assert.ok(path.isAbsolute(process.env.PLAYWRIGHT_JSON_OUTPUT_NAME));
+if (${scenario.attachments}) fs.writeFileSync(process.env.PLAYWRIGHT_JSON_OUTPUT_NAME, ${JSON.stringify(JSON.stringify({ attachments }))});
+process.exitCode = ${scenario.status};
+`,
+      { mode: 0o755 }
+    );
+    let status = 0;
+    try {
+      await promisify(execFile)(
+        process.execPath,
+        [
+          'benchmarks/slate-v2/donor/browser/react/pagination-virtualized-char-burst.mjs',
+        ],
+        {
+          cwd: repo,
+          env: {
+            ...process.env,
+            PATH: `${directory}${path.delimiter}${process.env.PATH}`,
+            PLITE_PAGINATION_CHAR_BURST_BASE_URL: 'http://127.0.0.1:1',
+            PLITE_PAGINATION_CHAR_BURST_REPORT: scenario.relative
+              ? path.relative(repo, report)
+              : report,
+            PLITE_PAGINATION_CHAR_BURST_ARTIFACT: artifact,
+          },
+          timeout: 10_000,
+        }
+      );
+    } catch (error) {
+      status = error.code;
+    }
+    assert.equal(status, scenario.expected);
+    const result = JSON.parse(fs.readFileSync(artifact, 'utf-8'));
+    assert.equal(result.playwright.status, scenario.status);
+    assert.equal(
+      result.metrics.pagination_virtualized_failed,
+      scenario.expected === 0 ? 0 : 1
+    );
+  });
+}
+
+for (const packageManager of ['pnpm', 'yarn', 'bun']) {
+  test(`comparison uses the pinned Node runtime with ${packageManager}`, async (t) => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-runtime-'));
+    t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+    fs.writeFileSync(
+      path.join(repo, '.pnp.cjs'),
+      'process.env.BENCHMARK_FIXTURE_PNP = "active";'
+    );
+    const result = await benchmarkRepo({
+      benchmarkSource:
+        'console.log(JSON.stringify({ version: process.version, executable: process.execPath, pnp: process.env.BENCHMARK_FIXTURE_PNP }));',
+      env: {},
+      packageManager,
+      repo,
+    });
+    assert.deepEqual(result, {
+      version: process.version,
+      executable: process.execPath,
+      pnp: 'active',
+    });
+  });
+}
+
+for (const packageName of [
+  'plitejs',
+  'slate',
+  'slate-react',
+  'slate-history',
+]) {
+  test(`resolves ${packageName} from an isolated comparison runner`, async () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-workspace-'));
+    const packageDirectory = path.join(repo, 'packages', packageName);
+    fs.mkdirSync(path.join(packageDirectory, 'dist'), { recursive: true });
+    fs.writeFileSync(
+      path.join(packageDirectory, 'package.json'),
+      JSON.stringify({
+        name: packageName,
+        type: 'module',
+        main: './dist/index.js',
+        exports: { '.': './dist/index.js', './react': './dist/index.js' },
+      })
+    );
+    fs.writeFileSync(
+      path.join(packageDirectory, 'dist/index.js'),
+      `export const owner = ${JSON.stringify(packageName)};`
+    );
+    try {
+      const result = await benchmarkRepo({
+        benchmarkSource: `import { owner } from ${JSON.stringify(packageName)};
+import { owner as subpathOwner } from ${JSON.stringify(`${packageName}/react`)};
+console.log(JSON.stringify({ owner, subpathOwner }));`,
+        env: {},
+        packageManager: 'node',
+        repo,
+      });
+      assert.deepEqual(result, {
+        owner: packageName,
+        subpathOwner: packageName,
+      });
+      assert.deepEqual(fs.readdirSync(path.join(repo, '.tmp/benchmarks')), []);
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+}
 
 test('keeps normalization benchmark correctness focused', () => {
   const registry = JSON.parse(

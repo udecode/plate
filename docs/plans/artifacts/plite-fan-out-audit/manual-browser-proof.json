@@ -1,0 +1,129 @@
+{
+  "purpose": "Manual behavior replay during the audit; these observations are not latency measurements. Final strict package/Chromium proof is recorded separately against final source fingerprints.",
+  "host": "http://127.0.0.1:3103",
+  "surfaces": [
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "route": "persistent-annotation-anchors",
+      "result": "pass",
+      "assertions": [
+        "anchor survived structural insertion and text prefix",
+        "offsets changed 1-4 to 8-11 to 9-12",
+        "clear removed annotation and visible widget"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "route": "multi-root-document",
+      "result": "pass",
+      "assertions": [
+        "native key updated only header root",
+        "undo restored header",
+        "redo restored edit while body stayed unchanged"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "route": "decorations-async?source=hook",
+      "result": "pass",
+      "assertions": [
+        "native typing kept existing text",
+        "decoration revision advanced from 35 to 40 after asynchronous source refresh"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "route": "comment-mode",
+      "result": "pass",
+      "assertions": [
+        "comment range followed inserted paragraph and prefix",
+        "metadata and resolution updates rendered",
+        "clear removed comments and widgets",
+        "read-only document writes stayed zero"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "huge-document",
+      "route": "http://127.0.0.1:3103/examples/plite/huge-document",
+      "checks": [
+        "Typed x after the first heading in the 10000-block virtualized editor",
+        "Heading text updated to Suppellex a cognatus arca aliquam audentia.x",
+        "Mounted blocks stayed 9; pending blocks stayed 9991; DOM nodes stayed 58"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "pagination",
+      "route": "http://127.0.0.1:3103/examples/plite/pagination",
+      "checks": [
+        "Staged document renders 15 pages and a 240-row table",
+        "Clicked mixed formatted paragraph and typed x; new text run appears after layout settles",
+        "Page count stays 15 and block count stays 51"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "search-highlighting",
+      "route": "http://127.0.0.1:3103/examples/plite/search-highlighting",
+      "checks": [
+        "Searching text produces two visible yellow highlights",
+        "Changing to an absent term clears both highlights without editing content",
+        "Clearing the search preserves both paragraphs"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "synced-blocks",
+      "route": "http://127.0.0.1:3103/examples/plite/synced-blocks",
+      "checks": [
+        "Extended Shift+ArrowDown through a shared content root, then collapsed",
+        "Clicked p2 and typed x; p2x remains in the outer editor",
+        "Outer editor stays active and both shared copies remain unchanged"
+      ]
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "yjs-collaboration",
+      "route": "http://127.0.0.1:3103/examples/plite/yjs-collaboration",
+      "checks": [
+        "Typing x in Peer A yields Hello world!x in all four peers",
+        "Undo in Peer A restores Hello world! in every peer",
+        "Only Peer A records the local undo entry"
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "performanceClaim": false,
+      "surface": "selected-void-cut",
+      "route": "http://127.0.0.1:3103/examples/plite/mentions",
+      "checks": [
+        "Native Meta+X removes only R2-D2",
+        "Native clipboard text equals @R2-D2",
+        "One Meta+Z restores R2-D2 and preserves Mace Windu"
+      ],
+      "buildFingerprint": "990eeb90acda2d53dfb771e5874ac322e8500f7f5f4ff9218592c0e94c2edc00"
+    },
+    {
+      "browser": "Browser",
+      "performanceClaim": false,
+      "surface": "richtext-formatting-round-trip",
+      "route": "http://127.0.0.1:3103/examples/plite/richtext",
+      "buildFingerprint": "990eeb90acda2d53dfb771e5874ac322e8500f7f5f4ff9218592c0e94c2edc00",
+      "checks": [
+        "Selected editable using native arrow keys",
+        "Toggled Bold on and off",
+        "ArrowRight then W produced This is editableW, preserving the following marked rich text"
+      ]
+    }
+  ]
+}

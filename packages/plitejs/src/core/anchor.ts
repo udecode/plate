@@ -15,6 +15,7 @@ import type { Text } from '../interfaces/text';
 import { getDefined } from '../internal/get-defined';
 import {
   type AnchorChangeContext,
+  getAnchorRootIndex,
   getAnchorStateValue,
   subscribeAnchorState,
 } from './anchor-state';
@@ -22,7 +23,7 @@ import {
   DocumentChange,
   getInternalDocumentRootChange,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { TrackMode } from './change/root-change';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
@@ -68,7 +69,6 @@ export interface Anchor<TValue extends AnchorValue> {
 type PointState = {
   includeRoot: boolean;
   point: Point;
-  position: number;
   nodeKey: NodeKey | null;
 };
 
@@ -149,10 +149,11 @@ const createPointState = (
 ): PointState => {
   const localPoint = { offset: point.offset, path: [...point.path] };
 
+  document.positionAt(localPoint);
+
   return {
     includeRoot: point.root !== undefined,
     point: localPoint,
-    position: document.positionAt(localPoint),
     nodeKey: nodeKeyAt(editor, root, point.path),
   };
 };
@@ -209,27 +210,61 @@ export function createAnchor<TValue extends AnchorValue>(
       : pathValue && !pathNodeKey
         ? 'boundary'
         : 'node';
-  let pathPosition = pathValue
-    ? pathMode === 'root'
-      ? 0
-      : pathMode === 'node'
-        ? indexedRoot(sourceValue, root).nodeRange(pathValue).from
-        : indexedRoot(sourceValue, root).childPosition(
-            pathValue.slice(0, -1),
-            getDefined(pathValue.at(-1))
-          )
-    : null;
+  const pathBoundaryParentNodeKey =
+    pathMode === 'boundary' && pathValue && pathValue.length > 1
+      ? (() => {
+          try {
+            return nodeKeyAt(runtimeEditor, root, pathValue.slice(0, -1));
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+  const sourceDocument = getAnchorRootIndex(
+    runtimeEditor,
+    sourceValue as EditorDocumentValue,
+    root
+  );
+  if (pathValue && pathMode !== 'root') {
+    if (pathMode === 'node') {
+      sourceDocument.nodeRange(pathValue);
+    } else {
+      sourceDocument.childPosition(
+        pathValue.slice(0, -1),
+        getDefined(pathValue.at(-1))
+      );
+    }
+  }
   let pointStates = pointValue
-    ? [createPointState(runtimeEditor, sourceValue, pointValue, root)]
+    ? [
+        createPointState(
+          runtimeEditor,
+          sourceValue,
+          pointValue,
+          root,
+          sourceDocument
+        ),
+      ]
     : rangeValue
       ? [
-          createPointState(runtimeEditor, sourceValue, rangeValue.anchor, root),
-          createPointState(runtimeEditor, sourceValue, rangeValue.focus, root),
+          createPointState(
+            runtimeEditor,
+            sourceValue,
+            rangeValue.anchor,
+            root,
+            sourceDocument
+          ),
+          createPointState(
+            runtimeEditor,
+            sourceValue,
+            rangeValue.focus,
+            root,
+            sourceDocument
+          ),
         ]
       : [];
   const checkpoints: Array<{
     current: AnchorValue | null;
-    pathPosition: number | null;
     pointStates: PointState[];
   }> = [];
 
@@ -241,6 +276,7 @@ export function createAnchor<TValue extends AnchorValue>(
     }
 
     return {
+      ...anchorValue,
       anchor: { ...anchorValue.anchor, path: [...anchorValue.anchor.path] },
       focus: { ...anchorValue.focus, path: [...anchorValue.focus.path] },
     };
@@ -252,18 +288,116 @@ export function createAnchor<TValue extends AnchorValue>(
       point: { ...state.point, path: [...state.point.path] },
     }));
 
+  const syncStableNodeKeys = (nextValue: JsonEditorValue) => {
+    if (current === null) {
+      sourceValue = nextValue;
+      return true;
+    }
+
+    if (kind === 'path') {
+      if (pathMode === 'root') {
+        current = hasRoot(nextValue, root) ? [] : null;
+        sourceValue = nextValue;
+        return true;
+      }
+
+      const stableNodeKey =
+        pathMode === 'node' ? pathNodeKey : pathBoundaryParentNodeKey;
+      const sourcePath =
+        pathMode === 'node'
+          ? (current as Path)
+          : (current as Path).slice(0, -1);
+      const runtimePath = stableNodeKey
+        ? pathOfNodeKey(runtimeEditor, root, stableNodeKey)
+        : null;
+
+      if (!runtimePath) return false;
+
+      try {
+        const sourceNode = nodeAtPath(rootNodes(sourceValue, root), sourcePath);
+        const nextNode = nodeAtPath(rootNodes(nextValue, root), runtimePath);
+
+        if (sourceNode !== nextNode) return false;
+      } catch {
+        return false;
+      }
+
+      const nextPath =
+        pathMode === 'node'
+          ? [...runtimePath]
+          : [...runtimePath, getDefined((current as Path).at(-1))];
+
+      current = nextPath;
+      sourceValue = nextValue;
+      return true;
+    }
+
+    const stablePoints = pointStates.map((state) => {
+      const runtimePath = state.nodeKey
+        ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
+        : null;
+
+      if (!runtimePath) return null;
+
+      try {
+        const sourceNode = nodeAtPath(
+          rootNodes(sourceValue, root),
+          state.point.path
+        );
+        const nextNode = nodeAtPath(rootNodes(nextValue, root), runtimePath);
+
+        if (sourceNode !== nextNode) return null;
+      } catch {
+        return null;
+      }
+
+      return { runtimePath, state };
+    });
+
+    if (stablePoints.some((entry) => entry === null)) return false;
+
+    pointStates = stablePoints.map((entry) => {
+      const stable = getDefined(entry);
+      const point = {
+        offset: stable.state.point.offset,
+        path: [...stable.runtimePath],
+      };
+
+      return {
+        ...stable.state,
+        point,
+      };
+    });
+    const points = pointStates.map((state) =>
+      withPublicPointRoot(state.point, root, state.includeRoot)
+    );
+
+    if (kind === 'point') {
+      if (!PointApi.equals(current as Point, points[0])) current = points[0];
+    } else if (
+      !PointApi.equals((current as Range).anchor, points[0]) ||
+      !PointApi.equals((current as Range).focus, points[1])
+    ) {
+      current = { anchor: points[0], focus: points[1] };
+    }
+    sourceValue = nextValue;
+    return true;
+  };
+
   const resolveMappedPoint = (
     state: PointState,
     change: DocumentChange,
     source: DocumentIndex,
     next: DocumentIndex,
     endpointAssociation: -1 | 1,
-    preserveSamePathOffset: boolean
+    preserveSamePathOffset: boolean,
+    context?: AnchorChangeContext
   ): MappedPoint | null => {
     const runtimePath = state.nodeKey
       ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
       : null;
-    const position = change.mapPosition(state.position, {
+    // Skipped edits can shift absolute positions without changing this point.
+    const position = change.mapPosition(source.positionAt(state.point), {
       association: endpointAssociation === -1 ? 'backward' : 'forward',
       ...(root === 'main' ? {} : { root }),
       track,
@@ -321,13 +455,27 @@ export function createAnchor<TValue extends AnchorValue>(
           };
         }
 
-        const offset = mapTextOffset(
-          sourceNode,
-          currentNode,
-          state.point.offset,
-          endpointAssociation,
-          track
-        );
+        const readOffset = () =>
+          mapTextOffset(
+            sourceNode,
+            currentNode,
+            state.point.offset,
+            endpointAssociation,
+            track
+          );
+        const offset = context
+          ? context.memoize(
+              [
+                'text-offset',
+                root,
+                state.nodeKey ?? state.point.path.join('.'),
+                state.point.offset,
+                endpointAssociation,
+                track ?? '',
+              ].join('\u0000'),
+              readOffset
+            )
+          : readOffset();
 
         if (offset != null) {
           return {
@@ -358,6 +506,8 @@ export function createAnchor<TValue extends AnchorValue>(
       return;
     }
 
+    if (!providedChange && syncStableNodeKeys(nextValue)) return;
+
     const change =
       providedChange ?? DocumentChange.between(sourceValue, nextValue);
 
@@ -366,7 +516,7 @@ export function createAnchor<TValue extends AnchorValue>(
       return;
     }
 
-    const sourceDocument = () =>
+    const getSourceDocument = () =>
       context?.beforeRoot(root) ?? indexedRoot(sourceValue, root);
     const nextDocument = () =>
       context?.afterRoot(root) ?? indexedRoot(nextValue, root);
@@ -384,7 +534,6 @@ export function createAnchor<TValue extends AnchorValue>(
 
       if (runtimePath) {
         current = [...runtimePath];
-        pathPosition = nextDocument().nodeRange(runtimePath).from;
         sourceValue = nextValue;
         return;
       }
@@ -392,7 +541,7 @@ export function createAnchor<TValue extends AnchorValue>(
       const pathWasRemoved = (() => {
         if (pathMode !== 'node' || !current) return false;
 
-        const nodeRange = sourceDocument().nodeRange(current as Path);
+        const nodeRange = getSourceDocument().nodeRange(current as Path);
         let removed = false;
 
         getInternalDocumentRootChange(change, root)?.iterChangedRanges(
@@ -406,19 +555,24 @@ export function createAnchor<TValue extends AnchorValue>(
 
       if (pathWasRemoved && options.deletion === 'drop') {
         current = null;
-        pathPosition = null;
         sourceValue = nextValue;
         return;
       }
 
-      const position =
-        pathPosition == null
-          ? null
-          : change.mapPosition(pathPosition, {
-              association: association === 'backward' ? 'backward' : 'forward',
-              ...(root === 'main' ? {} : { root }),
-              track,
-            });
+      const path = current as Path;
+      const position = change.mapPosition(
+        pathMode === 'node'
+          ? getSourceDocument().nodeRange(path).from
+          : getSourceDocument().childPosition(
+              path.slice(0, -1),
+              getDefined(path.at(-1))
+            ),
+        {
+          association: association === 'backward' ? 'backward' : 'forward',
+          ...(root === 'main' ? {} : { root }),
+          track,
+        }
+      );
       const nextPath =
         position == null
           ? null
@@ -433,14 +587,6 @@ export function createAnchor<TValue extends AnchorValue>(
             : (nextDocument().nodeStartingAt(position)?.path ?? null);
 
       current = nextPath ? [...nextPath] : null;
-      pathPosition = nextPath
-        ? pathMode === 'node'
-          ? nextDocument().nodeRange(nextPath).from
-          : nextDocument().childPosition(
-              nextPath.slice(0, -1),
-              getDefined(nextPath.at(-1))
-            )
-        : null;
     } else {
       const associations =
         kind === 'point'
@@ -460,35 +606,50 @@ export function createAnchor<TValue extends AnchorValue>(
               association
             );
 
-      const mappedPoints = pointStates.map((state, index) =>
-        resolveMappedPoint(
-          state,
-          change,
-          sourceDocument(),
-          nextDocument(),
-          associations[index],
-          context?.replace === true
-        )
-      );
+      const mappedPoints = pointStates.map((state, index) => {
+        const read = () =>
+          resolveMappedPoint(
+            state,
+            change,
+            getSourceDocument(),
+            nextDocument(),
+            associations[index],
+            context?.replace === true,
+            context
+          );
+        if (!context) return read();
+        const mapped = context.memoize(
+          JSON.stringify([
+            'point',
+            root,
+            state.point.path,
+            state.point.offset,
+            state.nodeKey,
+            state.includeRoot,
+            associations[index],
+            track,
+          ]),
+          read
+        );
+        return mapped
+          ? {
+              ...mapped,
+              point: withPublicPointRoot(mapped.point, root, state.includeRoot),
+            }
+          : null;
+      });
       const points = mappedPoints.map((mapped) => mapped?.point ?? null);
       const nextPointStates = mappedPoints.map((mapped, index) => {
         if (!mapped) return null;
 
         const previous = pointStates[index];
-        const position = change.mapPosition(previous.position, {
-          association: associations[index] === -1 ? 'backward' : 'forward',
-          ...(root === 'main' ? {} : { root }),
-          track,
-        });
-
-        if (mapped.runtimeStable && position != null) {
+        if (mapped.runtimeStable) {
           return {
             ...previous,
             point: {
               offset: mapped.point.offset,
               path: [...mapped.point.path],
             },
-            position,
           };
         }
 
@@ -523,7 +684,6 @@ export function createAnchor<TValue extends AnchorValue>(
       begin() {
         checkpoints.push({
           current: cloneAnchorValue(current),
-          pathPosition,
           pointStates: clonePointStates(),
         });
       },
@@ -538,7 +698,7 @@ export function createAnchor<TValue extends AnchorValue>(
         const checkpoint = checkpoints.pop();
 
         if (checkpoint) {
-          ({ current, pathPosition, pointStates } = checkpoint);
+          ({ current, pointStates } = checkpoint);
           sourceValue = innerValue2;
           return;
         }
@@ -546,10 +706,28 @@ export function createAnchor<TValue extends AnchorValue>(
         // An anchor created inside an aborted transaction cannot safely retain a
         // location that only existed in the discarded draft.
         current = null;
-        pathPosition = null;
         pointStates = [];
         sourceValue = innerValue2;
       },
+      fallback: () =>
+        current !== null &&
+        kind === 'path' &&
+        (pathMode === 'root' ||
+          (pathMode === 'boundary' && !pathBoundaryParentNodeKey)),
+      nodeKeys: () => {
+        if (current === null) return [];
+        if (kind === 'path') {
+          const nodeKey =
+            pathMode === 'node' ? pathNodeKey : pathBoundaryParentNodeKey;
+
+          return nodeKey ? [nodeKey] : [];
+        }
+
+        return pointStates.flatMap((state) =>
+          state.nodeKey ? [state.nodeKey] : []
+        );
+      },
+      root,
     },
     () => readValue(runtimeEditor) as unknown as EditorDocumentValue
   );
@@ -582,7 +760,6 @@ export function createAnchor<TValue extends AnchorValue>(
         } else {
           const checkpoint = {
             current: cloneAnchorValue(current),
-            pathPosition,
             pointStates: clonePointStates(),
             sourceValue,
           };
@@ -590,7 +767,7 @@ export function createAnchor<TValue extends AnchorValue>(
           mapTo(innerValue3);
           const resolved = cloneAnchorValue(current);
 
-          ({ current, pathPosition, pointStates, sourceValue } = checkpoint);
+          ({ current, pointStates, sourceValue } = checkpoint);
 
           return resolved as TValue | null;
         }

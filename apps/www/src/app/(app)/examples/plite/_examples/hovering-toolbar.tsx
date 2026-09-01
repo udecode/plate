@@ -151,11 +151,6 @@ const HoveringToolbar = () => {
   );
 };
 
-interface FormatButtonProps {
-  format: CustomTextKey;
-  icon: string;
-}
-
 const handleToolbarButtonClick = (
   event: MouseEvent<HTMLButtonElement>,
   command: () => void
@@ -173,7 +168,13 @@ const handleToolbarButtonPointerDown = (
   command();
 };
 
-const FormatButton = ({ format, icon }: FormatButtonProps) => {
+const FormatButton = ({
+  format,
+  icon,
+}: {
+  format: CustomTextKey;
+  icon: string;
+}) => {
   const editor = useEditorContext();
   const active = useEditorSelector((innerEditor) =>
     isMarkActive(innerEditor, format)

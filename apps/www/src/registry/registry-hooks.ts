@@ -2,6 +2,17 @@ import type { Registry } from 'shadcn/schema';
 
 export const registryHooks: Registry['items'] = [
   {
+    dependencies: ['@floating-ui/react', 'platejs'],
+    files: [
+      {
+        path: 'hooks/use-widget-floating.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-widget-floating',
+    type: 'registry:hook',
+  },
+  {
     dependencies: ['platejs'],
     files: [
       {

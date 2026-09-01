@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 
-import { createEditor } from '../../../../../packages/plitejs/src/index.ts';
+import { createEditor } from 'platejs';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
-import * as Y from 'yjs';
 
-import { createYjsExtension } from '../../../../../packages/platejs/src/yjs/core/extension.ts';
+import { yjs } from 'platejs/yjs';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
+
+const Y = await import(Bun.resolveSync('yjs', new URL('../../../../../packages/platejs/', import.meta.url).pathname));
 
 const iterations = Number.parseInt(
   process.env.PLITE_YJS_COLLAB_ITERATIONS ?? '5',
@@ -134,8 +135,8 @@ const createPeer = ({
     Y.applyUpdate(doc, seed);
   }
 
-  editor.extend(
-    createYjsExtension({ awareness, clientId, doc, rootName: 'plitejs' })
+  editor.install(
+    yjs({ awareness, clientId, doc, rootName: 'plitejs' })
   );
 
   return { awareness, doc, editor, id: clientId };

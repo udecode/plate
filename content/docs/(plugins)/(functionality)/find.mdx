@@ -1,0 +1,87 @@
+---
+title: Find
+description: Search editable text with transient highlights and keyboard navigation.
+docs:
+  - route: /docs/components/find
+    title: Find Component
+  - route: /docs/examples/find
+    title: Find Demo
+---
+
+<ComponentPreview name="find-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Opens with `Mod+F` and seeds the query from an expanded editor selection.
+- Highlights every match without writing marks into the document or history.
+- Searches through adjacent text leaves and inline descendants.
+- Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons.
+- Rescans after document commits and keeps one active result visible.
+- Exposes `useFindController` for app-owned controls.
+
+</PackageInfo>
+
+## Installation
+
+```bash
+npx shadcn@latest add @plate/find
+```
+
+## Usage
+
+Install `FindKit` with the rest of your editor plugins:
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { FindKit } from '@/components/editor/find';
+import { EditorKit } from '@/components/editor/plugins';
+
+const editor = createEditor({
+  plugins: [...EditorKit, ...FindKit],
+});
+```
+
+`FindKit` owns the search shortcut, transient decorations, active-match style,
+and accessible search bar. The copied component keeps its result owner outside
+the editor document, so a query never creates an editor operation.
+
+<ComponentSource name="find" />
+
+## Custom Controls
+
+Use `useFindController` inside the matching `<Plate>` tree when your product
+needs a different button or search bar:
+
+```tsx
+import { useFindController } from '@/components/editor/find';
+
+export function FindButton() {
+  const find = useFindController();
+
+  return (
+    <button onClick={() => find.open()} type="button">
+      Find
+    </button>
+  );
+}
+```
+
+The controller exposes `open`, `close`, `setQuery`, `next`, `previous`, and
+`commitActiveMatch`, plus query, count, active-index, pending, and error state.
+`commitActiveMatch` selects the active result and focuses the editor.
+
+## Keyboard Behavior
+
+| Key | Behavior |
+| --- | --- |
+| `Mod+F` | Open Find. An expanded selection becomes the initial query. |
+| `Enter` | Move to the next result. |
+| `Shift+Enter` | Move to the previous result. |
+| `Escape` | Close Find and return focus to the editor. |
+
+Find searches text. Document replacement belongs to an app command with its own
+selection, history, and collaboration policy.
+

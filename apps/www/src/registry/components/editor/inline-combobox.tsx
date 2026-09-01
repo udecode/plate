@@ -77,17 +77,6 @@ const defaultFilter: FilterFn = (
   );
 };
 
-type InlineComboboxProps = {
-  children: React.ReactNode;
-  element: Element;
-  trigger: string;
-  filter?: FilterFn | false;
-  hideWhenNoValue?: boolean;
-  showTrigger?: boolean;
-  value?: string;
-  setValue?: (value: string) => void;
-};
-
 const InlineCombobox = ({
   children,
   element,
@@ -97,7 +86,16 @@ const InlineCombobox = ({
   showTrigger = true,
   trigger,
   value: valueProp,
-}: InlineComboboxProps) => {
+}: {
+  children: React.ReactNode;
+  element: Element;
+  trigger: string;
+  filter?: FilterFn | false;
+  hideWhenNoValue?: boolean;
+  showTrigger?: boolean;
+  value?: string;
+  setValue?: (value: string) => void;
+}) => {
   const editor = useEditor();
   const path = usePath();
   const selected = useElementSelected();

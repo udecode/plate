@@ -257,7 +257,7 @@ Proof references:
 - `docs/plite/final-api-hard-cuts-status.md`
 - `docs/plite/references/live-shape-register.md`
 - `docs/plite/replacement-gates-scoreboard.md`
-- `packages/plitejs/test/page-layout/page-layout-contract.test.ts`
+- `packages/plitejs/test/pagination/page-layout-contract.test.ts`
 - `apps/www/src/app/(app)/examples/plite/_examples/pagination.tsx`
 - `apps/www/tests/plite-browser/donor/examples/pagination.test.ts`
 

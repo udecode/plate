@@ -1,4 +1,12 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
 
 import { render, waitFor } from '@testing-library/react';
 import * as React from 'react';
@@ -66,6 +74,49 @@ describe('CommandMenuDialog search ordering', () => {
     };
     pushMock.mockClear();
     setDocsSearchMock.mockClear();
+  });
+
+  it('keeps distinct command entries that share a documentation route', async () => {
+    const consoleError = spyOn(console, 'error').mockImplementation(() => {});
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+
+    try {
+      const view = render(
+        <CommandMenuDialog
+          navItems={[]}
+          open
+          sidebarNav={[
+            {
+              items: [
+                {
+                  href: '/docs/components/fixed-toolbar',
+                  title: 'Fixed Toolbar Buttons',
+                },
+                {
+                  href: '/docs/components/fixed-toolbar',
+                  title: 'Fixed Toolbar',
+                },
+              ],
+              title: 'Components',
+            },
+          ]}
+          onOpenChange={mock(() => {})}
+        />
+      );
+
+      await waitFor(() => {
+        expect(view.getByText('Fixed Toolbar Buttons')).toBeTruthy();
+        expect(view.getByText('Fixed Toolbar')).toBeTruthy();
+      });
+
+      const duplicateKeyErrors = consoleError.mock.calls.filter((args) =>
+        args.some((argument) => String(argument).includes('same key'))
+      );
+
+      expect(duplicateKeyErrors).toEqual([]);
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   it('renders static command results before dynamic API reference results', async () => {

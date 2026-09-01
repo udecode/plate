@@ -29,14 +29,6 @@ export type PlaceholderIntrinsicTag = Exclude<
   VoidIntrinsicTag
 >;
 
-type PlitePlaceholderProps = {
-  as?: PlaceholderIntrinsicTag;
-  children: ReactNode;
-  dir?: 'rtl';
-  ref?: Ref<HTMLElement>;
-  style?: CSSProperties;
-};
-
 type PlitePlaceholderComponentProps = HTMLAttributes<HTMLElement> & {
   ref?: Ref<HTMLElement>;
 };
@@ -72,7 +64,13 @@ export const PlitePlaceholder = ({
   dir,
   ref,
   style,
-}: PlitePlaceholderProps) => {
+}: {
+  as?: PlaceholderIntrinsicTag;
+  children: ReactNode;
+  dir?: 'rtl';
+  ref?: Ref<HTMLElement>;
+  style?: CSSProperties;
+}) => {
   const Component = as as ElementType<PlitePlaceholderComponentProps>;
   const webkit = useEditableDOMHostFact(
     (runtime) => runtime.isWebKitHost,

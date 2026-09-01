@@ -122,7 +122,15 @@ export const createYjsEditorAdapter = (
     return root === 'main' ? value.children : (value.roots?.[root] ?? []);
   };
   const canonicalizeNode = (root: string, node: Descendant): Descendant => {
-    const children = canonicalize(root, [node]);
+    const input =
+      root === 'main'
+        ? { children: [node] }
+        : { children: [], roots: { [root]: [node] } };
+    const document = editor.read.schema.fitDocument(
+      input as EditorDocumentValue
+    );
+    const children =
+      root === 'main' ? document.children : (document.roots?.[root] ?? []);
 
     if (children.length !== 1 || children[0] === undefined) {
       throw new Error(

@@ -69,6 +69,7 @@ their doctrine into each other:
 | Question                                                                      | Owner                                       |
 | ----------------------------------------------------------------------------- | ------------------------------------------- |
 | durable Plate/Plite architecture and accepted API law                         | root `VISION.md` and `docs/vision/plate.md` |
+| evidence-backed current architecture score and hard-cut verdict               | `plate-review`                              |
 | ideal reusable public call shape and API debt ranking                         | `best-api`                                  |
 | accepted API adoption, boundary, and proof plan                               | `plate-plan`                                |
 | end-to-end feature delivery across package, registry, docs, release, and proof | `plate-feature`                             |
@@ -116,6 +117,10 @@ Primary user-facing entrypoints:
 - `maintainer` for public Plate/Plite issue, PR, and security queue work.
 - `architecture-cleanup` for repo-grounded architecture/code cleanup,
   deslop, simplification, and agent-navigation friction.
+- `plate-review` for read-only, reproducible architecture scorecards across a
+  full Plate/Plite scope, plugin family, entrypoint, package, or bounded
+  surface. It diagnoses ownership, lifetime, reachability, scale, and proof,
+  then routes the repair without implementing it.
 - `best-api` for blank-slate public API design, review, and P0-P3 audits
   across Plate and Plite before adoption/implementation planning.
 - `editor-audit` for exhaustive source-level comparison of one or more local
@@ -169,6 +174,9 @@ Default routing:
   measured fix/rerun loops -> `benchmark`.
 - Internal Plate/Plite quality, behavior, browser proof, API cleanup, docs/API
   cohesion, or long autonomous loop -> `auto`.
+- "architecture score", "score this architecture", or a current-system
+  architecture review scoped as all/plugin/entrypoint/package/surface ->
+  `plate-review`. A diff or PR review still routes to `autoreview`.
 - "best API", "cleanest API", "best DX/AX", public call-shape design/review,
   or whether current API machinery should exist -> `best-api`.
 - Creating or adding a Plate feature/entrypoint through registry consumers, docs,
@@ -220,6 +228,11 @@ non-matching findings instead of patching around reviewer hallucinations.
   performance measurement belongs to `benchmark`, and source-level editor
   architecture comparison belongs to `editor-audit`
 - `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
+- `plate-review` for read-only, evidence-backed Plate/Plite architecture
+  scoring. It owns bounded manifests, owner/lifetime/reachability traces,
+  deterministic weighted score receipts and hard caps, before/after target
+  shapes, urgency, and exact repair routing. It does not compare external
+  editors, review diffs, choose final public calls, or implement fixes.
 - `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
 - `best-api` for concrete Plate/Plite public API design, review, and ranked audits. It starts from ideal call sites, treats current machinery and compatibility as evidence rather than requirements, and hands accepted targets to the layer plan or implementation owner.
 - `plate-feature` for one end-to-end Plate feature manifest and phase flow across
@@ -285,6 +298,7 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony at any priority, including P1
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
+- @.agents/rules/plate-review.mdc when reproducing a current Plate/Plite architecture score across all, plugin, entrypoint, package, or surface scope
 - @.agents/rules/best-api.mdc when choosing or reviewing reusable public API shape
 - @.agents/rules/editor-audit.mdc when comparing one or more editor source
   architectures against Plite and Plate

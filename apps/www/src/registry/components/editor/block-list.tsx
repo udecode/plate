@@ -15,8 +15,22 @@ import { cn } from '@/lib/utils';
 const config: Record<
   string,
   {
-    Li: React.FC<ListWrapperProps>;
-    Marker: React.FC<ListWrapperProps>;
+    Li: React.FC<
+      Parameters<ListWrapper>[0] & {
+        lineBreakBadge?: React.ReactNode;
+        listStart?: number;
+        listStyle?: string;
+        listType: ListType;
+      }
+    >;
+    Marker: React.FC<
+      Parameters<ListWrapper>[0] & {
+        lineBreakBadge?: React.ReactNode;
+        listStart?: number;
+        listStyle?: string;
+        listType: ListType;
+      }
+    >;
   }
 > = {
   task: {
@@ -26,12 +40,6 @@ const config: Record<
 };
 
 type ListWrapper = RenderNodeWrapper<typeof ListPlugin>;
-type ListWrapperProps = Parameters<ListWrapper>[0] & {
-  lineBreakBadge?: React.ReactNode;
-  listStart?: number;
-  listStyle?: string;
-  listType: ListType;
-};
 
 export const BlockList: ListWrapper = (props) => {
   const { listStyle, listType } = props.element;
@@ -52,7 +60,14 @@ export const BlockList: ListWrapper = (props) => {
   };
 };
 
-function List(props: ListWrapperProps) {
+function List(
+  props: Parameters<ListWrapper>[0] & {
+    lineBreakBadge?: React.ReactNode;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   const { listStart, listStyle, listType } = props;
   const { Li, Marker } = config[listType] ?? {};
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
@@ -78,7 +93,14 @@ function List(props: ListWrapperProps) {
   );
 }
 
-function TodoMarker(props: ListWrapperProps) {
+function TodoMarker(
+  props: Parameters<ListWrapper>[0] & {
+    lineBreakBadge?: React.ReactNode;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
 
@@ -103,7 +125,14 @@ function TodoMarker(props: ListWrapperProps) {
   );
 }
 
-function TodoLi(props: ListWrapperProps) {
+function TodoLi(
+  props: Parameters<ListWrapper>[0] & {
+    lineBreakBadge?: React.ReactNode;
+    listStart?: number;
+    listStyle?: string;
+    listType: ListType;
+  }
+) {
   return (
     <li
       className={cn(

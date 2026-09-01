@@ -7,13 +7,6 @@ import { Markdown } from '@/components/markdown';
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
 
-interface ComponentPreviewProps extends React.HTMLAttributes<HTMLDivElement> {
-  id: string;
-  description?: string;
-  iframeMinWidth?: number;
-  name?: string;
-}
-
 export function ComponentPreviewPro({
   id: initialId,
   children,
@@ -22,7 +15,12 @@ export function ComponentPreviewPro({
   iframeMinWidth,
   name,
   ...props
-}: ComponentPreviewProps) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  id: string;
+  description?: string;
+  iframeMinWidth?: number;
+  name?: string;
+}) {
   let id = initialId;
   if (!id && name) {
     id = name?.replace('-pro', '');

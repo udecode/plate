@@ -1,6 +1,11 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
+
+const nodeExecutable = process.versions.bun
+  ? execFileSync('node', ['-p', 'process.execPath'], { encoding: 'utf8' }).trim()
+  : process.execPath;
 
 export const parsePackageManager = async (repo) => {
   const pkg = JSON.parse(await readFile(resolve(repo, 'package.json'), 'utf8'));
@@ -81,26 +86,16 @@ export const buildRepo = async (repo, packageManager, filter) => {
   );
 };
 
-const runnerArgsFor = (packageManager, entry) => {
-  if (packageManager === 'bun') {
-    return { command: 'bun', args: ['run', entry] };
-  }
-
-  if (packageManager === 'yarn') {
-    return { command: 'yarn', args: ['node', entry] };
-  }
-
-  if (packageManager === 'pnpm') {
-    return { command: 'node', args: [entry] };
-  }
-
-  return { command: 'node', args: [entry] };
-};
-
-const linkCurrentWorkspacePackages = async (repo, runDirectory) => {
+const linkWorkspacePackages = async (repo, runDirectory) => {
   const nodeModules = resolve(runDirectory, 'node_modules');
 
-  for (const packageName of ['platejs', 'plitejs']) {
+  for (const packageName of [
+    'platejs',
+    'plitejs',
+    'slate',
+    'slate-react',
+    'slate-history',
+  ]) {
     const packageDirectory = resolve(repo, 'packages', packageName);
 
     try {
@@ -125,7 +120,6 @@ const linkCurrentWorkspacePackages = async (repo, runDirectory) => {
 export const benchmarkRepo = async ({
   benchmarkSource,
   env,
-  packageManager,
   repo,
 }) => {
   const tempDir = resolve(repo, '.tmp', 'benchmarks');
@@ -136,17 +130,22 @@ export const benchmarkRepo = async ({
   const filePath = resolve(runDirectory, 'runner.mjs');
 
   await mkdir(runDirectory, { recursive: true });
-  await linkCurrentWorkspacePackages(repo, runDirectory);
+  await linkWorkspacePackages(repo, runDirectory);
   await writeFile(filePath, benchmarkSource);
 
   let failed = false;
 
   try {
-    const { command, args } = runnerArgsFor(
-      packageManager,
-      relative(repo, filePath)
-    );
-    const result = await run(command, args, repo, env);
+    const args = [];
+    for (const [file, flag] of [
+      ['.pnp.cjs', '--require'],
+      ['.pnp.loader.mjs', '--experimental-loader'],
+    ]) {
+      const loader = resolve(repo, file);
+      if (existsSync(loader)) args.push(flag, loader);
+    }
+    args.push(relative(repo, filePath));
+    const result = await run(nodeExecutable, args, repo, env);
 
     return JSON.parse(result.stdout.trim());
   } catch (error) {

@@ -365,11 +365,17 @@ update method。
 <APISubListItem parent="render" name="abovePlite" type="Component" optional>
 在 Plite 包装器上方渲染的组件。
 </APISubListItem>
+<APISubListItem parent="render" name="afterContainer" type="ContainerSiblingComponent" optional>
+在 `PlateContainer` 之后渲染组件。组件只接收 `{ containerRef }`，即已挂载容器的精确 ref。
+</APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
-在 Editable 组件之后渲染的组件。
+在 Editable 组件之后渲染组件。组件只接收 `{ editableRef }`，即已挂载 Editable 的精确 ref。
+</APISubListItem>
+<APISubListItem parent="render" name="beforeContainer" type="ContainerSiblingComponent" optional>
+在 `PlateContainer` 之前渲染组件。组件只接收 `{ containerRef }`，即已挂载容器的精确 ref。
 </APISubListItem>
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
-在 Editable 组件之前渲染的组件。
+在 Editable 组件之前渲染组件。组件只接收 `{ editableRef }`，即已挂载 Editable 的精确 ref。
 </APISubListItem>
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。

@@ -1,7 +1,8 @@
+import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 import React, { act } from 'react';
-import type { Descendant } from '../../../../../packages/plitejs/src/index.ts';
+import type { Descendant, NodeKey } from '../../../../../packages/plitejs/src/index.ts';
 import {
   createEditor,
   Editable,
@@ -49,6 +50,7 @@ const runScenario = async (scenario: ScenarioId, iteration: number) => {
     );
 
     counter.reset();
+    const before = editor.read.runtime.snapshot();
     const startedAt = performance.now();
 
     await act(async () => {
@@ -95,14 +97,33 @@ const runScenario = async (scenario: ScenarioId, iteration: number) => {
 
     const elapsedMs = performance.now() - startedAt;
     const profile = counter.snapshot();
+    const after = editor.read.runtime.snapshot();
+    const runtimeNodeChecks = profile.events
+      .filter((event) => event.id === 'selector-runtime-node-check')
+      .map(({ nodeKey }) => ({
+        nodeKey,
+        beforePath: nodeKey ? before.index.pathOf(nodeKey as NodeKey) : null,
+        afterPath: nodeKey ? after.index.pathOf(nodeKey as NodeKey) : null,
+      }));
+    if (scenario === 'prependRoot') {
+      assert.equal(after.children[1], before.children[0]);
+    }
+    const unrelatedRuntimeNodeChecks = runtimeNodeChecks.filter(({ beforePath, afterPath }) => {
+      if (scenario === 'appendRoot') return true;
+      return beforePath?.length !== 1 || beforePath[0] !== 0 ||
+        afterPath?.length !== 1 || afterPath[0] !== (scenario === 'prependRoot' ? 1 : 0);
+    }).length;
 
     return {
       elapsedMs: round(elapsedMs),
+      runtimeNodeChecks,
+      unrelatedRuntimeNodeChecks,
+      allowedBoundaryChecks: scenario === 'appendRoot' ? 0 : 1,
       fullReplaceAllowedFanout: scenario === 'fullReplace' ? 1 : 0,
       renderTotal: profile.total,
       rootRuntimeIdsNotify: getCount(
         profile.byKey,
-        'selector:selector-root-runtime-ids-notify'
+        'selector:selector-root-node-keys-notify'
       ),
       runtimeNodeCheck: getCount(
         profile.byKey,
@@ -165,10 +186,9 @@ const fullReplaceFanoutCount = Math.max(
     .filter((sample) => sample.scenario === 'fullReplace')
     .map((sample) => sample.runtimeNodeCheck)
 );
-const fanoutViolationCount = Math.max(
-  localRootOrderFanoutCount,
-  fullReplaceFanoutCount - 1
-);
+const fanoutViolationCount = Math.max(...samples.map((sample) =>
+  Math.max(sample.unrelatedRuntimeNodeChecks, sample.runtimeNodeCheck - sample.allowedBoundaryChecks)
+));
 const maxRuntimeNodeNotify = Math.max(
   ...samples.map((sample) => sample.runtimeNodeNotify)
 );
@@ -215,3 +235,4 @@ console.log(
   `METRIC plite_react_runtime_node_max_elapsed_ms=${round(maxElapsedMs)}`
 );
 console.log(`wrote ${outputPath}`);
+assert.equal(fanoutViolationCount, 0, 'Root-order changes must not inspect unrelated runtime nodes');

@@ -55,16 +55,6 @@ export const useCounting = ({
   return number;
 };
 
-export type CountingNumbersProps = {
-  value: number;
-  className?: string;
-  duration?: number;
-  interval?: number;
-  noAnimation?: boolean;
-  reverse?: boolean;
-  start?: number;
-};
-
 export function CountingNumbers({
   className,
   duration = 800,
@@ -73,7 +63,15 @@ export function CountingNumbers({
   reverse = false,
   start = reverse ? 1000 : 0,
   value,
-}: CountingNumbersProps) {
+}: {
+  value: number;
+  className?: string;
+  duration?: number;
+  interval?: number;
+  noAnimation?: boolean;
+  reverse?: boolean;
+  start?: number;
+}) {
   const ref = useRef(null);
   const isInView = useInView(ref);
   const animatedNumber = useCounting({

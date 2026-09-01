@@ -1,0 +1,834 @@
+{
+  "status": "complete execution, strict timing gate red; runtime parity established",
+  "config": {
+    "blocks": 5000,
+    "coreIterations": 10,
+    "includeLegacyBrowserTrace": false,
+    "iterations": 5,
+    "legacyRepo": "../slate",
+    "overlayBlocks": 5000,
+    "overlayIslandSize": 32,
+    "skipBrowserBuild": false,
+    "smoke": false,
+    "strictBudget": true,
+    "traceIterations": 5,
+    "typeOps": 10
+  },
+  "failures": [],
+  "budgetFailures": [
+    {
+      "budget": 5,
+      "metric": "core.startBlockTypeMs.currentP75Ms",
+      "overBudgetSampleCount": 3,
+      "rawP95Ms": 22.91,
+      "stat": "p75",
+      "ratio": 1.05,
+      "value": 5.24
+    },
+    {
+      "budget": 5,
+      "metric": "core.middleBlockTypeMs.currentP75Ms",
+      "overBudgetSampleCount": 3,
+      "rawP95Ms": 12.94,
+      "stat": "p75",
+      "ratio": 2.23,
+      "value": 11.16
+    },
+    {
+      "budget": 1.5,
+      "metric": "legacyCompareWorstP95Ratio",
+      "ratio": 3.83,
+      "value": 5.75
+    }
+  ],
+  "diagnosticBudgetFailures": [
+    {
+      "budget": 75,
+      "metric": "partialDOMPromotionSteadyP95Ms",
+      "diagnostic": true,
+      "owner": "staged-full-dom-debt",
+      "reason": "Measured for honesty, but not a strict promotion gate until staged/full-DOM correctness is promoted.",
+      "ratio": 1.32,
+      "value": 99.19
+    }
+  ],
+  "steps": [
+    {
+      "id": "core-huge-document-compare",
+      "exitCode": 0,
+      "durationMs": 91955.67,
+      "artifactPath": "tmp/slate-core-huge-document-benchmark.json",
+      "summary": {
+        "blocks": 5000,
+        "worstP95Ratio": 27,
+        "worstP95RatioLane": "selectAllMs"
+      }
+    },
+    {
+      "id": "react-huge-document-legacy-compare",
+      "exitCode": 0,
+      "durationMs": 149444.11,
+      "artifactPath": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
+      "summary": {
+        "blocks": 5000,
+        "partialDOMPromotionThenTypeP95Ms": 61.26,
+        "worstP95Ratio": 5.75,
+        "worstP95RatioLane": "replaceFullDocumentWithTextMs",
+        "worstP95RatioSurface": "v2DefaultRenderAuto"
+      }
+    },
+    {
+      "id": "react-huge-document-browser-trace",
+      "exitCode": 0,
+      "durationMs": 11023.71,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "blocks": 5000,
+        "domNodesP95": 1004,
+        "domNodesP95BySurface": {
+          "defaultAuto": 1004
+        },
+        "editorElementsP95": 32,
+        "editorElementsP95BySurface": {
+          "defaultAuto": 32
+        },
+        "editorTextNodesP95": 32,
+        "editorTextNodesP95BySurface": {
+          "defaultAuto": 32
+        },
+        "burstToPaintP95Ms": 57.3,
+        "burstToPaintPerOpP95Ms": 5.73,
+        "clickToPaintP95Ms": 30.2,
+        "clickToSelectionReadyP95Ms": 15,
+        "coreNotifyListenersCountP95": 15,
+        "coreNotifyListenersP95Ms": 9.8,
+        "coreNotifyCommitListenersP95Ms": 8.3,
+        "coreNotifyExtensionCommitListenersP95Ms": 1.1,
+        "coreNotifySnapshotListenersP95Ms": null,
+        "coreNotifySourceListenersP95Ms": null,
+        "coreListenerSnapshotP95Ms": null,
+        "heapMBP95": 31.57,
+        "longTaskMaxP95Ms": 0,
+        "materializedSelectionReadyP95Ms": 20.3,
+        "materializedSelectToPaintP95Ms": 50.1,
+        "materializedSelectMaterializationFramesP95": 0,
+        "materializedSelectMaterializationScrollDeltaP95": 0,
+        "modelBurstToPaintPerOpP95Ms": 5.73,
+        "modelTypeToPaintP95Ms": 57.3,
+        "modelTypeToReadyP95Ms": 46.1,
+        "selectionReadyP95Ms": 29.4,
+        "selectMaterializationFramesP95": 0,
+        "selectMaterializationScrollDeltaP95": 0,
+        "selectToPaintP95Ms": 59.3,
+        "selectorDispatchP95Ms": 7.3,
+        "selectorDispatchCountP95": 15,
+        "selectorCheckCountP95": 135,
+        "selectorNotifyCountP95": 18,
+        "selectorSubscriptionCountP95": 35,
+        "nativeSurfaceTimeoutCount": 0,
+        "typeToPaintP95Ms": 18.7
+      }
+    },
+    {
+      "id": "react-huge-document-staged-diagnostic-trace",
+      "exitCode": 0,
+      "durationMs": 13641.26,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "blocks": 5000,
+        "domNodesP95": 385,
+        "domNodesP95BySurface": {
+          "stagedActiveDOMGroup": 385,
+          "stagedContentVisibility": 385
+        },
+        "editorElementsP95": 32,
+        "editorElementsP95BySurface": {
+          "stagedActiveDOMGroup": 32,
+          "stagedContentVisibility": 32
+        },
+        "editorTextNodesP95": 32,
+        "editorTextNodesP95BySurface": {
+          "stagedActiveDOMGroup": 32,
+          "stagedContentVisibility": 32
+        },
+        "burstToPaintP95Ms": 55.9,
+        "burstToPaintPerOpP95Ms": 5.59,
+        "clickToPaintP95Ms": 29.7,
+        "clickToSelectionReadyP95Ms": 16,
+        "coreNotifyListenersCountP95": 15,
+        "coreNotifyListenersP95Ms": 6.4,
+        "coreNotifyCommitListenersP95Ms": 4.1,
+        "coreNotifyExtensionCommitListenersP95Ms": 1.7,
+        "coreNotifySnapshotListenersP95Ms": null,
+        "coreNotifySourceListenersP95Ms": null,
+        "coreListenerSnapshotP95Ms": null,
+        "heapMBP95": 31.57,
+        "longTaskMaxP95Ms": 0,
+        "materializedSelectionReadyP95Ms": 21.4,
+        "materializedSelectToPaintP95Ms": 50.5,
+        "materializedSelectMaterializationFramesP95": 0,
+        "materializedSelectMaterializationScrollDeltaP95": 0,
+        "modelBurstToPaintPerOpP95Ms": 5.59,
+        "modelTypeToPaintP95Ms": 55.9,
+        "modelTypeToReadyP95Ms": 43.6,
+        "selectionReadyP95Ms": 28.6,
+        "selectMaterializationFramesP95": 0,
+        "selectMaterializationScrollDeltaP95": 0,
+        "selectToPaintP95Ms": 56.2,
+        "selectorDispatchP95Ms": 2.5,
+        "selectorDispatchCountP95": 15,
+        "selectorCheckCountP95": 135,
+        "selectorNotifyCountP95": 21,
+        "selectorSubscriptionCountP95": 18,
+        "nativeSurfaceTimeoutCount": 0,
+        "typeToPaintP95Ms": 17.9
+      }
+    },
+    {
+      "id": "react-huge-document-virtualized-type-to-paint",
+      "exitCode": 0,
+      "durationMs": 6803.61,
+      "artifactPath": "tmp/slate-react-huge-document-browser-trace-benchmark.json",
+      "summary": {
+        "blocks": 5000,
+        "domNodesP95": 370,
+        "domNodesP95BySurface": {
+          "virtualized": 370
+        },
+        "editorElementsP95": 17,
+        "editorElementsP95BySurface": {
+          "virtualized": 17
+        },
+        "editorTextNodesP95": 17,
+        "editorTextNodesP95BySurface": {
+          "virtualized": 17
+        },
+        "burstToPaintP95Ms": 40.1,
+        "burstToPaintPerOpP95Ms": 4.01,
+        "clickToPaintP95Ms": 23.1,
+        "clickToSelectionReadyP95Ms": 12.8,
+        "coreNotifyListenersCountP95": 15,
+        "coreNotifyListenersP95Ms": 4.4,
+        "coreNotifyCommitListenersP95Ms": 3.1,
+        "coreNotifyExtensionCommitListenersP95Ms": 1.5,
+        "coreNotifySnapshotListenersP95Ms": null,
+        "coreNotifySourceListenersP95Ms": null,
+        "coreListenerSnapshotP95Ms": null,
+        "heapMBP95": 19.55,
+        "longTaskMaxP95Ms": 0,
+        "materializedSelectionReadyP95Ms": 19.7,
+        "materializedSelectToPaintP95Ms": 49.7,
+        "materializedSelectMaterializationFramesP95": 0,
+        "materializedSelectMaterializationScrollDeltaP95": 0,
+        "modelBurstToPaintPerOpP95Ms": 4.01,
+        "modelTypeToPaintP95Ms": 40.1,
+        "modelTypeToReadyP95Ms": 24.8,
+        "selectionReadyP95Ms": 24.3,
+        "selectMaterializationFramesP95": 0,
+        "selectMaterializationScrollDeltaP95": 0,
+        "selectToPaintP95Ms": 54.9,
+        "selectorDispatchP95Ms": 1.9,
+        "selectorDispatchCountP95": 15,
+        "selectorCheckCountP95": 135,
+        "selectorNotifyCountP95": 21,
+        "selectorSubscriptionCountP95": 20,
+        "nativeSurfaceTimeoutCount": 0,
+        "typeToPaintP95Ms": 36.8
+      }
+    },
+    {
+      "id": "react-huge-document-overlays",
+      "exitCode": 0,
+      "durationMs": 19027.27,
+      "artifactPath": "tmp/slate-react-huge-document-overlays-benchmark.json",
+      "summary": {
+        "activeEditP95Ms": 11.56,
+        "blocks": 5000,
+        "overlayToggleP95Ms": 29.38,
+        "partialDOMPromotionColdP95Ms": 89.99,
+        "partialDOMPromotionSteadyP75Ms": 31.45,
+        "partialDOMPromotionSteadyP95Ms": 99.19,
+        "partialDOMPromotionTextAfterP95": 8
+      }
+    }
+  ],
+  "react": {
+    "config": {
+      "overscan": 0,
+      "blocks": 5000,
+      "chunkSize": 1000,
+      "disposeDelayMs": 0,
+      "segmentSize": 32,
+      "includeSyntheticBeforeInput": false,
+      "isolateCurrentSurfaces": true,
+      "iterations": 5,
+      "measureNativeSurfaceCompletion": false,
+      "profile": false,
+      "readyOnly": false,
+      "rootGroupSize": 16,
+      "splitSelectionLanes": true,
+      "typeOps": 10
+    },
+    "runtimes": {
+      "current": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      },
+      "legacy": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      }
+    },
+    "reactVersions": {
+      "current": "19.2.8",
+      "legacy": "18.2.0"
+    },
+    "artifactPaths": {
+      "latest": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
+      "run": "tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-chunk-1000-segment-32-radius-0-dispose-0-full-run-native-beforeinput-isolated-surfaces-split-selection-no-profile.json"
+    },
+    "surfaces": {
+      "legacyChunkOn": {
+        "readyMs": {
+          "samples": [
+            574.34,
+            528.93,
+            529.27,
+            636.99,
+            569.84
+          ],
+          "mean": 567.87,
+          "median": 569.84,
+          "p75": 574.34,
+          "p95": 636.99,
+          "p99": 636.99,
+          "min": 528.93,
+          "max": 636.99
+        },
+        "middleBlockTypeMs": {
+          "samples": [
+            45.31,
+            51.21,
+            45.66,
+            46.91,
+            42.57
+          ],
+          "mean": 46.33,
+          "median": 45.66,
+          "p75": 46.91,
+          "p95": 51.21,
+          "p99": 51.21,
+          "min": 42.57,
+          "max": 51.21
+        },
+        "middleBlockSelectThenTypeMs": {
+          "samples": [
+            50.2,
+            53,
+            49.86,
+            40.18,
+            41.35
+          ],
+          "mean": 46.92,
+          "median": 49.86,
+          "p75": 50.2,
+          "p95": 53,
+          "p99": 53,
+          "min": 40.18,
+          "max": 53
+        },
+        "replaceFullDocumentWithTextMs": {
+          "samples": [
+            160.77,
+            145.43,
+            134.6,
+            144.75,
+            152.32
+          ],
+          "mean": 147.57,
+          "median": 145.43,
+          "p75": 152.32,
+          "p95": 160.77,
+          "p99": 160.77,
+          "min": 134.6,
+          "max": 160.77
+        },
+        "insertFragmentFullDocumentMs": {
+          "samples": [
+            152.91,
+            142.37,
+            151.14,
+            156.52,
+            131.75
+          ],
+          "mean": 146.94,
+          "median": 151.14,
+          "p75": 152.91,
+          "p95": 156.52,
+          "p99": 156.52,
+          "min": 131.75,
+          "max": 156.52
+        }
+      },
+      "v2DefaultRenderAuto": {
+        "readyMs": {
+          "samples": [
+            107.9,
+            45.2,
+            52.5,
+            158.51,
+            39.01
+          ],
+          "mean": 80.62,
+          "median": 52.5,
+          "p75": 107.9,
+          "p95": 158.51,
+          "p99": 158.51,
+          "min": 39.01,
+          "max": 158.51
+        },
+        "middleBlockTypeMs": {
+          "samples": [
+            5.52,
+            8.93,
+            4.87,
+            6.24,
+            3.34
+          ],
+          "mean": 5.78,
+          "median": 5.52,
+          "p75": 6.24,
+          "p95": 8.93,
+          "p99": 8.93,
+          "min": 3.34,
+          "max": 8.93
+        },
+        "middleBlockSelectThenTypeMs": {
+          "samples": [
+            39.75,
+            40.93,
+            36.95,
+            39.02,
+            41.28
+          ],
+          "mean": 39.59,
+          "median": 39.75,
+          "p75": 40.93,
+          "p95": 41.28,
+          "p99": 41.28,
+          "min": 36.95,
+          "max": 41.28
+        },
+        "replaceFullDocumentWithTextMs": {
+          "samples": [
+            60.8,
+            62.98,
+            923.89,
+            82.2,
+            68.89
+          ],
+          "mean": 239.75,
+          "median": 68.89,
+          "p75": 82.2,
+          "p95": 923.89,
+          "p99": 923.89,
+          "min": 60.8,
+          "max": 923.89
+        },
+        "insertFragmentFullDocumentMs": {
+          "samples": [
+            53.93,
+            55.33,
+            90.56,
+            55.1,
+            48.91
+          ],
+          "mean": 60.77,
+          "median": 55.1,
+          "p75": 55.33,
+          "p95": 90.56,
+          "p99": 90.56,
+          "min": 48.91,
+          "max": 90.56
+        }
+      },
+      "v2DomPresent": {
+        "readyMs": {
+          "samples": [
+            32.36,
+            16.94,
+            15.07,
+            14.89,
+            17.22
+          ],
+          "mean": 19.3,
+          "median": 16.94,
+          "p75": 17.22,
+          "p95": 32.36,
+          "p99": 32.36,
+          "min": 14.89,
+          "max": 32.36
+        },
+        "middleBlockTypeMs": {
+          "samples": [
+            5.42,
+            5.6,
+            4.96,
+            5.64,
+            5.36
+          ],
+          "mean": 5.4,
+          "median": 5.42,
+          "p75": 5.6,
+          "p95": 5.64,
+          "p99": 5.64,
+          "min": 4.96,
+          "max": 5.64
+        },
+        "middleBlockSelectThenTypeMs": {
+          "samples": [
+            26.74,
+            31.89,
+            32.39,
+            22.92,
+            27.31
+          ],
+          "mean": 28.25,
+          "median": 27.31,
+          "p75": 31.89,
+          "p95": 32.39,
+          "p99": 32.39,
+          "min": 22.92,
+          "max": 32.39
+        },
+        "replaceFullDocumentWithTextMs": {
+          "samples": [
+            57.69,
+            55.84,
+            57.42,
+            54.71,
+            57.22
+          ],
+          "mean": 56.58,
+          "median": 57.22,
+          "p75": 57.42,
+          "p95": 57.69,
+          "p99": 57.69,
+          "min": 54.71,
+          "max": 57.69
+        },
+        "insertFragmentFullDocumentMs": {
+          "samples": [
+            48.84,
+            40.53,
+            46.18,
+            43.59,
+            50.6
+          ],
+          "mean": 45.95,
+          "median": 46.18,
+          "p75": 48.84,
+          "p95": 50.6,
+          "p99": 50.6,
+          "min": 40.53,
+          "max": 50.6
+        }
+      }
+    }
+  },
+  "core": {
+    "lane": "core-huge-document-compare-local",
+    "currentRepo": "/Users/zbeyens/git/plate-2",
+    "legacyRepo": "/Users/zbeyens/git/slate",
+    "iterations": 10,
+    "implementations": {
+      "current": "plite",
+      "legacy": "slate"
+    },
+    "runtimes": {
+      "current": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      },
+      "legacy": {
+        "executable": "/opt/homebrew/Cellar/node@24/24.14.1_1/bin/node",
+        "node": "v24.14.1",
+        "v8": "13.6.233.17-node.44"
+      }
+    },
+    "config": {
+      "blocks": 5000,
+      "currentOnly": false,
+      "profile": false,
+      "skipBuild": false,
+      "typeOps": 10
+    },
+    "current": {
+      "startBlockTypeMs": {
+        "samples": [
+          3.49,
+          12.73,
+          3,
+          5.24,
+          2.79,
+          2.71,
+          2.3,
+          3.34,
+          3.52,
+          22.91
+        ],
+        "mean": 6.2,
+        "median": 3.42,
+        "p75": 5.24,
+        "p95": 22.91,
+        "p99": 22.91,
+        "min": 2.3,
+        "max": 22.91
+      },
+      "middleBlockTypeMs": {
+        "samples": [
+          3.09,
+          12.25,
+          2.57,
+          3.89,
+          11.16,
+          2.68,
+          4.43,
+          12.94,
+          1.66,
+          2.03
+        ],
+        "mean": 5.67,
+        "median": 3.49,
+        "p75": 11.16,
+        "p95": 12.94,
+        "p99": 12.94,
+        "min": 1.66,
+        "max": 12.94
+      },
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          30.64,
+          27.67,
+          28,
+          28.67,
+          27.83,
+          28.34,
+          29.19,
+          28.06,
+          30.38,
+          31.77
+        ],
+        "mean": 29.06,
+        "median": 28.51,
+        "p75": 30.38,
+        "p95": 31.77,
+        "p99": 31.77,
+        "min": 27.67,
+        "max": 31.77
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          20.16,
+          32.62,
+          19.69,
+          27.66,
+          15.26,
+          13.59,
+          17.31,
+          21.33,
+          18.17,
+          21.64
+        ],
+        "mean": 20.74,
+        "median": 19.93,
+        "p75": 21.64,
+        "p95": 32.62,
+        "p99": 32.62,
+        "min": 13.59,
+        "max": 32.62
+      },
+      "selectAllMs": {
+        "samples": [
+          0.19,
+          0.25,
+          0.25,
+          0.27,
+          0.29,
+          0.39,
+          0.28,
+          0.41,
+          0.54,
+          0.54
+        ],
+        "mean": 0.34,
+        "median": 0.28,
+        "p75": 0.41,
+        "p95": 0.54,
+        "p99": 0.54,
+        "min": 0.19,
+        "max": 0.54
+      },
+      "selectAllDeleteTypeUndoMs": {
+        "samples": [
+          214.1,
+          303.96,
+          229.63,
+          251.77,
+          195.51,
+          214.17,
+          245.9,
+          200.65,
+          199.93,
+          215.75
+        ],
+        "mean": 227.14,
+        "median": 214.96,
+        "p75": 245.9,
+        "p95": 303.96,
+        "p99": 303.96,
+        "min": 195.51,
+        "max": 303.96
+      }
+    },
+    "legacy": {
+      "startBlockTypeMs": {
+        "samples": [
+          1.75,
+          1.55,
+          0.86,
+          2.14,
+          1.68,
+          2.36,
+          0.52,
+          0.69,
+          0.67,
+          0.79
+        ],
+        "mean": 1.3,
+        "median": 1.21,
+        "p75": 1.75,
+        "p95": 2.36,
+        "p99": 2.36,
+        "min": 0.52,
+        "max": 2.36
+      },
+      "middleBlockTypeMs": {
+        "samples": [
+          0.71,
+          0.76,
+          1.15,
+          0.51,
+          0.79,
+          0.89,
+          0.6,
+          0.6,
+          0.56,
+          0.53
+        ],
+        "mean": 0.71,
+        "median": 0.66,
+        "p75": 0.79,
+        "p95": 1.15,
+        "p99": 1.15,
+        "min": 0.51,
+        "max": 1.15
+      },
+      "replaceFullDocumentWithTextMs": {
+        "samples": [
+          60.94,
+          64.62,
+          51.22,
+          57,
+          52.9,
+          55.34,
+          50.39,
+          48.75,
+          50.09,
+          49.22
+        ],
+        "mean": 54.05,
+        "median": 52.06,
+        "p75": 57,
+        "p95": 64.62,
+        "p99": 64.62,
+        "min": 48.75,
+        "max": 64.62
+      },
+      "insertFragmentFullDocumentMs": {
+        "samples": [
+          54.74,
+          52.97,
+          49.72,
+          51.22,
+          49.16,
+          50.27,
+          50.87,
+          50.97,
+          50.38,
+          62.39
+        ],
+        "mean": 52.27,
+        "median": 50.92,
+        "p75": 52.97,
+        "p95": 62.39,
+        "p99": 62.39,
+        "min": 49.16,
+        "max": 62.39
+      },
+      "selectAllMs": {
+        "samples": [
+          0.02,
+          0.01,
+          0.02,
+          0.02,
+          0.02,
+          0.01,
+          0.02,
+          0.02,
+          0.02,
+          0.01
+        ],
+        "mean": 0.02,
+        "median": 0.02,
+        "p75": 0.02,
+        "p95": 0.02,
+        "p99": 0.02,
+        "min": 0.01,
+        "max": 0.02
+      },
+      "selectAllDeleteTypeUndoMs": {
+        "samples": [
+          3565.01,
+          3755.9,
+          3497.88,
+          3707.29,
+          3642.89,
+          3693.44,
+          3680.85,
+          3583.59,
+          3484.96,
+          3668.28
+        ],
+        "mean": 3628.01,
+        "median": 3655.58,
+        "p75": 3693.44,
+        "p95": 3755.9,
+        "p99": 3755.9,
+        "min": 3484.96,
+        "max": 3755.9
+      }
+    },
+    "deltaMeanMs": {
+      "startBlockTypeMs": 4.9,
+      "middleBlockTypeMs": 4.96,
+      "replaceFullDocumentWithTextMs": -24.99,
+      "insertFragmentFullDocumentMs": -31.53,
+      "selectAllMs": 0.32,
+      "selectAllDeleteTypeUndoMs": -3400.87
+    }
+  }
+}

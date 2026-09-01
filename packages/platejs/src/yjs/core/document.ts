@@ -137,16 +137,22 @@ export const createYjsPropertyLocationAt = (
 
 export const indexYjsPropertyContexts = (
   children: readonly Descendant[],
-  root: string | null
+  root: string | null,
+  ranges?: ReadonlyArray<Readonly<{ from: number; to: number }>>
 ): WeakMap<JsonNode, YjsPropertyContext> => {
   const contexts = new WeakMap<JsonNode, YjsPropertyContext>();
 
   const visit = (
     nodes: readonly Descendant[],
     innerParentPath: Path,
-    ancestors: readonly string[]
+    ancestors: readonly string[],
+    from = 0,
+    to = nodes.length
   ): void => {
-    nodes.forEach((node, index) => {
+    for (let index = from; index < to; index++) {
+      const node = nodes[index];
+
+      if (!node) throw new Error('Cannot index a missing Yjs property node.');
       const path = [...innerParentPath, index];
       const context = createYjsPropertyContext(node, {
         ancestors,
@@ -159,10 +165,14 @@ export const indexYjsPropertyContexts = (
       if (NodeApi.isElement(node)) {
         visit(node.children, path, [context.type, ...ancestors]);
       }
-    });
+    }
   };
 
-  visit(children, [], []);
+  if (ranges) {
+    for (const range of ranges) visit(children, [], [], range.from, range.to);
+  } else {
+    visit(children, [], []);
+  }
 
   return contexts;
 };

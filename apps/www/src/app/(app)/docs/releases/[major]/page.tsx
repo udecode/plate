@@ -10,11 +10,6 @@ import {
 } from '@/lib/releases';
 import { ReleasePageContent } from '../release-page-content';
 
-type ReleaseMajorPageProps = {
-  params: Promise<{
-    major: string;
-  }>;
-};
 
 const releases = releaseIndexData as ReleaseIndexRelease[];
 const olderMajorGroups = getOlderReleaseMajorGroups(releases);
@@ -28,7 +23,11 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: ReleaseMajorPageProps): Promise<Metadata> {
+}: ({
+  params: Promise<{
+    major: string;
+  }>;
+})): Promise<Metadata> {
   const { major } = await params;
   const group = getOlderMajorGroup(major);
 
@@ -63,7 +62,11 @@ export async function generateMetadata({
 
 export default async function ReleaseMajorPage({
   params,
-}: ReleaseMajorPageProps) {
+}: ({
+  params: Promise<{
+    major: string;
+  }>;
+})) {
   const { major } = await params;
   const group = getOlderMajorGroup(major);
 

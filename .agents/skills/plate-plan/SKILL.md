@@ -70,6 +70,16 @@ rejected shape.
   generic primitive or a real substrate gap, route the decision to Plite Plan
   and fix the substrate instead of preserving Plate glue or blindly defending
   the current Plite shape.
+- When a Plate product need reveals a neutral presentation law for one mounted
+  Editable, first route derivable runtime and DOM behavior to Plite React.
+  `PlateContent` inherits the mechanics; copied UI owns literal focus markers,
+  feature exclusions, and styling. Add a controlled input only when the exact
+  view cannot derive user intent. Do not plan a Plate plugin, store, or registry
+  kit whose only job is toggling that exact-view paint.
+- Plan sibling render slots as exact placement capabilities, not host prop
+  forwarding channels. Editable slots receive only `editableRef`; container
+  slots receive only `containerRef`. Adopt complete components through direct
+  registration and retain callbacks only for real custom composition.
 - Keep a Plate API only when it serves a distinct product job with a distinct
   namespace and adoption story.
 - Treat each independently installable registry item as its own copied-source
@@ -122,6 +132,10 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --title "<short Plate plan title>"
 ```
 
+Add `--with performance-observability` when the proposal can change repeated or
+hot runtime work. Resolve that applicability before target selection; do not
+wait until implementation.
+
 Use a short objective:
 
 ```txt
@@ -153,7 +167,11 @@ evidence requires it. External editor inventory and comparison belong to
 - Capture outcome, scope, non-goals, and explicit user constraints.
 - Read live source and current public teaching surfaces.
 - Name the Plate and Plite owners involved.
-- Record baseline behavior or proof only when it affects the decision.
+- Decide scale applicability from live source. When the proposal adds, retains,
+  or changes a runtime layer, cache, index, projection, store, subscription,
+  scheduler, geometry owner, repeated-unit fan-out, or other hot work,
+  materialize the performance pack and run Benchmark's embedded
+  pre-acceptance architecture probe.
 
 ### 2. Decide
 
@@ -178,6 +196,11 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
   every hard law and independent current job, the verdict is `cut`. Do not plan
   around rejected machinery; compatibility and implementation cost only order
   adoption.
+- A scale-sensitive row cannot lock as `keep`, `rearchitect`, `move`, `bridge`,
+  or `gate` without a passing executable current-owner versus target receipt.
+  Use the smallest disposable prototype when the target path does not exist.
+  Paper complexity, review scores, and deferred measurement leave the verdict
+  `defer` or `gate`, never ready.
 - Prefer delete, merge, or inline over wrappers and file churn.
 - Rank worthwhile changes by long-term architectural value. Order execution
   slices separately by dependency; implementation order is not the value rank.
@@ -188,6 +211,10 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
   condition, and focused proof.
 - Name exact source audits and owner commands. Planning proof validates the
   decision; execution proof validates changed behavior.
+- For every scale-sensitive slice, carry the frozen cohorts, budget, benchmark
+  command/artifact, deterministic cost indicators, source identities, and
+  correctness guard into the execution exit condition. The final production
+  path must rerun the same contract.
 - Prepare the final handoff in the plan, run `check-complete`, then emit the
   handoff in chat. Do not make pre-checker completion depend on a response that
   has not been sent yet.
@@ -199,6 +226,14 @@ Add only what the scope triggers:
 - High-risk public API, runtime, normalization, selection, collaboration, DOM,
   browser, or generated-contract change: record three realistic failures,
   blast radius, rollback/hard-cut answer, and focused proof.
+- Performance: require the embedded Benchmark receipt before choosing a
+  scale-sensitive owner. If no causal baseline or executable target probe
+  exists, the plan remains provisional. Use `performance` only to pressure-test
+  cohorts, repeated-unit budgets, degradation, native behavior, and production
+  proof requirements.
+- A mounted-view presentation row must name the Plite React input, Plate proxy,
+  copied-UI policy owner, deleted plugin/store/kit surfaces, and multi-view plus
+  native-selection non-interference proof.
 - External editor architecture: consume the accepted `editor-audit` evidence,
   material candidates, and owner routing. Refresh only stale claims that can
   change the plan.
@@ -219,6 +254,8 @@ A standard or deep plan is ready only when all are true:
 - execution slices and focused verification are concrete;
 - conditional risk/provenance/browser/docs gates are resolved or explicitly
   inapplicable with a reason;
+- every scale-sensitive decision has a passing pre-acceptance receipt, or live
+  source proves the work is type-only/zero-runtime;
 - no decision-changing question or runnable planning owner remains;
 - `check-complete.mjs` passes after fresh verification evidence is recorded.
 
@@ -241,7 +278,9 @@ After explicit acceptance:
    versioned doctrine when required, regenerate mirrors, and audit stale
    teaching.
 6. Run the applicable root `AGENTS.md` gates and applicable review skills.
-7. Update the plan with actual evidence and hand off the result.
+7. Rerun every scale-sensitive contract on the final production path with the
+   recorded correctness guard; a design prototype is not implementation proof.
+8. Update the plan with actual evidence and hand off the result.
 
 ## Handoff
 

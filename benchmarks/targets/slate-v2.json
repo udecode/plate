@@ -128,7 +128,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated createAndFill construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
+        "upgrade": "Preserve every established compile/query/validation/invalidation/cache/heap gate. Add exact 1/100/1,000 contribution compile/cache counts; 100/1,000 Plate descriptor resolution plus cold and structurally cached startup; isolated schema.create construction-plan cardinality across 100/1,000 irrelevant defaults; equivalent and non-equivalent Plate publication; 1k/10k explicit migration; fixed two-node canonical open-edge projected clipboard locality across 1k/50k documents; and 100/1,000 TypeScript fixture budgets with an explicit 1,000-plugin widening boundary."
       },
       "correctness": {
         "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
@@ -148,7 +148,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_schema_invalidation_document_width_ratio<=1.5 and plite_schema_architecture_schema_invalidation_changed_type_ratio<=2 and plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=64 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; plus plite_schema_architecture_contribution_1000_compile_p95_ms<100 and plite_schema_architecture_contribution_1000_structural_cache_p95_ms<25 and plite_schema_architecture_contribution_1000_previous_revision_cache_p95_ms<50 and plite_schema_architecture_contribution_1000_cache_compile_count=0 and plite_schema_architecture_plate_descriptor_resolution_width_ratio<=2 and plite_schema_architecture_plate_startup_1000_p95_ms<2500 and plite_schema_architecture_plate_startup_per_descriptor_ratio<=2.5 and plite_schema_architecture_construction_1000_default_property_ids=1 and plite_schema_architecture_construction_1000_property_ids=1 and plite_schema_architecture_construction_property_width_ratio<=2 and plite_schema_architecture_large_document_migration_10000_p95_ms<2000 and plite_schema_architecture_large_document_migration_width_ratio<=15 and plite_schema_architecture_large_document_migration_10000_configuration_commit_count=10 and plite_schema_architecture_large_document_migration_10000_migration_call_count=10 and plite_schema_architecture_projected_clipboard_width_ratio<=1.5 and plite_schema_architecture_projected_clipboard_host_width_ratio<=2 and plite_schema_architecture_projected_clipboard_selected_nodes=2 and plite_schema_architecture_projected_clipboard_open_start=1 and plite_schema_architecture_projected_clipboard_open_end=1 and plite_schema_architecture_typecheck_1000_check_ms<5000 and plite_schema_architecture_typecheck_1000_instantiations<5000000 and plite_schema_architecture_typecheck_1000_memory_bytes<1342177280 and plite_schema_architecture_typecheck_check_time_ratio<=2 and plite_schema_architecture_typecheck_instantiation_ratio<=1.25; structurally cached Plate startup, unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, cold invalidation index, and retained-representation-proxy metrics are baseline-only"
+        "promotion": "plite_schema_architecture_compile_p95_ms<16 and comparable type/exact-property/prefix/declared-wrapper ratios<=0.5 and plite_schema_architecture_wrapper_plan_searches_after_first=0 and plite_schema_architecture_schema_invalidation_document_width_ratio<=1.5 and plite_schema_architecture_schema_invalidation_changed_type_ratio<=2 and plite_schema_architecture_schema_invalidation_property_affected_runtime_ids=64 and plite_schema_architecture_equivalent_reconfigure_compile_count=0 and equivalent-reconfiguration ratio<=1.05 and worst-sample plite_schema_architecture_retained_heap_baseline_ratio<=0.75; plus plite_schema_architecture_contribution_1000_compile_p95_ms<100 and plite_schema_architecture_contribution_1000_structural_cache_p95_ms<25 and plite_schema_architecture_contribution_1000_previous_revision_cache_p95_ms<50 and plite_schema_architecture_contribution_1000_cache_compile_count=0 and plite_schema_architecture_plate_descriptor_resolution_width_ratio<=2 and plite_schema_architecture_plate_startup_1000_p95_ms<2500 and plite_schema_architecture_plate_startup_per_descriptor_ratio<=2.5 and plite_schema_architecture_construction_1000_default_property_ids=1 and plite_schema_architecture_construction_1000_property_ids=1 and plite_schema_architecture_construction_property_width_ratio<=2 and plite_schema_architecture_large_document_migration_10000_p95_ms<2000 and plite_schema_architecture_large_document_migration_width_ratio<=15 and plite_schema_architecture_large_document_migration_10000_configuration_commit_count=10 and plite_schema_architecture_large_document_migration_10000_migration_call_count=10 and plite_schema_architecture_projected_clipboard_width_ratio<=1.5 and plite_schema_architecture_projected_clipboard_root_validation_property_reads=0 and plite_schema_architecture_projected_clipboard_host_width_ratio<=2 and plite_schema_architecture_projected_clipboard_selected_nodes=2 and plite_schema_architecture_projected_clipboard_open_start=1 and plite_schema_architecture_projected_clipboard_open_end=1 and plite_schema_architecture_typecheck_1000_check_ms<5000 and plite_schema_architecture_typecheck_1000_instantiations<5000000 and plite_schema_architecture_typecheck_1000_memory_bytes<1342177280 and plite_schema_architecture_typecheck_check_time_ratio<=2 and plite_schema_architecture_typecheck_instantiation_ratio<=1.25; structurally cached Plate startup, unknown-wrapper first/warm timing, group, allowed-parent, compile-scope, cold/warm full-validation, cold invalidation index, and retained-representation-proxy metrics are baseline-only"
       }
     },
     {
@@ -287,7 +287,7 @@
     },
     {
       "id": "plite-yjs-event-change-bridge",
-      "question": "Does one sparse Yjs edit stay local and distance-independent across a 10,000-block root?",
+      "question": "Do sparse Yjs edits stay local across a 10,000-block root, and do 120-block batches avoid detached live-document transactions?",
       "owner": "yjs",
       "family": "collaboration",
       "kind": "current",
@@ -301,7 +301,7 @@
         "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/platejs/test/yjs/remote-import-contract.slow.ts ./packages/platejs/test/yjs/canonical-change-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/platejs/test/yjs/editor-adapter-contract.spec.ts ./packages/platejs/test/yjs/event-change-locality.spec.ts ./packages/platejs/test/yjs/remote-import-contract.slow.ts ./packages/platejs/test/yjs/canonical-change-contract.spec.ts",
         "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
       },
       "artifacts": [
@@ -314,7 +314,7 @@
         "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
       },
       "thresholds": {
-        "promotion": "plite_yjs_event_change_local_distance_ratio<=2 and plite_yjs_event_change_sync_distance_ratio<=2 and plite_yjs_event_change_runtime_ids_p95_ms<=1 and traceInvariantRequired=true"
+        "promotion": "plite_yjs_event_change_local_distance_ratio<=2 and plite_yjs_event_change_sync_distance_ratio<=2 and plite_yjs_event_change_runtime_ids_p95_ms<=1 and plite_yjs_event_change_batch_detached_transactions=0 and plite_yjs_event_change_batch_sync_p95_ms<=5000 and plite_yjs_event_change_property_context_failures=0 and traceInvariantRequired=true"
       }
     },
     {
@@ -338,7 +338,7 @@
       },
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
+          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
           "required": true
         }
       ],
@@ -449,7 +449,7 @@
         "direction": "lower",
         "unit": "count",
         "printsMetric": true,
-        "upgrade": "Primary metric is the aggregate fanout violation count; local root-order edits should be 0 and full replacement should stay within the benchmark allowance."
+        "upgrade": "Primary metric counts unrelated node checks and checks beyond the exact boundary allowance. Append checks zero nodes. Prepend may check the old first block moving from [0] to [1]; full replacement may check the replacement at [0]. Both are limited to one check. Per-node paths are recorded and a nonzero violation fails the runner."
       },
       "correctness": {
         "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
@@ -546,22 +546,22 @@
     },
     {
       "id": "react-stable-id-overlay-source",
-      "question": "Does one changed stable-ID decoration, annotation, or widget justify incremental mapping at 10,000 and 100,000 source entries?",
+      "question": "Does the shared projection mapping kernel avoid unrelated scans and copies through 100k entities, and stay linear for 10k disjoint, shared-bucket, and wide-item outputs?",
       "owner": "plitejs/react",
       "family": "react-locality",
       "kind": "current",
       "cwd": ".",
       "command": "PLITE_OVERLAY_SOURCE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs",
       "metrics": {
-        "primary": "plite_overlay_decoration_recreated_100000_indexed_median_ms",
+        "primary": "plite_mapped_source_trusted_one_id_p95_ms",
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "The artifact reports all decoration, annotation, and widget median/p95 controls; promotion requires every 100k row to clear the shared gate."
+        "upgrade": "Trusted one-ID changes copy one entity, visit one input, and scan zero unrelated unresolved IDs at 100/1k/10k/100k. Count copied child-map entries as well as rebuilt nodes, including divergent Unicode prefixes. Wide output work stays linear, historical snapshots remain immutable, and recreated external snapshots report their necessary full comparison separately."
       },
       "correctness": {
         "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/projections-and-selection-contract.test.tsx",
-        "policy": "Promotion requires snapshot/subscriber parity plus every 100k concept and churn row above 3x median and 2x p95 speedup."
+        "policy": "Require immutable ordered snapshots, unresolved-state transitions, fault atomicity, divergent Unicode IDs, long prefixes, isolated UTF-16 surrogates, exact Annotation/Widget dependency routing, one changed-ID batch per publication, and strict work/timing budgets."
       },
       "artifacts": [
         {
@@ -573,7 +573,42 @@
         "sources": ["docs/plans/2026-07-19-wordgard-plite-final-extraction.md"]
       },
       "thresholds": {
-        "promotion": "All 100k full-rebuild medians exceed 16.67ms; all indexed rows beat the control by at least 3x median and 2x p95."
+        "promotion": "plite_mapped_source_work_pass=1; copied child entries<=32*affectedOutputs+4096; one-ID trusted p95<=16.67ms including divergent Unicode prefixes; 10k affected-output p95<=100ms; cold creation<=250ms through 10k and <=2500ms at 100k; exact source fingerprints remain stable. Recreated external snapshot timing is diagnostic, not a delta-locality claim."
+      }
+    },
+    {
+      "id": "transient-projection-scalability",
+      "question": "Does one changed remote cursor, Widget, or Find result stay local through 1,000 cursors and 100k text / 10k matches?",
+      "owner": "platejs",
+      "family": "react-locality",
+      "kind": "current",
+      "cwd": ".",
+      "command": "TRANSIENT_PROJECTION_BENCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts packages/platejs/scripts/transient-projection/benchmark-scalability.ts --output=docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+      "metrics": {
+        "primary": "transient_projection_hard_guard_failures",
+        "direction": "lower",
+        "unit": "count",
+        "printsMetric": true,
+        "upgrade": "Promotion requires zero unrelated runtime or keyed-subscriber wakes, exact Yjs decode/resolution counters, linear Find projection work, and parity with causal controls. Isolated projections meet the frame budget; live document edits use the frozen matched-plain-editor overhead budget."
+      },
+      "correctness": {
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/widget-layer-contract.test.tsx && bun test --preload ./config/plite-source-test-setup.ts packages/platejs/test/yjs/awareness-contract.spec.ts packages/platejs/test/yjs/react-contract.spec.tsx && bun test apps/www/src/registry/components/editor/find.spec.tsx",
+        "policy": "The timing claim requires exact Widget identity/wake contracts, Yjs awareness/cache/React behavior, Find result/navigation behavior, and output parity for every causal control."
+      },
+      "artifacts": [
+        {
+          "path": "docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
+          "docs/plans/2026-08-31-transient-projection-scalability-benchmark.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "transient_projection_hard_guard_failures=0 and transient_projection_yjs_forced_stress_runtime_wakes<=1 and isolated projection p95<=frameBudgetMs and live editor p95<=max(plain*1.2,plain+5ms) and correctness=true"
       }
     },
     {
@@ -685,7 +720,7 @@
       "family": "react-large-document",
       "kind": "browser-trace",
       "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
         "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
@@ -699,7 +734,7 @@
       },
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
           "required": true
         }
       ],
@@ -723,7 +758,7 @@
       "family": "react-large-document",
       "kind": "browser-trace",
       "cwd": ".",
-      "command": "PLITE_BROWSER_TRACE_SURFACES=virtualized PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_TYPE_OPS=10 PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json PLITE_BROWSER_TRACE_SURFACES=virtualized PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_TYPE_OPS=10 PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
         "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
@@ -737,7 +772,7 @@
       },
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
+          "path": "tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json",
           "required": true
         }
       ],
@@ -867,21 +902,21 @@
     },
     {
       "id": "core-document-change-current",
-      "question": "How expensive are canonical document changes and replay?",
+      "question": "Do canonical changes and replay meet parity and timing gates, and do text batches publish shared ancestors once?",
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
       "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/document-change.mjs",
       "metrics": {
-        "primary": "transaction_median_ratio",
+        "primary": "plite_document_change_guard_failures",
         "direction": "lower",
-        "unit": "ratio",
-        "printsMetric": false,
-        "upgrade": "Emit benchmark-native METRIC lines when this target joins automated comparison runs."
+        "unit": "count",
+        "printsMetric": true,
+        "upgrade": "Keep original three-run replay/transaction median gates. Text batches through 10k blocks publish one indexed root and stay below 16.67 ms p95 with exact inverse/replay and unchanged identity."
       },
       "correctness": {
-        "command": "pnpm check:plite",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/document-change.test.ts ./packages/plitejs/test/document-change-laws.test.ts",
         "policy": "Canonical replay performance is valid only when the Plite package and browser correctness gate passes."
       },
       "artifacts": [
@@ -925,22 +960,22 @@
     },
     {
       "id": "core-query-anchor-observation",
-      "question": "How expensive are query, anchor, and observation paths?",
+      "question": "Do cached immutable-index reads and small selections stay local through 100,000 blocks, commit queries reuse aggregates, and append-node queries stay local through 10,000 blocks?",
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
+      "command": "PLITE_QUERY_ANCHOR_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
       "metrics": {
-        "primary": "core_benchmark_seconds",
+        "primary": "plite_commit_query_guard_failures",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "count",
+        "printsMetric": true,
+        "upgrade": "Membership and aggregate reads through 10,000 nodes stay below 16.67 ms p95 and reuse result identity. Small selection query groups through 100,000 blocks and append-node path queries through 10,000 blocks enumerate no complete indexes, meet exact key-read limits, and stay below 16.67 ms p95. One hundred cached immutable-index reads through 100,000 blocks must enumerate zero array properties and stay below 16.67 ms p95. Explicit full-document queries remain diagnostic."
       },
       "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/commit-metadata-contract.ts ./packages/plitejs/test/editor-runtime-view-contract.ts ./packages/plitejs/test/architecture-contracts.test.ts",
+        "policy": "Require exact change-kind and root membership, immutable aggregate snapshots, later-commit isolation, and Anchor mapping correctness."
       },
       "artifacts": [
         {
@@ -959,26 +994,61 @@
         "evidenceKitId": "core-query-ref-observation",
         "evidenceKitCategory": "slate-core-query-ref-observation",
         "evidenceKitActive": true
+      },
+      "thresholds": {
+        "promotion": "plite_commit_query_guard_failures=0"
+      }
+    },
+    {
+      "id": "dom-phase-scheduler",
+      "question": "Do pending DOM task flush, cancellation, and keyed replacement avoid quadratic queue maintenance at 100/1,000/10,000/50,000 tasks?",
+      "owner": "plite",
+      "family": "dom-scheduling",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_DOM_PHASE_SCHEDULER_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/dom-phase-scheduler.mjs",
+      "metrics": {
+        "primary": "plite_dom_phase_scheduler_guard_failures",
+        "direction": "lower",
+        "unit": "count",
+        "printsMetric": true,
+        "upgrade": "Flush, cancel, and keyed-replacement p95 must remain below 16.67 ms through 10,000 pending tasks and below 100 ms at 50,000. Require exact callback counts, four-phase ordering, one scheduled frame, and empty queues after teardown."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/dom/dom-phase-scheduler.test.ts",
+        "policy": "Preserve phase order, cancellation during callbacks, keyed coalescing, bounded reentrant loops, original-window timer cancellation, and root-owned teardown."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-dom-phase-scheduler-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-08-31-audit-and-repair-plite-fan-out.md"]
+      },
+      "thresholds": {
+        "promotion": "plite_dom_phase_scheduler_guard_failures=0"
       }
     },
     {
       "id": "core-node-transforms",
-      "question": "How expensive are structural node transforms?",
+      "question": "Do structural transforms preserve exact output and replace one subtree without materializing unrelated runtime identities?",
       "owner": "slate-v2",
       "family": "core-current",
       "kind": "current",
       "cwd": ".",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
+      "command": "PLITE_NODE_TRANSFORMS_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
       "metrics": {
-        "primary": "core_benchmark_seconds",
+        "primary": "plite_node_replacement_locality_failures",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "count",
+        "printsMetric": true,
+        "upgrade": "Replacing one paragraph at 100/1,000/10,000 blocks must leave the prior lazy index unmaterialized, preserve surviving keys and historical reads, and remain below the frozen 100 ms p95 budget. Constructing one text or element split at those widths must read zero full token streams and stay below 16.67 ms p95, with exact properties, inverse and serialized replay."
       },
       "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/commit-metadata-contract.ts ./packages/plitejs/test/document-change-structural-transform.test.ts ./packages/plitejs/test/document-change-relocation.test.ts",
+        "policy": "The locality guard supplements exact transform, runtime identity, and immutable historical snapshot contracts; strict package/browser proof remains a handoff gate."
       },
       "artifacts": [
         {
@@ -1077,22 +1147,22 @@
     },
     {
       "id": "core-anchors-projection",
-      "question": "How expensive are anchors and projection paths?",
-      "owner": "slate-v2",
-      "family": "core-current",
+      "question": "Do live Anchors avoid unrelated fan-out through 10,000 handles, and do two-leaf range projections stay local through 100,000 leaves?",
+      "owner": "plite",
+      "family": "core-anchor",
       "kind": "current",
       "cwd": ".",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs",
+      "command": "PLITE_ANCHORS_PROJECTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs --output=tmp/plite-anchors-projection-benchmark.json",
       "metrics": {
-        "primary": "core_benchmark_seconds",
+        "primary": "plite_anchor_state_distributed_10000_p95_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "upgrade": "Distributed 100/1,000/10,000 edits must visit only the affected Anchor bucket; 10,000 co-located Anchors remain legitimately O(affected). Two-leaf wide-block and cross-block projections through 100,000 leaves must read exactly two runtime keys without building a global text index."
       },
       "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/architecture-contracts.test.ts ./packages/plitejs/test/snapshot-contract.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx",
+        "policy": "Promotion requires the complete Anchor/range/collaboration mapping contract, Annotation consumer contract, zero unrelated Anchor visits, and exact public Anchor lifetime behavior."
       },
       "artifacts": [
         {
@@ -1101,10 +1171,10 @@
         }
       ],
       "docs": {
-        "sources": [
-          "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md"
-        ]
+        "sources": ["docs/plans/2026-08-31-audit-and-repair-plite-fan-out.md"]
+      },
+      "thresholds": {
+        "promotion": "100/1,000 distributed p95<=16.67ms; 10,000 distributed p95<=max(base*1.2,base+5ms); 10,000 same-leaf p95<=100ms; cold 10,000 Anchor creation max<=250ms; bulk 10,000 Anchor resolve/release max<=100ms; begin visits=0; distributed change/commit visits<=1; unrelated visits=0; projection key reads=2 and p95<=16.67ms through 100,000 leaves; correctness failures=0"
       },
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
@@ -1126,7 +1196,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst measured p95 across issue-shaped paste, copy, and cut work only. Supporting metrics isolate setup and correctness inspection, DOM encode/decode, HostCodec parse, detached fit, slice commit, changed spans, structural retention, heap deltas, retained heap with exposed GC, correctness failures, and fixed issue-budget failures."
+        "upgrade": "Primary metric is the worst measured p95 across issue-shaped paste, copy, and cut work only. Supporting metrics isolate setup and correctness inspection, DOM encode/decode, HostCodec parse, detached fit, slice commit, changed spans, structural retention, heap deltas, retained heap with exposed GC, correctness failures, and fixed issue-budget failures. Untimed full-copy work guards require zero missing-DOM identity builds and zero preserve-only property visits."
       },
       "correctness": {
         "command": "bun test benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts",
@@ -1195,17 +1265,20 @@
       "family": "collaboration",
       "kind": "current",
       "cwd": ".",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
+      "command": "PLITE_COLLAB_READINESS_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
       "metrics": {
-        "primary": "benchmark_seconds",
+        "primary": "collab_replacement_max_ms",
         "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
+        "unit": "ms",
+        "printsMetric": true,
+        "guards": [
+          "collab_replacement_max_node_reads_per_block",
+          "collab_readiness_guard_failures"
+        ]
       },
       "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/document-change.test.ts ./packages/plitejs/test/snapshot-contract.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/history",
+        "policy": "Preserve canonical identity, split/merge/move, history, anchors and replacement locality."
       },
       "artifacts": [
         {

@@ -313,15 +313,6 @@ export const Plite = <
   return <PliteSingleEditor {...props} editor={props.editor} />;
 };
 
-type PliteRuntimeViewProps<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly unknown[],
-> = PliteProps<V, TExtensions> & {
-  runtimeContext: NonNullable<
-    ReturnType<typeof useOptionalPliteRuntimeContext>
-  >;
-};
-
 const PliteRuntimeView = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly unknown[],
@@ -335,7 +326,11 @@ const PliteRuntimeView = <
   readOnly = false,
   root,
   runtimeContext,
-}: PliteRuntimeViewProps<V, TExtensions>) => {
+}: PliteProps<V, TExtensions> & {
+  runtimeContext: NonNullable<
+    ReturnType<typeof useOptionalPliteRuntimeContext>
+  >;
+}) => {
   const { getView, registerViewEditor } = runtimeContext;
   const editor = useMemo(() => {
     const view = getView({
@@ -389,13 +384,6 @@ const PliteRuntimeView = <
       </ProjectionContext>
     </EditorSelectorContext>
   );
-};
-
-type PliteSingleEditorProps<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly unknown[],
-> = PliteProps<V, TExtensions> & {
-  editor: ReactEditorType<V, TExtensions>;
 };
 
 const usePliteChangeCallbacks = <
@@ -524,7 +512,9 @@ const PliteSingleEditor = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly unknown[],
 >(
-  props: PliteSingleEditorProps<V, TExtensions>
+  props: PliteProps<V, TExtensions> & {
+    editor: ReactEditorType<V, TExtensions>;
+  }
 ) => {
   const {
     annotationStore = null,

@@ -114,6 +114,7 @@ Start Gates:
 | Implementation expectation recorded | pending | pending |
 | Workspace authority selected | pending | pending |
 | Branch / PR expectation decided | pending | pending |
+| Runtime scale applicability resolved | pending | Identify repeated units, collection/document/DOM growth, fan-out, hot work, and runtime-layer changes; apply `performance-observability` when any can change, or record a source-backed N/A |
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
@@ -141,7 +142,11 @@ Work Checklist:
 - [ ] Review or pressure lenses are selected and completed, or marked N/A with
       reason.
 - [ ] If implementation happens, touched-surface packs cover docs, browser,
-      package/API, or agent-native surfaces as needed.
+      package/API, performance/observability, or agent-native surfaces as needed.
+- [ ] Scale-sensitive architecture/API work materializes the performance pack
+      and completes an executable current-owner versus proposed-target probe
+      before the target is accepted; prose budgets and deferred measurement do
+      not satisfy this row.
 - [ ] Workspace authority recorded: every proof command names the cwd/tool that
       owns the analyzed or changed behavior.
 - [ ] Output budget discipline recorded and followed: broad searches are
@@ -155,6 +160,8 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the repo audit, consume the Benchmark handoff, or run the review/prototype/artifact check named in this plan | pending |
 | Current-state source audit | pending | Map current owner, boundaries, constraints, and affected surfaces | pending |
+| Pre-acceptance scale proof | pending | For scale-sensitive architecture, record the frozen budget, current baseline, target prototype/result, cohorts, deterministic cost indicators, timing/noise, source identities, and correctness guard; otherwise give a source-backed zero-runtime N/A | pending |
+| Production scale rerun contract | pending | For implementation, name and run the exact final production-path cohort/budget command plus correctness guard; planning-only work names the future owner and command | pending |
 | Decision criteria closure | pending | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | pending |
 | Options / tradeoffs / rejection record | pending | Record viable options, chosen recommendation, and why alternatives lose | pending |
 | Review / pressure pass | pending | Run selected reviewer/lens or record N/A with reason | pending |

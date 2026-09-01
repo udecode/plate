@@ -1,0 +1,551 @@
+{
+  "artifactVersion": 3,
+  "benchmark": "plite-anchor-state-scalability",
+  "budgets": {
+    "bulkReleaseMaxMs": 100,
+    "coldAnchorCreationMaxMs": 250,
+    "distributedOverheadP95Ms": 5,
+    "frameP95Ms": 16.67,
+    "pathologicalP95Ms": 100
+  },
+  "environment": {
+    "arch": "arm64",
+    "bun": "1.3.12",
+    "cpu": "Apple M5 Max",
+    "cpuCount": 18,
+    "platform": "darwin",
+    "release": "25.3.0"
+  },
+  "generatedAt": "2026-08-31T16:17:13.796Z",
+  "pass": false,
+  "projectionRows": [
+    {
+      "count": 100,
+      "shape": "cross-block",
+      "durationMs": {
+        "max": 0.183291,
+        "mean": 0.103021,
+        "min": 0.083041,
+        "p50": 0.093209,
+        "p75": 0.105167,
+        "p95": 0.143291,
+        "p99": null,
+        "packetP95": [
+          0.143291
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 100,
+      "pass": false
+    },
+    {
+      "count": 100,
+      "shape": "wide-block",
+      "durationMs": {
+        "max": 0.284709,
+        "mean": 0.119308,
+        "min": 0.078,
+        "p50": 0.104417,
+        "p75": 0.118209,
+        "p95": 0.20825,
+        "p99": null,
+        "packetP95": [
+          0.20825
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 100,
+      "pass": false
+    },
+    {
+      "count": 1000,
+      "shape": "cross-block",
+      "durationMs": {
+        "max": 1.430458,
+        "mean": 1.101402,
+        "min": 0.899375,
+        "p50": 1.075125,
+        "p75": 1.23875,
+        "p95": 1.29425,
+        "p99": null,
+        "packetP95": [
+          1.29425
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 1000,
+      "pass": false
+    },
+    {
+      "count": 1000,
+      "shape": "wide-block",
+      "durationMs": {
+        "max": 1.209542,
+        "mean": 0.914696,
+        "min": 0.79375,
+        "p50": 0.86225,
+        "p75": 0.982833,
+        "p95": 1.143625,
+        "p99": null,
+        "packetP95": [
+          1.143625
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 1000,
+      "pass": false
+    },
+    {
+      "count": 10000,
+      "shape": "cross-block",
+      "durationMs": {
+        "max": 17.68,
+        "mean": 15.007521,
+        "min": 13.235709,
+        "p50": 14.71775,
+        "p75": 15.506167,
+        "p95": 17.015791,
+        "p99": null,
+        "packetP95": [
+          17.015791
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 10000,
+      "pass": false
+    },
+    {
+      "count": 10000,
+      "shape": "wide-block",
+      "durationMs": {
+        "max": 11.676166,
+        "mean": 10.784531,
+        "min": 10.150875,
+        "p50": 10.697333,
+        "p75": 10.991791,
+        "p95": 11.45175,
+        "p99": null,
+        "packetP95": [
+          11.45175
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 10000,
+      "pass": false
+    },
+    {
+      "count": 100000,
+      "shape": "cross-block",
+      "durationMs": {
+        "max": 240.662292,
+        "mean": 154.572977,
+        "min": 135.960542,
+        "p50": 140.884958,
+        "p75": 151.607166,
+        "p95": 211.854416,
+        "p99": null,
+        "packetP95": [
+          211.854416
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 100000,
+      "pass": false
+    },
+    {
+      "count": 100000,
+      "shape": "wide-block",
+      "durationMs": {
+        "max": 252.185834,
+        "mean": 149.421817,
+        "min": 128.245584,
+        "p50": 138.493834,
+        "p75": 146.907792,
+        "p95": 216.652625,
+        "p99": null,
+        "packetP95": [
+          216.652625
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 20
+      },
+      "maxKeyReads": 100000,
+      "pass": false
+    }
+  ],
+  "rows": [
+    {
+      "budgetMs": 16.67,
+      "cohort": "distributed:nodes=100:anchors=100",
+      "expectedComplexity": "O(affected anchors) edit publication",
+      "anchor": {
+        "max": 2.732625,
+        "mean": 2.009192,
+        "min": 1.186833,
+        "p50": 2.0595,
+        "p75": 2.28975,
+        "p95": 2.57225,
+        "p99": null,
+        "packetP95": [
+          2.732625,
+          2.414125,
+          2.309875
+        ],
+        "p95PacketNoiseMs": 0.42275,
+        "sampleCount": 36
+      },
+      "base": {
+        "max": 5.843375,
+        "mean": 1.816977,
+        "min": 0.995375,
+        "p50": 1.609833,
+        "p75": 1.939167,
+        "p95": 4.099417,
+        "p99": null,
+        "packetP95": [
+          5.843375,
+          4.099417,
+          2.868209
+        ],
+        "p95PacketNoiseMs": 2.975166,
+        "sampleCount": 36
+      },
+      "bulkRelease": {
+        "max": 1.076417,
+        "mean": 1.076417,
+        "min": 1.076417,
+        "p50": 1.076417,
+        "p75": 1.076417,
+        "p95": 1.076417,
+        "p99": null,
+        "packetP95": [
+          1.076417
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "coldAnchorCreation": {
+        "max": 3.0355,
+        "mean": 3.0355,
+        "min": 3.0355,
+        "p50": 3.0355,
+        "p75": 3.0355,
+        "p95": 3.0355,
+        "p99": null,
+        "packetP95": [
+          3.0355
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "correctnessGuards": [
+        "exact range after every affected edit",
+        "unread target after unrelated-then-affected edits",
+        "unchanged ranges retain their positions",
+        "all released handles expire"
+      ],
+      "contract": {
+        "packets": 3,
+        "samplesPerPacket": 12,
+        "warmups": 8
+      },
+      "work": {
+        "beginVisitedAnchors": 0,
+        "changeVisitedAnchors": 1,
+        "commitVisitedAnchors": 1,
+        "discardVisitedAnchors": 0,
+        "affectedAnchors": 1,
+        "unrelatedChangeVisits": 0
+      },
+      "pass": true
+    },
+    {
+      "budgetMs": 16.67,
+      "cohort": "distributed:nodes=1000:anchors=1000",
+      "expectedComplexity": "O(affected anchors) edit publication",
+      "anchor": {
+        "max": 13.046792,
+        "mean": 8.899311,
+        "min": 6.926541,
+        "p50": 8.484625,
+        "p75": 9.212958,
+        "p95": 12.675,
+        "p99": null,
+        "packetP95": [
+          10.718375,
+          13.046792,
+          11.385
+        ],
+        "p95PacketNoiseMs": 2.328417,
+        "sampleCount": 36
+      },
+      "base": {
+        "max": 10.88025,
+        "mean": 8.108287,
+        "min": 6.800125,
+        "p50": 7.980625,
+        "p75": 8.478292,
+        "p95": 10.466458,
+        "p99": null,
+        "packetP95": [
+          10.466458,
+          10.88025,
+          8.828625
+        ],
+        "p95PacketNoiseMs": 2.051625,
+        "sampleCount": 36
+      },
+      "bulkRelease": {
+        "max": 6.862833,
+        "mean": 6.862833,
+        "min": 6.862833,
+        "p50": 6.862833,
+        "p75": 6.862833,
+        "p95": 6.862833,
+        "p99": null,
+        "packetP95": [
+          6.862833
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "coldAnchorCreation": {
+        "max": 5.815792,
+        "mean": 5.815792,
+        "min": 5.815792,
+        "p50": 5.815792,
+        "p75": 5.815792,
+        "p95": 5.815792,
+        "p99": null,
+        "packetP95": [
+          5.815792
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "correctnessGuards": [
+        "exact range after every affected edit",
+        "unread target after unrelated-then-affected edits",
+        "unchanged ranges retain their positions",
+        "all released handles expire"
+      ],
+      "contract": {
+        "packets": 3,
+        "samplesPerPacket": 12,
+        "warmups": 8
+      },
+      "work": {
+        "beginVisitedAnchors": 0,
+        "changeVisitedAnchors": 1,
+        "commitVisitedAnchors": 1,
+        "discardVisitedAnchors": 0,
+        "affectedAnchors": 1,
+        "unrelatedChangeVisits": 0
+      },
+      "pass": true
+    },
+    {
+      "budgetMs": 139.2123,
+      "cohort": "distributed:nodes=10000:anchors=10000",
+      "expectedComplexity": "O(affected anchors) edit publication",
+      "anchor": {
+        "max": 105.780625,
+        "mean": 96.553256,
+        "min": 87.110084,
+        "p50": 96.192084,
+        "p75": 102.774875,
+        "p95": 105.780625,
+        "p99": null,
+        "packetP95": [
+          105.780625,
+          98.88175,
+          104.885916
+        ],
+        "p95PacketNoiseMs": 6.898875,
+        "sampleCount": 15
+      },
+      "base": {
+        "max": 116.01025,
+        "mean": 99.180919,
+        "min": 89.272291,
+        "p50": 97.665542,
+        "p75": 104.844417,
+        "p95": 116.01025,
+        "p99": null,
+        "packetP95": [
+          104.844417,
+          116.01025,
+          111.814458
+        ],
+        "p95PacketNoiseMs": 11.165833,
+        "sampleCount": 15
+      },
+      "bulkRelease": {
+        "max": 41.734125,
+        "mean": 41.734125,
+        "min": 41.734125,
+        "p50": 41.734125,
+        "p75": 41.734125,
+        "p95": 41.734125,
+        "p99": null,
+        "packetP95": [
+          41.734125
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "coldAnchorCreation": {
+        "max": 49.740042,
+        "mean": 49.740042,
+        "min": 49.740042,
+        "p50": 49.740042,
+        "p75": 49.740042,
+        "p95": 49.740042,
+        "p99": null,
+        "packetP95": [
+          49.740042
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "correctnessGuards": [
+        "exact range after every affected edit",
+        "unread target after unrelated-then-affected edits",
+        "unchanged ranges retain their positions",
+        "all released handles expire"
+      ],
+      "contract": {
+        "packets": 3,
+        "samplesPerPacket": 5,
+        "warmups": 2
+      },
+      "work": {
+        "beginVisitedAnchors": 0,
+        "changeVisitedAnchors": 1,
+        "commitVisitedAnchors": 1,
+        "discardVisitedAnchors": 0,
+        "affectedAnchors": 1,
+        "unrelatedChangeVisits": 0
+      },
+      "pass": true
+    },
+    {
+      "budgetMs": 100,
+      "cohort": "pathological:nodes=1:anchors=10000",
+      "expectedComplexity": "O(affected anchors) edit publication",
+      "anchor": {
+        "max": 74.350417,
+        "mean": 54.64362,
+        "min": 47.75375,
+        "p50": 51.535209,
+        "p75": 55.200042,
+        "p95": 74.350417,
+        "p99": null,
+        "packetP95": [
+          74.350417,
+          50.00725,
+          73.207209
+        ],
+        "p95PacketNoiseMs": 24.343167,
+        "sampleCount": 15
+      },
+      "base": {
+        "max": 1.061167,
+        "mean": 0.680142,
+        "min": 0.378125,
+        "p50": 0.782542,
+        "p75": 0.8435,
+        "p95": 1.061167,
+        "p99": null,
+        "packetP95": [
+          1.061167,
+          0.813292,
+          0.900375
+        ],
+        "p95PacketNoiseMs": 0.247875,
+        "sampleCount": 15
+      },
+      "bulkRelease": {
+        "max": 6.142958,
+        "mean": 6.142958,
+        "min": 6.142958,
+        "p50": 6.142958,
+        "p75": 6.142958,
+        "p95": 6.142958,
+        "p99": null,
+        "packetP95": [
+          6.142958
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "coldAnchorCreation": {
+        "max": 21.741208,
+        "mean": 21.741208,
+        "min": 21.741208,
+        "p50": 21.741208,
+        "p75": 21.741208,
+        "p95": 21.741208,
+        "p99": null,
+        "packetP95": [
+          21.741208
+        ],
+        "p95PacketNoiseMs": 0,
+        "sampleCount": 1
+      },
+      "correctnessGuards": [
+        "exact range after every affected edit",
+        "unread target after unrelated-then-affected edits",
+        "unchanged ranges retain their positions",
+        "all released handles expire"
+      ],
+      "contract": {
+        "packets": 3,
+        "samplesPerPacket": 5,
+        "warmups": 2
+      },
+      "work": {
+        "beginVisitedAnchors": 0,
+        "changeVisitedAnchors": 10000,
+        "commitVisitedAnchors": 10000,
+        "discardVisitedAnchors": 0,
+        "affectedAnchors": 10000,
+        "unrelatedChangeVisits": 0
+      },
+      "pass": true
+    }
+  ],
+  "sourceIdentity": {
+    "head": "377a77a537971b793a4ddbb34cc13797fdfeee15",
+    "measuredInputs": {
+      "benchmarks/slate-v2/donor/core/current/anchors-projection.mjs": "be72e356672e33e85e1392105f80088e00a6e2a9612e7506bb8ae3290b1fff04",
+      "packages/plitejs/src/core/anchor-state.ts": "16b2b543c48c1c4eb675144839f8fc4c48127bf6338b40ff231b19fae72720cc",
+      "packages/plitejs/src/core/anchor.ts": "43725e8ab154839e051e8ef361417f764959c46a43b7dcbdc818452b705da618",
+      "packages/plitejs/src/core/commit.ts": "49674a4a227761e0e6afab226daca8381c4c3d419ce22860783ebdcaf65638ab",
+      "packages/plitejs/src/core/public-state.ts": "1457b08e4f6d172e062437e4d8719555dccecd9b8ee2ced52708f8850498893b",
+      "packages/plitejs/src/core/snapshot-index.ts": "49e04c92f53042a2a80ac869e7cd102160a3572a9c3c4d16d87b91b0085548f6",
+      "packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+      "packages/plitejs/src/core/change/document-index.ts": "a412a67d233ec01f07da4031582fad3c0f1a35854e1b24c881b83ced485b9e19",
+      "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+      "packages/plitejs/src/range-projection.ts": "b842628fade9ad01db999c5de53c9d96011b6583282e104854fe9709ecf1833c"
+    }
+  },
+  "summary": {
+    "correctnessFailures": 0,
+    "distributed10000P95Ms": 105.780625,
+    "maxColdAnchorCreationMs": 49.740042,
+    "maxBulkReleaseMs": 41.734125,
+    "maxUnrelatedChangeVisits": 0,
+    "pathological10000P95Ms": 74.350417,
+    "redCohorts": [],
+    "projectionFailures": 8,
+    "projectionWorstP95Ms": 216.652625
+  }
+}

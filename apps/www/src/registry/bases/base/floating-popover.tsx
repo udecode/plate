@@ -14,23 +14,6 @@ type FloatingAnchor =
     }
   | null;
 
-type FloatingPopoverProps = React.PropsWithChildren<{
-  defaultOpen?: boolean;
-  modal?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  open?: boolean;
-}>;
-
-type FloatingPopoverContentProps = React.ComponentPropsWithoutRef<'div'> & {
-  align?: 'center' | 'end' | 'start';
-  alignOffset?: number;
-  onFinalFocus?: (event: Event) => void;
-  onEscapeKeyDown?: (event: KeyboardEvent) => void;
-  onInitialFocus?: (event: Event) => void;
-  side?: 'bottom' | 'left' | 'right' | 'top';
-  sideOffset?: number;
-};
-
 type FloatingPopoverContextValue = {
   anchor: Exclude<FloatingAnchor, React.ReactElement>;
   open: boolean;
@@ -68,7 +51,12 @@ export function FloatingPopover({
   onOpenChange,
   open,
   ...props
-}: FloatingPopoverProps) {
+}: React.PropsWithChildren<{
+  defaultOpen?: boolean;
+  modal?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+}>) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const [anchor, setAnchor] =
     React.useState<Exclude<FloatingAnchor, React.ReactElement>>(null);
@@ -142,7 +130,15 @@ export function FloatingPopoverContent({
   sideOffset = 4,
   style,
   ...props
-}: FloatingPopoverContentProps) {
+}: React.ComponentPropsWithoutRef<'div'> & {
+  align?: 'center' | 'end' | 'start';
+  alignOffset?: number;
+  onFinalFocus?: (event: Event) => void;
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
+  onInitialFocus?: (event: Event) => void;
+  side?: 'bottom' | 'left' | 'right' | 'top';
+  sideOffset?: number;
+}) {
   const { anchor, open } = useFloatingPopoverContext();
 
   return (

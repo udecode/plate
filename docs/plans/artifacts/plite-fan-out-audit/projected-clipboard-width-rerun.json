@@ -1,0 +1,98 @@
+{
+  "projectedClipboardLocality": {
+    "documentWidthRatio": 0.5253352727272728,
+    "hostSerializationWidthRatio": 1.165259839316587,
+    "iterations": 1,
+    "rows": [
+      {
+        "blocks": 1000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 171875,
+          "p95": 195541,
+          "p99": 195541
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 19666,
+          "p95": 107333,
+          "p99": 107333
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 918,
+        "selectedNodes": 2
+      },
+      {
+        "blocks": 50000,
+        "rootValidationPropertyReads": 0,
+        "fragmentNs": {
+          "p50": 90292,
+          "p95": 108875,
+          "p99": 108875
+        },
+        "fragmentReads": 5,
+        "hostWriteNs": {
+          "p50": 22916,
+          "p95": 51042,
+          "p99": 51042
+        },
+        "hostWrites": 5,
+        "openEnd": 1,
+        "openStart": 1,
+        "payloadBytes": 918,
+        "selectedNodes": 2
+      }
+    ]
+  },
+  "typecheckBudget": {
+    "checkTimeRatio": 2.084391336818521,
+    "instantiationRatio": 1.5607057681997285,
+    "rows": [
+      {
+        "checkMs": 1339,
+        "instantiations": 6707188,
+        "memoryBytes": 1043122176,
+        "totalMs": 1379,
+        "types": 1188959,
+        "plugins": 100
+      },
+      {
+        "checkMs": 2791,
+        "instantiations": 10467947,
+        "memoryBytes": 1406665728,
+        "totalMs": 2833,
+        "types": 1607788,
+        "plugins": 1000
+      }
+    ],
+    "wideningBoundary": "The 100-plugin fixture preserves a literal tuple. The 1,000-plugin fixture explicitly widens to readonly AnyBasePlugin[] so editor inference stays bounded while every descriptor still typechecks."
+  },
+  "sourceBefore": {
+    "packages/plitejs/src/core/public-state.ts": "6d99b81c2f2f0dc46b548b2b5016f25f3cd837ff400f230e3aff5af0a2bf3db4",
+    "packages/plitejs/src/core/get-content-slice.ts": "f07ac943c0c9be799cb2e826b7677c45082a729c6a47ace791bc1e8592826817",
+    "packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "packages/plitejs/src/core/snapshot-index.ts": "7a844b6b7a48055c0d8be2aca5b670683d786a03beb3c856aec864b4a24a47a1",
+    "packages/plitejs/src/core/schema-compiler.ts": "ecefd96432f12fc2ef52efe1f16f842379660f75302e2680811e1de8c6f76d6f",
+    "packages/plitejs/src/core/editor-schema.ts": "3d0e9869216d07c6119b4cbc554f72630fb9e0aacc97370159ee82344c6a5a2b",
+    "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "5f870518895f714791b92fbe04cc723f8ed3bcade923db3e581eb4f6454143c5",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "7329a683b7a3fde565adeaf53d98f945b501d50983aeef00160d26037529b162",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "1bdde902fd27ddb50a0cba07877689a5ab817dafb5a70720e078d10944bf771c"
+  },
+  "sourceAfter": {
+    "packages/plitejs/src/core/public-state.ts": "6d99b81c2f2f0dc46b548b2b5016f25f3cd837ff400f230e3aff5af0a2bf3db4",
+    "packages/plitejs/src/core/get-content-slice.ts": "f07ac943c0c9be799cb2e826b7677c45082a729c6a47ace791bc1e8592826817",
+    "packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "packages/plitejs/src/core/snapshot-index.ts": "7a844b6b7a48055c0d8be2aca5b670683d786a03beb3c856aec864b4a24a47a1",
+    "packages/plitejs/src/core/schema-compiler.ts": "ecefd96432f12fc2ef52efe1f16f842379660f75302e2680811e1de8c6f76d6f",
+    "packages/plitejs/src/core/editor-schema.ts": "3d0e9869216d07c6119b4cbc554f72630fb9e0aacc97370159ee82344c6a5a2b",
+    "packages/plitejs/src/interfaces/node.ts": "e6be3923d652710abe3cc62e72f28ab5329770d4bb09f9dfcd773f1a36584291",
+    "packages/plitejs/src/react/editable/projected-clipboard.ts": "5f870518895f714791b92fbe04cc723f8ed3bcade923db3e581eb4f6454143c5",
+    "benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.ts": "7329a683b7a3fde565adeaf53d98f945b501d50983aeef00160d26037529b162",
+    "benchmarks/editor/benchmarks/plite-schema-typecheck-budget.mjs": "1bdde902fd27ddb50a0cba07877689a5ab817dafb5a70720e078d10944bf771c"
+  },
+  "generatedAt": "2026-08-31T17:45:13.036Z",
+  "scope": "Runtime clipboard guards pass; full schema target fails existing Plate typecheck instantiation and memory budgets."
+}

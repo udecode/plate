@@ -1,0 +1,874 @@
+{
+  "command": "PLITE_BROWSER_TRACE_BLOCKS=200 PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_SURFACES=defaultAuto,virtualized PLITE_BROWSER_TRACE_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+  "artifact": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-virtualized-blocks-200-iters-5-ops-10-after-delete-type-after-delete-text-after-200k-delete-run-2026-08-31T20-13-06.146Z.json",
+  "sourceManifest": "docs/plans/artifacts/plite-fan-out-audit/final-source-membership-before.json",
+  "status": "passed",
+  "limits": "Five samples per lane; navigation-to-ready includes runner settling and is not an isolated mount cost.",
+  "meta": {
+    "blocks": 200,
+    "browser": "chromium",
+    "externalBaseUrl": null,
+    "headless": true,
+    "iterations": 5,
+    "runLabel": null,
+    "runStartedAt": "2026-08-31T20:13:06.146Z",
+    "selectAllDelete": false,
+    "typeOps": 10
+  },
+  "surfaces": {
+    "defaultAuto": {
+      "nativeSurface": {
+        "timeouts": 0,
+        "observedBlocks": {
+          "samples": [
+            200,
+            200,
+            200,
+            200,
+            200
+          ],
+          "mean": 200,
+          "median": 200,
+          "p75": 200,
+          "p95": 200,
+          "p99": 200,
+          "min": 200,
+          "max": 200
+        },
+        "navigationToReady": {
+          "samples": [
+            542.47,
+            542.41,
+            544.76,
+            542.67,
+            550.8
+          ],
+          "mean": 544.62,
+          "median": 542.67,
+          "p75": 544.76,
+          "p95": 550.8,
+          "p99": 550.8,
+          "min": 542.41,
+          "max": 550.8
+        }
+      },
+      "lanes": {
+        "startBlock": {
+          "typeToPaint": {
+            "samples": [
+              14.7,
+              12.3,
+              11.3,
+              13.1,
+              16.6
+            ],
+            "mean": 13.6,
+            "median": 13.1,
+            "p75": 14.7,
+            "p95": 16.6,
+            "p99": 16.6,
+            "min": 11.3,
+            "max": 16.6
+          },
+          "domNodes": {
+            "samples": [
+              1053,
+              1053,
+              1053,
+              1053,
+              1053
+            ],
+            "mean": 1053,
+            "median": 1053,
+            "p75": 1053,
+            "p95": 1053,
+            "p99": 1053,
+            "min": 1053,
+            "max": 1053
+          },
+          "editorElements": {
+            "samples": [
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "mean": 200,
+            "median": 200,
+            "p75": 200,
+            "p95": 200,
+            "p99": 200,
+            "min": 200,
+            "max": 200
+          },
+          "selectToPaint": {
+            "samples": [
+              47.7,
+              55.3,
+              54.6,
+              55.4,
+              54.6
+            ],
+            "mean": 53.52,
+            "median": 54.6,
+            "p75": 55.3,
+            "p95": 55.4,
+            "p99": 55.4,
+            "min": 47.7,
+            "max": 55.4
+          },
+          "selectionReady": {
+            "samples": [
+              16.7,
+              27.4,
+              24,
+              28,
+              28.1
+            ],
+            "mean": 24.84,
+            "median": 27.4,
+            "p75": 28,
+            "p95": 28.1,
+            "p99": 28.1,
+            "min": 16.7,
+            "max": 28.1
+          },
+          "materializedSelectToPaint": {
+            "samples": [
+              48.7,
+              49.6,
+              49.5,
+              50.3,
+              50.1
+            ],
+            "mean": 49.64,
+            "median": 49.6,
+            "p75": 50.1,
+            "p95": 50.3,
+            "p99": 50.3,
+            "min": 48.7,
+            "max": 50.3
+          },
+          "materializedSelectionReady": {
+            "samples": [
+              22.5,
+              21.3,
+              20,
+              21.3,
+              22.2
+            ],
+            "mean": 21.46,
+            "median": 21.3,
+            "p75": 22.2,
+            "p95": 22.5,
+            "p99": 22.5,
+            "min": 20,
+            "max": 22.5
+          },
+          "clickToPaint": {
+            "samples": [
+              27.5,
+              28.8,
+              18.7,
+              26.5,
+              27.8
+            ],
+            "mean": 25.86,
+            "median": 27.5,
+            "p75": 27.8,
+            "p95": 28.8,
+            "p99": 28.8,
+            "min": 18.7,
+            "max": 28.8
+          },
+          "clickToSelectionReady": {
+            "samples": [
+              13,
+              15.8,
+              8.5,
+              9.5,
+              10.9
+            ],
+            "mean": 11.54,
+            "median": 10.9,
+            "p75": 13,
+            "p95": 15.8,
+            "p99": 15.8,
+            "min": 8.5,
+            "max": 15.8
+          },
+          "burstPerOp": {
+            "samples": [
+              6.27,
+              4.75,
+              4.66,
+              4.76,
+              5.48
+            ],
+            "mean": 5.18,
+            "median": 4.76,
+            "p75": 5.48,
+            "p95": 6.27,
+            "p99": 6.27,
+            "min": 4.66,
+            "max": 6.27
+          },
+          "modelTypeToPaint": {
+            "samples": [
+              62.7,
+              47.5,
+              46.6,
+              47.6,
+              54.8
+            ],
+            "mean": 51.84,
+            "median": 47.6,
+            "p75": 54.8,
+            "p95": 62.7,
+            "p99": 62.7,
+            "min": 46.6,
+            "max": 62.7
+          },
+          "longTaskMax": {
+            "samples": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mean": 0,
+            "median": 0,
+            "p75": 0,
+            "p95": 0,
+            "p99": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        "middleBlock": {
+          "typeToPaint": {
+            "samples": [
+              19,
+              17.8,
+              16.1,
+              18.1,
+              10.4
+            ],
+            "mean": 16.28,
+            "median": 17.8,
+            "p75": 18.1,
+            "p95": 19,
+            "p99": 19,
+            "min": 10.4,
+            "max": 19
+          },
+          "domNodes": {
+            "samples": [
+              1053,
+              1053,
+              1053,
+              1053,
+              1053
+            ],
+            "mean": 1053,
+            "median": 1053,
+            "p75": 1053,
+            "p95": 1053,
+            "p99": 1053,
+            "min": 1053,
+            "max": 1053
+          },
+          "editorElements": {
+            "samples": [
+              200,
+              200,
+              200,
+              200,
+              200
+            ],
+            "mean": 200,
+            "median": 200,
+            "p75": 200,
+            "p95": 200,
+            "p99": 200,
+            "min": 200,
+            "max": 200
+          },
+          "selectToPaint": {
+            "samples": [
+              48.6,
+              50.2,
+              51.9,
+              50.6,
+              49.8
+            ],
+            "mean": 50.22,
+            "median": 50.2,
+            "p75": 50.6,
+            "p95": 51.9,
+            "p99": 51.9,
+            "min": 48.6,
+            "max": 51.9
+          },
+          "selectionReady": {
+            "samples": [
+              17.7,
+              20.5,
+              20.6,
+              18.9,
+              19.9
+            ],
+            "mean": 19.52,
+            "median": 19.9,
+            "p75": 20.5,
+            "p95": 20.6,
+            "p99": 20.6,
+            "min": 17.7,
+            "max": 20.6
+          },
+          "materializedSelectToPaint": {
+            "samples": [
+              49.3,
+              49.6,
+              50.5,
+              48.6,
+              49.9
+            ],
+            "mean": 49.58,
+            "median": 49.6,
+            "p75": 49.9,
+            "p95": 50.5,
+            "p99": 50.5,
+            "min": 48.6,
+            "max": 50.5
+          },
+          "materializedSelectionReady": {
+            "samples": [
+              18.6,
+              18.9,
+              18.5,
+              17.7,
+              18.4
+            ],
+            "mean": 18.42,
+            "median": 18.5,
+            "p75": 18.6,
+            "p95": 18.9,
+            "p99": 18.9,
+            "min": 17.7,
+            "max": 18.9
+          },
+          "clickToPaint": {
+            "samples": [
+              22.2,
+              22.9,
+              22.9,
+              22.7,
+              23.1
+            ],
+            "mean": 22.76,
+            "median": 22.9,
+            "p75": 22.9,
+            "p95": 23.1,
+            "p99": 23.1,
+            "min": 22.2,
+            "max": 23.1
+          },
+          "clickToSelectionReady": {
+            "samples": [
+              9.8,
+              10.5,
+              9.8,
+              11.3,
+              10
+            ],
+            "mean": 10.28,
+            "median": 10,
+            "p75": 10.5,
+            "p95": 11.3,
+            "p99": 11.3,
+            "min": 9.8,
+            "max": 11.3
+          },
+          "burstPerOp": {
+            "samples": [
+              4.66,
+              4.67,
+              4.69,
+              4.65,
+              3.91
+            ],
+            "mean": 4.52,
+            "median": 4.66,
+            "p75": 4.67,
+            "p95": 4.69,
+            "p99": 4.69,
+            "min": 3.91,
+            "max": 4.69
+          },
+          "modelTypeToPaint": {
+            "samples": [
+              46.6,
+              46.7,
+              46.9,
+              46.5,
+              39.1
+            ],
+            "mean": 45.16,
+            "median": 46.6,
+            "p75": 46.7,
+            "p95": 46.9,
+            "p99": 46.9,
+            "min": 39.1,
+            "max": 46.9
+          },
+          "longTaskMax": {
+            "samples": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mean": 0,
+            "median": 0,
+            "p75": 0,
+            "p95": 0,
+            "p99": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      }
+    },
+    "virtualized": {
+      "nativeSurface": {
+        "timeouts": 0,
+        "observedBlocks": {
+          "samples": [
+            15,
+            15,
+            15,
+            15,
+            15
+          ],
+          "mean": 15,
+          "median": 15,
+          "p75": 15,
+          "p95": 15,
+          "p99": 15,
+          "min": 15,
+          "max": 15
+        },
+        "navigationToReady": {
+          "samples": [
+            542.04,
+            541.78,
+            540.15,
+            548.41,
+            540.91
+          ],
+          "mean": 542.66,
+          "median": 541.78,
+          "p75": 542.04,
+          "p95": 548.41,
+          "p99": 548.41,
+          "min": 540.15,
+          "max": 548.41
+        }
+      },
+      "lanes": {
+        "startBlock": {
+          "typeToPaint": {
+            "samples": [
+              34,
+              28.6,
+              28.6,
+              40.1,
+              29
+            ],
+            "mean": 32.06,
+            "median": 29,
+            "p75": 34,
+            "p95": 40.1,
+            "p99": 40.1,
+            "min": 28.6,
+            "max": 40.1
+          },
+          "domNodes": {
+            "samples": [
+              358,
+              358,
+              358,
+              358,
+              358
+            ],
+            "mean": 358,
+            "median": 358,
+            "p75": 358,
+            "p95": 358,
+            "p99": 358,
+            "min": 358,
+            "max": 358
+          },
+          "editorElements": {
+            "samples": [
+              15,
+              15,
+              15,
+              15,
+              15
+            ],
+            "mean": 15,
+            "median": 15,
+            "p75": 15,
+            "p95": 15,
+            "p99": 15,
+            "min": 15,
+            "max": 15
+          },
+          "selectToPaint": {
+            "samples": [
+              56.3,
+              55.9,
+              55.3,
+              63.1,
+              47.5
+            ],
+            "mean": 55.62,
+            "median": 55.9,
+            "p75": 56.3,
+            "p95": 63.1,
+            "p99": 63.1,
+            "min": 47.5,
+            "max": 63.1
+          },
+          "selectionReady": {
+            "samples": [
+              27.1,
+              27.4,
+              27.2,
+              29.5,
+              17.9
+            ],
+            "mean": 25.82,
+            "median": 27.2,
+            "p75": 27.4,
+            "p95": 29.5,
+            "p99": 29.5,
+            "min": 17.9,
+            "max": 29.5
+          },
+          "materializedSelectToPaint": {
+            "samples": [
+              49,
+              49.9,
+              49.7,
+              49.5,
+              49.5
+            ],
+            "mean": 49.52,
+            "median": 49.5,
+            "p75": 49.7,
+            "p95": 49.9,
+            "p99": 49.9,
+            "min": 49,
+            "max": 49.9
+          },
+          "materializedSelectionReady": {
+            "samples": [
+              19,
+              20.8,
+              20.7,
+              18.1,
+              19.1
+            ],
+            "mean": 19.54,
+            "median": 19.1,
+            "p75": 20.7,
+            "p95": 20.8,
+            "p99": 20.8,
+            "min": 18.1,
+            "max": 20.8
+          },
+          "clickToPaint": {
+            "samples": [
+              27.4,
+              26.7,
+              23.1,
+              23,
+              23
+            ],
+            "mean": 24.64,
+            "median": 23.1,
+            "p75": 26.7,
+            "p95": 27.4,
+            "p99": 27.4,
+            "min": 23,
+            "max": 27.4
+          },
+          "clickToSelectionReady": {
+            "samples": [
+              15.3,
+              15,
+              11.8,
+              13.9,
+              13.6
+            ],
+            "mean": 13.92,
+            "median": 13.9,
+            "p75": 15,
+            "p95": 15.3,
+            "p99": 15.3,
+            "min": 11.8,
+            "max": 15.3
+          },
+          "burstPerOp": {
+            "samples": [
+              3.86,
+              3.17,
+              3.18,
+              4.69,
+              3.2
+            ],
+            "mean": 3.62,
+            "median": 3.2,
+            "p75": 3.86,
+            "p95": 4.69,
+            "p99": 4.69,
+            "min": 3.17,
+            "max": 4.69
+          },
+          "modelTypeToPaint": {
+            "samples": [
+              38.6,
+              31.7,
+              31.8,
+              46.9,
+              32
+            ],
+            "mean": 36.2,
+            "median": 32,
+            "p75": 38.6,
+            "p95": 46.9,
+            "p99": 46.9,
+            "min": 31.7,
+            "max": 46.9
+          },
+          "longTaskMax": {
+            "samples": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mean": 0,
+            "median": 0,
+            "p75": 0,
+            "p95": 0,
+            "p99": 0,
+            "min": 0,
+            "max": 0
+          }
+        },
+        "middleBlock": {
+          "typeToPaint": {
+            "samples": [
+              27,
+              29.9,
+              34.4,
+              35.4,
+              29.8
+            ],
+            "mean": 31.3,
+            "median": 29.9,
+            "p75": 34.4,
+            "p95": 35.4,
+            "p99": 35.4,
+            "min": 27,
+            "max": 35.4
+          },
+          "domNodes": {
+            "samples": [
+              371,
+              371,
+              371,
+              371,
+              371
+            ],
+            "mean": 371,
+            "median": 371,
+            "p75": 371,
+            "p95": 371,
+            "p99": 371,
+            "min": 371,
+            "max": 371
+          },
+          "editorElements": {
+            "samples": [
+              17,
+              17,
+              17,
+              17,
+              17
+            ],
+            "mean": 17,
+            "median": 17,
+            "p75": 17,
+            "p95": 17,
+            "p99": 17,
+            "min": 17,
+            "max": 17
+          },
+          "selectToPaint": {
+            "samples": [
+              56,
+              49,
+              49.6,
+              49.2,
+              51.7
+            ],
+            "mean": 51.1,
+            "median": 49.6,
+            "p75": 51.7,
+            "p95": 56,
+            "p99": 56,
+            "min": 49,
+            "max": 56
+          },
+          "selectionReady": {
+            "samples": [
+              24.6,
+              18,
+              18.4,
+              18.5,
+              19.3
+            ],
+            "mean": 19.76,
+            "median": 18.5,
+            "p75": 19.3,
+            "p95": 24.6,
+            "p99": 24.6,
+            "min": 18,
+            "max": 24.6
+          },
+          "materializedSelectToPaint": {
+            "samples": [
+              50,
+              49.5,
+              49.7,
+              50.7,
+              48.5
+            ],
+            "mean": 49.68,
+            "median": 49.7,
+            "p75": 50,
+            "p95": 50.7,
+            "p99": 50.7,
+            "min": 48.5,
+            "max": 50.7
+          },
+          "materializedSelectionReady": {
+            "samples": [
+              18.5,
+              18.2,
+              18.5,
+              18.2,
+              17.3
+            ],
+            "mean": 18.14,
+            "median": 18.2,
+            "p75": 18.5,
+            "p95": 18.5,
+            "p99": 18.5,
+            "min": 17.3,
+            "max": 18.5
+          },
+          "clickToPaint": {
+            "samples": [
+              23.3,
+              23.3,
+              22.8,
+              23.2,
+              22.9
+            ],
+            "mean": 23.1,
+            "median": 23.2,
+            "p75": 23.3,
+            "p95": 23.3,
+            "p99": 23.3,
+            "min": 22.8,
+            "max": 23.3
+          },
+          "clickToSelectionReady": {
+            "samples": [
+              11.8,
+              11.1,
+              10.5,
+              14.4,
+              11.8
+            ],
+            "mean": 11.92,
+            "median": 11.8,
+            "p75": 11.8,
+            "p95": 14.4,
+            "p99": 14.4,
+            "min": 10.5,
+            "max": 14.4
+          },
+          "burstPerOp": {
+            "samples": [
+              3.06,
+              3.19,
+              3.87,
+              3.92,
+              3.18
+            ],
+            "mean": 3.44,
+            "median": 3.19,
+            "p75": 3.87,
+            "p95": 3.92,
+            "p99": 3.92,
+            "min": 3.06,
+            "max": 3.92
+          },
+          "modelTypeToPaint": {
+            "samples": [
+              30.6,
+              31.9,
+              38.7,
+              39.2,
+              31.8
+            ],
+            "mean": 34.44,
+            "median": 31.9,
+            "p75": 38.7,
+            "p95": 39.2,
+            "p99": 39.2,
+            "min": 30.6,
+            "max": 39.2
+          },
+          "longTaskMax": {
+            "samples": [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mean": 0,
+            "median": 0,
+            "p75": 0,
+            "p95": 0,
+            "p99": 0,
+            "min": 0,
+            "max": 0
+          }
+        }
+      }
+    }
+  }
+}

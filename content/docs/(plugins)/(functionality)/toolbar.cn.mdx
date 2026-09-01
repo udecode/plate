@@ -16,9 +16,9 @@ docs:
 
 - **固定工具栏**: 持久固定在编辑器顶部的工具栏
 - **浮动工具栏**: 文本选中时出现的上下文工具栏
-- **可定制按钮**: 轻松添加、删除和重新排序工具栏按钮
+- **可定制按钮**: 添加、删除和重新排序工具栏按钮
 - **响应式设计**: 适配不同屏幕尺寸和内容
-- **插件集成**: 与Plate插件和UI组件无缝集成
+- **插件集成**: 使用 Plate 插件和复制的 UI 组件
 
 </PackageInfo>
 
@@ -67,10 +67,8 @@ import { definePlatePlugin } from 'platejs/react';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbar } from '@/components/editor/floating-toolbar';
-import { FloatingToolbarButtons } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
-  type: 'fixed-toolbar',
   render: {
     beforeEditable: () => (
       <FixedToolbar>
@@ -81,13 +79,8 @@ const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
 });
 
 const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
-  type: 'floating-toolbar',
   render: {
-    afterEditable: () => (
-      <FloatingToolbar>
-        <FloatingToolbarButtons />
-      </FloatingToolbar>
-    ),
+    afterEditable: FloatingToolbar,
   },
 });
 
@@ -116,7 +109,6 @@ const editor = createEditor({
 同样地，可以通过编辑`components/editor/floating-toolbar.tsx`来自定义浮动工具栏。
 
 <ComponentSource name="floating-toolbar" />
-
 
 ### 创建自定义按钮
 
@@ -228,7 +220,7 @@ const turnIntoItems = [
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="render.beforeEditable" type="() => ReactNode">
+  <APIItem name="render.beforeEditable" type="EditableSiblingComponent">
     在编辑器内容前渲染固定工具栏。默认包含FixedToolbarButtons。
   </APIItem>
 </APIOptions>
@@ -240,7 +232,7 @@ const turnIntoItems = [
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="render.afterEditable" type="() => ReactNode">
+  <APIItem name="render.afterEditable" type="EditableSiblingComponent">
     在编辑器后作为覆盖层渲染浮动工具栏。默认包含FloatingToolbarButtons。
   </APIItem>
 </APIOptions>

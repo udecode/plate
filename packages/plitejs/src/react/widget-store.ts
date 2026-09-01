@@ -1,14 +1,14 @@
 import {
   type EditorCommit,
-  PointApi,
   RangeApi,
   type Range,
   type NodeKey,
   type Editor as EditorType,
 } from '..';
-import type {
-  PliteAnnotationStore,
-  PliteResolvedAnnotation,
+import {
+  subscribeAnnotationChanges,
+  type PliteAnnotationStore,
+  type PliteResolvedAnnotation,
 } from './annotation-store';
 import {
   failInvariant,
@@ -20,14 +20,13 @@ import {
   createMappedViewStoreKernel,
   createViewSourceFaultBoundary,
 } from './mapped-view-store';
-import { isPliteSourceDirty } from './projection-store';
 import { createStableIdMappedSource } from './stable-id-mapped-source';
 import type {
   PliteViewSourceErrorSink,
   PliteViewSourceStatus,
 } from './view-source';
 
-export type PliteWidgetAnchor =
+export type PliteWidgetTarget =
   | {
       annotationId: string;
       type: 'annotation';
@@ -40,13 +39,13 @@ export type PliteWidgetAnchor =
       type: 'selection';
     };
 
-/** UI descriptor anchored to an annotation, node node key, or selection. */
+/** UI descriptor targeted at an annotation, node key, or selection. */
 export type PliteWidget<
   T extends Record<string, unknown> = Record<string, never>,
 > = {
-  anchor: PliteWidgetAnchor;
   data?: T;
   id: string;
+  target: PliteWidgetTarget;
 };
 
 /** Latest resolved widget state for rendering floating or side-panel UI. */
@@ -55,8 +54,8 @@ export type PliteResolvedWidget<
   TAnnotation extends Record<string, unknown> = Record<string, never>,
 > = PliteWidget<T> & {
   annotation: PliteResolvedAnnotation<TAnnotation> | null;
+  available: boolean;
   range: Range | null;
-  visible: boolean;
 };
 
 /** Ordered widget ids plus resolved widgets by id. */
@@ -73,6 +72,7 @@ export type PliteWidgetStore<
   T extends Record<string, unknown> = Record<string, never>,
   TAnnotation extends Record<string, unknown> = Record<string, never>,
 > = {
+  readonly editor: EditorType;
   destroy: () => void;
   getMetrics: () => PliteWidgetStoreMetrics;
   getSourceStatus: () => PliteViewSourceStatus;
@@ -106,12 +106,11 @@ const EMPTY_METRICS = Object.freeze({
   widgetSubscriberWakeCount: 0,
 }) as PliteWidgetStoreMetrics;
 
-const isVisibleSelection = (range: Range | null) =>
-  !!range && !PointApi.equals(range.anchor, range.focus);
+const isAvailableSelection = (range: Range | null) => !!range;
 
-const areWidgetAnchorsEqual = (
-  left: PliteWidgetAnchor,
-  right: PliteWidgetAnchor
+const areWidgetTargetsEqual = (
+  left: PliteWidgetTarget,
+  right: PliteWidgetTarget
 ) => {
   if (left.type !== right.type) return false;
 
@@ -137,7 +136,7 @@ const areWidgetInputsEqual = <T extends Record<string, unknown>>(
   right: PliteWidget<T>
 ) =>
   left.id === right.id &&
-  areWidgetAnchorsEqual(left.anchor, right.anchor) &&
+  areWidgetTargetsEqual(left.target, right.target) &&
   areMappedViewDataEqual(left.data, right.data);
 
 const areResolvedWidgetsEqual = <
@@ -149,36 +148,43 @@ const areResolvedWidgetsEqual = <
 ) =>
   areWidgetInputsEqual(left, right) &&
   left.annotation === right.annotation &&
-  RangeApi.equals(left.range, right.range) &&
-  left.visible === right.visible;
+  left.available === right.available &&
+  RangeApi.equals(left.range, right.range);
 
-const getEditorChangeWidgetIds = <T extends Record<string, unknown>>(
-  widgets: ReadonlyArray<PliteWidget<T>>,
-  change: EditorCommit,
-  editor: EditorType
-) => {
-  const snapshot = editorGetSnapshot(editor);
-  const selectionDirty = isPliteSourceDirty('selection', {
-    change,
-    reason: 'editor',
-    snapshot,
-  });
-  const nodesDirty = isPliteSourceDirty('node', {
-    change,
-    reason: 'editor',
-    snapshot,
-  });
+type WidgetTargetIndex = {
+  annotationIds: Map<string, string[]>;
+  nodeKeys: Map<NodeKey, string[]>;
+  selectionIds: string[];
+};
 
-  return widgets.flatMap((widget) => {
-    if (widget.anchor.type === 'selection' && selectionDirty) {
-      return [widget.id];
+const indexWidgetTargets = <T extends Record<string, unknown>>(
+  widgets: ReadonlyArray<PliteWidget<T>>
+): WidgetTargetIndex => {
+  const index: WidgetTargetIndex = {
+    annotationIds: new Map(),
+    nodeKeys: new Map(),
+    selectionIds: [],
+  };
+
+  for (const widget of widgets) {
+    const { target } = widget;
+
+    if (target.type === 'selection') {
+      index.selectionIds.push(widget.id);
+    } else if (target.type === 'node') {
+      const ids = index.nodeKeys.get(target.nodeKey) ?? [];
+
+      ids.push(widget.id);
+      index.nodeKeys.set(target.nodeKey, ids);
+    } else {
+      const ids = index.annotationIds.get(target.annotationId) ?? [];
+
+      ids.push(widget.id);
+      index.annotationIds.set(target.annotationId, ids);
     }
-    if (widget.anchor.type === 'node' && nodesDirty) {
-      return [widget.id];
-    }
+  }
 
-    return [];
-  });
+  return index;
 };
 
 /**
@@ -213,26 +219,26 @@ const createPliteWidgetStoreInternal = <
   const resolveWidget = (widget: PliteWidget<T>) => {
     let annotation: PliteResolvedAnnotation<TAnnotation> | null = null;
     let range: Range | null = null;
-    let visible = false;
+    let available = false;
 
-    switch (widget.anchor.type) {
+    switch (widget.target.type) {
       case 'annotation': {
         annotation =
-          mappingAnnotationSnapshot?.byId.get(widget.anchor.annotationId) ??
+          mappingAnnotationSnapshot?.byId.get(widget.target.annotationId) ??
           null;
         range = annotation?.range ?? null;
-        visible = !!range;
+        available = !!range;
         break;
       }
       case 'node': {
-        visible = Boolean(
-          mappingEditorSnapshot.index.pathOf(widget.anchor.nodeKey)
+        available = Boolean(
+          mappingEditorSnapshot.index.pathOf(widget.target.nodeKey)
         );
         break;
       }
       case 'selection': {
         range = getSelectionDOMRange(editor, mappingEditorSnapshot.selection);
-        visible = isVisibleSelection(range);
+        available = isAvailableSelection(range);
         break;
       }
     }
@@ -240,8 +246,8 @@ const createPliteWidgetStoreInternal = <
     return Object.freeze({
       ...widget,
       annotation,
+      available,
       range,
-      visible,
     }) as PliteResolvedWidget<T, TAnnotation>;
   };
   const createMappedSource = (widgets: ReadonlyArray<PliteWidget<T>>) =>
@@ -270,6 +276,11 @@ const createPliteWidgetStoreInternal = <
   const mappedSource = initialMappedResult.ok
     ? initialMappedResult.value
     : createMappedSource([]);
+  let currentWidgets =
+    initialMappedResult.ok && initialWidgetsResult.ok
+      ? initialWidgetsResult.value
+      : [];
+  let targetIndex = indexWidgetTargets(currentWidgets);
   const toWidgetSnapshot = () => {
     const snapshot = mappedSource.getSnapshot();
 
@@ -294,6 +305,7 @@ const createPliteWidgetStoreInternal = <
   const syncWidgets = (
     widgets: ReadonlyArray<PliteWidget<T>>,
     syncOptions: Readonly<{
+      changedIds?: readonly string[];
       forceAll?: boolean;
       forceIds?: readonly string[];
     }> = {}
@@ -305,6 +317,9 @@ const createPliteWidgetStoreInternal = <
     );
 
     if (!mappedResult.ok) return;
+
+    if (!syncOptions.changedIds) targetIndex = indexWidgetTargets(widgets);
+    currentWidgets = widgets;
 
     const changedWidgetIds = mappedResult.value.changedEntityIds;
     metrics = Object.freeze({
@@ -345,6 +360,30 @@ const createPliteWidgetStoreInternal = <
     }
   };
 
+  const getEditorChangeWidgetIds = (change: EditorCommit) => {
+    const ids = new Set(
+      change.selectionChanged ? targetIndex.selectionIds : []
+    );
+
+    if (targetIndex.nodeKeys.size > 0 && change.changed.hasAny('structure')) {
+      const snapshot = editorGetSnapshot(editor);
+      const widgets = store.getSnapshot().byId;
+
+      for (const nodeKey of change.changed.nodeKeysAll('presence')) {
+        const targets = targetIndex.nodeKeys.get(nodeKey);
+
+        if (!targets) continue;
+        const available = Boolean(snapshot.index.pathOf(nodeKey));
+
+        for (const id of targets) {
+          if (widgets.get(id)?.available !== available) ids.add(id);
+        }
+      }
+    }
+
+    return [...ids];
+  };
+
   const subscribeToEditor = () =>
     editor.subscribeCommit((change) => {
       if (destroyed) {
@@ -354,35 +393,55 @@ const createPliteWidgetStoreInternal = <
       const widgetsResult = faultBoundary.run('read', getWidgets);
 
       if (!widgetsResult.ok) return;
-      const forceIds = getEditorChangeWidgetIds(
-        widgetsResult.value,
-        change,
-        editor
-      );
+      const forceIds = getEditorChangeWidgetIds(change);
 
-      if (forceIds.length > 0) {
-        syncWidgets(widgetsResult.value, { forceIds });
+      if (forceIds.length > 0 || widgetsResult.value !== currentWidgets) {
+        syncWidgets(
+          widgetsResult.value,
+          widgetsResult.value === currentWidgets
+            ? { changedIds: forceIds }
+            : { forceIds }
+        );
       }
     });
 
   const subscribeToAnnotations = () =>
-    annotationStore?.subscribe(() => {
-      if (destroyed) {
-        return;
-      }
+    annotationStore
+      ? subscribeAnnotationChanges(annotationStore, (changedIds) => {
+          if (destroyed) {
+            return;
+          }
 
-      const widgetsResult = faultBoundary.run('read', getWidgets);
+          const widgetsResult = faultBoundary.run('read', getWidgets);
 
-      if (!widgetsResult.ok) return;
+          if (!widgetsResult.ok) return;
 
-      const forceIds = widgetsResult.value.flatMap((widget) =>
-        widget.anchor.type === 'annotation' ? [widget.id] : []
-      );
+          const forceIds = [
+            ...new Set(
+              changedIds === null
+                ? [...targetIndex.annotationIds.values()].flat()
+                : changedIds.flatMap(
+                    (id) => targetIndex.annotationIds.get(id) ?? []
+                  )
+            ),
+          ];
 
-      if (forceIds.length > 0) {
-        syncWidgets(widgetsResult.value, { forceIds });
-      }
-    });
+          if (forceIds.length > 0 || widgetsResult.value !== currentWidgets) {
+            if (changedIds === null) {
+              metrics = Object.freeze({
+                ...metrics,
+                fullFallbackCount: metrics.fullFallbackCount + 1,
+              });
+            }
+            syncWidgets(
+              widgetsResult.value,
+              widgetsResult.value === currentWidgets
+                ? { changedIds: forceIds }
+                : { forceIds }
+            );
+          }
+        })
+      : undefined;
   let unsubscribeEditor = activated ? subscribeToEditor() : null;
   let unsubscribeAnnotation = activated ? subscribeToAnnotations() : null;
 
@@ -405,6 +464,7 @@ const createPliteWidgetStoreInternal = <
       unsubscribeAnnotation?.();
       store.destroy();
     },
+    editor,
     getMetrics() {
       return metrics;
     },

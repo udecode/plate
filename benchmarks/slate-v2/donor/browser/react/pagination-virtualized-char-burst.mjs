@@ -1,18 +1,17 @@
 import { spawn } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 import handler from 'serve-handler';
 import { round, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
-const siteOutRoot = fileURLToPath(
-  new URL('../../../../site/out', import.meta.url)
-);
-const siteRoot = fileURLToPath(new URL('../../../../site', import.meta.url));
-const reportPath =
+const siteRoot = resolve(process.cwd(), 'apps/plite');
+const siteOutRoot = resolve(siteRoot, 'out');
+const reportPath = resolve(
   process.env.PLITE_PAGINATION_CHAR_BURST_REPORT ||
-  'tmp/slate-pagination-virtualized-char-burst-playwright.json';
+  'tmp/slate-pagination-virtualized-char-burst-playwright.json'
+);
 const artifactPath =
   process.env.PLITE_PAGINATION_CHAR_BURST_ARTIFACT ||
   'tmp/slate-pagination-virtualized-char-burst-benchmark.json';
@@ -196,7 +195,7 @@ const startNextDevServer = async () => {
   });
   const url = `http://127.0.0.1:${port}`;
 
-  await Promise.race([waitForURL(`${url}/examples/pagination`), exitPromise]);
+  await Promise.race([waitForURL(`${url}/examples/plite/pagination`), exitPromise]);
 
   return {
     close: () =>
@@ -232,12 +231,13 @@ const startNextDevServer = async () => {
 const runPlaywright = async (baseURL) =>
   new Promise((resolve, reject) => {
     const child = spawn(
-      'bun',
+      'pnpm',
       [
-        'run',
+        'exec',
         'playwright',
-        '--',
-        'playwright/integration/examples/pagination.test.ts',
+        'test',
+        '--config=apps/plite/playwright.config.ts',
+        'tests/plite-browser/donor/examples/pagination.test.ts',
         '--project=chromium',
         '-g',
         grep,
@@ -281,8 +281,13 @@ const server = process.env.PLITE_PAGINATION_CHAR_BURST_BASE_URL
     : await startStaticServer();
 const baseURL = process.env.PLITE_PAGINATION_CHAR_BURST_BASE_URL ?? server?.url;
 
-const result = await runPlaywright(baseURL);
-await server?.close();
+rmSync(reportPath, { force: true });
+let result;
+try {
+  result = await runPlaywright(baseURL);
+} finally {
+  await server?.close();
+}
 
 if (result.status !== 0) {
   process.stderr.write(result.stdout);
@@ -410,7 +415,8 @@ const failureSample = getFailureSample();
 const virtualizedBurstMs =
   virtualized?.burstSettledMs ?? failureSample?.eventToPaintMs ?? 5000;
 const stagedTableBurstMs = stagedTable?.burstSettledMs ?? 0;
-const virtualizedFailed = result.status === 0 && virtualized ? 0 : 1;
+const virtualizedFailed =
+  result.status === 0 && staged && stagedTable && virtualized ? 0 : 1;
 
 const metrics = {
   pagination_staged_burst_ms: round(staged?.burstSettledMs ?? 0),
@@ -472,3 +478,7 @@ for (const [name, value] of Object.entries(metrics)) {
 }
 
 console.log(`ARTIFACT pagination_virtualized_char_burst=${artifactPath}`);
+
+if (virtualizedFailed) {
+  process.exitCode = result.status || 1;
+}

@@ -83,6 +83,17 @@ Pass a named `root` for one secondary document. Use `hasAny(kind)` and
 queries derive their answers from `DocumentChange` plus the retained before and
 after snapshot indexes.
 
+Choose the change kind your consumer needs. `nodeKeys("presence")` returns
+identities added to or removed from a document root. Moving a node within that
+root changes its path, not its presence. Use `"node"` for changed node values,
+`"path"` for path changes, and `"projection"` for combined rendering impact.
+Presence queries inspect changed ranges without enumerating shifted paths.
+Whole-value replacement compares the replaced roots.
+
+Aggregate key lists are immutable and reused within a commit.
+`hasNodeKey(key, kind)` shares the same cached membership, so subscribers do
+not each scan the changed-key list.
+
 ## Fit external content
 
 Parsing, paste, and import boundaries carry open content as an

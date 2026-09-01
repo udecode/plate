@@ -136,7 +136,22 @@ const dropdownArrowVariants = cva(
   }
 );
 
-type ToolbarButtonProps = {
+export function ToolbarButton({
+  children,
+  className,
+  isDropdown,
+  onKeyDown,
+  onMouseDown,
+  onPointerDown,
+  pressed,
+  size = 'sm',
+  tooltip,
+  tooltipContentProps,
+  tooltipProps,
+  tooltipTriggerProps,
+  variant,
+  ...props
+}: {
   isDropdown?: boolean;
   pressed?: boolean;
   tooltip?: React.ReactNode;
@@ -156,24 +171,7 @@ type ToolbarButtonProps = {
   React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
   'asChild'
 > &
-  VariantProps<typeof toolbarButtonVariants>;
-
-export function ToolbarButton({
-  children,
-  className,
-  isDropdown,
-  onKeyDown,
-  onMouseDown,
-  onPointerDown,
-  pressed,
-  size = 'sm',
-  tooltip,
-  tooltipContentProps,
-  tooltipProps,
-  tooltipTriggerProps,
-  variant,
-  ...props
-}: ToolbarButtonProps) {
+  VariantProps<typeof toolbarButtonVariants>) {
   const reportOverlayOpening = useToolbarOverlayTrigger(props);
 
   const button = (
@@ -260,12 +258,6 @@ export function ToolbarSplitButton({
   );
 }
 
-type ToolbarSplitButtonPrimaryProps = Omit<
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
-  'size'
-> &
-  VariantProps<typeof toolbarButtonVariants>;
-
 export function ToolbarSplitButtonPrimary({
   children,
   className,
@@ -275,7 +267,11 @@ export function ToolbarSplitButtonPrimary({
   size = 'sm',
   variant,
   ...props
-}: ToolbarSplitButtonPrimaryProps) {
+}: Omit<
+  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
+  'size'
+> &
+  VariantProps<typeof toolbarButtonVariants>) {
   const reportOverlayOpening = useToolbarOverlayTrigger(props);
 
   return (

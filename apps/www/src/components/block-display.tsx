@@ -9,7 +9,7 @@ import {
   getCachedRegistryItem,
 } from '@/lib/registry-cache';
 
-type BlockDisplayProps = {
+export function BlockDisplay(props: {
   item: RegistryItem & {
     meta?: {
       descriptionSrc?: string;
@@ -17,9 +17,7 @@ type BlockDisplayProps = {
       src?: string;
     };
   };
-};
-
-export function BlockDisplay(props: BlockDisplayProps) {
+}) {
   return (
     <React.Suspense fallback={null}>
       <BlockDisplayContent {...props} />
@@ -27,7 +25,17 @@ export function BlockDisplay(props: BlockDisplayProps) {
   );
 }
 
-async function BlockDisplayContent({ item: block }: BlockDisplayProps) {
+async function BlockDisplayContent({
+  item: block,
+}: {
+  item: RegistryItem & {
+    meta?: {
+      descriptionSrc?: string;
+      isPro?: boolean;
+      src?: string;
+    };
+  };
+}) {
   if (block.meta?.src) {
     return (
       <BlockViewer

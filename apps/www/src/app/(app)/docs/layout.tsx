@@ -4,11 +4,10 @@ import { DocsNav } from '@/components/docs-nav';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { getSidebarNavFromPageTree } from '@/lib/docs-page-tree';
 
-type DocsLayoutProps = {
-  children: React.ReactNode;
-};
 
-export default function DocsLayout({ children }: DocsLayoutProps) {
+export default function DocsLayout({ children }: ({
+  children: React.ReactNode;
+})) {
   const sidebarNav = getSidebarNavFromPageTree();
 
   return (

@@ -1382,7 +1382,7 @@ export const syncEditableDOMSelectionToEditor = ({
     (partialDOMBackedSelection && selectionHasDOMCoverage) ||
     !selection ||
     !isSelectionInEditorView(editor, selection) ||
-    (!options?.forceModelExport && shouldSkipDOMSelection(editor))
+    shouldSkipDOMSelection(editor, { force: options?.forceModelExport })
   ) {
     return;
   }

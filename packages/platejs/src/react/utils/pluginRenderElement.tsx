@@ -14,16 +14,8 @@ import { useEditor } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps';
 
-/**
- * Function used to render an element. If the function returns undefined then
- * the next RenderElement function is called. If the function renders a JSX
- * element then that JSX element is rendered.
- */
-type PlateElementRenderProps = PlateNodeProps &
-  RenderElementProps & { path: Path };
-
 export type RenderElement = (
-  props: PlateElementRenderProps
+  props: PlateNodeProps & RenderElementProps & { path: Path }
 ) => React.ReactElement<any> | undefined;
 
 function ElementContent({
@@ -31,7 +23,9 @@ function ElementContent({
   plugin,
   pluginContext,
   ...initialProps
-}: PlateElementRenderProps & { pluginContext?: Record<string, unknown> }) {
+}: (PlateNodeProps & RenderElementProps & { path: Path }) & {
+  pluginContext?: Record<string, unknown>;
+}) {
   let props = initialProps;
   const readOnly = useEditorReadOnly();
 

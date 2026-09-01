@@ -21,6 +21,7 @@ type MappedViewStoreKernel<TSnapshot> = {
   ) => Readonly<{ globalWakeCount: number; keyWakeCount: number }>;
   subscriberCount: () => number;
   subscribe: (listener: Listener) => () => void;
+  subscribeChanges: (listener: (keys: readonly string[]) => void) => () => void;
   subscribeKey: (key: string, listener: Listener) => () => void;
 };
 
@@ -28,6 +29,7 @@ export const createMappedViewStoreKernel = <TSnapshot>(
   initialSnapshot: TSnapshot
 ): MappedViewStoreKernel<TSnapshot> => {
   const listeners = new Set<Listener>();
+  const changeListeners = new Set<(keys: readonly string[]) => void>();
   const keyedListeners = new Map<string, Set<Listener>>();
   let destroyed = false;
   let snapshot = initialSnapshot;
@@ -60,6 +62,7 @@ export const createMappedViewStoreKernel = <TSnapshot>(
 
       destroyed = true;
       listeners.clear();
+      changeListeners.clear();
       keyedListeners.clear();
     },
     getSnapshot() {
@@ -74,7 +77,7 @@ export const createMappedViewStoreKernel = <TSnapshot>(
       }
 
       const keys = [...new Set(changedKeys)];
-      const globalWakeCount = listeners.size;
+      const globalWakeCount = listeners.size + changeListeners.size;
       const keyWakeCount = keys.reduce(
         (count, key) => count + (keyedListeners.get(key)?.size ?? 0),
         0
@@ -84,6 +87,7 @@ export const createMappedViewStoreKernel = <TSnapshot>(
       listeners.forEach((listener) => {
         listener();
       });
+      changeListeners.forEach((listener) => listener(keys));
       keys.forEach((key) => {
         keyedListeners.get(key)?.forEach((listener) => {
           listener();
@@ -93,7 +97,15 @@ export const createMappedViewStoreKernel = <TSnapshot>(
       return { globalWakeCount, keyWakeCount };
     },
     subscriberCount() {
-      return listeners.size;
+      return listeners.size + changeListeners.size;
+    },
+    subscribeChanges(listener) {
+      if (destroyed) return () => {};
+
+      changeListeners.add(listener);
+      return () => {
+        changeListeners.delete(listener);
+      };
     },
     subscribe(listener) {
       if (destroyed) return () => {};

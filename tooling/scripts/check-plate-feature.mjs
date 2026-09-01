@@ -15,7 +15,8 @@ const compareStrings = (left, right) => {
 
 const notApplicablePattern = /^N\/A:\s*\S/;
 const unresolvedPattern = /^(?:pending|todo\b|tbd\b)|\{\{/i;
-const flowModePattern = /^Flow mode:[ \t]*(?:\n-[ \t]*)?([^\n]+)$/m;
+const flowModePattern =
+  /^Flow mode:[ \t]*(?:\r?\n[ \t]*)*(?:-[ \t]*)?([^\r\n]+)$/m;
 const packageFileRowPattern =
   /^- \[([ x])\] `([^`]+)` — score: ([^—]+) — verdict: ([^—]+) — owner: ([^—]+) — evidence: ([^—]+) — next: (.+)\.?$/;
 const sectionHeadingPattern = /^[A-Z][^:]+:$/;
@@ -32,6 +33,7 @@ export const requiredSurfaces = [
   'React adapter',
   'Registry UI',
   'Composition',
+  'Scale proof',
   'Registry metadata/examples',
   'Docs',
   'Release artifacts',
@@ -41,7 +43,13 @@ export const requiredSurfaces = [
 ];
 
 const flowModes = new Map([
-  ['new package', { excluded: [], required: requiredSurfaces }],
+  [
+    'new package',
+    {
+      excluded: [],
+      required: requiredSurfaces.filter((surface) => surface !== 'Scale proof'),
+    },
+  ],
   [
     'existing package plus React/registry',
     {
@@ -52,7 +60,6 @@ const flowModes = new Map([
         'Registry UI',
         'Composition',
         'Registry metadata/examples',
-        'Plate Next attestation',
         'Proof',
         'Review/handoff',
       ],
@@ -221,7 +228,18 @@ export const validateFeaturePlan = (
     }
   }
 
-  if (bySurface.get('Package')?.[1] === 'yes') {
+  const packageAttestationApplies =
+    bySurface.get('Package')?.[1] === 'yes' &&
+    bySurface.get('Plate Next attestation')?.[1] === 'yes';
+
+  if (
+    bySurface.get('Plate Next attestation')?.[1] === 'yes' &&
+    bySurface.get('Package')?.[1] !== 'yes'
+  ) {
+    errors.push('Plate Next attestation requires the Package surface.');
+  }
+
+  if (packageAttestationApplies) {
     for (const surface of ['Package', 'Plate Next attestation']) {
       if (!bySurface.get(surface)?.[3].includes('#package-file-evidence')) {
         errors.push(`${surface}: Artifacts must link #package-file-evidence.`);

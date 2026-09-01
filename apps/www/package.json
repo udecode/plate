@@ -51,6 +51,7 @@
     "@emoji-mart/data": "1.2.1",
     "@excalidraw/excalidraw": "0.18.0",
     "@faker-js/faker": "9.8.0",
+    "@floating-ui/react": "^0.26.23",
     "@hocuspocus/provider": "2.15.2",
     "@hookform/resolvers": "5.1.1",
     "@next/third-parties": "16.3.2",

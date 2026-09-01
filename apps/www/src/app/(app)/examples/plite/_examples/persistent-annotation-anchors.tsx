@@ -321,8 +321,8 @@ const WidgetPanel = ({
                   snapshot.byId.get(id) ??
                   failInvariant('Expected value to be defined');
 
-                return `${widget.id}:${widget.anchor.type}:${
-                  widget.visible ? 'visible' : 'hidden'
+                return `${widget.id}:${widget.target.type}:${
+                  widget.available ? 'visible' : 'hidden'
                 }:${widget.data?.label ?? 'none'}`;
               })
               .join('|')}
@@ -526,7 +526,7 @@ const PersistentAnnotationAnchorsExample = () => {
       annotation
         ? [
             {
-              anchor: {
+              target: {
                 annotationId: 'comment-anchor',
                 type: 'annotation' as const,
               },

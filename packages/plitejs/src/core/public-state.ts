@@ -871,25 +871,11 @@ const createEditorDocumentValue = <V extends Value>({
   const hasExtraRoots = Object.keys(extraRoots).length > 0;
   const hasPersistentMeta =
     persistentMeta !== undefined && Object.keys(persistentMeta).length > 0;
-  const immutableChildren = Object.isFrozen(mainChildren)
-    ? mainChildren
-    : cloneFrozen(mainChildren);
-  const immutableRoots = hasExtraRoots
-    ? Object.freeze(
-        Object.fromEntries(
-          Object.entries(extraRoots).map(([root, rootChildren]) => [
-            root,
-            Object.isFrozen(rootChildren)
-              ? rootChildren
-              : cloneFrozen(rootChildren),
-          ])
-        )
-      )
-    : undefined;
+  // Canonical callers already own frozen arrays; rechecking scans every slot.
   const value = {
-    children: immutableChildren,
+    children: mainChildren,
     ...(hasPersistentMeta ? { meta: cloneFrozen(persistentMeta) } : {}),
-    ...(immutableRoots ? { roots: immutableRoots } : {}),
+    ...(hasExtraRoots ? { roots: Object.freeze(extraRoots) } : {}),
   };
 
   return Object.freeze(value);
@@ -4444,23 +4430,6 @@ const getUpdateView = <
         resolvedOptions
       );
     })) as EditorTransactionNodesApi<V>['unset'];
-  const discardReplacedNodeKeys = (root: string, path: Path) => {
-    const snapshot = getTransactionSnapshot(editor);
-
-    if (!snapshot) return;
-
-    const owner = getEditorRuntimeOwner(editor);
-    const currentIndex = getTransactionSnapshotIndex(owner, snapshot, root);
-
-    for (const [nodeKey, currentPath] of currentIndex.entries()) {
-      if (
-        currentPath.length >= path.length &&
-        path.every((part, index) => currentPath[index] === part)
-      ) {
-        snapshot.discardedNodeKeys.add(nodeKey);
-      }
-    }
-  };
   const replaceNode: EditorTransactionNodesApi<V>['replace'] = (
     nodes,
     options
@@ -4474,8 +4443,19 @@ const getUpdateView = <
         throw new Error('Cannot replace the editor root.');
       }
 
-      NodeApi.get(editor, at);
-      discardReplacedNodeKeys(getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY, at);
+      const replacedNode = NodeApi.get(editor, at);
+      const snapshot = getTransactionSnapshot(editor);
+      if (snapshot) {
+        const currentIndex = getTransactionSnapshotIndex(
+          getEditorRuntimeOwner(editor),
+          snapshot,
+          getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+        );
+        for (const [, relativePath] of NodeApi.nodes(replacedNode)) {
+          const nodeKey = currentIndex.keyAt([...at, ...relativePath]);
+          if (nodeKey) snapshot.discardedNodeKeys.add(nodeKey);
+        }
+      }
 
       const replacements = Array.isArray(nodes) ? nodes : [nodes];
       const parentPath = PathApi.parent(at);
@@ -8116,6 +8096,7 @@ export const runEditorTransaction = (
             beginAnchorTransaction(editor);
             if (!canonicalChanges.empty) {
               notifyAnchorChanges(editor, canonicalChanges, canonicalIndexes, {
+                commit: change,
                 replace: snapshot.reason === 'replace',
               });
             }

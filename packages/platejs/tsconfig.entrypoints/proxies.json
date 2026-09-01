@@ -24,8 +24,8 @@
     "../src/dom/**/*",
     "../src/history/**/*",
     "../src/hyperscript/**/*",
-    "../src/page-layout/**/*",
-    "../src/page-layout/react/**/*"
+    "../src/pagination/**/*",
+    "../src/pagination/react/**/*"
   ],
   "references": [
     {
@@ -38,7 +38,7 @@
       "path": "../../plitejs/tsconfig.entrypoints/history.json"
     },
     {
-      "path": "../../plitejs/tsconfig.entrypoints/layout.json"
+      "path": "../../plitejs/tsconfig.entrypoints/pagination.json"
     },
     {
       "path": "../../plitejs/tsconfig.entrypoints/testing.json"

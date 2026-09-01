@@ -1,0 +1,529 @@
+---
+description: Reproduce evidence-backed Plate/Plite architecture reviews and score current systems without implementing fixes. Use for full, plugin, entrypoint, package, or bounded surface audits that need ownership, lifetime, reachability, scale, proof, and before/after verdicts.
+argument-hint: '[all [plate|plite|both]] | [plugin|entrypoint|package|surface] <target>'
+name: plate-review
+metadata:
+  skiller:
+    source: .agents/rules/plate-review.mdc
+---
+
+# Plate Review
+
+Handle $ARGUMENTS.
+
+Own one job: diagnose and score current Plate/Plite architecture from source.
+Produce a blunt, reproducible verdict and route the accepted repair. Do not
+implement it.
+
+This is not a generic code-review wrapper. It exists because no other owner
+answers all of these questions together:
+
+- Where does the canonical truth live?
+- Does each state value live for the right lifetime?
+- Do package and entrypoint boundaries match runtime reachability?
+- Is the public path smaller than its machinery?
+- Does hot work remain local and scale with the right variable?
+- Which correctness and native-behavior laws own the design?
+- Is the claimed architecture adopted and directly proved?
+
+Adjacent owners stay separate:
+
+- `best-api` chooses the ideal reusable public call shape.
+- `plate-plan` and `plite-plan` own accepted architecture, adoption, and proof
+  plans.
+- `plate-next` audits migration and adoption against accepted doctrine at file
+  and package level.
+- `architecture-cleanup` finds and may execute behavior-neutral cleanup.
+- `editor-audit` compares Plite/Plate with external editor source trees.
+- `autoreview` reviews a diff, branch, commit, or PR.
+- `benchmark` measures scale and owns performance diagnosis.
+- package and feature skills implement accepted work.
+
+If the user asks for a fix as well as a review, finish the review first. Hand
+the accepted target to the proper owner. Do not let implementation convenience
+change the score.
+
+## Invocation Contract
+
+Accept exactly one primary scope.
+
+### `all [plate|plite|both]`
+
+Audit the whole selected architecture. Default to `both`.
+
+Use `autogoal`. Create a durable artifact set under
+`docs/plans/artifacts/<review-slug>/` containing:
+
+- `manifest.json`: every audit unit and its resolved public owner;
+- `scorecards.json`: one complete score receipt per audit unit;
+- `report.md`: ranked verdicts, hard cuts, before/after shapes, and routing.
+
+An audit unit is one independently scoreable package, public entrypoint, plugin
+family, or cross-layer runtime owner. Do not create duplicate units for the
+same job merely because it has headless and React files.
+
+The manifest must account for every selected public package and export-map
+entrypoint, then map every plugin family and runtime owner onto those entries.
+Report expected, reviewed, excluded, missing, and duplicate-unit counts. `all`
+cannot publish an overall average. Rank the units and report their individual
+scores; averaging unrelated architecture hides blockers.
+
+### `plugin <target>`
+
+Audit one semantic plugin family across all applicable layers, not only the
+descriptor whose name matched the query.
+
+Include:
+
+- package and public entrypoints;
+- canonical domain owner and writable stores;
+- headless plugin, extensions, transforms, queries, and serialization;
+- React adapters, hooks, providers, and package components;
+- copied registry UI, kits, demos, and application composition;
+- external application or service state that participates in the same job;
+- representative consumers, docs, tests, browser proof, and benchmarks;
+- compatibility or migration code only when it remains reachable.
+
+Resolve aliases such as `comment`, `comments`, `discussion`, and package names
+to one feature family before counting coverage. State that resolution.
+
+### `entrypoint <target>`
+
+Audit one exact public package entrypoint or subpath.
+
+Include its package manifest, export map, source barrel, implementation leaves,
+runtime and type dependencies, optional peers, packed reachability where
+relevant, representative consumers, docs, tests, and sibling entrypoints that
+could contradict its ownership. Score the entrypoint job, not the package's
+unrelated features.
+
+### `package <target>`
+
+Audit one package as a set of independent public jobs. Inventory every public
+entrypoint, dependency edge, exported owner, internal implementation family,
+representative consumer, and proof lane.
+
+This is not a Plate Next migration score. Do not review every file for modern
+syntax or cleanup. Judge whether the package and its entrypoints should exist,
+whether each owns an independent current job, and whether their runtime and
+public boundaries tell the truth.
+
+### `surface <target>`
+
+Audit an explicitly bounded concept, path set, or cross-layer mechanism. Start
+with the named boundary, then expand only far enough to include every owner,
+writer, public caller, lifecycle, dependency, and proof that can change the
+verdict. State the resolved boundary and exclusions before scoring.
+
+Use `surface` for architecture such as transient projections, selection
+geometry, plugin state, or serialization ownership that does not map cleanly
+to one plugin or entrypoint.
+
+### Invalid or misrouted input
+
+- A PR, diff, branch, or commit review routes to `autoreview`.
+- External editor comparison routes to `editor-audit`.
+- A public call-shape-only question routes to `best-api`.
+- Migration readiness or file-by-file Plate v2 adoption routes to `plate-next`.
+- A request to find cleanup candidates and apply safe packets routes to
+  `architecture-cleanup`.
+- A missing target for `plugin`, `entrypoint`, `package`, or `surface` is the
+  only input error that requires a user answer.
+
+Do not add `changed`, `compare`, `fix`, or `sync` modes. Existing owners already
+have those jobs.
+
+## Required Sources
+
+Read only the doctrine and source that can affect the selected scope:
+
+1. Root `VISION.md`, `docs/vision/common.md`, and the relevant Plate or Plite
+   detail file.
+2. Package manifests, export maps, public barrels, public types, and owning
+   implementation.
+3. Every writer and reader of the canonical state, including external stores
+   and copied registry code.
+4. Representative production consumers, current docs, tests, benchmarks, and
+   browser proof.
+5. Existing plans only after current source has established the architecture.
+
+Plans, docs, tests, and names are claims. Reachable implementation and real
+consumers decide current truth. Generated files and compatibility fixtures
+count when users or release artifacts can still reach them.
+
+Use current working-tree source as the review subject unless the user names an
+immutable ref. Do not perform branch hygiene or reject local source merely
+because it is uncommitted. Cite exact paths and line numbers from the reviewed
+tree.
+
+## Review Method
+
+Run these gates in order. Do not score first and rationalize afterward.
+
+### 1. Resolve the user job and deletion cone
+
+Name the concrete user, author, or runtime job. Inventory every public noun,
+plugin, namespace, store, layer, adapter, and package that claims part of it.
+
+Pressure-test each as deletable:
+
+1. Delete it and route its real jobs through an existing canonical owner.
+2. Merge or inline it when deletion leaves only private mechanics.
+3. Look one owner higher for an existing domain, model, runtime, view, or
+   application authority.
+4. Keep it only for a hard correctness, security, serialized-data,
+   native-behavior, or runtime law; an explicit user requirement; or a proven
+   independent current user job.
+
+Lead the final verdict with the largest justified cut. Implementation size,
+tests, docs, compatibility, and migration effort do not prove an owner should
+exist.
+
+### 2. Materialize the bounded manifest
+
+Before scoring, count the review surface.
+
+| Coverage | Required content |
+| --- | --- |
+| Public | packages, export-map entries, barrels, public types, documented calls |
+| Owners | canonical authority, every writable truth, derived caches, external stores |
+| Runtime | construction, reads, writes, invalidation, subscriptions, teardown |
+| Layers | Plite, Plate headless, Plate React, registry/app, service boundaries |
+| Consumers | at least one normal path and every materially different owner path |
+| Proof | unit, type, packed-artifact, benchmark, browser, and migration proof that applies |
+
+Report:
+
+```text
+expected=<n> reviewed=<n> excluded=<n> missing=<n> duplicates=<n>
+```
+
+Each exclusion needs a reason. A partial lexical search is not a complete
+manifest. If `missing > 0` or duplicate audit units remain unresolved, apply
+the `incomplete-manifest` cap and do not publish a final numeric score.
+
+### 3. Trace ownership and lifetime
+
+Classify every state value before judging its API:
+
+| Lifetime | Canonical owner |
+| --- | --- |
+| Durable document truth | model nodes/properties plus operations and serialization |
+| Shared application or service truth | application/service domain owner outside one editor instance |
+| Editor-session configuration | editor/plugin runtime configuration and scoped store |
+| View-local transient state | mounted view, DOM/input lifecycle, or component owner |
+| Derived read, cache, or index | private projection with explicit invalidation from its source |
+
+Then trace all writers, readers, invalidation, serialization, collaboration,
+mount/unmount, and reset paths. A cache is not a second truth only when callers
+cannot write it independently and its source owns invalidation.
+
+Wrong ownership or lifetime is structural failure. UI polish, tests, and a
+short call site cannot average it away.
+
+### 4. Trace layer and reachability truth
+
+Verify that public imports, package dependencies, optional peers, source
+barrels, packed JavaScript, declarations, and runtime construction agree.
+
+Check that:
+
+- a root exposes only code backed by required dependencies;
+- optional framework/runtime code sits behind an honest subpath;
+- a facade inherits lower contracts by identity except for explicit tested
+  exceptions;
+- copied registry code owns application composition and presentation policy;
+- headless owners do not import React or DOM policy;
+- sibling entrypoints do not publish competing owners for the same job.
+
+### 5. Judge the public path
+
+Show the normal call site, one real customization path, and an advanced escape
+path only when a current job needs it. Include public imports.
+
+Judge concept count, naming, inference, JSDoc, composition, and whether callers
+must synchronize internal carriers manually. A small call expression can still
+score badly when its imported nouns or state owner lie.
+
+If the best public shape is unresolved, keep the architecture verdict and route
+the exact call-shape decision to `best-api`.
+
+### 6. Classify scale before scoring
+
+Name every growing variable: documents, nodes, plugins, editors, views,
+subscribers, queries, decorations, DOM units, remote users, or history entries.
+Identify construction, steady-state, edit, invalidation, and teardown work.
+
+When the architecture adds or retains a scale-sensitive runtime layer, cache,
+index, projection, registry, scheduler, or fan-out, require an executable
+Benchmark receipt. Source complexity arguments are not measurements.
+
+Apply `unmeasured-scale` when measurement can change whether that layer should
+exist. Report the result as provisional and route the exact measurement to
+`benchmark`. Record scale as N/A only when source proves the competing shapes
+have the same runtime work or the surface is type-only/zero-runtime.
+
+### 7. Trace correctness and proof
+
+Name the applicable hard laws: normalization, operations, selection, history,
+serialization, collaboration, DOM/input, native browser behavior, security,
+and data integrity. Find the owner and direct proof for each.
+
+Distinguish:
+
+- source proof from inferred intent;
+- unit/type proof from packed reachability;
+- browser proof from source review;
+- performance measurement from asymptotic reasoning;
+- adopted production paths from fixtures or docs-only examples.
+
+### 8. Score, cap, prioritize, and route
+
+Score each axis from its evidence. Apply hard caps after the weighted subtotal.
+Assign urgency separately. Then show the current and target shapes.
+
+## Architecture Score
+
+Use integer grades from 0 through 4 on every axis.
+
+| Grade | Meaning |
+| --- | --- |
+| 0 | Contradicted: the current design violates the axis's core law. |
+| 1 | Accidental: the primary path works through leaks, duplication, or manual synchronization. |
+| 2 | Mixed: a plausible owner exists, but parallel truths, exceptions, or partial adoption remain. |
+| 3 | Coherent: the correct target is mostly present; bounded adoption or proof gaps remain. |
+| 4 | Canonical: one truthful owner, complete applicable adoption, and direct proof. |
+
+Missing evidence is not grade 0. Missing evidence makes the review incomplete or
+provisional. Grade 0 requires contradictory current evidence.
+
+| Axis key | Weight | Question |
+| --- | ---: | --- |
+| `owner` | 2.0 | Is there one canonical domain authority with no competing writable truth? |
+| `lifetime` | 2.0 | Does every value live, persist, reset, and invalidate at the correct lifetime? |
+| `boundary` | 1.0 | Do layers, packages, entrypoints, dependencies, and reachability tell the truth? |
+| `api` | 1.5 | Is the common public path small, inferable, composable, and free of owner leakage? |
+| `scale` | 1.5 | Is growing work local, bounded, measured when material, and owned by the right layer? |
+| `correctness` | 1.0 | Are hard model, data, native, collaboration, and safety laws centrally preserved? |
+| `proof` | 1.0 | Are the architecture, adoption, teaching, artifacts, and applicable runtime paths directly proved? |
+
+Weighted subtotal:
+
+```text
+sum(axis grade / 4 * axis weight) = raw score out of 10
+```
+
+Every axis row must include:
+
+- grade and weighted points;
+- at least one current source citation;
+- the concrete reason;
+- the falsifier: evidence that would raise, lower, or invalidate the grade.
+
+Do not average away ontology failure. Apply every evidenced cap and keep the
+lowest ceiling.
+
+| Cap key | Ceiling | Status | Trigger |
+| --- | ---: | --- | --- |
+| `wrong-owner` | 2.0 | final | The primary job belongs to another canonical authority. |
+| `duplicate-truth` | 2.0 | final | Two independently writable truths represent the same domain fact. |
+| `wrong-lifetime` | 3.0 | final | Durable, shared, editor-session, view-local, or derived state lives in the wrong lifetime owner. |
+| `reachability-contradiction` | 5.0 | final | A public entrypoint cannot truthfully run or type through its declared dependency boundary. |
+| `unmeasured-scale` | 6.0 | provisional | A scale-sensitive layer can still be kept or cut based on missing executable measurement. |
+| `correctness-blocker` | 1.0 | blocker | The owner permits corruption, security failure, or violation of a hard native/model law. |
+| `incomplete-manifest` | n/a | incomplete | Expected units, writers, public paths, or materially distinct consumers remain unreviewed. |
+
+`final` means the reviewed evidence supports a numeric score. `provisional`
+must render as a ceiling such as `≤6.0/10`; it is not a final score.
+`incomplete` has no numeric final score. A blocker may have a numeric ceiling,
+but the verdict must lead with the violated hard law.
+
+When several caps apply, list all of them. The most severe cap controls the
+displayed score. A cap never raises a lower subtotal.
+
+## Evidence Confidence
+
+Architecture quality and confidence are different. Score confidence from 0 to
+4 on these evidence dimensions, then report the weighted result out of 100:
+
+| Confidence key | Weight | Evidence |
+| --- | ---: | --- |
+| `inventory` | 35 | Complete bounded manifest with exclusions and duplicate resolution. |
+| `trace` | 30 | Public owner, all writers/readers, lifetime, dependencies, and invalidation traced. |
+| `consumers` | 20 | Normal path and every materially different production owner inspected. |
+| `runtime` | 15 | Applicable tests, packed artifacts, browser paths, and benchmarks directly checked. |
+
+Use the same 0–4 anchors: absent, weak, partial, strong, complete. Confidence
+does not change the architecture score. It tells the reader how firmly to trust
+it.
+
+## Deterministic Score Receipt
+
+Use the repo scorer for arithmetic and cap status:
+
+```bash
+node tooling/scripts/plate-review-score.mjs \
+  --axis owner=0 \
+  --axis lifetime=0 \
+  --axis boundary=2 \
+  --axis api=1 \
+  --axis scale=1 \
+  --axis correctness=2 \
+  --axis proof=3 \
+  --confidence inventory=4 \
+  --confidence trace=4 \
+  --confidence consumers=3 \
+  --confidence runtime=2 \
+  --cap wrong-owner \
+  --cap duplicate-truth
+```
+
+Copy its JSON receipt into a durable `all` scorecard. For a narrow review,
+report the same fields in chat. Never hand-edit the computed subtotal, ceiling,
+status, final score, or confidence.
+
+The scorer proves arithmetic, allowed grades, and cap behavior. It does not
+choose grades or caps. Source evidence does.
+
+## Priority
+
+Assign priority independently from the /10 score:
+
+- `P0`: confirmed corruption, security failure, serialized-data break, hard
+  native/model-law violation, or unusable primary public contract.
+- `P1`: wrong canonical owner or lifetime, competing writable truth, or a
+  common scale law with material ecosystem harm.
+- `P2`: bounded reachability, API, composition, adoption, or proof debt with a
+  safe current path.
+- `P3`: local naming, teaching, or cleanup debt with no architectural harm.
+
+A low score is not automatically P0. A narrow feature can be badly designed
+without being urgent. A high-scoring architecture can still contain one P0
+correctness defect.
+
+## Required Output
+
+Lead with one sentence that states the score/status, priority, and strongest
+cut. Then include only the sections that carry evidence.
+
+### Verdict
+
+- final or provisional display score;
+- confidence;
+- priority;
+- one-sentence reason;
+- largest justified deletion, merge, move, or keep decision.
+
+### Coverage
+
+```text
+mode=<mode> target=<resolved-target>
+expected=<n> reviewed=<n> excluded=<n> missing=<n> duplicates=<n>
+```
+
+List exclusions and unresolved gaps.
+
+### Scorecard
+
+| Axis | Grade | Weight | Points | Current evidence | Falsifier |
+| --- | ---: | ---: | ---: | --- | --- |
+
+After the table, show raw subtotal, every applied cap with evidence, displayed
+score, confidence receipt, and priority reason.
+
+### Current and target shapes
+
+Show one small before/after code or ownership-flow snippet. Include import
+owners when public API is involved. The target must show the canonical owner
+and state lifetime, not merely cleaner syntax.
+
+### Decisions
+
+| Rank | Action | Current noun/layer | Canonical owner | Evidence | Why |
+| ---: | --- | --- | --- | --- | --- |
+
+Use `delete`, `merge`, `inline`, `move`, `keep`, `measure`, or `defer`. Do not
+offer a compromise menu. Pick the best target.
+
+### Proof and next owner
+
+State what was inspected and what was not measured or rendered. Route each
+accepted decision to exactly one owner:
+
+| Decision | Next owner |
+| --- | --- |
+| Public call shape unresolved | `best-api` |
+| Accepted Plate boundary/adoption plan | `plate-plan` |
+| Accepted Plite substrate plan | `plite-plan` |
+| File/package migration adoption | `plate-next` |
+| Behavior-neutral cleanup packet | `architecture-cleanup` |
+| Runtime scale unknown | `benchmark` |
+| End-to-end Plate feature delivery | `plate-feature` |
+| Plugin/entrypoint implementation | `plate-plugin-creator` |
+| React/registry implementation | `plate-ui` |
+| One behavior bug | `patch` |
+
+Do not say “best next” without naming the exact owner and first bounded task.
+
+## Why a Comments Composition Can Score 2/10
+
+A `plugin comment` review includes the registry/application composition. The
+headless `platejs/comment` entrypoint may correctly own durable document
+anchors while the complete Comments system still puts application discussion
+truth in an editor plugin store and manually writes both the thread and its
+document anchor. That system can receive solid API, proof, and correctness
+points and still finish at 2/10:
+
+```text
+raw subtotal: 2.5/10
+wrong-owner ceiling: 2.0
+duplicate-truth ceiling: 2.0
+final: 2.0/10
+```
+
+That result is not taste disguised as math. The evidence must show that editor
+plugin state owns application discussion truth while document marks and the
+discussion store can be changed independently. Those structural facts cap the
+system before UI quality or test volume is considered.
+
+The target is therefore not “clean up the Comments plugin.” The target is:
+
+```text
+before: document marks <-> editor plugin store <-> application thread store
+after:  application thread owner -> document anchors -> derived editor view
+```
+
+The exact public calls still belong to `best-api`; this review establishes why
+the current owner graph cannot score higher.
+
+Do not transfer the 2/10 to `entrypoint platejs/comment`. That narrower mode
+scores the anchor entrypoint and its dependency boundary, not registry
+application state. Scores are comparable only when the resolved scope is the
+same.
+
+## Stop Conditions
+
+Stop and report an incomplete review when:
+
+- the bounded manifest cannot be completed;
+- a required writer, public entrypoint, or materially different consumer
+  cannot be located;
+- runtime scale can decide whether a proposed/current layer should exist and no
+  measurement receipt exists;
+- source contradicts the requested target name and more than one resolution is
+  materially plausible;
+- the user asks for an external comparison or diff review owned elsewhere.
+
+Do not turn missing evidence into a confident zero. Do not turn a provisional
+ceiling into a final score. Do not implement fixes from this skill.
+
+## Validation
+
+The first local validation command is:
+
+```bash
+pnpm check:plate-review
+```
+
+After changing this source rule, run `pnpm install` to regenerate
+`.agents/skills/plate-review/SKILL.md`, then rerun the validation command.

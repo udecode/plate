@@ -16,9 +16,9 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
-type HeadingProps = PliteElementProps<typeof BaseHeadingPlugin>;
-
-export function HeadingElementStatic(props: HeadingProps) {
+export function HeadingElementStatic(
+  props: PliteElementProps<typeof BaseHeadingPlugin>
+) {
   const { level } = props.element;
   const tag = `h${level}` as const;
 
@@ -29,7 +29,9 @@ export function HeadingElementStatic(props: HeadingProps) {
   );
 }
 
-export function HeadingElementDocx(props: HeadingProps) {
+export function HeadingElementDocx(
+  props: PliteElementProps<typeof BaseHeadingPlugin>
+) {
   const key = props.editor.key(props.path);
 
   return (

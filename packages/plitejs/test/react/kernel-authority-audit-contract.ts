@@ -686,7 +686,7 @@ test('each mounted root runtime owns the only DOM phase scheduler instance', () 
   ).toEqual({});
 });
 
-test('all source timing primitives are scheduler internals or named semantic timers', () => {
+test('source timing and document focus primitives have named owners', () => {
   const allSourceFiles = collectSourceFiles(pliteReactRoot);
 
   expect(
@@ -699,15 +699,19 @@ test('all source timing primitives are scheduler internals or named semantic tim
     'packages/plitejs/src/react/components/editable-text-blocks.tsx': 2,
     'packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx': 1,
     'packages/plitejs/src/react/hooks/use-plite-decoration-source.ts': 1,
+    'packages/plitejs/src/react/hooks/use-plite-widget-geometry.tsx': 1,
     'packages/plitejs/src/react/hooks/use-plite-widget-store.tsx': 1,
     'packages/plitejs/src/react/hooks/use-editor-selector.tsx': 1,
+    'packages/plitejs/src/react/widget-geometry.ts': 1,
   });
   expect(
     getMatchesByFiles(
       /document\.(?:addEventListener|removeEventListener)\(['"](?:blur|focus|focusin|focusout)['"]/g,
       allSourceFiles
     )
-  ).toEqual({});
+  ).toEqual({
+    'packages/plitejs/src/react/inactive-selection.ts': 4,
+  });
 });
 
 test('DOM sync tokens and model selection preferences belong to the root runtime lifecycle', () => {

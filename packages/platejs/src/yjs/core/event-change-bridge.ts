@@ -1691,10 +1691,7 @@ const createEventDocumentChange = (
   changedChildren: number;
   changedRanges: number;
 } => {
-  const contexts = indexYjsPropertyContexts(
-    before,
-    root === 'main' ? null : root
-  );
+  let contexts: ReturnType<typeof indexYjsPropertyContexts> | undefined;
   const sectionInputs = regions.map((region) =>
     Object.freeze({
       after: Object.freeze(after.slice(region.afterFrom, region.afterTo)),
@@ -1707,6 +1704,14 @@ const createEventDocumentChange = (
     lengths.total(),
     sectionInputs,
     (node, key) => {
+      contexts ??= indexYjsPropertyContexts(
+        before,
+        root === 'main' ? null : root,
+        regions.map((region) => ({
+          from: region.beforeFrom,
+          to: region.beforeTo,
+        }))
+      );
       const context = contexts.get(node);
 
       return context ? isSetValued(node, key, context) : false;
@@ -2492,7 +2497,8 @@ export class YjsEventChangeBridge {
     const relocationTargets = new Map<string, YjsNode>();
     const propertyContexts = indexYjsPropertyContexts(
       expected,
-      this.schemaRoot
+      this.schemaRoot,
+      regions.map((region) => ({ from: region.afterFrom, to: region.afterTo }))
     );
 
     for (const relocation of relocations) {

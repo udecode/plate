@@ -1310,4 +1310,92 @@ describe('DOM coverage native bridge', () => {
       cleanupEditorRoot(editor, root);
     }
   });
+
+  test('cutting a selected inline void publishes deletion and caret as one commit', () => {
+    const inlineVoidSchema = defineEditorSchema('schema:cut-inline-void', {
+      elements: {
+        mention: { void: 'markable-inline' },
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'preserve',
+    });
+    const editor = createEditor({
+      extensions: [inlineVoidSchema],
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+    });
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before ' },
+            {
+              type: 'mention',
+              character: 'R2-D2',
+              children: [{ text: '', bold: true }],
+            },
+            { text: ' after' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 0 },
+      },
+    });
+    const root = mountEditorRoot(editor);
+    const clipboard = new FakeDataTransfer();
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    try {
+      applyEditableCut({
+        editor,
+        event: createClipboardEvent(root, clipboard),
+        readOnly: false,
+      });
+
+      expect(commits).toBe(1);
+      const commit = editor.read((state) => state.lastCommit());
+      expect(commit?.changed.hasAny('structure')).toBe(true);
+      expect(commit?.changes.empty).toBe(false);
+      expect(editor.read((state) => state.children())).toEqual([
+        { type: 'paragraph', children: [{ text: 'before  after' }] },
+      ]);
+      expect(editor.read((state) => state.selection())).toEqual({
+        anchor: { path: [0, 0], offset: 7 },
+        focus: { path: [0, 0], offset: 7 },
+      });
+      expect(
+        decodeFragmentPayload(clipboard.getData('application/x-plite-fragment'))
+          .slice.content
+      ).toEqual([
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'mention',
+              character: 'R2-D2',
+              children: [{ text: '', bold: true }],
+            },
+          ],
+        },
+      ]);
+    } finally {
+      unsubscribe();
+      cleanupEditorRoot(editor, root);
+    }
+  });
 });

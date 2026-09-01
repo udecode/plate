@@ -135,7 +135,7 @@ const measureFit = (
   assert.equal(proof.length, expectedTopLevelNodes);
   assert.equal(Object.isFrozen(proof), true);
   assert.doesNotThrow(() =>
-    editor.read.schema.validateFragment([{ ...parent, children: [...proof] }])
+    editor.read.schema.assertFragment([{ ...parent, children: [...proof] }])
   );
 
   for (let index = 0; index < 50; index += 1) fit();

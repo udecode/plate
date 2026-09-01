@@ -113,7 +113,7 @@ function ActiveEditorToolbar() {
 primary editors. `useOptionalEditor()` returns `null` while none is active.
 Components that require an editor should use `useEditor()` and fail fast.
 
-## Editor API and Commands
+## Editor API and commands
 
 Use `editor.read` for snapshot-bound queries, `editor.api` for DOM, host, and
 plugin services, and `editor.update` for operations that change the document,
@@ -177,37 +177,39 @@ Use the scoped store when imperative code needs to read or write editor-local
 plugin state. Use `usePluginStore` when React UI needs to re-render from that
 state.
 
-```tsx title="components/find-replace-control.tsx" showLineNumbers
-import { FindReplacePlugin } from 'platejs/find-replace';
-import { useEditor, usePluginStore } from 'platejs/react';
+```tsx title="components/panel-control.tsx" showLineNumbers
+import { definePlatePlugin, useEditor, usePluginStore } from 'platejs/react';
 
-export function FindReplaceControl() {
+const PanelPlugin = definePlatePlugin('panel', {
+  initialState: { open: false },
+});
+
+export function PanelControl() {
   const editor = useEditor();
-  const search = usePluginStore(FindReplacePlugin, 'search');
+  const open = usePluginStore(PanelPlugin, 'open');
 
   return (
-    <input
-      value={search}
-      onChange={(event) => {
-        editor
-          .plugin(FindReplacePlugin)
-          .store.set({ search: event.target.value });
-        editor.api.react.refreshDecorations();
+    <button
+      type="button"
+      onClick={() => {
+        editor.plugin(PanelPlugin).store.set({ open: !open });
       }}
-    />
+    >
+      {open ? 'Close panel' : 'Open panel'}
+    </button>
   );
 }
 ```
 
 ```ts title="plugin-store.ts"
-const state = editor.plugin(FindReplacePlugin).store.get();
+const state = editor.plugin(PanelPlugin).store.get();
 
-editor.plugin(FindReplacePlugin).store.set({
-  search: 'Plate',
+editor.plugin(PanelPlugin).store.set({
+  open: true,
 });
 
-editor.plugin(FindReplacePlugin).store.set((draft) => {
-  draft.search = draft.search.trim();
+editor.plugin(PanelPlugin).store.set((draft) => {
+  draft.open = !draft.open;
 });
 ```
 

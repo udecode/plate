@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -907,12 +917,14 @@ test('Benchmark source, generated skill, routing, and removed perf owner agree',
   );
   assert.match(benchmarkRule, /all applicable lanes by default/i);
   assert.match(benchmarkRule, /## Durable Fix Decision/);
+  assert.match(benchmarkRule, /## Pre-Acceptance Architecture Probe/);
   assert.match(benchmarkRule, /best long-term target/i);
   assert.doesNotMatch(benchmarkRule, /apply the smallest durable fix/i);
   assert.match(
     benchmarkMethodology,
     /Public API and runtime architecture run `best-api`/
   );
+  assert.match(benchmarkMethodology, /## Embedded Architecture Probe/);
   assert.match(benchmarkTemplate, /- compatibility-verdict:/);
   assert.match(autoRule, /route .*benchmark/i);
   assert.match(
@@ -930,18 +942,177 @@ test('Benchmark source, generated skill, routing, and removed perf owner agree',
   assert.doesNotMatch(slateArRule, /`slate-ar perf(?:\s|`|<)/);
 });
 
+test('the performance pack blocks architecture closeout until executable scale evidence is resolved', () => {
+  const fixtureRoot = mkdtempSync(join(tmpdir(), 'architecture-scale-pack-'));
+  const templateDir = join(fixtureRoot, 'docs/plans/templates');
+  const packDir = join(templateDir, 'packs');
+  const planPath = join(fixtureRoot, 'docs/plans/scale-smoke.md');
+  const helper = join(
+    root,
+    '.agents/skills/autogoal/scripts/create-goal-scratchpad.mjs'
+  );
+  const checker = join(root, '.agents/skills/autogoal/scripts/check-complete.mjs');
+
+  try {
+    mkdirSync(packDir, { recursive: true });
+    writeFileSync(join(fixtureRoot, 'AGENTS.md'), '# fixture\n');
+    writeFileSync(
+      join(templateDir, 'scale-smoke.md'),
+      `# {{TITLE}}
+
+Objective:
+Prove the materialized scale contract blocks unresolved architecture.
+
+Goal plan:
+{{PLAN_PATH}}
+
+Template:
+{{TEMPLATE_PATH}}
+
+Completion threshold:
+- The scale contract is executable and resolved.
+
+Verification surface:
+- command: fixture checker pass.
+
+Constraints:
+- Preserve the fixture contract.
+
+Boundaries:
+- Temporary fixture only.
+
+Blocked condition:
+- No blocker remains.
+
+Start Gates:
+| Gate | Applies | Evidence |
+| --- | --- | --- |
+| Fixture ready | yes | source-audit: fixture exists |
+
+Work Checklist:
+- [x] Fixture primary work is complete.
+
+Completion Gates:
+| Gate | Applies | Required action | Evidence |
+| --- | --- | --- | --- |
+| Fixture proof | yes | Run fixture checker | command: primary fixture passed |
+
+Phase / pass table:
+| Phase | Status | Evidence | Next |
+| --- | --- | --- | --- |
+| Fixture | complete | command: primary fixture passed | N/A: complete |
+
+Verification evidence:
+- command: primary fixture passed.
+
+Reboot status:
+| Where am I? | Where am I going? | What is the goal? | What learned? | What done? |
+| --- | --- | --- | --- | --- |
+| Complete | Closeout | Enforce scale proof | Pack gates are mechanical | Fixture ran |
+
+Open risks:
+- None.
+`
+    );
+    copyFileSync(
+      join(
+        root,
+        'docs/plans/templates/packs/performance-observability.md'
+      ),
+      join(packDir, 'performance-observability.md')
+    );
+
+    const created = spawnSync(
+      process.execPath,
+      [
+        helper,
+        '--template',
+        'scale-smoke',
+        '--with',
+        'performance-observability',
+        '--title',
+        'Scale smoke',
+        '--path',
+        'docs/plans/scale-smoke.md',
+      ],
+      { cwd: fixtureRoot, encoding: 'utf8' }
+    );
+    assert.equal(created.status, 0, created.stderr);
+
+    const unresolved = spawnSync(
+      process.execPath,
+      [checker, 'docs/plans/scale-smoke.md'],
+      { cwd: fixtureRoot, encoding: 'utf8' }
+    );
+    assert.equal(unresolved.status, 1);
+    assert.match(unresolved.stderr, /Pre-acceptance scale proof/);
+
+    const performanceGateLabels = new Set([
+      'Performance pack selected',
+      'User-facing operation and runtime owner identified',
+      'Scale variables and cohorts fixed',
+      'Budget frozen before target measurement',
+      'Baseline and target probe selected',
+      'Correctness guard selected',
+      'Production detector decision recorded',
+      'Pre-acceptance scale proof',
+      'Warm latency budget',
+      'Large/stress scaling',
+      'Cold and failure paths',
+      'Payload and fan-out',
+      'Production-path rerun',
+      'Correctness guard',
+      'Before/after receipt',
+      'Detector and privacy',
+      'Performance regression check',
+    ]);
+    const resolved = readFileSync(planPath, 'utf8')
+      .split('\n')
+      .map((line) => {
+        if (!line.startsWith('|')) return line;
+
+        const cells = line
+          .split('|')
+          .slice(1, -1)
+          .map((cell) => cell.trim());
+        if (!performanceGateLabels.has(cells[0])) return line;
+
+        cells[1] = 'yes';
+        cells[cells.length - 1] =
+          'command: matched scale fixture and correctness guard passed';
+
+        return `| ${cells.join(' | ')} |`;
+      })
+      .join('\n')
+      .replaceAll('- [ ] Performance pack:', '- [x] Performance pack:');
+    writeFileSync(planPath, resolved);
+
+    const complete = spawnSync(
+      process.execPath,
+      [checker, 'docs/plans/scale-smoke.md'],
+      { cwd: fixtureRoot, encoding: 'utf8' }
+    );
+    assert.equal(complete.status, 0, complete.stderr);
+    assert.match(complete.stdout, /\[autogoal\] complete/);
+  } finally {
+    rmSync(fixtureRoot, { force: true, recursive: true });
+  }
+});
+
 test('all changed worker skills match source and retain one benchmark owner', () => {
   const changedSkills = [
     'architecture-cleanup',
     'auto',
     'autoclosure',
     'benchmark',
+    'best-api',
     'maintainer',
     'major-task',
     'patch',
     'performance',
     'plate-feature',
     'plate-plan',
+    'plate-plugin-creator',
     'plite-plan',
     'plite-research',
     'regression',

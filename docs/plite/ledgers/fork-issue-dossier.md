@@ -7523,8 +7523,8 @@ Planning source:
 
 Reviewed surface:
 
-- `packages/plitejs/src/page-layout/index.ts`
-- `packages/plitejs/src/page-layout/react.tsx`
+- `packages/plitejs/src/pagination/index.ts`
+- `packages/plitejs/src/pagination/react.tsx`
 - `packages/plite-layout-pretext/src/index.ts`
 - `packages/plitejs/src/react/rendering-strategy/create-segment-plan.ts`
 - `packages/plitejs/src/react/dom-strategy/use-virtualized-root-plan.ts`

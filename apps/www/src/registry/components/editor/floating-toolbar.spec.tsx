@@ -6,12 +6,14 @@ import * as React from 'react';
 let clickOutside: () => void;
 const floatingUpdate = mock();
 const setFloating = mock();
+const useWidgetFloatingMock = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
 let editorFocused = true;
 let selectedNodeCount = 0;
 let selectionExpanded = true;
 let selectionRange: unknown;
 let toolbarOverlayOpenChange: (open: boolean) => void;
+const editableRef = { current: document.createElement('div') };
 
 const selection = Object.assign(() => selectionRange, {
   isExpanded: () => selectionExpanded,
@@ -23,6 +25,7 @@ const editor = {
     lastCommit: () => null,
     selection,
     text: { string: () => (selectionExpanded ? 'selected' : '') },
+    view: { isFocused: () => editorFocused },
   },
 };
 
@@ -56,14 +59,22 @@ mock.module('platejs/react', () => ({
   },
   usePluginStore: () => false,
   useComposedRef: () => mock(),
+  useSelectionGeometry: () => ({
+    boundingRect: new DOMRect(),
+    focusRect: null,
+    rects: [],
+  }),
 }));
 
-mock.module('platejs/floating/react', () => ({
+mock.module('@floating-ui/react', () => ({
   flip: () => ({}),
-  getSelectionBoundingClientRect: () => new DOMRect(),
   offset: () => ({}),
-  useVirtualFloating: (options: typeof floatingOptions) => {
+}));
+
+mock.module('@/registry/hooks/use-widget-floating', () => ({
+  useWidgetFloating: (_geometry: unknown, options: typeof floatingOptions) => {
     floatingOptions = options;
+    useWidgetFloatingMock(options);
 
     return {
       refs: { setFloating },
@@ -144,10 +155,23 @@ describe('FloatingToolbar', () => {
     };
     floatingUpdate.mockClear();
     setFloating.mockClear();
+    useWidgetFloatingMock.mockClear();
   });
 
   afterAll(() => {
     mock.restore();
+  });
+
+  it('is a complete afterEditable component by default', async () => {
+    const { FloatingToolbar, FloatingToolbarPlugin } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    expect(FloatingToolbarPlugin.render.afterEditable).toBe(FloatingToolbar);
+
+    const view = render(<FloatingToolbar editableRef={editableRef} />);
+
+    expect(view.getByText('Ask AI')).toBeTruthy();
   });
 
   it('does not mount text toolbar work for node selections', async () => {
@@ -156,17 +180,21 @@ describe('FloatingToolbar', () => {
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<FloatingToolbar>toolbar</FloatingToolbar>);
+    const view = render(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.queryByText('toolbar')).toBeNull();
-    expect(floatingUpdate).not.toHaveBeenCalled();
+    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
   });
 
   it('allows the same range to reopen after a collapsed selection lifecycle', async () => {
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<FloatingToolbar>toolbar</FloatingToolbar>);
+    const view = render(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.getByText('toolbar')).toBeTruthy();
 
@@ -175,14 +203,18 @@ describe('FloatingToolbar', () => {
 
     selectionExpanded = false;
     selectionRange = null;
-    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     selectionExpanded = true;
     selectionRange = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
-    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.getByText('toolbar')).toBeTruthy();
   });
@@ -191,7 +223,9 @@ describe('FloatingToolbar', () => {
     const { FloatingToolbar } = await import(
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<FloatingToolbar>toolbar</FloatingToolbar>);
+    const view = render(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.getByText('toolbar')).toBeTruthy();
 
@@ -201,12 +235,16 @@ describe('FloatingToolbar', () => {
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
-    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.queryByText('toolbar')).toBeNull();
 
     editorFocused = true;
-    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.queryByText('toolbar')).toBeNull();
 
@@ -215,7 +253,9 @@ describe('FloatingToolbar', () => {
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 9, path: [0, 0] },
     };
-    view.rerender(<FloatingToolbar>toolbar</FloatingToolbar>);
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
 
     expect(view.getByText('toolbar')).toBeTruthy();
   });
@@ -225,7 +265,7 @@ describe('FloatingToolbar', () => {
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
     const view = render(
-      <FloatingToolbar>
+      <FloatingToolbar editableRef={editableRef}>
         <button type="button">toolbar action</button>
       </FloatingToolbar>
     );
@@ -234,7 +274,7 @@ describe('FloatingToolbar', () => {
 
     editorFocused = false;
     view.rerender(
-      <FloatingToolbar>
+      <FloatingToolbar editableRef={editableRef}>
         <button type="button">toolbar action</button>
       </FloatingToolbar>
     );

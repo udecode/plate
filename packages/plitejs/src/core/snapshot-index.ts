@@ -144,9 +144,15 @@ export const buildSnapshotIndex = (
     });
   };
 
-  collectElementPaths(children, parentPath);
   let materializedEntries: ReadonlyArray<readonly [NodeKey, Path]> | undefined;
   let activeChildren: readonly Descendant[] | null = children;
+  let elementPathsCollected = false;
+  const ensureElementPaths = () => {
+    if (elementPathsCollected) return;
+
+    collectElementPaths(getDefined(activeChildren), parentPath);
+    elementPathsCollected = true;
+  };
   const cache = (nodeKey: NodeKey, path: Path) => {
     const key = pathKey(path);
     const existingPath = idToPathCache.get(nodeKey);
@@ -196,6 +202,7 @@ export const buildSnapshotIndex = (
     if (materializedEntries) return materializedEntries;
 
     return profileCoreDuration('runtime-index-full-build', () => {
+      ensureElementPaths();
       const entries: Array<readonly [NodeKey, Path]> = [];
 
       const visit = (nodes: readonly Descendant[], pathPrefix: Path) => {
@@ -262,10 +269,12 @@ export const buildSnapshotIndex = (
     idToPathCache.get(nodeKey)
   );
 
-  SNAPSHOT_ELEMENT_ENTRIES.set(
-    index,
-    createElementEntryQuery(elementEntriesByType, keyAt)
-  );
+  const queryElements = createElementEntryQuery(elementEntriesByType, keyAt);
+
+  SNAPSHOT_ELEMENT_ENTRIES.set(index, (types) => {
+    if (types.length > 0) ensureElementPaths();
+    return queryElements(types);
+  });
   return index;
 };
 
@@ -866,10 +875,6 @@ const orderPaths = (paths: Iterable<Path>) => {
   return ordered;
 };
 
-const pathContains = (ancestor: readonly number[], path: readonly number[]) =>
-  ancestor.length <= path.length &&
-  ancestor.every((part, depth) => path[depth] === part);
-
 const collectChangedElementPaths = (
   segment: StructuralSnapshotIndexMappingSegment
 ) => {
@@ -1096,72 +1101,7 @@ const mapChangedNodeKeys = (
     }
   }
 
-  const nodeText = (path: Path, document: DocumentIndex): string => {
-    const node = document.node(path);
-
-    if ('text' in node && typeof node.text === 'string') return node.text;
-    if (!('children' in node) || !Array.isArray(node.children)) return '';
-
-    const read = (value: Descendant): string =>
-      'text' in value && typeof value.text === 'string'
-        ? value.text
-        : 'children' in value && Array.isArray(value.children)
-          ? value.children.map(read).join('')
-          : '';
-
-    return (node.children as readonly Descendant[]).map(read).join('');
-  };
-  const sameNodeKind = (sourcePath: Path, targetPath: Path) => {
-    const source = segment.before.node(sourcePath);
-    const target = segment.after.node(targetPath);
-    const sourceIsText = 'text' in source;
-    const targetIsText = 'text' in target;
-
-    if (sourceIsText || targetIsText) return sourceIsText === targetIsText;
-
-    return source.type === target.type;
-  };
-
-  // Splits and merges can preserve one node's complete text while replacing
-  // its opening token. Claim that unique semantic continuation before the
-  // positional opening-token survivor. A source ancestor emptied by moving
-  // one of its descendants is not a continuation; the destination ancestor
-  // can still continue its own identity around that moved descendant.
-  for (const sourcePath of orderedSources) {
-    if (
-      relocations.some((relocation) =>
-        pathContains(sourcePath, relocation.path)
-      )
-    ) {
-      continue;
-    }
-
-    const sourceText = nodeText(sourcePath, segment.before);
-
-    if (sourceText.length === 0) continue;
-    const continuations = orderedTargets.filter((targetPath) => {
-      // Split and merge continuations stay at the source depth. Text
-      // containment alone must never let an ancestor donate its identity to a
-      // touched descendant.
-      if (sourcePath.length !== targetPath.length) return false;
-      if (!sameNodeKind(sourcePath, targetPath)) return false;
-      const targetText = nodeText(targetPath, segment.after);
-
-      return (
-        targetText.length > 0 &&
-        (targetText.includes(sourceText) || sourceText.includes(targetText))
-      );
-    });
-
-    if (continuations.length !== 1) continue;
-    const nodeKey = index.keyAt(sourcePath);
-
-    if (nodeKey) claim(nodeKey, continuations[0]);
-  }
-
-  // Transforms can explicitly transfer a node key to the semantic
-  // continuation of a split/merge. Reserve those claims before positional
-  // opening-token inheritance.
+  // A live target's explicit identity outranks positional continuation.
   for (const targetPath of orderedTargets) {
     const nodeKey = getNodeKeyForNode(segment.after.node(targetPath), editor);
 
@@ -1700,7 +1640,14 @@ export const mapSnapshotIndexThroughChange = (
 
     if (sourcePath) {
       const targetPath = targetPathFor(sourcePath);
-      const node = targetPath ? nodeAt(targetPath) : null;
+
+      if (!targetPath) {
+        // Explicit assignments and prepared placements were checked above.
+        // A deleted canonical path cannot reappear during materialization.
+        idToPathCache.set(nodeKey, null);
+        return null;
+      }
+      const node = nodeAt(targetPath);
 
       if (
         node &&

@@ -299,41 +299,6 @@ export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
 
   const decorate = pipeDecorate(editor);
 
-  let afterEditable: React.ReactNode = null;
-  let beforeEditable: React.ReactNode = null;
-
-  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
-    const BeforeEditable = plugin.render.beforeEditable;
-
-    if (BeforeEditable) {
-      beforeEditable = (
-        <>
-          {beforeEditable}
-          <BeforeEditable />
-        </>
-      );
-    }
-  });
-
-  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
-    const AfterEditable = plugin.render.afterEditable;
-
-    if (AfterEditable) {
-      afterEditable = (
-        <>
-          {afterEditable}
-          <AfterEditable />
-        </>
-      );
-    }
-  });
-
   const content = (
     <div
       className={clsx('plite-editor', className)}
@@ -352,13 +317,7 @@ export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
     </div>
   );
 
-  let aboveEditable: React.ReactNode = (
-    <>
-      {beforeEditable}
-      {content}
-      {afterEditable}
-    </>
-  );
+  let aboveEditable: React.ReactNode = content;
 
   // Use pre-computed arrays for aboveEditable components
   getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {

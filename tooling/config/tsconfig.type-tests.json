@@ -44,9 +44,6 @@
         "../../packages/platejs/src/react/features/comment/index.ts"
       ],
       "platejs/csv": ["../../packages/platejs/src/csv/index.ts"],
-      "platejs/cursor/react": [
-        "../../packages/platejs/src/react/features/cursor/index.ts"
-      ],
       "platejs/date": ["../../packages/platejs/src/features/date/index.ts"],
       "platejs/date/react": [
         "../../packages/platejs/src/react/features/date/index.ts"
@@ -68,12 +65,6 @@
       "platejs/excalidraw": ["../../packages/platejs/src/excalidraw/index.ts"],
       "platejs/excalidraw/react": [
         "../../packages/platejs/src/excalidraw/react/index.ts"
-      ],
-      "platejs/find-replace": [
-        "../../packages/platejs/src/features/find-replace/index.ts"
-      ],
-      "platejs/floating/react": [
-        "../../packages/platejs/src/floating/react/index.ts"
       ],
       "platejs/footnote": [
         "../../packages/platejs/src/features/footnote/index.ts"
@@ -104,11 +95,9 @@
         "../../packages/platejs/src/react/features/mention/index.ts"
       ],
       "platejs/migrations": ["../../packages/platejs/src/migrations/index.ts"],
-      "platejs/page-layout": [
-        "../../packages/platejs/src/page-layout/index.ts"
-      ],
-      "platejs/page-layout/react": [
-        "../../packages/platejs/src/page-layout/react/index.ts"
+      "platejs/pagination": ["../../packages/platejs/src/pagination/index.ts"],
+      "platejs/pagination/react": [
+        "../../packages/platejs/src/pagination/react/index.ts"
       ],
       "platejs/react": ["../../packages/platejs/src/react/index.tsx"],
       "platejs/resizable/react": [
@@ -155,11 +144,9 @@
       "plitejs/hyperscript": [
         "../../packages/plitejs/src/hyperscript/index.ts"
       ],
-      "plitejs/page-layout": [
-        "../../packages/plitejs/src/page-layout/index.ts"
-      ],
-      "plitejs/page-layout/react": [
-        "../../packages/plitejs/src/page-layout/react.tsx"
+      "plitejs/pagination": ["../../packages/plitejs/src/pagination/index.ts"],
+      "plitejs/pagination/react": [
+        "../../packages/plitejs/src/pagination/react.tsx"
       ],
       "plitejs/react": ["../../packages/plitejs/src/react/index.ts"],
       "plitejs/testing": ["../../packages/plitejs/src/testing/index.ts"],

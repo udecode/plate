@@ -8,6 +8,7 @@ Choose proof from actual touched surfaces.
 | package import boundaries     | scoped `lint:fix`; audit affected `oxlint.config.ts` override | prove new source roots and entrypoints have no broad ignore |
 | package source/types          | package source-first typecheck and focused tests              | declaration/build proof when exports or artifacts changed   |
 | exports/files                 | `pnpm brl`; export audit                                      | package consumer typecheck                                  |
+| runtime scale                 | embedded Benchmark current-owner versus target probe          | exact final production-path cohort/budget rerun plus correctness guard |
 | copied registry UI            | owning app typecheck and focused tests                        | Browser on `/blocks/<id>-demo` when available               |
 | docs                          | source/API/link audit                                         | affected docs build or route proof                          |
 | registry metadata             | registry metadata tests/audit                                 | install/render path proof                                   |
@@ -47,6 +48,8 @@ Before completion, audit:
   every headless entrypoint without React or DOM, renders every SSR entrypoint
   without DOM, and exercises every client entrypoint in a real browser;
 - copied registry metadata and examples;
+- Scale proof applicability, pre-acceptance receipt, and final production-path
+  rerun when repeated/hot work can change;
 - docs and release classification;
 - Plate Next version/status and package fingerprint when attesting;
 - accepted P1 review findings.

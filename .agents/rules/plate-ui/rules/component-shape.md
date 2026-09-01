@@ -4,6 +4,7 @@
 
 - Node context hooks
 - Preserve props passthrough
+- Inline component props
 - Plugin access
 - Base/live split
 - Keep helpers local
@@ -56,6 +57,38 @@ export function MyElement({
 ```
 
 That drops required renderer props from the passthrough object.
+
+---
+
+## Inline component props
+
+Write a component-owned prop shape at the component signature:
+
+```tsx
+export function ToolbarButton({ active, children }: {
+  active?: boolean;
+  children: React.ReactNode;
+}) {
+  return <button data-active={active || undefined}>{children}</button>;
+}
+```
+
+Do not create a local `ToolbarButtonProps` alias. Same-file siblings, helpers,
+signature length, and generic complexity do not make that alias a contract.
+Keep a named component prop type only when it is exported through a real
+cross-file or published entrypoint contract. Do not export a type merely to
+avoid inlining it.
+
+An inline prop shape may select from an honest domain owner such as
+`Pick<EmojiPickerState, 'isOpen'>`. The state remains a state contract; do not
+flatten it or rename it to a prop bag. Descriptor-owned public renderer types
+such as `PlateElementProps<typeof FooPlugin>` remain their existing exported
+contracts.
+
+Run `node tooling/scripts/check-inline-component-props.mjs` to audit every
+authored TSX source, including archived source snapshots. Generated registry
+output, templates, dependency trees, and build output are excluded because
+their source owners live elsewhere.
 
 ---
 

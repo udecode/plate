@@ -104,6 +104,34 @@ test('DOM phase scheduler coalesces keyed work and cancels stale tasks', () => {
   expect(scheduler.pending()).toBe(0);
 });
 
+test('large scheduler batches retain phase order, cancellation, and keyed replacement', () => {
+  const fake = createSchedulerWindow();
+  const scheduler = createDOMPhaseScheduler({
+    getWindow: () => fake.schedulerWindow,
+  });
+  const calls: number[] = [];
+  const cancels = Array.from({ length: 10_000 }, (_, index) =>
+    scheduler.schedule('dom-write', `write-${index}`, () => calls.push(index), {
+      key: `key-${index}`,
+    })
+  );
+  for (let index = 0; index < 10_000; index += 2) cancels[index]();
+  scheduler.schedule('dom-write', 'replacement', () => calls.push(-1), {
+    key: 'key-1',
+  });
+  scheduler.schedule('model', 'model', () => calls.push(-2));
+  fake.flushAnimationFrame();
+
+  expect(calls).toEqual([
+    -2,
+    ...Array.from({ length: 4999 }, (_, index) => index * 2 + 3),
+    -1,
+  ]);
+  expect(scheduler.pending()).toBe(0);
+  scheduler.destroy();
+  expect(scheduler.pending()).toBe(0);
+});
+
 test('DOM phase scheduler skips ready work cancelled by an earlier phase', () => {
   const fake = createSchedulerWindow();
   const scheduler = createDOMPhaseScheduler({

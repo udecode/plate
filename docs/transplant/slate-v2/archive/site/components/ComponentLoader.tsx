@@ -1,7 +1,3 @@
-type LoaderProps = {
-  error?: Error | null
-}
-
 const LoadingError = ({ error }: { error: Error }) => (
   <div className="example-warning">
     <p>An error was thrown while loading this example.</p>
@@ -11,7 +7,7 @@ const LoadingError = ({ error }: { error: Error }) => (
   </div>
 )
 
-export function ComponentLoader({ error }: LoaderProps) {
+export function ComponentLoader({ error }: { error?: Error | null }) {
   if (error) {
     return <LoadingError error={error} />
   }
@@ -24,7 +20,7 @@ export function ComponentLoader({ error }: LoaderProps) {
   )
 }
 
-export function HugeDocumentLoader({ error }: LoaderProps) {
+export function HugeDocumentLoader({ error }: { error?: Error | null }) {
   if (error) {
     return <LoadingError error={error} />
   }

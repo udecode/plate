@@ -28,41 +28,7 @@ type Actions = {
   // Set search so Input is not required and we can use another one.
   setSearch: (search: string) => void;
 };
-type Children = { children?: React.ReactNode };
 
-type CommandProps = Children &
-  DivProps & {
-    /** Optional default item value when it is initially rendered. */
-    defaultValue?: string;
-    /** Optionally set to `true` to disable selection via pointer events. */
-    disablePointerSelection?: boolean;
-    /** Accessible label for this command menu. Not shown visibly. */
-    label?: string;
-    /**
-     * Optionally set to `true` to turn on looping around when using the arrow
-     * keys.
-     */
-    loop?: boolean;
-    /**
-     * Optionally set to `false` to turn off the automatic filtering and
-     * sorting. If `false`, you must conditionally render valid items based on
-     * the search query yourself.
-     */
-    shouldFilter?: boolean;
-    /** Optional controlled state of the selected command menu item. */
-    value?: string;
-    /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
-    vimBindings?: boolean;
-    /**
-     * Custom filter function for whether each command menu item should matches
-     * the given search query. It should return a number between 0 and 1, with 1
-     * being the best match and 0 being hidden entirely. By default, uses the
-     * `command-score` library.
-     */
-    filter?: (value: string, search: string, keywords?: string[]) => number;
-    /** Event handler called when the selected item of the menu changes. */
-    onValueChange?: (value: string) => void;
-  };
 type Context = {
   inputId: string;
   label: string;
@@ -78,83 +44,11 @@ type Context = {
   item: (id: string, groupId?: string) => () => void;
   value: (id: string, value: string, keywords?: string[]) => void;
 };
-type DialogProps = RadixDialog.DialogProps &
-  CommandProps & {
-    /** Provide a custom element the Dialog should portal into. */
-    container?: HTMLElement;
-    /** Provide a className to the Dialog content. */
-    contentClassName?: string;
-    /** Provide a className to the Dialog overlay. */
-    overlayClassName?: string;
-  };
-type DivProps = React.ComponentPropsWithRef<typeof Primitive.div>;
-type EmptyProps = Children & DivProps & {};
 type Group = {
   id: string;
   forceMount?: boolean;
 };
-type GroupProps = Children &
-  Omit<DivProps, 'heading' | 'value'> & {
-    /** Whether this group is forcibly rendered regardless of filtering. */
-    forceMount?: boolean;
-    /** Optional heading to render for this group. */
-    heading?: React.ReactNode;
-    /**
-     * If no heading is provided, you must provide a value that is unique for
-     * this group.
-     */
-    value?: string;
-  };
-type InputProps = Omit<
-  React.ComponentPropsWithRef<typeof Primitive.input>,
-  'onChange' | 'type' | 'value'
-> & {
-  /** Optional controlled state for the value of the search input. */
-  value?: string;
-  /** Event handler called when the search value changes. */
-  onValueChange?: (search: string) => void;
-};
-type ItemProps = Children &
-  Omit<DivProps, 'disabled' | 'onSelect' | 'value'> & {
-    /** Whether this item is currently disabled. */
-    disabled?: boolean;
-    /** Whether this item is forcibly rendered regardless of filtering. */
-    forceMount?: boolean;
-    /** Optional keywords to match against when filtering. */
-    keywords?: string[];
-    /**
-     * A unique value for this item. If no value is provided, it will be
-     * inferred from `children` or the rendered `textContent`. If your
-     * `textContent` changes between renders, you _must_ provide a stable,
-     * unique `value`.
-     */
-    value?: string;
-    /**
-     * Event handler for when this item is selected, either via click or
-     * keyboard selection.
-     */
-    onSelect?: (value: string) => void;
-  };
 
-type ListProps = Children &
-  DivProps & {
-    /** Accessible label for this List of suggestions. Not shown visibly. */
-    label?: string;
-  };
-type LoadingProps = Children &
-  DivProps & {
-    /** Accessible label for this loading progressbar. Not shown visibly. */
-    label?: string;
-    /** Estimated progress of loading asynchronous options. */
-    progress?: number;
-  };
-type SeparatorProps = DivProps & {
-  /**
-   * Whether this separator should always be rendered. Useful if you disable
-   * automatic filtering.
-   */
-  alwaysRender?: boolean;
-};
 type State = {
   filtered: { count: number; groups: Set<string>; items: Map<string, number> };
   search: string;
@@ -178,11 +72,42 @@ const ITEM_SELECTOR = `[cmdk-item=""]`;
 const VALID_ITEM_SELECTOR = `${ITEM_SELECTOR}:not([aria-disabled="true"])`;
 const SELECT_EVENT = 'cmdk-item-select';
 const VALUE_ATTR = 'data-value';
-const defaultFilter: NonNullable<CommandProps['filter']> = (
-  value,
-  search,
-  keywords
-) => commandScore(value, search, keywords);
+const defaultFilter: NonNullable<
+  ({ children?: React.ReactNode } & React.ComponentPropsWithRef<
+    typeof Primitive.div
+  > & {
+      /** Optional default item value when it is initially rendered. */
+      defaultValue?: string;
+      /** Optionally set to `true` to disable selection via pointer events. */
+      disablePointerSelection?: boolean;
+      /** Accessible label for this command menu. Not shown visibly. */
+      label?: string;
+      /**
+       * Optionally set to `true` to turn on looping around when using the arrow
+       * keys.
+       */
+      loop?: boolean;
+      /**
+       * Optionally set to `false` to turn off the automatic filtering and
+       * sorting. If `false`, you must conditionally render valid items based on
+       * the search query yourself.
+       */
+      shouldFilter?: boolean;
+      /** Optional controlled state of the selected command menu item. */
+      value?: string;
+      /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
+      vimBindings?: boolean;
+      /**
+       * Custom filter function for whether each command menu item should matches
+       * the given search query. It should return a number between 0 and 1, with 1
+       * being the best match and 0 being hidden entirely. By default, uses the
+       * `command-score` library.
+       */
+      filter?: (value: string, search: string, keywords?: string[]) => number;
+      /** Event handler called when the selected item of the menu changes. */
+      onValueChange?: (value: string) => void;
+    })['filter']
+> = (value, search, keywords) => commandScore(value, search, keywords);
 
 const CommandContext = React.createContext<Context | undefined>(undefined);
 const useCommand = () => {
@@ -232,7 +157,42 @@ const GroupContext = React.createContext<Group | undefined>(undefined);
 //   return 'cmdk' + id;
 // };
 
-const Command = (props: CommandProps) => {
+const Command = (
+  props: { children?: React.ReactNode } & React.ComponentPropsWithRef<
+    typeof Primitive.div
+  > & {
+      /** Optional default item value when it is initially rendered. */
+      defaultValue?: string;
+      /** Optionally set to `true` to disable selection via pointer events. */
+      disablePointerSelection?: boolean;
+      /** Accessible label for this command menu. Not shown visibly. */
+      label?: string;
+      /**
+       * Optionally set to `true` to turn on looping around when using the arrow
+       * keys.
+       */
+      loop?: boolean;
+      /**
+       * Optionally set to `false` to turn off the automatic filtering and
+       * sorting. If `false`, you must conditionally render valid items based on
+       * the search query yourself.
+       */
+      shouldFilter?: boolean;
+      /** Optional controlled state of the selected command menu item. */
+      value?: string;
+      /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
+      vimBindings?: boolean;
+      /**
+       * Custom filter function for whether each command menu item should matches
+       * the given search query. It should return a number between 0 and 1, with 1
+       * being the best match and 0 being hidden entirely. By default, uses the
+       * `command-score` library.
+       */
+      filter?: (value: string, search: string, keywords?: string[]) => number;
+      /** Event handler called when the selected item of the menu changes. */
+      onValueChange?: (value: string) => void;
+    }
+) => {
   const state = useLazyRef<State>(() => ({
     filtered: {
       /** The count of all visible items. */
@@ -799,7 +759,31 @@ const Command = (props: CommandProps) => {
  * navigation. Preferably pass a `value`, otherwise the value will be inferred
  * from `children` or the rendered item's `textContent`.
  */
-const Item = (props: ItemProps) => {
+const Item = (
+  props: { children?: React.ReactNode } & Omit<
+    React.ComponentPropsWithRef<typeof Primitive.div>,
+    'disabled' | 'onSelect' | 'value'
+  > & {
+      /** Whether this item is currently disabled. */
+      disabled?: boolean;
+      /** Whether this item is forcibly rendered regardless of filtering. */
+      forceMount?: boolean;
+      /** Optional keywords to match against when filtering. */
+      keywords?: string[];
+      /**
+       * A unique value for this item. If no value is provided, it will be
+       * inferred from `children` or the rendered `textContent`. If your
+       * `textContent` changes between renders, you _must_ provide a stable,
+       * unique `value`.
+       */
+      value?: string;
+      /**
+       * Event handler for when this item is selected, either via click or
+       * keyboard selection.
+       */
+      onSelect?: (value: string) => void;
+    }
+) => {
   const id = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const groupContext = React.useContext(GroupContext);
@@ -895,7 +879,22 @@ const Item = (props: ItemProps) => {
  * Group command menu items together with a heading. Grouped items are always
  * shown together.
  */
-const Group = (props: GroupProps) => {
+const Group = (
+  props: { children?: React.ReactNode } & Omit<
+    React.ComponentPropsWithRef<typeof Primitive.div>,
+    'heading' | 'value'
+  > & {
+      /** Whether this group is forcibly rendered regardless of filtering. */
+      forceMount?: boolean;
+      /** Optional heading to render for this group. */
+      heading?: React.ReactNode;
+      /**
+       * If no heading is provided, you must provide a value that is unique for
+       * this group.
+       */
+      value?: string;
+    }
+) => {
   const { children, forceMount, heading, ref: forwardedRef, ...etc } = props;
   const id = React.useId();
   const ref = React.useRef<HTMLDivElement>(null);
@@ -952,7 +951,15 @@ const Group = (props: GroupProps) => {
  * A visual and semantic separator between items or groups. Visible when the
  * search query is empty or `alwaysRender` is true, hidden otherwise.
  */
-const Separator = (props: SeparatorProps) => {
+const Separator = (
+  props: React.ComponentPropsWithRef<typeof Primitive.div> & {
+    /**
+     * Whether this separator should always be rendered. Useful if you disable
+     * automatic filtering.
+     */
+    alwaysRender?: boolean;
+  }
+) => {
   const { alwaysRender, ref: forwardedRef, ...etc } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const render = useCmdk((state) => !state.search);
@@ -973,7 +980,17 @@ const Separator = (props: SeparatorProps) => {
  * Command menu input. All props are forwarded to the underyling `input`
  * element.
  */
-const Input = (props: InputProps) => {
+const Input = (
+  props: Omit<
+    React.ComponentPropsWithRef<typeof Primitive.input>,
+    'onChange' | 'type' | 'value'
+  > & {
+    /** Optional controlled state for the value of the search input. */
+    value?: string;
+    /** Event handler called when the search value changes. */
+    onValueChange?: (search: string) => void;
+  }
+) => {
   const { onValueChange, ref: forwardedRef, ...etc } = props;
   const isControlled = props.value != null;
   const store = useStore();
@@ -1028,7 +1045,14 @@ const Input = (props: InputProps) => {
  * Contains `Item`, `Group`, and `Separator`. Use the `--cmdk-list-height` CSS
  * variable to animate height based on the number of results.
  */
-const List = (props: ListProps) => {
+const List = (
+  props: { children?: React.ReactNode } & React.ComponentPropsWithRef<
+    typeof Primitive.div
+  > & {
+      /** Accessible label for this List of suggestions. Not shown visibly. */
+      label?: string;
+    }
+) => {
   const { children, label = 'Suggestions', ref: forwardedRef, ...etc } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const height = React.useRef<HTMLDivElement>(null);
@@ -1078,7 +1102,50 @@ const List = (props: ListProps) => {
 };
 
 /** Renders the command menu in a Radix Dialog. */
-const Dialog = (props: DialogProps) => {
+const Dialog = (
+  props: RadixDialog.DialogProps &
+    ({ children?: React.ReactNode } & React.ComponentPropsWithRef<
+      typeof Primitive.div
+    > & {
+        /** Optional default item value when it is initially rendered. */
+        defaultValue?: string;
+        /** Optionally set to `true` to disable selection via pointer events. */
+        disablePointerSelection?: boolean;
+        /** Accessible label for this command menu. Not shown visibly. */
+        label?: string;
+        /**
+         * Optionally set to `true` to turn on looping around when using the arrow
+         * keys.
+         */
+        loop?: boolean;
+        /**
+         * Optionally set to `false` to turn off the automatic filtering and
+         * sorting. If `false`, you must conditionally render valid items based on
+         * the search query yourself.
+         */
+        shouldFilter?: boolean;
+        /** Optional controlled state of the selected command menu item. */
+        value?: string;
+        /** Set to `false` to disable ctrl+n/j/p/k shortcuts. Defaults to `true`. */
+        vimBindings?: boolean;
+        /**
+         * Custom filter function for whether each command menu item should matches
+         * the given search query. It should return a number between 0 and 1, with 1
+         * being the best match and 0 being hidden entirely. By default, uses the
+         * `command-score` library.
+         */
+        filter?: (value: string, search: string, keywords?: string[]) => number;
+        /** Event handler called when the selected item of the menu changes. */
+        onValueChange?: (value: string) => void;
+      }) & {
+      /** Provide a custom element the Dialog should portal into. */
+      container?: HTMLElement;
+      /** Provide a className to the Dialog content. */
+      contentClassName?: string;
+      /** Provide a className to the Dialog overlay. */
+      overlayClassName?: string;
+    }
+) => {
   const {
     container,
     contentClassName,
@@ -1108,7 +1175,11 @@ const Dialog = (props: DialogProps) => {
 };
 
 /** Automatically renders when there are no results for the search query. */
-const Empty = (props: EmptyProps) => {
+const Empty = (
+  props: { children?: React.ReactNode } & React.ComponentPropsWithRef<
+    typeof Primitive.div
+  > & {}
+) => {
   const render = useCmdk((state) => state.filtered.count === 0);
   const { ref, ...rest } = props;
 
@@ -1123,7 +1194,16 @@ const Empty = (props: EmptyProps) => {
  * You should conditionally render this with `progress` while loading
  * asynchronous items.
  */
-const Loading = (props: LoadingProps) => {
+const Loading = (
+  props: { children?: React.ReactNode } & React.ComponentPropsWithRef<
+    typeof Primitive.div
+  > & {
+      /** Accessible label for this loading progressbar. Not shown visibly. */
+      label?: string;
+      /** Estimated progress of loading asynchronous options. */
+      progress?: number;
+    }
+) => {
   const {
     children,
     label = 'Loading...',

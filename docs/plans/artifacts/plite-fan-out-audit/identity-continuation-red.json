@@ -1,0 +1,109 @@
+{
+  "benchmark": "plite-collab-readiness",
+  "artifactVersion": 3,
+  "mode": "replacement",
+  "iterations": 1,
+  "thresholdPolicy": {
+    "mode": "deterministic-work-guard; broad timings remain diagnostic",
+    "releaseGate": true,
+    "repeatRunsRequiredBeforeEnforcement": 3
+  },
+  "cohorts": [
+    {
+      "id": "normal",
+      "blocks": 100,
+      "remoteOps": 50,
+      "anchors": 25
+    },
+    {
+      "id": "large",
+      "blocks": 1000,
+      "remoteOps": 100,
+      "anchors": 100
+    }
+  ],
+  "lanes": {
+    "normal": {
+      "config": {
+        "id": "normal",
+        "blocks": 100,
+        "remoteOps": 50,
+        "anchors": 25
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          36.26
+        ],
+        "mean": 36.26,
+        "median": 36.26,
+        "p75": 36.26,
+        "p95": 36.26,
+        "p99": 36.26,
+        "min": 36.26,
+        "max": 36.26
+      },
+      "canonicalReplacementWork": {
+        "nodeReads": 63099,
+        "maximumNodeReads": 6400,
+        "historicalAndFollowUpChecked": true
+      }
+    },
+    "large": {
+      "config": {
+        "id": "large",
+        "blocks": 1000,
+        "remoteOps": 100,
+        "anchors": 100
+      },
+      "canonicalReplaceMs": {
+        "samples": [
+          577.48
+        ],
+        "mean": 577.48,
+        "median": 577.48,
+        "p75": 577.48,
+        "p95": 577.48,
+        "p99": 577.48,
+        "min": 577.48,
+        "max": 577.48
+      },
+      "canonicalReplacementWork": {
+        "nodeReads": 6030999,
+        "maximumNodeReads": 64000,
+        "historicalAndFollowUpChecked": true
+      }
+    }
+  },
+  "redFlags": {
+    "normal": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": null
+    },
+    "large": {
+      "batchSlowerThanSeparate": false,
+      "connectDisconnectHeapMaxBytes": null
+    }
+  },
+  "sourceBefore": {
+    "packages/plitejs/src/core/snapshot-index.ts": "9050436e2fc1e5c0dc23feb088c47363519aa3848a05c270674875023d865d5c",
+    "packages/plitejs/src/core/change/root-change.ts": "828318aed2125ba37518998fdfcec7d25332732658d9e204d1b149d0d85060bb",
+    "packages/plitejs/src/core/change/document-index.ts": "6d1376a3a0bdbba224d0a5c1bdb4635a7015404838d6d03174a5c815b454b8fd",
+    "packages/plitejs/src/core/anchor-state.ts": "596024768a5676d59e61990876abe813b388f93fe00fb3bd45de223466ba56f5",
+    "packages/plitejs/src/core/anchor.ts": "c446b7cb31374f9a06efb5038737a053b0315fcc5a03a0f7bbd3f88033e6302b",
+    "packages/plitejs/src/core/public-state.ts": "1457b08e4f6d172e062437e4d8719555dccecd9b8ee2ced52708f8850498893b",
+    "benchmarks/slate-v2/donor/core/current/collab-readiness.mjs": "de30fede302c14eff476571a8f05b90c2ac51a3c54447b7b4d271c3e7892a48b"
+  },
+  "sourceAfter": {
+    "packages/plitejs/src/core/snapshot-index.ts": "9050436e2fc1e5c0dc23feb088c47363519aa3848a05c270674875023d865d5c",
+    "packages/plitejs/src/core/change/root-change.ts": "828318aed2125ba37518998fdfcec7d25332732658d9e204d1b149d0d85060bb",
+    "packages/plitejs/src/core/change/document-index.ts": "6d1376a3a0bdbba224d0a5c1bdb4635a7015404838d6d03174a5c815b454b8fd",
+    "packages/plitejs/src/core/anchor-state.ts": "596024768a5676d59e61990876abe813b388f93fe00fb3bd45de223466ba56f5",
+    "packages/plitejs/src/core/anchor.ts": "c446b7cb31374f9a06efb5038737a053b0315fcc5a03a0f7bbd3f88033e6302b",
+    "packages/plitejs/src/core/public-state.ts": "1457b08e4f6d172e062437e4d8719555dccecd9b8ee2ced52708f8850498893b",
+    "benchmarks/slate-v2/donor/core/current/collab-readiness.mjs": "de30fede302c14eff476571a8f05b90c2ac51a3c54447b7b4d271c3e7892a48b"
+  },
+  "guards": [
+    "normal: canonical replacement exceeds linear node-read budget",
+    "large: canonical replacement exceeds linear node-read budget"
+  ]
+}

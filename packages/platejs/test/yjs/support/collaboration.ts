@@ -19,6 +19,8 @@ import {
 } from '../../../src/core';
 import type { HistoryStateApi, HistoryTxApi } from '../../../src/history';
 import type { YjsNode } from '../../../src/yjs/core/attributes';
+import type { YjsRemoteCursorCacheMetrics } from '../../../src/yjs/core/awareness-adapter';
+import { getActiveYjsController } from '../../../src/yjs/core/controller-registry';
 import {
   getYjsNode,
   readPliteValueFromYjs,
@@ -309,6 +311,27 @@ export const getYjsRemoteCursors = (
   peer: Peer
 ): ReadonlyArray<YjsRemoteCursor<YjsRemoteCursorData>> =>
   getYjsState(peer).remoteCursors();
+
+const getYjsCursorCache = (peer: Peer) => {
+  const controller = getActiveYjsController(peer.editor);
+
+  assert.ok(controller, 'expected an active Yjs controller');
+
+  return controller.cursorCache();
+};
+
+export const getYjsRemoteCursorIds = (peer: Peer): readonly number[] =>
+  getYjsCursorCache(peer).remoteCursorIds();
+
+export const getYjsRemoteCursorCacheMetrics = (
+  peer: Peer
+): YjsRemoteCursorCacheMetrics => getYjsCursorCache(peer).getMetrics();
+
+export const subscribeYjsRemoteCursor = (
+  peer: Peer,
+  clientId: number,
+  listener: () => void
+): (() => void) => getYjsCursorCache(peer).subscribeCursor(clientId, listener);
 
 export const getYjsAwarenessRevision = (peer: Peer): number =>
   getYjsState(peer).awarenessRevision();

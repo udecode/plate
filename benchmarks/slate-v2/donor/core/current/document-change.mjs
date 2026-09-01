@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,9 +22,19 @@ import {
   setNodeChange,
 } from '../../../../../packages/plitejs/src/core/change/root-change.ts';
 import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
+import { createInternalDocumentChange } from '../../../../../packages/plitejs/src/core/change/document-change.ts';
+import { RootChange } from '../../../../../packages/plitejs/src/core/change/root-change.ts';
+import { PreparedTokenSlice } from '../../../../../packages/plitejs/src/core/change/tokens.ts';
 import { round, summarize } from '../../shared/stats.mjs';
 
 const runs = Number.parseInt(process.env.PLITE_CHANGESET_RUNS ?? '3', 10);
+const fingerprints = () => Object.fromEntries([
+  'packages/plitejs/src/core/change/document-index.ts',
+  'packages/plitejs/src/core/change/root-change.ts',
+  'packages/plitejs/src/core/change/document-change.ts',
+  'benchmarks/slate-v2/donor/core/current/document-change.mjs',
+].map((file) => [file, createHash('sha256').update(readFileSync(file)).digest('hex')]));
+const sourceBefore = fingerprints();
 const iterations = Number.parseInt(
   process.env.PLITE_CHANGESET_ITERATIONS ?? '40',
   10
@@ -103,7 +115,7 @@ const scenarios = [
 ];
 
 const toDocumentChange = (change) =>
-  new DocumentChange(new Map(change.empty ? [] : [['main', change]]));
+  createInternalDocumentChange(new Map(change.empty ? [] : [['main', change]]));
 
 const measureSetup = (children) => {
   const editorSamples = [];
@@ -305,9 +317,48 @@ const canonicalReplayGate = results.every(
   (result) => result.gate.canonicalReplayUnder2x
 );
 const promotionGate = editorTransactionGate && canonicalReplayGate;
+const textBatches = [100, 1000, 10000].map((count) => {
+  const edits = Math.min(120, count - 1);
+  const before = DocumentIndex.fromValue(Array.from({ length: count }, (_, index) => paragraph(index)));
+  const change = RootChange.create(before, Array.from({ length: edits }, (_, index) => ({
+    from: before.nodeRange([index, 0]).from + 1,
+    insert: PreparedTokenSlice.text('!'),
+  })));
+  const fromIndexedValue = DocumentIndex.fromIndexedValue;
+  let publications = 0;
+  DocumentIndex.fromIndexedValue = function (indexed) {
+    if (indexed.value.length === count) publications++;
+    return fromIndexedValue.call(this, indexed);
+  };
+  let actual;
+  try {
+    actual = change.apply(before);
+  } finally {
+    DocumentIndex.fromIndexedValue = fromIndexedValue;
+  }
+  assert.deepEqual(actual.value, before.value.map((node, index) => index < edits ? {
+    ...node, children: [{ ...node.children[0], text: '!' + node.children[0].text }],
+  } : node));
+  assert.equal(actual.value[count - 1], before.value[count - 1]);
+  assert.deepEqual(change.invert(before).apply(actual).value, before.value);
+  assert.deepEqual(RootChange.fromJSON(change.toJSON()).apply(before).value, actual.value);
+  const samples = [];
+  for (let sample = 0; sample <= 20; sample++) {
+    const start = performance.now();
+    change.apply(before);
+    const elapsed = performance.now() - start;
+    if (sample > 0) samples.push(elapsed);
+  }
+  const durationMs = summarize(samples);
+  return { blocks: count, edits, publications, durationMs, pass: publications === 1 && durationMs.p95 <= 16.67 };
+});
+const sourceAfter = fingerprints();
+assert.deepEqual(sourceAfter, sourceBefore, 'Measured source changed during the benchmark');
 const artifact = {
-  artifactVersion: 2,
+  artifactVersion: 3,
   benchmark: 'plite-document-change',
+  sourceIdentity: { measuredInputs: sourceAfter },
+  textBatches,
   blocks,
   iterations,
   runs,
@@ -324,6 +375,8 @@ const artifact = {
       'serialized retained shapes and token/index unit counts; not process heap',
   },
   thresholdPolicy: {
+    textBatchPublications: 1,
+    textBatchP95MaxMs: 16.67,
     distributionGate:
       'The 2x time gate compares per-lane medians across 40 iterations in each of three runs. p75/p95/p99/max remain diagnostics because independently sampled sub-millisecond tails are dominated by scheduler and garbage-collection outliers; p99 is the maximum at this sample count.',
     parityRequired: true,
@@ -350,6 +403,8 @@ const artifactPath = fileURLToPath(
 await mkdir(dirname(artifactPath), { recursive: true });
 await writeFile(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
 
-console.log(JSON.stringify(artifact, null, 2));
+console.log(`METRIC plite_document_change_guard_failures=${Number(!promotionGate) + textBatches.filter((row) => !row.pass).length}`);
+console.log(`METRIC plite_document_change_text_batch_p95_ms=${Math.max(...textBatches.map((row) => row.durationMs.p95))}`);
+console.log(`ARTIFACT ${artifactPath}`);
 
-if (!promotionGate) process.exitCode = 1;
+if (!promotionGate || textBatches.some((row) => !row.pass)) process.exitCode = 1;

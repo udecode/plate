@@ -1,6 +1,6 @@
-import { act, fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { TextApi } from 'plitejs';
-import { createRef } from 'react';
+import { createRef, StrictMode } from 'react';
 
 import { replace as editorReplace } from '../../src/internal';
 import {
@@ -9,6 +9,11 @@ import {
   Editable,
   Plite,
 } from '../../src/react';
+import {
+  createPliteInactiveSelectionStore,
+  registerPliteInactiveSelectionFocus,
+  setPliteInactiveSelectionVisible,
+} from '../../src/react/inactive-selection';
 
 describe('plite-react editable behavior', () => {
   test('renders initial editor children into the editable DOM', () => {
@@ -96,6 +101,510 @@ describe('plite-react editable behavior', () => {
     expect((editable as HTMLElement).style.whiteSpace).toBe('');
     expect((editable as HTMLElement).style.overflowWrap).toBe('');
     expect((editable as HTMLElement).style.zIndex).toBe('');
+  });
+
+  test('shows an expanded selection while focus is in a marked control', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <div data-plite-keep-selection-visible>
+          <button type="button">Keep selection</button>
+        </div>
+      </>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+
+    await act(async () => {
+      fireEvent.blur(editable, { relatedTarget: control });
+      fireEvent.focusIn(control);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toHaveTextContent('es');
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        });
+      });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toHaveTextContent('t');
+  });
+
+  test('resolves a marked focus target after a blur with no related target', async () => {
+    const editor = createEditor({
+      id: 'r0',
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <StrictMode>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <button data-plite-keep-selection-visible type="button">
+          Keep selection
+        </button>
+      </StrictMode>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: null });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+
+    await act(async () => {
+      fireEvent.focusIn(control);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toHaveTextContent('es');
+  });
+
+  test('resolves a marked focus target through an open shadow root', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <div data-testid="shadow-host" />
+      </>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const host = rendered.getByTestId('shadow-host');
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+    const control = document.createElement('button');
+
+    control.setAttribute('data-plite-keep-selection-visible', '');
+    control.textContent = 'Keep selection';
+    shadowRoot.append(control);
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: host });
+      fireEvent.focusIn(control, { relatedTarget: editable });
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toHaveTextContent('es');
+  });
+
+  test('discards an unresolved blur on unmarked focus or window blur', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <button data-plite-keep-selection-visible type="button">
+          Keep selection
+        </button>
+        <button type="button">Clear selection</button>
+      </>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const keepControl = rendered.getByRole('button', {
+      name: 'Keep selection',
+    });
+    const clearControl = rendered.getByRole('button', {
+      name: 'Clear selection',
+    });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: null });
+      fireEvent.focusIn(clearControl);
+      fireEvent.focusIn(keepControl);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+
+    await act(async () => {
+      fireEvent.focusIn(editable);
+      fireEvent.blur(editable, { relatedTarget: null });
+      fireEvent.blur(window);
+      fireEvent.focusIn(keepControl);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+  });
+
+  test('clears the inactive selection when focus leaves marked controls', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <button data-plite-keep-selection-visible type="button">
+          Keep selection
+        </button>
+        <button type="button">Clear selection</button>
+      </>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const keepControl = rendered.getByRole('button', {
+      name: 'Keep selection',
+    });
+    const clearControl = rendered.getByRole('button', {
+      name: 'Clear selection',
+    });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: keepControl });
+      fireEvent.focusIn(keepControl);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).not.toBeNull();
+
+    await act(async () => {
+      fireEvent.focusIn(clearControl);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+  });
+
+  test('clears when focus returns to an Editable inside the marked ancestor', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <div data-plite-keep-selection-visible>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <button type="button">Keep selection</button>
+      </div>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: control });
+      fireEvent.focusIn(control);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).not.toBeNull();
+
+    await act(async () => {
+      fireEvent.focusIn(editable);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+  });
+
+  test('clears when the browser window loses focus', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <>
+        <Plite editor={editor}>
+          <Editable />
+        </Plite>
+        <button data-plite-keep-selection-visible type="button">
+          Keep selection
+        </button>
+      </>
+    );
+    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(editable, { relatedTarget: control });
+      fireEvent.focusIn(control);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).not.toBeNull();
+
+    await act(async () => {
+      fireEvent.blur(window);
+    });
+
+    expect(
+      rendered.container.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
+  });
+
+  test('keeps document focus work constant across inactive selection stores', () => {
+    const documentAddEventListener = jest.spyOn(document, 'addEventListener');
+    const windowAddEventListener = jest.spyOn(window, 'addEventListener');
+    const stores = Array.from({ length: 100 }, () =>
+      createPliteInactiveSelectionStore()
+    );
+    const notifications = stores.map(() => 0);
+    const unregisterStores: Array<() => void> = [];
+    const unsubscribeStores: Array<() => void> = [];
+
+    try {
+      stores.forEach((store, index) => {
+        unregisterStores.push(
+          registerPliteInactiveSelectionFocus(document, store)
+        );
+        unsubscribeStores.push(
+          store.subscribe(() => {
+            notifications[index] += 1;
+          })
+        );
+      });
+
+      expect(
+        documentAddEventListener.mock.calls.filter(
+          ([type]) => type === 'focusin'
+        )
+      ).toHaveLength(1);
+      expect(
+        documentAddEventListener.mock.calls.filter(
+          ([type]) => type === 'focusout'
+        )
+      ).toHaveLength(1);
+      expect(
+        windowAddEventListener.mock.calls.filter(([type]) => type === 'blur')
+      ).toHaveLength(1);
+
+      setPliteInactiveSelectionVisible(document, stores[25], true);
+      setPliteInactiveSelectionVisible(document, stores[75], true);
+      fireEvent.blur(window);
+
+      expect(notifications.reduce((total, count) => total + count, 0)).toBe(4);
+      expect(notifications.filter((count) => count > 0)).toEqual([2, 2]);
+    } finally {
+      unsubscribeStores.forEach((unsubscribe) => unsubscribe());
+      unregisterStores.reverse().forEach((unregister) => unregister());
+      documentAddEventListener.mockRestore();
+      windowAddEventListener.mockRestore();
+    }
+  });
+
+  test('shows a neutral caret for a collapsed inactive selection', async () => {
+    const rangePrototype = window.Range.prototype;
+    const previousBoundingRect = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getBoundingClientRect'
+    );
+    const previousClientRects = Object.getOwnPropertyDescriptor(
+      rangePrototype,
+      'getClientRects'
+    );
+    const rect = {
+      bottom: 58,
+      height: 18,
+      left: 30,
+      right: 31,
+      top: 40,
+      width: 1,
+      x: 30,
+      y: 40,
+    };
+
+    Object.defineProperties(rangePrototype, {
+      getBoundingClientRect: { configurable: true, value: () => rect },
+      getClientRects: { configurable: true, value: () => [] },
+    });
+
+    try {
+      const editor = createEditor({
+        initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+      });
+      const rendered = render(
+        <>
+          <Plite editor={editor}>
+            <Editable />
+          </Plite>
+          <button data-plite-keep-selection-visible type="button">
+            Keep selection
+          </button>
+        </>
+      );
+      const editable = rendered.container.querySelector('[data-plite-editor]')!;
+      const control = rendered.getByRole('button', {
+        name: 'Keep selection',
+      });
+
+      await act(async () => {
+        editor.update((tx) => {
+          tx.selection.set({ offset: 2, path: [0, 0] });
+        });
+        fireEvent.blur(editable, { relatedTarget: control });
+        fireEvent.focusIn(control);
+      });
+
+      await waitFor(() =>
+        expect(
+          rendered.container.querySelector(
+            '[data-plite-inactive-selection-caret]'
+          )
+        ).toBeTruthy()
+      );
+      const caret = rendered.container.querySelector<HTMLElement>(
+        '[data-plite-inactive-selection-caret]'
+      )!;
+
+      expect(caret).toHaveAttribute('aria-hidden', 'true');
+      expect(caret).toHaveStyle({ left: '30px', top: '40px' });
+      expect(
+        rendered.container.querySelector('[data-plite-inactive-selection]')
+      ).toBeNull();
+    } finally {
+      if (previousBoundingRect) {
+        Object.defineProperty(
+          rangePrototype,
+          'getBoundingClientRect',
+          previousBoundingRect
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getBoundingClientRect');
+      }
+      if (previousClientRects) {
+        Object.defineProperty(
+          rangePrototype,
+          'getClientRects',
+          previousClientRects
+        );
+      } else {
+        Reflect.deleteProperty(rangePrototype, 'getClientRects');
+      }
+    }
+  });
+
+  test('paints only the exact Editable that yielded focus', async () => {
+    const firstEditor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'first' }] }],
+    });
+    const secondEditor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'second' }] }],
+    });
+    const rendered = render(
+      <>
+        <div data-testid="first-editor">
+          <Plite editor={firstEditor}>
+            <Editable />
+          </Plite>
+        </div>
+        <div data-testid="second-editor">
+          <Plite editor={secondEditor}>
+            <Editable />
+          </Plite>
+        </div>
+        <button data-plite-keep-selection-visible type="button">
+          Keep selection
+        </button>
+      </>
+    );
+    const firstRoot = rendered.getByTestId('first-editor');
+    const secondRoot = rendered.getByTestId('second-editor');
+    const firstEditable = firstRoot.querySelector('[data-plite-editor]')!;
+    const control = rendered.getByRole('button', { name: 'Keep selection' });
+
+    await act(async () => {
+      firstEditor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      secondEditor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+      fireEvent.blur(firstEditable, { relatedTarget: control });
+      fireEvent.focusIn(control);
+    });
+
+    expect(
+      firstRoot.querySelector('[data-plite-inactive-selection]')
+    ).toHaveTextContent('fir');
+    expect(
+      secondRoot.querySelector('[data-plite-inactive-selection]')
+    ).toBeNull();
   });
 
   test('calls onCommit and onSelectionChange when editor selection changes', async () => {

@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-interface FrameworkDocsProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: string;
-}
-
-export function FrameworkDocs(_props: FrameworkDocsProps) {
+export function FrameworkDocs(
+  _props: React.HTMLAttributes<HTMLDivElement> & {
+    data: string;
+  }
+) {
   return null;
 }
