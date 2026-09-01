@@ -2570,7 +2570,7 @@
           "name": "EditorCommitRuntimeChangeKind",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCommitRuntimeChangeKind = 'decoration' | 'node' | 'path' | 'projection' | 'selection' | 'text';",
+          "signature": "type EditorCommitRuntimeChangeKind = 'decoration' | 'node' | 'path' |\n/** Runtime node identities added to or removed from a document root. */\n'presence' | 'projection' | 'selection' | 'text';",
           "source": "packages/platejs/src/interfaces/editor.ts",
           "typeParameters": []
         },
