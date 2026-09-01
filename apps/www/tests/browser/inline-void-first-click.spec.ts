@@ -1,4 +1,4 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/browser/playwright';
+import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';

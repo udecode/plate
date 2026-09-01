@@ -143,6 +143,12 @@
       "2026-08-12-canonical-node-props",
       "2025-11-20-biome-ultracite"
     ],
+    "caption": [
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
     "find": ["2026-08-31-transient-editor-geometry"],
     "find-demo": ["2026-08-31-transient-editor-geometry"],
     "editor-plugins": [
@@ -590,11 +596,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "caption": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
     ],
     "caption-static": ["2026-08-17-flat-editor-registry"],
     "comment-toolbar-button": [

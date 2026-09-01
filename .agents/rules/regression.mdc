@@ -523,6 +523,14 @@ record its `pass:` or `red:` pre-edit baseline in `Affected corpus replay`.
 Without that baseline, a later red cannot distinguish an introduced regression
 from inherited breakage, so Patch must not start.
 
+When Regression adopts already-applied work that was previously called
+`candidate-local`, `kept`, or `completed`, freeze those candidate bytes and run
+the affected corpus before restoring a baseline or changing product source.
+Record the adopted claim in the selected case status. If candidate intake is
+red, invalidate the prior claim and enter Failed-Fix Interrupt as
+`final-verification`; do not relabel the case `selected` or `pending`, restore
+baseline bytes, or start another Patch attempt first.
+
 For a shared CSS selector, marker, class map, or style expansion, inventory
 every current consumer before changing product bytes. Include consumers that
 explicitly neutralize or override the shared style, such as transparent,

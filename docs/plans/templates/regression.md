@@ -350,6 +350,11 @@ Work Checklist:
       forbidden duplicate/inherited-paint geometry oracle.
 - [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit
       baseline recorded before its shared owner changes.
+- [ ] When Regression adopts already-applied work previously called
+      `candidate-local`, `kept`, or `completed`, the frozen candidate corpus
+      runs before baseline restoration or product edits. A red candidate intake
+      invalidates the prior claim and enters `final-verification` Failed-Fix
+      Interrupt before attempt N+1.
 - [ ] Every requested or started package, browser, root, or CI gate that failed
       is recorded and passes an exact final rerun on the final bytes.
 - [ ] Every selected case is kept, reverted, quarantined, deferred, or blocked

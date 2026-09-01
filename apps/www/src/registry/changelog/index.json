@@ -75,6 +75,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-08-31-stabilize-hidden-media-captions",
+      "href": "/registry/changelog/2026-08-31-stabilize-hidden-media-captions.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep hidden media captions mounted during selection changes",
+      "change": {
+        "type": "source",
+        "date": "2026-08-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["caption"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-08-31-transient-editor-geometry",
       "href": "/registry/changelog/2026-08-31-transient-editor-geometry.json",
       "status": "draft",

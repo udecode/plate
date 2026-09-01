@@ -42,8 +42,7 @@ describe('Caption', () => {
     mock.restore();
   });
 
-  it('covers empty direct caption content while media is inactive', async () => {
-    const contentBoundary = mock(() => <span data-testid="caption-boundary" />);
+  it('keeps empty direct caption content mounted while media is inactive', async () => {
     const { Caption } = await import(
       `./caption?test=${Math.random().toString(36).slice(2)}`
     );
@@ -51,22 +50,14 @@ describe('Caption', () => {
       <Caption
         active={false}
         element={{ children: [{ text: '' }], type: 'image' }}
-        slots={{ contentBoundary } as any}
+        slots={{} as any}
       >
-        <span>Hidden caption</span>
+        <span data-testid="caption-content">Hidden caption</span>
       </Caption>
     );
 
-    expect(view.getByTestId('caption-boundary')).toBeTruthy();
-    expect(view.queryByText('Hidden caption')).toBeNull();
-    expect(contentBoundary).toHaveBeenCalledWith({
-      copyPolicy: 'model',
-      mounted: false,
-      reason: 'app-hidden',
-      renderPlaceholder: expect.any(Function),
-      scope: { from: 0, to: 0, type: 'children' },
-      selectionPolicy: 'skip',
-    });
+    expect(view.container.querySelector('figcaption')?.hidden).toBe(true);
+    expect(view.getByTestId('caption-content')).toBeTruthy();
   });
 
   it('reveals an empty caption for a media node selection', async () => {
@@ -77,7 +68,7 @@ describe('Caption', () => {
       <Caption
         active
         element={{ children: [{ text: '' }], type: 'image' }}
-        slots={{ contentBoundary: () => null } as any}
+        slots={{} as any}
       >
         <span data-testid="caption-content" />
       </Caption>
@@ -100,7 +91,7 @@ describe('Caption', () => {
       <Caption
         active
         element={{ children: [{ text: '' }], type: 'image' }}
-        slots={{ contentBoundary: () => null } as any}
+        slots={{} as any}
       >
         <span data-testid="caption-content" />
       </Caption>
@@ -118,7 +109,7 @@ describe('Caption', () => {
       <Caption
         active={false}
         element={{ children: [{ text: 'Visible caption' }], type: 'image' }}
-        slots={{ contentBoundary: () => null } as any}
+        slots={{} as any}
       >
         <span data-testid="caption-content">Visible caption</span>
       </Caption>

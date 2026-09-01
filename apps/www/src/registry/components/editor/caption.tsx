@@ -47,7 +47,7 @@ export function Caption({
   className,
   element,
   placeholder = 'Write a caption...',
-  slots,
+  slots: _slots,
   style,
   ...props
 }: React.ComponentProps<'figcaption'> & {
@@ -61,23 +61,6 @@ export function Caption({
   const empty = NodeApi.string(element).length === 0;
   const hidden = !active && empty;
 
-  if (hidden) {
-    if (element.children.length === 0) return null;
-
-    return slots.contentBoundary({
-      copyPolicy: 'model',
-      mounted: false,
-      reason: 'app-hidden',
-      renderPlaceholder: () => null,
-      scope: {
-        from: 0,
-        to: element.children.length - 1,
-        type: 'children',
-      },
-      selectionPolicy: 'skip',
-    });
-  }
-
   return (
     <figcaption
       {...props}
@@ -89,6 +72,7 @@ export function Caption({
         className
       )}
       data-placeholder={empty ? placeholder : undefined}
+      hidden={hidden}
       style={{
         ...style,
         width:

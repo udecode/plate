@@ -155,11 +155,11 @@ describe('ImageElement', () => {
     expect(view.getAllByTestId('caption-content')).toHaveLength(1);
   });
 
-  it('hides an inactive empty caption through the model boundary', async () => {
+  it('hides an inactive empty caption without unmounting its content', async () => {
     const view = await renderImage();
 
-    expect(view.container.querySelector('figcaption')).toBeNull();
-    expect(view.queryByTestId('caption-content')).toBeNull();
-    expect(view.getByTestId('caption-boundary')).toBeTruthy();
+    expect(view.container.querySelector('figcaption')?.hidden).toBe(true);
+    expect(view.getByTestId('caption-content')).toBeTruthy();
+    expect(view.queryByTestId('caption-boundary')).toBeNull();
   });
 });

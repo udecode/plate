@@ -801,6 +801,14 @@ record `pass: <evidence>` or `red: <evidence>` as its pre-edit baseline. Patch
 cannot start with `pending`, N/A, or an inferred historical result. This keeps a
 new cross-invariant failure attributable to the current attempt.
 
+When a run adopts already-applied work previously called `candidate-local`,
+`kept`, or `completed`, treat the frozen candidate as the first intake target.
+Run its affected corpus before restoring baseline bytes or editing product
+source, and retain the adopted claim in the selected case status. A red intake
+is a `final-verification` failed fix: invalidate the prior claim, run automatic
+Regression `repair-now`, and only then restart from attempt N+1. Changing the
+status to `selected` or `pending` cannot erase the failed-fix interrupt.
+
 A separate green from before the final shared-owner edit is stale. A receipt
 whose proof starts before the latest named input edit is invalid. A nonzero
 retry count cannot certify stability.

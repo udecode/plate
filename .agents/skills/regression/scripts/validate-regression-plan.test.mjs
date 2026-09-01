@@ -374,6 +374,7 @@ const failedFixRows = ({
   }).join("\n");
 
 const fixture = ({
+  adoptedCandidateStatus = false,
   anchorToInapplicableOracle = false,
   architectureVerdict = "patch",
   browserCommand = false,
@@ -402,6 +403,7 @@ const fixture = ({
   physicalHitPath = false,
   preImplementation = false,
   preImplementationBaseline = false,
+  preImplementationBaselineRed = false,
   receiptIdOverride,
   redTestEscalation = "unit-red: semantic validator test fails before repair",
   reporterProfile = false,
@@ -473,7 +475,11 @@ Selected executable cases:
         ? `browser: current-source Chromium route; runtime-modes: mounted command mode active${fixtureScope}`
         : `N/A: deterministic Node workflow; runtime-modes: no optional product mode${fixtureScope}`
   } | ${selectedTestCommand} | ${
-    preImplementation ? "reproduced" : "completed"
+    adoptedCandidateStatus
+      ? "adopted-completed"
+      : preImplementation
+        ? "reproduced"
+        : "completed"
   } | commit:${"1".repeat(40)} | Regression |
 
 Reporter evidence inventory:
@@ -525,7 +531,11 @@ Affected corpus replay:
 ${
   preImplementation
     ? preImplementationBaseline
-      ? "| Regression validator | case-complete | pass: executable case passed before the shared-owner edit | pending | pending | pending | pending |"
+      ? `| Regression validator | case-complete | ${
+          preImplementationBaselineRed
+            ? "red: adopted candidate sibling corpus failed before baseline restoration"
+            : "pass: executable case passed before the shared-owner edit"
+        } | pending | pending | pending | pending |`
       : "| pending | pending | pending | pending | pending | pending | pending |"
     : `| Regression validator | ${
         missingAffectedCase ? "other-case" : "case-complete"
@@ -1877,6 +1887,24 @@ test("pre-implementation plans may record a baseline before final replay exists"
       }
     ),
     []
+  );
+});
+
+test("adopted completed candidate RED requires failed-fix interrupt before baseline restoration", () => {
+  assert.match(
+    validateRegressionPlan(
+      fixture({
+        adoptedCandidateStatus: true,
+        preImplementation: true,
+        preImplementationBaseline: true,
+        preImplementationBaselineRed: true,
+      }),
+      {
+        complete: false,
+        rootDir: root,
+      }
+    ).join("\n"),
+    /adopted candidate intake RED requires final-verification Failed-Fix Interrupt/
   );
 });
 

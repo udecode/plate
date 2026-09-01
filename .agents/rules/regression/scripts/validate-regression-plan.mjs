@@ -77,6 +77,8 @@ const CAPTURE_ROUTING_PATH_PATTERN = /\bcapture-routing-path:\s*\S/i;
 const INTERACTION_INTERCEPTOR_PATH_PATTERN =
   /\binteraction-interceptor-path:\s*\S/i;
 const REPORTER_PROFILE_PATTERN = /\breporter-profile:\s*[^;|]+/i;
+const ADOPTED_CANDIDATE_STATUS_PATTERN =
+  /\badopted-(?:candidate-local|kept|completed)\b/i;
 const hasFocusFirstEventOrder = (value) => {
   const trace =
     String(value).match(/\bevent-order:\s*([^;|]+)/i)?.[1]?.toLowerCase() ??
@@ -2169,6 +2171,7 @@ export const validateRegressionPlan = (
     } else {
       const coveredCases = new Set();
       const allReceipts = Array.from(receiptsByCase.values()).flat();
+      const adoptedCandidateIntakeRed = new Set();
 
       for (const row of corpusTable.rows) {
         const label = `affected corpus ${row.owner || "<missing>"}`;
@@ -2183,6 +2186,14 @@ export const validateRegressionPlan = (
             errors.push(`${label} references unknown case ${caseId}`);
           } else {
             coveredCases.add(caseId);
+            if (
+              /^red:\s*\S/i.test(row.pre_edit_baseline ?? "") &&
+              ADOPTED_CANDIDATE_STATUS_PATTERN.test(
+                cases.get(caseId)?.status ?? ""
+              )
+            ) {
+              adoptedCandidateIntakeRed.add(caseId);
+            }
           }
         }
         if (!/^(?:pass|red):\s*\S/i.test(row.pre_edit_baseline ?? "")) {
@@ -2232,6 +2243,14 @@ export const validateRegressionPlan = (
           )
         ) {
           errors.push(`${label} replay started before the last owner edit`);
+        }
+      }
+
+      for (const caseId of adoptedCandidateIntakeRed) {
+        if ((failedCountByCase.get(caseId) ?? 0) === 0) {
+          errors.push(
+            `${caseId} adopted candidate intake RED requires final-verification Failed-Fix Interrupt before baseline restoration or product edits`
+          );
         }
       }
 

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-08-31-stabilize-hidden-media-captions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-08-31-stabilize-hidden-media-captions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-08-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep hidden media captions mounted during selection changes",
+  "targets": [
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-08-31-caption-keep-hidden-media-captions-d5a660bb",
+      "kind": "fix",
+      "summary": "Keep hidden media captions mounted during selection changes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["caption"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-08-31",
+          "entry": "2026-08-31-stabilize-hidden-media-captions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
