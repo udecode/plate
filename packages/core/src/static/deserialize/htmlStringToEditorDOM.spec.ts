@@ -14,4 +14,12 @@ describe('getEditorDOMFromHtmlString', () => {
       getEditorDOMFromHtmlString('<div><p>No editor</p></div>')
     ).toBeNull();
   });
+
+  it('parses HTML in an inert document', () => {
+    const node = getEditorDOMFromHtmlString(
+      '<div data-slate-editor="true"></div>'
+    );
+
+    expect(node?.ownerDocument).not.toBe(document);
+  });
 });

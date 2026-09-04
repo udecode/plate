@@ -1,7 +1,5 @@
-/** Convert HTML string into HTML element. */
-export const htmlStringToDOMNode = (rawHtml: string) => {
-  const node = document.createElement('body');
-  node.innerHTML = rawHtml;
+import { parseHtmlDocument } from './parseHtmlDocument';
 
-  return node;
-};
+/** Convert HTML string into HTML element. */
+export const htmlStringToDOMNode = (rawHtml: string) =>
+  parseHtmlDocument(rawHtml).body;
