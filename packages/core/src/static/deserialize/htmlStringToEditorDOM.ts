@@ -5,9 +5,8 @@
  * @returns The Editor element without head and body.
  */
 export const getEditorDOMFromHtmlString = (html: string) => {
-  const node = document.createElement('body');
-  node.innerHTML = html;
-  const editorNode = node.querySelector('[data-slate-editor="true"]');
+  const document = new DOMParser().parseFromString(html, 'text/html');
+  const editorNode = document.querySelector('[data-slate-editor="true"]');
 
   return editorNode as HTMLElement;
 };
