@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 53.3.10
+
+### Patch Changes
+
+- [`12a034f`](https://github.com/udecode/plate/commit/12a034f7cfe698cc020fade0d4849373d6faa065) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate-react`.
+
 ## 53.3.5
 
 ### Patch Changes
