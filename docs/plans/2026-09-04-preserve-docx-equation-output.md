@@ -223,6 +223,7 @@ Verification evidence:
 - `/Users/zbeyens/git/plate`: exact public-API repro after fix -> zero unrelated XML nodes imported.
 - Temporary review repository PR #1: open, non-draft, based on `main`, and owns this branch.
 - PR body readback: auto-release block, one exact task-plan line, confidence, proof table, required sections, and no self-link confirmed.
+- Hosted check readback: GitHub reports no checks on the temporary private-fork branch; exact local `pnpm check` is the full repository proof.
 
 Final handoff contract:
 - PR line: temporary review repository PR #1, open and non-draft
@@ -234,6 +235,7 @@ Final handoff contract:
 - Design: one shared internal parser owns both block and inline conversion paths.
 - Verified: focused public-API regressions, full conversion suite, post-fix repro, package build/typecheck, lint, full repository check, and clean local autoreview.
 - PR body verified: yes; auto-release block, exact plan line, confidence, proof table, required sections, and no self-link confirmed.
+- Hosted CI: no checks are configured on the temporary private fork; local `pnpm check` passed before PR creation.
 
 Task-style PR body contract:
 - Start with `🐛 Fixes ➖ N/A`, then exactly one task-plan line, then `🟢 95-100% confidence`.
@@ -256,4 +258,4 @@ Reboot status:
 | What have I done? | Reproduced, fixed, added six focused tests and a patch changeset, passed all gates, and opened verified private PR #1 |
 
 Open risks:
-- No open implementation risk. Merge, package release, advisory metadata/CVE work, and disclosure are separate maintainer actions.
+- No open implementation risk. The temporary private fork reports no hosted checks, so the green exact local `pnpm check` is the CI-equivalent proof; merge, release, advisory metadata/CVE work, and disclosure are separate maintainer actions.
