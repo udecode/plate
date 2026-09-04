@@ -1,6 +1,6 @@
 {
   "name": "@platejs/docx-io",
-  "version": "53.3.2",
+  "version": "53.3.10",
   "description": "DOCX import/export for Plate - file-based document conversion",
   "keywords": [
     "docx",
@@ -65,7 +65,7 @@
   "peerDependencies": {
     "@platejs/docx": ">=53.0.0",
     "@platejs/markdown": ">=53.0.0",
-    "platejs": ">=53.0.0",
+    "platejs": ">=53.3.10",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

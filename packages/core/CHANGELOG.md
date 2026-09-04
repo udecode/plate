@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.10
+
+### Patch Changes
+
+- [`1af4d23`](https://github.com/udecode/plate/commit/1af4d239b36642e94b222e18f17f2851a9cd65b3) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Preserve HTML escaping when serializing editor content
+
 ## 53.3.9
 
 ### Patch Changes

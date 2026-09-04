@@ -1,5 +1,11 @@
 # @platejs/docx-io
 
+## 53.3.10
+
+### Patch Changes
+
+- [`dfe6805`](https://github.com/udecode/plate/commit/dfe680559e9167b0e8aaf462488467783d4abc5b) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Preserve equation output while ignoring unrelated XML
+
 ## 53.3.2
 
 ### Patch Changes
