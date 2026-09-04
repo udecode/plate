@@ -14,11 +14,12 @@ Task source:
 - id / link: private repository advisory; identifier withheld from public artifacts until publication
 - title: Parse imported HTML in an inert document
 - acceptance criteria: reproduce against the shipped package; add a failing-then-passing regression; merge and release a patched package; publish sanitized advisory metadata; request CVE; read back final state
+- exact PR: https://github.com/udecode/plate/pull/5117
 
 Task state:
 - task_type: bug / public package security hotfix
 - task_complexity: non-trivial
-- current_phase: implementation
+- current_phase: PR / CI
 - current_phase_status: in_progress
 - next_phase: verification
 - goal_status: active
@@ -109,7 +110,7 @@ Start Gates:
 | Branch decision for code-changing task | yes | Created `codex/inert-html-string-parser` from current `origin/main` before code edits |
 | Release artifact decision | yes | Published `@platejs/core` behavior change requires a patch changeset |
 | PR expectation decision | yes | Sanitized public PR; user explicitly approved public handling and task workflow requires PR |
-| Dedicated task plan selected for exact PR | yes | This plan is dedicated only to the forthcoming GHSA-qrfj hotfix PR |
+| Dedicated task plan selected for exact PR | yes | This plan is dedicated only to PR #5117 |
 | Tracker sync expectation decision | yes | Advisory metadata/publication is the tracker sync surface |
 | Security advisory pack selected | yes | Applied in place after the valid verdict |
 | Advisory source read through correct authority or explicit access blocker | yes | Repository advisory endpoint read successfully |
@@ -160,7 +161,7 @@ Completion Gates:
 | Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | `.changeset/calm-bodies-parse.md` adds a core patch release note |
 | High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure: parsing still touches the active document or changes returned content; proof: red-green owner tests, 856 core tests, typecheck, bundled-source Chromium; boundary: both public string parsers |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/planning-only/trivial/no local patch | Local autoreview clean, no accepted/actionable findings, overall 0.84 |
-| PR create or update | yes | Run `check` before PR work | `pnpm check` passed before initial PR creation; PR synchronization pending |
+| PR create or update | yes | Run `check` before PR work | `pnpm check` passed; sanitized public PR #5117 created |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | Passed; no fixes applied |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Two failing DOM assertions emitted oversized object dumps; subsequent failure output was line-sliced and all other reads stayed scoped/capped |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
@@ -169,7 +170,7 @@ Completion Gates:
 | Repro escalation ladder | yes | Record each applicable ladder level or N/A reason | Complete in pre-solution section |
 | Bug reproduced before fix | yes | Record failing browser/source proof | Chromium reproduced the active-document side effect; inert parsing produced none |
 | Targeted behavior verification | yes | Run focused red-green regression | Both owner tests failed before their fixes and pass together after; 4 tests / 5 assertions |
-| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership | pending |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership | Dedicated plan records PR #5117; head/body readback pending after push |
 | Task-style PR body verified | yes | Verify sanitized PR body with `gh pr view --json body` | pending |
 | Tracker sync-back | yes | Update and publish repository advisory after release | pending |
 | Final handoff contract | yes | Record exact PR, confidence, tests, browser, outcome, caveat, design, verification | pending |
@@ -196,6 +197,7 @@ Phase / pass table:
 | Intake and source read | complete | Advisory, consumers, shipped artifact, and browser behavior verified | Implementation |
 | Implementation | complete | Two red-green tracer cycles; inert parsing applied to both public string parsers; patch changeset added | Verification |
 | Verification | in_progress | Focused tests, 856 core tests, typecheck, lint, post-fix Chromium, and autoreview pass | Run root check and CI |
+| PR / CI | in_progress | Sanitized public PR #5117 created after passing `pnpm check` | Commit exact PR ownership, verify body/head, monitor CI |
 | Closeout | pending | Final advisory readback and goal checker required | Complete verification |
 
 Findings:
@@ -230,6 +232,7 @@ Timeline:
 - 2026-09-04 Completed two red-green tracer cycles across both public string parsers and added a core patch changeset.
 - 2026-09-04 Passed 856 core tests, source-first core typecheck, lint, bundled-source Chromium proof, and local autoreview with no actionable findings.
 - 2026-09-04 `pnpm check` passed before PR creation: lint, 54-package build/typecheck, fast tests, slow tests, and slowest-test gate.
+- 2026-09-04 Created sanitized public PR #5117 with auto-release enabled and the required task-style body.
 
 Verification evidence:
 - `gh api repos/udecode/plate/security-advisories/GHSA-qrfj-mgw8-j9c6` -> triage report and metadata captured.
@@ -248,11 +251,11 @@ Verification evidence:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Verification before PR |
-| Where am I going? | Root check, public PR, CI, merge, release, advisory publication, readback |
+| Where am I? | PR #5117 head synchronization and CI |
+| Where am I going? | Verify plan/body/head, monitor CI, merge, release, advisory publication, readback |
 | What is the goal? | Resolve GHSA-qrfj with shipped-state proof and the correct final advisory state |
 | What have I learned? | The report is valid, the shared boundary owns the fix, and inert parsing preserves existing return shapes |
-| What have I done? | Implemented and verified both public parser fixes with red-green tests, package checks, Chromium, and autoreview |
+| What have I done? | Implemented and verified both public parser fixes, passed `pnpm check`, and opened sanitized public PR #5117 |
 
 Open risks:
 - Inert parsing is not sanitization; applications must still sanitize untrusted HTML before later rendering it.
