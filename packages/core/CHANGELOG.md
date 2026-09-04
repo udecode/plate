@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.3.11
+
+### Patch Changes
+
+- [#5117](https://github.com/udecode/plate/pull/5117) by [@zbeyens](https://github.com/zbeyens) – Parse HTML strings in inert documents during deserialization
+
 ## 53.3.10
 
 ### Patch Changes
