@@ -22,6 +22,7 @@ import { imageType, internalRelationship } from '../constants';
 import namespaces from '../namespaces';
 import { getImageDimensions } from '../utils/image-dimensions';
 import imageToBase64 from '../utils/image-to-base64';
+import { parseOmml } from '../utils/parse-omml';
 import { isValidUrl } from '../utils/url';
 import { vNodeHasChildren } from '../utils/vnode';
 // FIXME: remove the cyclic dependency
@@ -490,7 +491,7 @@ async function findXMLEquivalent(
         .up()
         .up();
       // Parse and import the OMML
-      const ommlFragment = fragment().ele(ommlString);
+      const ommlFragment = parseOmml(ommlString);
       paragraphFragment.first().import(ommlFragment);
       paragraphFragment.first().up();
 
