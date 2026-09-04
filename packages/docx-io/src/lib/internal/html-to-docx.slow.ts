@@ -276,6 +276,90 @@ describe('htmlToDocxBlob', () => {
     });
   });
 
+  describe('equations', () => {
+    it('ignores non-equation XML in equation attributes', async () => {
+      const foreignMarkup =
+        '<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:t>foreign-equation-markup</w:t></w:r>';
+      const html = `<div data-equation-omml='${foreignMarkup}'>block fallback</div><p><span data-equation-omml='${foreignMarkup}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).not.toContain('foreign-equation-markup');
+      expect(docXml).toContain('block fallback');
+      expect(docXml).toContain('inline fallback');
+    });
+
+    it('preserves block and inline OMML equations', async () => {
+      const mathNamespace =
+        'http://schemas.openxmlformats.org/officeDocument/2006/math';
+      const blockEquation = `<m:oMathPara xmlns:m="${mathNamespace}"><m:oMath><m:r><m:t>block-equation</m:t></m:r></m:oMath></m:oMathPara>`;
+      const inlineEquation = `<m:oMath xmlns:m="${mathNamespace}"><m:r><m:t>inline-equation</m:t></m:r></m:oMath>`;
+      const html = `<div data-equation-omml='${blockEquation}'>block fallback</div><p><span data-equation-omml='${inlineEquation}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('<m:oMathPara');
+      expect(docXml).toContain('block-equation');
+      expect(docXml).toContain('inline-equation');
+      expect(docXml).not.toContain('block fallback');
+      expect(docXml).not.toContain('inline fallback');
+    });
+
+    it('preserves equation content without foreign XML descendants', async () => {
+      const equation =
+        '<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><m:r><m:t>safe-equation</m:t></m:r><w:r><w:t>foreign-descendant</w:t></w:r></m:oMath>';
+      const html = `<p><span data-equation-omml='${equation}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('safe-equation');
+      expect(docXml).not.toContain('foreign-descendant');
+      expect(docXml).not.toContain('inline fallback');
+    });
+
+    it('preserves equation content without foreign XML attributes', async () => {
+      const equation =
+        '<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="foreign-relationship"><m:r><m:t>safe-attributes</m:t></m:r></m:oMath>';
+      const html = `<p><span data-equation-omml='${equation}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('safe-attributes');
+      expect(docXml).not.toContain('foreign-relationship');
+      expect(docXml).not.toContain('inline fallback');
+    });
+
+    it('preserves math attributes used by OMML', async () => {
+      const equation =
+        '<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:r><m:rPr><m:sty m:val="p"/></m:rPr><m:t xml:space="preserve"> spaced-equation </m:t></m:r></m:oMath>';
+      const html = `<p><span data-equation-omml='${equation}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('m:val="p"');
+      expect(docXml).toContain(' spaced-equation ');
+    });
+
+    it('ignores equation attributes with multiple roots', async () => {
+      const mathNamespace =
+        'http://schemas.openxmlformats.org/officeDocument/2006/math';
+      const equations = `<m:oMath xmlns:m="${mathNamespace}"><m:r><m:t>first-root</m:t></m:r></m:oMath><m:oMath xmlns:m="${mathNamespace}"><m:r><m:t>second-root</m:t></m:r></m:oMath>`;
+      const html = `<p><span data-equation-omml='${equations}'>inline fallback</span></p>`;
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).not.toContain('first-root');
+      expect(docXml).not.toContain('second-root');
+      expect(docXml).toContain('inline fallback');
+    });
+  });
+
   describe('special characters', () => {
     it('handle Unicode characters', async () => {
       const html = '<p>Hello World</p>';
