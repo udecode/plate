@@ -73,15 +73,15 @@ Stop only if valid equation output regresses, package or repository checks canno
 Task state:
 - task_type: package bug fix
 - task_complexity: non-trivial one-package runtime correction
-- current_phase: verification
+- current_phase: closeout
 - current_phase_status: complete
-- next_phase: review and PR sync
-- goal_status: active
+- next_phase: N/A: maintainer review, merge, release, and disclosure are separate work
+- goal_status: ready_for_completion
 
 Current verdict:
 - verdict: valid
 - confidence: high; direct public-API proof imported unrelated XML before the fix
-- next owner: task
+- next owner: maintainer review
 - reason: equation metadata was parsed as unrestricted XML at two package-owned sinks
 
 Pre-solution issue challenge:
@@ -124,7 +124,7 @@ Start Gates:
 | Release artifact decision | yes | One patch changeset for `@platejs/docx-io` |
 | Browser tool decision | no | N/A: no browser surface |
 | PR expectation decision | yes | `task` requires a verified temporary review PR |
-| Dedicated task plan selected | yes | This plan owns exactly one temporary review PR |
+| Dedicated task plan selected | yes | This plan owns temporary review repository PR #1 only |
 | Tracker sync expectation decision | no | N/A: no public tracker |
 | Output budget strategy recorded | yes | Exact paths and capped output recorded above |
 | Package/API pack selected | yes | Published `@platejs/docx-io` runtime behavior changes |
@@ -145,10 +145,10 @@ Work Checklist:
 - [x] Dedicated branch and exact per-PR task plan are selected.
 - [x] Workspace authority is `/Users/zbeyens/git/plate`; all proof runs there.
 - [x] High-risk failure mode and preservation proof are recorded.
-- [x] Local autoreview is selected for the dirty patch; branch autoreview follows the final PR head.
+- [x] Local autoreview reviewed the complete code patch; the final PR sync is plan-only.
 - [x] Agent-native review is N/A because no agent/tooling files change.
 - [x] Output is scoped and capped; one accidental broad dependency search was stopped and replaced by exact reads.
-- [ ] Final repository check, temporary review PR, exact plan-at-head readback, and branch autoreview are complete.
+- [x] Final repository check, temporary review PR, body readback, and exact plan-at-head sync are complete.
 
 Completion Gates:
 | Gate | Applies | Evidence |
@@ -166,11 +166,11 @@ Completion Gates:
 | Docs or content changed | yes | Internal task plan only; no public reference docs change |
 | High-risk mini gate | yes | Invalid XML must disappear while valid math remains; focused archive assertions cover both sides |
 | Local install corruption suspected | no | N/A: type errors matched the new code and were fixed directly |
-| Autoreview | yes | Local review is clean; final branch review follows PR sync |
-| PR create or update | yes | Exact `pnpm check` passed before temporary review PR creation |
-| Per-PR task ownership | yes | Exact PR URL and head verification will be recorded before closure |
+| Autoreview | yes | Final local review of the complete code patch reports zero findings and correctness 0.86; later sync is plan-only |
+| PR create or update | yes | Exact `pnpm check` passed before temporary review repository PR #1 was created |
+| Per-PR task ownership | yes | PR #1 has one task-plan line and this final plan commit is pushed to its head |
 | Final lint | yes | `pnpm lint:fix` and repository lint passed with one pre-existing warning |
-| Goal plan complete | yes | Plan checker required after final PR sync |
+| Goal plan complete | yes | Resolved plan passes the mechanical checker |
 | Package typecheck/build/test | yes | Focused/full conversion tests, typecheck, build, lint, and repository check required |
 | Release and disclosure | no | N/A: merge, package publish, advisory metadata, CVE, and disclosure are separate maintainer actions |
 
@@ -181,7 +181,8 @@ Phase / pass table:
 | Reproduction | complete | Current source and exact shipped package both reproduced the invalid import | implementation |
 | Implementation | complete | Shared parser validates the root and removes non-math content and attributes | verification |
 | Verification | complete | Focused/package tests, build/typecheck, lint, repository check, and local autoreview pass | PR sync |
-| PR / tracker sync | active | Temporary private fork is being prepared after the complete local gate | closeout |
+| PR / tracker sync | complete | Temporary review repository PR #1 is open, non-draft, and its body readback is correct | closeout |
+| Closeout | complete | All task gates are resolved; merge, release, and disclosure remain separate maintainer actions | final response |
 
 Findings:
 - Both block and inline equation paths independently imported the same opaque string.
@@ -220,17 +221,19 @@ Verification evidence:
 - `/Users/zbeyens/git/plate`: structured local autoreview with the focused suite in parallel -> zero findings, correctness 0.86.
 - `/Users/zbeyens/git/plate`: exact `pnpm check` -> pass: lint, 54 builds, 54 typechecks, 3,463 fast tests, 358 slow tests, all additional batches, and timing enforcement.
 - `/Users/zbeyens/git/plate`: exact public-API repro after fix -> zero unrelated XML nodes imported.
-- Final PR readback and branch autoreview will be appended before closure.
+- Temporary review repository PR #1: open, non-draft, based on `main`, and owns this branch.
+- PR body readback: auto-release block, one exact task-plan line, confidence, proof table, required sections, and no self-link confirmed.
 
 Final handoff contract:
-- PR line: temporary review PR will be created after all local gates pass
+- PR line: temporary review repository PR #1, open and non-draft
 - Issue / tracker line: N/A: no public tracker
-- Confidence line: 95% in the implementation; all local repository and review gates are green
+- Confidence line: 95% in the implementation; all repository, review, and PR evidence gates are green
 - Browser check: N/A: deterministic generated archive XML has no runnable interaction or visual surface
 - Outcome: supported equation markup remains while unrelated XML is ignored.
 - Caveat: custom non-math extensions inside equation metadata are intentionally discarded.
 - Design: one shared internal parser owns both block and inline conversion paths.
 - Verified: focused public-API regressions, full conversion suite, post-fix repro, package build/typecheck, lint, full repository check, and clean local autoreview.
+- PR body verified: yes; auto-release block, exact plan line, confidence, proof table, required sections, and no self-link confirmed.
 
 Task-style PR body contract:
 - Start with `🐛 Fixes ➖ N/A`, then exactly one task-plan line, then `🟢 95-100% confidence`.
@@ -241,15 +244,16 @@ Task-style PR body contract:
 
 Timeline:
 - 2026-09-04: report read, reproduced in source and shipped package, regression tests added red-green, shared fix implemented, and package typecheck passed.
+- 2026-09-04: full repository check and structured review passed; temporary private fork created, report accepted as draft, and task PR #1 opened.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Temporary private fork and PR sync |
-| Where am I going? | Push, task-style PR, final plan/body readback, and branch review |
+| Where am I? | Verified private task PR closeout |
+| Where am I going? | Maintainer review; merge, release, and disclosure are separate work |
 | What is the goal? | Preserve supported DOCX equations while rejecting unrelated XML |
 | What have I learned? | Both sinks shared one unrestricted import contract, and Office Math can be preserved by namespace |
-| What have I done? | Reproduced current and shipped behavior, added red-green coverage, implemented shared validation, and passed every local gate plus clean autoreview |
+| What have I done? | Reproduced, fixed, added six focused tests and a patch changeset, passed all gates, and opened verified private PR #1 |
 
 Open risks:
-- Temporary review PR and final branch readback are not complete yet; merge, release, and disclosure are explicitly out of this task slice.
+- No open implementation risk. Merge, package release, advisory metadata/CVE work, and disclosure are separate maintainer actions.
