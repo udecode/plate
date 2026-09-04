@@ -219,6 +219,7 @@ Error attempts:
 | Browser evaluate exposes a read-only page scope | 2 | Run the probe from page-owned script | Localhost page recorded event counts |
 | Focused failing tests emitted oversized DOM object dumps | 2 | Slice subsequent failure output and keep passing runs capped | Red state captured; later output remained bounded |
 | `pnpm exec esbuild` unavailable | 1 | Use repository-installed Bun bundler | Bundled the real fixed source successfully |
+| CI changeset policy rejected single-quoted frontmatter | 1 | Match the workflow's double-quoted package-name grammar | Changeset frontmatter corrected; rerun pending |
 
 External/browser findings:
 - Chromium loopback proof: pre-fix active-document parsing produced the reported side effect; inert parsing did not. The bundled fixed source likewise produced no side effect and returned an inert-document node.
@@ -233,6 +234,7 @@ Timeline:
 - 2026-09-04 Passed 856 core tests, source-first core typecheck, lint, bundled-source Chromium proof, and local autoreview with no actionable findings.
 - 2026-09-04 `pnpm check` passed before PR creation: lint, 54-package build/typecheck, fast tests, slow tests, and slowest-test gate.
 - 2026-09-04 Created sanitized public PR #5117 with auto-release enabled and the required task-style body.
+- 2026-09-04 CI auto-release checkbox passed; changeset policy exposed a quote-format mismatch and was corrected.
 
 Verification evidence:
 - `gh api repos/udecode/plate/security-advisories/GHSA-qrfj-mgw8-j9c6` -> triage report and metadata captured.
