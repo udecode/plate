@@ -978,9 +978,6 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      html-entities:
-        specifier: ^2.6.0
-        version: 2.6.0
       is-hotkey:
         specifier: ^0.2.0
         version: 0.2.0
