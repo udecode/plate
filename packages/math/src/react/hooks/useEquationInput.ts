@@ -3,6 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import { type TEquationElement, isHotkey } from 'platejs';
 import { useEditorRef, useElement } from 'platejs/react';
 
+import { getEquationExpression } from '../../lib/getEquationExpression.internal';
+
 export const useEquationInput = ({
   isInline,
   open,
@@ -16,10 +18,10 @@ export const useEquationInput = ({
   const element = useElement<TEquationElement>();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [expressionInput, setExpressionInput] = React.useState<string>(
-    element.texExpression
+    getEquationExpression(element)
   );
 
-  const initialExpressionRef = useRef<string>(element.texExpression);
+  const initialExpressionRef = useRef<string>(getEquationExpression(element));
 
   useEffect(() => {
     if (open) {
@@ -29,7 +31,7 @@ export const useEquationInput = ({
           inputRef.current.select();
 
           if (isInline) {
-            initialExpressionRef.current = element.texExpression;
+            initialExpressionRef.current = getEquationExpression(element);
           }
         }
       }, 0);

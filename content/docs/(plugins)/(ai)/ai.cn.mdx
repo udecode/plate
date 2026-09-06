@@ -56,13 +56,11 @@ const editor = createPlateEditor({
 
 <ComponentSource name="ai-api" />
 
-### 配置环境
+### 配置凭据
 
-在本地设置您的 AI 网关密钥（如果您不使用网关，请替换为您的提供商密钥）：
+在编辑器设置中输入你自己的 AI Gateway 密钥，或通过请求体的 `apiKey` 传入。API 路由使用请求方提供的密钥。
 
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
+如需使用共享的服务端凭据，请先添加应用身份验证、权限检查和每用户用量限制。不要将服务端凭据放入客户端代码。
 
 </Steps>
 
@@ -227,7 +225,12 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
-  const { apiKey, ctx, messages, model } = await req.json();
+  const { apiKey: key, ctx, messages, model } = await req.json();
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return Response.json({ error: 'Missing AI Gateway API key.' }, { status: 401 });
+  }
 
   const editor = createSlateEditor({
     plugins: BaseEditorKit,
@@ -236,7 +239,7 @@ export async function POST(req: Request) {
   });
 
   const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
+    apiKey,
   });
 
   const result = streamText({

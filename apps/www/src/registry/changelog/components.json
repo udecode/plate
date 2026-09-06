@@ -1,20 +1,46 @@
 {
   "schemaVersion": 1,
   "components": {
+    "equation-node": [
+      "2026-09-06-editor-content-and-service-defaults",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "equation-node-static": ["2026-09-06-editor-content-and-service-defaults"],
+    "media-preview-dialog": [
+      "2026-09-06-editor-content-and-service-defaults",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-api": [
+      "2026-09-06-editor-content-and-service-defaults",
+      "2026-06-28-ai-sdk-v7",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
+    "copilot-api": [
+      "2026-09-06-editor-content-and-service-defaults",
+      "2026-06-28-ai-sdk-v7",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-uploadthing-api": ["2026-09-06-editor-content-and-service-defaults"],
+    "column-node": [
+      "2026-09-06-editor-content-and-service-defaults",
+      "2026-06-10-attach-column-drop-target-ref",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
     "table-node": [
+      "2026-09-06-editor-content-and-service-defaults",
       "2026-07-09-table-toolbar-single-cell-selection",
       "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "ai-api": [
-      "2026-06-28-ai-sdk-v7",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
-    ],
-    "copilot-api": ["2026-06-28-ai-sdk-v7", "2025-11-20-biome-ultracite"],
     "use-chat": [
       "2026-06-28-ai-sdk-v7",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
@@ -52,12 +78,6 @@
     ],
     "code-block-node-static": [
       "2026-06-13-show-code-block-language-labels-read-only-mode"
-    ],
-    "column-node": [
-      "2026-06-10-attach-column-drop-target-ref",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "huge-document-demo": ["2026-06-02-improve-large-document-editing"],
     "hundreds-blocks-demo": [
@@ -103,12 +123,6 @@
     "date-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "equation-node": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
     "excalidraw-node": [
@@ -251,7 +265,6 @@
     "list-classic-node": ["2025-11-20-biome-ultracite"],
     "list-classic-toolbar-button": ["2025-11-20-biome-ultracite"],
     "media-placeholder-node": ["2025-11-20-biome-ultracite"],
-    "media-preview-dialog": ["2025-11-20-biome-ultracite"],
     "media-toolbar": ["2025-11-20-biome-ultracite"],
     "media-toolbar-button": ["2025-11-20-biome-ultracite"],
     "mode-toolbar-button": ["2025-11-20-biome-ultracite"],

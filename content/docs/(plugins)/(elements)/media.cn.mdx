@@ -102,6 +102,8 @@ const editor = createPlateEditor({
 
 <ComponentInstallation name="media-uploadthing-api" inline />
 
+提供的上传中间件仅允许本地开发。启用生产环境上传前，请将开发环境检查替换为应用的会话和权限检查，并设置适合应用的文件类型、大小限制和每用户配额。
+
 ### 环境配置
 
 从[UploadThing](https://uploadthing.com/dashboard/settings)获取密钥并添加到`.env`:

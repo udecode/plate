@@ -56,13 +56,11 @@ Expose a streaming command endpoint that proxies your model provider:
 
 <ComponentSource name="ai-api" />
 
-### Configure Environment
+### Configure Credentials
 
-Set your AI Gateway key locally (replace with your provider secret if you are not using a gateway):
+Enter your own AI Gateway key in the editor settings, or pass it as `apiKey` in the request body. The API route uses that caller-supplied key.
 
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
+To use a shared server credential, add application authentication, authorization, and per-user usage limits before calling the provider. Keep server credentials out of client code.
 
 </Steps>
 
@@ -227,7 +225,12 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: Request) {
-  const { apiKey, ctx, messages, model } = await req.json();
+  const { apiKey: key, ctx, messages, model } = await req.json();
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return Response.json({ error: 'Missing AI Gateway API key.' }, { status: 401 });
+  }
 
   const editor = createSlateEditor({
     plugins: BaseEditorKit,
@@ -236,7 +239,7 @@ export async function POST(req: Request) {
   });
 
   const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
+    apiKey,
   });
 
   const result = streamText({

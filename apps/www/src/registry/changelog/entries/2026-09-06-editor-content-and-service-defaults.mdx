@@ -1,0 +1,20 @@
+---
+id: 2026-09-06-editor-content-and-service-defaults
+date: 2026-09-06
+status: draft
+kind: fix
+summary: "Preserve editor content and configure service credentials"
+change: {"type":"source","date":"2026-09-06","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+<!-- entry: {"id":"2026-09-06-equation-values","kind":"fix","migrationNotes":[]} -->
+- **`equation-node`**, **`equation-node-static`**: Display incomplete equations as empty in editable and static views.
+<!-- entry: {"id":"2026-09-06-image-downloads","kind":"fix","migrationNotes":[]} -->
+- **`media-preview-dialog`**: Download supported image destinations while preserving relative, HTTP, HTTPS, blob, and image data URLs.
+<!-- entry: {"id":"2026-09-06-ai-credentials","kind":"behavior","migrationNotes":[]} -->
+- **`ai-api`**, **`copilot-api`**: Use the caller's AI Gateway key supplied through editor settings or the request body.
+<!-- entry: {"id":"2026-09-06-upload-authorization","kind":"behavior","migrationNotes":[]} -->
+- **`media-uploadthing-api`**: Allow uploads during local development; require application authorization before enabling production uploads.
+<!-- entry: {"id":"2026-09-06-drag-targets","kind":"fix","migrationNotes":[]} -->
+- **`column-node`**, **`table-node`**: Ignore drop checks without a source editor node.

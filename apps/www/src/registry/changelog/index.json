@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-06-editor-content-and-service-defaults",
+      "href": "/registry/changelog/2026-09-06-editor-content-and-service-defaults.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve editor content and configure service credentials",
+      "change": {
+        "type": "source",
+        "date": "2026-09-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "equation-node",
+        "equation-node-static",
+        "media-preview-dialog",
+        "ai-api",
+        "copilot-api",
+        "media-uploadthing-api",
+        "column-node",
+        "table-node"
+      ],
+      "entries": 5,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-09-table-toolbar-single-cell-selection",
       "href": "/registry/changelog/2026-07-09-table-toolbar-single-cell-selection.json",
       "status": "draft",

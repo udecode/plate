@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import {
   PreviewImage,
   useImagePreview,
@@ -47,13 +49,14 @@ export function MediaPreviewDialog() {
     zoomInProps,
     zoomOutDisabled,
   } = useImagePreview({ scrollSpeed: SCROLL_SPEED });
-  const downloadDisabled = !currentPreview?.url;
+  const downloadUrl = getImageDownloadUrl(currentPreview?.url);
+  const downloadDisabled = !downloadUrl;
   const handleDownload = () => {
-    if (!currentPreview?.url) return;
+    if (!downloadUrl) return;
 
     const link = document.createElement('a');
-    link.download = getImageDownloadFilename(currentPreview.url);
-    link.href = currentPreview.url;
+    link.download = getImageDownloadFilename(downloadUrl);
+    link.href = downloadUrl;
     link.rel = 'noopener noreferrer';
     document.body.append(link);
     link.click();
@@ -142,6 +145,7 @@ export function MediaPreviewDialog() {
               </button>
             </div>
             <button
+              aria-label="Download image"
               className={cn(
                 buttonVariants({
                   variant: downloadDisabled ? 'disabled' : 'default',
@@ -182,4 +186,25 @@ function getImageDownloadFilename(url: string) {
   } catch {
     return DEFAULT_DOWNLOAD_FILENAME;
   }
+}
+
+function getImageDownloadUrl(url: string | undefined) {
+  if (!url) return null;
+
+  try {
+    // Classify relative URLs without changing their document-relative resolution.
+    const parsed = new URL(url, 'https://plate.invalid');
+
+    if (
+      ['http:', 'https:', 'blob:'].includes(parsed.protocol) ||
+      (parsed.protocol === 'data:' &&
+        parsed.pathname.toLowerCase().startsWith('image/'))
+    ) {
+      return url;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }

@@ -34,15 +34,7 @@ import {
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
 
-  const { children, selection, toolName: toolNameParam } = ctx;
-
-  const editor = createSlateEditor({
-    plugins: BaseEditorKit,
-    selection,
-    value: children,
-  });
-
-  const apiKey = key || process.env.AI_GATEWAY_API_KEY;
+  const apiKey = typeof key === 'string' ? key.trim() : '';
 
   if (!apiKey) {
     return NextResponse.json(
@@ -50,6 +42,14 @@ export async function POST(req: NextRequest) {
       { status: 401 }
     );
   }
+
+  const { children, selection, toolName: toolNameParam } = ctx;
+
+  const editor = createSlateEditor({
+    plugins: BaseEditorKit,
+    selection,
+    value: children,
+  });
 
   const isSelecting = editor.api.isExpanded();
 

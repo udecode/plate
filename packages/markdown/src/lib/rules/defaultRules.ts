@@ -11,6 +11,7 @@ import {
   KEYS,
 } from 'platejs';
 import { normalizeDateValue } from '@platejs/date';
+import { Lexer } from 'marked';
 
 import type {
   MdBlockquote,
@@ -40,9 +41,10 @@ import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
 
-const BARE_AUTOLINK_PROTOCOL_REGEX = /^https?:\/\//i;
 import { parseAttributes, propsToAttributes } from './utils';
 
+// Other destinations need the link handler's Markdown escaping.
+const BARE_AUTOLINK_REGEX = /^https?:\/\/[^\s<>\\]+$/i;
 const LEADING_NEWLINE_REGEX = /^\n/;
 
 function isBoolean(value: any) {
@@ -182,13 +184,24 @@ export const defaultRules: MdRules = {
         children[0]?.type === 'text' &&
         children[0].value === node.url &&
         options.remarkStringifyOptions?.resourceLink !== true &&
-        BARE_AUTOLINK_PROTOCOL_REGEX.test(node.url ?? '');
+        BARE_AUTOLINK_REGEX.test(node.url ?? '');
 
       if (isBareAutolinkLiteral) {
-        return {
-          type: 'html',
-          value: node.url,
-        };
+        // GFM can trim punctuation from a literal URL even when it has no markup.
+        const tokens = Lexer.lexInline(node.url, { gfm: true });
+        const token = tokens[0];
+
+        if (
+          tokens.length === 1 &&
+          token?.type === 'link' &&
+          token.href === node.url &&
+          token.text === node.url
+        ) {
+          return {
+            type: 'html',
+            value: node.url,
+          };
+        }
       }
 
       return {

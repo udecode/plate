@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import { exec, execSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import { Command } from 'commander';
 import prompts from 'prompts';
+import { exec } from 'tinyexec';
 import { z } from 'zod';
 import packageJson from '../package.json';
 import { getPackageManager } from './utils/get-package-manager';
@@ -16,7 +16,6 @@ import { spinner as createSpinner } from './utils/spinner';
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
-const execPromise = promisify(exec);
 const VERSION_PREFIX_REGEX = /^\D*/;
 
 const DepSyncOptionsSchema = z.object({
@@ -56,10 +55,12 @@ async function fetchPackageVersion(
 ): Promise<string | null> {
   try {
     const versionSpecifier = targetVersionString
-      ? `${pkg}@"<=${targetVersionString}"`
+      ? `${pkg}@<=${targetVersionString}`
       : pkg;
-    const { stdout } = await execPromise(
-      `npm view ${versionSpecifier} version --json`
+    const { stdout } = await exec(
+      'npm',
+      ['view', '--json', '--', versionSpecifier, 'version'],
+      { nodePath: false, throwOnError: true }
     );
     const versions = JSON.parse(stdout);
     const latestMatchingVersion = Array.isArray(versions)

@@ -16,6 +16,17 @@ describe('BaseEquationPlugin', () => {
     expect(typeof (editor as any).tf.insert.equation).toBe('function');
   });
 
+  it('reads numeric TeX attributes as text', () => {
+    const editor = createSlateEditor({ plugins: [BaseEquationPlugin] });
+    const element = document.createElement('div');
+    element.setAttribute('data-slate-tex-expression', '42');
+    const props = editor
+      .getPlugin(BaseEquationPlugin)
+      .parsers.html?.deserializer?.toNodeProps?.({ element } as any);
+
+    expect(props).toMatchObject({ texExpression: '42' });
+  });
+
   it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
     const editor = createSlateEditor({
       plugins: [BaseEquationPlugin],

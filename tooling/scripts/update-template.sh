@@ -138,6 +138,11 @@ fi
 normalize_relative_ts_imports "$TEMPLATE_DIR/src"
 normalize_react_day_picker_api "$TEMPLATE_DIR"
 
+if [[ "$MODE" == "ai" ]]; then
+  cp "$BASE/tooling/templates/plate-playground-template/README.md" "$TEMPLATE_DIR/README.md"
+  cp "$BASE/tooling/templates/plate-playground-template/.env.example" "$TEMPLATE_DIR/.env.example"
+fi
+
 echo "Running bun lint:fix..."
 bun lint:fix
 

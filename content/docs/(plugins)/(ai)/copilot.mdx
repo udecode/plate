@@ -60,13 +60,11 @@ Copilot requires a server-side API endpoint to communicate with the AI model. Ad
 
 <ComponentSource name="copilot-api" />
 
-### Configure Environment
+### Configure Credentials
 
-Ensure your AI Gateway key is set in your environment variables:
+Enter your own AI Gateway key in the editor settings, or pass it as `apiKey` in `completeOptions.body`. The API route uses that caller-supplied key.
 
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
+To use a shared server credential, add application authentication, authorization, and per-user usage limits before calling the provider. Keep server credentials out of client code.
 
 </Steps>
 
@@ -175,7 +173,7 @@ export async function POST(req: NextRequest) {
     prompt,
   } = await req.json();
 
-  const apiKey = key || process.env.AI_GATEWAY_API_KEY;
+  const apiKey = typeof key === 'string' ? key.trim() : '';
 
   if (!apiKey) {
     return NextResponse.json(
@@ -210,7 +208,7 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-Then, set your `AI_GATEWAY_API_KEY` in `.env.local`.
+Pass the caller's key as `apiKey` in `completeOptions.body`.
 
 ### Instructions
 
@@ -283,15 +281,23 @@ Configure different AI models and providers in your API route:
 
 ```tsx title="app/api/ai/copilot/route.ts"
 import { createGateway, generateText } from 'ai';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const {
+    apiKey: key,
     instructions,
     model = 'openai/gpt-4o-mini',
     prompt,
   } = await req.json();
 
-  const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY });
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return NextResponse.json({ error: 'Missing AI Gateway API key.' }, { status: 401 });
+  }
+
+  const gateway = createGateway({ apiKey });
 
   const result = await generateText({
     instructions,

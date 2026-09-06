@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-06-editor-content-and-service-defaults",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-06-editor-content-and-service-defaults.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve editor content and configure service credentials",
+  "targets": [
+    {
+      "name": "equation-node",
+      "files": ["apps/www/src/registry/ui/equation-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-node-static",
+      "files": ["apps/www/src/registry/ui/equation-node-static.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": ["apps/www/src/registry/ui/media-preview-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for ai-api."
+        }
+      ]
+    },
+    {
+      "name": "copilot-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for copilot-api."
+        }
+      ]
+    },
+    {
+      "name": "media-uploadthing-api",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for media-uploadthing-api."
+        }
+      ]
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-06-equation-values",
+      "kind": "fix",
+      "summary": "Display incomplete equations as empty in editable and static views.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["equation-node", "equation-node-static"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-content-and-service-defaults",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-image-downloads",
+      "kind": "fix",
+      "summary": "Download supported image destinations while preserving relative, HTTP, HTTPS, blob, and image data URLs.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-preview-dialog"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-content-and-service-defaults",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-ai-credentials",
+      "kind": "behavior",
+      "summary": "Use the caller's AI Gateway key supplied through editor settings or the request body.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api", "copilot-api"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-content-and-service-defaults",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-upload-authorization",
+      "kind": "behavior",
+      "summary": "Allow uploads during local development; require application authorization before enabling production uploads.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-uploadthing-api"],
+      "source": {
+        "line": 18,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-content-and-service-defaults",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-drag-targets",
+      "kind": "fix",
+      "summary": "Ignore drop checks without a source editor node.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["column-node", "table-node"],
+      "source": {
+        "line": 20,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-content-and-service-defaults",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

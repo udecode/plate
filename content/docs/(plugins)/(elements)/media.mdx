@@ -101,6 +101,8 @@ const editor = createPlateEditor({
 
 <ComponentInstallation name="media-uploadthing-api" inline />
 
+The provided upload middleware permits local development only. Before enabling uploads in production, replace its development check with your application's session and permission checks. Choose file types, size limits, and per-user quotas for your application.
+
 ### Environment Setup
 
 Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) and add it to `.env`:

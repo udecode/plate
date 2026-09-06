@@ -14,6 +14,8 @@ export function EquationElementStatic(
   props: SlateElementProps<TEquationElement>
 ) {
   const { element } = props;
+  const texExpression =
+    typeof element.texExpression === 'string' ? element.texExpression : '';
 
   const html = getEquationHtml({
     element,
@@ -35,10 +37,10 @@ export function EquationElementStatic(
       <div
         className={cn(
           'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
-          element.texExpression.length === 0 ? 'bg-muted p-3 pr-9' : 'px-2 py-1'
+          texExpression.length === 0 ? 'bg-muted p-3 pr-9' : 'px-2 py-1'
         )}
       >
-        {element.texExpression.length > 0 ? (
+        {texExpression.length > 0 ? (
           <span
             dangerouslySetInnerHTML={{
               __html: html,
@@ -59,6 +61,10 @@ export function EquationElementStatic(
 export function InlineEquationElementStatic(
   props: SlateElementProps<TEquationElement>
 ) {
+  const texExpression =
+    typeof props.element.texExpression === 'string'
+      ? props.element.texExpression
+      : '';
   const html = getEquationHtml({
     element: props.element,
     options: {
@@ -84,13 +90,13 @@ export function InlineEquationElementStatic(
           'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
           inlineSuggestionVariants(),
-          props.element.texExpression.length === 0 &&
+          texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'
         )}
       >
         <span
           className={cn(
-            props.element.texExpression.length === 0 && 'hidden',
+            texExpression.length === 0 && 'hidden',
             'font-mono leading-none'
           )}
           dangerouslySetInnerHTML={{ __html: html }}
@@ -109,8 +115,10 @@ export function EquationElementDocx(
   props: SlateElementProps<TEquationElement>
 ) {
   const { element } = props;
+  const texExpression =
+    typeof element.texExpression === 'string' ? element.texExpression : '';
 
-  if (!element.texExpression || element.texExpression.length === 0) {
+  if (!texExpression) {
     return (
       <SlateElement {...props}>
         <p style={{ color: '#888', fontStyle: 'italic' }}>[Empty equation]</p>
@@ -129,7 +137,7 @@ export function EquationElementDocx(
           textAlign: 'center',
         }}
       >
-        {element.texExpression}
+        {texExpression}
       </p>
       {props.children}
     </SlateElement>
@@ -144,8 +152,10 @@ export function InlineEquationElementDocx(
   props: SlateElementProps<TEquationElement>
 ) {
   const { element } = props;
+  const texExpression =
+    typeof element.texExpression === 'string' ? element.texExpression : '';
 
-  if (!element.texExpression || element.texExpression.length === 0) {
+  if (!texExpression) {
     return (
       <SlateElement {...props} as="span">
         <span style={{ color: '#888', fontStyle: 'italic' }}>[equation]</span>
@@ -161,7 +171,7 @@ export function InlineEquationElementDocx(
           fontFamily: 'Cambria Math, Consolas, monospace',
         }}
       >
-        {element.texExpression}
+        {texExpression}
       </span>
       {props.children}
     </SlateElement>
