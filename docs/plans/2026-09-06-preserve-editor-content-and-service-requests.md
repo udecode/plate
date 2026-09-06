@@ -27,7 +27,7 @@ Task source:
 - id / link: private report identifiers and individual verdicts remain in the maintainer conversation
 - title: Triage remaining reports; fix accepted work in one PR
 - acceptance criteria: all ten dispositioned; six fixes; one PR containing the entire checkout; tests, artifact checks, browser proof and autoreview; no release or public advisory publication claimed
-- exact PR: to be assigned at creation
+- exact PR: https://github.com/udecode/plate/pull/5120
 
 Timed checkpoint:
 - requested duration: N/A: none requested
@@ -74,14 +74,14 @@ Task state:
 - task_type: triage and package bug fixes
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: in_progress
-- next_phase: closeout
-- goal_status: active
+- current_phase_status: done
+- next_phase: none
+- goal_status: complete
 
 Current verdict:
 - verdict: partially valid
 - confidence: high from source and published artifact inspection
-- next owner: PR delivery and private tracker sync
+- next owner: maintainer merge and release follow-up; outside this PR task
 - reason: six fixes, two duplicate reports, two reports without a demonstrated default boundary bypass
 
 Pre-solution issue challenge:
@@ -200,7 +200,7 @@ Work Checklist:
       new branch needed, or N/A with reason.
 - [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
-- [ ] If a PR exists, its body has exactly one
+- [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
       head, and this plan records that exact PR number or URL.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
@@ -255,7 +255,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | pnpm check, full www typecheck, owning package artifacts, focused registry tests, Chrome routes and clean structured review pass |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Ten reports challenged; six accepted owners, two duplicates, two without a default boundary bypass |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Static/shipped audit, benign unit/process tests, and actual local Browser demo/docs routes; no active payload execution |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Harmless Markdown markup/punctuation and CLI literal-argument regressions failed before repair; other reports proved through source contracts without active payloads |
@@ -275,16 +275,16 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Incremental parity review passes: existing CLI options, caller-key API and upload setup are discoverable and executable |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: failures were source/test issues, not install corruption |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Final gpt-5.5 local review: no accepted/actionable findings; patch correct |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | pnpm check passes; PR #5120 open with the verified checkout and task-style body |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | Exactly one task-plan body line; this tracked plan identifies https://github.com/udecode/plate/pull/5120; verify final pushed head before handoff |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | gh pr view 5120 --json body confirms required format, one plan line, no self-link and preserved auto-release block |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: PR uses textual browser evidence; screenshots remain in the maintainer task |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Six private comments link PR #5120; each comment and open state read back in Chrome; final API confirms six drafts and four closures |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Exact PR, dispositions, checks, Browser proof, setup changes and release/platform limits recorded below |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pnpm lint:fix passes; final pnpm check includes lint |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Bounded reads and logs outside checkout; initial oversized reads recorded and corrected |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-06-preserve-editor-content-and-service-requests.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-06-preserve-editor-content-and-service-requests.md` | check-complete.mjs passes on this completed task plan |
 | Advisory source read | yes | Read repo advisories through `gh api repos/<owner>/<repo>/security-advisories/<GHSA_ID>`, public read-only GHSA records through `gh api advisories/<GHSA_ID>`, npm-only advisories through npm/advisory registry source, or private reports through the provided report source; otherwise record access blocker | Ten full repository-scoped reports plus all discussion comments read; canonical overlaps checked |
 | Security repro / regression proof | yes | Record failing-before/passing-after proof, PoC validation, or N/A reason | Source/shipped audit and benign tests at owning boundaries; no active exploit or paid-service proof |
 | Private disclosure guard | yes | For private/draft/embargoed/not-yet-public sources, use repository advisory/private fork or sanitized public artifacts until approved disclosure; otherwise record N/A: already public | New public plan and PR omit report IDs and payloads; six advisory descriptions narrowed privately |
@@ -324,8 +324,8 @@ Phase / pass table:
 | Intake and source read | done | Ten reports read and dispositioned | implementation |
 | Implementation | done | Six owners fixed; three package changesets and registry notes | verification |
 | Verification | done | Full check, app typecheck, focused tests, built artifacts, Chrome proof and final review pass | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| PR / tracker sync | done | PR #5120 open; six private PR-link comments and advisory state readback verified | final response |
+| Closeout | done | Required checks pass; task plan records exact PR; release limits retained | final response |
 
 Findings:
 - Ten reports dispositioned: six accepted owners, two duplicates, two without a demonstrated default boundary bypass. Four reports closed privately and read back as unpublished.
@@ -356,6 +356,8 @@ Error attempts:
 | App typecheck required mutable test env and missing drag guards | 1 | Correct test env writes and add two source-node guards | Full www typecheck passes |
 
 Verification evidence:
+- PR #5120 is OPEN against main. Initial code commit f91de4fa8d is pushed. Final plan-only closeout commit records exact ownership.
+- All six accepted reports have private PR-link follow-ups with rendered comment and open-state readback; final repository API confirms four closed, six draft, all unpublished and no accepted patched-version claims.
 - Final structured autoreview (gpt-5.5, local): clean, no accepted/actionable findings; patch correct.
 - pnpm check passes after the punctuation repair. Subsequent edits only redact plan prose and correct equivalent changeset quoting.
 - Final built Markdown fixture at http://127.0.0.1:41238/ preserves five links, including the final period in the destination; verified in Chrome.
@@ -388,21 +390,21 @@ Verification evidence:
 - Windows command behavior is source-reviewed through tinyexec; execution proof is macOS/Node only.
 
 Final handoff contract:
-- PR line: pending
+- PR line: https://github.com/udecode/plate/pull/5120
 - Issue / tracker line: ten private repository reports; four closed, six draft, none published
 - Confidence line: high for verified local behavior; explicit release and platform limits below
 - Flow table:
   - Reproduced: benign data-handling regressions and shipped-source audit; no active exploit execution
   - Verified: focused package/registry tests, full app typecheck, built CLI/math and local Chrome routes; final structured review and pnpm check pass
 - Browser check: local desktop Chrome fixture, equation/media routes and affected docs; API tests mock providers
-- Outcome: ten reports dispositioned; six fixes prepared in one checkout, four reports closed privately
+- Outcome: ten reports dispositioned; six fixes committed and pushed in PR #5120, four reports closed privately
 - Caveat: AI routes require caller keys; production uploads require app authorization; registry/template refresh, package releases, public advisories and CVEs remain a later task; Windows not executed
 - Design:
   - Chosen boundary: package serialization/query/math owners and copied renderer/service handlers
   - Why not quick patch: input-only changes would miss persisted values and action-time handling
   - Why not broader change: no generic auth framework, core schema redesign, URL rewrite policy, legacy backport or release process change
 - Verified: see named command and Browser evidence above; final review/check status is recorded in completion gates
-- PR body verified: pending
+- PR body verified: gh pr view 5120 --json body; exactly one task-plan line, required format, no self-link, generated auto-release block preserved
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -427,20 +429,21 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Task plan at exact PR head: pending
-- Issue / tracker: six private draft metadata updates and four private closures verified; PR sync remains
+- PR: https://github.com/udecode/plate/pull/5120 (OPEN, base main, branch codex/preserve-query-and-link-data)
+- Task plan at exact PR head: this tracked plan identifies PR #5120; final pushed-head readback is required before handoff
+- Issue / tracker: six private draft metadata updates, six PR-link comments and four private closures verified; all ten remain unpublished
 - Browser proof: local desktop Chrome observations and screenshots recorded in this task
 - Caveats: releases/hosted propagation and Windows execution are unclaimed; production service setup changes documented
 
 Timeline:
 - 2026-09-06T14:19:04.559Z Task goal plan created.
+- 2026-09-06 PR #5120 created after verification and clean review; six private tracker follow-ups verified.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Final review and PR closeout |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
+| Where am I? | PR #5120 delivered; private tracker sync complete |
+| Where am I going? | Final handoff; merge and release are separate scope |
 | What is the goal? | All ten triaged; six fixes in one verified PR |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
