@@ -356,6 +356,10 @@ Error attempts:
 | App typecheck required mutable test env and missing drag guards | 1 | Correct test env writes and add two source-node guards | Full www typecheck passes |
 
 Verification evidence:
+- Compatibility follow-up: 253 Markdown tests pass; an additional 90 URL/serializer-option round trips and 28 full equation HTML-import/normalization cases pass. Four actual npm queries return identical JSON with the previous and current argument layouts. The external compatibility probe remains outside the repository.
+- Follow-up built-package Chrome proof at http://127.0.0.1:41239: three full contextual round trips with MDX enabled pass deep-equality assertions and display the preserved spaces, text and destinations. Screenshot captured in the task.
+- Final follow-up review (gpt-5.5, local): no accepted/actionable findings. Full pnpm check passes after the parser correction; the newest push still requires its own hosted CI run.
+- Follow-up compatibility review requested by the user: CI is green at 4a4a6052c9. Broader contextual round trips exposed a whitespace loss when angle-bracket HTTP links entered the incomplete-MDX fallback. The parser now skips complete HTTP autolinks while finding unmatched tags; 9 contextual serializer cases and 3 tag-stack cases cover the correction. The final pnpm check and structured local review pass after this correction. The built package preserves all three contextual cases in Chrome with MDX enabled.
 - PR #5120 is OPEN against main. Initial code commit f91de4fa8d is pushed. Final plan-only closeout commit records exact ownership.
 - All six accepted reports have private PR-link follow-ups with rendered comment and open-state readback; final repository API confirms four closed, six draft, all unpublished and no accepted patched-version claims.
 - Final structured autoreview (gpt-5.5, local): clean, no accepted/actionable findings; patch correct.
@@ -438,6 +442,7 @@ Final handoff / sync:
 Timeline:
 - 2026-09-06T14:19:04.559Z Task goal plan created.
 - 2026-09-06 PR #5120 created after verification and clean review; six private tracker follow-ups verified.
+- 2026-09-06 User requested a regression recheck; contextual Markdown whitespace correction verified and added to the same PR.
 
 Reboot status:
 | Question | Answer |

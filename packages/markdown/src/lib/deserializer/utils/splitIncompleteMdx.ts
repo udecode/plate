@@ -1,3 +1,5 @@
+const HTTP_AUTOLINK_REGEX = /^<https?:\/\/[^\s<>]*>/i;
+
 /** Check if character is valid for tag name: A-Z / a-z / 0-9 / $ - . _ : */
 const isNameChar = (c: number) =>
   (c >= 48 && c <= 57) || // 0-9
@@ -36,6 +38,14 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
     }
 
     const tagStart = i; // Remember the position of '<'
+    // Angle-bracket Markdown links have no matching MDX closing tag.
+    const autolink = HTTP_AUTOLINK_REGEX.exec(data.slice(i));
+
+    if (autolink) {
+      i += autolink[0].length;
+      continue;
+    }
+
     i++; // Skip '<'
     if (i >= len) {
       cutPos = tagStart;

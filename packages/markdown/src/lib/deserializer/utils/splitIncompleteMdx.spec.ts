@@ -1,6 +1,17 @@
 import { splitIncompleteMdx } from './splitIncompleteMdx';
 
 describe('splitIncomplete', () => {
+  it.each([
+    '<https://example.com/file.>',
+    '<http://example.com/a_b_>',
+    '<https://[::1]/docs>',
+  ])('keeps Markdown autolinks out of the MDX tag stack: %s', (link) => {
+    const complete = `<u>Before ${link} after.</u>`;
+
+    expect(splitIncompleteMdx(complete)).toBe(complete);
+    expect(splitIncompleteMdx(`${complete}<span`)).toEqual([complete, '<span']);
+  });
+
   it('split HTML with an incomplete tag at the end', () => {
     const data = '<u>underline</u>text<u>';
     const result = splitIncompleteMdx(data);
