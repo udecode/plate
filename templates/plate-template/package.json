@@ -21,10 +21,10 @@
     "@radix-ui/react-tooltip": "^1.2.16",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
-    "cn": "^0.2.5",
+    "cn": "^0.2.6",
     "lucide-react": "1.41.0",
     "next": "16.3.4",
-    "platejs": "^53.3.10",
+    "platejs": "^53.3.11",
     "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -45,7 +45,7 @@
     "postcss": "^8.5.28",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
-    "ultracite": "7.10.8"
+    "ultracite": "7.11.0"
   },
   "packageManager": "bun@1.3.9"
 }
