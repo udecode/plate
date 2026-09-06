@@ -76,7 +76,7 @@ jobs:
         if: ${{ steps.changesets.outputs.present != 'true' }}
         name: Install bun
         with:
-          bun-version: 1.3.9
+          bun-version: 1.4.2
 
       - name: 📦 Monorepo install
         if: ${{ steps.changesets.outputs.present != 'true' }}
@@ -157,7 +157,7 @@ jobs:
         if: ${{ steps.changesets.outputs.present != 'true' }}
         name: Install bun
         with:
-          bun-version: 1.3.9
+          bun-version: 1.4.2
 
       - name: 📦 Monorepo install
         if: ${{ steps.changesets.outputs.present != 'true' }}
