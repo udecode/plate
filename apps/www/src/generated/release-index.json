@@ -1,7 +1,7 @@
 [
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/d142cfb5b9358d97b3ec67448e7e00be41f067a4/packages/plate/CHANGELOG.md",
-    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.3.9...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/v53.3.9...v54.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
+    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.3.11...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/v53.3.11...v54.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
     "contributors": [
       {
         "url": "https://github.com/felixfeng33",
@@ -15,6 +15,40 @@
     "type": "major",
     "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5033",
     "url": "https://github.com/udecode/plate/releases/tag/v54.0.0-beta.0"
+  },
+  {
+    "changelogUrl": "https://github.com/udecode/plate/blob/c6801761b10a81e54b8f2e91e5ecbd20414e2939/packages/plate/CHANGELOG.md",
+    "content": "`@platejs/core`\n\n### Bug Fixes\n\n- Parse HTML strings in inert documents during deserialization ([#5117](https://github.com/udecode/plate/pull/5117))\n\n`platejs`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/utils`.\n\n`@platejs/utils`\n\n### Bug Fixes\n\n- Updated `@platejs/core`.\n\n[`v53.3.10...v53.3.11`](https://github.com/udecode/plate/compare/v53.3.10...v53.3.11) · By [@zbeyens](https://github.com/zbeyens)",
+    "contributors": [
+      {
+        "url": "https://github.com/zbeyens",
+        "username": "@zbeyens"
+      }
+    ],
+    "date": "2026-09-04",
+    "packageTag": "platejs@53.3.11",
+    "tag": "v53.3.11",
+    "title": "v53.3.11",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5118",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.3.11"
+  },
+  {
+    "changelogUrl": "https://github.com/udecode/plate/blob/a22433b590050906290778bf60ff948570bfe10a/packages/plate/CHANGELOG.md",
+    "content": "`@platejs/core`\n\n### Bug Fixes\n\n- Preserve HTML escaping when serializing editor content ([`1af4d23`](https://github.com/udecode/plate/commit/1af4d239b36642e94b222e18f17f2851a9cd65b3))\n\n`@platejs/docx-io`\n\n### Bug Fixes\n\n- Preserve equation output while ignoring unrelated XML ([`dfe6805`](https://github.com/udecode/plate/commit/dfe680559e9167b0e8aaf462488467783d4abc5b))\n\n`platejs`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/slate`, `@platejs/utils`.\n\n`@platejs/slate`\n\n### Bug Fixes\n\n- Updated `slate-react`. ([`12a034f`](https://github.com/udecode/plate/commit/12a034f7cfe698cc020fade0d4849373d6faa065))\n\n`@platejs/utils`\n\n### Bug Fixes\n\n- Updated `@platejs/core`, `@platejs/slate`.\n\n[`v53.3.9...v53.3.10`](https://github.com/udecode/plate/compare/v53.3.9...v53.3.10) · By [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D)",
+    "contributors": [
+      {
+        "url": "https://github.com/github-actions%5Bbot%5D",
+        "username": "@github-actions[bot]"
+      }
+    ],
+    "date": "2026-09-04",
+    "packageTag": "platejs@53.3.10",
+    "tag": "v53.3.10",
+    "title": "v53.3.10",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5116",
+    "url": "https://github.com/udecode/plate/releases/tag/v53.3.10"
   },
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/c60a7e6c8d99b0c3b6a15e0135f7ac8cdfe7f8e2/packages/plate/CHANGELOG.md",

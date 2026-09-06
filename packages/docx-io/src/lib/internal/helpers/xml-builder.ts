@@ -37,6 +37,7 @@ import {
 } from '../utils/color-conversion';
 import { getImageDimensions } from '../utils/image-dimensions';
 import imageToBase64 from '../utils/image-to-base64';
+import { parseOmml } from '../utils/parse-omml';
 import {
   cmRegex,
   cmToTWIP,
@@ -966,7 +967,7 @@ const buildRunOrRuns = async (
     ];
     try {
       // Parse the OMML string and create a fragment
-      const ommlFragment = fragment().ele(ommlString);
+      const ommlFragment = parseOmml(ommlString);
       return ommlFragment;
     } catch {
       // If parsing fails, fall through to normal text handling

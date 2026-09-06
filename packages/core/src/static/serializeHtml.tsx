@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { decode } from 'html-entities';
-
 import type { SlateEditor } from '../lib';
 import type { PlateStaticProps } from './components/PlateStatic';
 
@@ -20,9 +18,7 @@ const renderComponentToHtml = <P extends {}>(
   Component: React.ComponentType<P>,
   props: P
 ): string =>
-  decode(
-    ReactDOMServer.renderToStaticMarkup(React.createElement(Component, props))
-  );
+  ReactDOMServer.renderToStaticMarkup(React.createElement(Component, props));
 
 export type SerializeHtmlOptions<
   T extends PlateStaticProps = PlateStaticProps,
