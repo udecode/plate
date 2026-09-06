@@ -1,6 +1,6 @@
 {
   "name": "@lofcz/platejs-docx-io",
-  "version": "53.3.2",
+  "version": "53.4.6",
   "description": "DOCX import/export for Plate - file-based document conversion",
   "keywords": [
     "docx",

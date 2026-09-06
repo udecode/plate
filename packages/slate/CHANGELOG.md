@@ -1,5 +1,11 @@
 # @platejs/slate
 
+## 53.4.6
+
+### Patch Changes
+
+- Update `slate-react`
+
 ## 53.3.4
 
 ### Patch Changes

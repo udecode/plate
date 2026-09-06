@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 53.4.6
+
+### Patch Changes
+
+- - Parse HTML strings in inert documents during deserialization
+  - Preserve HTML escaping when serializing editor content
+
 ## 53.4.5
 
 ### Patch Changes

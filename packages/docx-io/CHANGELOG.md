@@ -1,5 +1,11 @@
 # @platejs/docx-io
 
+## 53.4.6
+
+### Patch Changes
+
+- Preserve equation output while ignoring unrelated XML
+
 ## 53.3.2
 
 ### Patch Changes
