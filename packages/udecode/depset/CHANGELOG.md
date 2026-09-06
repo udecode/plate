@@ -1,5 +1,11 @@
 # depset
 
+## 0.1.3
+
+### Patch Changes
+
+- [#5120](https://github.com/udecode/plate/pull/5120) by [@zbeyens](https://github.com/zbeyens) – Preserve dependency names and version constraints in package queries.
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 53.3.12
+
+### Patch Changes
+
+- [#5120](https://github.com/udecode/plate/pull/5120) by [@zbeyens](https://github.com/zbeyens) – Preserve link text and destinations when serializing Markdown.
+
 ## 53.3.3
 
 ### Patch Changes

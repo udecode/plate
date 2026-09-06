@@ -1,5 +1,11 @@
 # @platejs/math
 
+## 53.3.12
+
+### Patch Changes
+
+- [#5120](https://github.com/udecode/plate/pull/5120) by [@zbeyens](https://github.com/zbeyens) – Preserve equation text during HTML import, normalization and rendering, including persisted numeric and boolean values. Display missing or unsupported values as empty.
+
 ## 53.0.0
 
 ## 52.3.10
