@@ -58,9 +58,9 @@ const editor = createPlateEditor({
 
 ### 配置凭据
 
-在编辑器设置中输入你自己的 AI Gateway 密钥，或通过请求体的 `apiKey` 传入。API 路由使用请求方提供的密钥。
+使用自带密钥（BYOK）模式时，在编辑器设置中输入你自己的 AI Gateway 密钥，或通过请求体的 `apiKey`传入。浏览器将调用者自己的密钥发送到 API 路由，供该请求使用。
 
-如需使用共享的服务端凭据，请先添加应用身份验证、权限检查和每用户用量限制。不要将服务端凭据放入客户端代码。
+使用应用共享凭据时，先验证并授权每个请求，实施每用户用量限制，再在服务器上读取密钥。不要将共享密钥放入客户端代码或请求体。
 
 </Steps>
 
@@ -262,8 +262,8 @@ export async function POST(req: Request) {
 ```
 
 - `ctx.children` 和 `ctx.selection` 被重新水合到 Slate 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
-- 通过 `chatOptions.body` 转发提供商设置（model、apiKey、temperature、gateway 标志等）；您添加的所有内容都会在 JSON 有效载荷中原样传递，可以在调用 `createGateway` 之前读取。
-- 始终从服务器读取密钥。客户端应仅发送不透明标识符或短期令牌。
+- 通过 `chatOptions.body` 转发模型设置。在上面的自带密钥（BYOK）流程中，将调用者自己的密钥作为 `apiKey` 传入；浏览器会在 JSON 请求体中发送它。
+- 使用应用共享密钥时，客户端发送会话凭据或短期授权令牌。服务器应先授权请求，再读取共享的提供商密钥，而不是从浏览器接收该密钥。
 - 返回流式响应，以便 `useChat` 和 `useChatChunk` 可以增量处理令牌。
 
 ### 连接 `useChat`

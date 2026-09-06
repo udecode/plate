@@ -88,7 +88,7 @@
     {
       "id": "2026-09-06-equation-values",
       "kind": "fix",
-      "summary": "Display incomplete equations as empty in editable and static views.",
+      "summary": "Preserve string, number and boolean equation content in editable, static and document views; display missing or unsupported values as empty.",
       "details": [],
       "migrationNotes": [],
       "targets": ["equation-node", "equation-node-static"],

@@ -2,12 +2,27 @@ import { getEquationHtml } from './getEquationHtml';
 
 describe('getEquationHtml', () => {
   it.each([
-    undefined,
-    null,
-    42,
-  ])('renders an empty equation for %s', (texExpression) => {
+    { texExpression: undefined },
+    { texExpression: null },
+    { texExpression: {} },
+    { texExpression: [] },
+  ])('renders an empty equation for $texExpression', ({ texExpression }) => {
     expect(getEquationHtml({ element: { texExpression } as any })).toBe(
       getEquationHtml({ element: { texExpression: '' } as any })
+    );
+  });
+
+  it.each([
+    0,
+    42,
+    -3.5,
+    false,
+    true,
+  ])('renders primitive TeX content: %s', (texExpression) => {
+    expect(getEquationHtml({ element: { texExpression } as any })).toBe(
+      getEquationHtml({
+        element: { texExpression: String(texExpression) } as any,
+      })
     );
   });
 

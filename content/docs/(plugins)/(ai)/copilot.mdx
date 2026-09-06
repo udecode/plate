@@ -62,9 +62,9 @@ Copilot requires a server-side API endpoint to communicate with the AI model. Ad
 
 ### Configure Credentials
 
-Enter your own AI Gateway key in the editor settings, or pass it as `apiKey` in `completeOptions.body`. The API route uses that caller-supplied key.
+For bring-your-own-key (BYOK) usage, enter your AI Gateway key in the editor settings or pass it as `apiKey` in `completeOptions.body`. The browser sends the caller's own key to the API route, which uses it for that request.
 
-To use a shared server credential, add application authentication, authorization, and per-user usage limits before calling the provider. Keep server credentials out of client code.
+For a shared application credential, authenticate and authorize each request, enforce per-user usage limits, and load the key on the server. Keep that shared key out of client code and request bodies.
 
 </Steps>
 

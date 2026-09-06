@@ -1,5 +1,7 @@
 import { type OverrideEditor, ElementApi } from 'platejs';
 
+import { getEquationExpression } from './getEquationExpression.internal';
+
 export const withEquation: OverrideEditor = ({
   editor,
   tf: { normalizeNode },
@@ -14,7 +16,14 @@ export const withEquation: OverrideEditor = ({
         node.type === type &&
         typeof node.texExpression !== 'string'
       ) {
-        editor.tf.setNodes({ texExpression: '' }, { at: path });
+        editor.tf.setNodes(
+          {
+            texExpression: getEquationExpression({
+              texExpression: node.texExpression,
+            }),
+          },
+          { at: path }
+        );
 
         return;
       }

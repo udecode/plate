@@ -25,13 +25,9 @@ describe.each([
     inline: InlineEquationElementDocx,
   },
 ])('$name equation views', ({ block, inline }) => {
-  it.each([
-    undefined,
-    null,
-    42,
-    {},
-  ])('renders empty equation values: %s', (texExpression) => {
+  function renderEquations(texExpression: unknown) {
     const editor = createSlateEditor({
+      id: 'equation-content',
       plugins: [
         BaseEquationPlugin.withComponent(block),
         BaseInlineEquationPlugin.withComponent(inline),
@@ -53,7 +49,27 @@ describe.each([
       ] as any,
     });
 
-    const html = renderToStaticMarkup(<PlateStatic editor={editor} />);
+    return renderToStaticMarkup(<PlateStatic editor={editor} />);
+  }
+
+  it.each([
+    0,
+    42,
+    false,
+    true,
+  ])('preserves primitive equation content: %s', (texExpression) => {
+    expect(renderEquations(texExpression)).toBe(
+      renderEquations(String(texExpression))
+    );
+  });
+
+  it.each([
+    { texExpression: undefined },
+    { texExpression: null },
+    { texExpression: {} },
+    { texExpression: [] },
+  ])('renders empty equation values: $texExpression', ({ texExpression }) => {
+    const html = renderEquations(texExpression);
 
     expect(html).toContain('before');
     expect(html).toContain('after');

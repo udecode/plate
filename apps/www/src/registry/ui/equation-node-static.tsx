@@ -15,7 +15,11 @@ export function EquationElementStatic(
 ) {
   const { element } = props;
   const texExpression =
-    typeof element.texExpression === 'string' ? element.texExpression : '';
+    typeof element.texExpression === 'string' ||
+    typeof element.texExpression === 'number' ||
+    typeof element.texExpression === 'boolean'
+      ? String(element.texExpression)
+      : '';
 
   const html = getEquationHtml({
     element,
@@ -62,8 +66,10 @@ export function InlineEquationElementStatic(
   props: SlateElementProps<TEquationElement>
 ) {
   const texExpression =
-    typeof props.element.texExpression === 'string'
-      ? props.element.texExpression
+    typeof props.element.texExpression === 'string' ||
+    typeof props.element.texExpression === 'number' ||
+    typeof props.element.texExpression === 'boolean'
+      ? String(props.element.texExpression)
       : '';
   const html = getEquationHtml({
     element: props.element,
@@ -116,7 +122,11 @@ export function EquationElementDocx(
 ) {
   const { element } = props;
   const texExpression =
-    typeof element.texExpression === 'string' ? element.texExpression : '';
+    typeof element.texExpression === 'string' ||
+    typeof element.texExpression === 'number' ||
+    typeof element.texExpression === 'boolean'
+      ? String(element.texExpression)
+      : '';
 
   if (!texExpression) {
     return (
@@ -153,7 +163,11 @@ export function InlineEquationElementDocx(
 ) {
   const { element } = props;
   const texExpression =
-    typeof element.texExpression === 'string' ? element.texExpression : '';
+    typeof element.texExpression === 'string' ||
+    typeof element.texExpression === 'number' ||
+    typeof element.texExpression === 'boolean'
+      ? String(element.texExpression)
+      : '';
 
   if (!texExpression) {
     return (

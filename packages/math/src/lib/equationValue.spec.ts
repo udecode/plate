@@ -35,10 +35,20 @@ describe.each([
   });
 
   it.each([
-    undefined,
-    null,
-    42,
-  ])('normalizes non-string TeX values: %s', (texExpression) => {
+    { input: undefined, expected: '' },
+    { input: null, expected: '' },
+    { input: {}, expected: '' },
+    { input: [], expected: '' },
+    { input: 0, expected: '0' },
+    { input: 42, expected: '42' },
+    { input: -3.5, expected: '-3.5' },
+    { input: false, expected: 'false' },
+    { input: true, expected: 'true' },
+    { input: 'x^2', expected: 'x^2' },
+  ])('normalizes TeX values without losing primitive content: $input', ({
+    input: texExpression,
+    expected,
+  }) => {
     const equation = {
       children: [{ text: '' }],
       texExpression,
@@ -59,6 +69,6 @@ describe.each([
       Array.from(
         editor.api.nodes({ at: [], match: { type: plugin.key } })
       )[0][0]
-    ).toMatchObject({ texExpression: '' });
+    ).toMatchObject({ texExpression: expected });
   });
 });

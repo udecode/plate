@@ -32,8 +32,10 @@ import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const texExpression =
-    typeof props.element.texExpression === 'string'
-      ? props.element.texExpression
+    typeof props.element.texExpression === 'string' ||
+    typeof props.element.texExpression === 'number' ||
+    typeof props.element.texExpression === 'boolean'
+      ? String(props.element.texExpression)
       : '';
   const selected = useSelected();
   const [open, setOpen] = React.useState(selected);
@@ -105,7 +107,11 @@ export function InlineEquationElement(
 ) {
   const { element } = props;
   const texExpression =
-    typeof element.texExpression === 'string' ? element.texExpression : '';
+    typeof element.texExpression === 'string' ||
+    typeof element.texExpression === 'number' ||
+    typeof element.texExpression === 'boolean'
+      ? String(element.texExpression)
+      : '';
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(

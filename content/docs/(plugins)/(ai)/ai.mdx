@@ -58,9 +58,9 @@ Expose a streaming command endpoint that proxies your model provider:
 
 ### Configure Credentials
 
-Enter your own AI Gateway key in the editor settings, or pass it as `apiKey` in the request body. The API route uses that caller-supplied key.
+For bring-your-own-key (BYOK) usage, enter your AI Gateway key in the editor settings or pass it as `apiKey` in the request body. The browser sends the caller's own key to the API route, which uses it for that request.
 
-To use a shared server credential, add application authentication, authorization, and per-user usage limits before calling the provider. Keep server credentials out of client code.
+For a shared application credential, authenticate and authorize each request, enforce per-user usage limits, and load the key on the server. Keep that shared key out of client code and request bodies.
 
 </Steps>
 
@@ -262,8 +262,8 @@ export async function POST(req: Request) {
 ```
 
 - `ctx.children` and `ctx.selection` are rehydrated into a Slate editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
-- Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
-- Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
+- Forward model settings through `chatOptions.body`. In the BYOK flow shown above, include the caller's own key as `apiKey`; the browser sends it in the JSON payload.
+- For a shared application key, the client sends session credentials or a short-lived authorization token. Authorize the request and load the shared provider key on the server instead of accepting it from the browser.
 - Return a streaming response so `useChat` and `useChatChunk` can process tokens incrementally.
 
 ### Connect `useChat`

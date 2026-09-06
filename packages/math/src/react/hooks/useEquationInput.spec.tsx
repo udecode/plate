@@ -57,6 +57,36 @@ describe('useEquationInput', () => {
     mock.restore();
   });
 
+  it.each([
+    0,
+    42,
+    false,
+    true,
+  ])('preserves primitive content when editing and dismissing: %s', async (texExpression) => {
+    const { useEquationInput } = await import('./useEquationInput');
+    const element = { texExpression, type: 'equation' };
+    const setNodes = mock();
+    useElementMock.mockReturnValue(element);
+    useEditorRefMock.mockReturnValue({
+      tf: { setNodes, withMerging: (fn: Function) => fn() },
+    });
+
+    const { result, unmount } = renderHook(() =>
+      useEquationInput({ isInline: true, onClose: () => {}, open: false })
+    );
+
+    expect(result.current.props.value).toBe(String(texExpression));
+    act(() =>
+      result.current.props.onChange({ target: { value: 'x^2' } } as any)
+    );
+    result.current.onDismiss();
+    expect(setNodes).toHaveBeenLastCalledWith(
+      { texExpression: String(texExpression) },
+      { at: element }
+    );
+    unmount();
+  });
+
   it('updates inline equations with merging, restores dismiss state, and navigates at text edges', async () => {
     const { useEquationInput } = await import(
       `./useEquationInput?test=${Math.random().toString(36).slice(2)}`
