@@ -65,9 +65,9 @@ Task state:
 - task_type: bug
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: done
+- current_phase_status: in_progress
 - next_phase: N/A: repair verified; final PR check results tracked on PR #5119
-- goal_status: complete
+- goal_status: active
 
 Current verdict:
 - verdict: valid
@@ -272,7 +272,7 @@ Final handoff contract:
   - Reproduced: exact four-error lint fixture; browser N/A for lint diagnostics
   - Verified: exact lint fixture and app types pass, full check speed gate blocked; Chrome toolbar proof pass
 - Browser check: Chrome basic-nodes-demo toolbar list dropdown opens and dismisses; headings render
-- Outcome: source components satisfy template lint; template PR validation and release workflows share install, lint, typecheck and build checks, with committed output checked before regeneration on direct template events
+- Outcome: source components satisfy template lint; committed-template validation, Registry regeneration validation and release workflows share install, lint, typecheck and build checks; Registry owns PR regeneration
 - Caveat: CI-owned template regeneration and deployment follow merge; no full template sync claim
 - Design:
   - Chosen boundary: registry source components copied by the updater; one reusable validation workflow and shared shell verifier
@@ -406,3 +406,16 @@ Hosted repair verification:
 - Both committed manifests contain exact root-installed compiler/lint versions: Biome 2.5.0, parser 8.56.1, ESLint 10.2.1, hooks plugin 7.1.1, TypeScript 6.0.2 and Ultracite 7.8.3.
 - Registry PR validation also passes on generated head 3aa4bf5120: https://github.com/udecode/plate/actions/runs/34138017781. Final direct-template and root PR checks are tracked on PR #5119; no merge performed.
 - Full local check passes, eleven regression cases pass, final autoreview clean. This ledger-only closeout records the verified repair; no further source changes.
+
+Review-directed update (same PR #5119):
+- User asks to update after full-branch review identified missing root-toolchain triggers and duplicate regeneration/cancellation debt.
+- Acceptance: root package.json/pnpm-lock.yaml and generation helpers trigger Registry validation; direct template checks do not regenerate; Registry calls the shared workflow with regenerate=true; superseded PR checks cancel within separate caller workflow groups.
+- Scope: ci-templates.yml, registry.yml and task evidence only. Existing generated templates and source components remain unchanged.
+- Direct template runs install only Bun and Node for committed-output checks; Registry regeneration installs the monorepo toolchain. Both use the same fail-fast checker and eleven contract cases.
+- Verification: workflow event/mode routing matrix, actionlint, eleven subprocess cases, pnpm check, final autoreview and exact-head hosted CI. No local registry generation, template edits or merge.
+
+Routing verification:
+- 30 path/event cases pass for root manifests, registry sources, generator helpers, committed templates and unrelated docs. Four target/event execution cases prove one verifier per invocation, regeneration only in Registry mode, Node setup for committed checks and local package overrides only for PR regeneration.
+- Read-only validation concurrency uses caller workflow plus ref, separate from publication. Eleven subprocess contracts and actionlint pass; root source lint passes.
+
+- Review-directed patch passes pnpm check (/tmp/template-routing-check.log), actionlint, source lint and eleven integration cases. Final autoreview is clean at 0.86 (/tmp/template-routing-review.log). Source routing is verified; PR push/readback and hosted results remain.

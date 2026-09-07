@@ -7,11 +7,16 @@ on:
       - templates/release-sync-failure
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-templates.yml'
       - '.github/workflows/registry.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
       - 'apps/www/package.json'
       - 'apps/www/scripts/**'
       - 'apps/www/src/app/globals.css'
       - 'apps/www/src/registry/**'
+      - 'tooling/scripts/check-templates*'
+      - 'tooling/scripts/prepare-local-template*'
       - 'tooling/scripts/update-template*'
       - 'tooling/templates/**'
   pull_request:
@@ -21,11 +26,16 @@ on:
       - reopened
     paths:
       - '.github/actions/**'
+      - '.github/workflows/ci-templates.yml'
       - '.github/workflows/registry.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
       - 'apps/www/package.json'
       - 'apps/www/scripts/**'
       - 'apps/www/src/app/globals.css'
       - 'apps/www/src/registry/**'
+      - 'tooling/scripts/check-templates*'
+      - 'tooling/scripts/prepare-local-template*'
       - 'tooling/scripts/update-template*'
       - 'tooling/templates/**'
 
@@ -40,7 +50,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/ci-templates.yml
     with:
-      skip-committed-check: true
+      regenerate: true
 
   update-registry:
     name: Update Registry
