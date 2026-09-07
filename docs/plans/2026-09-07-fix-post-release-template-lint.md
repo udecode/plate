@@ -65,9 +65,9 @@ Task state:
 - task_type: bug
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: in_progress
-- next_phase: N/A: authorized push delivered; hosted CI pending
-- goal_status: active
+- current_phase_status: done
+- next_phase: N/A: repair verified; final PR check results tracked on PR #5119
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -400,3 +400,9 @@ Compiler/toolchain follow-up:
 - No workflow permission expansion or product-source change in this repair. Existing full root check passes; rerun required root check and final local review before push.
 
 - Full toolchain repair local proof: pnpm check exit 0 (/tmp/template-toolchain-check.log); autoreview clean 0.82 (/tmp/template-toolchain-review.log); eleven integration cases pass; both copied templates pass Biome and ESLint with exact root-installed toolchain. CI regeneration and final committed-output checks remain pending.
+
+Hosted repair verification:
+- Registry publication run https://github.com/udecode/plate/actions/runs/34137655181 passed both generated templates through install, lint, typecheck and build, then committed only CI-generated template files as 3aa4bf51209c66d6d1144ab05b5c1016f7190e2e.
+- Both committed manifests contain exact root-installed compiler/lint versions: Biome 2.5.0, parser 8.56.1, ESLint 10.2.1, hooks plugin 7.1.1, TypeScript 6.0.2 and Ultracite 7.8.3.
+- Registry PR validation also passes on generated head 3aa4bf5120: https://github.com/udecode/plate/actions/runs/34138017781. Final direct-template and root PR checks are tracked on PR #5119; no merge performed.
+- Full local check passes, eleven regression cases pass, final autoreview clean. This ledger-only closeout records the verified repair; no further source changes.
