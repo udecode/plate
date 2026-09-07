@@ -1,60 +1,76 @@
 name: CI Templates
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'templates/**'
+  workflow_call:
+    inputs:
+      skip-committed-check:
+        description: Registry source changes are validated through generated output.
+        type: boolean
+        default: false
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    types: [opened, synchronize, reopened]
     paths:
       - 'templates/**'
+      - '.github/workflows/ci-templates.yml'
+      - '.github/workflows/release.yml'
+      - 'tooling/scripts/check-templates*'
+      - 'tooling/scripts/update-template*'
+      - 'tooling/scripts/prepare-local-template*'
+      - 'tooling/templates/**'
+  push:
+    branches: [main]
+    paths:
+      - 'templates/**'
+      - '.github/workflows/ci-templates.yml'
+      - '.github/workflows/release.yml'
+      - 'tooling/scripts/check-templates*'
+      - 'tooling/scripts/update-template*'
+      - 'tooling/scripts/prepare-local-template*'
+      - 'tooling/templates/**'
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
   ci:
-    name: Typecheck, Build
+    name: Regenerate, lint, typecheck and build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        template:
-          - plate-template
-          - plate-playground-template
-    defaults:
-      run:
-        working-directory: templates/${{ matrix.template }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - uses: oven-sh/setup-bun@v2
-        name: Install bun
         with:
-          bun-version: latest
+          fetch-depth: 0
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
+          bun-version: 1.3.9
 
-      - uses: actions/cache@v4
-        name: ♻️ Setup bun cache
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          link-workspace-packages: 'true'
 
-      - name: 📥 Install
-        run: bun install --no-frozen-lockfile
+      - name: Verify checker failure handling
+        run: node --test tooling/scripts/check-templates.integration.mjs
 
-      - name: 🕵️ Typecheck & Build
-        run: bun run build
+      - name: Verify committed templates
+        if: ${{ !inputs.skip-committed-check }}
+        run: bash tooling/scripts/check-templates.sh
+
+      - name: Build registry
+        run: pnpm --filter www build:registry && pnpm --filter www build:tw && pnpm --filter www rd
+
+      - name: Regenerate templates
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
+        run: pnpm templates:update --local
+
+      - name: Use local packages for PR verification
+        if: github.event_name == 'pull_request'
+        env:
+          TEMPLATE_LOCAL_PACKAGE_BASE_REF: origin/${{ github.base_ref }}
+        run: node tooling/scripts/prepare-local-template-packages.mjs templates/plate-template templates/plate-playground-template
+
+      - name: Verify templates
+        run: bash tooling/scripts/check-templates.sh

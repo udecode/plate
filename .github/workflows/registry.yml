@@ -30,93 +30,12 @@ permissions:
 jobs:
   validate-registry:
     name: Validate Registry
-    runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.repository == 'udecode/plate' &&
-      (
-        github.event.pull_request.head.repo.full_name != github.repository ||
-        !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
-      )
-
-    concurrency:
-      group: ${{ github.workflow }}-validate-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-
-    steps:
-      - name: 📥 Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 🔎 Detect pending changesets
-        id: changesets
-        run: |
-          pending_changesets="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print)"
-
-          if [[ -n "$pending_changesets" ]]; then
-            echo "Pending changesets found:"
-            echo "$pending_changesets"
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: ⏭️ Skip registry validation
-        if: ${{ steps.changesets.outputs.present == 'true' }}
-        run: echo "Skipping registry validation while package changesets are pending."
-
-      - name: ♻️ Setup Node.js
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - uses: oven-sh/setup-bun@v2
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        name: Install bun
-        with:
-          bun-version: 1.3.9
-
-      - name: 📦 Monorepo install
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        uses: ./.github/actions/pnpm-install
-        with:
-          link-workspace-packages: 'true'
-
-      - name: 🏗 Build Registry
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        run: pnpm --filter www build:registry && pnpm --filter www build:tw
-
-      - name: 🏗 Build local dev registry
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        run: pnpm --filter www rd
-
-      - name: 🔄 Update templates
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        env:
-          TEMPLATE_SKIP_VERIFY: 'true'
-        run: pnpm templates:update --local
-
-      - name: 📦 Override templates with local workspace packages
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        env:
-          TEMPLATE_LOCAL_PACKAGE_BASE_REF: origin/${{ github.base_ref }}
-        run: |
-          node tooling/scripts/prepare-local-template-packages.mjs \
-            templates/plate-template \
-            templates/plate-playground-template
-
-      - name: ✅ Run template CI
-        if: ${{ steps.changesets.outputs.present != 'true' }}
-        run: |
-          cd templates/plate-template
-          bun install --no-frozen-lockfile
-          bun run build
-
-          cd ../plate-playground-template
-          bun install --no-frozen-lockfile
-          bun run build
+    if: github.event_name == 'pull_request' && github.repository == 'udecode/plate'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-templates.yml
+    with:
+      skip-committed-check: true
 
   update-registry:
     name: Update Registry
@@ -198,13 +117,7 @@ jobs:
       - name: ✅ Run template CI
         if: ${{ steps.changesets.outputs.present != 'true' && steps.template-changes.outputs.changed == 'true' }}
         run: |
-          cd templates/plate-template
-          bun install --no-frozen-lockfile
-          bun run build
-
-          cd ../plate-playground-template
-          bun install --no-frozen-lockfile
-          bun run build
+          bash tooling/scripts/check-templates.sh
 
       - name: ⬆️ Push registry updates
         if: ${{ steps.changesets.outputs.present != 'true' }}

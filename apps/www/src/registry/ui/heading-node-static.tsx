@@ -31,7 +31,7 @@ export function HeadingElementStatic({
       {...props}
     >
       {/* Bookmark anchor for DOCX TOC internal links */}
-      {id && <span id={id} />}
+      {!!id && <span id={id} />}
       {props.children}
     </SlateElement>
   );

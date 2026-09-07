@@ -419,23 +419,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          {
-            echo "=== templates/plate-template ==="
-            (
-              cd templates/plate-template
-              bun install --no-frozen-lockfile
-              bun lint
-              bun run build
-            )
-
-            echo "=== templates/plate-playground-template ==="
-            (
-              cd templates/plate-playground-template
-              bun install --no-frozen-lockfile
-              bun lint
-              bun run build -- --debug-prerender
-            )
-          } 2>&1 | tee "$RUNNER_TEMP/template-ci.log"
+          bash tooling/scripts/check-templates.sh 2>&1 | tee "$RUNNER_TEMP/template-ci.log"
 
       - name: ⬆️ Push template updates
         id: push-template-updates
