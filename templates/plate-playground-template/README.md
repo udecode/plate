@@ -42,8 +42,13 @@ cp .env.example .env.local
 
 Configure `.env.local`:
 
-- `AI_GATEWAY_API_KEY` – AI Gateway API key ([get one here](https://vercel.com/ai-gateway))
 - `UPLOADTHING_TOKEN` – UploadThing API key ([get one here](https://uploadthing.com/dashboard))
+
+Enter your own [AI Gateway key](https://vercel.com/ai-gateway) in the editor settings to use AI. The example API routes use the caller's key.
+
+Uploads work in local development. Before enabling production uploads, replace the development check in `src/lib/uploadthing.ts` with your application's session and permission checks. Add per-user upload limits.
+
+If your application uses a shared server AI credential, authorize each request and enforce per-user usage limits before calling the provider. Keep server credentials out of client code.
 
 Start the development server:
 

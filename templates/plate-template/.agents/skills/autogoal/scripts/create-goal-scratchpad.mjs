@@ -47,7 +47,7 @@ if (args.title) {
   await initProjectTemplates(root, { silent: true });
   const templatePath = resolveTemplatePath(root, args.template);
   const packs = resolvePackPaths(root, args.with ?? []);
-  const date = args.date ?? new Date().toISOString().slice(0, 10);
+  const date = args.date ?? localDateString();
   const slug = args.slug ?? slugify(args.title);
   const fileName = args.ticket
     ? `${args.ticket}-${slug}.md`
@@ -153,6 +153,14 @@ function parseArgs(argv) {
   }
 
   return parsed;
+}
+
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 async function renderTemplate(templatePath, values) {

@@ -120,7 +120,7 @@ type ToolbarButtonProps = {
 > &
   VariantProps<typeof toolbarButtonVariants>;
 
-export const ToolbarButton = withTooltip(function ToolbarButton({
+export const ToolbarButton = withTooltip(function ToolbarButtonContent({
   children,
   className,
   isDropdown,
@@ -227,6 +227,13 @@ export function ToolbarSplitButtonSecondary({
   ...props
 }: React.ComponentPropsWithoutRef<'span'> &
   VariantProps<typeof dropdownArrowVariants>) {
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLSpanElement>) => {
+      event.stopPropagation();
+    },
+    []
+  );
+
   return (
     <span
       className={cn(
@@ -237,7 +244,7 @@ export function ToolbarSplitButtonSecondary({
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}
-      onClick={(e) => e.stopPropagation()}
+      onClick={handleClick}
       role="button"
       {...props}
     >
@@ -376,7 +383,7 @@ export function ToolbarMenuGroup({
           className
         )}
       >
-        {label && (
+        {!!label && (
           <DropdownMenuLabel className="select-none font-semibold text-muted-foreground text-xs">
             {label}
           </DropdownMenuLabel>

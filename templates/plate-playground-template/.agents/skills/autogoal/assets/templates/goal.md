@@ -81,7 +81,6 @@ Completion Gates:
 | Named verification threshold | pending | Run the named proof or record blocker | pending |
 | Typecheck/build/test proof | pending | Run relevant owner checks or record N/A | pending |
 | Browser proof | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces; otherwise record N/A/blocker | pending |
-| Autoreview | pending | Review final diff/output against objective, constraints, and newest user request | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

@@ -82,11 +82,24 @@ parents:
   interaction proof is required
 - `package-api`: package exports, public API, release artifacts, package
   boundaries, or package-level checks changed
+- `performance-observability`: user-facing latency, payload size, query count,
+  database access, cache/index behavior, runtime pooling, repeated-unit work,
+  subscription fan-out, or throughput can change
 
-Core execution and review gates belong in the primary template. Every primary
-template must include `Autoreview` as the last human-readable gate before
-`Goal plan complete`. Packs are only for optional touched surfaces that would
-otherwise be absent from that template.
+A public API or architecture that adds, retains, or changes a runtime layer,
+cache, index, projection, store, subscription, scheduler, geometry owner, or
+other repeated hot work must materialize `performance-observability` before the
+target is accepted. The plan needs an executable comparison against the current
+owner, using a disposable target prototype when the proposed path does not yet
+exist. An asymptotic table, review score, future benchmark plan, or "measure
+during implementation" note is not pre-acceptance evidence.
+
+Core execution and proof gates belong in the primary template. `Autoreview` is
+never a universal goal or completion gate. Only after a complete end-to-end
+feature is already verified may the final handoff recommend it as an optional
+second pass; run it only when the user explicitly requests or accepts it.
+Packs are only for optional touched surfaces that would otherwise be absent
+from that template.
 
 Do not create runtime inheritance between templates. The helper copies pack rows
 into the generated plan's `Start Gates`, `Work Checklist`, and
@@ -133,7 +146,11 @@ Examples:
 - agent workflow task: `--template task --with agent-native`
 - browser behavior task: `--template task --with browser`
 - public app/API or package-boundary task: `--template task --with package-api`
+- query, cache, database, or runtime performance task:
+  `--template task --with performance-observability`
 - major architecture task: `--template major-task`
+- scale-sensitive architecture task:
+  `--template major-task --with performance-observability`
 - major architecture task that also changes docs and package API:
   `--template major-task --with docs --with package-api`
 
@@ -866,8 +883,9 @@ Template quality bar:
   facts.
 - No template may let a goal finish from polished prose, score alone, or a
   completed phase table without fresh evidence.
-- Every primary template must include an `Autoreview` completion gate before
-  the final `Goal plan complete` check.
+- No primary template may require `Autoreview`. A complete end-to-end feature
+  may end with an optional recommendation after normal proof, but declining it
+  never blocks `Goal plan complete`.
 - Every required checklist item must map to evidence, an explicit N/A reason,
   or a blocker.
 - Every required section is either present in the template or omitted with a
@@ -878,6 +896,12 @@ Template quality bar:
   public API, runtime, package-boundary, browser, agent-action, or command
   contract changes. Do not copy a major planning lane's scorecard, issue
   ledger, or full pass schedule into generic execution templates.
+- Architecture and API templates must decide scale applicability before target
+  acceptance. When repeated or hot runtime work can change, materialize the
+  performance pack, require an executable baseline-versus-target probe before
+  accepting the design, and require the same production-path rerun plus a
+  correctness guard after implementation. Only source-backed type-only or
+  zero-runtime work may record N/A.
 - The template should prefer concrete commands, file paths, issue rows,
   browser routes, screenshots, benchmark names, or source-audit rows over vague
   "review" wording.

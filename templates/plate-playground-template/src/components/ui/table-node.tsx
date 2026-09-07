@@ -766,16 +766,18 @@ function TableFloatingToolbar({
     []
   );
   const selected = useSelected();
-  const collapsedInside = useEditorSelector(
-    (editor) => selected && editor.api.isCollapsed(),
-    [selected]
-  );
   const isFocusedLast = useFocusedLast();
   const [isExpandedSelectionToolbarReady, setIsExpandedSelectionToolbarReady] =
     React.useState(false);
-  const isCollapsedToolbarOpen = isFocusedLast && collapsedInside;
-  const isExpandedSelectionPending =
-    isFocusedLast && !collapsedInside && selectedCellCount > 1;
+  // `getSelectedCellIds` only reports cells once a range spans more than one
+  // cell, so a count of zero means the selection (a caret or an expanded
+  // range) is confined to a single cell. Gating on it instead of
+  // `editor.api.isCollapsed()` keeps the row/column controls available while a
+  // cell's content is fully selected (e.g. select-all inside a cell), not just
+  // while the caret is collapsed in it.
+  const isSingleCellToolbarOpen =
+    isFocusedLast && selected && selectedCellCount === 0;
+  const isExpandedSelectionPending = isFocusedLast && selectedCellCount > 1;
 
   React.useEffect(() => {
     if (!isExpandedSelectionPending) {
@@ -797,13 +799,13 @@ function TableFloatingToolbar({
   const shouldRenderExpandedSelectionToolbar =
     isExpandedSelectionToolbarReady && isExpandedSelectionPending;
   const isToolbarOpen =
-    isCollapsedToolbarOpen || shouldRenderExpandedSelectionToolbar;
+    isSingleCellToolbarOpen || shouldRenderExpandedSelectionToolbar;
 
   return (
     <Popover modal={false} open={isToolbarOpen}>
       <PopoverAnchor asChild>{children}</PopoverAnchor>
-      {isCollapsedToolbarOpen && (
-        <CollapsedTableFloatingToolbarContent {...props} />
+      {isSingleCellToolbarOpen && (
+        <SingleCellTableFloatingToolbarContent {...props} />
       )}
       {shouldRenderExpandedSelectionToolbar && (
         <ExpandedSelectionTableFloatingToolbarContent {...props} />
@@ -831,7 +833,7 @@ function ExpandedSelectionTableFloatingToolbarContent(
   );
 }
 
-function CollapsedTableFloatingToolbarContent(
+function SingleCellTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
   const { tf } = useEditorPlugin(TablePlugin);
@@ -843,7 +845,6 @@ function CollapsedTableFloatingToolbarContent(
     <TableFloatingToolbarContent
       buttonProps={buttonProps}
       canSplit={canSplit}
-      collapsedInside
       onDeleteColumn={() => {
         tf.remove.tableColumn();
       }}
@@ -863,6 +864,7 @@ function CollapsedTableFloatingToolbarContent(
         tf.insert.tableRow({ before: true });
       }}
       onSplit={() => tf.table.split()}
+      singleCellMode
       {...props}
     />
   );
@@ -872,7 +874,7 @@ function TableFloatingToolbarContent({
   buttonProps,
   canMerge = false,
   canSplit = false,
-  collapsedInside = false,
+  singleCellMode = false,
   onDeleteColumn,
   onDeleteRow,
   onInsertColumnAfter,
@@ -886,7 +888,7 @@ function TableFloatingToolbarContent({
   buttonProps?: React.ComponentProps<typeof ToolbarButton>;
   canMerge?: boolean;
   canSplit?: boolean;
-  collapsedInside?: boolean;
+  singleCellMode?: boolean;
   onDeleteColumn?: () => void;
   onDeleteRow?: () => void;
   onInsertColumnAfter?: () => void;
@@ -942,7 +944,7 @@ function TableFloatingToolbarContent({
             </DropdownMenuPortal>
           </DropdownMenu>
 
-          {collapsedInside && (
+          {singleCellMode && (
             <ToolbarGroup>
               <ToolbarButton tooltip="Delete table" {...buttonProps}>
                 <Trash2Icon />
@@ -951,7 +953,7 @@ function TableFloatingToolbarContent({
           )}
         </ToolbarGroup>
 
-        {collapsedInside && (
+        {singleCellMode && (
           <ToolbarGroup>
             <ToolbarButton
               onClick={onInsertRowBefore}
@@ -977,7 +979,7 @@ function TableFloatingToolbarContent({
           </ToolbarGroup>
         )}
 
-        {collapsedInside && (
+        {singleCellMode && (
           <ToolbarGroup>
             <ToolbarButton
               onClick={onInsertColumnBefore}
@@ -1169,6 +1171,7 @@ export function TableRowElement({
     element,
     type: element.type,
     canDropNode: ({ dragEntry, dropEntry }) =>
+      !!dragEntry &&
       PathApi.equals(
         PathApi.parent(dragEntry[1]),
         PathApi.parent(dropEntry[1])

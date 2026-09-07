@@ -4,17 +4,17 @@
     "autogoal": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "3671ba865d2171491a24669737f67fadcb3c4a0d5876dd9ec22205ec5d2c42c4"
+      "computedHash": "a49c86774ceda0c6e32de349ac932d0c8743d7ba392daefec01a31d9fc4d1a09"
     },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "baeb5ec8145aa85e3bec7b07c73ad1edaa75c3e396b399c3865ac8e7960e6bb1"
+      "computedHash": "a6fa150c724715de3eb52a32d32c189d9359a94539a135eb89a111b4efcab51d"
     },
     "orchestrator": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
+      "computedHash": "4f4a86411e051b09635f48951c700e6be677abc5ef395217facff980fd543a48"
     },
     "react-useeffect": {
       "source": "softaworks/agent-toolkit",
@@ -24,12 +24,12 @@
     "resolve-pr-feedback": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "78cdc1f7cb0fc64a75bdf5ee0ee61e951e5a8e5152dc978d42e9da130fd9dd73"
+      "computedHash": "e17b174cfda02006cf4477f8ebae28de5909e990cf3688c34675068bbe16d7a8"
     },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "d81caa0f86aabab65b25e302d454f23a3328760386ed9078345584c0d5c8058e"
+      "computedHash": "f615de216e085a84e31593ad0fa9062232adc40cd87b7c7ab2b8e49abf6500be"
     },
     "tdd": {
       "source": "udecode/dotai",

@@ -3,7 +3,7 @@ param(
     [ValidateSet('malicious', 'benign')]
     [string] $Fixture,
 
-    [ValidateSet('codex', 'claude', 'droid', 'copilot', 'pi', 'opencode', 'cursor')]
+    [ValidateSet('codex', 'claude', 'amp', 'pi', 'kimi')]
     [string[]] $Engine,
 
     [Alias('h')]

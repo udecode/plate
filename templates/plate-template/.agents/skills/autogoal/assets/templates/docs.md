@@ -66,6 +66,7 @@ Start Gates:
 | Target docs read | pending | pending |
 | Nearest sibling docs read | pending | pending |
 | Documented source code read | pending | pending |
+| Walkthrough baseline for possible rendered change | pending | Before the first mutation, capture `.agents/skills/walkthrough/scripts/diff-baseline.mjs` or record N/A because rendered output cannot change |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -87,7 +88,7 @@ Completion Gates:
 | Docs source-backed claim audit | pending | Verify docs claims against current source | pending |
 | Docs links / routes / previews | pending | Verify or record N/A | pending |
 | Docs parser/build | pending | Run relevant docs parser/build or record N/A | pending |
-| Autoreview | pending | Review final docs against objective, constraints, source truth, and newest user request | pending |
+| UI walkthrough | pending | If docs changed a rendered UI or visual output, run `.agents/skills/walkthrough/SKILL.md` after final proof and show annotated images in the final handoff; otherwise record N/A | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

@@ -1,6 +1,6 @@
 # Autogoal
 
-Autogoal asks Codex to write a goal-backed plan ending with autoreview.
+Autogoal asks Codex to write a goal-backed plan ending with verified evidence.
 
 ## Install
 
@@ -32,9 +32,13 @@ can carry the evidence.
 4. First checkpoint: copy every explicit prompt requirement into the plan as
    checkable rows before implementation.
 5. Work in slices and record evidence as you go.
-6. Run autoreview, then fix or record accepted findings.
+6. Run a scoped self-check and close accepted findings.
 7. Run the completion check.
 8. Mark the goal complete only when the outcome is true and the plan passes.
+
+After a complete end-to-end feature is already verified, Codex may recommend
+`autoreview` as an optional second pass. It never gates goal completion and runs
+only when the user explicitly requests or accepts it.
 
 ## Helpers
 

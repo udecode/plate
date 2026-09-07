@@ -1,6 +1,6 @@
 ---
 name: resolve-pr-feedback
-description: Resolve GitHub PR review feedback with source-backed triage, fixes, autogoal plan state, mandatory autoreview closeout, replies, and thread resolution.
+description: Resolve GitHub PR review feedback with source-backed triage, fixes, autogoal plan state, focused proof, replies, and thread resolution.
 argument-hint: "[PR number, comment URL, or blank for current branch's PR]"
 disable-model-invocation: true
 ---
@@ -12,8 +12,8 @@ Handle $ARGUMENTS.
 Use this when addressing GitHub PR review comments, unresolved review threads,
 top-level review bodies, or a specific PR comment URL.
 
-Use this workflow directly; `autoreview` is the closeout gate for
-review-quality pressure.
+Use this workflow directly. Focused proof and a scoped self-check close the
+feedback loop; do not add a mandatory nested review workflow.
 
 ## Core Take
 
@@ -127,12 +127,11 @@ refresh downstream installs through the Skills CLI.
    touched area, diagnose and fix once, then rerun. If failures are unrelated
    and pre-existing, record that evidence instead of hiding it.
 
-7. **Autoreview closeout.** Load `autoreview` and run the correct target mode
-   after validation and before commit/push/reply/resolve. Fix or reject every
-   accepted actionable finding. If a review-triggered fix changes code, rerun
-   focused proof and `autoreview` until clean.
-
-   No nested PR feedback workflow. `autoreview` is the closeout gate.
+7. **Scoped closeout.** Self-check the combined diff against the accepted
+   feedback and rerun focused proof after material fixes. If this PR completes
+   an end-to-end feature and an independent second pass could materially help,
+   recommend optional `autoreview` in the final handoff. Never run it without
+   explicit user acceptance and never block commit/push/reply/resolve on it.
 
 8. **Commit and push when authorized by the invocation/repo policy.** If only
    replies were needed and no files changed, skip commit/push. If code changed,
@@ -212,8 +211,8 @@ https://github.com/OWNER/REPO/pull/NUMBER#discussion_rCOMMENT_ID
      PR_NUMBER COMMENT_NODE_ID OWNER/REPO
    ```
 
-4. Follow the same fix, validate, `autoreview`, commit/push, reply, resolve,
-   and verify pipeline as full mode.
+4. Follow the same fix, validate, scoped self-check, commit/push, reply,
+   resolve, and verify pipeline as full mode.
 
 ### Top-Level PR Comment URL
 
@@ -231,7 +230,7 @@ gh api repos/OWNER/REPO/issues/comments/COMMENT_ID \
 ```
 
 Treat this as one `pr_comment` item. It has no review-thread resolve API, so
-after fix/validate/`autoreview`/commit/push, reply with a top-level PR comment
+after fix/validate/self-check/commit/push, reply with a top-level PR comment
 that quotes enough context to identify the original comment:
 
 ```bash
@@ -255,7 +254,7 @@ gh api repos/OWNER/REPO/pulls/NUMBER/reviews --paginate \
 
 Treat this as one `review_body` item. It cannot be resolved through the
 review-thread API. Reply with a top-level PR comment after the same
-fix/validate/`autoreview` pipeline, using the repository from the URL:
+fix/validate/self-check pipeline, using the repository from the URL:
 
 ```bash
 gh pr comment NUMBER --repo OWNER/REPO --body-file REPLY_FILE
@@ -270,7 +269,7 @@ Stop when:
 
 - all new actionable feedback is fixed, replied, resolved, or consciously
   declined/not-addressed with evidence;
-- `autoreview` is clean after the last material fix;
+- the combined diff passes its scoped self-check after the last material fix;
 - verification passes or failures are recorded as unrelated/pre-existing;
 - push/reply/resolve/commit authority is missing;
 - a public API/product/taste decision needs human input;
@@ -289,7 +288,7 @@ Report:
 - threads resolved;
 - pending or needs-human items;
 - focused proof commands and results;
-- `autoreview` command/result/rerun count;
+- optional `autoreview` recommendation or run result, only when requested;
 - pushed commit or explicit N/A;
 - remaining unresolved count after re-fetch;
 - changed files;

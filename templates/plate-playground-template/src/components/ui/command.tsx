@@ -1,8 +1,10 @@
 'use client';
 
 import { Command as CommandPrimitive } from 'cmdk';
+import { cn } from 'cn';
 import { SearchIcon } from 'lucide-react';
 import type * as React from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -10,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 
 function Command({
   className,

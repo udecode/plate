@@ -18,6 +18,7 @@ const TEMPLATE_FILES = [
   'packs/browser.md',
   'packs/docs.md',
   'packs/package-api.md',
+  'packs/performance-observability.md',
 ];
 
 if (isMainModule()) {

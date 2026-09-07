@@ -68,6 +68,8 @@ Start Gates:
 | Decision criteria stated | pending | pending |
 | Existing repo patterns / prior decisions checked | pending | pending |
 | External research decision recorded | pending | pending |
+| Runtime scale applicability resolved | pending | Identify repeated units, collection/data growth, fan-out, hot work, and runtime-layer changes; apply `performance-observability` when any can change, or record a source-backed N/A |
+| Walkthrough baseline for possible UI change | pending | Before the first mutation, capture `.agents/skills/walkthrough/scripts/diff-baseline.mjs` or record N/A because UI/rendered output cannot change |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -82,14 +84,19 @@ Work Checklist:
 - [ ] Options, recommendation, tradeoffs, blast radius, and rejection reasons are recorded.
 - [ ] Facts, inference, and recommendation are separated.
 - [ ] Review or pressure passes are completed, or marked N/A with reason.
+- [ ] Scale-sensitive architecture/API work materializes the performance pack
+      and completes an executable current-owner versus proposed-target probe
+      before the target is accepted; prose budgets and deferred measurement do
+      not satisfy this row.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Decision criteria satisfied | pending | Map evidence to each criterion | pending |
 | Source audit complete | pending | Record repo evidence and external evidence | pending |
+| Pre-acceptance scale proof | pending | For scale-sensitive architecture, record the frozen budget, current baseline, target prototype/result, cohorts, deterministic cost indicators, timing/noise, and correctness guard; otherwise give a source-backed zero-runtime N/A | pending |
 | Review / pressure pass | pending | Record review lens or N/A | pending |
-| Autoreview | pending | Review final artifact against objective, criteria, constraints, and newest user request | pending |
+| UI walkthrough | pending | If implementation changed UI or rendered output, run `.agents/skills/walkthrough/SKILL.md` after final proof and show annotated images in the final handoff; otherwise record N/A | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
