@@ -143,10 +143,13 @@ if [[ "$MODE" == "ai" ]]; then
   cp "$BASE/tooling/templates/plate-playground-template/.env.example" "$TEMPLATE_DIR/.env.example"
 fi
 
-# Generated source uses the repository's lint contract, not newly released rules.
-bun add --dev --exact \
-  "@biomejs/biome@$(node -p "require(process.argv[1]).devDependencies['@biomejs/biome']" "$BASE/package.json")" \
-  "ultracite@$(node -p "require(process.argv[1]).devDependencies.ultracite" "$BASE/package.json")"
+# Generated source uses the repository's installed compiler/lint toolchain.
+toolchain_dependencies=()
+for dependency in @biomejs/biome @typescript-eslint/parser eslint eslint-plugin-react-hooks typescript ultracite; do
+  version="$(node -p "require(process.argv[1] + '/node_modules/' + process.argv[2] + '/package.json').version" "$BASE" "$dependency")"
+  toolchain_dependencies+=("$dependency@$version")
+done
+bun add --dev --exact "${toolchain_dependencies[@]}"
 
 echo "Running bun lint:fix..."
 bun lint:fix

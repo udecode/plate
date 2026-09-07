@@ -394,3 +394,9 @@ Follow-up review repair:
 - Root pnpm check completed successfully on this follow-up (including timing gate). Registry workflow repair validated with actionlint; no product source changed.
 
 - Final follow-up autoreview clean (0.83), /tmp/template-followup-review-final.log. Root check exit 0, /tmp/template-followup-check.log. Eleven integration tests pass; actionlint passes. Copied basic/playground lint checks cover 32/214 source files. Hosted write-back and final PR checks remain pending.
+
+Compiler/toolchain follow-up:
+- Hosted Registry push run 34137031859 regenerates both templates successfully, then ESLint rejects TypeScript 7.0 installed by bun update --latest. This is the same automatic-toolchain drift class. Align all six source toolchain dependencies to installed root versions, including parser, ESLint, hooks plugin and TypeScript. Installed metadata uses direct root node_modules paths because Ultracite does not export package.json.
+- No workflow permission expansion or product-source change in this repair. Existing full root check passes; rerun required root check and final local review before push.
+
+- Full toolchain repair local proof: pnpm check exit 0 (/tmp/template-toolchain-check.log); autoreview clean 0.82 (/tmp/template-toolchain-review.log); eleven integration cases pass; both copied templates pass Biome and ESLint with exact root-installed toolchain. CI regeneration and final committed-output checks remain pending.

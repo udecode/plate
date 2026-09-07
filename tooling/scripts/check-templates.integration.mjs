@@ -88,12 +88,21 @@ function updateTemplate(failInstall = false) {
     mkdirSync(path.join(root, 'templates/plate-template/src'), {
       recursive: true,
     });
-    writeFileSync(
-      path.join(root, 'package.json'),
-      JSON.stringify({
-        devDependencies: { '@biomejs/biome': '2.5.0', ultracite: '7.8.3' },
-      })
-    );
+    for (const [name, version] of Object.entries({
+      '@biomejs/biome': '2.5.0',
+      '@typescript-eslint/parser': '8.56.1',
+      eslint: '10.2.1',
+      'eslint-plugin-react-hooks': '7.1.1',
+      typescript: '6.0.2',
+      ultracite: '7.8.3',
+    })) {
+      const directory = path.join(root, 'node_modules', name);
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(
+        path.join(directory, 'package.json'),
+        JSON.stringify({ name, version })
+      );
+    }
     writeFileSync(
       path.join(root, 'bin/bun'),
       `#!/usr/bin/env bash
@@ -131,22 +140,22 @@ if [[ "$1" == add && "$TEMPLATE_TEST_FAIL" == true ]]; then exit 23; fi
   }
 }
 
-test('installs repository lint versions after dependency updates and before lint', () => {
+test('installs repository toolchain after dependency updates and before lint', () => {
   const result = updateTemplate();
   assert.equal(result.status, 0);
   assert.deepEqual(result.calls, [
     'update --latest',
-    'add --dev --exact @biomejs/biome@2.5.0 ultracite@7.8.3',
+    'add --dev --exact @biomejs/biome@2.5.0 @typescript-eslint/parser@8.56.1 eslint@10.2.1 eslint-plugin-react-hooks@7.1.1 typescript@6.0.2 ultracite@7.8.3',
     'lint:fix',
     'typecheck',
   ]);
 });
 
-test('stops before lint if installing the repository lint versions fails', () => {
+test('stops before lint if installing the repository toolchain fails', () => {
   const result = updateTemplate(true);
   assert.equal(result.status, 23);
   assert.deepEqual(result.calls, [
     'update --latest',
-    'add --dev --exact @biomejs/biome@2.5.0 ultracite@7.8.3',
+    'add --dev --exact @biomejs/biome@2.5.0 @typescript-eslint/parser@8.56.1 eslint@10.2.1 eslint-plugin-react-hooks@7.1.1 typescript@6.0.2 ultracite@7.8.3',
   ]);
 });
