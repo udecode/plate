@@ -65,9 +65,9 @@ Task state:
 - task_type: bug
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: done
+- current_phase_status: in_progress
 - next_phase: N/A: authorized push delivered; hosted CI pending
-- goal_status: complete
+- goal_status: active
 
 Current verdict:
 - verdict: valid
@@ -382,3 +382,15 @@ Delivery evidence:
 - Final full check: /tmp/plate-template-pr5119-check.log, exit 1 only at timing gate after correctness passes. Nine checker integration tests pass again.
 - CI Templates run 34132705816 and Registry validation run 34132706179 started on the pushed head. Hosted outcomes remain pending; this delivery does not claim hosted success or merge.
 - Final ledger-only follow-up records delivery and completion under the explicit check override.
+
+Hosted CI follow-up (same task, PR #5119):
+- User reports CI fails. Exact head 77074e1ead: root CI passes; CI Templates rejects four stale committed-output lint errors before regeneration; Registry regeneration reaches playground and fails 332 lint errors after automatic Biome/Ultracite upgrades.
+- Repair boundary: generated templates are CI-owned output. The trusted template repair branch uses the existing Registry publication job to regenerate and commit templates before final direct validation; retain committed-output checks. After dependency/shadcn updates, pin template Biome and Ultracite to the root manifest versions before lint. No template output or lint rules edited manually.
+- Local copied playground source: 214 files pass exact root tool versions (Biome 2.5.0, Ultracite 7.8.3) with unchanged template config. Eleven subprocess checks cover shared verifier and updater alignment/failure propagation.
+- Scope: ci-templates.yml, registry.yml, update-template.sh, existing integration test, this plan. No source component changes; previous browser/typecheck proof remains applicable. Hosted CI success on final PR head is the remaining verification target.
+
+Follow-up review repair:
+- Accepted missing-committed-output finding. Retained precheck; expanded existing trusted push-only Registry publisher to templates/release-sync-failure. It commits only templates on that branch, pushes back to the triggering branch with existing credentials, skips its own [skip release] commits, and bypasses pending-changeset publication suppression only for the repair branch. PR validation remains read-only.
+- Root pnpm check completed successfully on this follow-up (including timing gate). Registry workflow repair validated with actionlint; no product source changed.
+
+- Final follow-up autoreview clean (0.83), /tmp/template-followup-review-final.log. Root check exit 0, /tmp/template-followup-check.log. Eleven integration tests pass; actionlint passes. Copied basic/playground lint checks cover 32/214 source files. Hosted write-back and final PR checks remain pending.

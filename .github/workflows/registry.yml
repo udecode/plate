@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - templates/release-sync-failure
     paths:
       - '.github/actions/**'
       - '.github/workflows/registry.yml'
@@ -11,6 +12,8 @@ on:
       - 'apps/www/scripts/**'
       - 'apps/www/src/app/globals.css'
       - 'apps/www/src/registry/**'
+      - 'tooling/scripts/update-template*'
+      - 'tooling/templates/**'
   pull_request:
     types:
       - opened
@@ -23,6 +26,8 @@ on:
       - 'apps/www/scripts/**'
       - 'apps/www/src/app/globals.css'
       - 'apps/www/src/registry/**'
+      - 'tooling/scripts/update-template*'
+      - 'tooling/templates/**'
 
 permissions:
   contents: write
@@ -40,7 +45,7 @@ jobs:
   update-registry:
     name: Update Registry
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+    if: ${{ github.event_name == 'push' && github.repository == 'udecode/plate' && !contains(github.event.head_commit.message, '[skip release]') }}
 
     concurrency:
       group: ${{ github.workflow }}-publish-${{ github.ref }}
@@ -56,6 +61,11 @@ jobs:
       - name: 🔎 Detect pending changesets
         id: changesets
         run: |
+          if [[ "$GITHUB_REF" == 'refs/heads/templates/release-sync-failure' ]]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           pending_changesets="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print)"
 
           if [[ -n "$pending_changesets" ]]; then
@@ -122,7 +132,11 @@ jobs:
       - name: ⬆️ Push registry updates
         if: ${{ steps.changesets.outputs.present != 'true' }}
         run: |
-          git add .
+          if [[ "$GITHUB_REF" == 'refs/heads/templates/release-sync-failure' ]]; then
+            git add templates
+          else
+            git add .
+          fi
 
           if git diff --cached --quiet; then
             echo "No registry changes to publish."
@@ -130,4 +144,4 @@ jobs:
           fi
 
           git commit -m "chore: sync registry and templates [skip release]"
-          git push origin HEAD:main
+          git push origin "HEAD:$GITHUB_REF_NAME"

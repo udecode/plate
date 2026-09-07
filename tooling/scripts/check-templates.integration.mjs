@@ -80,3 +80,73 @@ for (const [index, step] of expected.entries()) {
     assert.deepEqual(result.calls, expected.slice(0, index + 1));
   });
 }
+
+function updateTemplate(failInstall = false) {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'template-update-'));
+  try {
+    mkdirSync(path.join(root, 'bin'));
+    mkdirSync(path.join(root, 'templates/plate-template/src'), {
+      recursive: true,
+    });
+    writeFileSync(
+      path.join(root, 'package.json'),
+      JSON.stringify({
+        devDependencies: { '@biomejs/biome': '2.5.0', ultracite: '7.8.3' },
+      })
+    );
+    writeFileSync(
+      path.join(root, 'bin/bun'),
+      `#!/usr/bin/env bash
+printf '%s\\n' "$*" >> "$TEMPLATE_TEST_LOG"
+if [[ "$1" == add && "$TEMPLATE_TEST_FAIL" == true ]]; then exit 23; fi
+`,
+      { mode: 0o755 }
+    );
+    writeFileSync(path.join(root, 'bin/pnpm'), '#!/bin/sh\nexit 0\n', {
+      mode: 0o755,
+    });
+    const log = path.join(root, 'calls.log');
+    const result = spawnSync(
+      'bash',
+      [new URL('./update-template.sh', import.meta.url).pathname, 'basic'],
+      {
+        cwd: root,
+        env: {
+          ...process.env,
+          PATH: `${root}/bin:${process.env.PATH}`,
+          TEMPLATE_TEST_LOG: log,
+          TEMPLATE_TEST_FAIL: String(failInstall),
+          TEMPLATE_SKIP_VERIFY: 'false',
+          TEMPLATE_REGISTRY_URL: '',
+        },
+        encoding: 'utf8',
+      }
+    );
+    return {
+      status: result.status,
+      calls: readFileSync(log, 'utf8').trim().split('\n'),
+    };
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+test('installs repository lint versions after dependency updates and before lint', () => {
+  const result = updateTemplate();
+  assert.equal(result.status, 0);
+  assert.deepEqual(result.calls, [
+    'update --latest',
+    'add --dev --exact @biomejs/biome@2.5.0 ultracite@7.8.3',
+    'lint:fix',
+    'typecheck',
+  ]);
+});
+
+test('stops before lint if installing the repository lint versions fails', () => {
+  const result = updateTemplate(true);
+  assert.equal(result.status, 23);
+  assert.deepEqual(result.calls, [
+    'update --latest',
+    'add --dev --exact @biomejs/biome@2.5.0 ultracite@7.8.3',
+  ]);
+});

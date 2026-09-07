@@ -143,6 +143,11 @@ if [[ "$MODE" == "ai" ]]; then
   cp "$BASE/tooling/templates/plate-playground-template/.env.example" "$TEMPLATE_DIR/.env.example"
 fi
 
+# Generated source uses the repository's lint contract, not newly released rules.
+bun add --dev --exact \
+  "@biomejs/biome@$(node -p "require(process.argv[1]).devDependencies['@biomejs/biome']" "$BASE/package.json")" \
+  "ultracite@$(node -p "require(process.argv[1]).devDependencies.ultracite" "$BASE/package.json")"
+
 echo "Running bun lint:fix..."
 bun lint:fix
 
