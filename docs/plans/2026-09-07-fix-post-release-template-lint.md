@@ -65,9 +65,9 @@ Task state:
 - task_type: bug
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: in_progress
+- current_phase_status: done
 - next_phase: N/A: repair verified; final PR check results tracked on PR #5119
-- goal_status: active
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -419,3 +419,8 @@ Routing verification:
 - Read-only validation concurrency uses caller workflow plus ref, separate from publication. Eleven subprocess contracts and actionlint pass; root source lint passes.
 
 - Review-directed patch passes pnpm check (/tmp/template-routing-check.log), actionlint, source lint and eleven integration cases. Final autoreview is clean at 0.86 (/tmp/template-routing-review.log). Source routing is verified; PR push/readback and hosted results remain.
+
+Review-directed update delivery:
+- Source head 4c5f19a7e10b006e092f37195f318e702dfc3536 is pushed to PR #5119. Direct template CI run 34140477304 passes; its step readback explicitly skips monorepo install, registry build and regeneration, then verifies committed templates.
+- Registry PR validation run 34140477695 passes with regenerate=true. Trusted publication run 34140474720 also passes without changing the template tree. Root manifest/lockfile and generator inputs are covered by both Registry event filters.
+- Root local check, eleven verifier tests, 30 path/event cases, four execution cases, actionlint and final autoreview pass. PR body has the exact plan line and current committed/generated ownership. Final PR check outcomes are tracked on PR #5119. No merge.
