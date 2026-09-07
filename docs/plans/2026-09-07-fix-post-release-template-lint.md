@@ -65,9 +65,9 @@ Task state:
 - task_type: bug
 - task_complexity: normal
 - current_phase: closeout
-- current_phase_status: in_progress
-- next_phase: push and verify PR #5119
-- goal_status: active
+- current_phase_status: done
+- next_phase: N/A: authorized push delivered; hosted CI pending
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -167,7 +167,7 @@ Work Checklist:
       new branch needed, or N/A with reason.
 - [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
-- [ ] If a PR exists, its body has exactly one
+- [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
       head, and this plan records that exact PR number or URL.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
@@ -193,7 +193,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Exact lint, nine verifier cases, actionlint, app types, browser and review pass; repeated full-check timing failures explicitly accepted by user for this push |
 | Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Exact four-error reproduction validates the source repair |
 | Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | Exact four-error isolated lint reproduction before source edit; browser cannot observe CI lint errors |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Exact four-error isolated lint reproduction before source edit; browser cannot observe CI lint errors |
@@ -213,16 +213,16 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Shared checker is CLI accessible, cwd-independent and fail-fast; nine executable contract checks; source review clean |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: Generated docs export race; sequential regeneration used, no node_modules corruption signal |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Final local gpt-5.5 review after committed-template repair exits 0 with zero actionable findings; /tmp/plate-template-ci-review-repair.log |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | PR #5119 updated after pnpm check; user explicitly overrides unrelated timing failures |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | PR #5119 body read back with one exact task-plan line; plan committed at 0cf837155d with exact PR URL |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | gh pr view 5119 --json body readback confirms required format and one task-plan line; no current-PR self-link |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: No visual change; exact interaction proof recorded without image |
 | Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: User/CI request, no issue tracker comments requested |
 | Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | PR, exact lint red/green, full checks, browser and clean review; hosted template sync remains after merge |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pnpm lint:fix passes; exact template fixture lint passes |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | External logs/scoped reads; initial skill read truncated then bounded reads used |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: No requested duration |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-07-fix-post-release-template-lint.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-07-fix-post-release-template-lint.md` | Completion checker passes after final ledger update |
 
 | Agent source / generated sync | no | Sync rules when changed | N/A: no rules/mirrors changed |
 | Agent action discoverability | yes | Source-audit command callers | Three workflows invoke shared checker; accepts no implicit remote action |
@@ -233,9 +233,9 @@ Phase / pass table:
 |-------|--------|----------|------|
 | Intake and source read | done | CI and exact isolated lint repro | complete |
 | Implementation | done | Four registry lint repairs; shared template verifier and reusable CI workflow | complete |
-| Verification | blocked | Exact template lint, full app types, lint, package types/build and all correctness tests pass; speed gate fails repeatedly | Speed gate owner or explicit override |
-| PR / tracker sync | blocked | No PR/commit/push because pnpm check fails speed budgets | Keep local source patch |
-| Closeout | blocked | User-facing blocker recorded; no completion claim | Resolve gate or explicit override |
+| Verification | done | Scoped checks pass; full-check timing failures explicitly accepted by user | complete |
+| PR / tracker sync | done | PR #5119 head/body verified at 0cf837155d; same plan names exact PR | complete |
+| Closeout | done | Authorized patch pushed; hosted CI running, no merge or hosted success claimed | complete |
 
 Findings:
 - Four exact CI lint errors resolved by source-only changes; no additional product scope.
@@ -376,3 +376,9 @@ PR authorization and ownership:
 - User explicitly authorized pushing this patch to the template PR after the failing-check override question. The unrelated timing failures are accepted for this push and disclosed in the PR body; no timing policy changed.
 - Applied the entire local patch on top of PR head 1be4341d0b6f3ab6762d8737882aa03d424aa186, retaining CI-produced template changes. No manual template edits.
 - Prior blocker entries are historical; the user override resolves the PR authorization blocker. Hosted CI remains separate proof.
+
+Delivery evidence:
+- PR #5119 head readback: 0cf837155d945b69cb4cb65bad52ca8278d16833. Body has one exact task-plan line and discloses the accepted timing failure.
+- Final full check: /tmp/plate-template-pr5119-check.log, exit 1 only at timing gate after correctness passes. Nine checker integration tests pass again.
+- CI Templates run 34132705816 and Registry validation run 34132706179 started on the pushed head. Hosted outcomes remain pending; this delivery does not claim hosted success or merge.
+- Final ledger-only follow-up records delivery and completion under the explicit check override.
