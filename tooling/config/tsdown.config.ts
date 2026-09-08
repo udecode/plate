@@ -6,6 +6,9 @@ import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
 const PACKAGE_ROOT_PATH = process.cwd();
+const PACKAGE_JSON = JSON.parse(
+  fs.readFileSync(path.join(PACKAGE_ROOT_PATH, 'package.json'), 'utf8')
+) as { name?: string };
 
 const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
@@ -109,6 +112,10 @@ export default defineConfig((opts) => [
       bundle: true,
       sourcemap: enableSourcemaps,
     },
+    // jotai-x is a private workspace fork (Jotai 3 mount-timing). npm cannot
+    // create @lofcz/jotai-x, so core ships the compiled source instead.
+    noExternal:
+      PACKAGE_JSON.name === '@lofcz/platejs-core' ? ['jotai-x'] : undefined,
     exports: true,
     plugins: [
       pluginBabel({

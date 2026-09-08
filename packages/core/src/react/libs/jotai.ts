@@ -5,7 +5,7 @@ export {
   useStoreAtomState,
   useStoreAtomValue,
   useStoreSetAtom,
-} from 'jotai-x';
+} from './jotai-x';
 
 export {
   useStoreSelect,

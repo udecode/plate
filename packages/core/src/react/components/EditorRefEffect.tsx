@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
+import { useAtomStoreSet, useAtomStoreValue } from '../libs/jotai-x';
 
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 

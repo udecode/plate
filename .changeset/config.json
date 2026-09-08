@@ -8,5 +8,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["www", "@plate/scripts"]
+  "ignore": ["www", "@plate/scripts", "@lofcz/jotai-x"]
 }

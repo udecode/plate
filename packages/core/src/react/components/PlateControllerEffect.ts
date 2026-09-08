@@ -4,7 +4,11 @@ import type { WritableAtom } from 'jotai/vanilla';
 
 import { useStableFn } from '@udecode/react-utils';
 import { focusAtom } from 'jotai-optics';
-import { type JotaiStore, useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
+import {
+  type JotaiStore,
+  useAtomStoreSet,
+  useAtomStoreValue,
+} from '../libs/jotai-x';
 
 import { useFocused } from '../slate-react';
 import {

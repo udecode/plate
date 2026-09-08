@@ -1,7 +1,7 @@
 import React from 'react';
 
 import clsx from 'clsx';
-import { useAtomStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from '../libs/jotai-x';
 import omit from 'lodash/omit.js';
 import { useDeepCompareMemo } from 'use-deep-compare';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { JotaiStore } from 'jotai-x';
+import type { JotaiStore } from '../../libs/jotai-x';
 
 import { type Atom, atom } from 'jotai';
 

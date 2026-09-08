@@ -1,6 +1,7 @@
 {
   "name": "@lofcz/jotai-x",
   "version": "2.4.0",
+  "private": true,
   "description": "Jotai store factory for a best-in-class developer experience.",
   "keywords": [
     "jotai"
@@ -48,9 +49,6 @@
     "react": {
       "optional": true
     }
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "type": "module",
   "module": "./dist/index.js",

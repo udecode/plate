@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 
 import { useComposedRef } from '@udecode/react-utils';
 import { isDefined } from '@udecode/utils';
-import { useAtomStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from '../libs/jotai-x';
 
 import type { EditableProps } from '../../lib/types/EditableProps';
 import type { PlateEditor } from '../editor';

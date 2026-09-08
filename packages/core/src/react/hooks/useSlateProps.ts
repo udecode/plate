@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { Value } from '@platejs/slate';
 
-import { useAtomStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from '../libs/jotai-x';
 
 import { useEditorRef, useIncrementVersion, usePlateStore } from '../stores';
 import { pipeOnChange } from '../utils/pipeOnChange';

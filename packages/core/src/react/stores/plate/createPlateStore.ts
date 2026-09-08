@@ -1,7 +1,11 @@
 import React from 'react';
 
 import { atom } from 'jotai';
-import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
+import {
+  useAtomStoreSet,
+  useAtomStoreState,
+  useAtomStoreValue,
+} from '../../libs/jotai-x';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 import type { PlateChangeKey, PlateStoreState } from './PlateStore';

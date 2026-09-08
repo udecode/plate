@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
-import { useAtomStoreValue } from 'jotai-x';
+import { useAtomStoreValue } from '../libs/jotai-x';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';

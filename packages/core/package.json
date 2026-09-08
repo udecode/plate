@@ -55,7 +55,6 @@
     "is-hotkey": "^0.2.0",
     "jotai": "^3.0.0",
     "jotai-optics": "0.4.0",
-    "jotai-x": "workspace:@lofcz/jotai-x@*",
     "lodash": "^4.17.21",
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
@@ -79,6 +78,7 @@
   "module": "./dist/index.js",
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "jotai-x": "workspace:@lofcz/jotai-x@*",
     "mutative": "^1.1.0"
   }
 }
