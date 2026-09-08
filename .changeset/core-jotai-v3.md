@@ -1,5 +1,5 @@
 ---
-"@platejs/core": patch
+"@lofcz/platejs-core": patch
 ---
 
 Use Jotai 3

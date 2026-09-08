@@ -24,7 +24,7 @@ const statusOutputPath = path.join(
   'prepare-release-changesets-status.json'
 );
 const scopePrefixPattern = /^@/;
-const frontmatterPattern = /^---\n([\s\S]*?)\n---/;
+const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
 const upstreamPackagePattern = /"@platejs\/([^"]+)"/g;
 
 if (isMainModule()) {

@@ -85,7 +85,6 @@ export const createAtomProvider = <T extends object, N extends string = ''>(
 ) => {
   const Effect = options.effect;
 
-  // eslint-disable-next-line react/display-name
   return ({ store, scope, children, resetKey, ...props }: ProviderProps<T>) => {
     const [storeState, setStoreState] = React.useState<JotaiStore>(
       () => store ?? createStore()

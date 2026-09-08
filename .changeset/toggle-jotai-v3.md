@@ -1,5 +1,5 @@
 ---
-"@platejs/toggle": patch
+"@lofcz/platejs-toggle": patch
 ---
 
 Use Jotai 3
