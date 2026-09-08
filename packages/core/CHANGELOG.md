@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.4.8
+
+### Patch Changes
+
+- 998393c: Bundle the Jotai 3 jotai-x fork into core so installs no longer need the unpublished @lofcz/jotai-x package.
+
 ## 53.4.7
 
 ### Patch Changes

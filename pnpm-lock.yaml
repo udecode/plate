@@ -1090,9 +1090,6 @@ importers:
       jotai-optics:
         specifier: 0.4.0
         version: 0.4.0(jotai@3.0.0(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1)
-      jotai-x:
-        specifier: workspace:@lofcz/jotai-x@*
-        version: link:../udecode/jotai-x
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1130,6 +1127,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      jotai-x:
+        specifier: workspace:@lofcz/jotai-x@*
+        version: link:../udecode/jotai-x
       mutative:
         specifier: ^1.1.0
         version: 1.3.0
