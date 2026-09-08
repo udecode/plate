@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 53.4.7
+
+### Patch Changes
+
+- 4ffb7b3: Use Jotai 3
+
 ## 53.4.6
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@lofcz/platejs",
-  "version": "53.3.9",
+  "version": "53.4.7",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",

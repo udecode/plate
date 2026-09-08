@@ -1,6 +1,6 @@
 {
   "name": "@lofcz/jotai-x",
-  "version": "2.3.4",
+  "version": "2.4.0",
   "description": "Jotai store factory for a best-in-class developer experience.",
   "keywords": [
     "jotai"

@@ -1,5 +1,11 @@
 # platejs
 
+## 53.4.7
+
+### Patch Changes
+
+- 9f6752d: Use Jotai 3
+
 ## 53.3.9
 
 ### Patch Changes

@@ -1,6 +1,13 @@
 # @platejs/toggle
 
+## 53.4.7
+
+### Patch Changes
+
+- 4ffb7b3: Use Jotai 3
+
 ## 53.0.0
+
 ## 52.3.6
 
 ### Patch Changes
