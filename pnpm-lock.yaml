@@ -643,8 +643,8 @@ importers:
         specifier: 1.5.11
         version: 1.5.11
       jotai:
-        specifier: 2.8.4
-        version: 2.8.4(@types/react@19.2.7)(react@19.2.4)
+        specifier: 3.0.0
+        version: 3.0.0(@types/react@19.2.7)(react@19.2.4)
       lodash:
         specifier: 4.17.21
         version: 4.17.21
@@ -1085,14 +1085,14 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       jotai:
-        specifier: ~2.8.4
-        version: 2.8.4(@types/react@19.2.7)(react@19.2.4)
+        specifier: ^3.0.0
+        version: 3.0.0(@types/react@19.2.7)(react@19.2.4)
       jotai-optics:
         specifier: 0.4.0
-        version: 0.4.0(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1)
+        version: 0.4.0(jotai@3.0.0(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1)
       jotai-x:
-        specifier: 2.3.4
-        version: 2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4)
+        specifier: workspace:@lofcz/jotai-x@*
+        version: link:../udecode/jotai-x
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1819,8 +1819,8 @@ importers:
         specifier: workspace:@lofcz/platejs-indent@*
         version: link:../indent
       jotai:
-        specifier: ^2.18.0
-        version: 2.18.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.7)(react@19.2.4)
+        specifier: ^3.0.0
+        version: 3.0.0(@types/react@19.2.7)(react@19.2.4)
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1900,6 +1900,22 @@ importers:
       '@types/prompts':
         specifier: 2.4.9
         version: 2.4.9
+
+  packages/udecode/jotai-x:
+    dependencies:
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@19.2.4)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../../plate-scripts
+      jotai:
+        specifier: ^3.0.0
+        version: 3.0.0(@types/react@19.2.7)(react@19.2.4)
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.4
 
   packages/udecode/react-hotkeys:
     dependencies:
@@ -7913,18 +7929,6 @@ packages:
       jotai: '>=2.9.2'
       react: '>=17.0.0'
 
-  jotai-x@2.3.4:
-    resolution: {integrity: sha512-FirSJ2ZwJtWXpg1EP5iTZdXZE4ilXUvHnMR6DqvSfUuDADl2LNEvFBjdenyxmUdE5Fqru6qLrArw2MMRAFFIdA==}
-    peerDependencies:
-      '@types/react': '>=17.0.0'
-      jotai: '>=2.0.0'
-      react: '>=17.0.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      react:
-        optional: true
-
   jotai@2.11.0:
     resolution: {integrity: sha512-zKfoBBD1uDw3rljwHkt0fWuja1B76R7CjznuBO+mSX6jpsO1EBeWNRKpeaQho9yPI/pvCv4recGfgOXGxwPZvQ==}
     engines: {node: '>=12.20.0'}
@@ -7937,30 +7941,12 @@ packages:
       react:
         optional: true
 
-  jotai@2.18.0:
-    resolution: {integrity: sha512-XI38kGWAvtxAZ+cwHcTgJsd+kJOJGf3OfL4XYaXWZMZ7IIY8e53abpIHvtVn1eAgJ5dlgwlGFnP4psrZ/vZbtA==}
-    engines: {node: '>=12.20.0'}
+  jotai@3.0.0:
+    resolution: {integrity: sha512-KxhbmsJUp/tmrv6aZgO+nzB3H9K8C0xmk5i3aGkwy/EANg73DVBkggv3zVHaAi5PlNlQgTgP4uiVepo+JC+wSA==}
+    engines: {node: '>=22.12.0'}
     peerDependencies:
-      '@babel/core': '>=7.0.0'
-      '@babel/template': '>=7.0.0'
-      '@types/react': '>=17.0.0'
-      react: '>=17.0.0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@babel/template':
-        optional: true
-      '@types/react':
-        optional: true
-      react:
-        optional: true
-
-  jotai@2.8.4:
-    resolution: {integrity: sha512-f6jwjhBJcDtpeauT2xH01gnqadKEySwwt1qNBLvAXcnojkmb76EdqRt05Ym8IamfHGAQz2qMKAwftnyjeSoHAA==}
-    engines: {node: '>=12.20.0'}
-    peerDependencies:
-      '@types/react': '>=17.0.0'
-      react: '>=17.0.0'
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -17258,9 +17244,9 @@ snapshots:
 
   jose@6.2.0: {}
 
-  jotai-optics@0.4.0(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1):
+  jotai-optics@0.4.0(jotai@3.0.0(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1):
     dependencies:
-      jotai: 2.8.4(@types/react@19.2.7)(react@19.2.4)
+      jotai: 3.0.0(@types/react@19.2.7)(react@19.2.4)
       optics-ts: 2.4.1
 
   jotai-scope@0.7.2(jotai@2.11.0(@types/react@19.2.7)(react@19.2.4))(react@19.2.4):
@@ -17268,26 +17254,12 @@ snapshots:
       jotai: 2.11.0(@types/react@19.2.7)(react@19.2.4)
       react: 19.2.4
 
-  jotai-x@2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4):
-    dependencies:
-      jotai: 2.8.4(@types/react@19.2.7)(react@19.2.4)
-    optionalDependencies:
-      '@types/react': 19.2.7
-      react: 19.2.4
-
   jotai@2.11.0(@types/react@19.2.7)(react@19.2.4):
     optionalDependencies:
       '@types/react': 19.2.7
       react: 19.2.4
 
-  jotai@2.18.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.7)(react@19.2.4):
-    optionalDependencies:
-      '@babel/core': 7.29.0
-      '@babel/template': 7.28.6
-      '@types/react': 19.2.7
-      react: 19.2.4
-
-  jotai@2.8.4(@types/react@19.2.7)(react@19.2.4):
+  jotai@3.0.0(@types/react@19.2.7)(react@19.2.4):
     optionalDependencies:
       '@types/react': 19.2.7
       react: 19.2.4

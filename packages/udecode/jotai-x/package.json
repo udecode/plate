@@ -1,26 +1,23 @@
 {
-  "name": "@lofcz/platejs-toggle",
-  "version": "53.0.0",
-  "description": "Toggle plugin for Plate",
+  "name": "@lofcz/jotai-x",
+  "version": "2.3.4",
+  "description": "Jotai store factory for a best-in-class developer experience.",
   "keywords": [
-    "plate",
-    "plugin",
-    "slate"
+    "jotai"
   ],
   "homepage": "https://platejs.org",
   "bugs": {
-    "url": "https://github.com/udecode/plate/issues"
+    "url": "https://github.com/lofcz/plate/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/lofcz/plate.git",
-    "directory": "packages/toggle"
+    "directory": "packages/udecode/jotai-x"
   },
   "license": "MIT",
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
-    "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -39,24 +36,30 @@
     "test:watch": "plate-pkg p:test:watch",
     "typecheck": "plate-pkg p:typecheck"
   },
-  "dependencies": {
-    "@platejs/indent": "workspace:@lofcz/platejs-indent@*",
-    "jotai": "^3.0.0",
-    "lodash": "^4.17.21",
-    "react-compiler-runtime": "^1.0.0"
-  },
-  "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "workspace:@lofcz/platejs@*"
-  },
   "peerDependencies": {
-    "platejs": ">=53.0.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "@types/react": ">=18.0.0",
+    "jotai": ">=3.0.0",
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  },
+  "devDependencies": {
+    "@plate/scripts": "workspace:*",
+    "jotai": "^3.0.0",
+    "react": ">=18.0.0"
+  }
 }

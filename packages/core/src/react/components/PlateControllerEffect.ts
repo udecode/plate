@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { WritableAtom } from 'jotai/vanilla/atom';
+import type { WritableAtom } from 'jotai/vanilla';
 
 import { useStableFn } from '@udecode/react-utils';
 import { focusAtom } from 'jotai-optics';
