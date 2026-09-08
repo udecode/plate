@@ -556,6 +556,9 @@ function getPackageChangelogUrl(packageName, commitRef) {
 function getPackageDirectory(packageName) {
   if (packageName === 'platejs') return 'packages/plate';
   if (packageName === 'depset') return 'packages/udecode/depset';
+  if (packageName === '@lofcz/jotai-x' || packageName === 'jotai-x') {
+    return 'packages/udecode/jotai-x';
+  }
 
   if (packageName.startsWith('@platejs/')) {
     return `packages/${packageName.slice('@platejs/'.length)}`;
