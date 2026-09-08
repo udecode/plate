@@ -26,6 +26,7 @@ const statusOutputPath = path.join(
 const scopePrefixPattern = /^@/;
 const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
 const upstreamPackagePattern = /"@platejs\/([^"]+)"/g;
+const workspaceAliasPattern = /^workspace:((?:@[^/]+\/)?[^@]+)@/;
 
 if (isMainModule()) {
   await main();
@@ -73,6 +74,27 @@ function isMainModule() {
   return (
     !!entrypoint && path.resolve(entrypoint) === fileURLToPath(import.meta.url)
   );
+}
+
+export function resolveWorkspaceDependencyName(
+  dependencyName,
+  version,
+  workspacePackages
+) {
+  if (typeof version !== 'string' || !version.startsWith('workspace:')) {
+    return null;
+  }
+
+  const aliasMatch = workspaceAliasPattern.exec(version);
+  if (aliasMatch && workspacePackages.has(aliasMatch[1])) {
+    return aliasMatch[1];
+  }
+
+  if (workspacePackages.has(dependencyName)) {
+    return dependencyName;
+  }
+
+  return null;
 }
 
 export function getAutoReleasePackages(releases, workspacePackages) {
@@ -152,13 +174,14 @@ async function getWorkspacePackages() {
     workspacePackage.runtimeDependencyNames = Object.entries(
       workspacePackage.packageJson.dependencies ?? {}
     )
-      .filter(
-        ([dependencyName, version]) =>
-          workspacePackages.has(dependencyName) &&
-          typeof version === 'string' &&
-          version.startsWith('workspace:')
+      .map(([dependencyName, version]) =>
+        resolveWorkspaceDependencyName(
+          dependencyName,
+          version,
+          workspacePackages
+        )
       )
-      .map(([dependencyName]) => dependencyName);
+      .filter(Boolean);
   }
 
   for (const [packageName, workspacePackage] of workspacePackages) {

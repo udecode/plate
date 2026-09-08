@@ -5,6 +5,7 @@ import {
   createAutoChangesetContent,
   getAutoReleasePackages,
   getChangesetStatusArgs,
+  resolveWorkspaceDependencyName,
 } from './prepare-release-changesets.mjs';
 
 function createWorkspacePackages(entries) {
@@ -28,6 +29,64 @@ function createWorkspacePackages(entries) {
 
   return workspacePackages;
 }
+
+test('resolves workspace aliases used by the @lofcz fork', () => {
+  const workspacePackages = new Map([
+    ['@lofcz/platejs-core', {}],
+    ['@lofcz/platejs-utils', {}],
+    ['@lofcz/platejs', {}],
+  ]);
+
+  assert.equal(
+    resolveWorkspaceDependencyName(
+      '@platejs/core',
+      'workspace:@lofcz/platejs-core@*',
+      workspacePackages
+    ),
+    '@lofcz/platejs-core'
+  );
+  assert.equal(
+    resolveWorkspaceDependencyName(
+      '@lofcz/platejs-core',
+      'workspace:*',
+      workspacePackages
+    ),
+    '@lofcz/platejs-core'
+  );
+  assert.equal(
+    resolveWorkspaceDependencyName(
+      '@platejs/core',
+      'workspace:*',
+      workspacePackages
+    ),
+    null
+  );
+});
+
+test('auto-releases fork packages that depend via workspace aliases', () => {
+  const workspacePackages = createWorkspacePackages({
+    '@lofcz/platejs': ['@lofcz/platejs-core', '@lofcz/platejs-utils'],
+    '@lofcz/platejs-code-drawing': ['@lofcz/platejs-utils'],
+    '@lofcz/platejs-core': [],
+    '@lofcz/platejs-utils': ['@lofcz/platejs-core'],
+  });
+
+  const autoReleasePackages = getAutoReleasePackages(
+    [{ name: '@lofcz/platejs-utils', type: 'patch' }],
+    workspacePackages
+  );
+
+  assert.deepEqual(autoReleasePackages, [
+    {
+      name: '@lofcz/platejs',
+      updatedDependencyNames: ['@lofcz/platejs-utils'],
+    },
+    {
+      name: '@lofcz/platejs-code-drawing',
+      updatedDependencyNames: ['@lofcz/platejs-utils'],
+    },
+  ]);
+});
 
 test('auto-releases transitive runtime dependents of released packages', () => {
   const workspacePackages = createWorkspacePackages({
