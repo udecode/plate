@@ -65,6 +65,7 @@ const nextConfig = (_phase: string) => {
   const config: NextConfig = {
     cacheComponents: true,
     distDir: isPliteMode ? '.next-plite' : '.next',
+    allowedDevOrigins: ['udecodes-mac-studio.tail49dee1.ts.net'],
     typescript: {
       ignoreBuildErrors: true,
     },
