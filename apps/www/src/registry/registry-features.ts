@@ -313,6 +313,7 @@ export const registryStaticFeatures: Registry['items'] = [
       '@plate/basic-marks-static',
       '@plate/callout-static',
       '@plate/code-block-static',
+      '@plate/code-drawing-static',
       '@plate/column-static',
       '@plate/comment-static',
       '@plate/date-static',

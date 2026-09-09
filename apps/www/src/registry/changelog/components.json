@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "components": {
+    "editor-plugins-static": [
+      "2026-09-09-ai-code-drawing-context",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "playground-demo": [
+      "2026-09-07-playground-details",
+      "2026-08-14-author-editor-runtime",
+      "2026-07-23-explicit-editor-kit-composition"
+    ],
     "date-node": [
       "2026-08-31-fix-date-first-click-reopen",
       "2026-08-13-fix-registry-install-dependencies",
@@ -556,7 +565,6 @@
     "suggestion-static": ["2026-08-17-flat-editor-registry"],
     "toc-static": ["2026-08-17-flat-editor-registry"],
     "toggle-static": ["2026-08-17-flat-editor-registry"],
-    "editor-plugins-static": ["2026-08-17-flat-editor-registry"],
     "align": ["2026-08-17-flat-editor-registry"],
     "autoformat": ["2026-08-17-flat-editor-registry"],
     "basic-marks": ["2026-08-17-flat-editor-registry"],
@@ -865,10 +873,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
-    ],
-    "playground-demo": [
-      "2026-08-14-author-editor-runtime",
-      "2026-07-23-explicit-editor-kit-composition"
     ],
     "code-drawing-demo": [
       "2026-08-14-author-editor-runtime",

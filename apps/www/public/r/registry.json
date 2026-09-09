@@ -2333,6 +2333,7 @@
         "https://platejs.org/r/basic-marks-static.json",
         "https://platejs.org/r/callout-static.json",
         "https://platejs.org/r/code-block-static.json",
+        "https://platejs.org/r/code-drawing-static.json",
         "https://platejs.org/r/column-static.json",
         "https://platejs.org/r/comment-static.json",
         "https://platejs.org/r/date-static.json",

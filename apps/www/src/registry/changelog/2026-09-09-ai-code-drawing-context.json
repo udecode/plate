@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-09-ai-code-drawing-context",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-09-ai-code-drawing-context.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Support AI writing in documents containing code drawings",
+  "targets": [
+    {
+      "name": "editor-plugins-static",
+      "files": ["apps/www/src/registry/components/editor/plugins-static.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-09-editor-plugins-support-ai-writing-documents-2bdd0b4f",
+      "kind": "fix",
+      "summary": "Support AI writing in documents containing code drawings",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-plugins-static"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-09",
+          "entry": "2026-09-09-ai-code-drawing-context",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

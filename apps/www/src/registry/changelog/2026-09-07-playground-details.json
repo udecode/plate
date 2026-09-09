@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-playground-details",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-playground-details.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Explore collapsible Details in the playground",
+  "targets": [
+    {
+      "name": "playground-demo",
+      "files": [
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/playground-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-playground-explore-collapsible-details-bb83ccb4",
+      "kind": "behavior",
+      "summary": "Explore collapsible Details in the playground",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["playground-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-playground-details",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

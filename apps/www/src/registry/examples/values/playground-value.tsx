@@ -675,6 +675,40 @@ export const playgroundValue: EditorDocumentValue = {
       type: 'callout',
       variant: 'info',
     },
+    {
+      children: [
+        {
+          children: [{ text: 'Expand to explore Details' }],
+          type: 'summary',
+        },
+        {
+          children: [
+            {
+              text: 'Keep extra context, notes, or answers in a collapsible block.',
+            },
+          ],
+          type: 'paragraph',
+        },
+        {
+          children: [
+            {
+              children: [{ text: 'Details can be nested too' }],
+              type: 'summary',
+            },
+            {
+              children: [
+                {
+                  text: 'Expand each block independently to explore its content.',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          type: 'details',
+        },
+      ],
+      type: 'details',
+    },
     // Columns
     {
       children: [{ text: 'Multi-column Layout' }],

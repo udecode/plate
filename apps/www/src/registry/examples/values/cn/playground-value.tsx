@@ -552,6 +552,37 @@ export const playgroundValue: EditorDocumentValue = {
       ],
       type: 'table',
     },
+    {
+      children: [{ text: '折叠内容' }],
+      level: 3,
+      type: 'heading',
+    },
+    {
+      children: [
+        {
+          children: [{ text: '展开查看 Details 示例' }],
+          type: 'summary',
+        },
+        {
+          children: [{ text: '将补充说明、笔记或答案放进可折叠的内容块。' }],
+          type: 'paragraph',
+        },
+        {
+          children: [
+            {
+              children: [{ text: 'Details 也支持嵌套' }],
+              type: 'summary',
+            },
+            {
+              children: [{ text: '每个内容块都可以独立展开和折叠。' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'details',
+        },
+      ],
+      type: 'details',
+    },
     // Media Section
     {
       children: [{ text: '图片和媒体' }],
