@@ -53,6 +53,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
     }),
   schema: {
     element: {
+      selectable: false,
       properties: {
         value: property.string({
           required: true,

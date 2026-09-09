@@ -31,6 +31,7 @@ import {
   leaf as editorLeaf,
   parent as editorParent,
   point as editorPoint,
+  positions as editorPositions,
   previous as editorPrevious,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
@@ -1145,6 +1146,21 @@ const getCollapsedDeleteTarget = (
 
   if (crossesIsolatingBoundary(editor, at, pointTarget, voids)) {
     return at;
+  }
+
+  if (!voids) {
+    // Deletion must see adjacent atoms that caret navigation skips.
+    const positions = editorPositions(editor, {
+      at: { anchor: at, focus: pointTarget },
+      reverse,
+      unit: 'offset',
+    });
+    positions.next();
+    const adjacent = positions.next().value;
+
+    if (adjacent && getHighestNonEditable(editor, adjacent)) {
+      return matchPointRootVisibility(adjacent, at);
+    }
   }
 
   const currentBlock = editorAbove(editor, {

@@ -35,14 +35,14 @@ describe('BaseDatePlugin', () => {
     expect(editor.read.schema.property(value)?.value.kind).toBe('string');
   });
 
-  it('does not force date elements to opt out of keyboard entry', () => {
+  it('skips date elements during keyboard entry', () => {
     const editor = createEditor({
       plugins: [BaseDatePlugin],
     });
 
     const element = { children: [{ text: '' }], type: 'date' };
 
-    expect(editor.read.schema.isKeyboardSelectable(element)).toBe(true);
+    expect(editor.read.schema.isKeyboardSelectable(element)).toBe(false);
   });
 
   it('provides the date.insert transaction', () => {
@@ -130,7 +130,7 @@ describe('BaseDatePlugin', () => {
     });
   });
 
-  it('moves right into the date child so the inline void stays keyboard-accessible', () => {
+  it('crosses the date to the right without changing content', () => {
     const editor = createEditor({
       plugins: [BaseDatePlugin],
       selection: {
@@ -154,15 +154,18 @@ describe('BaseDatePlugin', () => {
       ],
     });
 
+    const before = editor.read.value();
+
     editor.update.selection.move({ distance: 1, unit: 'character' });
 
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 0, path: [0, 1, 0] },
-      focus: { offset: 0, path: [0, 1, 0] },
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 0, path: [0, 2] },
     });
+    expect(editor.read.value()).toEqual(before);
   });
 
-  it('moves left into the date child so the inline void stays keyboard-accessible', () => {
+  it('crosses the date to the left without changing content', () => {
     const editor = createEditor({
       plugins: [BaseDatePlugin],
       selection: {
@@ -186,6 +189,8 @@ describe('BaseDatePlugin', () => {
       ],
     });
 
+    const before = editor.read.value();
+
     editor.update.selection.move({
       distance: 1,
       reverse: true,
@@ -193,9 +198,10 @@ describe('BaseDatePlugin', () => {
     });
 
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 0, path: [0, 1, 0] },
-      focus: { offset: 0, path: [0, 1, 0] },
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
     });
+    expect(editor.read.value()).toEqual(before);
   });
 
   it('inserts a canonical date node and trailing spacer', () => {

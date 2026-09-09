@@ -170,59 +170,61 @@ describe('plite delete contract', () => {
     });
   });
 
-  it('keeps the adjacent text boundary when deleting an inline void', () => {
-    for (const reverse of [true, false]) {
-      const editor = createEditor();
+  it('keeps adjacent text boundaries when deleting selectable and non-selectable inline voids', () => {
+    for (const selectable of [true, false]) {
+      for (const reverse of [true, false]) {
+        const editor = createEditor();
 
-      editor.install(
-        defineTestSchema(`inline-void-delete-${reverse}`, {
-          token: { void: 'inline' },
-        })
-      );
-      editorReplace(editor, {
-        children: [
-          {
-            type: 'paragraph',
-            children: [
-              { text: 'hi ' },
-              { type: 'token', children: [{ text: '' }] },
-              { text: ' after' },
-            ],
+        editor.install(
+          defineTestSchema(`inline-void-delete-${selectable}-${reverse}`, {
+            token: { selectable, void: 'inline' },
+          })
+        );
+        editorReplace(editor, {
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                { text: 'hi ' },
+                { type: 'token', children: [{ text: '' }] },
+                { text: ' after' },
+              ],
+            },
+          ],
+          selection: {
+            kind: 'text',
+            anchor: reverse
+              ? { path: [0, 2], offset: 0 }
+              : { path: [0, 0], offset: 3 },
+            focus: reverse
+              ? { path: [0, 2], offset: 0 }
+              : { path: [0, 0], offset: 3 },
           },
-        ],
-        selection: {
+        });
+
+        const before = editorGetSnapshot(editor);
+        const leftNodeKey = before.index.keyAt([0, 0]);
+        const rightNodeKey = before.index.keyAt([0, 2]);
+
+        assert.ok(leftNodeKey);
+        assert.ok(rightNodeKey);
+
+        editor.update((tx) => {
+          if (reverse) tx.text.deleteBackward();
+          else tx.text.deleteForward();
+        });
+
+        const snapshot = editorGetSnapshot(editor);
+
+        assert.deepEqual(snapshot.children, [paragraph('hi  after')]);
+        assert.equal(snapshot.index.keyAt([0, 0]), leftNodeKey);
+        assert.equal(snapshot.index.pathOf(rightNodeKey), null);
+        assert.deepEqual(snapshot.selection, {
           kind: 'text',
-          anchor: reverse
-            ? { path: [0, 2], offset: 0 }
-            : { path: [0, 0], offset: 3 },
-          focus: reverse
-            ? { path: [0, 2], offset: 0 }
-            : { path: [0, 0], offset: 3 },
-        },
-      });
-
-      const before = editorGetSnapshot(editor);
-      const leftNodeKey = before.index.keyAt([0, 0]);
-      const rightNodeKey = before.index.keyAt([0, 2]);
-
-      assert.ok(leftNodeKey);
-      assert.ok(rightNodeKey);
-
-      editor.update((tx) => {
-        if (reverse) tx.text.deleteBackward();
-        else tx.text.deleteForward();
-      });
-
-      const snapshot = editorGetSnapshot(editor);
-
-      assert.deepEqual(snapshot.children, [paragraph('hi  after')]);
-      assert.equal(snapshot.index.keyAt([0, 0]), leftNodeKey);
-      assert.equal(snapshot.index.pathOf(rightNodeKey), null);
-      assert.deepEqual(snapshot.selection, {
-        kind: 'text',
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      });
+          anchor: { path: [0, 0], offset: 3 },
+          focus: { path: [0, 0], offset: 3 },
+        });
+      }
     }
   });
 
