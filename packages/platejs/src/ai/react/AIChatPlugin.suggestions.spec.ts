@@ -45,6 +45,83 @@ const createEditor = (
 };
 
 describe('AIChatPlugin suggestions', () => {
+  it('accepts every streamed chunk when editing a single block', () => {
+    const original = 'This sentence are badly write';
+    const chatNodes = [{ children: [{ text: original }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: original.length, path: [0, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.store.set({ mode: 'chat' });
+    for (const content of [
+      'This',
+      'This sentence',
+      'This sentence is poorly written.',
+    ]) {
+      ai.update.applySuggestions(content);
+    }
+    ai.update.accept();
+
+    expect(editor.read.text.string([])).toBe(
+      'This sentence is poorly written.'
+    );
+  });
+
+  it('discards all streamed chunks without changing adjacent blocks', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes,
+      {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }
+    );
+    const before = editor.read.value();
+    const tailKey = editor.key([1]);
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.update.applySuggestions('new');
+    ai.update.applySuggestions('new text');
+    editor.plugin(BaseAIPlugin).update.undo();
+
+    expect(editor.read.value()).toEqual(before);
+    expect(editor.key([1])).toBe(tailKey);
+  });
+
+  it('stops later chunks when a single-block preview target is deleted', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes,
+      {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }
+    );
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.update.applySuggestions('new');
+    editor.update.nodes.remove({ at: [0] });
+    const before = editor.read.value();
+
+    ai.update.applySuggestions('new text');
+
+    expect(editor.read.value()).toEqual(before);
+    expect(editor.read.text.string([])).toBe('tail');
+  });
+
   it('replaces multi-block chat nodes and persists their selection ids', () => {
     const chatNodes = [
       { children: [{ text: 'old-a' }], type: 'paragraph' },

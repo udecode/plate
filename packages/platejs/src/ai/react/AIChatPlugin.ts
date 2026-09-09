@@ -1474,18 +1474,30 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           ) {
             return;
           }
-          if (
-            chatNodes.length === 1 &&
-            !tx.nodes.get(chatNodes[0].nodeKey, {
-              match: ElementApi.isElement,
-            })
-          ) {
-            return;
+          if (chatNodes.length === 1) {
+            const replacementKeys = context.store.get('_replaceNodeKeys');
+            const targetKeys =
+              replacementKeys.length > 0
+                ? replacementKeys
+                : [chatNodes[0].nodeKey];
+
+            if (
+              targetKeys.some(
+                (key) => !tx.nodes.get(key, { match: ElementApi.isElement })
+              )
+            ) {
+              return;
+            }
           }
 
           const nextNodes = diffNodes(content);
 
           if (chatNodes.length <= 1) {
+            if (context.store.get('_replaceNodeKeys').length > 0) {
+              tx.history.merge();
+            } else {
+              tx.history.newBatch();
+            }
             tx.ai.markBatch();
             tx.fragment.replace(nextNodes);
 
@@ -1498,7 +1510,16 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               })
             );
 
-            if (range) tx.selection.set(range);
+            if (range) {
+              tx.selection.set(range);
+              const replacementKeys = tx.nodes
+                .blocks({ at: range, mode: 'highest' })
+                .map(([node]) => tx.key(node));
+
+              updateContext.afterCommit(() => {
+                context.store.set({ _replaceNodeKeys: replacementKeys });
+              });
+            }
 
             return;
           }
