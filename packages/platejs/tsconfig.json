@@ -85,5 +85,5 @@
     }
   },
   "include": ["src", "../../tooling/config/global.d.ts"],
-  "exclude": ["**/*.spec.*", "**/*.slow.*", "**/*.test.*", "**/__tests__/**"]
+  "exclude": ["dist", "node_modules"]
 }

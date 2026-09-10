@@ -6,6 +6,7 @@ import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries
 export const workspaceSourcePathConfigFiles = Object.freeze([
   'tsconfig.json',
   'apps/www/tsconfig.json',
+  'packages/cli/tsconfig.json',
   'packages/platejs/tsconfig.json',
   'packages/plitejs/tsconfig.json',
   'packages/test/tsconfig.json',

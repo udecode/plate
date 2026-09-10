@@ -542,6 +542,7 @@ const createHtmlPluginContext = <
   Object.freeze({
     ...plugin.context,
     pluginState: Object.freeze({ ...plugin.getPluginState() }),
+    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- EditorCoreStateView is invariant in its value type, so TypeScript requires the intermediate unknown assertion.
     state: toEditorCoreStateView(state) as unknown as EditorCoreStateView,
   });
 

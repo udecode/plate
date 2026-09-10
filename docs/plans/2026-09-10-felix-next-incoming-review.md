@@ -403,3 +403,28 @@ that published history intact and adds the exact patch bytes used by the green
 local checks. The generated release-status working change remains unstaged.
 The Tailwind implementation and three Comments example source files remain
 checkpointed for immediate restoration after the patch follow-up.
+
+Remote CI source-type repair:
+The missing-patch follow-up `1a2e1c0c9f` passed remote dependency installation,
+the release/changelog job and Vercel deployment. Main CI then reported 163
+typed-lint annotations. The local built declarations had masked two source
+configuration gaps: Plate's normal project excluded its test files, and the
+CLI was absent from the canonical Plate/Plite source-path generator.
+
+The follow-up keeps Plate tests in their normal source project and generates
+the CLI's complete source paths through the existing owner. Partitioned
+production typechecks keep their own explicit test exclusions. A regression
+uses the real parsed project and a resolver that denies workspace `dist`
+files; it fails before the configuration fix and passes afterward. All 12
+source-configuration tests and generator consistency checks pass. With that
+source context repaired, the HTML value-type erasure requires one precise
+Oxlint exception: the owning compiler proves the intermediate `unknown` cast
+is required, and emitted JavaScript remains identical. No runtime expression
+or public API changed; no rule was globally disabled.
+
+The corrected full local check passes typed lint, all 93 package typecheck
+tasks, 2,125 Bun tests and 516 Node tests with no failures. Remote follow-up
+state is recorded at final readback. All CI-repair inputs are fingerprinted in
+`.audit/felix-next-push/typed-lint-source-fix/candidate.json`. Publish only those
+five config/test/comment files and this plan; the resumed Tailwind and
+Comments work stays local.

@@ -70,6 +70,63 @@ test('www resolves public Plite dependencies against workspace source', () => {
   }
 });
 
+test('typed lint owns Plate tests and resolves CLI dependencies without built declarations', () => {
+  const ts = createRequire(path.join(repoRoot, 'apps/www/package.json'))(
+    'typescript'
+  );
+  const readConfig = (relativePath) => {
+    const configPath = path.join(repoRoot, relativePath);
+
+    return ts.getParsedCommandLineOfConfigFile(
+      configPath,
+      {},
+      {
+        ...ts.sys,
+        onUnRecoverableConfigFileDiagnostic: (diagnostic) => {
+          assert.fail(
+            ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+          );
+        },
+      }
+    );
+  };
+  const plateConfig = readConfig('packages/platejs/tsconfig.json');
+
+  assert.ok(
+    plateConfig.fileNames.includes(
+      path.join(
+        repoRoot,
+        'packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts'
+      )
+    )
+  );
+
+  const cliConfig = readConfig('packages/cli/tsconfig.json');
+  const host = {
+    ...ts.sys,
+    fileExists: (fileName) => {
+      const resolved = ts.sys.realpath?.(fileName) ?? fileName;
+
+      return (
+        !/[/\\](?:packages|node_modules)[/\\](?:platejs|plitejs)[/\\]dist(?:[/\\]|$)/u.test(
+          resolved
+        ) && ts.sys.fileExists(fileName)
+      );
+    },
+  };
+  const resolved = ts.resolveModuleName(
+    'plitejs',
+    path.join(repoRoot, 'packages/platejs/src/facade.ts'),
+    cliConfig.options,
+    host
+  ).resolvedModule;
+
+  assert.equal(
+    resolved?.resolvedFileName,
+    path.join(repoRoot, 'packages/plitejs/src/index.ts')
+  );
+});
+
 test('Plite CI runs the repository Bun version', () => {
   const rootManifest = JSON.parse(
     readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
