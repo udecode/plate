@@ -453,3 +453,23 @@ hashes are in `final-ci-setup-candidate.json`; full check output is in
 HTML comment removal and plan. The resumed Tailwind and Comments work stays
 local. The auxiliary strict lint-policy audit still reports the same existing
 findings outside these changes; its result is not counted as passing.
+
+Remote follow-up `37dfaff9f8`:
+The full root check, release workflow, Vercel deployment, all four Chromium
+shards and their coverage merge pass. Main CI then reaches the package tests
+and fails one table case: the 2,000-column resize fixture exceeds Bun's default
+5-second watchdog at 5,274.96 ms. The other 235 table cases pass. The unchanged
+case passes locally; this failure does not assert a resize latency budget.
+
+The test retains all 2,000 columns, 201 deltas and width/preview assertions,
+with one explicit 30-second watchdog for shared CI setup. No runtime behavior,
+benchmark acceptance threshold or assertion changes. The full table partition
+passes all 236 cases and 19,063 assertions after that test-only correction.
+The final local `pnpm check` passes all 93 typecheck tasks, 2,125 Bun tests
+and 516 Node tests with zero failures. Final remote checks remain required
+before publication closure.
+`final-main-ci-failure.log`, `table-resize-baseline.log` and
+`table-partition-timeout.log` retain the failure and focused verification.
+`check-table-timeout.log` retains the full check; the exact test input is
+fingerprinted in `table-timeout-candidate.json`. This follow-up publishes only
+that test and this plan. All other ongoing edits stay local.
