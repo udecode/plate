@@ -94,4 +94,48 @@ describe('slice and fragment public APIs', () => {
     assert.equal(commits, 0);
     assert.deepEqual(editor.read.runtime.snapshot(), before);
   });
+  it('fits replacement across partial text edges in different blocks without publishing', () => {
+    const before = [
+      paragraph('earlier'),
+      paragraph('prefix selected start'),
+      paragraph('selected middle'),
+      paragraph('selected end suffix'),
+      paragraph('later'),
+    ];
+    const range = {
+      anchor: { path: [3, 0], offset: 12 },
+      focus: { path: [1, 0], offset: 7 },
+    };
+    const editor = createEditor({
+      initialValue: before,
+      initialSelection: SelectionApi.text(range),
+    });
+    const snapshot = editor.read.value();
+    const selection = editor.read.selection();
+    const anchor = editor.anchor([4], { deletion: 'drop' });
+    let commits = 0;
+    editor.subscribeCommit(() => {
+      commits += 1;
+    });
+    const replacement = [paragraph('First'), paragraph('Second')];
+    const spec = editor.read.slice.fit(ContentSlice.closed(replacement), {
+      at: range,
+    });
+    assert.ok(spec);
+    assert.equal(editor.read.value().children, snapshot.children);
+    assert.deepEqual(editor.read.selection(), selection);
+    assert.deepEqual(anchor.resolve(), [4]);
+    assert.equal(commits, 0);
+    const expected = [
+      paragraph('earlier'),
+      paragraph('prefix First'),
+      paragraph('Second suffix'),
+      paragraph('later'),
+    ];
+    assert.deepEqual(spec.changes.apply(snapshot).children, expected);
+    editor.update.fragment.replace(replacement, { at: range });
+    assert.deepEqual(editor.read.children(), expected);
+    assert.equal(commits, 1);
+    anchor.release();
+  });
 });

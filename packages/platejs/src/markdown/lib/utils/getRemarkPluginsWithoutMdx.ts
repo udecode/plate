@@ -1,17 +1,20 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
 import type { NormalizePluginState } from '../../../core';
+import {
+  getRemarkPluginTag,
+  setRemarkPluginTag,
+} from '../internal/remarkPluginTags';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 
 type Callable = (...args: never[]) => unknown;
-const pluginTags = new WeakMap<object, string>();
 
 export const tagRemarkPlugin = <T extends Callable>(
   pluginFn: T,
   tag: string
 ) => {
-  pluginTags.set(pluginFn, tag);
+  setRemarkPluginTag(pluginFn, tag);
 
   return pluginFn;
 };
@@ -87,5 +90,6 @@ export const getRemarkPluginsWithoutMdx = (
 ) =>
   materializeRemarkPlugins(plugins).filter(
     (plugin) =>
-      typeof plugin !== 'function' || pluginTags.get(plugin) !== REMARK_MDX_TAG
+      typeof plugin !== 'function' ||
+      getRemarkPluginTag(plugin) !== REMARK_MDX_TAG
   );

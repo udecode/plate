@@ -6,9 +6,23 @@ import {
   SelectionApi,
   type Value,
 } from '../../core';
+import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
+import { type AIChatAdapter, AIChatPlugin } from './AIChatPlugin';
+
+const createChat = (
+  sendMessage: ReturnType<typeof mock>,
+  regenerate = mock(async () => {})
+) =>
+  ({
+    messages: [],
+    status: 'ready' as const,
+    sendMessage,
+    regenerate,
+    stop: mock(),
+    clear: mock(),
+  }) satisfies AIChatAdapter;
 
 const createEditor = (
   sendMessage: ReturnType<typeof mock>,
@@ -18,7 +32,7 @@ const createEditor = (
   ]
 ) => {
   const editor = createProductEditor({
-    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin, MarkdownPlugin],
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -26,10 +40,7 @@ const createEditor = (
     },
     initialValue,
   });
-  const chat = {
-    messages: [],
-    sendMessage,
-  } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+  const chat = createChat(sendMessage);
 
   editor.plugin(AIChatPlugin).store.set({ chat });
 
@@ -38,7 +49,7 @@ const createEditor = (
 
 describe('AIChatPlugin submit', () => {
   it('returns early when both prompt and input are empty', () => {
-    const sendMessage = mock();
+    const sendMessage = mock(async () => {});
     const editor = createEditor(sendMessage);
     editor.plugin(AIChatPlugin).api.submit('');
 
@@ -46,7 +57,7 @@ describe('AIChatPlugin submit', () => {
   });
 
   it('defaults an empty node selection to chat mode', () => {
-    const sendMessage = mock();
+    const sendMessage = mock(async () => {});
     const editor = createEditor(sendMessage, [
       { children: [{ text: '' }], type: 'paragraph' },
       { children: [{ text: 'two' }], type: 'paragraph' },
@@ -57,11 +68,16 @@ describe('AIChatPlugin submit', () => {
     editor.plugin(AIChatPlugin).api.submit('draft');
 
     expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('chat');
-    expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
+    const target = editor.key([0]);
+    if (!target) throw new Error('Expected a selected block key.');
+    expect(editor.plugin(AIChatPlugin).store.get('operation')?.targets).toEqual(
+      [target]
+    );
     expect(sendMessage).toHaveBeenCalledWith(
       'draft',
       expect.objectContaining({
         body: expect.objectContaining({
+          requestId: editor.plugin(AIChatPlugin).store.get('operation')?.id,
           ctx: expect.objectContaining({
             nodeSelection: {
               anchorPath: [0],
@@ -78,8 +94,8 @@ describe('AIChatPlugin submit', () => {
     );
   });
 
-  it('undoes insert mode, stores selected blocks, and sends their context', () => {
-    const sendMessage = mock();
+  it('replaces a detached operation and sends backward selected block context', () => {
+    const sendMessage = mock(async () => {});
     const editor = createEditor(sendMessage);
     const selectedNodeKeys = new Set([editor.key([0])!, editor.key([1])!]);
     editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
@@ -90,27 +106,32 @@ describe('AIChatPlugin submit', () => {
         focusPath: [0],
       })
     );
-    editor.update({ history: 'merge' }, (tx) => {
-      tx.ai.markBatch();
-      tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
+    const ai = editor.plugin(AIChatPlugin);
+    const initial = editor.read.value();
+    const initialSelection = editor.read.selection();
+    const previousId = ai.api.start({ mode: 'insert', toolName: 'generate' });
+    ai.api.receive(previousId, 'unaccepted draft');
+    ai.store.set({ toolName: 'edit' });
+    const requestId = ai.api.submit('draft', { mode: 'insert' });
+    expect(requestId).not.toBe(previousId);
+    expect(ai.store.get('operation')).toMatchObject({
+      id: requestId,
+      source: '',
+      status: 'streaming',
+      targets: [...selectedNodeKeys],
     });
-
-    editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
+    expect(editor.read.value()).toEqual(initial);
+    expect(editor.read.selection()).toEqual(initialSelection);
+    expect(editor.read.history.undos()).toHaveLength(0);
 
     expect(editor.read.text.string([])).toBe('onetwo');
     expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
     expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBe('edit');
-    expect(
-      editor
-        .plugin(AIChatPlugin)
-        .store.get('chatNodes')
-        .map(({ nodeKey }) => nodeKey)
-    ).toEqual([...selectedNodeKeys]);
-    expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
       'draft',
       expect.objectContaining({
         body: expect.objectContaining({
+          requestId: editor.plugin(AIChatPlugin).store.get('operation')?.id,
           ctx: expect.objectContaining({
             nodeSelection: {
               anchorPath: [1],
@@ -137,13 +158,9 @@ describe('AIChatPlugin submit', () => {
 
   it('preserves backward node selection when regenerating', () => {
     const regenerate = mock(async () => {});
-    const sendMessage = mock();
+    const sendMessage = mock(async () => {});
     const editor = createEditor(sendMessage);
-    const chat = {
-      messages: [],
-      regenerate,
-      sendMessage,
-    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+    const chat = createChat(sendMessage, regenerate);
 
     editor.plugin(AIChatPlugin).store.set({ chat });
     editor.update.selection.set(
@@ -152,13 +169,30 @@ describe('AIChatPlugin submit', () => {
         focusPath: [0],
       })
     );
-    editor.plugin(AIChatPlugin).api.submit('draft');
-    editor.plugin(BaseAIPlugin).update.beginPreview();
-
-    editor.plugin(AIChatPlugin).api.reload();
+    const ai = editor.plugin(AIChatPlugin);
+    const requestId = ai.api.submit('draft');
+    const targets = ai.store.get('operation')?.targets;
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    const beforeRetry = editor.read.value();
+    const selectionBeforeRetry = editor.read.selection();
+    const retryId = ai.api.retry();
+    expect(editor.read.value()).toEqual(beforeRetry);
+    expect(editor.read.selection()).toEqual(selectionBeforeRetry);
+    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(retryId).not.toBe(requestId);
+    expect(ai.store.get('operation')).toMatchObject({
+      id: retryId,
+      targets,
+      source: '',
+      status: 'streaming',
+    });
 
     expect(regenerate).toHaveBeenCalledWith({
       body: {
+        requestId: retryId,
         ctx: expect.objectContaining({
           nodeSelection: {
             anchorPath: [1],
@@ -170,8 +204,47 @@ describe('AIChatPlugin submit', () => {
     });
   });
 
+  it('preserves backward discrete targets without including intervening blocks', () => {
+    const sendMessage = mock(async () => {});
+    const editor = createEditor(
+      sendMessage,
+      ['one', 'middle', 'three'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      }))
+    );
+    editor.update.selection.set(
+      SelectionApi.nodes([[0], [2]], { anchorPath: [2], focusPath: [0] })
+    );
+    const ai = editor.plugin(AIChatPlugin);
+    const id = ai.api.submit('review');
+    expect(ai.store.get('operation')).toMatchObject({
+      id,
+      targets: [editor.key([0]), editor.key([2])],
+    });
+    expect(sendMessage).toHaveBeenCalledWith(
+      'review',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          requestId: id,
+          ctx: expect.objectContaining({
+            nodeSelection: {
+              anchorPath: [2],
+              focusPath: [0],
+              paths: [[0], [2]],
+            },
+            selection: {
+              anchor: { offset: 5, path: [2, 0] },
+              focus: { offset: 0, path: [0, 0] },
+            },
+          }),
+        }),
+      })
+    );
+  });
+
   it('localizes named-root request context while retaining local key ownership', () => {
-    const sendMessage = mock();
+    const sendMessage = mock(async () => {});
     const RootHolderPlugin = defineBasePlugin('aiRootHolder', {
       schema: {
         element: {
@@ -210,10 +283,7 @@ describe('AIChatPlugin submit', () => {
         },
       },
     });
-    const chat = {
-      messages: [],
-      sendMessage,
-    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+    const chat = createChat(sendMessage);
 
     editor.plugin(AIChatPlugin).store.set({ chat });
     editor.plugin(AIChatPlugin).api.submit('review', { toolName: 'comment' });
@@ -222,6 +292,7 @@ describe('AIChatPlugin submit', () => {
       'review',
       expect.objectContaining({
         body: expect.objectContaining({
+          requestId: editor.plugin(AIChatPlugin).store.get('operation')?.id,
           ctx: expect.objectContaining({
             children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
             nodeSelection: {
@@ -242,14 +313,13 @@ describe('AIChatPlugin submit', () => {
       })
     );
 
-    const blockRef = editor.plugin(AIChatPlugin).store.get('_blockRefs').b1;
     const headerKey = createEditorView(editor, { root: 'header' }).key([0]);
 
     if (!headerKey) throw new Error('Expected a named-root block key');
 
-    expect(blockRef).toEqual({
-      key: headerKey,
+    expect(editor.plugin(AIChatPlugin).store.get('operation')).toMatchObject({
       root: 'header',
+      targets: [headerKey],
     });
   });
 });

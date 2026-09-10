@@ -1,11 +1,7 @@
 import React from 'react';
 
 import { failInvariant } from '../internal/failInvariant';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
+import { getCompiledPlateModelBinding } from '../internal/plugin/compilePlateModel';
 import type {
   AnyBasePluginPortal,
   AnyPluginBase,
@@ -14,6 +10,7 @@ import type {
 } from '../lib';
 import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 import { PliteElement } from './components/plite-nodes';
+import { getStaticRenderRuntime, type StaticRenderers } from './renderers';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderElement = (
@@ -22,7 +19,8 @@ export type PliteRenderElement = (
 
 export const pluginRenderElementStatic = (
   editor: Editor,
-  plugin: AnyBasePluginPortal | AnyPluginBase
+  plugin: AnyBasePluginPortal | AnyPluginBase,
+  renderers?: StaticRenderers
 ): PliteRenderElement =>
   function render(initialNodeProps) {
     let nodeProps = initialNodeProps;
@@ -31,7 +29,9 @@ export const pluginRenderElementStatic = (
       plugin
     )?.elementType;
     const Component = elementType
-      ? (getPlateRuntime(editor).components[elementType] as any)
+      ? (getStaticRenderRuntime(editor, renderers).components[
+          elementType
+        ] as any)
       : undefined;
     const Element = Component ?? PliteElement;
 
@@ -39,17 +39,21 @@ export const pluginRenderElementStatic = (
 
     // Intentional props accumulation pattern.
     nodeProps = getRenderNodeStaticProps({
+      renderers,
       editor,
       path: nodeProps.path,
       plugin,
       props: nodeProps as any,
     });
 
-    getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((name) => {
+    getStaticRenderRuntime(
+      editor,
+      renderers
+    ).pluginCache.render.belowNodes.forEach((name) => {
       const wrapperPlugin =
-        getCompiledPlatePlugin(editor, name) ??
+        getStaticRenderRuntime(editor, renderers).plugins[name] ??
         failInvariant('Expected value to be defined');
-      const wrapperContext = createPluginContext(editor, wrapperPlugin);
+      const wrapperContext = createPluginContext(editor, wrapperPlugin.name);
       const renderBelow = wrapperPlugin.render.belowNodes;
       const hoc =
         typeof renderBelow === 'function'
@@ -72,34 +76,38 @@ export const pluginRenderElementStatic = (
       <Element {...defaultProps} {...nodeProps}>
         {children}
 
-        {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
-          (name) => {
-            const innerPlugin =
-              getCompiledPlatePlugin(editor, name) ??
-              failInvariant('Expected value to be defined');
-            const innerComponent = innerPlugin.render.belowRootNodes;
-            const pluginContext = createPluginContext(editor, innerPlugin);
+        {getStaticRenderRuntime(
+          editor,
+          renderers
+        ).pluginCache.render.belowRootNodes.map((name) => {
+          const innerPlugin =
+            getStaticRenderRuntime(editor, renderers).plugins[name] ??
+            failInvariant('Expected value to be defined');
+          const innerComponent = innerPlugin.render.belowRootNodes;
+          const pluginContext = createPluginContext(editor, innerPlugin.name);
 
-            if (typeof innerComponent !== 'function') return null;
+          if (typeof innerComponent !== 'function') return null;
 
-            return Reflect.apply(innerComponent, undefined, [
-              {
-                ...defaultProps,
-                ...nodeProps,
-                ...pluginContext,
-                key: name,
-              },
-            ]) as React.ReactNode;
-          }
-        )}
+          return Reflect.apply(innerComponent, undefined, [
+            {
+              ...defaultProps,
+              ...nodeProps,
+              ...pluginContext,
+              key: name,
+            },
+          ]) as React.ReactNode;
+        })}
       </Element>
     );
 
-    getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((name) => {
+    getStaticRenderRuntime(
+      editor,
+      renderers
+    ).pluginCache.render.aboveNodes.forEach((name) => {
       const wrapperPlugin =
-        getCompiledPlatePlugin(editor, name) ??
+        getStaticRenderRuntime(editor, renderers).plugins[name] ??
         failInvariant('Expected value to be defined');
-      const wrapperContext = createPluginContext(editor, wrapperPlugin);
+      const wrapperContext = createPluginContext(editor, wrapperPlugin.name);
       const renderAbove = wrapperPlugin.render.aboveNodes;
       const hoc =
         typeof renderAbove === 'function'

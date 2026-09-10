@@ -141,6 +141,19 @@
       "platejs/yjs": ["../../packages/platejs/src/yjs/index.ts"],
       "platejs/yjs/react": ["../../packages/platejs/src/yjs/react/index.ts"],
       "platejs/math/katex.css": ["../../packages/platejs/math/katex.css"],
+      "plitejs": ["../../packages/plitejs/src/index.ts"],
+      "plitejs/diff": ["../../packages/plitejs/src/diff/index.ts"],
+      "plitejs/dom": ["../../packages/plitejs/src/dom/index.ts"],
+      "plitejs/history": ["../../packages/plitejs/src/history/index.ts"],
+      "plitejs/hyperscript": [
+        "../../packages/plitejs/src/hyperscript/index.ts"
+      ],
+      "plitejs/pagination": ["../../packages/plitejs/src/pagination/index.ts"],
+      "plitejs/pagination/react": [
+        "../../packages/plitejs/src/pagination/react.tsx"
+      ],
+      "plitejs/react": ["../../packages/plitejs/src/react/index.ts"],
+      "plitejs/testing": ["../../packages/plitejs/src/testing/index.ts"],
       "@platejs/test": ["../../packages/test/src/index.ts"],
       "registry": ["./public/r/registry.json"],
       "registry-shadcn": ["./registry-shadcn.json"]

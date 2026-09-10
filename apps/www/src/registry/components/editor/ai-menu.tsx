@@ -18,13 +18,10 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { ElementApi, isHotkey, NodeApi } from 'platejs';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
-import { CommentPlugin } from 'platejs/comment/react';
+import { ElementApi, isHotkey, NodeApi, createEditorView } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
 import {
   useEditorPlugin,
-  useEditorRuntimeState,
-  useCreateEditor,
   useEditorSelector,
   useFocusedLast,
   useHotkeys,
@@ -32,7 +29,6 @@ import {
   type Editor,
   useEditor,
 } from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -48,81 +44,56 @@ import {
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { BaseEditorRenderers } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-export function AIChatEditor({ content }: { content: string }) {
-  const aiEditor = useCreateEditor({
-    plugins: BaseEditorKit,
-  });
-  const { store } = useEditorPlugin(AIChatPlugin);
-  const document = React.useMemo(
-    () => aiEditor.api.markdown.deserialize(content),
-    [aiEditor, content]
-  );
-
-  useEditorRuntimeState(aiEditor, (state) => state.children());
-
-  React.useEffect(() => {
-    aiEditor.update({ history: 'skip' }).value.replace(document);
-    store.set({ previewValue: aiEditor.read.children() });
-  }, [aiEditor, document, store]);
-
-  return <EditorStatic variant="aiChat" editor={aiEditor} />;
+export function AIChatEditor() {
+  const editor = useEditor();
+  const operation = usePluginStore(AIChatPlugin, 'operation');
+  return operation ? (
+    <EditorStatic
+      variant="aiChat"
+      editor={editor}
+      value={{ children: operation.value }}
+      renderers={BaseEditorRenderers}
+    />
+  ) : null;
 }
 
 export function AIMenu() {
   const editor = useEditor();
-  const { api, read } = useEditorPlugin(AIChatPlugin);
+  const { api } = useEditorPlugin(AIChatPlugin);
   const mode = usePluginStore(AIChatPlugin, 'mode');
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
-  const streaming = usePluginStore(AIChatPlugin, 'streaming');
-  const isSelecting = useEditorSelector(
-    (innerEditor) =>
-      innerEditor.read.selection.nodes().length > 0 ||
-      innerEditor.read.selection.isExpanded()
-  );
+  const operation = usePluginStore(AIChatPlugin, 'operation');
   const isFocusedLast = useFocusedLast();
   const chatOpen = usePluginStore(AIChatPlugin, 'open');
-  const open = chatOpen && isFocusedLast;
+  const open = chatOpen && (!!operation || isFocusedLast);
   const [value, setValue] = React.useState('');
 
   const [input, setInput] = React.useState('');
 
-  const chat = usePluginStore(AIChatPlugin, 'chat');
-  const lastAssistantMessage = usePluginStore(
-    AIChatPlugin,
-    'lastAssistantMessage'
-  );
-
-  const messages = chat?.messages;
-  const status = chat?.status ?? 'ready';
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
 
-  const content = lastAssistantMessage?.parts.find(
-    (part) => part.type === 'text'
-  )?.text;
+  const content = operation?.source;
 
   React.useEffect(() => {
-    if (!streaming) return undefined;
-
-    const anchorEntry = read.node({ anchor: true });
-    if (!anchorEntry) return undefined;
-
-    const anchorDom = editor.api.dom.resolveDOMNode(anchorEntry[0]);
-    if (!anchorDom) return undefined;
-    const animationFrame = window.requestAnimationFrame(() => {
-      setAnchorElement(anchorDom);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-    };
-  }, [editor, read, streaming]);
+    if (!operation) return undefined;
+    const key = operation.targets.at(-1);
+    const view = operation.root
+      ? createEditorView(editor, { root: operation.root })
+      : editor;
+    const entry = key ? view.read.nodes.get(key) : undefined;
+    const node = entry && editor.api.dom.resolveDOMNode(entry[0]);
+    const anchor = node?.closest<HTMLElement>('[data-ai-target]') ?? node;
+    if (!anchor) return undefined;
+    const frame = requestAnimationFrame(() => setAnchorElement(anchor));
+    return () => cancelAnimationFrame(frame);
+  }, [editor, operation]);
 
   const setOpen = (innerOpen: boolean) => {
     if (innerOpen) {
@@ -133,6 +104,7 @@ export function AIMenu() {
   };
 
   React.useEffect(() => {
+    if (operation) return undefined;
     if (!chatOpen) {
       const animationFrame = window.requestAnimationFrame(() => {
         setAnchorElement(null);
@@ -180,42 +152,14 @@ export function AIMenu() {
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [chatOpen, editor]);
+  }, [chatOpen, editor, operation]);
 
   useHotkeys('esc', () => {
     api.stop();
   });
 
-  const isLoading = status === 'streaming' || status === 'submitted';
-
-  React.useEffect(() => {
-    if (toolName !== 'edit' || mode !== 'chat' || isLoading) return undefined;
-
-    let anchorNode = editor
-      .plugin(SuggestionPlugin)
-      .read.nodes({ transient: true })
-      .at(-1);
-
-    if (!anchorNode) {
-      anchorNode =
-        editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
-    }
-
-    if (!anchorNode) return undefined;
-
-    const block = editor.read.nodes.block({ at: anchorNode[1] });
-    const domNode = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
-
-    if (!domNode) return undefined;
-
-    const animationFrame = window.requestAnimationFrame(() => {
-      setAnchorElement(domNode);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-    };
-  }, [editor, isLoading, mode, toolName]);
+  const isLoading =
+    usePluginStore(AIChatPlugin, 'operation')?.status === 'streaming';
 
   if (isLoading && mode === 'insert') return null;
 
@@ -247,15 +191,19 @@ export function AIMenu() {
           value={value}
           onValueChange={setValue}
         >
-          {mode === 'chat' &&
-            isSelecting &&
-            content &&
-            toolName === 'generate' && <AIChatEditor content={content} />}
+          {mode === 'chat' && content && toolName === 'generate' && (
+            <AIChatEditor />
+          )}
 
+          {operation?.error && (
+            <div role="alert" className="p-3 text-sm text-destructive">
+              {operation.error}
+            </div>
+          )}
           {isLoading ? (
             <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
               <Loader2Icon className="size-4 animate-spin" />
-              {(messages?.length ?? 0) > 1 ? 'Editing...' : 'Thinking...'}
+              {operation?.source ? 'Writing...' : 'Thinking...'}
             </div>
           ) : (
             <CommandPrimitive.Input
@@ -330,22 +278,7 @@ const aiChatItems = {
     label: 'Accept',
     value: 'accept',
     onSelect: ({ editor }) => {
-      const { mode, toolName } = editor.plugin(AIChatPlugin).store.get();
-
-      if (mode === 'chat' && toolName === 'generate') {
-        editor.plugin(AIChatPlugin).update.replaceSelection();
-        return;
-      }
-
-      editor.plugin(AIChatPlugin).update.accept();
-      editor.update((tx) => {
-        const end = tx.points.end([]);
-
-        if (!end) return;
-
-        tx.selection.set({ anchor: end, focus: end });
-      });
-      editor.api.dom.focus({ retries: 5 });
+      editor.plugin(AIChatPlugin).api.accept();
     },
   },
   comment: {
@@ -390,7 +323,6 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     shortcut: 'Escape',
     value: 'discard',
     onSelect: ({ editor }) => {
-      editor.plugin(AIPlugin).update.undo();
       editor.plugin(AIChatPlugin).api.hide();
     },
   },
@@ -472,7 +404,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'insertBelow',
     onSelect: ({ editor }) => {
       /** Format: 'none' Fix insert table */
-      editor.plugin(AIChatPlugin).update.insertBelow({ format: 'none' });
+      editor.plugin(AIChatPlugin).api.accept({ placement: 'below' });
     },
   },
   makeLonger: {
@@ -504,7 +436,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Replace selection',
     value: 'replace',
     onSelect: ({ editor }) => {
-      editor.plugin(AIChatPlugin).update.replaceSelection();
+      editor.plugin(AIChatPlugin).api.accept();
     },
   },
   simplifyLanguage: {
@@ -539,7 +471,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Try again',
     value: 'tryAgain',
     onSelect: ({ editor }) => {
-      editor.plugin(AIChatPlugin).api.reload();
+      editor.plugin(AIChatPlugin).api.retry();
     },
   },
 } satisfies Record<
@@ -615,21 +547,21 @@ export const AIMenuItems = ({
   setValue: (value: string) => void;
 }) => {
   const editor = useEditor();
-  const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
+  const operation = usePluginStore(AIChatPlugin, 'operation');
+  const mode = usePluginStore(AIChatPlugin, 'mode');
   const isSelecting = useEditorSelector(
     (innerEditor2) =>
       innerEditor2.read.selection.nodes().length > 0 ||
       innerEditor2.read.selection.isExpanded()
   );
 
-  const menuState: EditorChatState =
-    (messages?.length ?? 0) > 0
-      ? isSelecting
-        ? 'selectionSuggestion'
-        : 'cursorSuggestion'
-      : isSelecting
-        ? 'selectionCommand'
-        : 'cursorCommand';
+  const menuState: EditorChatState = operation
+    ? mode === 'chat'
+      ? 'selectionSuggestion'
+      : 'cursorSuggestion'
+    : isSelecting
+      ? 'selectionCommand'
+      : 'cursorCommand';
   const menuGroups = menuStateItems[menuState];
 
   React.useEffect(() => {
@@ -652,6 +584,11 @@ export const AIMenuItems = ({
               key={menuItem.value}
               className="[&_svg]:text-muted-foreground"
               value={menuItem.value}
+              disabled={
+                (menuItem.value === 'accept' ||
+                  menuItem.value === 'insertBelow') &&
+                operation?.status !== 'ready'
+              }
               onSelect={() => {
                 menuItem.onSelect?.({ editor, input });
                 setInput('');
@@ -669,27 +606,20 @@ export const AIMenuItems = ({
 
 export function AILoadingBar() {
   const editor = useEditor();
+  const operation = usePluginStore(AIChatPlugin, 'operation');
 
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
   const chat = usePluginStore(AIChatPlugin, 'chat');
   const mode = usePluginStore(AIChatPlugin, 'mode');
 
-  const status = chat?.status ?? 'ready';
-
   const { api } = useEditorPlugin(AIChatPlugin);
 
-  const isLoading = status === 'streaming' || status === 'submitted';
+  const isLoading =
+    usePluginStore(AIChatPlugin, 'operation')?.status === 'streaming';
 
   const handleComments = (type: 'accept' | 'reject') => {
-    if (type === 'accept') {
-      editor.plugin(CommentPlugin).update.clearTransient();
-    }
-
-    if (type === 'reject') {
-      editor.plugin(CommentPlugin).update.unsetMark({ transient: true });
-    }
-
-    api.hide();
+    if (type === 'accept') api.accept();
+    else api.discard();
   };
 
   useHotkeys('esc', () => {
@@ -709,7 +639,9 @@ export function AILoadingBar() {
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
-        <span>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</span>
+        <span>
+          {chat?.status === 'submitted' ? 'Thinking...' : 'Writing...'}
+        </span>
         <Button
           size="sm"
           variant="ghost"
@@ -728,7 +660,7 @@ export function AILoadingBar() {
     );
   }
 
-  if (toolName === 'comment' && status === 'ready') {
+  if (toolName === 'comment' && !isLoading && operation) {
     return (
       <div
         className={cn(
@@ -736,12 +668,21 @@ export function AILoadingBar() {
           'p-3'
         )}
       >
+        {editor
+          .plugin(AIChatPlugin)
+          .store.get('operation')
+          ?.comments.map((comment) => (
+            <p key={comment.id} className="max-w-sm py-2">
+              {comment.comment}
+            </p>
+          ))}
+        {operation.error && <p role="alert">{operation.error}</p>}
         {/* Header with controls */}
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex items-center gap-5">
             <Button
               size="sm"
-              disabled={isLoading}
+              disabled={operation.status !== 'ready'}
               onClick={() => {
                 handleComments('accept');
               }}

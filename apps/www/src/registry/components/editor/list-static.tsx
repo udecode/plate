@@ -35,6 +35,7 @@ export const BaseListKit = [
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
       PLUGINS.details,
+      PLUGINS.image,
     ],
   }),
 ];

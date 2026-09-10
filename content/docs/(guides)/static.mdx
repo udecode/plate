@@ -174,6 +174,37 @@ export default async function MyStaticPage() {
 
 </Steps>
 
+## Render an independent value
+
+Pass an immutable document without replacing the editor's content:
+
+```tsx
+import { PlateStatic } from 'platejs/static';
+import { BaseEditorRenderers } from '@/components/editor/plugins-static';
+
+<PlateStatic
+  editor={editor}
+  value={{ children: draft }}
+  renderers={BaseEditorRenderers}
+/>;
+```
+
+The editor owns installed schema and plugin configuration. `value` owns the
+rendered document, including named roots. `createStaticRenderers` projects the
+presentation fields of authored static plugin descriptors. Its configuration
+must use object layers; it does not execute plugin setup callbacks or create
+another editor runtime.
+
+Static node components receive `document`. Use `document.nodes`,
+`document.children()`, and `document.forRoot(name)` for content reads. Use
+`document.anchorId(path)` for links between headings and a table of contents.
+These IDs belong to the rendering instance, not the live editor.
+
+Keep values immutable. Rendering retains unchanged independent subtrees and
+invalidates them when a document query they used changes. A renderer that
+reads all entries depends on the whole root. Clipboard extraction also reads
+the displayed value, including rich text marks and named roots.
+
 ## Client-Side Alternative: `PlateView`
 
 For cases where you need **minimal interactivity** with static content, use `<PlateView>`. This component wraps `<PlateStatic>` and adds client-side event handlers for user interactions while maintaining the performance benefits of static rendering.

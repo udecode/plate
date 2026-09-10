@@ -1,5 +1,10 @@
 # AI streaming and Markdown demo architecture
 
+Execution update (2026-09-10): the user authorized implementation and pulling
+latest `next`. Current progress and unresolved gates are recorded in the
+[execution plan](2026-09-10-execute-ai-streaming-and-markdown-demo-architecture.md).
+The planning-only status below describes the original design session.
+
 Objective:
 制定 Markdown 流式测试页修复与 AI 流式架构改造方案，保留现有 Markdown、MDX、流式富文本和原位审阅体验；本轮不修改实现。
 

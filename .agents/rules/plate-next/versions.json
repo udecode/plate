@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 135,
+  "latestVersion": 136,
   "versions": [
     {
       "version": 0,
@@ -1583,6 +1583,17 @@
         "Use the canonical presence query for added or removed node identities; do not compute all shifted paths for an existence check.",
         "Reuse immutable query results and membership indexes; known absent identities must not trigger whole-document index construction.",
         "Keep keyed composed reads and small range projections bounded to contributing sources and selected leaves, with affected, unchanged, and later-affected scale proof."
+      ]
+    },
+    {
+      "version": 136,
+      "date": "2026-09-10",
+      "doctrineFingerprint": "sha256:0edefb56f182d162bdf3625422c2f6c19ed59e8d55185b7202890388522cfa6b",
+      "summary": "Keep external generation in request-owned drafts and render immutable values through the existing static owner.",
+      "migrationChecks": [
+        "Keep cumulative raw source and exact target identity in the AI operation; reject stale frames and conflicts before one accepted history batch.",
+        "Render independent values with PlateStatic and static presentation descriptors; static document reads and clipboard extraction must use the displayed value.",
+        "Prove cross-node and named-root invalidation before memoizing immutable static subtrees; retire parser buffers, rollback snapshots, and synthetic AI document anchors from application APIs."
       ]
     }
   ],

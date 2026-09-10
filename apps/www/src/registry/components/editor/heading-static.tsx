@@ -32,11 +32,11 @@ export function HeadingElementStatic(
 export function HeadingElementDocx(
   props: PliteElementProps<typeof BaseHeadingPlugin>
 ) {
-  const key = props.editor.key(props.path);
+  const id = props.document.anchorId(props.path);
 
   return (
     <HeadingElementStatic {...props}>
-      {key && <span id={`plate_${key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`} />}
+      <span id={id} />
       {props.children}
     </HeadingElementStatic>
   );

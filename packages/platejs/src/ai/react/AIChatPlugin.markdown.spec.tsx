@@ -296,10 +296,13 @@ describe('AIChatPlugin read.markdown', () => {
       expect(ref?.root).toBe('header');
       expect(ref?.key).toBe(cellKey);
 
-      aiChat.update.applyTableCellSuggestion({
-        content: 'replacement',
-        ref: 'c1',
-      });
+      const requestId = aiChat.api.submit('edit cell', { toolName: 'edit' });
+      if (requestId === undefined) throw new Error('Expected an AI request');
+      const before = editor.read.value();
+      aiChat.api.receiveTable(requestId, { content: 'replacement', ref: 'c1' });
+      expect(editor.read.value()).toEqual(before);
+      aiChat.api.finish(requestId);
+      expect(aiChat.api.accept()).toBe(true);
 
       expect(
         createEditorView(editor, { root: 'header' }).read.text.string([])

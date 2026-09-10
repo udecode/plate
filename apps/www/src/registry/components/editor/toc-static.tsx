@@ -1,6 +1,10 @@
 import { cva } from 'class-variance-authority';
 import type { Editor } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import {
+  type StaticDocument,
+  type PliteElementProps,
+  PliteElement,
+} from 'platejs/static';
 import { BaseTocPlugin, type Heading } from 'platejs/toc';
 import * as React from 'react';
 
@@ -28,14 +32,14 @@ const DOCX_DEPTH_INDENT: Record<number, string> = {
 export function TocElementStatic(
   props: PliteElementProps<typeof BaseTocPlugin>
 ) {
-  const { editor } = props;
-  const headingList = getHeadingList(editor);
+  const { editor, document } = props;
+  const headingList = getHeadingList(editor, document);
 
   return (
     <PliteElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
-          headingList.map((item: Heading) => (
+          headingList.map((item: Heading<string>) => (
             <Button
               key={item.key}
               variant="ghost"
@@ -57,10 +61,10 @@ export function TocElementStatic(
   );
 }
 
-const getHeadingList = (editor?: Editor) => {
+const getHeadingList = (editor: Editor, document: StaticDocument) => {
   if (!editor) return [];
 
-  return editor.plugin(BaseTocPlugin).read.headings();
+  return editor.plugin(BaseTocPlugin).read.headings({ document });
 };
 
 /**
@@ -68,8 +72,8 @@ const getHeadingList = (editor?: Editor) => {
  * Renders TOC items as anchor links for proper Word internal navigation.
  */
 export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
-  const { editor } = props;
-  const headingList = getHeadingList(editor);
+  const { editor, document } = props;
+  const headingList = getHeadingList(editor, document);
 
   return (
     <PliteElement {...props}>
@@ -80,7 +84,7 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
         }}
       >
         {headingList.length > 0 ? (
-          headingList.map((item: Heading) => (
+          headingList.map((item: Heading<string>) => (
             <p
               key={item.key}
               style={{
@@ -89,7 +93,7 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
               }}
             >
               <a
-                href={`#plate_${item.key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`}
+                href={`#${item.key}`}
                 style={{
                   color: '#0066cc',
                   textDecoration: 'underline',

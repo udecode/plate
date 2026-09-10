@@ -167,8 +167,8 @@ Plugin for generating table of contents.
     Top offset when scrolling to heading.
     - **Default:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
-    Custom function to query headings.
+  <APIItem name="queryHeading" type="({ nodes }) => Array&lt;{ path: Path; depth: number; title: string; type: string }&gt;" optional>
+    Select headings from document nodes and return document paths. Live rendering supplies editor keys; static rendering supplies render-local anchor IDs.
   </APIItem>
 </APIOptions>
 </API>

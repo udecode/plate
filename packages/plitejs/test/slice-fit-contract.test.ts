@@ -60,6 +60,7 @@ const SliceFitSchema = defineEditorSchema('schema:slice-fit-contract', {
     } as const,
     paragraph: {
       content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { align: property.string() },
     } as const,
     section: {
       content: schema.content.types(
@@ -1428,6 +1429,45 @@ describe('contextual schema slice fitting', () => {
     }
   });
 
+  it('fits compatible partial text across containers and retains unselected siblings', () => {
+    const value = {
+      children: [
+        {
+          type: 'section',
+          children: [paragraph('earlier'), paragraph('prefix selected')],
+        },
+        {
+          type: 'section',
+          children: [paragraph('selected suffix'), paragraph('later')],
+        },
+      ],
+    };
+    const editor = createSchemaEditor(value.children);
+    const before = editor.read.value();
+    const fitted = editor.read.slice.fit(
+      ContentSlice.closed([paragraph('First'), paragraph('Second')]),
+      {
+        at: {
+          anchor: { path: [0, 1, 0], offset: 7 },
+          focus: { path: [1, 0, 0], offset: 8 },
+        },
+      }
+    );
+    assert.ok(fitted);
+    assert.equal(editor.read.value().children, before.children);
+    assert.deepEqual(fitted.changes.apply(value).children, [
+      {
+        type: 'section',
+        children: [
+          paragraph('earlier'),
+          paragraph('prefix First'),
+          paragraph('Second suffix'),
+          paragraph('later'),
+        ],
+      },
+    ]);
+  });
+
   it('preserves the surviving block type across an expanded deletion', () => {
     const value = {
       children: [
@@ -2524,4 +2564,42 @@ describe('contextual schema slice fitting', () => {
       );
     }
   );
+});
+
+it('complete-range replacement uses incoming block properties after cross-leaf fitting', () => {
+  const editor = createSchemaEditor([
+    paragraph('old first'),
+    paragraph('old last'),
+  ]);
+  editor.update.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 8 },
+  });
+  const incoming = [
+    { ...paragraph('Right aligned'), align: 'right' },
+    { ...paragraph('CSS wins'), align: 'center' },
+    paragraph('Invalid ignored'),
+  ];
+  assert.equal(editor.update.fragment.replace(incoming), true);
+  assert.deepEqual(editor.read.children(), incoming);
+});
+
+it('partial-range fitting retains boundary block properties around unselected text', () => {
+  const editor = createSchemaEditor([
+    { ...paragraph('prefix selected'), align: 'left' },
+    paragraph('selected suffix'),
+  ]);
+  editor.update.selection.set({
+    anchor: { path: [0, 0], offset: 7 },
+    focus: { path: [1, 0], offset: 8 },
+  });
+  assert.equal(
+    editor.update.fragment.replace([
+      { ...paragraph('replacement'), align: 'right' },
+    ]),
+    true
+  );
+  assert.deepEqual(editor.read.children(), [
+    { ...paragraph('prefix replacement suffix'), align: 'left' },
+  ]);
 });

@@ -4,7 +4,9 @@ import {
   property,
   schema,
   PLUGINS,
+  NodeApi,
 } from '../../../core';
+import { createStaticDocument } from '../../../static/document';
 import { BaseTocPlugin } from './BaseTocPlugin';
 
 const TestParagraphPlugin = defineBasePlugin(PLUGINS.paragraph, {
@@ -189,6 +191,44 @@ describe('BaseTocPlugin', () => {
 });
 
 describe('BaseTocPlugin.read.headings', () => {
+  it('uses the same path-based query for live and detached documents', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseTocPlugin.configure({
+          initialState: {
+            queryHeading: ({ nodes }) => {
+              const node = nodes.get([0])?.[0];
+              return node
+                ? [
+                    {
+                      depth: 2,
+                      path: [0],
+                      title: NodeApi.string(node),
+                      type: 'custom',
+                    },
+                  ]
+                : [];
+            },
+          },
+        }),
+        ...TestHeadingPlugins,
+      ],
+      initialValue: [
+        { type: 'heading', level: 1, children: [{ text: 'original' }] },
+      ],
+    });
+    const value = {
+      children: [{ type: 'heading', level: 1, children: [{ text: 'draft' }] }],
+    };
+    const document = createStaticDocument(value, editor.read.schema);
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      { depth: 2, key: editor.key([0]), title: 'original', type: 'custom' },
+    ]);
+    expect(editor.plugin(BaseTocPlugin).read.headings({ document })).toEqual([
+      { depth: 2, key: document.anchorId([0]), title: 'draft', type: 'custom' },
+    ]);
+    expect(editor.read.children()[0].children[0].text).toBe('original');
+  });
   it('returns titled headings with depth and runtime key without persisted ids', () => {
     const editor = createEditor({
       plugins: [BaseTocPlugin, ...TestHeadingPlugins],
@@ -235,13 +275,13 @@ describe('BaseTocPlugin.read.headings', () => {
 
   it('uses the configured queryHeading override when present', () => {
     const queryHeading = mock((state) => {
-      const key = state.key([0]);
+      const entry = state.nodes.get([0]);
 
-      return key
+      return entry
         ? [
             {
               depth: 9,
-              key,
+              path: [0],
               title: 'Custom',
               type: 'custom-heading',
             },

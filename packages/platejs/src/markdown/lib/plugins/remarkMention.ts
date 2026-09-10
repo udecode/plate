@@ -2,6 +2,8 @@ import type { Link, Node, Parent, Text } from 'mdast';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
+import { tagRemarkPlugin } from '../utils/getRemarkPluginsWithoutMdx';
+
 export type MentionNode = Parent & {
   children: Text[];
   type: 'mention';
@@ -29,7 +31,7 @@ declare module 'mdast' {
  * - @username - Simple mention format (no spaces allowed)
  * - [display text](mention:id) - Markdown link-style format (supports spaces)
  */
-export const remarkMention: Plugin = () => (tree: Node) => {
+const mention: Plugin = () => (tree: Node) => {
   // First, convert link nodes with mention: protocol to mention nodes
   visit(
     tree,
@@ -136,3 +138,5 @@ export const remarkMention: Plugin = () => (tree: Node) => {
     }
   );
 };
+
+export const remarkMention = tagRemarkPlugin(mention, 'remarkMention');

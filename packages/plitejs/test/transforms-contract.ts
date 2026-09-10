@@ -18,6 +18,7 @@ import {
   TextApi,
 } from 'plitejs';
 
+import { withTransactionDocumentChangeObserver } from '../src/core/public-state';
 import {
   getSnapshot as editorGetSnapshot,
   insertNodes as editorInsertNodes,
@@ -55,6 +56,67 @@ const getNodeEntry = <T extends Descendant>(
 };
 
 describe('plite transforms contract', () => {
+  it('does not publish a change when deleting an absent property', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const before = editorGetSnapshot(editor);
+    let commits = 0;
+    const unsubscribe = editor.subscribe(() => {
+      commits += 1;
+    });
+    let changes = 0;
+
+    editor.update((tx) => {
+      withTransactionDocumentChangeObserver(
+        editor,
+        () => {
+          changes += 1;
+        },
+        () => {
+          tx.nodes.set({ missing: null }, { at: [0] });
+          tx.nodes.set({ missing: undefined }, { at: [0] });
+          tx.nodes.set(
+            { missing: null },
+            {
+              at: [0],
+              compare: () => true,
+              merge: () => 'unused',
+            }
+          );
+        }
+      );
+    });
+
+    assert.equal(changes, 0);
+    assert.equal(commits, 0);
+    assert.equal(editorGetSnapshot(editor), before);
+    unsubscribe();
+  });
+
+  it('preserves real updates, deletion and custom merging beside absent deletions in a named root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: {
+          header: [{ ...paragraph('header'), align: 'left', count: 2 }],
+        },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    header.update.nodes.set(
+      { missing: null, count: 3 },
+      {
+        at: [0],
+        compare: (next, previous) => next !== previous,
+        merge: (previous, next) => Number(previous) + Number(next),
+      }
+    );
+    header.update.nodes.set({ missing: undefined, align: null }, { at: [0] });
+    assert.deepEqual(header.read.children(), [
+      { ...paragraph('header'), count: 5 },
+    ]);
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+  });
+
   it('honors type selectors across every node transform', () => {
     {
       const editor = createEditor({

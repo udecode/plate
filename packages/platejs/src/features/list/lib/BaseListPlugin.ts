@@ -16,7 +16,6 @@ import {
   traverseHtmlElements,
   type DefinitionOf,
   type Descendant,
-  type EditorCoreStateView,
   type Element,
   type ElementWith,
   type Location,
@@ -24,6 +23,7 @@ import {
   type NodeKey,
   type NodeSelection,
 } from '../../../core';
+import type { StaticDocument } from '../../../lib/types/StaticDocument';
 import { BaseIndentPlugin } from '../../indent';
 
 export const ListStyle = {
@@ -161,7 +161,7 @@ export type GetSiblingListOptions = {
 
 /** Minimal read contract for custom list sibling traversal. */
 export type ListSiblingState = {
-  nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
+  nodes: Pick<StaticDocument['nodes'], 'get'>;
 };
 
 export function isOrderedList(element: Element) {
@@ -222,7 +222,7 @@ const getSequenceSiblingOptions = (
 };
 
 const getListSibling = (
-  state: Pick<EditorCoreStateView, 'nodes'>,
+  state: ListSiblingState,
   [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqList = true,
@@ -277,14 +277,14 @@ const listOrdinalsByState = new WeakMap<
 >();
 
 const getListOrdinal = (
-  state: Pick<EditorCoreStateView, 'nodes' | 'runtime'>,
+  state: { nodes: Pick<StaticDocument['nodes'], 'get' | 'path'> },
   element: Element,
   options: Partial<GetSiblingListOptions> | undefined,
-  headingType: string | undefined
+  headingType: string | undefined,
+  stateKey: object
 ): number | undefined => {
   if (element.listType !== ListType.Numbered) return undefined;
 
-  const stateKey = state.runtime.snapshot().index;
   let cache = listOrdinalsByState.get(stateKey);
 
   if (
@@ -327,7 +327,7 @@ const getListOrdinal = (
       if (!PathApi.hasPrevious(currentPath)) return undefined;
       const previousPath = PathApi.previous(currentPath);
       const previousNode = state.nodes.get(previousPath, {
-        match: ElementApi.isElement,
+        match: (candidate) => ElementApi.isElement(candidate),
       })?.[0];
 
       return previousNode
@@ -706,7 +706,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
               state,
               node,
               store.get().getSiblingListOptions,
-              headingType
+              headingType,
+              state.runtime.snapshot().index
             );
             return {
               attributes: {
@@ -880,7 +881,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             if (!PathApi.hasPrevious(currentPath)) return undefined;
             const previousPath = PathApi.previous(currentPath);
             const previousNode = state.nodes.get(previousPath, {
-              match: ElementApi.isElement,
+              match: (candidate) => ElementApi.isElement(candidate),
             })?.[0];
 
             if (!previousNode) return undefined;
@@ -901,7 +902,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             getNextEntry: ([, currentPath]) => {
               const nextPath = PathApi.next(currentPath);
               const nextNode = state.nodes.get(nextPath, {
-                match: ElementApi.isElement,
+                match: (candidate) => ElementApi.isElement(candidate),
               })?.[0];
 
               if (!nextNode) return undefined;
@@ -913,14 +914,15 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           }),
         /** Get the previous indent-list item. */
         getPrevious,
-        ordinal: (element: Element) => {
+        ordinal: (element: Element, options?: { document: StaticDocument }) => {
           const heading = editor.plugin(PLUGINS.heading);
 
           return getListOrdinal(
-            state,
+            options?.document ?? state,
             element,
             store.get().getSiblingListOptions,
-            heading.installed ? heading.schema.type : undefined
+            heading.installed ? heading.schema.type : undefined,
+            options?.document ?? state.runtime.snapshot().index
           );
         },
         expandItemsWithChildren: (
@@ -931,7 +933,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
 
           entries.forEach(([, path]) => {
             const liveEntry = state.nodes.get(path, {
-              match: ElementApi.isElement,
+              match: (candidate) => ElementApi.isElement(candidate),
             });
 
             if (!liveEntry) return;
@@ -949,7 +951,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             while (true) {
               const nextPath = PathApi.next(currentPath);
               const nextNode = state.nodes.get(nextPath, {
-                match: ElementApi.isElement,
+                match: (candidate) => ElementApi.isElement(candidate),
               })?.[0];
 
               if (!nextNode) break;
@@ -1283,7 +1285,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
           return state.transaction.extend(result, (tx) => {
             const nextPath = PathApi.next(nodeEntry[1]);
             const nextNode = tx.nodes.get(nextPath, {
-              match: ElementApi.isElement,
+              match: (candidate) => ElementApi.isElement(candidate),
             })?.[0];
 
             if (

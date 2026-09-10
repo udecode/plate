@@ -635,7 +635,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               },
             };
 
-            delete next[key(current.id)];
+            if (current.id !== previousData.id) delete next[key(current.id)];
 
             return next;
           });

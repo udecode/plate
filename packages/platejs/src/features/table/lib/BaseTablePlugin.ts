@@ -30,6 +30,7 @@ import {
   TextApi,
 } from '../../../core';
 import { clipboardHandler } from '../../../dom/plite-dom.internal';
+import type { StaticDocument } from '../../../lib/types/StaticDocument';
 import { failInvariant } from '../internal/failInvariant';
 import {
   getColSpan,
@@ -488,6 +489,20 @@ export type TableRowElement = ElementOf<typeof BaseTableRowPlugin>;
 export type TableCellElement = ElementOf<typeof BaseTableCellPlugin>;
 
 /** Enables support for tables. */
+const getStaticCellIndices = (
+  document: StaticDocument,
+  element: TableCellElement
+): CellIndices => {
+  const cellPath = document.nodes.path(element);
+  const tablePath = cellPath?.slice(0, -2);
+  const table = tablePath && document.nodes.get(tablePath)?.[0];
+  const anchor =
+    table && ElementApi.isElement(table)
+      ? createDetachedTableContext(table, tablePath).anchorOf(element)
+      : undefined;
+  return anchor ? { col: anchor.col, row: anchor.row } : { col: 0, row: 0 };
+};
+
 export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
   dependencies: [BaseTableRowPlugin],
   initialState,
@@ -1157,31 +1172,46 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         cellIndices,
         defaultBorder = { width: 1 },
         element,
+        document,
       }: {
         element: TableCellElement;
+        document?: StaticDocument;
         cellIndices?: CellIndices;
         defaultBorder?: TableCellBorder;
       }): BorderStylesDefault => {
-        const cellPath = state.nodes.path(element);
+        const cellPath = (document ?? state).nodes.path(element);
 
         if (!cellPath) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
         const [rowNode, rowPath] =
-          state.nodes.parent(cellPath, { type: BaseTableRowPlugin }) ?? [];
+          (document
+            ? document.nodes.parent(cellPath)
+            : state.nodes.parent(cellPath, { type: BaseTableRowPlugin })) ?? [];
 
-        if (!rowNode || !rowPath) {
+        if (!rowNode || !ElementApi.isElement(rowNode) || !rowPath) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
-        const [tableNode] = state.nodes.parent(rowPath, { type: plugin }) ?? [];
+        const [tableNode] =
+          (document
+            ? document.nodes.parent(rowPath)
+            : state.nodes.parent(rowPath, { type: plugin })) ?? [];
 
-        if (!tableNode || tableNode.type !== type) {
+        if (
+          !tableNode ||
+          !ElementApi.isElement(tableNode) ||
+          tableNode.type !== type
+        ) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
-        const { col } = cellIndices ?? state.table.getCellIndices(element);
+        const { col } =
+          cellIndices ??
+          (document
+            ? getStaticCellIndices(document, element)
+            : state.table.getCellIndices(element));
         const isFirstCell = col === 0;
         const isFirstRow = tableNode.children?.[0] === rowNode;
         const getBorder = (direction: BorderDirection) => {
@@ -1205,42 +1235,54 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         cellIndices,
         columnWidths: initialColumnWidths,
         element,
+        document,
         rowSize: initialRowSize,
       }: {
         element: TableCellElement;
+        document?: StaticDocument;
         cellIndices?: CellIndices;
         columnWidths?: ReadonlyArray<number | null>;
         rowSize?: number;
       }): { minHeight: number; width: number } => {
         let rowSize = initialRowSize;
         let columnWidths = initialColumnWidths;
-        const path = state.nodes.path(element);
+        const path = (document ?? state).nodes.path(element);
 
         if (!path) return { minHeight: rowSize ?? 0, width: 0 };
 
         if (!rowSize) {
           const [rowElement] =
-            state.nodes.parent(path, { type: BaseTableRowPlugin }) ?? [];
+            (document
+              ? document.nodes.parent(path)
+              : state.nodes.parent(path, { type: BaseTableRowPlugin })) ?? [];
 
           if (
             !rowElement ||
+            !ElementApi.isElement(rowElement) ||
             rowElement.type !== editor.plugin(BaseTableRowPlugin).schema.type
           ) {
             return { minHeight: 0, width: 0 };
           }
 
-          rowSize = rowElement.height ?? 0;
+          rowSize =
+            typeof rowElement.height === 'number' ? rowElement.height : 0;
         }
         if (!columnWidths) {
           const [, rowPath] =
-            state.nodes.parent(path, { type: BaseTableRowPlugin }) ?? [];
+            (document
+              ? document.nodes.parent(path)
+              : state.nodes.parent(path, { type: BaseTableRowPlugin })) ?? [];
 
           if (!rowPath) return { minHeight: rowSize, width: 0 };
 
           const [tableNode] =
-            state.nodes.parent(rowPath, { type: plugin }) ?? [];
+            (document
+              ? document.nodes.parent(rowPath)
+              : state.nodes.parent(rowPath, { type: plugin })) ?? [];
 
-          if (!tableNode) return { minHeight: rowSize, width: 0 };
+          if (!tableNode || !ElementApi.isElement(tableNode)) {
+            return { minHeight: rowSize, width: 0 };
+          }
 
           columnWidths = api.getOverriddenColumnSizes(tableNode);
         }
@@ -1253,7 +1295,11 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         });
 
         const colSpan = getColSpan(element);
-        const { col } = cellIndices ?? state.table.getCellIndices(element);
+        const { col } =
+          cellIndices ??
+          (document
+            ? getStaticCellIndices(document, element)
+            : state.table.getCellIndices(element));
         const width = columnWidths
           .slice(col, col + colSpan)
           .reduce<number>(

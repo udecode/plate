@@ -529,7 +529,7 @@ type TransactionSpecContext = {
   selectionWritten: boolean;
   snapshot: TransactionSnapshot;
   transactionView?: EditorTransaction;
-  updateView?: { token: TransactionToken; view: object };
+  updateView?: { token: TransactionToken; view: object; correction?: object };
 };
 
 const TRANSACTION_SPEC_CONTEXTS = new WeakMap<
@@ -5760,6 +5760,10 @@ export const getCorrectionUpdateView = <
   editor: Editor<V, TExtensions>
 ): EditorCorrectionTransaction<V, TExtensions> => {
   const tx = getUpdateView(editor);
+  const updateView = getDefined(getTransactionSpecContext(editor)?.updateView);
+  if (updateView.correction) {
+    return updateView.correction as EditorCorrectionTransaction<V, TExtensions>;
+  }
   const txRecord = tx as unknown as Record<string, unknown>;
   const installedGroups = Object.fromEntries(
     Array.from(
@@ -5768,7 +5772,7 @@ export const getCorrectionUpdateView = <
     )
   );
 
-  return Object.freeze({
+  const view = Object.freeze({
     ...installedGroups,
     anchor: tx.anchor,
     blocks: tx.blocks,
@@ -5782,6 +5786,8 @@ export const getCorrectionUpdateView = <
     text: tx.text,
     value: tx.value,
   }) as EditorCorrectionTransaction<V, TExtensions>;
+  updateView.correction = view;
+  return view;
 };
 
 export const readEditor = <

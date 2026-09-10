@@ -235,6 +235,7 @@ export const entrypointDags = {
             'markdown',
             'react-core',
             'combobox',
+            'comment',
             'suggestion',
             'suggestion/react',
             'table',

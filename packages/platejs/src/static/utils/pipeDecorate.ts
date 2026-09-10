@@ -3,6 +3,7 @@ import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import type { PlateRuntime } from '../../internal/plugin/plateRuntime';
 import type { Editor, EditableProps } from '../../lib';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import type { EditableProps as PliteEditableProps } from '../internal/plite-react';
@@ -15,7 +16,9 @@ export function pipeDecorate(
   editor: Editor,
   decorateProp?:
     | ((ctx: { editor: Editor; entry: NodeEntry }) => Range[] | undefined)
-    | null
+    | null,
+  editableDecorate?: undefined,
+  rendering?: Pick<PlateRuntime, 'plugins' | 'pluginCache'>
 ): EditableProps['decorate'];
 export function pipeDecorate(
   editor: Editor,
@@ -23,37 +26,40 @@ export function pipeDecorate(
     | ((ctx: { editor: Editor; entry: NodeEntry }) => Range[] | undefined)
     | null
     | undefined,
-  editableDecorate: PliteEditableProps['decorate']
+  editableDecorate: PliteEditableProps['decorate'],
+  rendering?: Pick<PlateRuntime, 'plugins' | 'pluginCache'>
 ): PliteEditableProps['decorate'];
 export function pipeDecorate(
   editor: Editor,
   decorateProp?:
     | ((ctx: { editor: Editor; entry: NodeEntry }) => Range[] | undefined)
     | null,
-  editableDecorate?: PliteEditableProps['decorate']
+  editableDecorate?: PliteEditableProps['decorate'],
+  rendering?: Pick<PlateRuntime, 'plugins' | 'pluginCache'>
 ) {
   if (
-    getPlateRuntime(editor).pluginCache.decorate.length === 0 &&
+    (rendering ?? getPlateRuntime(editor)).pluginCache.decorate.length === 0 &&
     !decorateProp &&
     !editableDecorate
   ) {
     return undefined;
   }
 
-  const pluginDecorators = getPlateRuntime(editor).pluginCache.decorate.flatMap(
-    (name) => {
-      const plugin = getCompiledPlatePlugin(editor, name);
+  const pluginDecorators = (
+    rendering ?? getPlateRuntime(editor)
+  ).pluginCache.decorate.flatMap((name) => {
+    const plugin =
+      rendering?.plugins[name] ?? getCompiledPlatePlugin(editor, name);
 
-      return plugin && typeof plugin.decorate === 'function'
-        ? [
-            {
-              context: createPluginContext(editor, plugin),
-              decorate: plugin.decorate,
-            },
-          ]
-        : [];
-    }
-  );
+    return plugin && typeof plugin.decorate === 'function'
+      ? [
+          {
+            context: createPluginContext(editor, plugin.name),
+            decorate: plugin.decorate,
+          },
+        ]
+      : [];
+  });
 
   return (entry: NodeEntry) => {
     let ranges: Array<

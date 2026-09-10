@@ -52,6 +52,7 @@ import type {
 } from '../types';
 import type { AnyObject } from '../types/AnyObject';
 import type { Nullable } from '../types/Nullable';
+import type { StaticDocument } from '../types/StaticDocument';
 import type {
   BasePluginDependencyDescriptors,
   BasePluginInstalledCapabilityWitness,
@@ -1008,6 +1009,7 @@ export type RenderStaticNodeWrapperProps<
         RenderElementProps<
           0 extends 1 & TSource ? Element : ElementWith<WithAnyName<C>>
         > & {
+          document: StaticDocument;
           path: Path;
         }
     : never;

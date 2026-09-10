@@ -3,13 +3,15 @@ import {
   NodeApi,
   PLUGINS,
   type DefinitionOf,
-  type EditorStateView,
+  type Path,
+  ElementApi,
   type NodeKey,
 } from '../../../core';
+import type { StaticDocument } from '../../../lib/types/StaticDocument';
 
-export type Heading = {
+export type Heading<TKey extends string = NodeKey> = {
   depth: number;
-  key: NodeKey;
+  key: TKey;
   title: string;
   type: string;
 };
@@ -17,7 +19,10 @@ export type Heading = {
 export type TocPluginState = {
   isScroll: boolean;
   topOffset: number;
-  queryHeading?: (state: EditorStateView) => Heading[];
+  /** Select headings by document path; rendering supplies the appropriate identity. */
+  queryHeading?: (
+    document: Pick<StaticDocument, 'nodes'>
+  ) => Array<Omit<Heading, 'key'> & { path: Path }>;
 };
 
 export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
@@ -48,43 +53,53 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
     },
   },
 }).extend(({ editor }) => ({
-  read: ({ store, state }) => ({
-    headings: () => {
+  read: ({ store, state }) => {
+    function headings(options: {
+      document: StaticDocument;
+    }): Array<Heading<string>>;
+    function headings(): Heading[];
+    function headings(options?: {
+      document: StaticDocument;
+    }): Array<Heading<string>> {
+      const document = options?.document;
+      const source: Pick<StaticDocument, 'nodes'> = document ?? {
+        nodes: {
+          get: state.nodes.get,
+          parent: state.nodes.parent,
+          path: state.nodes.path,
+          entries: () => state.nodes.entries({ at: [] }),
+        },
+      };
       const { queryHeading } = store.get();
-
-      if (queryHeading) return queryHeading(state);
-
-      const headings: Heading[] = [];
       const heading = editor.plugin(PLUGINS.heading);
-
-      if (!heading.installed) return headings;
-
-      for (const [node] of state.nodes.entries({
-        at: [],
-        type: heading.schema.type,
-      })) {
-        const title = NodeApi.string(node);
-        const depth = node.level;
-
-        if (
-          title &&
-          typeof depth === 'number' &&
-          Number.isInteger(depth) &&
-          depth >= 1 &&
-          depth <= 6
-        ) {
-          headings.push({
-            depth,
-            key: state.key(node),
-            title,
-            type: node.type,
+      const candidates = queryHeading
+        ? queryHeading(source)
+        : [...source.nodes.entries()].flatMap(([node, path]) => {
+            if (
+              !heading.installed ||
+              !ElementApi.isElement(node) ||
+              node.type !== heading.schema.type
+            ) {
+              return [];
+            }
+            const title = NodeApi.string(node);
+            const depth = node.level;
+            return title &&
+              typeof depth === 'number' &&
+              Number.isInteger(depth) &&
+              depth >= 1 &&
+              depth <= 6
+              ? [{ depth, path, title, type: node.type }]
+              : [];
           });
-        }
-      }
-
-      return headings;
-    },
-  }),
+      return candidates.flatMap(({ path, ...entry }) => {
+        if (!source.nodes.get(path)) return [];
+        const key = document ? document.anchorId(path) : state.key(path);
+        return key ? [{ ...entry, key }] : [];
+      });
+    }
+    return { headings };
+  },
 }));
 
 export type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;

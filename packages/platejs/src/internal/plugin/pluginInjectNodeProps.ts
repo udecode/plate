@@ -5,7 +5,7 @@ import type {
   GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import { getPluginContextProps } from '../../lib/plugin/createPluginContext.internal';
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 import { isDefined } from '../../lib/utils/isDefined';
 import { getCompiledPlateModelBinding } from './compilePlateModel';
@@ -65,10 +65,9 @@ export const pluginInjectNodeProps = (
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
   const nodeValue = getNodeProp(node, nodeKey);
-  const editorPluginContext = createPluginContext(editor, plugin.name);
   const getTransformOptions = (value?: unknown) => ({
     ...nodeProps,
-    ...editorPluginContext,
+    ...getPluginContextProps(editor, plugin.name),
     nodeValue,
     value,
   });
@@ -102,7 +101,7 @@ export const pluginInjectNodeProps = (
           {
             classNames,
             defaultNodeValue,
-            ...editorPluginContext,
+            ...getPluginContextProps(editor, plugin.name),
             nodeKey,
             nodeProps,
             styleKey,
@@ -133,7 +132,8 @@ export const pluginInjectNodeProps = (
           getTransformOptions(),
         ]) ?? nodeValue)
       : nodeValue;
-  const transformOptions = getTransformOptions(value);
+  let transformOptions: ReturnType<typeof getTransformOptions> | undefined;
+  const options = () => (transformOptions ??= getTransformOptions(value));
 
   let newProps: GetInjectNodePropsReturnType = {};
   const nodeValueKey = getNodePropClassValue(nodeValue);
@@ -148,7 +148,7 @@ export const pluginInjectNodeProps = (
   ) {
     newProps.className =
       typeof transformClassName === 'function'
-        ? Reflect.apply(transformClassName, undefined, [transformOptions])
+        ? Reflect.apply(transformClassName, undefined, [options()])
         : valueKey
           ? classNames?.[valueKey]
           : undefined;
@@ -156,13 +156,13 @@ export const pluginInjectNodeProps = (
   if (styleKey) {
     newProps.style =
       typeof transformStyle === 'function'
-        ? Reflect.apply(transformStyle, undefined, [transformOptions])
+        ? Reflect.apply(transformStyle, undefined, [options()])
         : { [styleKey]: value };
   }
   if (typeof transformProps === 'function') {
     newProps =
       Reflect.apply(transformProps, undefined, [
-        { ...transformOptions, props: newProps },
+        { ...options(), props: newProps },
       ]) ?? newProps;
   }
 

@@ -48,12 +48,12 @@ export function isStaticVoidRemoveSuggestion(
 }
 
 export function VoidRemoveSuggestionOverlayStatic({
-  editor,
+  document,
   element,
 }: RenderStaticNodeWrapperProps<typeof BaseSuggestionPlugin>) {
   const active =
-    editor.read.schema.isVoid(element) &&
-    !editor.read.schema.isInline(element) &&
+    document.schema.isVoid(element) &&
+    !document.schema.isInline(element) &&
     isStaticVoidRemoveSuggestion(element);
 
   if (!active) return null;

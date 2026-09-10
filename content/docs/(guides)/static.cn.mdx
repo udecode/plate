@@ -345,3 +345,11 @@ interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 -   探索 [HTML 序列化](/docs/html) 以导出内容。
 -   了解在 [React 服务器组件](/docs/installation/rsc) 中使用 Plate。
 -   参阅各插件文档了解其基础（非 React）导入方式。
+
+## 渲染独立的文档值
+
+通过 `<PlateStatic editor={editor} value={{ children: draft }} renderers={BaseEditorRenderers} />` 展示不可变草稿，无需替换编辑器正文。`BaseEditorRenderers` 来自复制的 `plugins-static`。编辑器负责已安装的 schema 与插件配置，`value` 提供展示内容及命名根。
+
+`createStaticRenderers` 从静态插件描述中提取展示配置，只接受对象配置层，不执行插件初始化回调，也不创建额外编辑器。静态节点组件通过 `document.nodes`、`document.children()`、`document.forRoot(name)` 读取展示内容。标题与目录使用 `document.anchorId(path)` 共享当前渲染实例的锚点。
+
+保持文档值不可变。未变化且读取依赖未变化的子树可复用；跨节点查询改变时对应子树重新渲染。剪贴板提取也读取展示值，保留富文本标记与命名根。

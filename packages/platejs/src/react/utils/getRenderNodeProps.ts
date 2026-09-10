@@ -8,10 +8,10 @@ import {
   type GetInjectNodePropsOptions,
   getPluginNodeClass,
 } from '../../lib';
+import { getPluginContextProps } from '../../lib/plugin/createPluginContext.internal';
 import type { AnyObject } from '../../lib/types/AnyObject';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
 import type { Editor } from '../editor';
-import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
 
 /**
@@ -57,7 +57,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
     ? pluginContext
     : plugin
       ? {
-          ...createPluginContext(editor, plugin),
+          ...getPluginContextProps(editor, plugin.name),
           api: editor.api,
         }
       : {

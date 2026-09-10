@@ -748,6 +748,16 @@ where trust decisions are actually made.
 AI support stays optional, composable, and plugin-first. Core editor APIs
 should not contort around provider churn or hype-cycle abstractions.
 
+Streamed model output remains an operation-owned draft until acceptance. Raw
+source is authoritative; rendered nodes never become parser input. A request
+captures exact targets, rejects stale frames, and validates conflicts before
+one accepted history batch. Discard does not mutate document history.
+
+Read-only projections use the existing static renderer with an immutable value
+and the installed schema and codecs. They do not create another editable
+runtime. Static components query the displayed document, including named
+roots; memoization preserves those query dependencies.
+
 ## Setup
 
 Plate is code-first by design. Users should see plugin definitions, editor

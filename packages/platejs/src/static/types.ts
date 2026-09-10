@@ -11,6 +11,7 @@ import type { AnyObject } from '../lib/types/AnyObject';
 import type { RenderElementProps } from '../lib/types/RenderElementProps';
 import type { StaticRenderLeafProps } from '../lib/types/RenderLeafProps';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
+import type { StaticDocument } from './document';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;
@@ -32,6 +33,7 @@ type ErasedBasePluginContext = AnyBasePluginContext;
 export type PliteRenderNodeProps<
   C extends BasePluginDefinition = BasePluginDefinition,
 > = (0 extends 1 & C ? ErasedBasePluginContext : BasePluginContext<C>) & {
+  document: StaticDocument;
   attributes?: AnyObject;
   className?: string;
   /** @see {@link NodeProps} */

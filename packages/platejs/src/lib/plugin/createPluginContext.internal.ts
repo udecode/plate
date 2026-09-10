@@ -96,6 +96,28 @@ export function createPluginContext(
   return createPluginAccess(editor, plugin, true);
 }
 
+const renderContextProps = new WeakMap<
+  AnyBasePluginContext,
+  { plugin: AnyPluginBase; api: unknown; props: AnyBasePluginContext }
+>();
+
+/** Materialize repeated render props without re-enumerating a plugin proxy per node. */
+export function getPluginContextProps(
+  editor: Editor,
+  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
+): AnyBasePluginContext {
+  const context = createPluginContext(editor, plugin);
+  const compiled = context.plugin;
+  const { api } = context;
+  const previous = renderContextProps.get(context);
+  if (previous?.plugin === compiled && previous.api === api) {
+    return previous.props;
+  }
+  const props = Object.freeze({ ...context });
+  renderContextProps.set(context, { plugin: compiled, api, props });
+  return props;
+}
+
 const createPluginAccess = (
   editor: object,
   input: AnyBasePlugin | AnyPluginBase | PluginReference | string,

@@ -4,12 +4,15 @@
 
 import { type UseChatHelpers, useChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { NodeApi, TextApi, PLUGINS, nanoid } from 'platejs';
+import {
+  type UIMessage,
+  type ChatTransport,
+  type UIMessageChunk,
+  DefaultChatTransport,
+} from 'ai';
+import { NodeApi, nanoid } from 'platejs';
 import type { AIChatRequestContext } from 'platejs/ai';
 import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
-import { getCommentKey, getTransientCommentKey } from 'platejs/comment';
-import { MarkdownPlugin } from 'platejs/markdown';
 import { type Editor, useEditor, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
@@ -18,6 +21,7 @@ import { discussionPlugin } from './discussion';
 export type AIChatTransportPluginState = {
   chatOptions: {
     api: string;
+    demo?: boolean;
     body: Record<string, unknown>;
   };
 };
@@ -26,9 +30,10 @@ export const AIChatTransportPlugin = AIChatPlugin.extend({
   initialState: {
     chatOptions: {
       api: '/api/ai/command',
+      demo: false,
       body: {},
     },
-  } satisfies AIChatTransportPluginState,
+  } as AIChatTransportPluginState,
 });
 
 export type ToolName = 'comment' | 'edit' | 'generate';
@@ -92,11 +97,17 @@ type ChatRequestBody = {
   [key: string]: unknown;
 };
 
-function createChatTransport({ api, editor }: { api: string; editor: Editor }) {
+export function createChatTransport({
+  api,
+  editor,
+}: {
+  api: string;
+  editor: Editor;
+}) {
   let abortController: AbortController | null = null;
   const transport = new DefaultChatTransport<ChatMessage>({
     api,
-    // Mock the API response. Remove it when you implement the route /api/ai/command
+    // Demo output is an explicit configuration; HTTP failures stay failures.
     fetch: (async (input, init) => {
       const bodyOptions = editor.plugin(AIChatTransportPlugin).store.get()
         .chatOptions?.body;
@@ -104,16 +115,21 @@ function createChatTransport({ api, editor }: { api: string; editor: Editor }) {
       const initBody = JSON.parse(init?.body as string) as ChatRequestBody;
 
       const body: ChatRequestBody = {
-        ...initBody,
         ...bodyOptions,
+        ...initBody,
       };
 
-      const res = await fetch(input, {
-        ...init,
-        body: JSON.stringify(body),
-      });
+      const demo =
+        editor.plugin(AIChatTransportPlugin).store.get().chatOptions.demo ===
+        true;
+      if (!demo) {
+        return fetch(input, {
+          ...init,
+          body: JSON.stringify(body),
+        });
+      }
 
-      if (!res.ok) {
+      {
         let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
 
         try {
@@ -159,8 +175,6 @@ function createChatTransport({ api, editor }: { api: string; editor: Editor }) {
 
         return response;
       }
-
-      return res;
     }) as typeof fetch,
   });
 
@@ -169,13 +183,99 @@ function createChatTransport({ api, editor }: { api: string; editor: Editor }) {
       abortController?.abort();
       abortController = null;
     },
-    transport,
+    transport: {
+      // Draft identities are scoped to this mounted editor operation.
+      reconnectToStream: async () => null,
+      async sendMessages(options) {
+        const id = options.body && Reflect.get(options.body, 'requestId');
+        if (typeof id !== 'number') {
+          throw new Error('AI requests require an operation identity.');
+        }
+        const ai = editor.plugin(AIChatPlugin);
+        try {
+          const stream = await transport.sendMessages(options);
+          const parts = new Map<string, string>();
+          const reader = stream
+            .pipeThrough(
+              new TransformStream<UIMessageChunk, UIMessageChunk>({
+                transform(chunk, controller) {
+                  const operation = ai.store.get('operation');
+                  if (
+                    operation?.id !== id ||
+                    operation.status !== 'streaming'
+                  ) {
+                    return;
+                  }
+                  if (
+                    chunk.type === 'data-toolName' &&
+                    isToolName(chunk.data)
+                  ) {
+                    ai.api.receiveTool(id, chunk.data);
+                  }
+                  if (
+                    chunk.type === 'data-table' &&
+                    isTableCellUpdate(chunk.data) &&
+                    chunk.data.status === 'streaming' &&
+                    chunk.data.cellUpdate
+                  ) {
+                    ai.api.receiveTable(id, chunk.data.cellUpdate);
+                  }
+                  if (
+                    chunk.type === 'data-comment' &&
+                    isComment(chunk.data) &&
+                    chunk.data.status === 'streaming' &&
+                    chunk.data.comment
+                  ) {
+                    ai.api.receiveComment(id, {
+                      ...chunk.data.comment,
+                      id: chunk.id ?? nanoid(),
+                    });
+                  }
+                  if (chunk.type === 'text-start') parts.set(chunk.id, '');
+                  if (chunk.type === 'text-delta') {
+                    parts.set(
+                      chunk.id,
+                      (parts.get(chunk.id) ?? '') + chunk.delta
+                    );
+                    ai.api.receive(id, [...parts.values()].join(''));
+                  }
+                  if (chunk.type === 'error') {
+                    ai.api.error(id, new Error(chunk.errorText));
+                  }
+                  controller.enqueue(chunk);
+                },
+                flush() {
+                  ai.api.finish(id, [...parts.values()].join(''));
+                },
+              })
+            )
+            .getReader();
+          return new ReadableStream<UIMessageChunk>({
+            async pull(controller) {
+              try {
+                const result = await reader.read();
+                if (result.done) controller.close();
+                else controller.enqueue(result.value);
+              } catch (error) {
+                ai.api.error(id, error);
+                controller.error(error);
+              }
+            },
+            cancel(reason) {
+              return reader.cancel(reason);
+            },
+          });
+        } catch (error) {
+          ai.api.error(id, error);
+          throw error;
+        }
+      },
+    } satisfies ChatTransport<ChatMessage>,
   };
 }
 
 export const useEditorChat = () => {
   const editor = useEditor();
-  const markdownApi = editor.plugin(MarkdownPlugin).api;
   const options = usePluginStore(AIChatTransportPlugin, 'chatOptions');
 
   const chatTransport = React.useMemo(
@@ -190,112 +290,48 @@ export const useEditorChat = () => {
   const baseChat = useChat<ChatMessage>({
     id: 'editor',
     transport: chatTransport.transport,
-    onData(data) {
-      if (data.type === 'data-toolName' && isToolName(data.data)) {
-        editor.plugin(AIChatPlugin).store.set({ toolName: data.data });
-      }
-
-      if (data.type === 'data-table' && isTableCellUpdate(data.data)) {
-        const tableData = data.data;
-
-        if (tableData.status === 'finished') {
-          const chatSelection = editor
-            .plugin(AIChatPlugin)
-            .store.get('chatSelection');
-
-          if (!chatSelection) return;
-
-          editor.update.selection.set(chatSelection);
-
-          return;
-        }
-
-        const { cellUpdate } = tableData;
-
-        if (cellUpdate == null) {
-          throw new Error('Streaming table data requires a cell update');
-        }
-
-        editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
-      }
-
-      if (data.type === 'data-comment' && isComment(data.data)) {
-        const commentData = data.data;
-
-        if (commentData.status === 'finished') {
-          editor.update.selection.set(null);
-
-          return;
-        }
-
-        const aiComment = commentData.comment;
-
-        if (aiComment == null) {
-          throw new Error('Streaming comment data requires a comment');
-        }
-
-        const range = editor.plugin(AIChatPlugin).read.commentRange(aiComment);
-
-        if (!range) {
-          console.warn('No range found for AI comment');
-          return;
-        }
-
-        const discussions =
-          editor.plugin(discussionPlugin).store.get('discussions') || [];
-
-        // Generate a new discussion ID
-        const discussionId = nanoid();
-
-        // Create a new comment
-        const newComment = {
-          id: nanoid(),
-          contentRich: [
-            { children: [{ text: aiComment.comment }], type: 'paragraph' },
-          ],
-          createdAt: new Date(),
-          discussionId,
-          isEdited: false,
-          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-        };
-
-        // Create a new discussion
-        const newDiscussion = {
-          id: discussionId,
-          comments: [newComment],
-          createdAt: new Date(),
-          documentContent: markdownApi
-            .deserialize(aiComment.content)
-            .children.map((node) => NodeApi.string(node))
-            .join('\n'),
-          isResolved: false,
-          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-        };
-
-        // Update discussions
-        const updatedDiscussions = [...discussions, newDiscussion];
-        editor
-          .plugin(discussionPlugin)
-          .store.set({ discussions: updatedDiscussions });
-
-        // Apply comment marks to the editor
-        editor.update({ history: 'merge' }).nodes.set(
-          {
-            [getCommentKey(newDiscussion.id)]: true,
-            [getTransientCommentKey()]: true,
-            [editor.plugin(PLUGINS.comment).schema.key]: true,
-          },
-          {
-            at: range,
-            match: TextApi.isText,
-            split: true,
-          }
-        );
-      }
-    },
 
     ...options,
   });
+
+  React.useEffect(() => {
+    editor.plugin(AIChatPlugin).store.set({
+      onCommentsAccepted: (comments) => {
+        const discussion = editor.plugin(discussionPlugin);
+        const userId = discussion.store.get('currentUserId');
+        discussion.store.set({
+          discussions: [
+            ...discussion.store.get('discussions'),
+            ...comments.map((comment) => ({
+              id: comment.id,
+              comments: [
+                {
+                  id: nanoid(),
+                  contentRich: [
+                    {
+                      type: 'paragraph',
+                      children: [{ text: comment.comment }],
+                    },
+                  ],
+                  createdAt: new Date(),
+                  discussionId: comment.id,
+                  isEdited: false,
+                  userId,
+                },
+              ],
+              createdAt: new Date(),
+              documentContent: comment.content,
+              isResolved: false,
+              userId,
+            })),
+          ],
+        });
+      },
+    });
+    return () => {
+      editor.plugin(AIChatPlugin).store.set({ onCommentsAccepted: null });
+    };
+  }, [editor]);
 
   const chat = {
     ...baseChat,
@@ -312,10 +348,17 @@ export const useEditorChat = () => {
     publishChat();
   }, [chat.status, chat.messages, chat.error, chatTransport]);
 
+  React.useEffect(
+    () => () => {
+      editor.plugin(AIChatPlugin).api.reset();
+    },
+    [editor]
+  );
+
   return chat;
 };
 
-// Used for testing. Remove it after implementing the useEditorChat API.
+// Explicit demo transport; production HTTP failures never select this source.
 const fakeStreamText = ({
   chunkCount = 10,
   context,

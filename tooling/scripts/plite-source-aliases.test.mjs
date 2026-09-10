@@ -36,17 +36,29 @@ test('workspace source entries cover every public runtime entry exactly once', (
   }
 });
 
-test('www does not expose Plite runtime aliases to application code', () => {
-  const appRoot = path.join(repoRoot, 'apps/www');
+test('app proof resolves every Plite entrypoint from the canonical package source map', () => {
+  const packageDirectory = path.join(repoRoot, 'packages/platejs');
+  const appDirectory = path.join(repoRoot, 'apps/www');
+  const packageConfig = JSON.parse(
+    readFileSync(path.join(packageDirectory, 'tsconfig.json'), 'utf-8')
+  );
   const appConfig = JSON.parse(
-    readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf-8')
+    readFileSync(path.join(appDirectory, 'tsconfig.json'), 'utf-8')
   );
-  const { paths } = appConfig.compilerOptions;
 
-  assert.deepEqual(
-    Object.keys(paths).filter((specifier) => specifier.startsWith('plitejs')),
-    []
-  );
+  for (const [specifier, targets] of Object.entries(
+    packageConfig.compilerOptions.paths
+  )) {
+    if (specifier !== 'plitejs' && !specifier.startsWith('plitejs/')) continue;
+
+    assert.deepEqual(
+      appConfig.compilerOptions.paths[specifier]?.map((target) =>
+        path.resolve(appDirectory, target)
+      ),
+      targets.map((target) => path.resolve(packageDirectory, target)),
+      `${specifier} must use source in the app proof graph`
+    );
+  }
 });
 
 test('Plite CI runs the repository Bun version', () => {

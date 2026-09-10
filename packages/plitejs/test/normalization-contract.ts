@@ -183,6 +183,52 @@ describe('plite normalization contract', () => {
     assert.deepEqual(seen.slice(0, 2), ['first', 'second']);
   });
 
+  it('keeps correction reads live and expires captured writes after each update', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+    });
+    const writes: Array<() => void> = [];
+    const seen: string[] = [];
+    editor.install(
+      defineExtension('correction-lifetime', {
+        corrections: [
+          {
+            event: 'content',
+            query: { type: 'paragraph' },
+            correct({ tx, entry: [, path] }) {
+              const read = () => tx.text.string(path);
+              writes.push(() =>
+                tx.text.insert('escaped', {
+                  at: { path: [...path, 0], offset: 0 },
+                })
+              );
+              seen.push(read());
+              if (seen.at(-1) === 'alpha!') {
+                tx.text.insert('?', { at: { path: [...path, 0], offset: 6 } });
+                seen.push(read());
+              }
+            },
+          },
+        ],
+      })
+    );
+    writes.length = 0;
+    seen.length = 0;
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 5 } });
+    assert.ok(seen.includes('alpha!'));
+    assert.ok(seen.includes('alpha!?'));
+    for (const write of writes) assert.throws(write, /no longer active/);
+    const previousWrites = [...writes];
+    editor.update.text.insert('.', { at: { path: [0, 0], offset: 7 } });
+    assert.ok(seen.includes('alpha!?.'));
+    for (const write of previousWrites) {
+      assert.throws(write, /no longer active/);
+    }
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'alpha!?.' }] },
+    ]);
+  });
+
   it('runs extension corrections during automatic update closeout', () => {
     const editor = createEditor({
       initialValue: [

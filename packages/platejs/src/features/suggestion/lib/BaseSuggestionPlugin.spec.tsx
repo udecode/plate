@@ -3087,6 +3087,31 @@ const getTextSelection = (editor: Editor) => {
     });
 
   describe('diffToSuggestions', () => {
+    it('preserves insert and delete marks when diff callbacks share one identity', () => {
+      const editor = createSuggestionEditor();
+      const suggestion = editor.plugin(BaseSuggestionPlugin).api;
+      const identity = { id: 'operation-one', createdAt: 1 };
+      const value = suggestion.diff(
+        [{ type: 'paragraph', children: [{ text: 'old' }] }],
+        [{ type: 'paragraph', children: [{ text: 'new' }] }],
+        {
+          getDeleteProps: (node) =>
+            suggestion.getProps(node, {
+              ...identity,
+              suggestionDeletion: true,
+            }),
+          getInsertProps: (node) => suggestion.getProps(node, identity),
+        }
+      );
+      expect(
+        value[0].children.map((node) => suggestion.suggestionData(node))
+      ).toEqual([
+        { ...identity, type: 'remove', userId: 'user-1' },
+        { ...identity, type: 'insert', userId: 'user-1' },
+      ]);
+      expect(suggestion.skipDeletes(value[0])).toBe('new');
+    });
+
     it('ignores schema metadata through its physical property key', () => {
       const editor = createSuggestionEditor();
       const value = editor.plugin(BaseSuggestionPlugin).api.diff(

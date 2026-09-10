@@ -1,5 +1,4 @@
-import { ElementApi, PathApi } from 'platejs';
-import { BaseAIPlugin } from 'platejs/ai';
+import { ElementApi, NodeApi } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 
 import { createTestEditor } from './__tests__/createTestEditor';
@@ -230,84 +229,50 @@ const mdxSamplePreviewChunks = [
 
 const streamPreview = (chunks: string[]) => {
   const { editor } = createTestEditor();
-  const initialSelection = JSON.parse(JSON.stringify(editor.read.selection()));
-  const initialValue = JSON.parse(JSON.stringify(editor.read.children()));
-
-  editor.plugin(AIChatPlugin).store.set({ mode: 'insert', open: true });
-
-  const aiChat = editor.plugin(AIChatPlugin);
-  const { startBlock, startInEmptyParagraph } = aiChat.read.insertStart();
-
-  editor.plugin(BaseAIPlugin).update.beginPreview({
-    originalBlocks:
-      startInEmptyParagraph && startBlock && ElementApi.isElement(startBlock)
-        ? [structuredClone(startBlock)]
-        : [],
-  });
-
-  const selection = editor.read.selection();
-
-  if (!selection) {
-    throw new Error('Expected an initial text selection.');
-  }
-
-  const insertAt = PathApi.next(selection.focus.path.slice(0, 1));
-
-  editor.update({ history: 'skip' }).nodes.insert(
-    {
-      children: [{ text: '' }],
-      type: editor.plugin(AIChatPlugin).schema.type,
-    },
-    {
-      at: insertAt,
-    }
-  );
-
-  editor.plugin(AIChatPlugin).store.set({ streaming: true });
-
+  const initialSelection = editor.read.selection();
+  const initialValue = editor.read.value();
+  const ai = editor.plugin(AIChatPlugin);
+  const id = ai.api.start({ mode: 'insert', toolName: 'generate' });
+  let source = '';
   for (const chunk of chunks) {
-    aiChat.update.insertChunk(chunk, {
-      textProps: {
-        [editor.plugin(BaseAIPlugin).schema.key]: true,
-      },
-    });
+    source += chunk;
+    ai.api.receive(id, source);
+    expect(ai.store.get('operation')?.source).toBe(source);
+    expect(editor.read.value()).toEqual(initialValue);
+    expect(editor.read.selection()).toEqual(initialSelection);
+    expect(editor.read.history.undos()).toHaveLength(0);
   }
-
-  editor.plugin(AIChatPlugin).store.set({
-    _blockChunks: '',
-    _blockPath: null,
-    _mdxName: null,
-    streaming: false,
-  });
-
-  return { editor, initialSelection, initialValue };
+  ai.api.finish(id);
+  const operation = ai.store.get('operation');
+  expect(operation?.status).toBe('ready');
+  if (!operation) throw new Error('Expected a detached draft.');
+  expect(operation.value).toEqual(
+    editor.api.markdown.deserialize(source).children
+  );
+  return { editor, initialSelection, initialValue, operation };
 };
 
 describe('ai chat streaming history', () => {
-  it('streams the generated MDX sample through insert preview', () => {
-    const { editor } = streamPreview(mdxSamplePreviewChunks);
-    const blockquote = editor.read.nodes.find({
-      at: [],
-      type: 'blockquote',
-    })?.[0];
-    const link = editor.read.nodes.find({
-      at: [],
-      match: (node) =>
-        ElementApi.isElement(node) &&
-        node.url === 'https://en.wikipedia.org/wiki/Hypertext',
-    })?.[0];
-    const callout = editor.read.nodes.find({ at: [], type: 'callout' })?.[0];
-    const file = editor.read.nodes.find({ at: [], type: 'file' })?.[0];
-    const audio = editor.read.nodes.find({ at: [], type: 'audio' })?.[0];
-    const video = editor.read.nodes.find({ at: [], type: 'video' })?.[0];
+  it('streams the generated MDX sample into an independent rich-text draft', () => {
+    const { operation } = streamPreview(mdxSamplePreviewChunks);
+    const nodes = [
+      ...NodeApi.elements({ type: 'document', children: operation.value }),
+    ].map(([node]) => node);
+    const blockquote = nodes.find((node) => node.type === 'blockquote');
+    const link = nodes.find(
+      (node) => node.url === 'https://en.wikipedia.org/wiki/Hypertext'
+    );
+    const callout = nodes.find((node) => node.type === 'callout');
+    const file = nodes.find((node) => node.type === 'file');
+    const audio = nodes.find((node) => node.type === 'audio');
+    const video = nodes.find((node) => node.type === 'video');
 
-    expect(blockquote).toMatchObject({ aiPreview: true });
+    expect(blockquote).toBeDefined();
     expect(
       blockquote?.children.every((child) => ElementApi.isElement(child))
     ).toBe(true);
     expect(link).toBeDefined();
-    expect(link).not.toHaveProperty('aiPreview');
-    expect(callout).toMatchObject({ aiPreview: true });
+    expect(callout).toBeDefined();
     expect(file).toMatchObject({ name: 'sample.pdf', width: '80%' });
     expect(file).not.toHaveProperty('align');
     expect(audio).toMatchObject({ textAlign: 'center', width: '80%' });
@@ -318,61 +283,49 @@ describe('ai chat streaming history', () => {
     });
   });
 
-  it('keeps insert-mode preview out of history and restores the snapshot on ai undo', () => {
-    const { editor, initialValue } = streamPreview(['hello', ' world']);
-
+  it('keeps the draft out of history and discards without changing the document', () => {
+    const { editor, initialSelection, initialValue, operation } = streamPreview(
+      ['hello', ' world']
+    );
+    expect(operation.value).toEqual([
+      { type: 'paragraph', children: [{ text: 'hello world' }] },
+    ]);
     expect(editor.read.history.undos()).toHaveLength(0);
-
-    editor.plugin(BaseAIPlugin).update.undo();
-
-    expect(editor.read.children()).toEqual(initialValue);
+    editor.plugin(AIChatPlugin).api.discard();
+    expect(editor.plugin(AIChatPlugin).store.get('operation')).toBeNull();
+    expect(editor.read.value()).toEqual(initialValue);
+    expect(editor.read.selection()).toEqual(initialSelection);
     expect(editor.read.history.undos()).toHaveLength(0);
   });
 
-  it('accepts streamed preview as a compact undoable batch', () => {
+  it('accepts streamed preview as one compact undoable batch', () => {
     const chunks = Array.from({ length: 40 }, () => 'chunk ');
-    const { editor, initialSelection, initialValue } = streamPreview(chunks);
-
-    editor.plugin(AIChatPlugin).update.accept();
-
+    const { editor, initialSelection, initialValue, operation } =
+      streamPreview(chunks);
+    expect(
+      editor.plugin(AIChatPlugin).api.accept({ placement: 'replace' })
+    ).toBe(true);
+    expect(editor.read.children()).toEqual(operation.value);
     expect(editor.read.history.undos()).toHaveLength(1);
     const [batch] = editor.read.history.undos();
     const mainChange = batch!.change.toJSON().primary;
-
     expect(mainChange).toBeDefined();
     expect(mainChange!.length).toBeLessThan(chunks.length);
-    expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (n: any) =>
-          ElementApi.isElement(n) &&
-          n.type === editor.plugin(AIChatPlugin).schema.type,
-      })
-    ).toBe(false);
-    expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (n: any) => !!n[editor.plugin(BaseAIPlugin).schema.key],
-      })
-    ).toBe(false);
-    expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (n: any) => ElementApi.isElement(n) && !!n.aiPreview,
-      })
-    ).toBe(false);
-
+    const accepted = editor.read.value();
+    const acceptedSelection = editor.read.selection();
     editor.update.history.undo();
-
-    expect(editor.read.children()).toEqual(initialValue);
+    expect(editor.read.value()).toEqual(initialValue);
     expect(editor.read.selection()).toEqual(initialSelection);
+    editor.update.history.redo();
+    expect(editor.read.value()).toEqual(accepted);
+    expect(editor.read.selection()).toEqual(acceptedSelection);
   });
 
   it('places the cursor at the end of the accepted preview', () => {
     const { editor } = streamPreview(['hello', ' world']);
-
-    editor.plugin(AIChatPlugin).update.accept();
-
+    expect(
+      editor.plugin(AIChatPlugin).api.accept({ placement: 'replace' })
+    ).toBe(true);
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
@@ -380,12 +333,19 @@ describe('ai chat streaming history', () => {
   });
 
   it('restores the accepted cursor on redo after undo', () => {
-    const { editor } = streamPreview(['hello', ' world']);
-
-    editor.plugin(AIChatPlugin).update.accept();
+    const { editor, initialSelection, initialValue } = streamPreview([
+      'hello',
+      ' world',
+    ]);
+    expect(
+      editor.plugin(AIChatPlugin).api.accept({ placement: 'replace' })
+    ).toBe(true);
+    const accepted = editor.read.value();
     editor.update.history.undo();
+    expect(editor.read.value()).toEqual(initialValue);
+    expect(editor.read.selection()).toEqual(initialSelection);
     editor.update.history.redo();
-
+    expect(editor.read.value()).toEqual(accepted);
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },

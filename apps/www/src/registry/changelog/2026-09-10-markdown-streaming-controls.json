@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-markdown-streaming-controls",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-markdown-streaming-controls.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Stream independent AI drafts with reliable review and Markdown playback",
+  "targets": [
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-static",
+      "files": ["apps/www/src/registry/components/editor/indent-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-static",
+      "files": ["apps/www/src/registry/components/editor/list-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plugins-static",
+      "files": ["apps/www/src/registry/components/editor/plugins-static.ts"],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "table-static",
+      "files": ["apps/www/src/registry/components/editor/table-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-static",
+      "files": ["apps/www/src/registry/components/editor/toc-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-static",
+      "files": ["apps/www/src/registry/components/editor/heading-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-static",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown",
+      "files": ["apps/www/src/registry/components/editor/markdown.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-markdown-streaming-fix-playback-list-images-ed7afe91",
+      "kind": "fix",
+      "summary": "Stream independent AI drafts with reliable review and Markdown playback",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["markdown-streaming-demo", "indent-static", "list-static"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-markdown-streaming-controls",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-10-markdown-streaming-controls-2",
+      "kind": "behavior",
+      "summary": "Review generated text and comments without editing the document until acceptance. HTTP failures stay visible; sample output requires explicit demo configuration.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai", "ai-menu", "use-chat"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-markdown-streaming-controls",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-10-markdown-streaming-controls-3",
+      "kind": "behavior",
+      "summary": "Render independent draft values with the installed schema and static presentation configuration.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "plugins-static",
+        "table-static",
+        "toc-static",
+        "heading-static",
+        "block-list-static",
+        "suggestion-static",
+        "markdown"
+      ],
+      "source": {
+        "line": 15,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-markdown-streaming-controls",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

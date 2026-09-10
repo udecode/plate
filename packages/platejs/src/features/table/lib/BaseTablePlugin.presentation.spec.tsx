@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import type { TestEditor } from '#platejs-test-internal';
 import { jsxt } from '#platejs-test-internal';
 
+import { createStaticDocument } from '../../../static/document';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -13,6 +14,44 @@ import type { TableCellElement, TableElement } from './BaseTablePlugin';
 import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table presentation', () => {
+  it('reads detached named-root table geometry and borders without editor writes', () => {
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
+    });
+    const cell = {
+      type: 'tableCell',
+      children: [{ type: 'paragraph', children: [{ text: 'draft' }] }],
+    } as TableCellElement;
+    const first = { ...cell, colSpan: 2 };
+    const table = {
+      type: 'table',
+      columnWidths: [100, 120, 140],
+      children: [{ type: 'tableRow', height: 42, children: [first, cell] }],
+    };
+    const before = editor.read.value();
+    const document = createStaticDocument(
+      { children: [], roots: { draft: [table] } },
+      editor.read.schema
+    ).forRoot('draft');
+    expect(
+      editor
+        .plugin(BaseTablePlugin)
+        .read.getCellSize({ element: cell, document })
+    ).toEqual({ minHeight: 42, width: 140 });
+    expect(
+      editor
+        .plugin(BaseTablePlugin)
+        .read.getCellBorders({ element: cell, document })
+    ).toEqual({
+      bottom: { width: 1 },
+      right: { width: 1 },
+      top: { width: 1 },
+      left: undefined,
+    });
+    expect(editor.read.value()).toEqual(before);
+  });
+
   {
     jsxt;
 

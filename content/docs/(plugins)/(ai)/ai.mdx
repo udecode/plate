@@ -1,6 +1,6 @@
 ---
 title: AI
-description: AI-powered writing assistance.
+description: Stream Markdown drafts, review suggestions, and accept one editor change.
 docs:
   - route: https://pro.platejs.org/docs/examples/ai
     title: Plus
@@ -8,293 +8,102 @@ docs:
 
 <ComponentPreview name="ai-demo" />
 
-<PackageInfo>
+## Drafts and acceptance
 
-## Features
+AI output is a draft until the user accepts it. Streaming does not change the
+editor document, selection, or undo history. The copied UI renders insert
+previews and edit suggestions at their original targets. Chat generation uses
+the review panel.
 
-- **Context-aware command menu** that adapts to cursor, text selection, and block selection workflows.
-- **Streaming Markdown/MDX insertion** with table, column, and code block support through `editor.update.aiChat.insertChunk`.
-- **Insert and chat review modes** with localized insert previews plus undo-safe batching through `editor.update.ai`.
-- **Block selection aware transforms** to replace or append entire sections using `editor.update.aiChat.replaceSelection` and `editor.update.aiChat.insertBelow`.
-- **Direct integration with `@ai-sdk/react`** so `editor.plugin(AIChatPlugin).api.submit` can stream responses from Vercel AI SDK helpers.
-- **Suggestion and comment utilities** that diff AI edits, accept/reject changes, and map AI feedback back to document ranges.
+The operation captures exact selected block identities or the text range.
+Unselected blocks between discrete targets remain independent. If a target is
+edited or deleted, acceptance reports a conflict. Retry retains the original
+target and creates a fresh request identity.
 
-</PackageInfo>
+Accept writes the generated content in one history batch. One Undo restores
+the preceding document and selection; one Redo reapplies the accepted change.
+Discard drops the draft and preserves existing redo history. Stop retains a
+partial draft for review and rejects subsequent frames from that request.
 
-## Kit Usage
+## Kit usage
 
-<Steps>
-
-### Installation
-
-The fastest way to add AI functionality is with the `AIKit`. It ships the configured `AIPlugin`, `AIChatPlugin`, Markdown streaming helpers, cursor overlay, and their [Plate UI](/docs/installation/plate-ui) components.
+Install the copied AI UI and its configured plugins:
 
 <ComponentSource name="ai" />
-
-- [`AIMenu`](/docs/components/ai-menu): Floating command surface for prompts, tool shortcuts, and chat review.
-- [`AILoadingBar`](/docs/components/ai-loading-bar): Displays streaming status at the editor container.
-- [`AIAnchorElement`](/docs/components/ai-anchor-element): Invisible anchor node used to position the floating menu during streaming.
-- [`AILeaf`](/docs/components/ai-leaf): Renders AI-marked text with subtle styling.
-
-### Add Kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 
 const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...AIKit,
-  ],
+  plugins: [/* your document plugins, */ ...AIKit],
 });
 ```
 
-### Add API Route
+`AIChatPlugin` supplies request state and acceptance. `MarkdownPlugin` owns
+Markdown and MDX conversion. `SuggestionPlugin` supplies edit projections.
+`AIPlugin` defines the optional AI text mark.
 
-Expose a streaming command endpoint that proxies your model provider:
-
-<ComponentSource name="ai-api" />
-
-### Configure Environment
-
-Set your AI Gateway key locally (replace with your provider secret if you are not using a gateway):
-
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
-
-</Steps>
-
-## Manual Usage
-
-<Steps>
-
-### Installation
-
-```bash
-npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
-```
-
-`platejs` is optional but required for diff-based edit suggestions.
-
-### Add Plugins
-
-```tsx
-import { createEditor } from 'platejs/react';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
-import { MarkdownPlugin } from 'platejs/markdown';
-
-export const editor = createEditor({
-  plugins: [
-    MarkdownPlugin,
-    AIPlugin,
-    AIChatPlugin, // extended in the next step
-  ],
-});
-```
-
-- Editor selection supplies text and multi-node targets to `AIChatPlugin`.
-- `MarkdownPlugin`: Provides Markdown serialization used by streaming utilities.
-- `AIPlugin`: Adds the AI mark and transforms for undoing AI batches.
-- `AIChatPlugin`: Supplies the AI combobox, API helpers, and transforms.
-
-Use `AIPlugin.configure({ component })` with your own element (or [`AILeaf`](/docs/components/ai-leaf)) to highlight AI-generated text.
-
-### Configure AIChatPlugin
-
-Configure `AIChatPlugin` to hook streaming and edits. The plugin owns chunk
-insertion, preview snapshots, and suggestion updates.
-
-```tsx
-import cloneDeep from 'lodash/cloneDeep';
-import {
-  AIChatPlugin,
-  AIPlugin,
-  useChatChunk,
-} from 'platejs/ai/react';
-import { ElementApi, PathApi, PLUGINS } from 'platejs';
-import { usePluginStore } from 'platejs/react';
-
-export const aiChatPlugin = AIChatPlugin.extend({
-  initialState: {
-    chatOptions: {
-      api: '/api/ai/command',
-      body: {
-        model: 'openai/gpt-4o-mini',
-      },
-    },
-    trigger: ' ',
-    triggerPreviousCharPattern: /^\s?$/,
-  },
-  useHooks: ({ editor, read, store, update }) => {
-    const mode = usePluginStore(AIChatPlugin, 'mode');
-    const toolName = usePluginStore(AIChatPlugin, 'toolName');
-
-    useChatChunk({
-      onChunk: ({ chunk, isFirst, nodes, text: content }) => {
-        if (isFirst && mode === 'insert') {
-          const selection = editor.read.selection();
-
-          if (!selection) return;
-
-          const { startBlock, startInEmptyParagraph } =
-            read.insertStart();
-
-          editor.update.ai.beginPreview({
-            originalBlocks:
-              startInEmptyParagraph &&
-              startBlock &&
-              ElementApi.isElement(startBlock)
-                ? [cloneDeep(startBlock)]
-                : [],
-          });
-
-          editor.update({ history: 'skip' }, (tx) => {
-            tx.nodes.insert(
-              {
-                children: [{ text: '' }],
-                type: editor.plugin(PLUGINS.aiChat).schema.type,
-              },
-              {
-                at: PathApi.next(selection.focus.path.slice(0, 1)),
-              }
-            );
-          });
-          store.set({ streaming: true });
-        }
-
-        if (mode === 'insert' && nodes.length > 0) {
-          if (!store.get('streaming')) return;
-
-          update.insertChunk(chunk, {
-            autoScroll: true,
-            textProps: {
-              [editor.plugin(PLUGINS.ai).schema.key]: true,
-            },
-          });
-        }
-
-        if (toolName === 'edit' && mode === 'chat') {
-          update.applySuggestions(content, { split: isFirst });
-        }
-      },
-      onFinish: () => {
-        store.set({
-          _blockChunks: '',
-          _blockPath: null,
-          _mdxName: null,
-          streaming: false,
-        });
-      },
-    });
-  },
-});
-```
-
-- `useChatChunk`: Watches the stored chat adapter and yields incremental chunks.
-- `editor.update.ai.beginPreview`: Captures the rollback slice and selection before the first preview chunk.
-- `update.insertChunk`: Streams Markdown/MDX into the document while reusing the active block.
-- `update.applySuggestions`: Converts edit responses into transient suggestion nodes.
-
-Provide your own `render` components (toolbar button, floating menu, etc.) when you extend the plugin.
-
-### Build API Route
-
-Handle `editor.plugin(AIChatPlugin).api.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload that contains the editor `children`, current `selection`, and last `toolName`.
-[Complete API example](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
-
-```ts title="app/api/ai/command/route.ts"
-import { createGateway } from '@ai-sdk/gateway';
-import { convertToCoreMessages, streamText } from 'ai';
-import { createEditor } from 'platejs';
-
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
-
-export async function POST(req: Request) {
-  const { apiKey, ctx, messages, model } = await req.json();
-
-  const editor = createEditor({
-    plugins: BaseEditorKit,
-    selection: ctx.selection,
-    initialValue: ctx.children,
-  });
-
-  const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY,
-  });
-
-  const result = streamText({
-    experimental_transform: markdownJoinerTransform(),
-    messages: convertToCoreMessages(messages),
-    model: gateway(model ?? 'openai/gpt-4o-mini'),
-    system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
-  });
-
-  return result.toDataStreamResponse();
-}
-```
-
-- `ctx.children` and `ctx.selection` are rehydrated into a Plite editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
-- Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
-- Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
-- Return a streaming response so `useChat` and `useChatChunk` can process tokens incrementally.
-
-### Connect `useChat`
-
-Bridge the editor and your model endpoint with `@ai-sdk/react`. Store helpers on the plugin so transforms can reload, stop, or show chat state.
-
-```tsx
-import { useEffect } from 'react';
-
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { useChat } from '@ai-sdk/react';
-import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
-import { useEditorPlugin } from 'platejs/react';
-
-type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
-
-export const useEditorAIChat = () => {
-  const { store } = useEditorPlugin(AIChatPlugin);
-
-  const chat = useChat<ChatMessage>({
-    id: 'editor',
-    api: '/api/ai/command',
-    transport: new DefaultChatTransport(),
-    onData(data) {
-      if (data.type === 'data-toolName') {
-        store.set({ toolName: data.data });
-      }
-    },
-  });
-
-  useEffect(() => {
-    store.set({ chat: createAIChatAdapter(chat) });
-  }, [chat, store]);
-
-  return chat;
-};
-```
-
-The copied `ai-menu` item owns floating-menu anchoring for cursor, text, and
-block selections. Keep product-specific menu effects beside that component.
+The kit's `useEditorChat` connects the real AI SDK transport. Each request
+carries `requestId` and `ctx`; text, tool, table, comment, and error frames are
+bound to that request. Text parts accumulate in stream order. The final frame
+is applied before the operation becomes ready.
 
 <ComponentSource name="ai-menu" />
 
-Now you can submit prompts programmatically:
+### Server endpoint
+
+Provide an AI SDK UI message stream from your server:
+
+<ComponentSource name="ai-api" />
+
+The request context contains document children, selection, exact node selection,
+block references, table cell references, and the requested tool. Named-root
+requests use that root's local document paths. The client retains runtime keys;
+the model receives request-local references.
+
+Configure the copied transport with an endpoint and provider settings:
 
 ```tsx
-editor.plugin(AIChatPlugin).api.submit('', {
-  prompt: {
-    default: 'Continue the document after {block}',
-    selecting: 'Rewrite {selection} with a clearer tone',
+import { AIChatTransportPlugin } from '@/components/editor/use-chat';
+
+editor.plugin(AIChatTransportPlugin).store.set({
+  chatOptions: {
+    api: '/api/ai/command',
+    body: { model: 'openai/gpt-4o-mini' },
+    demo: false,
   },
-  toolName: 'generate',
 });
 ```
 
-</Steps>
+Keep credentials in server environment variables. HTTP and stream errors are
+visible failures. A local demonstration can explicitly set `demo: true` to
+use the copied sample transport.
+
+## Custom transport
+
+Use cumulative raw source as the input. Never reconstruct it by serializing
+preview nodes. The installed Markdown parser and codecs determine the draft.
+Complete block prefixes can be retained; syntax with backward dependencies or
+unknown remark transforms uses complete parsing.
+
+```tsx
+import { AIChatPlugin } from 'platejs/ai/react';
+
+const ai = editor.plugin(AIChatPlugin);
+const requestId = ai.api.start({ mode: 'insert', toolName: 'generate' });
+ai.api.receive(requestId, 'Hello');
+ai.api.receive(requestId, 'Hello **world**');
+ai.api.finish(requestId, 'Hello **world**!');
+
+// Call from the user's review actions.
+ai.api.accept();
+```
+
+`receive` accepts a replacement source snapshot as well as an appended source.
+Duplicate snapshots do no work. Frames for stopped, discarded, replaced, or
+finished operations are ignored. Report transport failures with
+`ai.api.error(requestId, error)`.
 
 ## Prompt Templates
 
@@ -348,350 +157,67 @@ editor.plugin(aiChatPlugin).store.set({
 });
 ```
 
-Everything under `chatOptions.body` arrives in the route handler, letting you swap providers, pass user-specific metadata, or branch into different prompt templates.
+Use `chatOptions.body` for provider settings. Request identity and the captured editor context belong to the operation. Keep provider secrets on the server.
 
-## Keyboard Shortcuts
+## Operation API
+
+```tsx
+const ai = editor.plugin(AIChatPlugin);
+const operation = ai.store.get('operation');
+
+ai.api.submit('Rewrite clearly', { mode: 'chat', toolName: 'edit' });
+ai.api.stop();
+ai.api.retry();
+ai.api.accept({ placement: 'below' });
+ai.api.discard();
+```
+
+| API | Purpose |
+| --- | --- |
+| `submit(input, { mode?, toolName?, prompt?, options? })` | Capture request context and send through the stored chat adapter. Returns the request identity. |
+| `start({ mode?, toolName? })` | Capture targets for a custom text transport. Returns the request identity. |
+| `receive(id, source)` | Parse a cumulative raw Markdown source snapshot into the detached draft. |
+| `receiveTool(id, toolName)` | Set the request's interpretation to generate, edit, or comment. |
+| `receiveTable(id, { ref, content })` | Stage Markdown content for a request-local table cell reference. |
+| `receiveComment(id, { id, blockRef, content, comment })` | Stage feedback on the quoted text in a referenced block. |
+| `finish(id, source?)` | Apply the optional final snapshot and mark the draft ready. |
+| `error(id, error)` | Expose a failure for the matching active request. |
+| `stop()` | Stop transport and retain the partial draft. |
+| `retry()` | Regenerate against the retained target with a fresh identity. |
+| `accept({ placement? })` | Commit a ready draft once. `placement` is `replace` or `below`; insert mode appends after a nonempty target. Returns success. |
+| `discard()` | Close review and release the draft. |
+| `show()`, `hide()`, `reset()` | Control the menu and clear pending state. |
+
+`operation` is null or a read-only snapshot with `id`, `status`, `source`,
+`value`, `preview`, `targets`, `root`, `partial`, `comments`, and optional
+`error`. `value` contains generated blocks; `preview` contains presentation
+nodes, including edit suggestions. Use `status` (`streaming`, `ready`, or
+`error`) for loading and review controls.
+
+Render `operation.preview` with `PlateStatic` and an explicit static renderer
+configuration. The editor supplies installed schema and codec behavior; the
+immutable `value` prop supplies displayed content. See [Static rendering](/docs/static).
+
+### Tables and comments
+
+Table responses address request-local cell references and stage cell children.
+Acceptance validates those cells and preserves other cells. Comment responses
+stage ranges and feedback without writing document marks or discussion records.
+Acceptance writes comment marks in the editor batch, then invokes
+`onCommentsAccepted` with the accepted comments. The copied discussion owner
+stores those records. Document Undo removes the marks; discussion storage has
+its own persistence lifecycle.
+
+### Prompt reads and selectors
+
+`ai.read.markdown`, `commentRange`, `prompt`, and `resolvePlaceholders` read
+current editor context. `ai.selectors.lastAssistantMessage` reads the stored
+chat adapter. Use `createAIChatAdapter` to bridge AI SDK helpers to that adapter.
+
+## Keyboard shortcuts
 
 <KeyTable>
-  <KeyTableItem hotkey="Space">Open the AI menu in an empty block (cursor mode)</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + J">Show the AI menu (set via `shortcuts.show`)</KeyTableItem>
-  <KeyTableItem hotkey="Escape">Hide the AI menu and stop streaming</KeyTableItem>
+  <KeyTableItem hotkey="Space">Open AI in an empty block</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">Open the AI menu</KeyTableItem>
+  <KeyTableItem hotkey="Escape">Close review and stop streaming</KeyTableItem>
 </KeyTable>
-
-## Streaming
-
-The installed plugin keeps complex layouts intact while responses arrive:
-
-- `aiChat.update.insertChunk(chunk, options)` updates the active block and appends complete blocks.
-- `aiChat.api.deserializeChunk` and `aiChat.api.deserializeInlineChunk` decode complete or inline chunks.
-- `aiChat.read.serializeChunk` serializes from the current snapshot for drift checks.
-
-Call `aiChat.api.stop()` when streaming finishes.
-
-## Streaming Example
-
-<ComponentPreview name="markdown-streaming-demo" />
-
-## Plate Plus
-
-<ComponentPreviewPro name="ai-pro" />
-
-## API Reference
-
-### `AIPlugin`
-
-Adds an `ai` mark to streamed text and exposes transforms to remove AI nodes or undo the last AI batch. Use `.configure({ component })` to render AI-marked text with a custom component.
-
-<API name="AIPlugin">
-  <APIOptions>
-    <APIItem name="schema.mark" type="PluginSchemaMark">AI content is stored as a boolean text property using `property.boolean({ default: false, omitDefault: true })` with explicit lifecycle rules.</APIItem>
-    <APIItem name="render.isDecoration" type="false">AI marks render once per text node rather than as decorations.</APIItem>
-  </APIOptions>
-</API>
-
-### `AIChatPlugin`
-
-Main plugin that powers the AI menu, chat state, and transforms.
-
-<API name="AIChatPlugin">
-  <APIOptions>
-    <APIItem name="trigger" type="RegExp | string | string[]" optional>Character(s) that open the command menu. Defaults to `' '`.</APIItem>
-    <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
-    <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
-    <APIItem name="chat" type="AIChatAdapter" optional>Store the adapter returned by `createAIChatAdapter(useChat(...))` so API calls can access chat state and controls.</APIItem>
-    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for diff edit suggestions (managed internally).</APIItem>
-    <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
-    <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
-    <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
-    <APIItem name="previewValue" type="Value" optional>Generated preview nodes registered by the copied AI chat editor for insert and replace commands (managed internally).</APIItem>
-    <APIItem name="streaming" type="boolean" optional>True while a response is streaming. Defaults to `false`.</APIItem>
-    <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>Active tool used to interpret the response.</APIItem>
-  </APIOptions>
-</API>
-
-### `editor.plugin(AIChatPlugin).api.submit(input, options?)`
-
-Submits a prompt to your model provider. When `mode` is omitted it defaults to `'insert'` for a collapsed cursor and `'chat'` otherwise.
-
-<API name="submit">
-<APIParameters>
-  <APIItem name="input" type="string">Raw input from the user.</APIItem>
-  <APIItem name="options" type="object" optional>Fine-tune submission behaviour.</APIItem>
-</APIParameters>
-<APIOptions type="object">
-  <APIItem name="mode" type="'chat' | 'insert'" optional>Override the response mode.</APIItem>
-  <APIItem name="options" type="ChatRequestOptions" optional>Forwarded to `chat.sendMessage` (model, headers, etc.).</APIItem>
-  <APIItem name="prompt" type="EditorPrompt" optional>String, config, or function resolved against the current editor snapshot.</APIItem>
-  <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>Tags the submission so hooks can react differently.</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(AIChatPlugin).api.reset(options?)`
-
-Clears chat state, removes AI nodes, and optionally undoes the last AI batch.
-
-<API name="reset">
-<APIParameters>
-  <APIItem name="options" type="{ undo?: boolean }" optional>Pass `undo: false` to keep streamed content.</APIItem>
-</APIParameters>
-</API>
-
-### `editor.read.aiChat.node(options?)`
-
-Retrieves the first AI node that matches the specified criteria.
-
-<API name="node">
-<APIParameters>
-  <APIItem name="options" type="object &amp; { anchor?: boolean; streaming?: boolean }" optional>Set `anchor: true` to get the anchor node or `streaming: true` to retrieve the node currently being streamed into.</APIItem>
-</APIParameters>
-<APIReturns type="NodeEntry | undefined">Matching node entry, if found.</APIReturns>
-</API>
-
-### `editor.plugin(AIChatPlugin).api.reload()`
-
-Replays the last prompt using the stored chat adapter, restoring the original selection or block selection before resubmitting.
-
-### `editor.plugin(AIChatPlugin).api.stop()`
-
-Stops streaming and calls `chat.stop`.
-
-### `editor.plugin(AIChatPlugin).api.show()`
-
-Opens the AI menu, clears previous chat messages, and resets tool state.
-
-### `editor.plugin(AIChatPlugin).api.hide(options?)`
-
-Closes the AI menu, optionally undoing the last AI batch and refocusing the editor.
-
-<API name="hide">
-<APIParameters>
-  <APIItem name="options" type="{ focus?: boolean; undo?: boolean }" optional>Set `focus: false` to keep focus outside the editor or `undo: false` to preserve inserted content.</APIItem>
-</APIParameters>
-</API>
-
-### `editor.update.aiChat.accept()`
-
-Accepts the latest response. In insert mode it removes AI marks and places the caret at the end of the streamed content. In chat mode it applies the pending suggestions.
-
-### `editor.update.aiChat.insertBelow(options?)`
-
-Inserts the stored chat preview below the current selection or block selection.
-
-<API name="insertBelow">
-<APIParameters>
-  <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Copy formatting from the source selection. Defaults to `'single'`.</APIItem>
-</APIParameters>
-</API>
-
-### `editor.update.aiChat.replaceSelection(options?)`
-
-Replaces the current selection or block selection with the stored chat preview.
-
-<API name="replaceSelection">
-<APIParameters>
-  <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Controls how much formatting from the original selection should be applied.</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(AIChatPlugin).update.remove({ at: [] })`
-
-Removes every temporary AI Chat anchor without a feature-specific wrapper.
-
-```tsx
-editor
-  .plugin(AIChatPlugin)
-  .update({ history: 'skip' })
-  .remove({ at: [] });
-```
-
-### `editor.update.ai.insertNodes(nodes, options?)`
-
-Inserts nodes tagged with the AI mark at the current selection (or `options.target`).
-
-### `editor.update.ai.removeMarks(options?)`
-
-Clears the AI mark from matching nodes.
-
-### `editor.update.ai.removeNodes(options?)`
-
-Removes text nodes that are marked as AI-generated.
-
-### `editor.update.ai.beginPreview(options?)`
-
-Captures the rollback slice and selection for insert-mode AI preview. Call it once before writing the first unsaved preview chunk.
-
-<API name="beginPreview">
-<APIParameters>
-  <APIItem name="options" type="{ originalBlocks?: Value }" optional>Top-level blocks that the preview will overwrite. Use `[]` when preview inserts after existing content.</APIItem>
-</APIParameters>
-<APIReturns type="boolean">Returns `true` when a new preview rollback point was stored, or `false` when preview state already exists.</APIReturns>
-</API>
-
-### `editor.update.ai.acceptPreview()`
-
-Commits the active preview as one fresh undoable batch, strips preview-only markers, and clears preview bookkeeping.
-
-<API name="acceptPreview">
-<APIReturns type="boolean">Returns `true` when an active preview was committed.</APIReturns>
-</API>
-
-### `editor.update.ai.cancelPreview()`
-
-Restores the rollback point for the active preview and clears preview bookkeeping.
-
-<API name="cancelPreview">
-<APIReturns type="boolean">Returns `true` when an active preview was restored.</APIReturns>
-</API>
-
-### `editor.update.ai.discardPreview()`
-
-Clears preview bookkeeping without restoring content. Use it when the previewed content should stay in place.
-
-<API name="discardPreview">
-<APIReturns type="boolean">Returns `true` when active preview bookkeeping was cleared.</APIReturns>
-</API>
-
-### `editor.read.ai.hasPreview()`
-
-Reports whether an insert-mode preview rollback point is currently active.
-
-<API name="hasPreview">
-<APIReturns type="boolean">Returns `true` when preview rollback state exists.</APIReturns>
-</API>
-
-### `editor.update.ai.undo()`
-
-Undoes the latest batch marked by `editor.update.ai.markBatch()`. If an
-insert-mode preview is active, it cancels that preview first.
-
-### Registry Chat Preview
-
-The copied `ai-menu` item includes `AIChatEditor`. It creates the preview
-editor, deserializes response Markdown, and publishes `previewValue` to the AI
-Chat plugin beside the UI that consumes it.
-
-<ComponentSource name="ai-menu" />
-
-### `useChatChunk`
-
-Streams chat responses chunk-by-chunk and gives you full control over insertion.
-
-<API name="useChatChunk">
-<APIParameters>
-  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: Text[]; text: string }) => void">Handle each streamed chunk.</APIItem>
-  <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>Called when streaming finishes.</APIItem>
-</APIParameters>
-</API>
-
-### AI Chat capabilities
-
-Use the installed plugin for AI Chat services, snapshot reads, and updates:
-
-```tsx
-const aiChat = editor.plugin(AIChatPlugin);
-
-const prompt = aiChat.read.prompt({ prompt: 'Improve this' });
-aiChat.update.insertChunk(chunk, { autoScroll: true });
-```
-
-| Namespace | Methods |
-| --- | --- |
-| `ai.api` | `findTextRangeInBlock` |
-| `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
-| `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
-| `aiChat.store.get` | `lastAssistantMessage` |
-| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set` |
-
-### `ai.api.findTextRangeInBlock`
-
-Find an exact, typo-tolerant, or partial-prefix text match inside a block:
-
-```tsx
-const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
-  block,
-  findText: 'Text to locate',
-});
-```
-
-It returns a Plite `Range` or `null`.
-
-## Customization
-
-### Adding Custom AI Commands
-
-<ComponentSource name="ai-menu" />
-
-Extend the `aiChatItems` map to add new commands. Each command receives `{ editor, input }` and can call `editor.plugin(AIChatPlugin).api.submit` with custom prompts or transforms.
-
-#### Simple Custom Command
-
-```tsx
-import { AIChatPlugin } from 'platejs/ai/react';
-import { ListIcon } from 'lucide-react';
-
-export const aiChatItems = {
-  summarizeInBullets: {
-    icon: <ListIcon />,
-    label: 'Summarize in bullets',
-    value: 'summarizeInBullets',
-    onSelect: ({ editor }) => {
-      void editor.plugin(AIChatPlugin).api.submit('', {
-        prompt: 'Summarize the current selection using bullet points',
-        toolName: 'generate',
-      });
-    },
-  },
-};
-```
-
-#### Command with Complex Logic
-
-```tsx
-import { AIChatPlugin } from 'platejs/ai/react';
-import { PLUGINS } from 'platejs';
-import { BookIcon } from 'lucide-react';
-
-export const aiChatItems = {
-  generateTOC: {
-    icon: <BookIcon />,
-    label: 'Generate table of contents',
-    value: 'generateTOC',
-    onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
-        .map((name) => editor.plugin(name))
-        .flatMap((plugin) =>
-          plugin.installed ? [plugin.schema.type] : []
-        );
-      const headings = editor.read.nodes.toArray({
-        at: [],
-        type: headingTypes,
-      });
-
-      const prompt =
-        headings.length === 0
-          ? 'Create a realistic table of contents for this document'
-          : 'Generate a table of contents that reflects the existing headings';
-
-      void editor.plugin(AIChatPlugin).api.submit('', {
-        mode: 'insert',
-        prompt,
-        toolName: 'generate',
-      });
-    },
-  },
-};
-```
-
-The command reads the installed H1-H3 capabilities. If the editor omits all
-three, it uses the fallback prompt instead of assuming persisted type strings.
-
-The menu automatically switches between command and suggestion states:
-
-- `cursorCommand`: Cursor is collapsed and no response yet.
-- `selectionCommand`: Text is selected and no response yet.
-- `cursorSuggestion` / `selectionSuggestion`: A response exists, so actions like Accept, Try Again, or Insert Below are shown.
-
-Use `toolName` (`'generate' | 'edit' | 'comment'`) to control how streaming
-hooks process the response. For example, `'edit'` enables diff-based
-suggestions, while `'comment'` can map feedback through
-`aiChat.read.commentRange`.

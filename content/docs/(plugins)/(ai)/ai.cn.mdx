@@ -1,6 +1,6 @@
 ---
 title: AI
-description: AI 驱动的写作辅助。
+description: 流式生成 Markdown 草稿，审阅建议，并通过一次编辑操作接受结果。
 docs:
   - route: https://pro.platejs.org/docs/examples/ai
     title: Plus
@@ -8,687 +8,125 @@ docs:
 
 <ComponentPreview name="ai-demo" />
 
-<PackageInfo>
+## 草稿与接受
 
-## 功能特性
+AI 输出在用户接受之前属于独立草稿。流式预览不修改编辑器正文、选区或撤销历史。复制的 UI 在原目标位置显示插入预览和编辑建议；聊天生成结果显示在审阅面板中。
 
-- **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
-- **流式 Markdown/MDX 插入**，支持表格、列和代码块，通过 `editor.update.aiChat.insertChunk` 执行。
-- **插入和聊天审查模式**，通过局部回滚预览和 `editor.update.ai` 实现撤销安全批处理。
-- **块选择感知变换**，使用 `editor.update.aiChat.replaceSelection` 和 `editor.update.aiChat.insertBelow` 替换或追加整个部分。
-- **与 `@ai-sdk/react` 直接集成**，使 `editor.plugin(AIChatPlugin).api.submit` 可以从 Vercel AI SDK 助手流式传输响应。
-- **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
+操作保存精确的区块身份或文本范围。离散选区之间未选中的区块保持独立。目标被修改或删除时，接受操作报告冲突。重试保留原目标，并创建新的请求标识。
 
-</PackageInfo>
+接受通过一个历史批次写入生成内容。一次撤销恢复此前的正文和选区，一次重做重新应用结果。丢弃只清除草稿，保留已有重做历史。停止保留可审阅的部分结果，并忽略该请求后续到达的数据。
 
-## Kit 使用方法
-
-<Steps>
-
-### 安装
-
-添加 AI 功能最快的方式是使用 `AIKit`。它包含已配置的 `AIPlugin`、`AIChatPlugin`、Markdown 流式助手、光标覆盖层及其 [Plate UI](/docs/installation/plate-ui) 组件。
+## 使用套件
 
 <ComponentSource name="ai" />
 
-- [`AIMenu`](/docs/components/ai-menu)：用于提示、工具快捷方式和聊天审查的浮动命令界面。
-- [`AILoadingBar`](/docs/components/ai-loading-bar)：在编辑器容器中显示流式状态。
-- [`AIAnchorElement`](/docs/components/ai-anchor-element)：用于在流式传输期间定位浮动菜单的不可见锚点节点。
-- [`AILeaf`](/docs/components/ai-leaf)：以微妙的样式渲染 AI 标记的文本。
-
-### 添加 Kit
-
 ```tsx
-import {
-  createEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 
 const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-  ...AIKit,
-  ],
-  });
-```
-
-### 添加 API 路由
-
-暴露一个流式命令端点，代理您的模型提供商：
-
-<ComponentSource name="ai-api" />
-
-### 配置环境
-
-在本地设置您的 AI 网关密钥（如果您不使用网关，请替换为您的提供商密钥）：
-
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
-
-</Steps>
-
-## 手动使用
-
-<Steps>
-
-### 安装
-
-```bash
-npm install platejs @ai-sdk/react @tanstack/react-virtual ai fastest-levenshtein marked remark-mdx remark-parse remark-stringify unified
-```
-
-`platejs` 是可选的，但对于基于差异的编辑建议是必需的。
-
-### 添加插件
-
-```tsx
-import { createEditor } from 'platejs/react';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
-import { MarkdownPlugin } from 'platejs/markdown';
-
-export const editor = createEditor({
-  plugins: [
-    MarkdownPlugin,
-    AIPlugin,
-    AIChatPlugin, // 在下一步中扩展
-  ],
+  plugins: [/* 文档插件，*/ ...AIKit],
 });
 ```
 
-- 编辑器选择为 `AIChatPlugin` 提供文本和多节点目标。
-- `MarkdownPlugin`：提供流式工具使用的 Markdown 序列化。
-- `AIPlugin`：添加 AI 标记和用于撤销 AI 批处理的变换。
-- `AIChatPlugin`：提供 AI 组合框、API 助手和变换。
+`AIChatPlugin` 管理请求状态和接受操作。`MarkdownPlugin` 负责 Markdown 与 MDX 转换。`SuggestionPlugin` 提供编辑建议投影。`AIPlugin` 定义可选的 AI 文本标记。
 
-使用 `AIPlugin.configure({ component })` 配合您自己的元素（或 [`AILeaf`](/docs/components/ai-leaf)）来高亮 AI 生成的文本。
-
-### 配置 AIChatPlugin
-
-配置 `AIChatPlugin` 以连接流式传输和编辑。插件负责分块插入、预览快照和建议更新。
-
-```tsx
-import cloneDeep from 'lodash/cloneDeep';
-import {
-  AIChatPlugin,
-  AIPlugin,
-  useChatChunk,
-  } from 'platejs/ai/react';
-import { ElementApi,
-  PathApi,
-} from 'platejs';
-import { usePluginStore } from 'platejs/react';
-
-export const aiChatPlugin = AIChatPlugin.extend({
-  initialState: {
-    chatOptions: {
-      api: '/api/ai/command',
-      body: {
-        model: 'openai/gpt-4o-mini',
-      },
-    },
-    trigger: ' ',
-    triggerPreviousCharPattern: /^\s?$/,
-  },
-  useHooks: ({ editor, read, store, update }) => {
-    const mode = usePluginStore(AIChatPlugin, 'mode');
-    const toolName = usePluginStore(AIChatPlugin, 'toolName');
-
-    useChatChunk({
-      onChunk: ({ chunk, isFirst, nodes, text: content }) => {
-        if (isFirst && mode === 'insert') {
-          const selection = editor.read.selection();
-
-          if (!selection) return;
-
-          const { startBlock, startInEmptyParagraph } =
-            read.insertStart();
-
-          editor.update.ai.beginPreview({
-            originalBlocks:
-              startInEmptyParagraph &&
-              startBlock &&
-              ElementApi.isElement(startBlock)
-                ? [cloneDeep(startBlock)]
-                : [],
-          });
-
-          editor.update({ history: 'skip' }, (tx) => {
-            tx.nodes.insert(
-              {
-                children: [{ text: '' }],
-                type: editor.plugin(PLUGINS.aiChat).schema.type,
-              },
-              {
-                at: PathApi.next(selection.focus.path.slice(0, 1)),
-              }
-            );
-          });
-          store.set({ streaming: true });
-        }
-
-        if (mode === 'insert' && nodes.length > 0) {
-          if (!store.get('streaming')) return;
-
-          update.insertChunk(chunk, {
-            autoScroll: true,
-            textProps: {
-              [editor.plugin(PLUGINS.ai).schema.key]: true,
-            },
-          });
-        }
-
-        if (toolName === 'edit' && mode === 'chat') {
-          update.applySuggestions(content, { split: isFirst });
-        }
-      },
-      onFinish: () => {
-        store.set({
-          _blockChunks: '',
-          _blockPath: null,
-          _mdxName: null,
-          streaming: false,
-        });
-      },
-    });
-  },
-});
-```
-
-- `useChatChunk`：监视存储的聊天适配器并生成增量块。
-- `editor.update.ai.beginPreview`：在写入首个预览块之前捕获回滚片段和选区。
-- `update.insertChunk`：将 Markdown/MDX 分块写入文档并复用当前区块。
-- `update.applySuggestions`：将编辑响应转换为临时建议节点。
-
-扩展插件时，请提供您自己的 `render` 组件（工具栏按钮、浮动菜单等）。
-
-### 构建 API 路由
-
-在服务器上处理 `editor.plugin(AIChatPlugin).api.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
-[完整 API 示例](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
-
-```ts title="app/api/ai/command/route.ts"
-import { createGateway } from '@ai-sdk/gateway';
-import { convertToCoreMessages, streamText } from 'ai';
-import { createEditor } from 'platejs';
-
-import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
-
-export async function POST(req: Request) {
-  const { apiKey, ctx, messages, model } = await req.json();
-
-  const editor = createEditor({
-    plugins: BaseEditorKit,
-    selection: ctx.selection,
-    initialValue: ctx.children,
-  });
-
-  const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY,
-  });
-
-  const result = streamText({
-    experimental_transform: markdownJoinerTransform(),
-    messages: convertToCoreMessages(messages),
-    model: gateway(model ?? 'openai/gpt-4o-mini'),
-    system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
-  });
-
-  return result.toDataStreamResponse();
-}
-```
-
-- `ctx.children` 和 `ctx.selection` 被重新水合到 Plite 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
-- 通过 `chatOptions.body` 转发提供商设置（model、apiKey、temperature、gateway 标志等）；您添加的所有内容都会在 JSON 有效载荷中原样传递，可以在调用 `createGateway` 之前读取。
-- 始终从服务器读取密钥。客户端应仅发送不透明标识符或短期令牌。
-- 返回流式响应，以便 `useChat` 和 `useChatChunk` 可以增量处理令牌。
-
-### 连接 `useChat`
-
-使用 `@ai-sdk/react` 桥接编辑器和您的模型端点。将助手存储在插件上，以便变换可以重新加载、停止或显示聊天状态。
-
-```tsx
-import { useEffect } from 'react';
-
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { useChat } from '@ai-sdk/react';
-import { AIChatPlugin, createAIChatAdapter } from 'platejs/ai/react';
-import { useEditorPlugin } from 'platejs/react';
-
-type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
-
-export const useEditorAIChat = () => {
-  const { store } = useEditorPlugin(AIChatPlugin);
-
-  const chat = useChat<ChatMessage>({
-    id: 'editor',
-    api: '/api/ai/command',
-    transport: new DefaultChatTransport(),
-    onData(data) {
-      if (data.type === 'data-toolName') {
-        store.set({ toolName: data.data });
-      }
-    },
-  });
-
-  useEffect(() => {
-    store.set({ chat: createAIChatAdapter(chat) });
-  }, [chat, store]);
-
-  return chat;
-};
-```
-
-复制的 `ai-menu` 项负责光标、文本选区和块选区的浮动菜单锚定。将产品专属的
-菜单副作用放在该组件旁边。
+套件中的 `useEditorChat` 连接真实 AI SDK 传输。请求携带 `requestId` 和 `ctx`；文本、工具、表格、评论和错误数据都绑定到对应请求。多个文本部分按流中顺序累积。最后的数据应用完成后，操作才进入可接受状态。
 
 <ComponentSource name="ai-menu" />
 
-现在您可以以编程方式提交提示：
+### 服务端接口
+
+服务端返回 AI SDK UI 消息流：
+
+<ComponentSource name="ai-api" />
+
+请求上下文包含正文、文本选区、精确区块选区、区块引用、表格单元格引用和工具名称。命名根请求使用该根内的局部路径。客户端保留运行时身份，模型只接收请求内引用。
+
+```tsx
+import { AIChatTransportPlugin } from '@/components/editor/use-chat';
+
+editor.plugin(AIChatTransportPlugin).store.set({
+  chatOptions: {
+    api: '/api/ai/command',
+    body: { model: 'openai/gpt-4o-mini' },
+    demo: false,
+  },
+});
+```
+
+密钥保存在服务端环境变量中。HTTP 和流错误会显示为失败。仅本地演示需要样例传输时，显式配置 `demo: true`。
+
+## 自定义传输
+
+传入累积的原始 Markdown 文本，不要通过序列化预览节点重建输入。草稿沿用已安装的 Markdown 解析器与编解码器。完整区块前缀可被保留；存在向前引用依赖或未知 remark 转换时使用完整解析。
+
+```tsx
+import { AIChatPlugin } from 'platejs/ai/react';
+
+const ai = editor.plugin(AIChatPlugin);
+const requestId = ai.api.start({ mode: 'insert', toolName: 'generate' });
+ai.api.receive(requestId, 'Hello');
+ai.api.receive(requestId, 'Hello **world**');
+ai.api.finish(requestId, 'Hello **world**!');
+
+// 在用户接受结果时调用。
+ai.api.accept();
+```
+
+`receive` 支持追加与替换源快照。重复快照不产生工作。停止、丢弃、替换或完成的操作会忽略迟到数据。通过 `ai.api.error(requestId, error)` 报告传输失败。
+
+## 提示词
+
+`submit` 接受字符串、`default` / `selecting` / `nodeSelecting` 配置，或接收 `{ editor, isSelecting, isNodeSelecting }` 的函数。精确区块选区优先匹配 `nodeSelecting`，包括内容为空的选中区块。
 
 ```tsx
 editor.plugin(AIChatPlugin).api.submit('', {
   prompt: {
-    default: 'Continue the document after {block}',
-    selecting: 'Rewrite {selection} with a clearer tone',
+    default: 'Continue after {block}',
+    selecting: 'Rewrite {selection} clearly',
+    nodeSelecting: 'Rewrite {nodeSelection} clearly',
   },
   toolName: 'generate',
 });
 ```
 
-</Steps>
+`ai.read.prompt` 根据当前选区选择提示词。`ai.read.resolvePlaceholders` 用 Markdown 展开 `{editor}`、`{block}`、`{nodeSelection}` 和 `{prompt}`。服务端参考复制的 `ai-api`，根据请求上下文选择生成、编辑或评论工具。
 
-## 提示模板
+## 操作 API
 
-### 客户端提示
+| API | 用途 |
+| --- | --- |
+| `submit(input, { mode?, toolName?, prompt?, options? })` | 保存上下文，通过聊天适配器发送请求并返回请求标识。 |
+| `start({ mode?, toolName? })` | 为自定义文本传输保存目标并返回请求标识。 |
+| `receive(id, source)` | 将累积源快照解析为独立草稿。 |
+| `receiveTool(id, toolName)` | 指定生成、编辑或评论工具。 |
+| `receiveTable(id, { ref, content })` | 暂存引用单元格的 Markdown 内容。 |
+| `receiveComment(id, { id, blockRef, content, comment })` | 暂存引用区块中指定文本的评论。 |
+| `finish(id, source?)` | 应用可选的最终快照，进入可接受状态。 |
+| `error(id, error)` | 显示匹配请求的错误。 |
+| `stop()` | 停止传输并保留部分草稿。 |
+| `retry()` | 保留原目标，以新标识重新生成。 |
+| `accept({ placement? })` | 接受一次草稿并返回是否成功。位置为 `replace` 或 `below`；插入模式在非空目标后追加。 |
+| `discard()` | 关闭审阅并释放草稿。 |
+| `show()`、`hide()`、`reset()` | 控制菜单并清除待处理状态。 |
 
-- `aiChat.api.submit` 接受 `EditorPrompt`：字符串、`default`/`selecting`/`nodeSelecting` 对象，或接收 `{ editor, isSelecting, isNodeSelecting }` 的函数。
-- `isSelecting` 表示代表范围是否展开；`isNodeSelecting` 表示精确节点成员关系，因此选择空节点时，即使代表范围折叠，它仍为 `true`。`nodeSelecting` 优先于 `selecting`。
-- `aiChat.read.prompt` 针对当前快照解析该输入。
-- `aiChat.read.resolvePlaceholders` 使用快照 Markdown 扩展 `{editor}`、`{block}`、`{nodeSelection}` 和 `{prompt}`。
+`ai.store.get('operation')` 返回 null 或只读快照，包含 `id`、`status`、`source`、`value`、`preview`、`targets`、`root`、`partial`、`comments` 及可选的 `error`。`value` 是生成区块，`preview` 是包含编辑建议的展示节点。`status` 为 `streaming`、`ready` 或 `error`。
 
-```tsx
-const aiChat = editor.plugin(AIChatPlugin);
-const template = aiChat.read.resolvePlaceholders(
-  'Rewrite {nodeSelection} using a friendly tone.'
-);
+使用 `PlateStatic` 的不可变 `value` 与显式静态渲染配置展示草稿。编辑器提供已安装的 schema 与编解码行为。参见[静态渲染](/docs/static)。
 
-aiChat.api.submit('Improve tone', {
-  prompt: template,
-  toolName: 'generate',
-});
-```
+### 表格与评论
 
-### 服务器端提示
+表格结果通过请求内引用暂存单元格子节点。接受时验证目标单元格，并保留其他单元格。评论先暂存范围与反馈，不写入正文标记或讨论记录。接受在编辑器批次中写入评论标记，然后调用 `onCommentsAccepted`。复制的讨论组件负责存储记录；正文撤销会移除标记，讨论存储拥有独立的持久化生命周期。
 
-`apps/www/src/app/api/ai/command` 中的演示后端从 `ctx` 重建编辑器并构建结构化提示：
+### 读取与选择器
 
-- `getChooseToolPrompt` 决定请求是 `generate`、`edit` 还是 `comment`。
-- `getGeneratePrompt`、`getEditPrompt` 和 `getCommentPrompt` 将当前编辑器状态转换为针对每种模式量身定制的指令。
-- 服务端提示助手通过 `editor.api.markdown.serialize`
-  序列化显式编辑器快照，并使用 `buildStructuredPrompt`
-  组合选区、块 ID 和 MDX 标签。
+`ai.read.markdown`、`commentRange`、`prompt` 和 `resolvePlaceholders` 读取当前编辑器上下文。`ai.selectors.lastAssistantMessage` 读取聊天适配器。使用 `createAIChatAdapter` 连接 AI SDK 辅助对象。
 
-增强从客户端发送的有效载荷以微调服务器提示：
-
-```ts
-editor.plugin(aiChatPlugin).store.set({
-  chatOptions: {
-    api: '/api/ai/command',
-    body: {
-      model: 'openai/gpt-4o-mini',
-      tone: 'playful',
-      temperature: 0.4,
-    },
-  },
-});
-```
-
-`chatOptions.body` 下的所有内容都会到达路由处理程序，让您可以交换提供商、传递用户特定的元数据或分支到不同的提示模板。
-
-## 键盘快捷键
+## 快捷键
 
 <KeyTable>
-  <KeyTableItem hotkey="Space">在空块中打开 AI 菜单（光标模式）</KeyTableItem>
-  <KeyTableItem hotkey="Cmd + J">显示 AI 菜单（通过 `shortcuts.show` 设置）</KeyTableItem>
-  <KeyTableItem hotkey="Escape">隐藏 AI 菜单并停止流式传输</KeyTableItem>
+  <KeyTableItem hotkey="Space">在空区块中打开 AI</KeyTableItem>
+  <KeyTableItem hotkey="Cmd + J">打开 AI 菜单</KeyTableItem>
+  <KeyTableItem hotkey="Escape">关闭审阅并停止传输</KeyTableItem>
 </KeyTable>
-
-## 流式传输
-
-已安装插件在响应到达时保持复杂布局完整：
-
-- `aiChat.update.insertChunk(chunk, options)` 更新当前区块并追加完整区块。
-- `aiChat.api.deserializeChunk` 和 `aiChat.api.deserializeInlineChunk` 解码完整或内联分块。
-- `aiChat.read.serializeChunk` 从当前快照序列化以检查漂移。
-
-流式传输完成时调用 `aiChat.api.stop()`。
-
-## 流式传输示例
-
-<ComponentPreview name="markdown-streaming-demo" />
-
-## Plate Plus
-
-<ComponentPreviewPro name="ai-pro" />
-
-## Hooks
-
-### Registry 聊天预览
-
-复制的 `ai-menu` 项包含 `AIChatEditor`。它创建预览编辑器、反序列化响应
-Markdown，并在消费该状态的 UI 旁将 `previewValue` 发布到 AI Chat 插件。
-
-<ComponentSource name="ai-menu" />
-
-### `useChatChunk`
-
-逐块流式传输聊天响应，让您完全控制插入。
-
-<API name="useChatChunk">
-<APIParameters>
-  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: Text[]; text: string }) => void">处理每个流式块。</APIItem>
-  <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>流式传输完成时调用。</APIItem>
-</APIParameters>
-</API>
-
-## AI Chat 能力
-
-通过已安装插件访问 AI Chat 服务、快照读取和更新：
-
-```tsx
-const aiChat = editor.plugin(AIChatPlugin);
-
-const prompt = aiChat.read.prompt({ prompt: '改进这段内容' });
-aiChat.update.insertChunk(chunk, { autoScroll: true });
-```
-
-| 命名空间 | 方法 |
-| --- | --- |
-| `ai.api` | `findTextRangeInBlock` |
-| `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
-| `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
-| `aiChat.store.get` | `lastAssistantMessage` |
-| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set` |
-
-### `ai.api.findTextRangeInBlock`
-
-在块内查找精确匹配、容错匹配或部分前缀匹配：
-
-```tsx
-const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
-  block,
-  findText: '要查找的文本',
-});
-```
-
-返回 Plite `Range` 或 `null`。
-
-## 插件
-
-### `AIPlugin`
-
-向流式文本添加 `ai` 标记，并暴露变换以移除 AI 节点或撤销最后一个 AI 批次。使用 `.configure({ component })` 以自定义组件渲染 AI 标记的文本。
-
-<API name="AIPlugin">
-  <APIOptions>
-    <APIItem name="schema.mark" type="PluginSchemaMark">AI 内容通过 `property.boolean({ default: false, omitDefault: true })` 和显式生命周期规则存储为布尔文本属性。</APIItem>
-    <APIItem name="render.isDecoration" type="false">AI 标记每个文本节点渲染一次，而不是作为装饰渲染。</APIItem>
-  </APIOptions>
-</API>
-
-### `AIChatPlugin`
-
-驱动 AI 菜单、聊天状态和变换的主插件。
-
-<API name="AIChatPlugin">
-  <APIOptions>
-    <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
-    <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
-    <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
-    <APIItem name="chat" type="AIChatAdapter" optional>存储 `createAIChatAdapter(useChat(...))` 返回的适配器，以便 API 调用可以访问聊天状态和控制器。</APIItem>
-    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>与编辑器作用域运行时标识配对的差异编辑建议节点快照（内部管理）。</APIItem>
-    <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
-    <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
-    <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
-    <APIItem name="previewValue" type="Value" optional>由复制的 AI 聊天编辑器注册并供插入和替换命令使用的生成预览节点（内部管理）。</APIItem>
-    <APIItem name="streaming" type="boolean" optional>响应流式传输时为 true。默认为 `false`。</APIItem>
-    <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>用于解释响应的活动工具。</APIItem>
-  </APIOptions>
-</API>
-
-## API
-
-### `editor.plugin(AIChatPlugin).api.submit(input, options?)`
-
-向您的模型提供商提交提示。当省略 `mode` 时，折叠光标默认为 `'insert'`，否则为 `'chat'`。
-
-<API name="submit">
-<APIParameters>
-  <APIItem name="input" type="string">来自用户的原始输入。</APIItem>
-  <APIItem name="options" type="object" optional>微调提交行为。</APIItem>
-</APIParameters>
-<APIOptions type="object">
-  <APIItem name="mode" type="'chat' | 'insert'" optional>覆盖响应模式。</APIItem>
-  <APIItem name="options" type="ChatRequestOptions" optional>转发到 `chat.sendMessage`（model、headers 等）。</APIItem>
-  <APIItem name="prompt" type="EditorPrompt" optional>针对当前编辑器快照解析的字符串、配置或函数。</APIItem>
-  <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>标记提交，以便 hooks 可以做出不同的响应。</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(AIChatPlugin).api.reset(options?)`
-
-清除聊天状态，移除 AI 节点，并可选择撤销最后一个 AI 批次。
-
-<API name="reset">
-<APIParameters>
-  <APIItem name="options" type="{ undo?: boolean }" optional>传递 `undo: false` 以保留流式内容。</APIItem>
-</APIParameters>
-</API>
-
-### `editor.read.aiChat.node(options?)`
-
-检索与指定条件匹配的第一个 AI 节点。
-
-<API name="node">
-<APIParameters>
-  <APIItem name="options" type="object &amp; { anchor?: boolean; streaming?: boolean }" optional>设置 `anchor: true` 以获取锚点节点，或 `streaming: true` 以检索当前正在流式传输的节点。</APIItem>
-</APIParameters>
-<APIReturns type="NodeEntry | undefined">匹配的节点条目（如果找到）。</APIReturns>
-</API>
-
-### `editor.plugin(AIChatPlugin).api.reload()`
-
-使用存储的聊天适配器重放最后一个提示，在重新提交之前恢复原始选择或块选择。
-
-### `editor.plugin(AIChatPlugin).api.stop()`
-
-停止流式传输并调用 `chat.stop`。
-
-### `editor.plugin(AIChatPlugin).api.show()`
-
-打开 AI 菜单，清除之前的聊天消息，并重置工具状态。
-
-### `editor.plugin(AIChatPlugin).api.hide(options?)`
-
-关闭 AI 菜单，可选择撤销最后一个 AI 批次并重新聚焦编辑器。
-
-<API name="hide">
-<APIParameters>
-  <APIItem name="options" type="{ focus?: boolean; undo?: boolean }" optional>设置 `focus: false` 以保持焦点在编辑器外，或 `undo: false` 以保留插入的内容。</APIItem>
-</APIParameters>
-</API>
-
-## 变换
-
-### `editor.update.aiChat.accept()`
-
-接受最新的响应。在插入模式下，它移除 AI 标记并将光标放置在流式内容的末尾。在聊天模式下，它应用待处理的建议。
-
-### `editor.update.aiChat.insertBelow(options?)`
-
-在当前选择或块选择下方插入存储的聊天预览。
-
-<API name="insertBelow">
-<APIParameters>
-  <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>从源选择复制格式。默认为 `'single'`。</APIItem>
-</APIParameters>
-</API>
-
-### `editor.update.aiChat.replaceSelection(options?)`
-
-用存储的聊天预览替换当前选择或块选择。
-
-<API name="replaceSelection">
-<APIParameters>
-  <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>控制应应用原始选择的多少格式。</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(AIChatPlugin).update.remove({ at: [] })`
-
-移除所有用于定位 AI 菜单的临时锚点，无需额外的功能包装方法。
-
-```tsx
-editor
-  .plugin(AIChatPlugin)
-  .update({ history: 'skip' })
-  .remove({ at: [] });
-```
-
-### `editor.update.ai.insertNodes(nodes, options?)`
-
-在当前选择（或 `options.target`）处插入带有 AI 标记的节点。
-
-### `editor.update.ai.removeMarks(options?)`
-
-从匹配的节点中清除 AI 标记。
-
-### `editor.update.ai.removeNodes(options?)`
-
-移除标记为 AI 生成的文本节点。
-
-### `editor.update.ai.beginPreview(options?)`
-
-捕获插入模式 AI 预览的回滚块切片和选区。在写入首个未保存的预览块之前调用一次。
-
-<API name="beginPreview">
-<APIParameters>
-  <APIItem name="options" type="{ originalBlocks?: Value }" optional>预览将覆盖的顶层块。若预览是在现有内容之后插入，则传 `[]`。</APIItem>
-</APIParameters>
-<APIReturns type="boolean">当存储了新的预览回滚点时返回 `true`；若预览状态已存在则返回 `false`。</APIReturns>
-</API>
-
-### `editor.update.ai.acceptPreview()`
-
-将当前预览作为一次新的可撤销批次提交，移除仅预览使用的标记，并清除预览状态。
-
-<API name="acceptPreview">
-<APIReturns type="boolean">当活动预览被提交时返回 `true`。</APIReturns>
-</API>
-
-### `editor.update.ai.cancelPreview()`
-
-恢复当前预览的回滚点，并清除预览状态。
-
-<API name="cancelPreview">
-<APIReturns type="boolean">当活动预览被恢复时返回 `true`。</APIReturns>
-</API>
-
-### `editor.update.ai.discardPreview()`
-
-清除预览状态而不恢复内容。当预览内容应该保留在文档中时使用它。
-
-<API name="discardPreview">
-<APIReturns type="boolean">当活动预览状态被清除时返回 `true`。</APIReturns>
-</API>
-
-### `editor.read.ai.hasPreview()`
-
-报告当前是否存在插入模式预览的回滚点。
-
-<API name="hasPreview">
-<APIReturns type="boolean">当存在预览回滚状态时返回 `true`。</APIReturns>
-</API>
-
-### `editor.update.ai.undo()`
-
-撤销由 `editor.update.ai.markBatch()` 标记的最新批次。若当前存在插入模式预览，则先取消该预览。
-
-## 自定义
-
-### 添加自定义 AI 命令
-
-<ComponentSource name="ai-menu" />
-
-扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ editor, input }` 并可以使用自定义提示或变换调用 `editor.plugin(AIChatPlugin).api.submit`。
-
-#### 简单自定义命令
-
-```tsx
-import { AIChatPlugin } from 'platejs/ai/react';
-import { ListIcon } from 'lucide-react';
-
-export const aiChatItems = {
-  summarizeInBullets: {
-    icon: <ListIcon />,
-    label: 'Summarize in bullets',
-    value: 'summarizeInBullets',
-    onSelect: ({ editor }) => {
-      void editor.plugin(AIChatPlugin).api.submit('', {
-        prompt: 'Summarize the current selection using bullet points',
-        toolName: 'generate',
-      });
-    },
-  },
-};
-```
-
-#### 带复杂逻辑的命令
-
-```tsx
-import { AIChatPlugin } from 'platejs/ai/react';
-import { PLUGINS } from 'platejs';
-import { BookIcon } from 'lucide-react';
-
-export const aiChatItems = {
-  generateTOC: {
-    icon: <BookIcon />,
-    label: 'Generate table of contents',
-    value: 'generateTOC',
-    onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
-        .map((name) => editor.plugin(name))
-        .flatMap((plugin) =>
-          plugin.installed ? [plugin.schema.type] : []
-        );
-      const headings = editor.read.nodes.toArray({
-        at: [],
-        type: headingTypes,
-      });
-
-      const prompt =
-        headings.length === 0
-          ? 'Create a realistic table of contents for this document'
-          : 'Generate a table of contents that reflects the existing headings';
-
-      void editor.plugin(AIChatPlugin).api.submit('', {
-        mode: 'insert',
-        prompt,
-        toolName: 'generate',
-      });
-    },
-  },
-};
-```
-
-该命令读取已安装的 H1-H3 capability。若编辑器未安装这三个 capability，
-它会使用 fallback prompt，而不会假定持久化类型字符串。
-
-菜单自动在命令和建议状态之间切换：
-
-- `cursorCommand`：光标折叠且尚无响应。
-- `selectionCommand`：文本被选中且尚无响应。
-- `cursorSuggestion` / `selectionSuggestion`：存在响应，因此显示接受、重试或在下方插入等操作。
-
-使用 `toolName`（`'generate' | 'edit' | 'comment'`）控制流式 hooks 如何处理响应。`'edit'` 启用差异建议，`'comment'` 可通过 `aiChat.read.commentRange` 将反馈映射为讨论范围。

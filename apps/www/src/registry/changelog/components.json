@@ -1,6 +1,84 @@
 {
   "schemaVersion": 1,
   "components": {
+    "markdown-streaming-demo": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "indent-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "ai": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "ai-menu": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "use-chat": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "plugins-static": ["2026-09-10-markdown-streaming-controls"],
+    "table-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "toc-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "heading-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "block-list-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "suggestion-static": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "markdown": [
+      "2026-09-10-markdown-streaming-controls",
+      "2026-08-17-flat-editor-registry"
+    ],
     "editor-plugins-static": [
       "2026-09-09-ai-code-drawing-context",
       "2026-08-17-flat-editor-registry"
@@ -47,11 +125,6 @@
     "mdx-plate-components": [
       "2026-08-31-inline-component-props",
       "2025-11-20-biome-ultracite"
-    ],
-    "block-list-static": [
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "block-list": [
       "2026-08-31-inline-component-props",
@@ -117,11 +190,6 @@
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
     ],
-    "heading-static": [
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "inline-combobox": [
       "2026-08-31-inline-component-props",
       "2026-08-28-canonical-editor-api-names",
@@ -171,20 +239,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "inactive-selection-demo": ["2026-08-31-transient-editor-geometry"],
-    "ai-menu": [
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-31-simplify-ai-chat-source-commands",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
     "font-size-toolbar-button": [
       "2026-08-31-transient-editor-geometry",
       "2026-08-28-canonical-editor-api-names",
@@ -265,21 +319,6 @@
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2025-11-20-biome-ultracite",
       "2025-10-21-add-rejectaisuggestions"
-    ],
-    "use-chat": [
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
-    "ai": [
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry"
     ],
     "select-editor": [
       "2026-08-28-canonical-editor-api-names",
@@ -540,14 +579,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "list-static": [
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "table-static": [
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "align-static": ["2026-08-17-flat-editor-registry"],
     "basic-marks-static": ["2026-08-17-flat-editor-registry"],
     "callout-static": ["2026-08-17-flat-editor-registry"],
@@ -558,12 +589,9 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-12-fix-font-size-selection-highlight"
     ],
-    "indent-static": ["2026-08-17-flat-editor-registry"],
     "line-height-static": ["2026-08-17-flat-editor-registry"],
     "link-static": ["2026-08-17-flat-editor-registry"],
     "media-static": ["2026-08-17-flat-editor-registry"],
-    "suggestion-static": ["2026-08-17-flat-editor-registry"],
-    "toc-static": ["2026-08-17-flat-editor-registry"],
     "toggle-static": ["2026-08-17-flat-editor-registry"],
     "align": ["2026-08-17-flat-editor-registry"],
     "autoformat": ["2026-08-17-flat-editor-registry"],
@@ -579,7 +607,6 @@
     ],
     "indent": ["2026-08-17-flat-editor-registry"],
     "line-height": ["2026-08-17-flat-editor-registry"],
-    "markdown": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "slash": ["2026-08-17-flat-editor-registry"],
     "tabbable": ["2026-08-17-flat-editor-registry"],
@@ -867,12 +894,6 @@
     "copilot-demo": [
       "2026-08-14-author-editor-runtime",
       "2026-08-13-fix-registry-install-dependencies"
-    ],
-    "markdown-streaming-demo": [
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "code-drawing-demo": [
       "2026-08-14-author-editor-runtime",

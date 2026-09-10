@@ -1,18 +1,12 @@
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
-import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   type DefinitionOf,
-  type Descendant,
-  type EditorNodeUnsetOptions,
-  type EditorNodesOptions,
   type Element,
   ElementApi,
   type NamedRootKey,
-  type Node,
   NodeApi,
-  type NodeEntry,
   type NodeKey,
   PLUGINS,
   type Path,
@@ -20,29 +14,25 @@ import {
   type PlatePluginReadState,
   type Range,
   SelectionApi,
-  TextApi,
-  type Value,
   createEditorView,
   defineEffect,
   editorCommands,
-  schema,
 } from '../../core';
 import type { TriggerComboboxPluginState } from '../../features/combobox';
-import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
 import { BaseTablePlugin } from '../../features/table';
-import {
-  type DeserializeMdOptions,
-  MarkdownPlugin,
-  type SerializeMdOptions,
-} from '../../markdown';
+import { MarkdownPlugin } from '../../markdown';
 import { type Editor, definePlatePlugin } from '../../react/core';
 import { SuggestionPlugin } from '../../react/features/suggestion';
-import { failInvariant } from '../internal/failInvariant';
 import type {
   AIChatRequestContext,
   AIToolName,
 } from '../lib/AIChatRequestContext';
-import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
+import { BaseAIPlugin } from '../lib/BaseAIPlugin';
+import {
+  createAIChatOperation,
+  type AIChatOperation,
+  type AIChatComment,
+} from './internal/createAIChatOperation';
 
 export type AIMode = 'chat' | 'insert';
 
@@ -96,31 +86,17 @@ export type TableCellUpdate = {
   ref: string;
 };
 
-export type AIChatNodeSnapshot = {
-  isSelectionAnchor?: true;
-  isSelectionFocus?: true;
-  node: Element;
-  nodeKey: NodeKey;
-  root?: NamedRootKey;
-};
-
 export type AIChatPluginState = {
-  _blockChunks: string;
-  _blockPath: Path | null;
+  operation: AIChatOperation | null;
+  onCommentsAccepted: ((comments: readonly AIChatComment[]) => void) | null;
   _blockRefs: Record<string, Readonly<{ key: NodeKey; root?: NamedRootKey }>>;
-  _mdxName: string | null;
-  _replaceNodeKeys: NodeKey[];
   _tableCellRefs: Record<
     string,
     Readonly<{ key: NodeKey; root?: NamedRootKey }>
   >;
   chat: AIChatAdapter | null;
-  chatNodes: AIChatNodeSnapshot[];
-  chatSelection: Range | null;
   mode: AIMode;
   open: boolean;
-  previewValue: Value;
-  streaming: boolean;
   toolName: AIToolName;
   trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
   triggerPreviousCharPattern: NonNullable<
@@ -130,37 +106,22 @@ export type AIChatPluginState = {
 
 type MarkdownType = 'block' | 'editor' | 'nodeSelection' | 'tableCellWithRef';
 
-type StreamInsertOptions = {
-  autoScroll?: boolean;
-  elementProps?: Record<string, unknown>;
-  textProps?: Record<string, unknown>;
-};
-
-const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
-const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
 const aiChatShowEffect = defineEffect({ key: 'ai.chat.show' });
 const dependencies = [BaseAIPlugin, MarkdownPlugin, SuggestionPlugin] as const;
 
 type AIChatPluginReadState = PlatePluginReadState<
   DefinitionOf<(typeof dependencies)[number]>
 >;
-type AIChatInsertState = Pick<AIChatPluginReadState, 'nodes' | 'selection'>;
 type AIChatPromptState = Pick<AIChatPluginReadState, 'selection'>;
 
 const initialState: AIChatPluginState = {
-  _blockChunks: '',
-  _blockPath: null,
+  operation: null,
+  onCommentsAccepted: null,
   _blockRefs: {},
-  _mdxName: null,
-  _replaceNodeKeys: [],
   _tableCellRefs: {},
   chat: null,
-  chatNodes: [],
-  chatSelection: null,
   mode: 'insert',
   open: false,
-  previewValue: [],
-  streaming: false,
   toolName: null,
   trigger: ' ',
   triggerPreviousCharPattern: /^\s?$/,
@@ -169,584 +130,38 @@ const initialState: AIChatPluginState = {
 export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
   dependencies,
   initialState,
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
 })
   .extend((context) => {
     const { editor } = context;
-    const codeBlock = editor.plugin(PLUGINS.codeBlock);
-    const columnGroup = editor.plugin(PLUGINS.columnGroup);
-    const equation = editor.plugin(PLUGINS.equation);
+    let requestContext: AIChatRequestContext | null = null;
+    const operation = createAIChatOperation(editor, (next) =>
+      context.store.set({ operation: next })
+    );
     const paragraph = editor.plugin(PLUGINS.paragraph);
-    const ai = editor.plugin(BaseAIPlugin);
-    const suggestionKey = editor.plugin(SuggestionPlugin).schema.key;
     const tablePlugin = editor.plugin(BaseTablePlugin);
-    const getChunkTrimmed = (
-      chunk: string,
-      { direction = 'right' }: { direction?: 'left' | 'right' } = {}
-    ) => {
-      const trimmed =
-        direction === 'right' ? chunk.trimEnd() : chunk.trimStart();
-
-      return direction === 'right'
-        ? chunk.slice(trimmed.length)
-        : chunk.slice(0, chunk.length - trimmed.length);
-    };
-    const appendTrailingText = (element: Element, text: string): Element => {
-      const lastChild = element.children.at(-1);
-      const content = editor.read.schema.element(element.type)?.content;
-
-      if (content && !content.allowsText) {
-        if (!ElementApi.isElement(lastChild)) return element;
-
-        return {
-          ...element,
-          children: [
-            ...element.children.slice(0, -1),
-            appendTrailingText(lastChild, text),
-          ],
-        };
-      }
-
-      if (
-        lastChild &&
-        TextApi.isText(lastChild) &&
-        Object.keys(lastChild).length === 1
-      ) {
-        return {
-          ...element,
-          children: [
-            ...element.children.slice(0, -1),
-            { text: lastChild.text + text },
-          ],
-        };
-      }
-
-      return {
-        ...element,
-        children: [...element.children, { text }],
-      };
-    };
-    const isCompleteCodeBlock = (value: string) => {
-      const trimmed = value.trim();
-
-      return trimmed.startsWith('```') && trimmed.endsWith('```');
-    };
-    const isCompleteMath = (value: string) => {
-      const trimmed = value.trim();
-
-      return (
-        trimmed.length > 4 && trimmed.startsWith('$$') && trimmed.endsWith('$$')
-      );
-    };
-    function withNodeProps(
-      nodes: readonly Element[],
-      options: StreamInsertOptions,
-      preview: boolean
-    ): Element[];
-    function withNodeProps(
-      nodes: readonly Descendant[],
-      options: StreamInsertOptions,
-      preview: boolean
-    ): Descendant[];
-    function withNodeProps(
-      nodes: readonly Descendant[],
-      options: StreamInsertOptions,
-      preview: boolean
-    ): Descendant[] {
-      return nodes.map((node) => {
-        if (!ElementApi.isElement(node)) {
-          return { ...options.textProps, ...node, text: node.text };
-        }
-
-        const previewAllowed =
-          preview &&
-          editor.read.schema.property({
-            key: AI_PREVIEW_KEY,
-            placement: 'element',
-            type: node.type,
-          }) !== null;
-
-        return {
-          ...node,
-          ...options.elementProps,
-          ...(previewAllowed ? { [AI_PREVIEW_KEY]: true } : {}),
-          children: withNodeProps(node.children, options, preview),
-        };
-      });
-    }
-    const isSameNode = (left: Descendant, right: Descendant) => {
-      const heading = editor.plugin(PLUGINS.heading);
-
-      if (left.type !== right.type) return false;
-
-      if (
-        heading.installed &&
-        ElementApi.isElement(left) &&
-        ElementApi.isElement(right) &&
-        left.type === heading.schema.type &&
-        left.level !== right.level
-      ) {
-        return false;
-      }
-
-      return [
-        left.listType,
-        right.listType,
-        left.listStyle,
-        right.listStyle,
-        left.listStart,
-        right.listStart,
-        left.listRestart,
-        right.listRestart,
-        left.checked,
-        right.checked,
-      ].some((value) => value !== undefined)
-        ? left.listType === right.listType &&
-            left.listStyle === right.listStyle &&
-            left.listStart === right.listStart &&
-            left.listRestart === right.listRestart &&
-            left.checked === right.checked &&
-            left.indent === right.indent
-        : true;
-    };
-    const deserializeInlineChunk = (
-      text: string,
-      options?: DeserializeMdOptions
-    ) => {
-      try {
-        return editor.api.markdown.deserializeInline(text, options);
-      } catch {
-        return editor.api.markdown.deserializeInline(text, {
-          ...options,
-          withoutMdx: true,
-        });
-      }
-    };
-    const deserializeChunk = (data: string, options?: DeserializeMdOptions) => {
-      let input = data;
-
-      if (data.startsWith('$$') && !isCompleteMath(data)) {
-        input = data.replace('$$', String.raw`\$\$`);
-      }
-
-      const mdxName = context.store.get('_mdxName');
-
-      if (mdxName) {
-        if (input.includes(`</${mdxName}>`)) {
-          context.store.set({ _mdxName: null });
-        } else {
-          return [
-            {
-              children: [{ text: input }],
-              type: editor.plugin(PLUGINS.paragraph).schema.type,
-            },
-          ];
-        }
-      } else {
-        const nextMdxName = statMdxTagRegex.exec(input)?.[1];
-
-        if (nextMdxName && input.startsWith(`<${nextMdxName}`)) {
-          context.store.set({ _mdxName: nextMdxName });
-        }
-      }
-
-      const deserializeOptions = {
-        ...options,
-        preserveEmptyParagraphs: false,
-      };
-      const blocks = (() => {
-        try {
-          return editor.api.markdown.deserialize(input, deserializeOptions)
-            .children;
-        } catch {
-          return editor.api.markdown.deserialize(input, {
-            ...deserializeOptions,
-            withoutMdx: true,
-          }).children;
-        }
-      })();
-      let result: Descendant[] = blocks.map((node) =>
-        ElementApi.isElement(node)
-          ? {
-              ...node,
-              children: [...node.children],
-              ...(equation.installed &&
-              node.type === equation.schema.type &&
-              typeof node.latex === 'string'
-                ? { latex: node.latex.trim() }
-                : {}),
-            }
-          : node
-      );
-      const trailing = getChunkTrimmed(data);
-      const lastBlock = result.at(-1);
-      const addNewLine = trailing === '\n\n';
-      const prependNewLine =
-        getChunkTrimmed(data, { direction: 'left' }) === '\n\n';
-      const isCodeBlockOrTable =
-        (codeBlock.installed && lastBlock?.type === codeBlock.schema.type) ||
-        (tablePlugin.installed && lastBlock?.type === tablePlugin.schema.type);
-
-      if (
-        lastBlock &&
-        ElementApi.isElement(lastBlock) &&
-        !isCodeBlockOrTable &&
-        trailing.length > 0 &&
-        !addNewLine
-      ) {
-        result = [
-          ...result.slice(0, -1),
-          appendTrailingText(lastBlock, trailing),
-        ];
-      }
-      if (addNewLine && !isCodeBlockOrTable) {
-        result.push({ children: [{ text: '' }], type: paragraph.schema.type });
-      }
-      if (prependNewLine && !isCodeBlockOrTable) {
-        result.unshift({
-          children: [{ text: '' }],
-          type: paragraph.schema.type,
-        });
-      }
-
-      if (
-        !result.every((node): node is Element => ElementApi.isElement(node))
-      ) {
-        throw new Error('Markdown documents must contain block elements.');
-      }
-
-      return result;
-    };
-    const serializeChunk = (options: SerializeMdOptions, chunk: string) => {
-      const { value: source, ...rest } = options;
-      const sourceValue = source ?? {
-        children: [...editor.read.children()],
-      };
-      const children = [...sourceValue.children];
-      const lastBlock = children.at(-1);
-      if (
-        lastBlock &&
-        ElementApi.isElement(lastBlock) &&
-        (() => {
-          const heading = editor.plugin(PLUGINS.heading);
-
-          return heading.installed && lastBlock.type === heading.schema.type;
-        })()
-      ) {
-        const lastText = lastBlock.children.at(-1);
-
-        if (TextApi.isText(lastText)) {
-          children[children.length - 1] = {
-            ...lastBlock,
-            children: [
-              ...lastBlock.children.slice(0, -1),
-              { text: lastText.text.trimEnd() },
-            ],
-          };
-        }
-      }
-
-      let hasLineBreaks = false;
-      const escapeLineBreaks = (nodes: readonly Descendant[]): Descendant[] =>
-        nodes.map((node) => {
-          if (TextApi.isText(node)) {
-            if (node.text !== '\n' && node.text.includes('\n')) {
-              hasLineBreaks = true;
-
-              return {
-                ...node,
-                text: node.text.replaceAll('\n', STREAM_LINE_BREAK_PLACEHOLDER),
-              };
-            }
-
-            return node;
-          }
-
-          return ElementApi.isElement(node)
-            ? { ...node, children: escapeLineBreaks(node.children) }
-            : node;
-        });
-      const escaped = escapeLineBreaks(children);
-
-      if (
-        !escaped.every((node): node is Element => ElementApi.isElement(node))
-      ) {
-        throw new Error('Markdown documents must contain block elements.');
-      }
-
-      let result = editor.api.markdown.serialize({
-        ...rest,
-        value: { ...sourceValue, children: escaped },
-      });
-      const trimmedChunk = getChunkTrimmed(chunk);
-      const closedChunk = chunk.trimEnd();
-
-      if (isCompleteCodeBlock(result) && !closedChunk.endsWith('```')) {
-        result = result.trimEnd().slice(0, -3) + trimmedChunk;
-      }
-      if (isCompleteMath(result) && !closedChunk.endsWith('$$')) {
-        result = result.trimEnd().slice(0, -3) + trimmedChunk;
-      }
-
-      result = result
-        .replace(/&#x20;/g, ' ')
-        .replace(/&#x200B;/g, ' ')
-        .replace(/\u200B/g, '');
-      if (hasLineBreaks) {
-        result = result.replaceAll(STREAM_LINE_BREAK_PLACEHOLDER, '\n');
-      }
-      if (trimmedChunk.includes('\n') && trimmedChunk !== '\n\n') {
-        const trimmedResult = result.trimEnd();
-
-        if (trimmedResult.endsWith('\n<br />')) {
-          result = trimmedResult.slice(0, -'<br />'.length);
-        } else if (result.endsWith(`${trimmedChunk}\n`)) {
-          result = result.slice(0, -`${trimmedChunk}\n`.length);
-        }
-      }
-      if (trimmedChunk !== '\n\n') result = result.trimEnd() + trimmedChunk;
-      if (chunk.endsWith('\n\n')) {
-        if (result === '\n') result = '';
-        else if (result.endsWith('\n\n')) result = result.slice(0, -1);
-      }
-
-      return result.replace(/\\([\\`*_{}[\]()#+\-.!~<>|$])/g, '$1');
-    };
-    const serializeChunkFromState = (
-      state: Pick<AIChatPluginReadState, 'children'>,
-      options: SerializeMdOptions,
-      chunk: string
-    ) =>
-      serializeChunk(
-        options.value
-          ? options
-          : {
-              ...options,
-              value: { children: [...state.children()] },
-            },
-        chunk
-      );
-    const currentBlockPath = (state: AIChatInsertState) => {
-      const anchor = state.nodes.find({
-        at: [],
-        type: context.plugin,
-      });
-      const anchorPrevious =
-        anchor && anchor[1].at(-1) !== 0
-          ? PathApi.previous(anchor[1])
-          : undefined;
-      const selection = state.selection();
-      const selectionPath =
-        state.selection.nodes().at(-1)?.[1] ?? selection?.focus.path;
-      const path = anchorPrevious ?? selectionPath?.slice(0, 1) ?? [0];
-      const entry = state.nodes.get(path, { match: ElementApi.isElement });
-      const containerTypes = new Set<string>(
-        [columnGroup, tablePlugin]
-          .filter((plugin) => plugin.installed)
-          .map((plugin) => plugin.schema.type)
-      );
-
-      return entry && containerTypes.has(entry[0].type)
-        ? (state.nodes.above()?.[1] ?? path)
-        : path;
-    };
-    const getInsertStart = (state: AIChatInsertState) => {
-      const path = currentBlockPath(state);
-      const startBlock = state.nodes.get(path, {
-        match: ElementApi.isElement,
-      })?.[0];
-
-      return {
-        path,
-        startBlock,
-        startInEmptyParagraph:
-          !!startBlock &&
-          NodeApi.string(startBlock).length === 0 &&
-          startBlock.type === paragraph.schema.type,
-      };
-    };
-    const withoutSuggestionData = (
-      nodes: readonly Descendant[]
-    ): Descendant[] =>
-      nodes.map((node) => {
-        if (TextApi.isText(node)) {
-          return Reflect.get(node, suggestionKey) || node.comment
-            ? { text: node.text }
-            : node;
-        }
-        if (!ElementApi.isElement(node)) return node;
-
-        const result = {
-          ...node,
-          children: withoutSuggestionData(node.children),
-        };
-
-        Object.keys(result).forEach((key) => {
-          if (
-            key === suggestionKey ||
-            key === 'suggestionData' ||
-            key === SUGGESTION_TRANSIENT_KEY ||
-            key.startsWith(`${suggestionKey}_`)
-          ) {
-            Reflect.deleteProperty(result, key);
-          }
-        });
-
-        return result;
-      });
-    const withTransient = (nodes: readonly Descendant[]): Descendant[] =>
-      nodes.map((node) =>
-        TextApi.isText(node)
-          ? { ...node, [SUGGESTION_TRANSIENT_KEY]: true }
-          : {
-              ...node,
-              children: withTransient(node.children),
-              [SUGGESTION_TRANSIENT_KEY]: true,
-            }
-      );
-    const diffNodes = (content: string) => {
-      const rawChatNodes = context.store.get('chatNodes');
-      let chatNodes = withoutSuggestionData(
-        cloneDeep(rawChatNodes.map(({ node }) => node))
-      );
-      const first = chatNodes[0];
-
-      if (
-        chatNodes.length === 1 &&
-        ElementApi.isElement(first) &&
-        tablePlugin.installed &&
-        first.type === tablePlugin.schema.type &&
-        first.children.length === 1
-      ) {
-        const row = first.children[0];
-        const cell =
-          ElementApi.isElement(row) && row.children.length === 1
-            ? row.children[0]
-            : undefined;
-
-        const tableCell = editor.plugin(PLUGINS.tableCell);
-
-        if (
-          tableCell.installed &&
-          ElementApi.isElement(cell) &&
-          cell.type === tableCell.schema.type
-        ) {
-          chatNodes = [...cell.children];
-        }
-      }
-
-      const parsed = editor.api.markdown
-        .deserialize(content)
-        .children.map((node, index) =>
-          ElementApi.isElement(node)
-            ? {
-                ...node,
-                ...chatNodes[index],
-                children: node.children,
-              }
-            : node
-        );
-
-      return withTransient(
-        editor.plugin(SuggestionPlugin).api.diff(chatNodes, parsed, {
-          ignoreProps: ['id'],
-        })
-      );
-    };
-    const createFormattedBlocks = ({
-      blocks,
-      format,
-      sourceBlock,
-    }: {
-      blocks: Element[];
-      format: 'all' | 'none' | 'single';
-      sourceBlock: NodeEntry<Element>;
-    }) => {
-      if (format === 'none') return cloneDeep(blocks);
-
-      const firstText = NodeApi.first(sourceBlock[0], [0]);
-
-      if (!TextApi.isText(firstText[0])) return null;
-
-      const blockProps = NodeApi.extractProps(sourceBlock[0]);
-      const textProps = NodeApi.extractProps(firstText[0]);
-      const applyTextFormatting = (node: Descendant): Descendant =>
-        TextApi.isText(node)
-          ? { ...textProps, ...node }
-          : ElementApi.isElement(node)
-            ? {
-                ...node,
-                children: node.children.map(applyTextFormatting),
-              }
-            : node;
-
-      return blocks.map((block, index) =>
-        format === 'single' && index > 0
-          ? block
-          : {
-              ...block,
-              ...blockProps,
-              children: block.children.map(applyTextFormatting),
-            }
-      );
-    };
     const stop = () => {
-      context.store.set({ streaming: false });
-      context.store.set({ _blockChunks: '' });
-      context.store.set({ _blockPath: null });
-      context.store.set({ _mdxName: null });
-      void context.store.get().chat?.stop?.();
+      operation.stop();
+      void context.store.get('chat')?.stop();
     };
     const resetOptions = () => {
       stop();
-
+      operation.discard();
       const { chat } = context.store.get();
-
       if (chat?.messages.length) chat.clear();
       context.store.set({
         _blockRefs: {},
-        _replaceNodeKeys: [],
         _tableCellRefs: {},
-        chatNodes: [],
         mode: 'insert',
-        previewValue: [],
         toolName: null,
       });
     };
-    const reset = ({ undo = true }: { undo?: boolean } = {}) => {
-      resetOptions();
-
-      if (undo) editor.plugin(BaseAIPlugin).update.undo();
-      else editor.plugin(BaseAIPlugin).update.discardPreview();
-    };
+    const reset = () => resetOptions();
     const hideOptions = ({ focus = true }: { focus?: boolean } = {}) => {
       resetOptions();
       context.store.set({ open: false });
-
-      if (!focus) return;
-
-      editor.api.dom.focus();
+      if (focus) editor.api.dom.focus();
     };
-    const hide = ({
-      focus = true,
-      undo = true,
-    }: {
-      focus?: boolean;
-      undo?: boolean;
-    } = {}) => {
-      reset({ undo });
-      hideOptions({ focus });
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({
-          at: [],
-          type: context.plugin,
-        });
-      });
-    };
+    const hide = hideOptions;
     const serializeMarkdown = (
       state: AIChatPluginReadState,
       { type }: { type: MarkdownType }
@@ -965,6 +380,71 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         selection: requestAt,
       };
     };
+    const commentRange = (comment: TComment) => {
+      const blockRefs = context.store.get('_blockRefs');
+      const blockRef = Object.hasOwn(blockRefs, comment.blockRef)
+        ? blockRefs[comment.blockRef]
+        : undefined;
+
+      if (!blockRef) return undefined;
+
+      const blockEditor = blockRef.root
+        ? createEditorView(editor, { root: blockRef.root })
+        : editor;
+      const firstBlock = blockEditor.read.nodes.get(blockRef.key, {
+        match: ElementApi.isElement,
+      });
+
+      if (!firstBlock) return undefined;
+
+      const nodes = editor.api.markdown.deserialize(comment.content).children;
+      const ranges: Range[] = [];
+
+      nodes.forEach((node, index) => {
+        const block =
+          index === 0
+            ? firstBlock
+            : blockEditor.read.nodes.get([firstBlock[1][0] + index], {
+                match: ElementApi.isElement,
+              });
+
+        if (!block) return;
+
+        const localRange = context.editor
+          .plugin(BaseAIPlugin)
+          .api.findTextRangeInBlock({
+            block,
+            findText: NodeApi.string(node),
+          });
+        const range =
+          localRange && blockRef.root
+            ? {
+                anchor: { ...localRange.anchor, root: blockRef.root },
+                focus: { ...localRange.focus, root: blockRef.root },
+              }
+            : localRange;
+
+        if (range) ranges.push(range);
+      });
+
+      const first = ranges[0];
+      const last = ranges.at(-1);
+
+      if (!first || !last) return undefined;
+
+      return { anchor: first.anchor, focus: last.focus };
+    };
+    const references = () => {
+      const refs = {
+        ...context.store.get('_blockRefs'),
+        ...context.store.get('_tableCellRefs'),
+      };
+      return Object.values(refs).flatMap(({ key, root }) => {
+        const view = root ? createEditorView(editor, { root }) : editor;
+        const entry = view.read.nodes.get(key, { match: ElementApi.isElement });
+        return entry ? [{ key, node: entry[0], root }] : [];
+      });
+    };
     const getPrompt = (
       state: AIChatPromptState,
       { prompt = '' }: { prompt?: EditorPrompt }
@@ -987,58 +467,76 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
     return {
       api: () => ({
-        deserializeChunk,
-        deserializeInlineChunk,
+        /** Start a detached operation for a custom transport or recorded stream. */
+        start: ({
+          mode = 'insert',
+          toolName = 'generate',
+        }: { mode?: AIMode; toolName?: AIToolName } = {}) => {
+          stop();
+          context.store.set({ mode, toolName });
+          return operation.start({ mode, edit: toolName === 'edit' });
+        },
         hide,
-        reload: () => {
-          const { chat, chatNodes, chatSelection, toolName } =
-            context.store.get();
-
-          context.store.set({ previewValue: [] });
-          if (!editor.plugin(BaseAIPlugin).update.undo()) return;
-          if (chatSelection) editor.update.selection.set(chatSelection);
+        retry: () => {
+          stop();
+          const { chat, mode, toolName } = context.store.get();
+          const id = operation.start({
+            mode,
+            edit: toolName === 'edit',
+            retry: true,
+          });
+          void chat
+            ?.regenerate({
+              body: {
+                requestId: id,
+                ctx: {
+                  ...requestContext,
+                  toolName,
+                },
+              },
+            })
+            .catch((error) => operation.error(id, error));
+          return id;
+        },
+        receive: operation.receive,
+        receiveTool: (id: number, toolName: AIToolName) => {
+          if (
+            operation.current?.id !== id ||
+            operation.current.status !== 'streaming'
+          ) {
+            return;
+          }
+          context.store.set({ toolName });
+          operation.tool(id, toolName === 'edit');
+        },
+        receiveTable: (id: number, { ref, content }: TableCellUpdate) => {
+          const reference = context.store.get('_tableCellRefs')[ref];
+          if (reference) operation.table(id, reference.key, content);
           else {
-            const anchor = chatNodes.find(
-              ({ isSelectionAnchor }) => isSelectionAnchor
-            );
-            const focus = chatNodes.find(
-              ({ isSelectionFocus }) => isSelectionFocus
-            );
-            const entries = chatNodes.flatMap(({ nodeKey }) => {
-              const entry = editor.read.nodes.get(nodeKey, {
-                match: ElementApi.isElement,
-              });
-
-              return entry ? [entry] : [];
-            });
-
-            if (
-              entries.length !== chatNodes.length ||
-              new Set(entries.map(([node]) => editor.key(node))).size !==
-                chatNodes.length
-            ) {
-              return;
-            }
-            if (chatNodes.length > 0 && (!anchor || !focus)) return;
-
-            editor.update.selection.setNodes(
-              entries.map(([node]) => node),
-              anchor && focus
-                ? { anchor: anchor.nodeKey, focus: focus.nodeKey }
-                : undefined
+            operation.error(id, new Error('Unknown AI table cell reference.'));
+          }
+        },
+        receiveComment: (id: number, comment: TComment & { id: string }) => {
+          const reference = context.store.get('_blockRefs')[comment.blockRef];
+          const range = reference && commentRange(comment);
+          if (reference && range) {
+            operation.comment(id, reference.key, range, comment);
+          } else {
+            operation.error(
+              id,
+              new Error('The AI comment target cannot be found.')
             );
           }
-
-          const selection = editor.read.selection();
-
-          void chat?.regenerate({
-            body: {
-              ctx: {
-                ...getRequestContext(selection ?? null),
-                toolName,
-              },
-            },
-          });
+        },
+        finish: operation.finish,
+        error: operation.error,
+        discard: () => hideOptions(),
+        accept: (options?: { placement?: 'replace' | 'below' }) => {
+          const result = operation.accept(options);
+          if (!result) return false;
+          context.store.get('onCommentsAccepted')?.(result.comments);
+          hideOptions();
+          return true;
         },
         reset,
         show: () => {
@@ -1067,8 +565,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           if (!prompt && input.length === 0) return;
 
-          context.store.set({ previewValue: [] });
-
           const selection = editor.read.selection();
           const isNodeSelecting = editor.read.selection.nodes().length > 0;
           const nextMode =
@@ -1077,147 +573,39 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               ? 'chat'
               : 'insert');
 
-          if (nextMode === 'insert') editor.plugin(BaseAIPlugin).update.undo();
+          stop();
 
           context.store.set({ mode: nextMode });
           context.store.set({ toolName: nextToolName });
 
-          const requestContext = getRequestContext(selection ?? null);
+          requestContext = getRequestContext(selection ?? null);
           const promptText = getPrompt(editor.read, {
             prompt: prompt ?? input,
           });
-          const chatSelection = isNodeSelecting ? null : selection;
-          const chatNodes = editor.read.nodes
-            .blocks({ mode: 'highest' })
-            .map(([node, path]) => {
-              const root =
-                editor.read.view.root() ??
-                SelectionApi.root(editor.read.selection());
-              const isEndpoint = (endpoint: Path | undefined) =>
-                !!endpoint &&
-                (PathApi.equals(path, endpoint) ||
-                  PathApi.isAncestor(path, endpoint));
-
-              return {
-                ...(isEndpoint(requestContext.nodeSelection?.anchorPath)
-                  ? { isSelectionAnchor: true as const }
-                  : {}),
-                ...(isEndpoint(requestContext.nodeSelection?.focusPath)
-                  ? { isSelectionFocus: true as const }
-                  : {}),
-                node,
-                nodeKey: editor.key(node),
-                ...(root ? { root } : {}),
-              };
-            });
-
-          context.store.set({ chatNodes });
-          context.store.set({ chatSelection });
-
-          void chat?.sendMessage(promptText, {
-            body: {
-              ctx: {
-                ...requestContext,
-                toolName: nextToolName,
-              },
-            },
-            ...options,
+          const id = operation.start({
+            mode: nextMode,
+            edit: nextToolName === 'edit',
+            references: references(),
           });
+          void chat
+            ?.sendMessage(promptText, {
+              ...options,
+              body: {
+                ...options?.body,
+                requestId: id,
+                ctx: {
+                  ...requestContext,
+                  toolName: nextToolName,
+                },
+              },
+            })
+            .catch((error) => operation.error(id, error));
+          return id;
         },
       }),
       read: ({ state }) => ({
-        commentRange: (comment: TComment) => {
-          const blockRefs = context.store.get('_blockRefs');
-          const blockRef = Object.hasOwn(blockRefs, comment.blockRef)
-            ? blockRefs[comment.blockRef]
-            : undefined;
-
-          if (!blockRef) return undefined;
-
-          const blockEditor = blockRef.root
-            ? createEditorView(editor, { root: blockRef.root })
-            : editor;
-          const firstBlock = blockEditor.read.nodes.get(blockRef.key, {
-            match: ElementApi.isElement,
-          });
-
-          if (!firstBlock) return undefined;
-
-          const nodes = editor.api.markdown.deserialize(
-            comment.content
-          ).children;
-          const ranges: Range[] = [];
-
-          nodes.forEach((node, index) => {
-            const block =
-              index === 0
-                ? firstBlock
-                : blockEditor.read.nodes.get([firstBlock[1][0] + index], {
-                    match: ElementApi.isElement,
-                  });
-
-            if (!block) return;
-
-            const localRange = context.editor
-              .plugin(BaseAIPlugin)
-              .api.findTextRangeInBlock({
-                block,
-                findText: NodeApi.string(node),
-              });
-            const range =
-              localRange && blockRef.root
-                ? {
-                    anchor: { ...localRange.anchor, root: blockRef.root },
-                    focus: { ...localRange.focus, root: blockRef.root },
-                  }
-                : localRange;
-
-            if (range) ranges.push(range);
-          });
-
-          const first = ranges[0];
-          const last = ranges.at(-1);
-
-          if (!first || !last) return undefined;
-
-          return { anchor: first.anchor, focus: last.focus };
-        },
-        insertStart: getInsertStart.bind(null, state),
+        commentRange,
         markdown: serializeMarkdown.bind(null, state),
-        node: (
-          options: Omit<EditorNodesOptions<Node>, 'type'> & {
-            anchor?: boolean;
-            streaming?: boolean;
-          } = {}
-        ) => {
-          const { anchor = false, streaming = false, ...rest } = options;
-
-          if (anchor) {
-            return state.nodes.find({
-              at: [],
-              ...rest,
-              type: context.plugin,
-            });
-          }
-          if (streaming) {
-            const path = context.store.get('_blockPath');
-
-            if (!context.store.get('streaming') || !path) return undefined;
-
-            return state.nodes.find({
-              at: path,
-              match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
-              mode: 'lowest',
-              reverse: true,
-              ...rest,
-            });
-          }
-
-          return state.nodes.find({
-            match: (node) => Boolean(Reflect.get(node, ai.schema.key)),
-            ...rest,
-          });
-        },
         prompt: getPrompt.bind(null, state),
         resolvePlaceholders: (
           text: string,
@@ -1241,726 +629,13 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           return result;
         },
-        serializeChunk: serializeChunkFromState.bind(null, state),
       }),
+      on: { commit: () => operation.validate() },
       selectors: {
         lastAssistantMessage: (state) =>
           state.chat?.messages.findLast(
             (message) => message.role === 'assistant'
           ),
-      },
-      update: ({ context: updateContext, tx }) => {
-        const getPreviewSource = () => {
-          const source = [...context.store.get('previewValue')];
-
-          if (source.every((node) => editor.read.nodes.isEmpty(node))) {
-            return undefined;
-          }
-
-          return source;
-        };
-        const insertChunk = (
-          chunk: string,
-          options: StreamInsertOptions = {}
-        ) => {
-          const hasPreview = tx.ai.hasPreview();
-
-          if (hasPreview) tx.history.skip();
-          const { _blockChunks, _blockPath } = context.store.get();
-
-          if (_blockPath === null) {
-            const blocks = deserializeChunk(chunk);
-            const { path, startInEmptyParagraph } = getInsertStart(tx);
-
-            if (blocks.length === 0) return;
-
-            const insertPath = startInEmptyParagraph
-              ? path
-              : PathApi.next(path);
-            const insertedBlocks = withNodeProps(blocks, options, hasPreview);
-
-            const insert = () => {
-              if (startInEmptyParagraph) {
-                tx.nodes.replace(insertedBlocks, { at: path, select: true });
-              } else {
-                tx.blocks.insertAfter(insertedBlocks, {
-                  at: path,
-                  select: true,
-                });
-              }
-            };
-
-            if (options.autoScroll) tx.dom.autoScroll(insert);
-            else insert();
-
-            let lastPath = insertPath;
-
-            for (let index = 1; index < blocks.length; index++) {
-              lastPath = PathApi.next(lastPath);
-            }
-
-            const lastBlock = tx.nodes.get(lastPath, {
-              match: ElementApi.isElement,
-            });
-
-            if (!lastBlock) return;
-
-            updateContext.afterCommit(() => {
-              context.store.set({
-                _blockChunks:
-                  blocks.length > 1
-                    ? serializeChunk(
-                        { value: { children: [lastBlock[0]] } },
-                        chunk
-                      )
-                    : chunk,
-                _blockPath: lastPath,
-              });
-            });
-
-            return;
-          }
-
-          const combined = _blockChunks + chunk;
-          const blocks = deserializeChunk(combined);
-
-          if (blocks.length === 0) {
-            console.warn(
-              `Unsupported Markdown nodes: ${JSON.stringify(combined)}`
-            );
-
-            return;
-          }
-
-          let nextChunks = _blockChunks;
-          let nextPath = _blockPath;
-
-          const update = () => {
-            if (blocks.length === 1) {
-              const current = tx.nodes.get(_blockPath, {
-                match: ElementApi.isElement,
-              })?.[0];
-
-              if (!current) return;
-
-              if (isSameNode(current, blocks[0])) {
-                const end = tx.points.end(_blockPath);
-
-                if (!end) return;
-
-                tx.nodes.insert(
-                  withNodeProps(
-                    deserializeInlineChunk(chunk),
-                    options,
-                    hasPreview
-                  ),
-                  { at: end, select: true }
-                );
-
-                const updated = tx.nodes.get(_blockPath, {
-                  match: ElementApi.isElement,
-                });
-
-                if (!updated) return;
-
-                const serialized = serializeChunk(
-                  { value: { children: [updated[0]] } },
-                  combined
-                );
-
-                if (
-                  serialized === combined &&
-                  NodeApi.string(blocks[0]) === serialized
-                ) {
-                  nextChunks = combined;
-                } else {
-                  tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
-                    at: _blockPath,
-                    select: true,
-                  });
-                  const replacement = serializeChunk(
-                    { value: { children: blocks } },
-                    combined
-                  );
-                  const preserveChunkTypes = new Set<string>(
-                    [codeBlock, tablePlugin, equation]
-                      .filter((plugin) => plugin.installed)
-                      .map((plugin) => plugin.schema.type)
-                  );
-
-                  nextChunks = preserveChunkTypes.has(blocks[0].type)
-                    ? combined
-                    : replacement;
-                }
-              } else {
-                nextChunks = serializeChunk(
-                  { value: { children: blocks } },
-                  combined
-                );
-                tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
-                  at: _blockPath,
-                  select: true,
-                });
-              }
-
-              return;
-            }
-
-            tx.nodes.replace(withNodeProps(blocks, options, hasPreview), {
-              at: _blockPath,
-              select: true,
-            });
-            nextPath = _blockPath;
-            for (let index = 1; index < blocks.length; index++) {
-              nextPath = PathApi.next(nextPath);
-            }
-
-            const end = tx.nodes.get(nextPath, { match: ElementApi.isElement });
-
-            if (end) {
-              nextChunks = serializeChunk(
-                { value: { children: [end[0]] } },
-                combined
-              );
-            }
-          };
-
-          if (options.autoScroll) tx.dom.autoScroll(update);
-          else update();
-
-          updateContext.afterCommit(() => {
-            context.store.set({
-              _blockChunks: nextChunks,
-              _blockPath: nextPath,
-            });
-          });
-        };
-        const reviewSuggestions = (action: 'accept' | 'reject') => {
-          const suggestion = editor.plugin(SuggestionPlugin);
-
-          tx.suggestion.nodes({ transient: true }).forEach(([node]) => {
-            const data = suggestion.api.suggestionData(node);
-
-            if (!data) return;
-
-            tx.suggestion[action]({
-              createdAt: new Date(data.createdAt),
-              keyId: suggestion.api.key(data.id),
-              suggestionId: data.id,
-              type: data.type,
-              userId: data.userId,
-            });
-          });
-          tx.suggestion.clearTransient({
-            at: [],
-            mode: 'all',
-            match: (node) =>
-              Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-          } satisfies EditorNodeUnsetOptions<Node>);
-        };
-        const applySuggestions = (
-          content: string,
-          _options: { split?: boolean } = {}
-        ) => {
-          const chatNodes = context.store.get('chatNodes');
-          const sourceRoots = new Set(chatNodes.map(({ root }) => root));
-
-          // A scoped plugin portal is required to mutate a named root. Until
-          // Plate exposes one, fail closed instead of applying rootless paths
-          // to the primary document.
-          if (
-            sourceRoots.size !== 1 ||
-            !sourceRoots.has(editor.read.view.root())
-          ) {
-            return;
-          }
-          if (chatNodes.length === 1) {
-            const replacementKeys = context.store.get('_replaceNodeKeys');
-            const targetKeys =
-              replacementKeys.length > 0
-                ? replacementKeys
-                : [chatNodes[0].nodeKey];
-
-            if (
-              targetKeys.some(
-                (key) => !tx.nodes.get(key, { match: ElementApi.isElement })
-              )
-            ) {
-              return;
-            }
-          }
-
-          const nextNodes = diffNodes(content);
-
-          if (chatNodes.length <= 1) {
-            if (context.store.get('_replaceNodeKeys').length > 0) {
-              tx.history.merge();
-            } else {
-              tx.history.newBatch();
-            }
-            tx.ai.markBatch();
-            tx.fragment.replace(nextNodes);
-
-            const range = tx.ranges.fromEntries(
-              tx.nodes.toArray({
-                at: [],
-                mode: 'lowest',
-                match: (node) =>
-                  TextApi.isText(node) && !!node[SUGGESTION_TRANSIENT_KEY],
-              })
-            );
-
-            if (range) {
-              tx.selection.set(range);
-              const replacementKeys = tx.nodes
-                .blocks({ at: range, mode: 'highest' })
-                .map(([node]) => tx.key(node));
-
-              updateContext.afterCommit(() => {
-                context.store.set({ _replaceNodeKeys: replacementKeys });
-              });
-            }
-
-            return;
-          }
-
-          if (context.store.get('_replaceNodeKeys').length === 0) {
-            context.store.set({
-              _replaceNodeKeys: chatNodes.map(({ nodeKey }) => nodeKey),
-            });
-          }
-
-          const replaceNodeKeys = context.store.get('_replaceNodeKeys');
-
-          if (
-            replaceNodeKeys.length === 0 ||
-            new Set(replaceNodeKeys).size !== replaceNodeKeys.length
-          ) {
-            return;
-          }
-          const resolvedReplaceNodes = replaceNodeKeys.map((nodeKey) =>
-            tx.nodes.get(nodeKey, { match: ElementApi.isElement })
-          );
-
-          if (resolvedReplaceNodes.some((entry) => !entry)) return;
-
-          const replaceNodes = resolvedReplaceNodes
-            .map(
-              (entry) => entry ?? failInvariant('Expected value to be defined')
-            )
-            .toSorted(([, a], [, b]) => PathApi.compare(a, b));
-          const groups: Array<{
-            at: number[];
-            children: Descendant[];
-            count: number;
-            index: number;
-            keys: NodeKey[];
-          }> = [];
-
-          replaceNodes.forEach(([, path], index) => {
-            const next = nextNodes[index];
-            let replacement: Descendant[] = [];
-
-            if (next) {
-              const candidates =
-                index === replaceNodes.length - 1 &&
-                nextNodes.length > replaceNodes.length
-                  ? nextNodes.slice(index)
-                  : [next];
-              replacement = candidates;
-            }
-
-            const at = path.slice(0, -1);
-            const childIndex = path.at(-1);
-
-            if (childIndex === undefined) return;
-
-            const previous = groups.at(-1);
-
-            if (
-              previous &&
-              PathApi.equals(previous.at, at) &&
-              childIndex === previous.index + previous.count
-            ) {
-              previous.children.push(...replacement);
-              previous.count += 1;
-            } else {
-              groups.push({
-                at,
-                children: replacement,
-                count: 1,
-                index: childIndex,
-                keys: [],
-              });
-            }
-          });
-
-          tx.ai.markBatch();
-          groups.toReversed().forEach((group) => {
-            tx.nodes.replaceChildren(group.children, {
-              at: group.at,
-              count: group.count,
-              index: group.index,
-              preserveKeys: true,
-            });
-
-            group.keys = group.children.map((_node, offset) => {
-              const node = tx.nodes.get([...group.at, group.index + offset], {
-                match: ElementApi.isElement,
-              })?.[0];
-
-              if (!node || !ElementApi.isElement(node)) {
-                throw new Error('AI block replacements must be elements.');
-              }
-
-              return tx.key(node);
-            });
-          });
-
-          const replacementKeys = groups.flatMap(({ keys }) => keys);
-
-          if (
-            replacementKeys.length !== nextNodes.length ||
-            new Set(replacementKeys).size !== replacementKeys.length
-          ) {
-            throw new Error('AI block replacement identity is ambiguous.');
-          }
-
-          updateContext.afterCommit(() => {
-            const entries = replacementKeys.flatMap((key) => {
-              const entry = editor.read.nodes.get(key, {
-                match: ElementApi.isElement,
-              });
-
-              return entry ? [entry] : [];
-            });
-            if (entries.length === replacementKeys.length) {
-              editor.update.selection.setNodes(entries.map(([node]) => node));
-            }
-            context.store.set({ _replaceNodeKeys: replacementKeys });
-          });
-        };
-        const applyTableCellSuggestion = ({
-          content,
-          ref,
-        }: TableCellUpdate) => {
-          const refs = context.store.get('_tableCellRefs');
-          const target = Object.hasOwn(refs, ref) ? refs[ref] : undefined;
-          const entry = target
-            ? tx.nodes.get(target.key, { match: ElementApi.isElement })
-            : undefined;
-
-          if (!target || !entry) {
-            console.warn('Table cell reference not found');
-
-            return;
-          }
-
-          const [cell, path] = entry;
-          const children = target.root ? tx.root(target.root) : tx.children();
-          const rootedCell = NodeApi.get({ children, type: '' }, path);
-
-          if (rootedCell !== cell) {
-            console.warn('Table cell reference root does not match');
-
-            return;
-          }
-          const current = withoutSuggestionData(cell.children);
-          const parsed = editor.api.markdown
-            .deserialize(content)
-            .children.map((node, index) => {
-              const previous = current[index];
-              const id = previous && Reflect.get(previous, 'id');
-
-              return ElementApi.isElement(node) && typeof id === 'string'
-                ? { ...node, id }
-                : node;
-            });
-          const next = withTransient(
-            editor.plugin(SuggestionPlugin).api.diff(current, parsed, {
-              ignoreProps: ['id'],
-            })
-          );
-
-          tx.ai.markBatch();
-          tx.nodes.replaceChildren(next, { at: target.key });
-        };
-        const getChatBlocks = (restored: boolean) => {
-          if (!restored) return [];
-
-          const chatNodes = context.store.get('chatNodes');
-          const entries = chatNodes.flatMap(({ nodeKey }) => {
-            const keyedEntry = tx.nodes.get(nodeKey, {
-              match: ElementApi.isElement,
-            });
-
-            return keyedEntry ? [keyedEntry] : [];
-          });
-
-          if (
-            entries.length !== chatNodes.length ||
-            new Set(entries.map(([node]) => tx.key(node))).size !==
-              chatNodes.length
-          ) {
-            return [];
-          }
-
-          return entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
-        };
-        const selectEntries = (entries: ReadonlyArray<NodeEntry<Element>>) => {
-          tx.selection.setNodes(entries.map(([node]) => node));
-        };
-        const resolveInsertedBlocks = (nodes: Element[]) => {
-          const entries = nodes.flatMap((node) => {
-            const entry = tx.nodes.get(tx.key(node), {
-              match: ElementApi.isElement,
-            });
-
-            return entry ? [entry] : [];
-          });
-
-          if (entries.length !== nodes.length) {
-            throw new Error('Inserted AI blocks must resolve exactly once.');
-          }
-
-          return entries;
-        };
-        const insertBlocksAfterAndSelect = (
-          nodes: Element[],
-          target: NodeEntry<Element>
-        ) => {
-          tx.blocks.insertAfter(nodes, { at: tx.key(target[0]) });
-          selectEntries(resolveInsertedBlocks(nodes));
-        };
-        const replaceBlocksAndSelect = (
-          nodes: Element[],
-          entries: ReadonlyArray<NodeEntry<Element>>
-        ) => {
-          const selectedKeys = entries.map(([node]) => tx.key(node));
-          const firstKey = selectedKeys[0];
-
-          if (!firstKey) return;
-
-          tx.nodes.insert(nodes, { at: firstKey });
-          selectEntries(resolveInsertedBlocks(nodes));
-
-          for (const key of selectedKeys.toReversed()) {
-            tx.nodes.remove({ at: key });
-          }
-        };
-
-        return {
-          accept: () => {
-            if (context.store.get('mode') === 'insert') {
-              let focus: ReturnType<typeof tx.points.end>;
-
-              tx.children().forEach((node, index) => {
-                if (ElementApi.isElement(node) && node[AI_PREVIEW_KEY]) {
-                  focus = tx.points.end([index]);
-                }
-              });
-
-              const acceptedPreview = tx.ai.acceptPreview();
-
-              if (!acceptedPreview) {
-                tx.ai.markBatch();
-                tx.ai.clearPreviewNodes({
-                  at: [],
-                  match: (node) =>
-                    ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
-                });
-                tx.ai.removeMarks();
-                tx.nodes.remove({
-                  at: [],
-                  type: context.plugin,
-                });
-              }
-
-              if (!acceptedPreview && focus) {
-                tx.selection.set({ anchor: focus, focus });
-              }
-            } else {
-              reviewSuggestions('accept');
-              tx.nodes.remove({
-                at: [],
-                type: context.plugin,
-              });
-            }
-            updateContext.afterCommit(() => {
-              hideOptions();
-            });
-          },
-          acceptSuggestions: () => {
-            reviewSuggestions('accept');
-          },
-          applySuggestions,
-          applyTableCellSuggestion,
-          insertBelow: ({
-            format = 'single',
-          }: {
-            format?: 'all' | 'none' | 'single';
-          } = {}) => {
-            if (context.store.get('toolName') !== 'generate') {
-              const selected = tx.nodes.blocks();
-              const nodes = cloneDeep(selected.map(([node]) => node));
-
-              const last = getChatBlocks(tx.ai.undo()).at(-1);
-
-              if (!last) return;
-
-              insertBlocksAfterAndSelect(nodes, last);
-              reviewSuggestions('accept');
-              tx.nodes.remove({
-                at: [],
-                type: context.plugin,
-              });
-              updateContext.afterCommit(() => {
-                hideOptions({ focus: false });
-              });
-
-              return;
-            }
-
-            const source = getPreviewSource();
-
-            if (!source) return;
-
-            const isNodeSelecting = tx.selection.nodes().length > 0;
-
-            const restored = tx.ai.undo();
-            tx.nodes.remove({
-              at: [],
-              type: context.plugin,
-            });
-            updateContext.afterCommit(() => {
-              hideOptions();
-            });
-
-            if (isNodeSelecting) {
-              const selected = getChatBlocks(restored);
-
-              const last = selected.at(-1);
-
-              if (!last) return;
-
-              const blocks =
-                format === 'none'
-                  ? cloneDeep(source)
-                  : createFormattedBlocks({
-                      blocks: cloneDeep(source),
-                      format,
-                      sourceBlock: last,
-                    });
-
-              if (!blocks) return;
-
-              insertBlocksAfterAndSelect(blocks, last);
-
-              return;
-            }
-
-            const selection = tx.selection();
-
-            if (!selection) return;
-
-            const edges = tx.ranges.edges(selection);
-
-            if (!edges) return;
-
-            const [, end] = edges;
-            const current = tx.nodes.block({ at: end });
-
-            if (!current) return;
-
-            const blocks =
-              format === 'none'
-                ? cloneDeep(source)
-                : createFormattedBlocks({
-                    blocks: cloneDeep(source),
-                    format,
-                    sourceBlock: current,
-                  });
-
-            if (!blocks) return;
-
-            insertBlocksAfterAndSelect(blocks, current);
-          },
-          insertChunk,
-          rejectSuggestions: () => {
-            reviewSuggestions('reject');
-          },
-          replaceSelection: ({
-            format = 'single',
-          }: {
-            format?: 'all' | 'none' | 'single';
-          } = {}) => {
-            const source = getPreviewSource();
-
-            if (!source) return;
-
-            const restored = tx.ai.undo();
-            tx.nodes.remove({
-              at: [],
-              type: context.plugin,
-            });
-            updateContext.afterCommit(() => {
-              hideOptions();
-            });
-
-            if (tx.selection.nodes().length === 0) {
-              const block = tx.nodes.block();
-
-              if (
-                block &&
-                tx.selection.contains(block[1]) &&
-                format !== 'none'
-              ) {
-                const blocks = createFormattedBlocks({
-                  blocks: cloneDeep(source),
-                  format,
-                  sourceBlock: block,
-                });
-
-                if (!blocks) return;
-
-                const codeLine = editor.plugin(PLUGINS.codeLine);
-
-                if (
-                  codeLine.installed &&
-                  codeBlock.installed &&
-                  block[0].type === codeLine.schema.type &&
-                  source[0].type === codeBlock.schema.type &&
-                  source.length === 1
-                ) {
-                  tx.fragment.replace(blocks[0].children);
-                } else {
-                  tx.fragment.replace(blocks);
-                }
-              } else {
-                tx.fragment.replace(source);
-              }
-
-              return;
-            }
-
-            const selected = getChatBlocks(restored);
-
-            if (selected.length === 0) return;
-
-            const blocks =
-              format === 'none' || (format === 'single' && selected.length > 1)
-                ? cloneDeep(source)
-                : createFormattedBlocks({
-                    blocks: cloneDeep(source),
-                    format,
-                    sourceBlock: selected[0],
-                  });
-
-            if (!blocks) return;
-
-            replaceBlocksAndSelect(blocks, selected);
-          },
-        };
       },
     };
   })
@@ -2003,27 +678,6 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           tx.effects.emit(aiChatShowEffect, null);
         });
       }),
-    ],
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry: [node, path], tx }) {
-          const aiKey = context.editor.plugin(BaseAIPlugin).schema.key;
-
-          if (Reflect.get(node, aiKey) && !context.store.get('open')) {
-            tx.nodes.unset(aiKey, {
-              at: path,
-              match: (candidate) => Boolean(Reflect.get(candidate, aiKey)),
-            });
-          } else if (
-            ElementApi.isElement(node) &&
-            node.type === context.schema.type &&
-            !context.store.get('open')
-          ) {
-            tx.nodes.remove({ at: path });
-          }
-        },
-      },
     ],
     effectTypes: [aiChatShowEffect],
     on: {

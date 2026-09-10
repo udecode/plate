@@ -2,6 +2,38 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-10-markdown-streaming-controls",
+      "href": "/registry/changelog/2026-09-10-markdown-streaming-controls.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Stream independent AI drafts with reliable review and Markdown playback",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "markdown-streaming-demo",
+        "indent-static",
+        "list-static",
+        "ai",
+        "ai-menu",
+        "use-chat",
+        "plugins-static",
+        "table-static",
+        "toc-static",
+        "heading-static",
+        "block-list-static",
+        "suggestion-static",
+        "markdown"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-09-ai-code-drawing-context",
       "href": "/registry/changelog/2026-09-09-ai-code-drawing-context.json",
       "status": "draft",

@@ -1,44 +1,36 @@
-/** @jsx jsxt */
-
-import { jsxt } from '@platejs/test';
 import { AIChatPlugin } from 'platejs/ai/react';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 
-const { editor } = createTestEditor() as any;
+const streamSource = (source: string) => {
+  const { editor } = createTestEditor();
+  const before = editor.read.value();
+  const ai = editor.plugin(AIChatPlugin);
+  const id = ai.api.start({ mode: 'insert', toolName: 'generate' });
+  ai.api.receive(id, source);
+  ai.api.finish(id);
+  const operation = ai.store.get('operation');
+  expect(operation?.status).toBe('ready');
+  expect(operation?.source).toBe(source);
+  expect(operation?.value).toEqual(
+    editor.api.markdown.deserialize(source).children
+  );
+  expect(editor.read.value()).toEqual(before);
+  expect(editor.read.history.undos()).toHaveLength(0);
+  return operation;
+};
 
-jsxt;
-
-describe('AIChatPlugin api.deserializeChunk', () => {
-  it('round-trips a paragraph chunk with a trailing blank line', async () => {
-    const chunk = 'chunk1\n\n';
-
-    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
-
-    const output = (
-      <fragment>
-        <hp>chunk1</hp>
-        <hp>
-          <htext />
-        </hp>
-      </fragment>
-    );
-
-    expect(result).toEqual(output);
-
-    expect(
-      editor
-        .plugin(AIChatPlugin)
-        .read.serializeChunk({ value: { children: result } }, chunk)
-    ).toEqual(chunk);
+describe('AIChatPlugin detached Markdown parsing', () => {
+  it('preserves paragraph source with a trailing blank line', () => {
+    const operation = streamSource('chunk1\n\n');
+    expect(operation?.value).toEqual([
+      { type: 'paragraph', children: [{ text: 'chunk1' }] },
+    ]);
   });
 
-  it('keeps trailing line breaks inside code blocks', async () => {
-    const chunk = '```typescript\nconst a = 1\n\n';
-
-    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
-
-    const output = [
+  it('keeps trailing line breaks inside code blocks', () => {
+    const operation = streamSource('```typescript\nconst a = 1\n\n');
+    expect(operation?.value).toEqual([
       {
         children: [
           { children: [{ text: 'const a = 1' }], type: 'codeLine' },
@@ -47,32 +39,14 @@ describe('AIChatPlugin api.deserializeChunk', () => {
         language: 'typescript',
         type: 'codeBlock',
       },
-    ];
-
-    expect(result).toEqual(output);
+    ]);
   });
 
-  it('round-trips inline math without altering the chunk', async () => {
-    const chunk = '$$a^2 ';
-
-    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
-
-    const serialized = editor
-      .plugin(AIChatPlugin)
-      .read.serializeChunk({ value: { children: result } }, chunk);
-
-    expect(serialized).toEqual(chunk);
+  it('preserves an incomplete inline math source without serialization feedback', () => {
+    streamSource('$$a^2 ');
   });
 
-  it('round-trips incomplete html without forcing markdown parsing', async () => {
-    const chunk = '<!DOCTYPE ';
-
-    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
-
-    const serialized = editor
-      .plugin(AIChatPlugin)
-      .read.serializeChunk({ value: { children: result } }, chunk);
-
-    expect(serialized).toEqual(chunk);
+  it('preserves incomplete HTML source using complete Markdown parsing', () => {
+    streamSource('<!DOCTYPE ');
   });
 });

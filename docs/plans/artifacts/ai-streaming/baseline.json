@@ -1,0 +1,527 @@
+{
+  "base": "f03d2b8c23",
+  "description": "Current insertion parser and edit history after P0 no-op repair; exact semantic comparison without property exclusions.",
+  "rows": [
+    {
+      "name": "marks",
+      "size": 1,
+      "equal": false,
+      "actual": [
+        {
+          "children": [
+            {
+              "text": "A "
+            },
+            {
+              "italic": true,
+              "text": "bold"
+            },
+            {
+              "text": " word and "
+            },
+            {
+              "italic": true,
+              "text": "italic"
+            },
+            {
+              "text": " text."
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Last paragraph."
+            }
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "A "
+            },
+            {
+              "bold": true,
+              "text": "bold"
+            },
+            {
+              "text": " word and "
+            },
+            {
+              "italic": true,
+              "text": "italic"
+            },
+            {
+              "text": " text."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Last paragraph."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "marks",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "name": "marks",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "name": "reference",
+      "size": 1,
+      "equal": false,
+      "error": "Full Markdown parser returned no nodes",
+      "full": {
+        "children": []
+      }
+    },
+    {
+      "name": "reference",
+      "size": 16,
+      "equal": false,
+      "error": "Full Markdown parser returned no nodes",
+      "full": {
+        "children": []
+      }
+    },
+    {
+      "name": "reference",
+      "size": 128,
+      "equal": false,
+      "error": "Full Markdown parser returned no nodes",
+      "full": {
+        "children": []
+      }
+    },
+    {
+      "name": "setext",
+      "size": 1,
+      "equal": false,
+      "actual": [
+        {
+          "children": [
+            {
+              "text": "Heading======"
+            }
+          ],
+          "level": 1,
+          "type": "heading"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Paragraph"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "level": 1,
+          "type": "heading",
+          "children": [
+            {
+              "text": "Heading"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "Paragraph"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "setext",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "name": "setext",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "name": "columns",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "name": "columns",
+      "size": 16,
+      "equal": false,
+      "actual": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "paragraph<column_group>\n<column width=\"50%\">left\n</column><column width=\"50%\">right\n</column></column_group>"
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "text": "last"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "expected": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "paragraph"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "<column_group>\n<column width=\"50%\">\nleft\n</column>\n<column width=\"50%\">\nright\n</column>\n</column_group>"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "columns",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "name": "code",
+      "size": 1,
+      "equal": false,
+      "actual": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "text": "```js"
+                }
+              ],
+              "type": "codeLine"
+            },
+            {
+              "children": [
+                {
+                  "text": "const x = \"**literal**\";"
+                }
+              ],
+              "type": "codeLine"
+            }
+          ],
+          "type": "codeBlock"
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "language": "js",
+          "type": "codeBlock",
+          "children": [
+            {
+              "type": "codeLine",
+              "children": [
+                {
+                  "text": "const x = \"**literal**\";"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "code",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "name": "code",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "name": "whitespace",
+      "size": 1,
+      "equal": false,
+      "actual": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last  "
+            }
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "whitespace",
+      "size": 16,
+      "equal": false,
+      "actual": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last  "
+            }
+          ]
+        }
+      ],
+      "expected": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "whitespace",
+      "size": 128,
+      "equal": false,
+      "actual": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "text": "last  "
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "expected": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "first\nline"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "text": "last"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "blocks": 1,
+      "counts": [
+        1,
+        1,
+        1
+      ],
+      "acceptedBatches": 2,
+      "oneUndoRestoresOriginal": false,
+      "afterUndo": [
+        {
+          "type": "paragraph",
+          "suggestionTransient": true,
+          "children": [
+            {
+              "suggestion_PSLz3_NPHJdOxjDKkMbCC": {
+                "id": "PSLz3_NPHJdOxjDKkMbCC",
+                "createdAt": 1789034066365,
+                "type": "remove",
+                "userId": "alice"
+              },
+              "suggestion": true,
+              "suggestionTransient": true,
+              "text": "original 0"
+            },
+            {
+              "suggestion_PSLz3_NPHJdOxjDKkMbCC": {
+                "id": "PSLz3_NPHJdOxjDKkMbCC",
+                "createdAt": 1789034066365,
+                "type": "insert",
+                "userId": "alice"
+              },
+              "suggestionTransient": true,
+              "suggestion": true,
+              "text": "new text result"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blocks": 2,
+      "counts": [
+        1,
+        2,
+        3
+      ],
+      "acceptedBatches": 4,
+      "oneUndoRestoresOriginal": false,
+      "afterUndo": [
+        {
+          "type": "paragraph",
+          "suggestionTransient": true,
+          "children": [
+            {
+              "suggestion_hXF73qWBYwFmTN-1gKG95": {
+                "id": "hXF73qWBYwFmTN-1gKG95",
+                "createdAt": 1789034066459,
+                "type": "remove",
+                "userId": "alice"
+              },
+              "suggestion": true,
+              "suggestionTransient": true,
+              "text": "original 0"
+            },
+            {
+              "suggestion_hXF73qWBYwFmTN-1gKG95": {
+                "id": "hXF73qWBYwFmTN-1gKG95",
+                "createdAt": 1789034066459,
+                "type": "insert",
+                "userId": "alice"
+              },
+              "suggestionTransient": true,
+              "suggestion": true,
+              "text": "new text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "suggestionTransient": true,
+          "children": [
+            {
+              "suggestion_owbLfvZRUHWa_BffSlmRJ": {
+                "id": "owbLfvZRUHWa_BffSlmRJ",
+                "createdAt": 1789034066459,
+                "type": "remove",
+                "userId": "alice"
+              },
+              "suggestion": true,
+              "suggestionTransient": true,
+              "text": "original 1"
+            },
+            {
+              "suggestion_owbLfvZRUHWa_BffSlmRJ": {
+                "id": "owbLfvZRUHWa_BffSlmRJ",
+                "createdAt": 1789034066459,
+                "type": "insert",
+                "userId": "alice"
+              },
+              "suggestionTransient": true,
+              "suggestion": true,
+              "text": "second result"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

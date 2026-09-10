@@ -165,6 +165,17 @@ suggestion, history, read-only, and any other relevant active or inactive mode.
 The same transform with a route-owned mode disabled is a proxy: it can reproduce
 the first exception while hiding the next invalid state in the same action.
 
+Markdown and MDX proof must assert parsed node types, structure, and relevant
+properties. Record `semantic-shape:` in the applicable model oracle. Playback
+completion and visible text cannot distinguish rich content from literal markup.
+Check the complete fixture against the installed codec before blaming streaming.
+
+When widening slice or fragment fitting, replay both partial and fully covered
+selection boundaries. The applicable model oracle must record
+`property-precedence:` and prove incoming block properties on complete
+replacement, retained properties on partial replacement, and schema barriers.
+Text equality alone cannot close a fit-candidate admission change.
+
 Record `fixture-scope:` beside the runtime modes. Use
 `fixture-scope: complete <input>` when the route consumes a deterministic
 sample, recording, corpus, or generated fixture. A minimal prefix may be

@@ -378,6 +378,17 @@ other mode state and explicit inactive states that matter. A transform call
 with a route-owned mode missing is proxy evidence even when it throws the same
 first error.
 
+Markdown and MDX proof must assert parsed node types, structure, and relevant
+properties. Record `semantic-shape:` in the applicable model oracle. Playback
+completion and visible text cannot distinguish rich content from literal markup.
+Check the complete fixture against the installed codec before blaming streaming.
+
+When widening slice or fragment fitting, replay both partial and fully covered
+selection boundaries. The applicable model oracle must record
+`property-precedence:` and prove incoming block properties on complete
+replacement, retained properties on partial replacement, and schema barriers.
+Text equality alone cannot close a fit-candidate admission change.
+
 Input scope must match the claim too. Record `fixture-scope: complete <input>`
 when the reported action consumes a deterministic sample, recording, corpus,
 or generated fixture. `fixture-scope: minimal <invariant>` is allowed only

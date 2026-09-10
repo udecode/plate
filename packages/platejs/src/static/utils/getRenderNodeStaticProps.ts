@@ -11,8 +11,10 @@ import {
   getPluginNodeProps,
   getPluginNodeClass,
 } from '../../lib';
-import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import { getPluginContextProps } from '../../lib/plugin/createPluginContext.internal';
 import type { AnyObject } from '../../lib/types/AnyObject';
+import { createStaticDocument, type StaticDocument } from '../document';
+import { getStaticRenderRuntime, type StaticRenderers } from '../renderers';
 import type { PliteRenderNodeProps } from '../types';
 
 type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
@@ -23,6 +25,7 @@ type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
     className?: string;
     nodeProps?: AnyObject;
     style?: React.CSSProperties;
+    document?: StaticDocument;
   };
 
 export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
@@ -30,7 +33,9 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   path,
   plugin,
   props,
+  renderers,
 }: {
+  renderers?: StaticRenderers;
   editor: Editor;
   props: TProps;
   /** Pre-computed path to avoid expensive node path lookup */
@@ -43,11 +48,14 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   const contextProps = {
     ...props,
     ...(plugin
-      ? createPluginContext(editor, plugin.name)
+      ? getPluginContextProps(editor, plugin.name)
       : {
           api: editor.api,
           editor,
         }),
+    document:
+      props.document ??
+      createStaticDocument(editor.read.value(), editor.read.schema),
   };
 
   const { className } = props;
@@ -73,7 +81,9 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   const newProps = pipeInjectNodeProps(
     editor,
     mergedProps,
-    path ? () => path : (node) => editor.read.nodes.path(node)
+    path ? () => path : (node) => contextProps.document.nodes.path(node),
+    true,
+    renderers ? getStaticRenderRuntime(editor, renderers) : undefined
   );
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {

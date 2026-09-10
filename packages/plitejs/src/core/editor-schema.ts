@@ -1530,6 +1530,50 @@ export const createEditorSchema = <V extends Value = Value>(
   const findWrapping: InternalEditorSchemaApi<V>['findWrapping'] =
     sliceFitter.findWrapping;
 
+  // The compiled schema is immutable. Only properties that can supply a missing
+  // value or require one need a visit when a node has no corresponding key.
+  const missingPropertyCandidates = new WeakMap<
+    CompiledEditorSchema,
+    Map<
+      string,
+      { defaults: CompiledSchemaProperty[]; required: CompiledSchemaProperty[] }
+    >
+  >();
+  const getMissingPropertyCandidates = (
+    schema: CompiledEditorSchema,
+    placement: 'element' | 'text',
+    type: string
+  ) => {
+    let byType = missingPropertyCandidates.get(schema);
+    if (!byType) {
+      byType = new Map();
+      missingPropertyCandidates.set(schema, byType);
+    }
+    const key = `${placement}:${type}`;
+    let candidates = byType.get(key);
+    if (!candidates) {
+      candidates = { defaults: [], required: [] };
+      const allowedIds =
+        placement === 'element'
+          ? schema.properties.elementAllowedByType.get(type)
+          : schema.properties.textAllowedByParentType.get(type);
+      for (const id of allowedIds ?? []) {
+        const property = schema.properties.byId.get(id);
+        if (!property || typeof property.key !== 'string') continue;
+        if (property.descriptor.required) candidates.required.push(property);
+        if (
+          !property.descriptor.omitDefault &&
+          (Object.hasOwn(property.descriptor, 'default') ||
+            property.descriptor.generate)
+        ) {
+          candidates.defaults.push(property);
+        }
+      }
+      byType.set(key, candidates);
+    }
+    return candidates;
+  };
+
   const canonicalizeDeclarativePropertyRecord = (
     source: Readonly<Record<string, unknown>>,
     schema: CompiledEditorSchema,
@@ -1644,14 +1688,13 @@ export const createEditorSchema = <V extends Value = Value>(
       output[key] = canonical;
     }
 
-    const allowedIds =
-      placement === 'element'
-        ? schema.properties.elementAllowedByType.get(context.type)
-        : schema.properties.textAllowedByParentType.get(context.type);
+    const candidates = getMissingPropertyCandidates(
+      schema,
+      placement,
+      context.type
+    );
 
-    for (const id of allowedIds ?? []) {
-      const property = schema.properties.byId.get(id);
-
+    for (const property of candidates.defaults) {
       if (
         !property ||
         typeof property.key !== 'string' ||
@@ -1686,11 +1729,9 @@ export const createEditorSchema = <V extends Value = Value>(
         : property.descriptor.default;
     }
 
-    for (const id of allowedIds ?? []) {
-      const property = schema.properties.byId.get(id);
-
+    for (const property of candidates.required) {
       if (
-        !property?.descriptor.required ||
+        !property.descriptor.required ||
         typeof property.key !== 'string' ||
         Object.hasOwn(output, property.key) ||
         !matchesCompiledSchemaTarget(schema, property.target, context)

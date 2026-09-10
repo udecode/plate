@@ -1922,7 +1922,9 @@ export const compileSliceFitter = <V extends Value>(
       cost: number,
       allowAsymmetric = false
     ): SliceFitCandidate | null => {
-      if (!targetText || !NodeApi.isText(targetText)) return null;
+      const startText =
+        start.path.length > 0 ? document.node(start.path) : null;
+      if (!startText || !NodeApi.isText(startText)) return null;
       if (
         !allowAsymmetric &&
         inputSlice.openStart === inputSlice.openEnd &&
@@ -1931,11 +1933,12 @@ export const compileSliceFitter = <V extends Value>(
         return null;
       }
       if (
+        sameTextPath &&
         variant.openStart === inputSlice.openStart &&
         variant.openStart > 1 &&
         start.offset === end.offset &&
-        start.offset === targetText.text.length &&
-        targetText.text.length > 0
+        start.offset === startText.text.length &&
+        startText.text.length > 0
       ) {
         return null;
       }
@@ -1957,7 +1960,7 @@ export const compileSliceFitter = <V extends Value>(
           !targetBlock ||
           !ElementApi.isElement(targetBlock) ||
           targetBlock.children.length !== 1 ||
-          targetBlock.children[0] !== targetText
+          targetBlock.children[0] !== startText
         ) {
           return null;
         }
@@ -1975,7 +1978,7 @@ export const compileSliceFitter = <V extends Value>(
         const targetElementKeys = Object.keys(targetBlock).filter(
           (key) => key !== 'children'
         );
-        const targetTextKeys = Object.keys(targetText).filter(
+        const startTextKeys = Object.keys(startText).filter(
           (key) => key !== 'text'
         );
 
@@ -1995,15 +1998,15 @@ export const compileSliceFitter = <V extends Value>(
                 'children',
                 targetElementKeys
               ) ||
-              !nodePropertiesEqual(text, targetText, 'text', targetTextKeys)
+              !nodePropertiesEqual(text, startText, 'text', startTextKeys)
             );
           })
         ) {
           return null;
         }
 
-        const prefix = targetText.text.slice(0, start.offset);
-        const suffix = targetText.text.slice(end.offset);
+        const prefix = startText.text.slice(0, start.offset);
+        const suffix = startText.text.slice(end.offset);
 
         if (!isDetachedContentSlice(variant)) return null;
         const fullInsert = encodeContentSliceContent(variant);
@@ -2038,7 +2041,7 @@ export const compileSliceFitter = <V extends Value>(
         variant.openEnd === 0 &&
         start.path.length === 2 &&
         start.offset === 0 &&
-        targetText.text.length === 0 &&
+        startText.text.length === 0 &&
         getPreparedDocumentSlice(encoded) &&
         variant.content.every(rootCanContain)
       ) {
@@ -2367,13 +2370,43 @@ export const compileSliceFitter = <V extends Value>(
       sourceSlice.openEnd === 0 &&
       inputSlice.content.every(rootCanContain) &&
       !sourceSharesTargetContent;
-    const shouldGenerateLocalCandidate = () =>
-      !exactBounds &&
-      sameTextPath &&
-      inputSlice.content.length > 0 &&
-      ((hasContextualStructuralVariant() &&
-        start.path.length > 2 &&
-        Boolean(targetText && NodeApi.isText(targetText) && targetText.text)) ||
+    const shouldGenerateLocalCandidate = () => {
+      if (exactBounds || inputSlice.content.length === 0) return false;
+      if (!sameTextPath) {
+        if (!sourceSharesTargetContent) return false;
+        // Local fitting retains boundary block properties. Fully covered blocks
+        // must use the structural candidate so incoming properties win.
+        const retainsBoundaryContent = (
+          point: Point,
+          edge: 'start' | 'end'
+        ) => {
+          for (let depth = point.path.length - 1; depth > 0; depth--) {
+            const path = point.path.slice(0, depth);
+            const node = document.node(path);
+            if (
+              !node ||
+              !ElementApi.isElement(node) ||
+              getElementBehavior(node).inline
+            ) {
+              continue;
+            }
+            const boundary = getTextEdge(node, path, edge);
+            return !!boundary && !pointsEqual(point, boundary);
+          }
+          return false;
+        };
+        return (
+          retainsBoundaryContent(start, 'start') ||
+          retainsBoundaryContent(end, 'end')
+        );
+      }
+
+      return (
+        (hasContextualStructuralVariant() &&
+          start.path.length > 2 &&
+          Boolean(
+            targetText && NodeApi.isText(targetText) && targetText.text
+          )) ||
         (inputSlice.openStart !== inputSlice.openEnd &&
           start.path.length > 2) ||
         (inputSlice.openStart === 1 &&
@@ -2392,7 +2425,9 @@ export const compileSliceFitter = <V extends Value>(
                 ? start.offset > 0 || end.offset < targetText.text.length
                 : start.offset > 0 && end.offset < targetText.text.length
               : sourceSharesTargetContent && start.path.length > 2)
-          )));
+          ))
+      );
+    };
     const preferOpenVariants =
       !preserveClosedInlineBoundary &&
       !preserveClosedStructuralBoundary &&

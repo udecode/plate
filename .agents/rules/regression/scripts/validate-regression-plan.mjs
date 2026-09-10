@@ -825,6 +825,28 @@ export const validateRegressionPlan = (
     }
 
     const selected = cases.get(caseId);
+    const parsedRichText = /\b(?:Markdown|MDX|rich[- ]text pars(?:e|er|ing))\b/i.test(
+      [selected?.setup_action, selected?.expected_outcome,
+        ...(evidenceByCase.get(caseId) ?? []).map((row) => row.claim)].join(" ")
+    );
+    if (parsedRichText && !Array.from(rows?.values() ?? []).some((row) =>
+      row.observation?.toLowerCase() === "model" &&
+      row.applies?.toLowerCase() === "yes" &&
+      /\bsemantic-shape:\s*\S/i.test(row.positive_assertion ?? "")
+    )) {
+      errors.push(`${caseId} parsed rich text requires semantic-shape: in an applicable model oracle`);
+    }
+    const fitAdmission = /\b(?:slice|fragment)[- ]fit(?:ting|ter)?\b/i.test(
+      [selected?.setup_action, selected?.expected_outcome,
+        ...(evidenceByCase.get(caseId) ?? []).map((row) => row.claim)].join(" ")
+    );
+    if (fitAdmission && !Array.from(rows?.values() ?? []).some((row) =>
+      row.observation?.toLowerCase() === "model" &&
+      row.applies?.toLowerCase() === "yes" &&
+      /\bproperty-precedence:\s*\S/i.test(row.positive_assertion ?? "")
+    )) {
+      errors.push(`${caseId} slice fitting requires property-precedence: in an applicable model oracle`);
+    }
     const browserCommand = isBrowserCommandCase(selected);
     const pointerInteraction = POINTER_INTERACTION_PATTERN.test(
       [

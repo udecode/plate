@@ -95,11 +95,17 @@ type PluginStateSnapshotContext = Readonly<{
   snapshots: WeakMap<object, unknown>;
 }>;
 
+// Only snapshots produced by this owner can bypass another defensive copy.
+// Object.isFrozen alone is insufficient: a caller can freeze a mutable graph's root.
+const ownedSnapshots = new WeakSet<object>();
+
 const snapshotPluginStateValue = (
   value: unknown,
   context: PluginStateSnapshotContext
 ): unknown => {
-  if (!value || typeof value !== 'object') return value;
+  if (!value || typeof value !== 'object' || ownedSnapshots.has(value)) {
+    return value;
+  }
   if (isNominalPluginDescriptor(value)) {
     const family = getPluginSchemaFamily(value);
     const canonicalByName = family
@@ -146,7 +152,9 @@ const snapshotPluginStateValue = (
       ...value.map((item) => snapshotPluginStateValue(item, context))
     );
 
-    return Object.freeze(snapshot);
+    Object.freeze(snapshot);
+    ownedSnapshots.add(snapshot);
+    return snapshot;
   }
   const prototype = Object.getPrototypeOf(value);
 
@@ -169,7 +177,9 @@ const snapshotPluginStateValue = (
     });
   }
 
-  return Object.freeze(snapshot);
+  Object.freeze(snapshot);
+  ownedSnapshots.add(snapshot);
+  return snapshot;
 };
 
 /** Own one initial-state graph without retaining caller-owned plain data. */

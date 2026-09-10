@@ -1,0 +1,155 @@
+{
+  "scope": "Disposable known-plugin prototype; no production adoption",
+  "rows": [
+    {
+      "source": "A **bold** word and _italic_ text.\n\nLast paragraph.",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "A **bold** word and _italic_ text.\n\nLast paragraph.",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "A **bold** word and _italic_ text.\n\nLast paragraph.",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "Heading\n=======\n\nParagraph",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "Heading\n=======\n\nParagraph",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "Heading\n=======\n\nParagraph",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "[link][target]\n\n[target]: https://example.com",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "[link][target]\n\n[target]: https://example.com",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "[link][target]\n\n[target]: https://example.com",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "first  \nline\n\nlast  ",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "first  \nline\n\nlast  ",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "first  \nline\n\nlast  ",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "paragraph\n\n<columnGroup>\n<column width=\"50%\">\nleft\n</column>\n<column width=\"50%\">\nright\n</column>\n</columnGroup>\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "paragraph\n\n<columnGroup>\n<column width=\"50%\">\nleft\n</column>\n<column width=\"50%\">\nright\n</column>\n</columnGroup>\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "paragraph\n\n<columnGroup>\n<column width=\"50%\">\nleft\n</column>\n<column width=\"50%\">\nright\n</column>\n</columnGroup>\n\nlast",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "```js\nconst x = \"**literal**\";\n```\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "```js\nconst x = \"**literal**\";\n```\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "```js\nconst x = \"**literal**\";\n```\n\nlast",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "- first\n\n  continued\n- second\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "- first\n\n  continued\n- second\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "- first\n\n  continued\n- second\n\nlast",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "| a | b |\n| - | - |\n| c | d |\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "| a | b |\n| - | - |\n| c | d |\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "| a | b |\n| - | - |\n| c | d |\n\nlast",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "Hello :smile: and @bob\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "Hello :smile: and @bob\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "Hello :smile: and @bob\n\nlast",
+      "size": 128,
+      "equal": true
+    },
+    {
+      "source": "Math\n\n$$\nx+y\n$$\n\nlast",
+      "size": 1,
+      "equal": true
+    },
+    {
+      "source": "Math\n\n$$\nx+y\n$$\n\nlast",
+      "size": 16,
+      "equal": true
+    },
+    {
+      "source": "Math\n\n$$\nx+y\n$$\n\nlast",
+      "size": 128,
+      "equal": true
+    }
+  ]
+}

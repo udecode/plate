@@ -1,19 +1,72 @@
 import {
   type Descendant,
-  createEditorView,
-  type Editor as PliteEditor,
   ElementApi,
   NodeApi,
+  TextApi,
   MAIN_ROOT_KEY,
 } from '../../facade';
 import { type Editor, HtmlPlugin } from '../../lib';
+import { createStaticDocument, type StaticDocument } from '../document';
 
-export const getSelectedDomFragment = (editor: Editor): Descendant[] => {
+export const getSelectedDomFragment = (
+  editor: Editor,
+  options: { document?: StaticDocument; element?: HTMLElement } = {}
+): Descendant[] => {
   const selection = window.getSelection();
 
   if (!selection || selection.rangeCount === 0) return [];
 
   const range = selection.getRangeAt(0);
+  if (
+    options.element &&
+    (!options.element.contains(range.startContainer) ||
+      !options.element.contains(range.endContainer))
+  ) {
+    return [];
+  }
+  const document =
+    options.document ??
+    createStaticDocument(editor.read.value(), editor.read.schema);
+  const point = (container: globalThis.Node, offset: number) => {
+    const element = (
+      container.nodeType === 1
+        ? (container as HTMLElement)
+        : container.parentElement
+    )?.closest<HTMLElement>(
+      '[data-plite-node="text"][data-plite-path][data-plite-root]'
+    );
+    if (!element) return undefined;
+    const serializedPath = element.dataset.plitePath;
+    const root = element.dataset.pliteRoot;
+    if (!serializedPath || !root) return undefined;
+    const path = serializedPath.split(',').map(Number);
+    if (path.some((part) => !Number.isSafeInteger(part) || part < 0)) {
+      return undefined;
+    }
+    const scope = root === MAIN_ROOT_KEY ? document : document.forRoot(root);
+    const node = scope.nodes.get(path)?.[0];
+    if (!TextApi.isText(node)) return undefined;
+    const prefix = window.document.createRange();
+    prefix.selectNodeContents(element);
+    prefix.setEnd(container, offset);
+    const textOffset = node.text.length === 0 ? 0 : prefix.toString().length;
+    if (textOffset > node.text.length) return undefined;
+    return { root, scope, point: { path, offset: textOffset } };
+  };
+  const anchor = point(range.startContainer, range.startOffset);
+  const focus = point(range.endContainer, range.endOffset);
+  if (anchor && focus) {
+    if (anchor.root !== focus.root) return [];
+    return [
+      ...NodeApi.fragment(
+        { children: anchor.scope.children(), type: 'static-root' },
+        {
+          anchor: anchor.point,
+          focus: focus.point,
+        }
+      ),
+    ];
+  }
   const fragment = range.cloneContents();
 
   const domBlocks = Array.from(
@@ -39,10 +92,8 @@ export const getSelectedDomFragment = (editor: Editor): Descendant[] => {
       return;
     }
     const block = (
-      root === MAIN_ROOT_KEY
-        ? editor
-        : createEditorView(editor as unknown as PliteEditor, { root })
-    ).read.nodes.get(path);
+      root === MAIN_ROOT_KEY ? document : document.forRoot(root)
+    ).nodes.get(path);
 
     // prevent inline elements like link and table cells.
     if (!block || !ElementApi.isElement(block[0]) || block[1].length !== 1) {
@@ -59,7 +110,7 @@ export const getSelectedDomFragment = (editor: Editor): Descendant[] => {
       ElementApi.isElement(block[0]) &&
       !editor.read.schema.isVoid(block[0])
     ) {
-      const html = document.createElement('div');
+      const html = window.document.createElement('div');
       html.append(node);
       const results = editor
         .plugin(HtmlPlugin)

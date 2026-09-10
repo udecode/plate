@@ -48,12 +48,12 @@ export function TableRowElementStatic(
 export function TableCellElementStatic(
   props: PliteElementProps<typeof BaseTableCellPlugin>
 ) {
-  const { editor, element } = props;
+  const { editor, element, document } = props;
   const isHeader = element.header === true;
   const table = editor.plugin(BaseTablePlugin);
 
-  const { minHeight, width } = table.read.getCellSize({ element });
-  const borders = table.read.getCellBorders({ element });
+  const { minHeight, width } = table.read.getCellSize({ element, document });
+  const borders = table.read.getCellBorders({ element, document });
 
   return (
     <PliteElement

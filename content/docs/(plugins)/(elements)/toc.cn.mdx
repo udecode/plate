@@ -166,7 +166,7 @@ function Layout() {
     滚动至标题时的顶部偏移量
     - **默认值:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
+  <APIItem name="queryHeading" type="({ nodes }) => Array&lt;{ path: Path; depth: number; title: string; type: string }&gt;" optional>
     自定义标题查询函数
   </APIItem>
 </APIOptions>

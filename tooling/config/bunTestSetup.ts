@@ -1,4 +1,5 @@
 import { afterEach, expect, mock, spyOn } from 'bun:test';
+import { TransformStream as NodeTransformStream } from 'node:stream/web';
 import { TextEncoder } from 'node:util';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
@@ -58,6 +59,14 @@ GlobalRegistrator.register({
     handleDisabledFileLoadingAsSuccess: true,
     navigation: { disableChildFrameNavigation: true },
   },
+});
+
+// Happy DOM exposes an incomplete TransformStream. Keep the native stream
+// family together so SDK response parsers can pipe real readable streams.
+Object.defineProperty(globalThis, 'TransformStream', {
+  configurable: true,
+  writable: true,
+  value: NodeTransformStream,
 });
 
 if (global.document && !global.document.doctype) {

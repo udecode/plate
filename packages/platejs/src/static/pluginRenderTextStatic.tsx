@@ -2,11 +2,7 @@ import { clsx } from 'clsx';
 import React from 'react';
 
 import { failInvariant } from '../internal/failInvariant';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
+import { getCompiledPlateModelBinding } from '../internal/plugin/compilePlateModel';
 import type { Editor } from '../lib/editor/Editor';
 import type {
   AnyBasePlugin,
@@ -15,6 +11,7 @@ import type {
 } from '../lib/plugin/BasePlugin';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
 import { PliteText } from './components';
+import { getStaticRenderRuntime, type StaticRenderers } from './renderers';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderText = (
@@ -23,17 +20,21 @@ export type PliteRenderText = (
 
 export const pluginRenderTextStatic = (
   editor: Editor,
-  plugin: AnyBasePluginPortal | AnyPluginBase
+  plugin: AnyBasePluginPortal | AnyPluginBase,
+  renderers?: StaticRenderers
 ): PliteRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
     const textKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
     if (textKey && text[textKey]) {
-      const Component = getPlateRuntime(editor).components[textKey] as any;
+      const Component = getStaticRenderRuntime(editor, renderers).components[
+        textKey
+      ] as any;
       const Text = Component ?? PliteText;
 
       const ctxProps = getRenderNodeStaticProps({
+        renderers,
         editor,
         path: nodeProps.path,
         plugin,
@@ -55,33 +56,40 @@ export const pluginRenderTextStatic = (
 /** @see {@link RenderText} */
 export const pipeRenderTextStatic = (
   editor: Editor,
-  { renderText: renderTextProp }: { renderText?: PliteRenderText } = {}
+  {
+    renderText: renderTextProp,
+    renderers,
+  }: { renderText?: PliteRenderText; renderers?: StaticRenderers } = {}
 ): PliteRenderText => {
   const renderTexts: PliteRenderText[] = [];
   const textPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
-  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
+  getStaticRenderRuntime(editor, renderers).pluginCache.node.textMarks.forEach(
+    (name) => {
+      const plugin =
+        getStaticRenderRuntime(editor, renderers).plugins[name] ??
+        failInvariant('Expected value to be defined');
 
-    if (plugin) {
-      renderTexts.push(pluginRenderTextStatic(editor, plugin));
+      if (plugin) {
+        renderTexts.push(pluginRenderTextStatic(editor, plugin, renderers));
+      }
     }
-  });
+  );
 
-  getPlateRuntime(editor).pluginCache.node.textProps.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
-    const key = plugin
-      ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
-      : undefined;
+  getStaticRenderRuntime(editor, renderers).pluginCache.node.textProps.forEach(
+    (name) => {
+      const plugin =
+        getStaticRenderRuntime(editor, renderers).plugins[name] ??
+        failInvariant('Expected value to be defined');
+      const key = plugin
+        ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
+        : undefined;
 
-    if (plugin && key) {
-      textPropsEntries.push({ key, plugin });
+      if (plugin && key) {
+        textPropsEntries.push({ key, plugin });
+      }
     }
-  });
+  );
 
   return function render({ attributes: initialAttributes, ...props }) {
     let attributes = initialAttributes;
@@ -120,6 +128,7 @@ export const pipeRenderTextStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
+      renderers,
       editor,
       path: props.path,
       props: { attributes, ...props, children } as any,

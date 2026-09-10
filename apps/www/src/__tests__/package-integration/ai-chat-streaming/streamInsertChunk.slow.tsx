@@ -10,9 +10,25 @@ jsxt;
 const streamChunks = (chunks: string[]) => {
   const { editor } = createTestEditor();
 
+  const ai = editor.plugin(AIChatPlugin);
+  const initial = editor.read.value();
+  const selection = editor.read.selection();
+  const id = ai.api.start({ mode: 'insert', toolName: 'generate' });
+  let source = '';
   for (const chunk of chunks) {
-    editor.plugin(AIChatPlugin).update.insertChunk(chunk);
+    source += chunk;
+    ai.api.receive(id, source);
+    expect(ai.store.get('operation')?.source).toBe(source);
+    expect(editor.read.value()).toEqual(initial);
+    expect(editor.read.selection()).toEqual(selection);
+    expect(editor.read.history.undos()).toHaveLength(0);
   }
+  ai.api.finish(id);
+  expect(ai.store.get('operation')?.status).toBe('ready');
+  expect(ai.store.get('operation')?.value).toEqual(
+    editor.api.markdown.deserialize(source).children
+  );
+  expect(ai.api.accept({ placement: 'replace' })).toBe(true);
 
   return editor;
 };
@@ -25,7 +41,7 @@ const getStreamedMarkdown = (chunks: string[]) => {
   return { editor, expected: expectedEditor.read.children() };
 };
 
-describe('AIChatPlugin update.insertChunk', () => {
+describe('AIChatPlugin streamed draft acceptance', () => {
   describe('paragraph boundaries', () => {
     it('starts a new paragraph after a trailing blank line', () => {
       const editor = streamChunks(['chunk1\n\n', 'chunk2', 'chunk3']);

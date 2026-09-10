@@ -8,9 +8,10 @@ import {
   schema,
   PLUGINS,
 } from '../../core';
+import { BaseColumnPlugin, BaseColumnItemPlugin } from '../../features/layout';
+import { BaseListPlugin } from '../../features/list';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
-import { AI_PREVIEW_KEY } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (paragraphType = 'paragraph') => {
@@ -101,125 +102,88 @@ const createEditor = (paragraphType = 'paragraph') => {
 };
 
 describe('AIChatPlugin streaming', () => {
-  it('keeps a trailing empty paragraph while deserializing chunks', () => {
-    const editor = createEditor();
-
-    expect(
-      editor.plugin(AIChatPlugin).api.deserializeChunk('hello\n\n')
-    ).toEqual([
-      { children: [{ text: 'hello' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'paragraph' },
-    ]);
-  });
-
-  it('uses the resolved paragraph type while deserializing chunks', () => {
-    const editor = createEditor('customParagraph');
-
-    expect(
-      editor.plugin(AIChatPlugin).api.deserializeChunk('hello\n\n')
-    ).toEqual([
-      { children: [{ text: 'hello' }], type: 'customParagraph' },
-      { children: [{ text: '' }], type: 'customParagraph' },
-    ]);
-  });
-
-  it('does not carry suggestion metadata into applied AI content', () => {
-    const editor = createEditor();
-    const aiChat = editor.plugin(AIChatPlugin);
-    const nodeKey = editor.key([0])!;
-
-    aiChat.store.set({
-      chatNodes: [
-        {
-          node: {
-            children: [{ comment: true, suggestion: true, text: 'hello' }],
-            suggestionData: [],
-            suggestionTransient: true,
-            suggestion_old: { id: 'old' },
-            type: 'paragraph',
-          },
-          nodeKey,
-        },
+  it('replays paragraph and opening column markup with List corrections without a document commit', () => {
+    const editor = createProductEditor({
+      plugins: [
+        BaseListPlugin.configure({ targetPlugins: [PLUGINS.paragraph] }),
+        BaseColumnPlugin,
+        BaseColumnItemPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
       ],
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     });
-
-    aiChat.update.applySuggestions('hello');
-
-    const serialized = JSON.stringify(editor.read.children());
-
-    expect(serialized).not.toContain('suggestionData');
-    expect(serialized).not.toContain('suggestion_old');
-    expect(serialized).not.toContain('"comment"');
-    expect(serialized).not.toContain('"suggestion":');
+    const ai = editor.plugin(AIChatPlugin);
+    const before = editor.read.children();
+    const id = ai.api.start();
+    ai.api.receive(id, 'paragraph\n\n');
+    ai.api.receive(id, 'paragraph\n\n<column_group>\n');
+    expect(NodeApi.string(ai.store.get('operation')!.value[0])).toBe(
+      'paragraph'
+    );
+    expect(editor.read.children()).toBe(before);
+    const source =
+      'paragraph\n\n<column_group>\n<column width="50%">\nleft\n</column>\n</column_group>\n\nlast';
+    ai.api.receive(id, source);
+    ai.api.finish(id);
+    expect(ai.store.get('operation')!.value).toEqual(
+      editor.api.markdown.deserialize(source).children
+    );
   });
 
-  it('preserves closing code and math fences before trailing newlines', () => {
-    const editor = createEditor();
-    const { read } = editor.plugin(AIChatPlugin);
-
-    expect(
-      read.serializeChunk(
-        {
-          value: {
-            children: [
-              {
-                children: [
-                  {
-                    children: [{ text: 'const answer = 42;' }],
-                    type: 'codeLine',
-                  },
-                ],
-                lang: 'typescript',
-                type: 'codeBlock',
-              },
-            ],
-          },
-        },
-        '```typescript\nconst answer = 42;\n```\n\n'
-      )
-    ).toBe('```typescript\nconst answer = 42;\n```\n');
-    expect(
-      read.serializeChunk(
-        {
-          value: {
-            children: [
-              {
-                children: [{ text: '' }],
-                latex: 'x+1',
-                type: 'equation',
-              },
-            ],
-          },
-        },
-        '$$\nx+1\n$$\n'
-      )
-    ).toBe('$$\nx+1\n$$\n');
-  });
-
-  it('streams into the current empty block with supplied element props', () => {
-    const editor = createEditor();
-
-    editor.plugin(AIChatPlugin).update.insertChunk('hello', {
-      elementProps: { [AI_PREVIEW_KEY]: true },
+  for (const paragraphType of ['paragraph', 'customParagraph']) {
+    it(`keeps raw trailing newlines with resolved ${paragraphType} semantics`, () => {
+      const editor = createEditor(paragraphType);
+      const ai = editor.plugin(AIChatPlugin);
+      const id = ai.api.start();
+      ai.api.receive(id, 'hello\n\n');
+      expect(ai.store.get('operation')!.source).toBe('hello\n\n');
+      expect(ai.store.get('operation')!.value).toEqual(
+        editor.api.markdown.deserialize('hello\n\n').children
+      );
+      expect(ai.store.get('operation')!.value[0].type).toBe(paragraphType);
     });
-
-    expect(editor.read.text.string([])).toBe('hello');
-    expect(Reflect.get(editor.read.children()[0], AI_PREVIEW_KEY)).toBe(true);
-  });
-
-  it('replaces a streamed heading when its canonical level changes', () => {
+  }
+  for (const source of [
+    '```typescript\nconst answer = 42;\n```\n\n',
+    '$$\nx+1\n$$\n',
+  ]) {
+    it('preserves code/math fence source and complete parser semantics', () => {
+      const editor = createEditor();
+      const ai = editor.plugin(AIChatPlugin);
+      const id = ai.api.start();
+      for (let end = 1; end <= source.length; end += 1) {
+        ai.api.receive(id, source.slice(0, end));
+      }
+      ai.api.finish(id);
+      expect(ai.store.get('operation')!.source).toBe(source);
+      expect(ai.store.get('operation')!.value).toEqual(
+        editor.api.markdown.deserialize(source).children
+      );
+    });
+  }
+  it('keeps preview metadata out of the accepted empty block', () => {
     const editor = createEditor();
-    const aiChat = editor.plugin(AIChatPlugin);
-
-    editor.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
-    aiChat.store.set({ _blockChunks: '', _blockPath: [0] });
-
-    aiChat.update.insertChunk('## Two');
-
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [{ text: 'Two' }],
-      level: 2,
+    const ai = editor.plugin(AIChatPlugin);
+    const id = ai.api.start();
+    ai.api.receive(id, 'hello');
+    expect(editor.read.text.string([])).toBe('');
+    ai.api.finish(id);
+    expect(ai.api.accept()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: 'hello' }] },
+    ]);
+  });
+  it('replaces a generated heading when a snapshot changes its level', () => {
+    const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+    const id = ai.api.start();
+    ai.api.receive(id, '# One');
+    ai.api.receive(id, '## Two');
+    expect(ai.store.get('operation')!.value[0]).toEqual({
       type: 'heading',
+      level: 2,
+      children: [{ text: 'Two' }],
     });
   });
 });

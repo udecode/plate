@@ -478,14 +478,45 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getChildrenStart !== -1);
     assert.ok(getSelectionStart > getChildrenStart);
     assert.ok(selectStart > getSelectionStart);
-    assert.ok(
-      getChildrenSource.indexOf('Editor.getChildren') <
-        getChildrenSource.indexOf('Editor.getSnapshot')
-    );
-    assert.ok(
-      getSelectionSource.indexOf('Editor.getSelection') <
-        getSelectionSource.indexOf('Editor.getSnapshot')
-    );
+    const children = [{ children: [{ text: 'read without materializing' }] }];
+    const selection = { anchor: { path: [0, 0], offset: 0 } };
+    const failSnapshot = () => {
+      throw new Error('benchmark assertions must not materialize snapshots');
+    };
+
+    for (const isPlite of [true, false]) {
+      const readers = new Function(
+        'isPlite',
+        'Editor',
+        `${getChildrenSource}\n${getSelectionSource}\nreturn { getChildren, getSelection };`
+      )(isPlite, { getSnapshot: failSnapshot });
+      const editor = isPlite
+        ? {
+            get children() {
+              throw new Error('Plite assertions must use canonical reads');
+            },
+            get selection() {
+              throw new Error('Plite assertions must use canonical reads');
+            },
+            read: {
+              children: () => children,
+              selection: () => selection,
+              snapshot: failSnapshot,
+            },
+            getSnapshot: failSnapshot,
+          }
+        : {
+            children,
+            selection,
+            get read() {
+              throw new Error('legacy editors use direct properties');
+            },
+            getSnapshot: failSnapshot,
+          };
+
+      assert.equal(readers.getChildren(editor), children);
+      assert.equal(readers.getSelection(editor), selection);
+    }
   });
 
   it('keeps the core huge-document history lane subscribed to snapshots', () => {

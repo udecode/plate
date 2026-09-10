@@ -1,6 +1,8 @@
 /** @platejs-curated-entrypoint */
 
 export * from './components/index';
+export * from './document';
+export { createStaticRenderers, type StaticRenderers } from './renderers';
 export * from './deserialize/htmlStringToEditorDOM';
 export * from './editor/index';
 export * from './renderStaticHtml';

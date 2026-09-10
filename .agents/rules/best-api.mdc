@@ -617,3 +617,18 @@ implementation/proof questions. Route those questions to `plate-plan`,
 
 Do not implement product API changes unless the user explicitly asks and the
 owning execution skill is loaded.
+
+### External generation and immutable presentation
+
+For streamed external generation, keep the raw source and request identity in
+the feature operation. Derive presentation without editing the canonical
+document. Acceptance owns one validated editor transaction and its history
+boundary; discard is operation cleanup. Do not expose rollback snapshots,
+parser buffers, synthetic document anchors, or serialization feedback as the
+application API. Exact targets and conflicts belong to that same operation.
+
+For independent read-only rendering, pass an immutable document value to the
+existing static renderer. Reuse installed schema and codecs. Static content
+queries read that value through a small document context, never a fabricated
+editor or mutable live view. Reuse authored static presentation descriptors.
+Prove cross-node query invalidation before memoizing retained nodes.

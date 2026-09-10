@@ -3,9 +3,7 @@ import React from 'react';
 import { failInvariant } from '../internal/failInvariant';
 import {
   getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
   getCompiledPlatePluginByType,
-  getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
 import type { AnyPluginBase, Editor } from '../lib';
 import { PliteElement } from './components/plite-nodes';
@@ -13,14 +11,17 @@ import {
   type PliteRenderElement,
   pluginRenderElementStatic,
 } from './pluginRenderElementStatic';
+import { getStaticRenderRuntime, type StaticRenderers } from './renderers';
 import { getRenderNodeStaticProps } from './utils';
 
 export const pipeRenderElementStatic = (
   editor: Editor,
   {
     renderElement: renderElementProp,
+    renderers,
   }: {
     renderElement?: PliteRenderElement;
+    renderers?: StaticRenderers;
   } = {}
 ): PliteRenderElement =>
   function render(props) {
@@ -28,12 +29,19 @@ export const pipeRenderElementStatic = (
       editor,
       props.element.type
     ) as unknown as AnyPluginBase | undefined;
+    const renderPlugin =
+      plugin &&
+      (getStaticRenderRuntime(editor, renderers).plugins[plugin.name] ?? {
+        ...plugin,
+        render: {},
+        inject: {},
+      });
     const binding = plugin
       ? getCompiledPlateModelBinding(editor, plugin)
       : undefined;
 
-    if (plugin && binding?.kind === 'element') {
-      return pluginRenderElementStatic(editor, plugin)(props);
+    if (renderPlugin && binding?.kind === 'element') {
+      return pluginRenderElementStatic(editor, renderPlugin, renderers)(props);
     }
 
     if (renderElementProp) {
@@ -41,6 +49,7 @@ export const pipeRenderElementStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
+      renderers,
       editor,
       path: props.path,
       props: { ...props } as any,
@@ -50,15 +59,17 @@ export const pipeRenderElementStatic = (
       <PliteElement {...ctxProps}>
         {props.children}
 
-        {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
-          (name) => {
-            const innerPlugin = (getCompiledPlatePlugin(editor, name) ??
-              failInvariant('Expected value to be defined')) as any;
-            const Component = innerPlugin.render.belowRootNodes;
+        {getStaticRenderRuntime(
+          editor,
+          renderers
+        ).pluginCache.render.belowRootNodes.map((name) => {
+          const innerPlugin = (getStaticRenderRuntime(editor, renderers)
+            .plugins[name] ??
+            failInvariant('Expected value to be defined')) as any;
+          const Component = innerPlugin.render.belowRootNodes;
 
-            return <Component key={name} {...ctxProps} />;
-          }
-        )}
+          return <Component key={name} {...ctxProps} />;
+        })}
       </PliteElement>
     );
   };

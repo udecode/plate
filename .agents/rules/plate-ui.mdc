@@ -455,3 +455,12 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
 - [react-performance.md](./rules/react-performance.md)
 - [registry.md](./rules/registry.md)
 - [shadcn-proofing.md](./rules/shadcn-proofing.md)
+
+## Independent static values
+
+Follow Best API's external-generation and immutable-presentation law.
+`PlateStatic` receives `value` plus optional `renderers`; static components read
+the displayed `document`, not canonical editor content. Reuse the static kit's
+presentation descriptors through `createStaticRenderers`. Verify retained-node
+queries, named roots, heading anchors, clipboard content, and request draft
+lifetimes when this boundary changes.

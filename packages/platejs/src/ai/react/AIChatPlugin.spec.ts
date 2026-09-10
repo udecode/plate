@@ -4,7 +4,6 @@ import {
   BaseParagraphPlugin,
   getPlateRuntime,
   editorCommands,
-  type Value,
 } from '../../core';
 import { createEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
@@ -25,55 +24,28 @@ describe('AIChatPlugin', () => {
     expect(names.filter((name) => name === 'markdown')).toHaveLength(1);
   });
 
-  it('clears internal streaming state when stop is called', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
+  it('stops the active request and keeps its partial source', () => {
+    const editor = createEditor({ plugins: [AIChatPlugin] });
+    const ai = editor.plugin(AIChatPlugin);
+    const id = ai.api.start();
+    ai.api.receive(id, 'abc');
+    ai.api.stop();
+    expect(ai.store.get('operation')).toMatchObject({
+      status: 'ready',
+      source: 'abc',
+      partial: true,
     });
-
-    editor.plugin(AIChatPlugin).store.set({ streaming: true });
-    editor.plugin(AIChatPlugin).store.set({ _blockChunks: 'abc' });
-    editor.plugin(AIChatPlugin).store.set({ _blockPath: [0] });
-    editor.plugin(AIChatPlugin).store.set({ _mdxName: 'foo' });
-
-    editor.plugin(AIChatPlugin).api.stop();
-
-    expect(editor.plugin(AIChatPlugin).store.get('streaming')).toBe(false);
-    expect(editor.plugin(AIChatPlugin).store.get('_blockChunks')).toBe('');
-    expect(editor.plugin(AIChatPlugin).store.get('_blockPath')).toBeNull();
-    expect(editor.plugin(AIChatPlugin).store.get('_mdxName')).toBeNull();
   });
 
-  it('removes its anchor without adding history', () => {
-    const initialValue: Value = [
-      { children: [{ text: '' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'aiChat' },
-    ];
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      initialValue,
-    });
-
-    editor.plugin(AIChatPlugin).update({ history: 'skip' }).remove({ at: [] });
-
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('paragraph');
-    expect(editor.read.history.undos()).toHaveLength(0);
-  });
-
-  it('hides and removes its anchor without adding history', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      initialValue: [
-        { children: [{ text: '' }], type: 'paragraph' },
-        { children: [{ text: '' }], type: 'aiChat' },
-      ],
-    });
-
-    editor.plugin(AIChatPlugin).api.hide({ focus: false, undo: false });
-
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('paragraph');
+  it('hides a draft without a canonical commit or history change', () => {
+    const editor = createEditor({ plugins: [AIChatPlugin] });
+    const ai = editor.plugin(AIChatPlugin);
+    const before = editor.read.children();
+    const id = ai.api.start();
+    ai.api.receive(id, 'draft');
+    ai.api.hide({ focus: false });
+    expect(ai.store.get('operation')).toBeNull();
+    expect(editor.read.children()).toBe(before);
     expect(editor.read.history.undos()).toHaveLength(0);
   });
 

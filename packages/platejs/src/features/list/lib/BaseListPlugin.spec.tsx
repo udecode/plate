@@ -10,6 +10,7 @@ import {
   type InitialValue,
   type Value,
 } from '../../../core';
+import { createStaticDocument } from '../../../static/document';
 import { BaseIndentPlugin } from '../../indent';
 import {
   BaseListPlugin,
@@ -43,6 +44,36 @@ const createEditor = (
   });
 
 describe('BaseListPlugin canonical model', () => {
+  it('computes list ordinals from detached named-root siblings', () => {
+    const editor = createEditor();
+    const first = {
+      type: 'paragraph',
+      indent: 1,
+      listType: 'numbered',
+      listStart: 5,
+      children: [{ text: 'Five' }],
+    };
+    const second = {
+      type: 'paragraph',
+      indent: 1,
+      listType: 'numbered',
+      listStart: 2,
+      children: [{ text: 'Six' }],
+    };
+    const before = editor.read.value();
+    const document = createStaticDocument(
+      { children: [], roots: { draft: [first, second] } },
+      editor.read.schema
+    ).forRoot('draft');
+    expect(editor.read.list.ordinal(second, { document })).toBe(6);
+    const next = createStaticDocument(
+      { children: [], roots: { draft: [second] } },
+      editor.read.schema
+    ).forRoot('draft');
+    expect(editor.read.list.ordinal(second, { document: next })).toBe(2);
+    expect(editor.read.value()).toEqual(before);
+  });
+
   it('accepts signed integer starts and rejects fractional ordinals', () => {
     const editor = createEditor();
     const document = (listStart: number, listRestart: number) => ({

@@ -1380,12 +1380,7 @@
     },
     "test:partition:ai": {
       "cache": true,
-      "dependsOn": [
-        "typecheck:partition:ai",
-        "typecheck:partition:ai-react",
-        "typecheck:partition:core",
-        "typecheck:partition:suggestion"
-      ],
+      "dependsOn": ["typecheck:partition:ai", "typecheck:partition:core"],
       "inputs": [
         "src/ai/**",
         "!src/ai/react/**",
@@ -1409,9 +1404,12 @@
         "typecheck:partition:ai",
         "typecheck:partition:ai-react",
         "typecheck:partition:combobox",
+        "typecheck:partition:comment",
         "typecheck:partition:core",
+        "typecheck:partition:layout",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-list",
         "typecheck:partition:suggestion",
         "typecheck:partition:suggestion-react",
         "typecheck:partition:table"
@@ -2369,7 +2367,8 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:standard-indent",
-        "typecheck:partition:standard-list"
+        "typecheck:partition:standard-list",
+        "typecheck:partition:static"
       ],
       "inputs": [
         "src/features/list/**",
@@ -2484,6 +2483,7 @@
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:react-core",
+        "typecheck:partition:static",
         "typecheck:partition:table",
         "typecheck:partition:table-react",
         "typecheck:partition:yjs-react"
@@ -2570,7 +2570,11 @@
     },
     "test:partition:toc": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:toc"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:static",
+        "typecheck:partition:toc"
+      ],
       "inputs": [
         "src/features/toc/**",
         "test/features/toc/**",
@@ -2748,10 +2752,7 @@
     },
     "typecheck:partition:ai": {
       "cache": true,
-      "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:suggestion"
-      ],
+      "dependsOn": ["typecheck:partition:core"],
       "inputs": [
         "src/ai/**",
         "!src/ai/react/**",
@@ -2781,6 +2782,7 @@
       "dependsOn": [
         "typecheck:partition:ai",
         "typecheck:partition:combobox",
+        "typecheck:partition:comment",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",

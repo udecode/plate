@@ -21,6 +21,7 @@ import type {
 } from '../../lib';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { UnknownObject } from '../../lib/types/AnyObject';
+import type { StaticDocument } from '../document';
 
 type NodeAttributeProps = {
   attributes: UnknownObject & {
@@ -87,6 +88,7 @@ export type PliteElementProps<TPlugin extends PliteNodePropsDescriptor> =
 export type PliteNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = BasePluginContext<C> & {
+  document: StaticDocument;
   /**
    * Optional ref to be merged with `attributes.ref`.
    *

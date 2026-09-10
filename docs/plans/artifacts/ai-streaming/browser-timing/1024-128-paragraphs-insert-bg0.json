@@ -1,0 +1,107 @@
+{
+  "build": "schema-candidates-and-target-mount",
+  "scope": "Production copied EditorKit; cold + three warmups + ten independent identical tail, final, Accept, Undo, Redo trials.",
+  "previewBudget": 16,
+  "actionBudget": 100,
+  "bytes": 1024,
+  "background": 0,
+  "chunk": 128,
+  "mode": "insert",
+  "shape": "paragraphs",
+  "cold": {
+    "preview": 5.699999988079071,
+    "final": 14.599999994039536,
+    "accept": 94.2999999821186,
+    "undo": 19.299999982118607,
+    "redo": 84.90000000596046
+  },
+  "warm": [
+    {
+      "preview": 5,
+      "final": 8.799999982118607,
+      "accept": 69.69999998807907,
+      "undo": 15.099999994039536,
+      "redo": 68.59999999403954
+    },
+    {
+      "preview": 2.800000011920929,
+      "final": 9.400000005960464,
+      "accept": 70.39999997615814,
+      "undo": 17.200000017881393,
+      "redo": 67.59999999403954
+    },
+    {
+      "preview": 2.9000000059604645,
+      "final": 8.599999994039536,
+      "accept": 71.5,
+      "undo": 14.700000017881393,
+      "redo": 65.7999999821186
+    },
+    {
+      "preview": 2.5999999940395355,
+      "final": 9,
+      "accept": 70.5,
+      "undo": 14.400000005960464,
+      "redo": 64.2000000178814
+    },
+    {
+      "preview": 3,
+      "final": 8.899999976158142,
+      "accept": 85.2999999821186,
+      "undo": 16.599999994039536,
+      "redo": 68
+    },
+    {
+      "preview": 2.9000000059604645,
+      "final": 9.699999988079071,
+      "accept": 71.5,
+      "undo": 18.19999998807907,
+      "redo": 66.7000000178814
+    },
+    {
+      "preview": 3.2999999821186066,
+      "final": 10.099999994039536,
+      "accept": 69.5,
+      "undo": 15,
+      "redo": 66.19999998807907
+    },
+    {
+      "preview": 3.0999999940395355,
+      "final": 9.799999982118607,
+      "accept": 70.80000001192093,
+      "undo": 17.099999994039536,
+      "redo": 64.30000001192093
+    },
+    {
+      "preview": 2.5999999940395355,
+      "final": 8.800000011920929,
+      "accept": 68.09999999403954,
+      "undo": 15,
+      "redo": 62.599999994039536
+    },
+    {
+      "preview": 2.7999999821186066,
+      "final": 9,
+      "accept": 66.40000000596046,
+      "undo": 17,
+      "redo": 65.19999998807907
+    }
+  ],
+  "p95": {
+    "preview": 5,
+    "final": 10.099999994039536,
+    "accept": 85.2999999821186,
+    "undo": 18.19999998807907,
+    "redo": 68.59999999403954
+  },
+  "unchanged": true,
+  "accepted": true,
+  "acceptBatches": 1,
+  "undoEqual": true,
+  "redoEqual": true,
+  "previewCommits": 0,
+  "changedNodes": 7,
+  "actualBytes": 1029,
+  "nodes": 49,
+  "textLength": 735
+}

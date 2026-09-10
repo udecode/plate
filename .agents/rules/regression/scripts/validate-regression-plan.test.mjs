@@ -961,6 +961,26 @@ test("unit RED requires explicit fixture scope", () => {
   );
 });
 
+test("parsed rich text requires a semantic shape oracle beyond visible text", () => {
+  const textOnly = fixture().replace(
+    "validate one complete plan",
+    "Markdown streaming completes and contains the expected text"
+  );
+  assert.match(
+    validateRegressionPlan(textOnly, { complete: true, rootDir: root }).join("\n"),
+    /parsed rich text requires semantic-shape: in an applicable model oracle/
+  );
+  const structured = textOnly.replace(
+    "the complete semantic plan passes",
+    "semantic-shape: parsed columns contain the expected typed children"
+  );
+  assert.ok(
+    !validateRegressionPlan(structured, { complete: true, rootDir: root }).some(
+      (error) => error.includes("parsed rich text requires semantic-shape:")
+    )
+  );
+});
+
 test("minimal fixture scope cannot close the case", () => {
   assert.match(
     validateRegressionPlan(fixture({ minimalFixtureScope: true }), {
@@ -2155,4 +2175,12 @@ test("capture helper emits no receipt when a proof input changes", () => {
   } finally {
     rmSync(tmpDir, { force: true, recursive: true });
   }
+});
+
+
+test("slice fitting requires both partial and complete replacement property proof", () => {
+  const textOnly = fixture().replace("validate one complete plan", "slice fitting preserves selected text");
+  assert.match(validateRegressionPlan(textOnly, { complete: true, rootDir: root }).join("\n"), /slice fitting requires property-precedence:/);
+  const properties = textOnly.replace("the complete semantic plan passes", "property-precedence: complete replacement imports alignment; partial replacement retains context; schema barriers hold");
+  assert.ok(!validateRegressionPlan(properties, { complete: true, rootDir: root }).some((error) => error.includes("slice fitting requires property-precedence:")));
 });

@@ -2,11 +2,7 @@ import { clsx } from 'clsx';
 import React from 'react';
 
 import { failInvariant } from '../internal/failInvariant';
-import {
-  getCompiledPlateModelBinding,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../internal/plugin/compilePlateModel';
+import { getCompiledPlateModelBinding } from '../internal/plugin/compilePlateModel';
 import type {
   AnyBasePlugin,
   AnyBasePluginPortal,
@@ -15,6 +11,7 @@ import type {
   StaticRenderLeafProps as RenderLeafProps,
 } from '../lib';
 import { PliteLeaf } from './components';
+import { getStaticRenderRuntime, type StaticRenderers } from './renderers';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
 
 export type PliteRenderLeaf = (
@@ -23,7 +20,8 @@ export type PliteRenderLeaf = (
 
 export const pluginRenderLeafStatic = (
   editor: Editor,
-  plugin: AnyBasePluginPortal | AnyPluginBase
+  plugin: AnyBasePluginPortal | AnyPluginBase,
+  renderers?: StaticRenderers
 ): PliteRenderLeaf =>
   function render(props) {
     const { children, leaf } = props;
@@ -31,10 +29,11 @@ export const pluginRenderLeafStatic = (
 
     if (leafKey && leaf[leafKey]) {
       const Component = (plugin.render.leaf ??
-        getPlateRuntime(editor).components[leafKey]) as any;
+        getStaticRenderRuntime(editor, renderers).components[leafKey]) as any;
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
+        renderers,
         editor,
         path: props.path,
         plugin,
@@ -56,33 +55,41 @@ export const pluginRenderLeafStatic = (
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeafStatic = (
   editor: Editor,
-  { renderLeaf: renderLeafProp }: { renderLeaf?: PliteRenderLeaf } = {}
+  {
+    renderLeaf: renderLeafProp,
+    renderers,
+  }: { renderLeaf?: PliteRenderLeaf; renderers?: StaticRenderers } = {}
 ): PliteRenderLeaf => {
   const renderLeafs: PliteRenderLeaf[] = [];
   const leafPropsEntries: Array<{ key: string; plugin: AnyBasePlugin }> = [];
 
-  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((name) => {
+  getStaticRenderRuntime(
+    editor,
+    renderers
+  ).pluginCache.node.decoratedMarks.forEach((name) => {
     const plugin =
-      getCompiledPlatePlugin(editor, name) ??
+      getStaticRenderRuntime(editor, renderers).plugins[name] ??
       failInvariant('Expected value to be defined');
 
     if (plugin) {
-      renderLeafs.push(pluginRenderLeafStatic(editor, plugin));
+      renderLeafs.push(pluginRenderLeafStatic(editor, plugin, renderers));
     }
   });
 
-  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((name) => {
-    const plugin =
-      getCompiledPlatePlugin(editor, name) ??
-      failInvariant('Expected value to be defined');
-    const key = plugin
-      ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
-      : undefined;
+  getStaticRenderRuntime(editor, renderers).pluginCache.node.leafProps.forEach(
+    (name) => {
+      const plugin =
+        getStaticRenderRuntime(editor, renderers).plugins[name] ??
+        failInvariant('Expected value to be defined');
+      const key = plugin
+        ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
+        : undefined;
 
-    if (plugin && key) {
-      leafPropsEntries.push({ key, plugin });
+      if (plugin && key) {
+        leafPropsEntries.push({ key, plugin });
+      }
     }
-  });
+  );
 
   return function render({ attributes: initialAttributes, ...props }) {
     let attributes = initialAttributes;
@@ -121,6 +128,7 @@ export const pipeRenderLeafStatic = (
     }
 
     const ctxProps = getRenderNodeStaticProps({
+      renderers,
       editor,
       path: props.path,
       props: { attributes, ...props, children } as any,

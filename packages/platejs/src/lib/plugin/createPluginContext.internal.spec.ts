@@ -6,7 +6,10 @@ import {
 } from '../../core';
 import type { Editor } from '../editor';
 import { createEditor } from '../editor';
-import { createPluginContext } from './createPluginContext.internal';
+import {
+  createPluginContext,
+  getPluginContextProps,
+} from './createPluginContext.internal';
 import { defineBasePlugin } from './defineBasePlugin';
 
 describe('createPluginContext', () => {
@@ -52,6 +55,26 @@ describe('createPluginContext', () => {
     expect(editor.plugin(testPlugin)).toBe(portal);
     expect(context.store.get('testValue')).toBe('initial');
     expect(portal.store.get('testValue')).toBe('initial');
+  });
+
+  it('retains render props while store capabilities read current state', () => {
+    const props = getPluginContextProps(editor, testPlugin);
+    expect(props).toEqual({ ...createPluginContext(editor, testPlugin) });
+    expect(getPluginContextProps(editor, testPlugin)).toBe(props);
+    editor.plugin(testPlugin).store.set({ testValue: 'updated' });
+    expect(props.store.get('testValue')).toBe('updated');
+    expect(getPluginContextProps(editor, testPlugin)).toBe(props);
+    expect(Object.isFrozen(props)).toBe(true);
+  });
+
+  it('keeps rendered capabilities scoped to the editor and descriptor family', () => {
+    const other = createEditor({ plugins: [testPlugin] });
+    const props = getPluginContextProps(editor, testPlugin);
+    expect(getPluginContextProps(other, testPlugin)).not.toBe(props);
+    const unrelated = defineBasePlugin('test', {});
+    expect(() => getPluginContextProps(editor, unrelated)).toThrow(
+      'different descriptor family'
+    );
   });
 
   it('keeps plugin capability facades serialization-safe', () => {

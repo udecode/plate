@@ -276,6 +276,9 @@ export const setNodes = ((
 
         const newValue: unknown = props[k as keyof Node];
 
+        // Deleting a missing property cannot produce a document change.
+        if (newValue == null && !Object.hasOwn(node, k)) continue;
+
         if (compare(newValue, value)) {
           hasChanges = true;
           // Omit new properties from the old properties list

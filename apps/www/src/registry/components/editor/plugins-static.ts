@@ -1,3 +1,5 @@
+import { createStaticRenderers } from 'platejs/static';
+
 import { BaseAlignKit } from './align-static';
 import { BaseBasicBlocksKit } from './basic-blocks-static';
 import { BaseBasicMarksKit } from './basic-marks-static';
@@ -21,7 +23,7 @@ import { BaseSuggestionKit } from './suggestion-static';
 import { BaseTableKit } from './table-static';
 import { BaseTocKit } from './toc-static';
 
-export const BaseEditorKit = [
+const BaseEditorRenderingPlugins = [
   ...BaseBasicBlocksKit,
   ...BaseCodeBlockKit,
   ...BaseCodeDrawingKit,
@@ -43,5 +45,13 @@ export const BaseEditorKit = [
   ...BaseLineHeightKit,
   ...BaseCommentKit,
   ...BaseSuggestionKit,
+] as const;
+
+export const BaseEditorRenderers = createStaticRenderers(
+  BaseEditorRenderingPlugins
+);
+
+export const BaseEditorKit = [
+  ...BaseEditorRenderingPlugins,
   ...MarkdownKit,
 ] as const;
