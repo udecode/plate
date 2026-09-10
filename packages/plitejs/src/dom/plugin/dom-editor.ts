@@ -1121,6 +1121,15 @@ export const DOMEditor: DOMEditorInterface = {
   blur: (editor) => {
     const el = DOMEditor.assertDOMNode(editor, editor);
     const root = DOMEditor.findDocumentOrShadowRoot(editor);
+    EDITOR_TO_FOCUS_REQUEST_GENERATION.set(
+      editor,
+      (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1
+    );
+    if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root)?.editor === editor) {
+      ROOT_TO_FOCUS_REQUEST_OWNER.delete(root);
+    }
+    EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
+    EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
     IS_FOCUSED.set(editor, false);
     setEditorFocused(editor, false);
 

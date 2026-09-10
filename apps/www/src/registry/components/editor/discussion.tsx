@@ -412,7 +412,7 @@ function SuggestionDiscussionCard({
 
   return (
     <article
-      className="group/suggestion-review relative flex flex-col"
+      className="relative flex flex-col focus-within:[&>header>.plite-suggestion-actions]:pointer-events-auto focus-within:[&>header>.plite-suggestion-actions]:opacity-100 hover:[&>header>.plite-suggestion-actions]:pointer-events-auto hover:[&>header>.plite-suggestion-actions]:opacity-100"
       data-suggestion-review={review.suggestionId}
     >
       <header className="relative flex items-center">
@@ -426,7 +426,7 @@ function SuggestionDiscussionCard({
         <span className="text-xs leading-none text-muted-foreground/80">
           {formatCommentDate(review.createdAt)}
         </span>
-        <span className="pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 group-focus-within/suggestion-review:pointer-events-auto group-focus-within/suggestion-review:opacity-100 group-hover/suggestion-review:pointer-events-auto group-hover/suggestion-review:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+        <span className="plite-suggestion-actions pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
           <Button
             aria-label="Accept suggestion"
             className="size-6 p-1 text-muted-foreground"

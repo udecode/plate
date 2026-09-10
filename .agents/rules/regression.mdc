@@ -677,6 +677,12 @@ a synthetic focus event. Record
 Prove each mounted view independently; a shared editor's aggregate state does
 not establish the focused root.
 
+Trace DOM selection writes on those same frozen bytes. A browser can focus an
+editable when selection changes without calling the element's `focus()` method.
+Record `selection-focus-trace: selection-write + active-before + active-after`
+and `selection-focus-result: <write-owner/effect-or-no-write>` before another
+product attempt. A trace of explicit focus calls alone cannot identify that owner.
+
 ### 7. Improve The Method
 
 Every case records one methodology decision in the plan:

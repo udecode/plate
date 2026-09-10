@@ -314,7 +314,7 @@ function CodeDrawingPreview({
     <div
       className={`flex ${
         isMobile ? 'flex-col-reverse' : 'flex-col'
-      } group my-4 w-full items-stretch border bg-muted/50 md:flex-row`}
+      } my-4 w-full items-stretch border bg-muted/50 md:flex-row hover:[&_[role=toolbar]]:opacity-100`}
       style={{
         minHeight: `${DEFAULT_MIN_HEIGHT}px`,
       }}
@@ -370,7 +370,7 @@ function CodeDrawingToolbar({
   const opacityClass =
     isMobile || toolbarVisible || languageSelectOpen || viewSelectOpen
       ? 'opacity-100'
-      : 'opacity-0 group-hover:opacity-100';
+      : 'opacity-0';
 
   const positionClass = isMobile
     ? 'flex items-center gap-2'

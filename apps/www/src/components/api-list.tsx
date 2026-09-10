@@ -87,7 +87,7 @@ export function APIItem({
             {id && (
               <a
                 className={cn(
-                  'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                  'opacity-0 hover:opacity-100 [@media(hover:hover)]:[.group:hover_&]:opacity-100'
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -99,7 +99,7 @@ export function APIItem({
                 </div>
               </a>
             )}
-            <span className="font-mono text-sm leading-none font-semibold group-hover:underline">
+            <span className="font-mono text-sm leading-none font-semibold [@media(hover:hover)]:[.group:hover_&]:underline">
               {name}
             </span>
             {required && (
@@ -305,7 +305,7 @@ export function APIList({
                 {id && (
                   <a
                     className={cn(
-                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                      'opacity-0 hover:opacity-100 [@media(hover:hover)]:[.group:hover_&]:opacity-100'
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -425,7 +425,7 @@ export function APISubListItem({
         {id && (
           <a
             className={cn(
-              'opacity-0 hover:opacity-100 group-hover:opacity-100'
+              'opacity-0 hover:opacity-100 [@media(hover:hover)]:[.group:hover_&]:opacity-100'
             )}
             onClick={(e) => {
               e.stopPropagation();
@@ -447,7 +447,7 @@ export function APISubListItem({
             REQUIRED
           </span>
         )}
-        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground group-hover:no-underline">
+        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground [@media(hover:hover)]:[.group:hover_&]:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>

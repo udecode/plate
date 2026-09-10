@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comment-demo",
+  "title": "Comments",
+  "description": "Create comments, reply in threads, and resolve conversations.",
+  "registryDependencies": [
+    "https://platejs.org/r/basic-blocks.json",
+    "https://platejs.org/r/comment.json",
+    "https://platejs.org/r/comment-toolbar-button.json",
+    "https://platejs.org/r/discussion.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/link.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/comment-demo.tsx",
+      "content": "'use client';\n\nimport { CommentsPlugin } from 'platejs/comments/react';\nimport { Plate, useCreateEditor } from 'platejs/react';\n\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { CommentToolbarButton } from '@/registry/components/editor/comment-toolbar-button';\nimport { DiscussionKit } from '@/registry/components/editor/discussion';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport { LinkKit } from '@/registry/components/editor/link';\nimport { SuggestionKit } from '@/registry/components/editor/suggestion';\nimport { Toolbar } from '@/registry/components/editor/toolbar';\nimport {\n  commentThreads,\n  commentUsers,\n  commentValue,\n} from '@/registry/examples/values/comment-value';\n\nexport default function CommentDemo() {\n  const editor = useCreateEditor({\n    plugins: [\n      ...BasicBlocksKit,\n      ...LinkKit,\n      ...SuggestionKit,\n      ...DiscussionKit,\n      CommentsPlugin.configure({\n        initialState: {\n          currentUserId: 'alice',\n          users: commentUsers,\n          initialThreads: commentThreads,\n        },\n      }),\n    ],\n    initialValue: commentValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer className=\"h-[420px]\" variant=\"demo\">\n        <Toolbar className=\"border-b px-3 py-1\">\n          <CommentToolbarButton />\n        </Toolbar>\n        <Editor\n          aria-label=\"Comments document\"\n          className=\"h-auto min-h-[280px] px-8 pb-16 sm:px-12\"\n          variant=\"demo\"\n        />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/comment-value.tsx",
+      "content": "import type { Value } from 'platejs';\nimport type { CommentThread, CommentUser } from 'platejs/comments';\n\nimport { createCommentValue } from '@/registry/components/editor/comment';\n\nexport const commentUsers: Record<string, CommentUser> = {\n  alice: {\n    id: 'alice',\n    name: 'Alice',\n    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',\n  },\n  bob: {\n    id: 'bob',\n    name: 'Bob',\n    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',\n  },\n  charlie: {\n    id: 'charlie',\n    name: 'Charlie',\n    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',\n  },\n};\n\nconst trailingText =\n  ' on many text segments. You can even have overlapping annotations!';\n\nexport const commentValue: Value = [\n  { type: 'heading', level: 2, children: [{ text: 'Comments' }] },\n  {\n    type: 'paragraph',\n    children: [\n      { text: 'Discuss changes using ' },\n      { type: 'link', url: '/docs/comment', children: [{ text: 'comments' }] },\n      { text: trailingText },\n    ],\n  },\n  {\n    type: 'paragraph',\n    children: [{ text: 'Select some text and add your own comment as Alice.' }],\n  },\n];\n\nexport const commentThreads: CommentThread[] = [\n  {\n    id: 'discussion1',\n    createdAt: '2026-09-10T10:00:00.000Z',\n    resolved: false,\n    status: 'published',\n    excerpt: 'comments on many text segments',\n    userId: 'charlie',\n    target: {\n      type: 'range',\n      range: {\n        anchor: { path: [1, 1, 0], offset: 0 },\n        focus: { path: [1, 2], offset: trailingText.indexOf('.') },\n      },\n    },\n    messages: [\n      {\n        id: 'discussion1-comment',\n        userId: 'charlie',\n        createdAt: '2026-09-10T10:00:00.000Z',\n        body: createCommentValue(\n          'Comments are a great way to provide feedback and discuss changes.'\n        ),\n      },\n      {\n        id: 'discussion1-reply',\n        userId: 'bob',\n        createdAt: '2026-09-10T10:02:00.000Z',\n        body: createCommentValue(\n          'Agreed! The link to the docs makes it easy to learn more.'\n        ),\n      },\n    ],\n  },\n  {\n    id: 'discussion2',\n    createdAt: '2026-09-10T10:05:00.000Z',\n    resolved: false,\n    status: 'published',\n    excerpt: 'overlapping',\n    userId: 'bob',\n    target: {\n      type: 'range',\n      range: {\n        anchor: { path: [1, 2], offset: trailingText.indexOf('overlapping') },\n        focus: {\n          path: [1, 2],\n          offset: trailingText.indexOf('overlapping') + 'overlapping'.length,\n        },\n      },\n    },\n    messages: [\n      {\n        id: 'discussion2-comment',\n        userId: 'bob',\n        createdAt: '2026-09-10T10:05:00.000Z',\n        body: createCommentValue(\n          'Nice demonstration of overlapping annotations with both comments and suggestions!'\n        ),\n      },\n      {\n        id: 'discussion2-reply',\n        userId: 'charlie',\n        createdAt: '2026-09-10T10:07:00.000Z',\n        body: createCommentValue(\n          'This helps users understand how powerful the editor can be.'\n        ),\n      },\n    ],\n  },\n];\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comment",
+        "title": "Comments"
+      }
+    ]
+  },
+  "type": "registry:example"
+}

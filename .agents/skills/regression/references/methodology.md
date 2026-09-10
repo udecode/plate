@@ -800,6 +800,12 @@ native or public-API focus without a synthetic focus-event supplement, and
 check each mounted view independently. This exposes missing notifications
 even when native focus and the imperative API agree.
 
+Also trace DOM selection writes on the same frozen bytes: changing selection
+can focus an editable without calling its `focus()` method. Record
+`selection-focus-trace: selection-write + active-before + active-after` and
+`selection-focus-result: <write-owner/effect-or-no-write>` before another
+product attempt. Explicit focus-call instrumentation alone misses this path.
+
 For a failed popup or toolbar focus case, that frozen-byte diagnostic also
 captures native `focusin` and `focusout`, then samples the focus owner at mount,
 Floating UI positioned readiness, settlement, and the no-click follow-up key.

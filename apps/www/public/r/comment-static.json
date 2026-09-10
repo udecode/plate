@@ -17,5 +17,15 @@
       "target": "@components/editor/comment-static.ts"
     }
   ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comment"
+      }
+    ],
+    "examples": [
+      "comment-review-demo"
+    ]
+  },
   "type": "registry:component"
 }

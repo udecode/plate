@@ -56,14 +56,17 @@ export function ColumnElement({
   const composedRef = useComposedRef(ref, previewRef, nodeRef);
 
   return (
-    <div className="group/column relative" style={{ width: width ?? '100%' }}>
+    <div
+      className="group/column relative hover:[&>.plite-column-drag-handle]:opacity-100"
+      style={{ width: width ?? '100%' }}
+    >
       {!readOnly && (
         <div
           ref={handleRef}
           className={cn(
             '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
             'pointer-events-auto flex items-center',
-            'opacity-0 transition-opacity group-hover/column:opacity-100'
+            'plite-column-drag-handle opacity-0 transition-opacity'
           )}
         >
           <ColumnDragHandle />

@@ -372,9 +372,16 @@ test(AI_CASE_ID, async ({ page }, testInfo) => {
     const paragraph = editor
       .getByText(/Experience a modern rich-text editor/)
       .first();
+    const editorHarness = createPliteBrowserEditorHarness(
+      page,
+      AI_CASE_ID,
+      editor
+    );
 
     await expect(paragraph).toBeVisible();
+    const before = await editorHarness.get.modelValue();
     await paragraph.dblclick();
+    const selection = await editorHarness.get.selection();
     const askAI = page.getByRole('button', { name: 'Ask AI' });
     await expect(askAI).toBeVisible();
     await askAI.click();
@@ -399,6 +406,13 @@ test(AI_CASE_ID, async ({ page }, testInfo) => {
     expect(hasPaintedShadow(appearance.boxShadow)).toBe(false);
 
     await page.keyboard.press('Escape');
+    await expect(editor).toBeFocused();
+    await expect.poll(() => editorHarness.get.selection()).toEqual(selection);
+    expect(await editorHarness.get.modelValue()).toEqual(before);
+    await page.keyboard.insertText('AI close proof');
+    await expect(editor).toContainText('AI close proof');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => editorHarness.get.modelValue()).toEqual(before);
     await expect(editor).toBeFocused();
     runtimeErrors.assertNone();
   } finally {

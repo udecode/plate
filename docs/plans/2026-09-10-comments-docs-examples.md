@@ -1,6 +1,6 @@
 # Comments documentation and examples
 
-Status: in progress. Local implementation and verification only; no publication.
+Status: complete. Local implementation and verification passed.
 
 ## Outcome and scope
 
@@ -12,12 +12,12 @@ conversations. Keep the mixed Comments/Suggestions example on Discussion.
 
 | Unit | Required outcome | Evidence |
 | --- | --- | --- |
-| Core comments | Existing conversations; create, reply, edit, resolve, cancel; minimal feature setup | Pending real `/blocks/comment-demo` interaction |
-| Overlaps and history | Both overlapping threads reachable; edits map ranges; deletion retains access; undo/redo restore highlighting | Pending `/blocks/comment-overlap-demo` interaction |
-| Local persistence and recovery | Save/reload document and threads together; labeled simulated failure retains draft; retry succeeds once | Pending `/blocks/comment-persistence-demo` interaction |
-| Read-only and static | Document rejects typing; comments remain readable; static output paints matching ranges | Pending `/blocks/comment-review-demo` interaction |
-| Documentation | Preview, minimal setup, distinct examples, integration, API; composition linked to Discussion | Pending exact `/docs/comment` desktop and narrow viewport |
-| Registry and types | Registered downloadable examples and complete imports; generated registry/changelog and source/type checks | Pending |
+| Core comments | Existing conversations; create, reply, edit, resolve, cancel; minimal feature setup | Passed real `/blocks/comment-demo` interactions |
+| Overlaps and history | Both overlapping threads reachable; edits map ranges; deletion retains access; undo/redo restore highlighting | Passed `/blocks/comment-overlap-demo` interactions |
+| Local persistence and recovery | Save/reload document and threads together; labeled simulated failure retains draft; retry succeeds once | Passed `/blocks/comment-persistence-demo` interactions |
+| Read-only and static | Document rejects edits; comments remain readable; static output paints matching ranges | Passed `/blocks/comment-review-demo` interactions |
+| Documentation | Preview, minimal setup, distinct examples, integration, API; composition linked to Discussion | Passed `/docs/comment` desktop and 390px layout, independent examples, and import-recipe link |
+| Registry and types | Registered examples and complete imports; generated registry/changelog and source/type checks | Passed full www typecheck, registry build/source check, lint, changelog check and final docs check |
 
 ## Source obligations
 
@@ -68,3 +68,25 @@ conversations. Keep the mixed Comments/Suggestions example on Discussion.
   Remaining drafts are outside the checkout. This task has no publication grant.
 - Doctor reports stale managed app/browser artifacts. Final verification will
   use a fresh source-backed dev server; no managed-build freshness claim is made.
+
+## Final evidence
+
+- [Browser receipts](artifacts/comments-docs-examples/browser-proof.json) bind
+  each example and the combined page to observed actions and outcomes.
+- [Source identity](artifacts/comments-docs-examples/source-identity.json)
+  records the ten authored source files and the source-backed server on 3296.
+- Full www typecheck passed, including docs source parity and registry source
+  checks. Registry generation produced 371 canonical payloads and 15 overlays.
+  Changelog consistency, focused lint and the final docs check passed.
+- The page preserves all 20 API table entries and the complete import recipe,
+  linked under Editor document migrations. Preview heights keep short examples
+  compact and expose retry/static content at 390px.
+- Screenshots were inspected for conversations, overlaps, failed-send recovery
+  and desktop/narrow docs. Raw browser screenshot capture avoided scaling in
+  the in-app screenshot wrapper. This is desktop browser and responsive-layout
+  proof, not physical mobile-device proof.
+- A concurrent registry regeneration invalidated the initial core attempt by
+  refreshing the page. The complete scenario was rerun after generation settled.
+- The preview server is intentionally retained for local review. Temporary
+  viewport overrides were reset. No package API changes, commit, push, or PR
+  were performed by this task; another task published the earlier planning file.

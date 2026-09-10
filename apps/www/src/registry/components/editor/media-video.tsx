@@ -65,7 +65,7 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
 
   return (
     <PlateElement className="py-2.5" {...props}>
-      <figure className="relative m-0 cursor-default">
+      <figure className="relative m-0 cursor-default hover:[&_.plite-media-resize-handle]:after:opacity-100">
         <div contentEditable={false}>
           <Resizable
             className={cn(isDragging && 'opacity-50')}

@@ -7,6 +7,41 @@ import { expect, test } from '@playwright/test';
 const CASE_ID = 'media-caption:file-selection-to-toc-navigation';
 const EDITOR = '[data-plite-editor="true"][contenteditable="true"]';
 
+test('media resize handles remain visible over the image caption', async ({
+  page,
+}) => {
+  await page.goto('/blocks/editor-ai', { waitUntil: 'commit' });
+  const editor = page.locator(EDITOR).first();
+  const harness = createPliteBrowserEditorHarness(
+    page,
+    'media-caption:resize-hover',
+    editor
+  );
+  await harness.ready({ editor: 'visible', text: 'sample.pdf' });
+  const figure = editor
+    .locator('figure')
+    .filter({ has: page.locator('img') })
+    .first();
+  await figure.locator('img').click();
+  const caption = figure.locator('figcaption');
+  await expect(caption).toBeVisible();
+  const handles = figure.getByLabel('Resize media');
+  await expect(handles).toHaveCount(2);
+  const opacities = () =>
+    handles.evaluateAll((elements) =>
+      elements.map((element) => getComputedStyle(element, '::after').opacity)
+    );
+
+  await page.mouse.move(0, 0);
+  await expect.poll(opacities).toEqual(['0', '0']);
+  await caption.hover();
+  await expect.poll(opacities).toEqual(['1', '1']);
+  await figure.locator('img').hover();
+  await expect.poll(opacities).toEqual(['1', '1']);
+  await page.mouse.move(0, 0);
+  await expect.poll(opacities).toEqual(['0', '0']);
+});
+
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 

@@ -6,6 +6,7 @@
 @source "../**/*.{ts,tsx,mdx}";
 @source not "../../public/r";
 @source not "../__registry__";
+@source not "../**/__tests__";
 @source not "../../tests";
 @source not "../**/*.{spec,test}.{ts,tsx}";
 

@@ -23,7 +23,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     const heading = page.getByRole('heading', {
       name: 'Collaborative Editing',
     });
-    const draggable = page.locator('.plite-editor > .group').filter({
+    const draggable = page.locator('.plite-editor > div').filter({
       has: heading,
     });
     const previousText = draggable

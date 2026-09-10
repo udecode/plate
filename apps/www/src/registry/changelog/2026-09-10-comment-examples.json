@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-comment-examples",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-comment-examples.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Comments examples for conversations, overlapping ranges, local persistence, and read-only review.",
+  "targets": [
+    {
+      "name": "comment-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-overlap-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-overlap-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-review-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-review-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-comment-examples",
+      "kind": "new",
+      "summary": "Focused Comments examples cover conversations, overlapping ranges with undo and redo, local snapshot save/reload with a simulated failed reply, and read-only/static rendering.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-comment-examples",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

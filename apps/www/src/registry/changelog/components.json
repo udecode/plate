@@ -1,6 +1,27 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-menu": [
+      "2026-09-10-ai-menu-focus",
+      "2026-09-08-ai-session",
+      "2026-09-08-keyboard-dismissal",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "comment-demo": ["2026-09-10-comment-examples"],
+    "comment-overlap-demo": ["2026-09-10-comment-examples"],
+    "comment-persistence-demo": ["2026-09-10-comment-examples"],
+    "comment-review-demo": ["2026-09-10-comment-examples"],
     "code-drawing": [
       "2026-09-10-diagram-rendering-demand",
       "2026-09-07-drawing-renderer-config",
@@ -107,22 +128,6 @@
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-13-ai-request-refs",
       "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
-    "ai-menu": [
-      "2026-09-08-ai-session",
-      "2026-09-08-keyboard-dismissal",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-31-simplify-ai-chat-source-commands",
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"

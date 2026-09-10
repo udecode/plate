@@ -197,6 +197,26 @@ envelope version needs its exact generated fingerprint in
   mix peers from different schema versions.
 </Callout>
 
+### Import comment annotations
+
+Run `extractLegacyCommentRanges` before loading documents that contain `comment`, `comment_*`, `comment_draft`, or `commentTransient` properties.
+
+```ts
+import { extractLegacyCommentRanges } from "platejs/migrations";
+
+const {
+  comments,
+  diagnostics,
+  document: cleanDocument,
+} = extractLegacyCommentRanges(document, {
+  threadIds: storedThreads.map((thread) => thread.id),
+});
+
+console.table(diagnostics);
+```
+
+Persist `cleanDocument` and import `comments` through your storage layer after reviewing every diagnostic. The extractor never invents missing thread IDs. Run it offline; the runtime plugin has no legacy fallback.
+
 ### Remote initial value
 
 Fetch remote content before constructing the editor. The loader owns aborts,

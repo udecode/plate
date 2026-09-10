@@ -1,7 +1,5 @@
 # Tailwind hover selector removal
 
-This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
-
 Objective:
 Remove the Tailwind compiler patch while preserving component hover/focus behavior and bounded hover cost on the full native 30,000-span code block.
 
@@ -11,285 +9,213 @@ one-shot execution
 Goal plan:
 docs/plans/2026-09-10-tailwind-hover-selector-removal.md
 
-Template:
-docs/plans/templates/benchmark.md
-
 Primary template:
 docs/plans/templates/benchmark.md
 
 Applied packs:
-- none
+None. Task, Benchmark, Hard Cut, Plate UI, Verify Plate, Testing, Poteto Mode, Autogoal and Show Me Your Work supplied the applicable methods.
 
 ## Benchmark Source
 
-- request: User accepted component-owned selector replacement with “go” on 2026-09-10, after explicitly requesting removal of the Tailwind patch.
-- scope: App hover/focus CSS, editor controls, source scanning, patch registration and installed compiler; local implementation and proof.
-- invocation: Accepted implementation with embedded before/after performance probe; no main-branch product comparison or broad editor benchmark requested.
-- candidate-identity: Current next checkout, base f03d2b8c2397638acfe8b50abf4e90139778360f; final input hashes will be retained with artifacts.
-- plate-main-identity: N/A: comparison is installed patched Tailwind versus component selectors using pristine Tailwind, not current versus main.
+- request: User accepted component-owned selector replacement with “go” on 2026-09-10 after requesting Tailwind patch removal.
+- scope: Local app/editor control CSS, test-source scanning, compiler patch registration, generated registry and affected proof. No publication requested.
+- invocation: $benchmark tailwind-hover-selector-removal; performance proof inside the accepted implementation task.
+- candidate-identity: fingerprint: final-source-manifest.json; current HEAD d785ce1022ad7d322e28a0caa706da003fe420ce; the task's 31 source/test/manifest path states identify local work independently of concurrent commits.
+- plate-main-identity: N/A: accepted comparator is patched versus unpatched CSS on the same product, not origin/main.
 - plite-identity: N/A: no Plite source/runtime changes.
-- slate-identity: N/A: CSS invalidation has no substrate comparison.
+- slate-identity: N/A: component CSS has no substrate comparator.
 - named-symptom: Hovering the full native code-block surface must not restyle the 30,000-token subtree.
-- final-artifacts: docs/plans/artifacts/2026-09-10-tailwind-hover-selector-removal/
-
-First checkpoint:
-- Copy every explicit requirement into checkable rows before measurement or
-  code changes.
-- Resolve source identities, host/build freshness, fixture/action comparability,
-  correctness guards, and every default lane's applicability.
-- All applicable lanes are selected by default. Only an explicit `only`
-  invocation may mark otherwise relevant lanes
-  `N/A: only - <reason>`. Use `N/A: inapplicable - <reason>` only for a lane
-  that genuinely cannot apply.
-
-Timed checkpoint:
-- requested duration: N/A: no timed request.
-- semantics: N/A: no timed request.
-- start / deadline: N/A: no deadline.
-- final loop closure: Complete accepted selector removal and all applicable correctness/proof rows.
+- final-artifacts: artifact: docs/plans/artifacts/2026-09-10-tailwind-hover-selector-removal/
 
 Completion threshold:
-- Compiler patch and pnpm registration absent, installed upstream compiler verified; generated app CSS contains no universal group/peer hover/focus rules. Editor controls, composed headings, sidebar actions and floating labels retain their intended behavior. Registry output regenerated.
-- Frozen hover contract: preserve the existing <100 ms maximum RecalcStyleDuration guard. In matched packets reject a material regression when candidate p95 grows by both >5 ms and >25% beyond baseline and observed packet spread. Report first entry separately; do not claim a speed improvement from values within noise. Full native descendants and code text must remain unchanged; adjacent typing and undo must pass.
-- Every applicable lane is complete or N/A with evidence.
-- Every kept fix passes its exact benchmark rerun and correctness guard.
-- Benchmark plan validation passes with `--complete`, P1 autoreview is N/A on next, and the Autogoal checker passes.
+Patch and pnpm registration absent; both installed compiler bundles match the official 4.1.8 tarball; no universal group/peer hover/focus rules in fresh app CSS. Preserve native DOM, text, adjacent typing and undo. Keep the existing maximum RecalcStyleDuration below 100 ms. Reject a material matched regression only when both above 5 ms and above 25% beyond baseline and packet spread. First entry is separate from settled samples; small samples do not support p95/p99 or speedup claims. Complete applicable lanes and plan validators.
 
 Verification surface:
-- benchmark commands / artifacts: Existing www code-block-native-interactions.spec.ts plus supported Chrome CDP for matched CSS owner measurement; retain baseline.css and candidate.css, raw packets, fingerprints and logs.
-- correctness commands: pnpm --filter www test:www-browser:chromium tests/browser/code-block-native-interactions.spec.ts; affected UI browser tests and component-owned CSS behavior cases.
-- Browser / Chrome / device proof: Existing repository Playwright runner for repeatable tests; real Chrome Ziad profile via CUA for final native pointer and scroll proof. No raw mobile-device claim.
-- source/ref/fingerprint proof: Baseline CSS SHA256 e4f34be4000e02dfbcd3cb40104bf56f56b156219927ca844912b1b0af8c557d; baseline lock e8f39bfde02f1e8bb5b886ea0576bf2299e97099901e8dd3398a95f81c1c0d4f; final hashes pending.
+Existing www Playwright runner, native Chrome 152 Ziad through CUA, source-first www TypeScript, scoped Ultracite, registry build/check, official compiler hashes, captured CSS and source fingerprints. Full native fixture is `/blocks/code-block-huge-demo`; `/docs/code-block#native-plate-dom` is its documented 1,000-line embedded example. Artifacts retain all failed attempts.
 
 Constraints:
-- Correctness and native editor behavior outrank metric movement.
-- Do not hide latency with debounce, delayed work, changed fixtures, degraded
-  DOM, or a narrower action.
-- Do not create another benchmark target registry or permanent run ledger.
-- A conclusive cause pauses later lanes; it does not complete the goal.
-- A proven cause selects the best long-term durable target, not the cheapest
-  compatible patch. Before stability, hard-cut API or architecture when that
-  buys materially better lasting value; preserve only a named hard correctness,
-  security, serialized-data, native-behavior, or runtime law.
-- After a fix, rerun the exact red lane and correctness guard before breadth.
-- Do not commit, push, open a PR, comment, publish, or release unless separately
-  authorized.
+Correctness and native behavior outrank metric movement. No virtualization, reduced DOM, debounce, JS hover state, compiler fork or global CSS rewriting. No package API change. No commit/push/PR authority. Autoreview is N/A on next. Other tasks' shared write windows were honored; only this task's servers/tabs are cleaned up.
 
 Boundaries:
-- allowed runtime/packages/apps: apps/www component source and globals.css, root package.json/pnpm-lock.yaml, patches, generated registry output.
-- allowed benchmark/tests/fixtures: Existing www browser runner and its affected UI/native test owners; local plan artifacts.
-- allowed baseline checkouts/hosts: Current checkout only. Initial baseline server 3297 PID 94396 cwd apps/www verified. Task-owned fresh dev server 3299 uses .next-tailwind-proof and source aliases.
-- non-goals: Package/editor algorithms, virtualization, React patches, upstream compiler fork, global CSS rewriting, publication, unrelated upstream style catalogs.
-
-Output budget strategy:
-- Discover target/runner filenames and counts first. Exclude `node_modules`,
-  `.next`, `.turbo`, generated static output, broad historical plans, and old
-  artifacts unless named. Save large benchmark/trace output to artifacts and
-  inspect summaries plus focused slices.
+App component CSS, editor registry component CSS, globals scanning, patch/manifest/lockfile cleanup, affected browser tests and generated registry. Package algorithms, release lanes, unrelated style catalogs, raw-device claims and publication are outside scope. The source-only checks for currently unmounted controls are explicit in native-ui-observations.json.
 
 Blocked condition:
-- A reproducible correctness failure in the accepted selectors or materially regressed matched hover cost keeps this task open. A browser capability gap is reported at its exact claim boundary while all independent source and automated proof continues.
+A reproducible CSS regression, changed native DOM/text or material hover regression keeps the task open. Unmounted pre-existing controls and extension-injected DOM are recorded at their actual evidence boundary; they do not authorize unrelated product rewrites.
 
 ## Interaction Coverage
 
-- first-interaction: pending
-- settled-interaction: pending
-- route-scope: pending
-- reporter-profile: pending
-
-Use `pass: <proof>` or `N/A: <concrete reason>` for each phase and host.
+- first-interaction: pass: matched native first entry 1.573 ms baseline versus 2.092 ms final; native-comparison.json.
+- settled-interaction: pass: native settled median 1.488 ms baseline versus 1.765 ms final; Chrome's separate 11-transition final packet ranges 1.654-3.380 ms.
+- route-scope: pass: full 10,000-line block, embedded 1,000-line docs preview, editor-ai, column-demo, code-drawing-demo, discussion demo, docs sidebar and table routes; affected-ui.log and native-ui-observations.json distinguish interaction and source-only proof.
+- reporter-profile: pass: real Chrome 152 Ziad, 1690x1233 DPR1, full DOM and native pointer/wheel events. DarkReader injects a recoverable hydration mismatch on editor-ai; extension state was preserved. No clean-profile/no-extension claim.
 
 ## Comparison Signature
 
 | Field | Candidate | Baseline | Comparable evidence |
 |---|---|---|---|
-| ref / dirty fingerprint | pending | pending | pending |
-| lockfile / package manager | pending | pending | pending |
-| build mode / host / port | pending | pending | pending |
-| browser / machine / viewport / DPR | pending | pending | pending |
-| route / fixture / document / plugins | pending | pending | pending |
-| setup / action / DOM strategy | pending | pending | pending |
-| warmups / samples / interleave order | pending | pending | pending |
+| ref / dirty fingerprint | fingerprint: final-source-manifest.json on d785ce1022ad7d322e28a0caa706da003fe420ce | fingerprint: source-before-manifest.json on initial f03d2b8 | artifact: source-before copies and exact freeze/restoration manifests |
+| lockfile / package manager | pnpm 9.15.0; pristine Tailwind 4.1.8; final lock hash in source manifest | pnpm 9.15.0; patched Tailwind 4.1.8; lock e8f39bfde02f1e8bb5b886ea0576bf2299e97099901e8dd3398a95f81c1c0d4f | artifact: installed-compiler-verification.json and final-css-audit.json |
+| build mode / host / port | Source-first Next dev, current checkout, 3299 .next-tailwind-final | Same checkout/source-first Next dev on 3297 | artifact: final-server.log, baseline-native-loaded.css and final-native-loaded.css |
+| browser / machine / viewport / DPR | Repository Chromium at 2005x1169; native Chrome 152 Ziad at 1690x1233 DPR1 | Same browser/machine/viewport in each respective comparison | artifact: baseline-browser, final-pruned-browser and native-chrome-*.json |
+| route / fixture / document / plugins | Full 10,000 lines, 30002 pre descendants, 448889 characters; EditorKit | Same route, native DOM, text and EditorKit | artifact: native-interactions tests and native-ui-observations.json |
+| setup / action / DOM strategy | Pointer x1500/1000 y400, two animation frames, original full native DOM, adjacent typing/undo | Same action and correctness guard | artifact: native-comparison.json and existing test source |
+| warmups / samples / interleave order | Route ready before packet; 4 headless transitions; separate 12 native Chrome transitions including initial outside position | Same protocol and counts; chronological baseline then candidate | artifact: raw packets; diagnostic-matched.json separately interleaves tag/class/tag/class with 8 transitions per packet |
 
 Start Gates:
 | Gate | Applies | Evidence |
 |---|---|---|
-| Prompt requirements captured before work | pending | pending |
-| Timed checkpoint parsed | pending | pending |
-| `benchmark` source and methodology read | yes | pending |
-| Task plan reused; standing Autogoal request or explicit opt-out resolved | yes | pending |
-| Candidate and baseline identities recorded | pending | pending |
-| Target/runner discovery completed from current source | pending | pending |
-| Host/build/fixture freshness proved | pending | pending |
-| Correctness oracle identified | pending | pending |
-| All default lanes inventoried | yes | pending |
-| `only` narrowing explicitly authorized or N/A | pending | pending |
-| Browser/native proof strategy selected | pending | pending |
-| Output budget strategy recorded | yes | see above |
-| Commit/PR/release authority recorded | yes | no mutation authorized by default |
+| Requirements, authority and timing | yes | Accepted go, local-only scope, no duration requested; standing Autogoal reused this plan. |
+| Benchmark/Task method and hard-cut target | yes | Sources read before implementation; component presentation replaces compiler patch, no public abstraction added. |
+| Host, fixture and oracle | yes | Patched baseline test passed; both CSS snapshots and source copies saved; full DOM/text and adjacent editing are the oracle. |
+| Lane applicability and browser choice | yes | All nine lanes inventoried below; Verify Plate selects existing automated runner plus real Chrome. |
+| Output and concurrency boundaries | yes | Large trace kept as bounded diagnostic summary plus reproducible CSS/DOM; frozen sources restored and verified on all 24 path states. |
 
 Work Checklist:
-- [ ] User: Replace expensive application group/peer hover/focus selectors and preserve hover media queries, keyboard focus, touch visibility, open/active states and nested-owner behavior.
-- [ ] User: Remove the Tailwind patch and registration; verify installed upstream source.
-- [ ] User: Exclude source test fixtures from Tailwind scanning.
-- [ ] User: Compare against patched CSS on the full 30,000-span route; preserve all native DOM.
-- [ ] AGENTS / Plate UI: Regenerate registry output on next and inspect generated source. No package exports change, so brl N/A.
-- [ ] Plate UI: Registry changelog disposition and affected source type/lint proof.
-- [ ] Task: No commit/push/PR requested; Autoreview N/A on next.
-- [ ] Verify Plate: Preserve source/host/action/results and screenshot, clean only task-owned sessions.
-- [ ] Every explicit scope, comparison, timing, stop condition, deliverable,
-      verification surface, and success criterion is recorded.
-- [ ] Short objective, threshold, verification, constraints, boundaries, and
-      blocked condition are concrete.
-- [ ] Default lanes remain in diagnostic order; every N/A row has a reason.
-- [ ] Candidate/baseline signatures prove comparable source, fixture, action,
-      build, browser, machine, and sampling.
-- [ ] Primary metrics match the visible user operation; proxies stay labeled.
-- [ ] Samples expose p50/p75/p95/p99 only when sample count supports them,
-      plus max, absolute/relative delta, and noise evidence.
-- [ ] Red lanes are not called causal without the conclusive-cause gate.
-- [ ] A proven cause pauses later lanes before another expensive benchmark.
-- [ ] Every proven cause records its fix class, best long-term target, decision
-      owner, layer plan, compatibility verdict, and implementation owner.
-- [ ] `public-api` and `runtime-architecture` causes run `best-api`, then
-      `plite-plan`, `plate-plan`, or both before implementation. Broad accepted
-      execution may use `task autonomous`; target selection may not.
-- [ ] One isolated owner is fixed, then the exact benchmark and correctness
-      guard rerun before breadth resumes.
-- [ ] Failed reruns invalidate or continue the same cause; they do not skip to
-      a different green metric.
-- [ ] Green reruns resume the first pending applicable lane.
-- [ ] Every packet has keep/revert/invalidate/quarantine/defer and next-owner
-      evidence.
-- [ ] Harness/metric/host defects are repaired before product optimization.
-- [ ] Final handoff reports candidate/baseline identities, lane status, first
-      conclusive cause, metrics, fix/reruns, resumed breadth, and residual risk.
+- [x] Replace application group/peer hover/focus utilities with component-owned specific targets; preserve hover media queries, focus, touch visibility, menu-open/active states and nested owners.
+- [x] Remove Tailwind patch and registration; official tarball matches both installed bundles. Other Bun patches remain unchanged.
+- [x] Exclude source test fixtures from Tailwind scanning; fresh CSS contains zero retired hover/focus variants.
+- [x] Preserve full 30002-descendant native DOM and compare patched versus unpatched hover cost, first and settled separately.
+- [x] Remove unused StarOnGithub after a source-wide caller search; remove its obsolete CSS. Keep mounted Plus card and verify underline behavior.
+- [x] Preserve media caption hover region; add actual editor regression coverage. Retain toolbar/touch/focus behavior and validate 19 distinct affected cases.
+- [x] Regenerate registry: 371 canonical payloads and 15 sparse overlays; source checker passes. No manual generated edits or template edits.
+- [x] Scoped lint and source-first www TypeScript pass. No package exports/code changed, so package build, brl and full Plite lanes are N/A.
+- [x] Registry changelog N/A: implementation/performance maintenance preserves presented feature and copied install API; no new user-facing feature or dependency.
+- [x] Best API doctrine repair N/A: no reusable public API or new canonical consumer setup contract; existing component presentation ownership is retained.
+- [x] Keep all red packets, isolate cause, rerun exact lane before breadth, and retain keep/invalidate decisions below.
+- [x] Record source/host/fixture/action provenance, small-sample limits, explicit unmounted-control limits and native screenshot observation.
+- [x] Honor both shared-checkout freezes; no commit/push/PR and no Autoreview on next. Clean only task-owned sessions.
+- [x] Reconcile all applicable methods and pass Benchmark/Autogoal completion validators.
 
 ## Benchmark Lane Table
 
 | Order | Lane | Applies | Status | Evidence | Next |
 |---|---|---|---|---|---|
-| 1 | source-and-host-readiness | yes | in_progress | Patched baseline CSS saved; native baseline test 1/1 passed in 4.9s; fresh unpatched host starting. | Finish compiler and host identity. |
-| 2 | current-vs-main-product-smoke | N/A: inapplicable - accepted comparison is patched versus unpatched CSS on the same current product | N/A | No origin/main product claim. | none |
-| 3 | plate-vs-plite-decomposition | N/A: inapplicable - only component CSS changes, no editor layer changes | N/A | CSS owner isolated in prior hover trace and accepted source assessment. | none |
-| 4 | owner-microbench-and-trace | yes | pending | Compare patched baseline and current component selectors; verify style invalidation work and controls. | Matched owner probe. |
-| 5 | product-mount-matrix | N/A: inapplicable - no mount architecture or mount performance claim | N/A | Fresh route readiness remains in lane 1; style parsing captured by compiled-output audit. | none |
-| 6 | trusted-editing-matrix | yes | pending | Existing native code-block suite covers adjacent typing, undo and full DOM. | Run final native suite. |
-| 7 | plite-vs-pinned-slate | N/A: inapplicable - CSS-only product presentation, no substrate change | N/A | No engine comparison claim. | none |
-| 8 | example-breadth | yes | pending | Affected gutters, column/row/media controls, comments/suggestions, drawing toolbar, floating labels, emoji, sidebar and composed heading links. | Existing tests plus focused current-source selector oracle. |
-| 9 | large-and-stress | yes | pending | 30,000-span native code block, first and settled entry, outer and embedded scrolling. | Final real Chrome proof. |
+| 1 | source-and-host-readiness | yes | complete | Official compiler hash match; source/lock/CSS fingerprints; fresh route ready. | none |
+| 2 | current-vs-main-product-smoke | no | N/A: inapplicable - accepted comparator is patched versus unpatched CSS | No main-product comparison claim. | none |
+| 3 | plate-vs-plite-decomposition | no | N/A: inapplicable - CSS-only component presentation | No editor engine changes. | none |
+| 4 | owner-microbench-and-trace | yes | complete | Global tag invalidation isolated; class diagnostic and exact native rerun passed. | none |
+| 5 | product-mount-matrix | no | N/A: inapplicable - no mount architecture or mount performance claim | Route readiness handled in lane 1. | none |
+| 6 | trusted-editing-matrix | yes | complete | Native continuous input/replacement/history/caret and block movement at desktop/mobile widths; adjacent typing and undo. | none |
+| 7 | plite-vs-pinned-slate | no | N/A: inapplicable - no substrate implementation or engine claim | Component CSS only. | none |
+| 8 | example-breadth | yes | complete | 19 distinct cases pass across affected-ui.log and locator rerun; actual labels/emoji/Plus verified; unmounted sidebar-action/column-control limits explicit. | none |
+| 9 | large-and-stress | yes | complete | Full 10000-line DOM; native Chrome pointer/wheel; embedded and outer docs scrolling preserved. | none |
 
 ## Current Cause Checkpoint
 
 - state: none
-- cause-id: N/A: no cause proven
-- lane: N/A: no cause proven
-- comparable-baseline: N/A: no cause proven
-- material-delta: N/A: no cause proven
-- isolated-owner: N/A: no cause proven
-- causal-intervention: N/A: no cause proven
-- correctness-guard-result: pending
-- fix-class: N/A: no cause proven
-- long-term-target: N/A: no cause proven
-- decision-owner: N/A: no cause proven
-- layer-plan: N/A: no cause proven
-- compatibility-verdict: N/A: no cause proven
-- fix-owner: N/A: no cause proven
-- benchmark-command: N/A: no cause proven
-- benchmark-rerun: N/A: no cause proven
-- benchmark-rerun-result: pending
-- correctness-command: N/A: no cause proven
-- correctness-rerun: N/A: no cause proven
-- correctness-rerun-result: pending
-- resume-lane: N/A: no cause proven
+- cause-id: N/A: closed; kept cause and exact reruns are archived in Cause History
+- lane: N/A: closed; kept cause and exact reruns are archived in Cause History
+- comparable-baseline: N/A: closed; kept cause and exact reruns are archived in Cause History
+- material-delta: N/A: closed; kept cause and exact reruns are archived in Cause History
+- isolated-owner: N/A: closed; kept cause and exact reruns are archived in Cause History
+- causal-intervention: N/A: closed; kept cause and exact reruns are archived in Cause History
+- correctness-guard-result: N/A: closed; kept cause and exact reruns are archived in Cause History
+- fix-class: N/A: closed; kept cause and exact reruns are archived in Cause History
+- long-term-target: N/A: closed; kept cause and exact reruns are archived in Cause History
+- decision-owner: N/A: closed; kept cause and exact reruns are archived in Cause History
+- layer-plan: N/A: closed; kept cause and exact reruns are archived in Cause History
+- compatibility-verdict: N/A: closed; kept cause and exact reruns are archived in Cause History
+- fix-owner: N/A: closed; kept cause and exact reruns are archived in Cause History
+- benchmark-command: N/A: closed; kept cause and exact reruns are archived in Cause History
+- benchmark-rerun: N/A: closed; kept cause and exact reruns are archived in Cause History
+- benchmark-rerun-result: N/A: closed; kept cause and exact reruns are archived in Cause History
+- correctness-command: N/A: closed; kept cause and exact reruns are archived in Cause History
+- correctness-rerun: N/A: closed; kept cause and exact reruns are archived in Cause History
+- correctness-rerun-result: N/A: closed; kept cause and exact reruns are archived in Cause History
+- resume-lane: N/A: closed; kept cause and exact reruns are archived in Cause History
 
 ## Cause History
 
 | Cause ID | Lane | Decision | Fix Class | Long-Term Target | Decision Owner | Layer Plan | Compatibility Verdict | Fix Owner | Causal Evidence | Pre-Fix Correctness | Benchmark Command | Benchmark Result | Correctness Command | Post-Fix Correctness | Evidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending | pending |
+| hover-target-invalidation | owner-microbench-and-trace | kept | internal-implementation | Component-owned selectors ending in specific class or data-slot targets; pristine Tailwind compiler | benchmark | N/A: internal CSS implementation, no package architecture change | N/A: preserve current controls and native DOM without a public API change | apps/www component and registry owners | diagnostic-checkpoint.json and diagnostic-matched.json | pass: baseline native test preserves 30002 descendants and adjacent typing/undo | PLAYWRIGHT_BASE_URL=http://localhost:3299 pnpm --filter www test:www-browser:chromium tests/browser/code-block-native-interactions.spec.ts -g 'native huge code keeps' | pass: final-pruned.log; native style max 2.092 ms below 100 ms and below the material-regression floor | Same native code-block test: adjacent typing and undo before/after the full code block | pass: final-pruned.log; all 30002 descendants and code text retained; adjacent typing and undo passed | final-pruned.log and native-comparison.json |
 
 Packet ledger:
 | Packet | Lane | Hypothesis / cause | Candidate / baseline metric | Correctness | Decision | Next |
 |---|---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending | pending |
+| Patched baseline | 1/4 | Existing patch bounds hover invalidation | max 1.573 ms | native DOM/editing pass | keep as comparator | source intervention |
+| Initial direct tag targets | 4 | Direct selector syntax alone may suffice | max 185.578 ms | budget failed before adjacent editing | invalidate implementation; preserve receipt | isolate invalidation targets |
+| Matched owner diagnostic | 4 | Bare span/div/svg targets widen global invalidation | tag 294-915 ms; class 1-3 ms | 40000 spans; correct control opacity | keep causal evidence; synthetic proxy only | exact native rerun |
+| Final source | 4/6/8/9 | Specific targets and dead-source removal | native max 2.092 ms; Chrome max 3.380 ms | 19 distinct cases pass; current source type/lint/registry pass | keep local implementation | complete |
 
 Metric table:
-| Lane / action | Samples | Baseline p50/p75/p95/p99/max | Candidate p50/p75/p95/p99/max | Absolute / relative delta | Noise / confidence | Artifact |
-|---|---|---|---|---|---|---|
-| pending | pending | pending | pending | pending | pending | pending |
+| Action | Samples | Baseline | Final | Delta / interpretation | Artifact |
+|---|---|---|---|---|---|
+| Headless first native entry | 1 each | 1.573 ms | 2.092 ms | +0.519 ms; no material regression | native-comparison.json |
+| Headless settled native hover | 2 each | median 1.488 ms | median 1.765 ms | +0.277 ms; too small for a speed claim | native-comparison.json |
+| Native Chrome transitions | 11 each after initial outside sample | range 1.524-2.080 ms | range 1.654-3.380 ms | Max delta 1.300 ms; below 5 ms floor | native-chrome-baseline.json / native-chrome-final.json |
+| Synthetic owner intervention | 16 each, interleaved | tag range 294.223-915.070 ms | class range 0.965-3.031 ms | Causal proxy only, not product speedup | diagnostic-matched.json |
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |---|---|---|---|
-| Named verification threshold | pending | Run the exact metrics, comparisons, and correctness proof named above | pending |
-| Benchmark plan structural validation | yes | Run `node .agents/skills/benchmark/scripts/validate-benchmark-plan.mjs docs/plans/2026-09-10-tailwind-hover-selector-removal.md` at cause/resume checkpoints | pending |
-| Every applicable lane closed | yes | Complete or mark N/A with concrete reason | pending |
-| Exact post-fix benchmark reruns | pending | Rerun every kept fix against its original lane/baseline | pending |
-| Correctness/native behavior reruns | pending | Run named tests and Browser/Chrome/device proof required by the claim | pending |
-| Final source/host identity | yes | Prove final artifacts still match candidate and baseline identities | pending |
-| Benchmark target/metric honesty | yes | Repair or verify source identity, fixture parity, sample math, aggregation, and artifact provenance | pending |
-| Durable fix decision | pending | For every proven cause, validate the long-term target, Best API/layer-plan route when architectural, hard-cut or hard-law verdict, and concrete implementation owner | pending |
-| Package/type/build proof | pending | Run affected package checks/typecheck/build only where owned | pending |
-| Browser surface proof | pending | Run Browser for product routes; Chrome/device for native state when applicable, or N/A with reason | pending |
-| Changeset/release artifact | pending | Add only for published package behavior/API changes, otherwise N/A | pending |
-| Agent rule/skill sync | pending | Run `pnpm install` and mirror/resource checks when agent sources changed, otherwise N/A | pending |
-| Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Timed checkpoint | pending | Satisfy requested duration and close current packet, otherwise N/A | pending |
-| P1 autoreview | pending | Use Task's review gate and remaining budget; never on next; otherwise N/A with reason | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-09-10-tailwind-hover-selector-removal.md` | pending |
+| Threshold and exact rerun | yes | Original full native guard | final-pruned.log; max 2.092 ms; DOM/text/editing unchanged |
+| Applicable lanes and breadth | yes | Close five applicable lanes | 19 distinct affected browser cases plus native CUA observations |
+| Source/host/compiler/metric honesty | yes | Fingerprint and compare final inputs | final-source-manifest.json, final-css-audit.json, installed-compiler-verification.json, native-comparison.json |
+| Durable target | yes | Keep presentation in existing owners | No compiler fork, new abstraction, package API or reduced DOM |
+| Type/build/lint | yes | Source-first types and affected generators/checks | final-typecheck.log, lint.log, final-test-lint.log, registry-build.log, registry-check.log |
+| Changeset/changelog | N/A | No package API or presented feature change | Internal CSS maintenance; copied install shape unchanged |
+| Agent rule/skill sync | N/A | No workflow files edited | Skill/vision doctrine unchanged |
+| Timing and publication review | N/A | No timed/publication request; never Autoreview on next | No task commit/push/PR |
+| Benchmark complete validation | yes | Run validator --complete | benchmark-plan-validation.log |
+| Goal complete validation | yes | Run check-complete.mjs | goal-plan-validation.log |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |---|---|---|---|
-| Intake and comparison authority | in_progress | created plan | fast symptom lane |
-| Ordered diagnosis | pending | | cause gate or next lane |
-| Fix and exact rerun | pending | | resume breadth |
-| Remaining breadth | pending | | final verification |
-| Review and closeout | pending | | final response |
+| Intake and source readiness | complete | Baseline and native goal recorded | none |
+| Ordered diagnosis and cause | complete | Preserved red candidate and matched causal intervention | none |
+| Fix and exact rerun | complete | final-pruned.log | none |
+| Remaining breadth | complete | 19 distinct cases and native-ui-observations.json | none |
+| Closeout | complete | Source/compiler/CSS hashes and plan validators | none |
 
 Findings:
-- Internal implementation: presentation belongs to the components. Keep the existing native DOM and CSS-only state; no package API or new shared abstraction is needed.
+Direct selectors must end in specific target classes/attributes. Bare `span` hover targets trigger global tag invalidation even when the styled component is not mounted. The unused GitHub-star component was deleted. Media hover belongs on the figure so the caption remains in its hover region.
 
 Decisions and tradeoffs:
-- Internal implementation: presentation belongs to the components. Keep the existing native DOM and CSS-only state; no package API or new shared abstraction is needed.
+Keep stable visual behavior in component CSS. Preserve theme/data-state variants because those states legitimately affect descendants; do not ban all universal selectors. Existing sidebar actions have no mounted caller, and the current column demo mounts no column handle; their preserved source ownership is not a runtime drag/action claim.
 
 Harness/methodology repairs:
-- Internal implementation: presentation belongs to the components. Keep the existing native DOM and CSS-only state; no package API or new shared abstraction is needed.
+Wait for fresh-route readiness before performance measurements. Replace two browser locators that depended on deleted generic group markers; their behavior assertions are unchanged. Report synthetic forced-style probes separately from native frame-based timing. Native dev CSS caches unused classes, so fresh final-source.css proves the deleted component's utilities are absent from a clean compile; native measured CSS hashes remain identical after its deletion.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |---|---|---|---|
-| None yet | 0 | | |
+| Bare tag target implementation | 1 | Specific classes, then dead-source removal | Original native guard passes |
+| Cold route navigation timeout | 1 | Await HTTP 200; unchanged test | Ready rerun passes |
+| Obsolete .group test locators | 2 | Locate existing layout/parent without retired marker | All three focused rerun cases pass |
+| CUA readiness/unsupported focus/ambiguous emoji locator | bounded | Use documented click/press and freshly resolved target | Native controls verified; no source change |
 
 Verification evidence:
-- Pending.
+Both installed Tailwind files match the official tarball. Fresh CSS is 401463 bytes with zero group/peer hover/focus variants and zero deleted GitHub-star targets. Registry generation/check, source-first www typecheck and scoped lint pass. Nineteen distinct browser cases pass; the exact native test was rerun after the final source deletion. Native Chrome retains 30002 descendants and 448889 characters through wheel scrolling, and the docs preview retains 3002 descendants through inner/outer scroll.
 
 Final handoff contract:
-- goal plan / scope: pending
-- candidate / baseline identities: pending
-- completed / N/A / pending lanes: pending
-- first conclusive cause: pending
-- baseline / latest / best metrics: pending
-- fix owner / changed files: pending
-- exact benchmark and correctness reruns: pending
-- resumed breadth: pending
-- packet decisions: pending
-- harness/methodology repairs: pending
-- residual claim limits / next owner: pending
+- goal plan / scope: This local Tailwind removal plan.
+- candidate / baseline identities: final-source-manifest.json and source-before-manifest.json; final CSS/compiler fingerprints retained.
+- completed / N/A / pending lanes: 5 complete, 4 N/A with applicability reasons, 0 pending.
+- first conclusive cause: Global hover invalidation keyed to bare span targets.
+- baseline / latest / best metrics: Native max 1.573 / 2.092 ms; no speedup claimed.
+- fix owner / changed files: Component CSS, dead GitHub-star source, Tailwind patch/registration, source scanning, tests and generated registry.
+- exact benchmark and correctness reruns: final-pruned.log, affected-ui.log, control-locator-rerun.log.
+- resumed breadth: All applicable local lanes closed, with unmounted-control limitations explicit.
+- packet decisions: Baseline kept, initial candidate invalidated, class-target evidence and final implementation kept.
+- harness/methodology repairs: Fresh route readiness, obsolete test locators and source/runtime CSS cache distinction recorded.
+- residual claim limits / next owner: Local development/browser proof; no publication, raw-device or full cross-engine certification.
 
 Timeline:
-- 2026-09-10T15:06:27.892Z Benchmark goal plan created.
+- 2026-09-10: Captured patched baseline and created native goal before implementation.
+- 2026-09-10: Initial unpatched implementation failed the existing hover budget; native invalidation trace and interleaved diagnostic isolated bare tag targets.
+- 2026-09-10: Honored publication freeze; all 24 interim file states and pristine dependency graph were restored and independently checked.
+- 2026-09-10: Corrected selectors, preserved caption hover, generated registry, passed native/UI/source checks, removed unused GitHub-star source, and reran exact final proof.
 
 Reboot status:
 | Question | Answer |
 |---|---|
-| Where am I? | Intake and comparison authority |
-| Where am I going? | Ordered diagnosis, fix/rerun, remaining breadth, closeout |
-| What is the goal? | Remove the Tailwind compiler patch with equivalent component behavior and bounded full-DOM hover. |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Local implementation and verification complete |
+| What is next? | User review; publication requires its own authority |
+| What is the goal? | Remove compiler patch while retaining controls and full native DOM performance |
+| What did I learn? | Global invalidation depends on selector targets, not just descendant syntax |
+| What did I do? | See receipts and final handoff contract |
 
 Open risks:
-- Pending.
+No unresolved in-scope regression. Native Chrome's DarkReader-injected hydration warning and currently unmounted sidebar/column controls are explicit proof limits, not clean-state or interaction claims. Small packets establish the frozen guard and exclude a material regression; they do not establish percentile distributions or a speed improvement.

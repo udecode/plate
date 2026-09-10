@@ -711,29 +711,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       if (undo) editor.plugin(BaseAIPlugin).update.undo();
       else editor.plugin(BaseAIPlugin).update.discardPreview();
     };
-    const hideOptions = ({ focus = true }: { focus?: boolean } = {}) => {
+    const hideOptions = () => {
       resetOptions();
       context.store.set({ open: false });
-
-      if (!focus) return;
-
-      editor.api.dom.focus();
-    };
-    const hide = ({
-      focus = true,
-      undo = true,
-    }: {
-      focus?: boolean;
-      undo?: boolean;
-    } = {}) => {
-      reset({ undo });
-      hideOptions({ focus });
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({
-          at: [],
-          type: context.plugin,
-        });
-      });
     };
     const serializeMarkdown = (
       state: AIChatPluginReadState,
@@ -974,10 +954,26 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
     };
 
     return {
-      api: () => ({
+      api: ({ editor: commandEditor }) => ({
         deserializeChunk,
         deserializeInlineChunk,
-        hide,
+        hide: ({
+          focus = true,
+          undo = true,
+        }: {
+          focus?: boolean;
+          undo?: boolean;
+        } = {}) => {
+          reset({ undo });
+          hideOptions();
+          commandEditor.update({ history: 'skip' }, (tx) => {
+            tx.nodes.remove({
+              at: [],
+              type: context.plugin,
+            });
+          });
+          if (focus) commandEditor.api.dom.focus();
+        },
         reload: () => {
           const { chat, chatNodes, chatSelection, toolName } =
             context.store.get();
@@ -1799,7 +1795,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 type: context.plugin,
               });
               updateContext.afterCommit(() => {
-                hideOptions({ focus: false });
+                hideOptions();
               });
 
               return;

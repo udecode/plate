@@ -853,7 +853,10 @@ export function TableRowElement({
       {...props}
       ref={useComposedRef(props.ref, previewRef, nodeRef)}
       as="tr"
-      className={cn('group/row', isDragging && 'opacity-50')}
+      className={cn(
+        'group/row hover:[&>td>.plite-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.plite-row-drag-handle]:opacity-0',
+        isDragging && 'opacity-50'
+      )}
       style={
         {
           '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
@@ -893,7 +896,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
       className={cn(
         '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
-        'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-data-[table-resizing=true]/row:opacity-0'
+        'plite-row-drag-handle opacity-0 transition-opacity duration-100'
       )}
       onClick={() => {
         const range = editor.read.ranges.get(element);

@@ -268,10 +268,10 @@ export function SettingsDialog() {
   };
 
   const renderApiKeyInput = (service: string, label: string) => (
-    <div className="group relative">
+    <div className="relative focus-within:[&>div>label]:pointer-events-none focus-within:[&>div>label]:top-0 focus-within:[&>div>label]:cursor-default focus-within:[&>div>label]:text-xs focus-within:[&>div>label]:font-medium focus-within:[&>div>label]:text-foreground">
       <div className="flex items-center justify-between">
         <label
-          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-[top,font-size,color] group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:text-xs group-focus-within:font-medium group-focus-within:text-foreground has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
+          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-sm text-muted-foreground/70 transition-[top,font-size,color] has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:text-xs has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground"
           htmlFor={label}
         >
           <span className="inline-flex bg-background px-2">{label}</span>
@@ -366,7 +366,7 @@ export function SettingsDialog() {
             <div className="space-y-4">
               {renderApiKeyInput('aiGatewayApiKey', 'AI Gateway API Key')}
 
-              <div className="group relative">
+              <div className="relative">
                 <label
                   className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground"
                   htmlFor="select-model"

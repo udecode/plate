@@ -34,4 +34,6 @@ Bind the editor with `useAIChat({ editableRef, transport, onData })`. The packag
 
 Export `AIChatPluginState` and `CopilotPluginState` as the complete mutable state contracts for their descriptors.
 
+Return focus to the invoking mounted editor when closing AI Chat. Preserve the `focus: false` option and reject anchor removal through a retired view.
+
 Require explicit Copilot completion transport configuration. Set `completeOptions.api` before triggering a completion; the package does not guess an application route. Export `CopilotCompleteOptions` for that contract.

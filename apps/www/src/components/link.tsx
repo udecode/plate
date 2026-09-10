@@ -32,7 +32,7 @@ export function Link({
       {...props}
     >
       {isSection && (
-        <div className="absolute top-1.5 -left-5 leading-none opacity-0 group-hover:opacity-100 hover:opacity-100">
+        <div className="absolute top-1.5 -left-5 leading-none opacity-0 hover:opacity-100 [@media(hover:hover)]:[.group:hover_&]:opacity-100">
           <Icons.pragma className="size-4 text-muted-foreground" />
         </div>
       )}

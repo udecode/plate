@@ -49,7 +49,7 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
       selected={selected}
     >
       <PlateElement {...props} className="py-2.5">
-        <figure className="group relative m-0">
+        <figure className="relative m-0 hover:[&_.plite-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
               align={textAlign}

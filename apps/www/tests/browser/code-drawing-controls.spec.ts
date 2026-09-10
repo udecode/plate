@@ -50,7 +50,7 @@ test('drawing controls follow the mobile breakpoint and toolbar overflow remains
   await page.setViewportSize({ width: 767, height: 844 });
   await page.goto('/blocks/code-drawing-demo', { waitUntil: 'commit' });
   const drawing = page.locator('.plite-codeDrawing');
-  const layout = drawing.locator('.group.my-4').first();
+  const layout = drawing.locator('.my-4').first();
   const controls = drawing.getByRole('toolbar').first();
 
   await expect(layout).toHaveCSS('flex-direction', 'column-reverse');

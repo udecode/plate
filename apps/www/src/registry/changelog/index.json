@@ -2,6 +2,47 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-10-ai-menu-focus",
+      "href": "/registry/changelog/2026-09-10-ai-menu-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Return to the editor after applying AI content",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-10-comment-examples",
+      "href": "/registry/changelog/2026-09-10-comment-examples.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Comments examples for conversations, overlapping ranges, local persistence, and read-only review.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-10-diagram-rendering-demand",
       "href": "/registry/changelog/2026-09-10-diagram-rendering-demand.json",
       "status": "draft",

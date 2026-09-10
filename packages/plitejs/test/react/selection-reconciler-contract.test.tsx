@@ -9,6 +9,7 @@ import {
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
   IS_NODE_MAP_DIRTY,
+  IS_FOCUSED,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
 import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
@@ -65,6 +66,114 @@ test('initial unselected mounts do not read native selection between sibling vie
     findRoot.mockRestore();
   }
 });
+
+test.each(['before-frame', 'after-frame'] as const)(
+  'explicit blur cancels Android selection reapplication %s',
+  (phase) => {
+    vi.useFakeTimers();
+    const editor = createEditor<Value>({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    });
+    const runtime = new EditableDOMRuntime({ editor });
+    const { rootRef } = runtime;
+    Object.defineProperty(runtime, 'isAndroidHost', { value: true });
+    const queued: Array<{ label: string; callback: () => void }> = [];
+    vi.spyOn(runtime.domPhaseScheduler, 'schedule').mockImplementation(
+      (_phase, label, callback) => {
+        queued.push({ label, callback });
+        return () => {};
+      }
+    );
+    runtime.androidInputManagerRef.current = {
+      flush: vi.fn(),
+      prepareDOMTeardown: vi.fn(),
+      scheduleFlush: vi.fn(),
+      hasPendingDiffs: () => false,
+      hasPendingAction: () => false,
+      hasPendingChanges: () => false,
+      isFlushing: () => 'action',
+      handleUserSelect: vi.fn(),
+      handleCompositionEnd: vi.fn(),
+      handleCompositionStart: vi.fn(),
+      handleDOMBeforeInput: vi.fn(),
+      handleKeyDown: vi.fn(),
+      handleDomMutations: vi.fn(),
+      handleInput: () => false,
+    };
+    function Harness() {
+      useEditableSelectionReconciler({
+        partialDOMBackedSelection: false,
+        runtime,
+        scrollSelectionIntoView: vi.fn(),
+      });
+      return (
+        <div
+          aria-label="Android selection fixture"
+          ref={rootRef}
+          role="textbox"
+          tabIndex={0}
+        >
+          <span>abc</span>
+        </div>
+      );
+    }
+    const mounted = render(<Harness />);
+    const root = runtime.rootRef.current!;
+    const text = root.querySelector('span')!.firstChild!;
+    const selection = document.getSelection()!;
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, 1);
+    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(range);
+    const selectionWrite = vi.spyOn(selection, 'setBaseAndExtent');
+    const focus = vi.spyOn(root, 'focus');
+    try {
+      root.focus();
+      IS_FOCUSED.set(editor, true);
+      act(() => {
+        editor.update((tx) => {
+          tx.selection.set({
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 0 },
+            focus: { path: [0, 0], offset: 1 },
+          });
+        });
+        mounted.rerender(<Harness />);
+      });
+      expect(selectionWrite).toHaveBeenCalled();
+      const frame = queued.find(
+        (task) => task.label === 'android-selection-reapply-frame'
+      );
+      expect(frame).toBeDefined();
+      if (phase === 'after-frame') {
+        act(() => frame!.callback());
+      }
+      const pending =
+        phase === 'before-frame'
+          ? frame
+          : queued.findLast(
+              (task) => task.label === 'android-selection-spellcheck-refresh'
+            );
+      expect(pending).toBeDefined();
+      editor.api.dom.blur();
+      selectionWrite.mockClear();
+      focus.mockClear();
+      act(() => pending!.callback());
+      expect(focus).not.toHaveBeenCalled();
+      expect(selectionWrite).not.toHaveBeenCalled();
+      expect(editor.api.dom.isFocused()).toBe(false);
+      expect(document.activeElement === root).toBe(false);
+    } finally {
+      mounted.unmount();
+      runtime.destroy();
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    }
+  }
+);
 
 test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
   const editor = createEditor<Value>();
@@ -1295,6 +1404,7 @@ test('selection reconciler preserves node selection while clearing native select
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(firstText, 0, secondText, 3);
 
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
@@ -1381,6 +1491,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
 
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
@@ -1459,6 +1570,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(textNode, 0, textNode, 0);
 
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
@@ -1555,6 +1667,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(firstText, 3, firstText, 3);
 
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
@@ -1843,6 +1956,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(firstText, 1, firstText, 1);
 
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);

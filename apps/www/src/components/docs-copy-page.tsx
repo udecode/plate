@@ -134,7 +134,7 @@ function DocsCopyPageTrigger({
       size="sm"
       variant="secondary"
       className={cn(
-        'peer -ml-0.5 size-8 shadow-none md:size-7 md:text-[0.8rem]',
+        'focus-visible:[&~[data-slot=separator]]:opacity-0 -ml-0.5 size-8 shadow-none md:size-7 md:text-[0.8rem]',
         className
       )}
     >
@@ -189,7 +189,7 @@ export function DocsCopyPage({
         </DropdownMenu>
         <Separator
           orientation="vertical"
-          className="absolute top-1 right-8 z-0 h-6! bg-foreground/5! peer-focus-visible:opacity-0 sm:right-7 sm:h-5!"
+          className="absolute top-1 right-8 z-0 h-6! bg-foreground/5! sm:right-7 sm:h-5!"
         />
         <PopoverTrigger asChild className="flex sm:hidden">
           <DocsCopyPageTrigger />

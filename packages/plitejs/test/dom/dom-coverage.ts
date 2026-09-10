@@ -656,6 +656,61 @@ describe('DOM coverage boundaries', () => {
     });
   });
 
+  for (const dirty of [false, true]) {
+    test(`explicit blur cancels pending ${dirty ? 'retry' : 'settlement'}`, () => {
+      withDom((document) => {
+        const editor = createEditor({ extensions: [dom()] });
+        const root = mountEditorRoot(editor, document);
+
+        editorReplace(editor, {
+          children: [
+            { type: 'paragraph', children: [{ text: 'focus' }] },
+          ] satisfies Descendant[],
+          selection: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 2 },
+          },
+        });
+        const textDOM = createTextDOM(document, 'focus');
+
+        root.appendChild(textDOM);
+        const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+
+        bindDOMNode(editor, textNode as Descendant, textDOM);
+        IS_NODE_MAP_DIRTY.set(editor, dirty);
+        const { callbacks, scheduler } = createRecordingScheduler();
+        const uninstall = installEditorDOMPhaseScheduler(
+          editor,
+          root,
+          scheduler
+        );
+
+        try {
+          editor.api.dom.focus({ retries: 2 });
+          const pending = callbacks.slice();
+
+          expect(pending.length).toBeGreaterThan(0);
+          editor.api.dom.blur();
+          IS_NODE_MAP_DIRTY.delete(editor);
+
+          for (const task of pending) {
+            if (!task.cancelled) task.callback();
+          }
+
+          expect(document.activeElement === document.body).toBe(true);
+          expect(editor.api.dom.isFocused()).toBe(false);
+
+          editor.api.dom.focus({ retries: 1 });
+          expect(document.activeElement === root).toBe(true);
+          expect(editor.api.dom.isFocused()).toBe(true);
+        } finally {
+          uninstall();
+        }
+      });
+    });
+  }
+
   test('settles focus without stealing it or reviving a replaced root', () => {
     withDom((document) => {
       const editor = createEditor({ extensions: [dom()] });
@@ -791,6 +846,15 @@ describe('DOM coverage boundaries', () => {
         );
 
         secondEditor.api.dom.focus({ retries: 1 });
+        expect(document.activeElement).toBe(secondRoot);
+
+        const secondSettle = secondSchedule.callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        firstEditor.api.dom.blur();
+        secondRoot.blur();
+        secondSettle!.callback();
         expect(document.activeElement).toBe(secondRoot);
 
         secondRoot.remove();

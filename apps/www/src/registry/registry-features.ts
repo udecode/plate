@@ -604,7 +604,12 @@ export const registryFeatures: Registry['items'] = [
         { route: '/docs/comment' },
         { route: 'https://pro.platejs.org/docs/components/comment-node' },
       ],
-      examples: ['discussion-demo'],
+      examples: [
+        'comment-demo',
+        'comment-overlap-demo',
+        'comment-persistence-demo',
+        'comment-review-demo',
+      ],
     },
     registryDependencies: [
       'avatar',
@@ -627,6 +632,10 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'comment-static',
+    meta: {
+      docs: [{ route: '/docs/comment' }],
+      examples: ['comment-review-demo'],
+    },
     description:
       'Decoration attributes for static comment ranges and overlaps.',
     registryDependencies: ['@plate/highlight-style'],

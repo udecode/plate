@@ -1380,7 +1380,7 @@ export const Index: Record<string, any> = {
       target: "@components/editor/comment.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["discussion-demo"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["comment-demo","comment-overlap-demo","comment-persistence-demo","comment-review-demo"]},
   },
   "comment-static": {
     name: "comment-static",
@@ -1393,7 +1393,7 @@ export const Index: Record<string, any> = {
       target: "@components/editor/comment-static.ts"
     }],
     component: null,
-    meta: undefined,
+    meta: {"docs":[{"route":"/docs/comment"}],"examples":["comment-review-demo"]},
   },
   "discussion": {
     name: "discussion",
@@ -2143,6 +2143,90 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: undefined,
+  },
+  "comment-demo": {
+    name: "comment-demo",
+    description: "Create comments, reply in threads, and resolve conversations.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/comment.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/link.json"],
+    files: [{
+      path: "src/registry/examples/comment-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/comment-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/comment-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/comment","title":"Comments"}]},
+  },
+  "comment-overlap-demo": {
+    name: "comment-overlap-demo",
+    description: "Edit overlapping comment ranges and follow them through undo and redo.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/comment.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/history-toolbar-button.json"],
+    files: [{
+      path: "src/registry/examples/comment-overlap-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/comment-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/comment-overlap-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/comment","title":"Comments"}]},
+  },
+  "comment-persistence-demo": {
+    name: "comment-persistence-demo",
+    description: "Save a local document snapshot with comments and retry a simulated failed reply.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/comment.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/toolbar.json","button","https://platejs.org/r/link.json"],
+    files: [{
+      path: "src/registry/examples/comment-persistence-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/comment-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/comment-persistence-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/comment","title":"Comments"}]},
+  },
+  "comment-review-demo": {
+    name: "comment-review-demo",
+    description: "Read comments on a read-only document and render static highlights.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/basic-blocks-static.json","https://platejs.org/r/comment-static.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/link.json","https://platejs.org/r/link-static.json"],
+    files: [{
+      path: "src/registry/examples/comment-review-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/comment-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/comment-review-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/comment","title":"Comments"}]},
   },
   "copilot-demo": {
     name: "copilot-demo",

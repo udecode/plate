@@ -118,8 +118,14 @@ test('AI preview renders generated text, accepts it, and preserves undo on a nar
     });
     await page.getByRole('option', { name: 'Accept', exact: true }).click();
     await expect(root).toContainText('Generated preview text.');
-    await root.press('ControlOrMeta+z');
+    await expect(root).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+z');
     await expect.poll(() => editor.get.modelValue()).toEqual(before);
+    await page.keyboard.insertText('!');
+    await expect(root).toContainText('!');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => editor.get.modelValue()).toEqual(before);
+    await expect(root).toBeFocused();
     errors.assertNone();
   } finally {
     errors.stop();

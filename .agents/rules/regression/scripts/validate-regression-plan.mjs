@@ -1927,6 +1927,14 @@ export const validateRegressionPlan = (
           `${label} failed focus-state fix requires focus-state-trace: native + dom-api + react-context`
         );
       }
+      if (hasFocusState) {
+        if (!/\bselection-focus-trace:\s*selection-write\s*\+\s*active-before\s*\+\s*active-after\b/i.test(row.resume_state ?? "")) {
+          errors.push(`${label} failed focus-state fix requires selection-focus-trace: selection-write + active-before + active-after`);
+        }
+        if (!/\bselection-focus-result:\s*\S/i.test(row.resume_state ?? "")) {
+          errors.push(`${label} failed focus-state fix requires selection-focus-result: <write-owner/effect-or-no-write>`);
+        }
+      }
 
       const hasPopupFocus = Array.from(caseOracles?.values() ?? []).some(
         (oracle) => {

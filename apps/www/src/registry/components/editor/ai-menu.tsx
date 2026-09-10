@@ -322,6 +322,7 @@ const aiChatItems = {
 
       if (mode === 'chat' && toolName === 'generate') {
         editor.plugin(AIChatPlugin).update.replaceSelection();
+        editor.api.dom.focus();
         return;
       }
 
@@ -333,7 +334,7 @@ const aiChatItems = {
 
         tx.selection.set({ anchor: end, focus: end });
       });
-      editor.api.dom.focus({ retries: 5 });
+      editor.api.dom.focus();
     },
   },
   comment: {
@@ -461,6 +462,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor }) => {
       /** Format: 'none' Fix insert table */
       editor.plugin(AIChatPlugin).update.insertBelow({ format: 'none' });
+      editor.api.dom.focus();
     },
   },
   makeLonger: {
@@ -493,6 +495,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'replace',
     onSelect: ({ editor }) => {
       editor.plugin(AIChatPlugin).update.replaceSelection();
+      editor.api.dom.focus();
     },
   },
   simplifyLanguage: {

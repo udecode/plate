@@ -1,6 +1,6 @@
 ---
 title: Comments
-description: Load comment records with document ranges, edit them, and save their mapped positions.
+description: Add comments to text, reply in threads, and keep them attached as your document changes.
 docs:
   - route: /docs/discussion
     title: Discussion
@@ -10,19 +10,21 @@ docs:
     title: Comment Toolbar Button
 ---
 
-<ComponentPreview name="discussion-demo" />
+<ComponentPreview name="comment-demo" height="420px" />
 
-Pass fetched comment records to `CommentsPlugin`. The package owns the records, comment actions, subscriptions, and range mapping. Your application loads and saves the data.
+Click a highlight to open its conversation. Select text and use the Comment button or `Mod+Shift+M` to start a thread. You are Alice: reply to an existing conversation, or create your own thread to try editing, deleting, and resolving comments. Press Escape to cancel a new comment.
+
+For comments alongside proposed edits, see [Discussion](/docs/discussion).
 
 <PackageInfo>
 
 ## Features
 
-- Serializable thread records with rich-text messages and ISO timestamps
-- Ranges that track edits, undo, and redo
-- Ordered overlapping highlights and editor-local activation
-- Keyed subscriptions for messages, pending input, and thread lists
-- Comment and suggestion review through copied Discussion UI
+- Rich-text comments, replies, and resolved threads
+- Highlights that follow document edits, undo, and redo
+- Overlapping threads and comments spanning text segments
+- Serializable records for saving with your document
+- Read-only review and static highlights
 
 </PackageInfo>
 
@@ -33,45 +35,47 @@ Pass fetched comment records to `CommentsPlugin`. The package owns the records, 
 ### Installation
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
+npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.org/r/link.json https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
-`DiscussionKit` includes Comment styling, the shared discussion index, block triggers, and Floating Discussion. The copied `comment` item supplies `CommentKit`, rich thread cards, and the composer. The toolbar button starts a comment from the selection; `Mod+Shift+M` provides the same action.
+`DiscussionKit` supplies comment styling, block buttons, and the floating thread view. Its copied UI requires `SuggestionKit`, which the registry command also installs. The example uses no suggested edits.
 
 <ComponentSource name="discussion" />
 
 ### Add Kit
 
-Pass records fetched with the matching document to `initialThreads`:
+Load comment records with their matching document:
 
-```tsx title="components/editor/comments-editor.tsx" showLineNumbers {23-30}
+```tsx title="components/editor/comments-editor.tsx" showLineNumbers
 "use client";
 
-import type { EditorValueInput } from "platejs";
+import type { EditorValueInput, Value } from "platejs";
 import type { CommentThread, CommentUser } from "platejs/comments";
 import { CommentsPlugin } from "platejs/comments/react";
 import { Plate, useCreateEditor } from "platejs/react";
 
+import { BasicBlocksKit } from "@/components/editor/basic-blocks";
+import { CommentToolbarButton } from "@/components/editor/comment-toolbar-button";
 import { DiscussionKit } from "@/components/editor/discussion";
 import { Editor, EditorContainer } from "@/components/editor/editor";
-import { EditorKit } from "@/components/editor/plugins";
+import { LinkKit } from "@/components/editor/link";
+import { SuggestionKit } from "@/components/editor/suggestion";
+import { Toolbar } from "@/components/editor/toolbar";
 
 export function CommentsEditor({ value, threads, users, currentUserId }: {
-  value: EditorValueInput;
+  value: EditorValueInput<Value>;
   threads: readonly CommentThread[];
   users: Record<string, CommentUser>;
   currentUserId: string;
 }) {
   const editor = useCreateEditor({
     plugins: [
-      ...EditorKit,
+      ...BasicBlocksKit,
+      ...LinkKit,
+      ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: {
-          initialThreads: threads,
-          users,
-          currentUserId,
-        },
+        initialState: { initialThreads: threads, users, currentUserId },
       }),
     ],
     initialValue: value,
@@ -80,6 +84,9 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
   return (
     <Plate editor={editor}>
       <EditorContainer>
+        <Toolbar>
+          <CommentToolbarButton />
+        </Toolbar>
         <Editor />
       </EditorContainer>
     </Plate>
@@ -87,11 +94,47 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
 }
 ```
 
-`initialThreads` seeds each editor once. Use `api.setThreads(records)` for an explicit refetch. Updating the component's initial props does not replace the editor's current records.
+`initialThreads` seeds each editor once. Use `api.setThreads(records)` for an explicit refetch. Updating initial props does not replace the editor's current records.
 
 </Steps>
 
-## Application data
+## Examples
+
+### Overlaps and history
+
+Click “overlapping” to open both conversations. Edit the highlighted text, then undo and redo. Delete all text in the first paragraph and open its block button to find the threads again.
+
+<ComponentPreview name="comment-overlap-demo" height="360px" />
+
+Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside. If all annotated text is deleted, the range collapses at a valid position and its block button keeps the thread reachable. Undo and redo restore the mapped range, including backward direction and overlaps.
+
+### Save, reload, and retry
+
+Save a snapshot, change the document or a comment, then reload to restore the saved pair. The snapshot stays in memory. The reply form below the editor simulates one failed send: the draft stays in place, and sending again adds the reply.
+
+<ComponentPreview name="comment-persistence-demo" height="700px" />
+
+Use `CommentComposer`'s `onSubmit` to await your save. Return a thread ID or `true` only after success. Returning `false` or `null`, or throwing an error, keeps the rich-text draft and displays a retry message. The composer blocks duplicate submissions while waiting.
+
+### Read-only and static
+
+Open comments in the read-only document to read and reply. The static snapshot paints the same initial ranges without thread controls.
+
+<ComponentPreview name="comment-review-demo" height="720px" />
+
+Set `readOnly` on both `Plate` and `Editor` to prevent document edits. Comment permissions remain an application decision; this example permits replies.
+
+For static rendering, configure `BaseCommentsPlugin` with `commentDecorationAttributes` from the copied `comment-static` item, then pass the editor to `EditorStatic`. Install those items when adding a static view:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/comment-static.json https://platejs.org/r/editor-static.json
+```
+
+Each view needs the records for its own document revision. Plain coordinates cannot identify edits that happened in a different document.
+
+## Integration
+
+### Application data
 
 Store complete `CommentThread` records. Message bodies use Plate `Value`; timestamps use ISO 8601 strings. Range targets contain plain document coordinates:
 
@@ -139,6 +182,17 @@ const snapshot = {
 
 `api.setThreads(records)` replaces complete records together and preserves the current user and pending composer. It copies incoming data and rejects duplicate thread IDs, invalid timestamps, and invalid ranges before replacing existing records. Ranges address the primary document; named secondary roots are unsupported. `api.setThreads([])` clears the records. Read snapshots are immutable; use the API to change them.
 
+### Ownership
+
+| Owner | Responsibility |
+| --- | --- |
+| `platejs/comments` | Own records, actions, subscriptions, and private native range handles |
+| `platejs/comments/react` | Add selection commands, shortcuts, and highlight clicks |
+| Copied `comment` and `discussion` items | Style highlights and render forms, cards, block triggers, and popovers |
+| Your application | Supply users and fetched records; persist data and authorize remote writes |
+
+Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` and `currentUserId` use the plugin store; subscribe with `usePluginStore` and update them through `store.set`.
+
 ## Manual Usage
 
 The headless plugin provides the same data and range API without React. This example loads the records above:
@@ -159,55 +213,14 @@ const editor = createEditor({
 });
 ```
 
-## Ownership
+For stored documents with inline comment properties, see [Import comment annotations](/docs/editor#import-comment-annotations).
 
-| Owner | Responsibility |
-| --- | --- |
-| `platejs/comments` | Own records, actions, subscriptions, and private native range handles |
-| `platejs/comments/react` | Add selection commands, shortcuts, and highlight clicks |
-| Copied `comment` and `discussion` items | Style highlights and render forms, cards, block triggers, and popovers |
-| Your application | Supply users and fetched records; persist data and authorize remote writes |
+## API Reference
 
-Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` and `currentUserId` use the plugin store; subscribe with `usePluginStore` and update them through `store.set`.
-
-## Editing and history
-
-Comments use inward-associated `nearest` anchors internally. Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside the range.
-
-When all annotated text is deleted, the range collapses at a valid document position. Its block trigger keeps the thread reachable without highlighting neighboring text. Undo and redo restore the mapped range, including backward direction and overlaps.
-
-## Collaboration and read-only review
-
-Pass the same serialized records to independent editors when their documents match. Each editor creates its own native handles and activation state. If document revisions differ, load ranges for each revision; plain coordinates cannot identify edits that happened elsewhere.
-
-For a read-only view, set `readOnly` on both `Plate` and `Editor`. For static rendering, use `BaseCommentsPlugin` and configure `commentDecorationAttributes` from the copied `comment-static` item. Thread cards remain copied application UI.
-
-## Legacy document migration
-
-Run `extractLegacyCommentRanges` before loading documents that contain `comment`, `comment_*`, `comment_draft`, or `commentTransient` properties.
-
-```ts
-import { extractLegacyCommentRanges } from "platejs/migrations";
-
-const {
-  comments,
-  diagnostics,
-  document: cleanDocument,
-} = extractLegacyCommentRanges(document, {
-  threadIds: storedThreads.map((thread) => thread.id),
-});
-
-console.table(diagnostics);
-```
-
-Persist `cleanDocument` and import `comments` through your storage layer after reviewing every diagnostic. The extractor never invents missing thread IDs. Run it offline; the runtime plugin has no legacy fallback.
-
-## Plugins
+### Plugins
 
 - `BaseCommentsPlugin` from `platejs/comments` owns headless data and range behavior.
 - `CommentsPlugin` from `platejs/comments/react` adds React view interactions.
-
-## API Reference
 
 ### Data and ranges
 
@@ -244,6 +257,10 @@ Creation requires a user ID and a nonempty body. Failed creation returns `null`;
 ### Subscriptions
 
 `subscribeThread(id, listener)` observes one record. `subscribeVisibleThreadIds`, `subscribeDraftThreadIds`, and `subscribePending` observe their respective snapshots. `subscribeThreads` observes persisted data changes, including mapped ranges. Each method returns an unsubscribe function.
+
+### Copied UI
+
+`CommentKit` from the copied `comment` item configures highlight styling. `DiscussionKit` adds block buttons and the floating thread view. Use the exported `CommentThreadCard` and `CommentComposer` to build a custom thread layout.
 
 ### `CommentComposer`
 

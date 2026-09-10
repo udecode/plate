@@ -2490,7 +2490,40 @@ test.describe('pagination example', {
         visibleRowsMatch: true,
       });
 
+    const selectedRow = editor.root.locator(
+      `[data-plite-path="${tablePath},28"]`
+    );
+
+    await selectedRow.evaluate((row) =>
+      row.scrollIntoView({ block: 'center' })
+    );
+    await expect
+      .poll(() =>
+        selectedRow.evaluate((row) => {
+          const viewport = row.ownerDocument.querySelector(
+            '[data-testid="pagination-viewport"]'
+          )!;
+          const viewportBounds = viewport.getBoundingClientRect();
+          const rowBounds = row.getBoundingClientRect();
+
+          return (
+            rowBounds.top >= viewportBounds.top &&
+            rowBounds.bottom <= viewportBounds.bottom
+          );
+        })
+      )
+      .toBe(true);
+
     await page.getByLabel('Rows').fill('96');
+    await expect
+      .poll(async () => {
+        const value = (await editor.get.modelValue()) as {
+          children: { children: unknown[] }[];
+        };
+
+        return value.children[tablePath].children.length;
+      })
+      .toBe(96);
 
     await expect
       .poll(async () => {
@@ -2508,6 +2541,7 @@ test.describe('pagination example', {
         cellsMatchRows: true,
         visibleRowsMatch: true,
       });
+    await expect(page.getByLabel('Rows')).toBeFocused();
   });
 
   test('edits a visually second-page table cell without splitting the table DOM', async ({

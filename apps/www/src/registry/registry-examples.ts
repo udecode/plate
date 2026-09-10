@@ -2,6 +2,149 @@ import type { Registry } from 'shadcn/schema';
 
 export const examples: Registry['items'] = [
   {
+    name: 'comment-demo',
+    title: 'Comments',
+    description:
+      'Create comments, reply in threads, and resolve conversations.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/comment',
+      '@plate/comment-toolbar-button',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/suggestion',
+      '@plate/toolbar',
+      '@plate/link',
+    ],
+  },
+  {
+    name: 'comment-overlap-demo',
+    title: 'Overlapping Comments',
+    description:
+      'Edit overlapping comment ranges and follow them through undo and redo.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-overlap-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/comment',
+      '@plate/comment-toolbar-button',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/suggestion',
+      '@plate/toolbar',
+      '@plate/history-toolbar-button',
+    ],
+  },
+  {
+    name: 'comment-persistence-demo',
+    title: 'Save and Reload Comments',
+    description:
+      'Save a local document snapshot with comments and retry a simulated failed reply.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-persistence-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/comment',
+      '@plate/comment-toolbar-button',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/suggestion',
+      '@plate/toolbar',
+      'button',
+      '@plate/link',
+    ],
+  },
+  {
+    name: 'comment-review-demo',
+    title: 'Read-only and Static Comments',
+    description:
+      'Read comments on a read-only document and render static highlights.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/comment-review-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/comment-value.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/comment',
+          title: 'Comments',
+        },
+      ],
+    },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/comment',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/suggestion',
+      '@plate/basic-blocks-static',
+      '@plate/comment-static',
+      '@plate/editor-static',
+      '@plate/link',
+      '@plate/link-static',
+    ],
+  },
+  {
     dependencies: ['@platejs/test'],
     description: 'Renders AI ghost text suggestions at the cursor position.',
     files: [

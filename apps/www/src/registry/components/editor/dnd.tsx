@@ -1,7 +1,7 @@
 'use client';
 
 import { GripVertical } from 'lucide-react';
-import { ElementApi, PathApi, type Element, type Path } from 'platejs';
+import { PathApi, type Element, type Path } from 'platejs';
 import {
   DndPlugin,
   type DropLineDirection,
@@ -120,16 +120,12 @@ function Draggable({
   }, []);
   const isInColumn = container === 'column';
   const isInTable = container === 'table';
-  const isContainer =
-    ElementApi.isElement(element.children[0]) &&
-    editor.read.schema.isBlock(element.children[0]);
   const isActive = active || isPointerActive;
   return (
     <div
       className={cn(
-        'relative',
-        isThisDragging && 'opacity-50',
-        isContainer ? 'group/container' : 'group'
+        'relative hover:[&>.plite-gutterLeft]:opacity-100',
+        isThisDragging && 'opacity-50'
       )}
       onMouseEnter={() => {
         if (isThisDragging) return;
@@ -149,7 +145,7 @@ function Draggable({
       )}
 
       {!isInTable && !hasTableCellSelection && (
-        <Gutter active={isPointerActive} isContainer={isContainer}>
+        <Gutter active={isPointerActive}>
           <button
             ref={dragButtonRef}
             aria-label="Drag block"
@@ -303,11 +299,9 @@ function Gutter({
   active,
   children,
   className,
-  isContainer,
   ...props
 }: React.ComponentProps<'div'> & {
   active: boolean;
-  isContainer: boolean;
 }) {
   return (
     <div
@@ -315,9 +309,6 @@ function Gutter({
       className={cn(
         'plite-gutterLeft',
         '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0',
-        isContainer
-          ? 'group-hover/container:opacity-100'
-          : 'group-hover:opacity-100',
         'focus-within:opacity-100',
         active && 'opacity-100',
         className

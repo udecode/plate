@@ -62,7 +62,7 @@ export function MediaEmbedElement(
   return (
     <MediaToolbar plugin={MediaEmbedPlugin} selected={selected}>
       <PlateElement className="py-2.5" {...props}>
-        <figure className="group relative m-0 w-full cursor-default">
+        <figure className="relative m-0 w-full cursor-default hover:[&_.plite-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
               align={textAlign}

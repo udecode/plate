@@ -8,6 +8,11 @@ const selectCommentModeIntroWithPointer = async (
   page: Page,
   rootSelector = '#comment-mode'
 ) => {
+  await page
+    .locator(`${rootSelector} [data-plite-string]`)
+    .first()
+    .scrollIntoViewIfNeeded();
+
   const start = await getTextOffsetPoint(page, rootSelector, 0);
   const end = await getTextOffsetPoint(
     page,

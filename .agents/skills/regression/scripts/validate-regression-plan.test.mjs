@@ -1807,11 +1807,21 @@ test("a failed focus-state fix compares the native, DOM and React owners", () =>
 
   const resolved = failedFocus.replace(
     "; diagnostic: pass unchanged-bytes failing phase classified",
-    "; diagnostic: pass unchanged-bytes failing phase classified; focus-state-trace: native + dom-api + react-context"
+    "; diagnostic: pass unchanged-bytes failing phase classified; focus-state-trace: native + dom-api + react-context; selection-focus-trace: selection-write + active-before + active-after; selection-focus-result: selection export refocused the editor"
   );
   assert.doesNotMatch(
     validateRegressionPlan(resolved, { complete: true, rootDir: root }).join("\n"),
     /failed focus-state fix/
+  );
+  assert.match(
+    validateRegressionPlan(
+      resolved.replace(
+        "; selection-focus-trace: selection-write + active-before + active-after; selection-focus-result: selection export refocused the editor",
+        "; focus-call-result: explicit blur completed"
+      ),
+      { complete: true, rootDir: root }
+    ).join("\n"),
+    /failed focus-state fix requires selection-focus-trace/
   );
 });
 

@@ -473,3 +473,164 @@ before publication closure.
 `check-table-timeout.log` retains the full check; the exact test input is
 fingerprinted in `table-timeout-candidate.json`. This follow-up publishes only
 that test and this plan. All other ongoing edits stay local.
+
+Focus repair case `ci-focus-explicit-blur`:
+On pushed `e92dceb4fe`, root checks and the corrected table gate pass; the
+React-core partition reports one failure among 294 cases. Under StrictMode,
+`BlockPlaceholderPlugin.spec.tsx` focuses the mounted view, shows its empty
+block placeholder, calls that view's `api.dom.blur()`, and still sees the
+placeholder afterward. The exact local partition passes, so its immediate
+assertion alone does not prove delayed focus work has settled.
+
+Class: DOM focus-request ownership, in Plite. Candidate cause:
+`DOMEditor.focus` schedules retry and delayed settlement work; `DOMEditor.blur`
+clears focused state but does not invalidate the request owning that work.
+The existing DOM scheduler tests will deterministically exercise public focus,
+explicit blur and pending callbacks. Expected: native focus stays outside the
+editor and its focused state stays false; a later explicit focus still works,
+and blurring an older editor cannot cancel a sibling's current request.
+Retain the three placeholder host variants, StrictMode and post-blur oracle.
+Fix the existing request owner only if those cases reproduce. Required proof:
+red/green DOM cases, full DOM and React-core partitions, actual browser focus
+behavior, source types, root check and final pushed CI. No placeholder policy,
+new public API, selection clearing, or unrelated product changes are in scope.
+
+
+Attempt 1 final verification was rejected, not published. The exact browser
+fixture failed 9/15 retry-free Chromium rows after draining queued work, and
+Chrome retained the focused editor and placeholder. Frozen-byte native tracing
+shows explicit blur reaches BODY, then the layout effect in
+`selection-reconciler.ts` calls `Selection.setBaseAndExtent`; that native write
+reacquires editor focus without an HTMLElement.focus call. The original
+scheduler fix is necessary but does not govern this independent write owner.
+The browser fixture uses all three original host variants and the complete
+one/nonempty plus empty-paragraph selection setup under StrictMode.
+
+Best API / Plite Plan decision for attempt 2:
+The public mounted-view `api.dom.focus()` and `api.dom.blur()` calls retain their
+existing jobs. The strongest justified cut is the reconciler's permission to
+export selection into an unfocused view merely because BODY is active. Reuse
+the existing view focus authority before passive selection reconciliation;
+retain explicit focus's owned retry/settlement cancellation. No new flag,
+controller, timer, selection model, public API or plugin is warranted. Removing
+focus settlement wholesale would break the separately proved incidental host
+loss repair. Clearing model selection on blur would destroy preserved selection.
+Plite owns both DOM mechanics; Plate placeholders consume the resulting view
+state and require no policy patch. One constant focus check adds no per-node
+work, allocation or scheduler. This is a correctness guard in an existing
+lifecycle, with no new runtime layer or performance claim.
+
+Execution slice: gate the existing React selection layout effect on live view
+focus before any external-text/native selection export; rerun deterministic
+DOM cancellation and sibling cases, original React-core partition, all three
+browser hosts five times with zero retries, source types and root checks.
+Risks to prove: initial selected but unfocused mounts must not steal focus;
+explicit focus and follow-up typing must still work; sibling focus and native
+incidental-loss repair must remain intact. No rollback of concurrent work.
+
+Regression workflow repair uses the project-owned source under
+`.agents/rules/regression`, not a vendor/global skill. Its validator rejects a
+failed focus-state packet that traces explicit focus but omits DOM selection
+writes and their before/after active element. The negative fixture is red before
+the validator change. Source generation runs through pnpm install. Agent-native
+review: existing Patch failed-fix routing reaches Regression, its source and
+mirrors expose the diagnostic, and the executable validator enforces it. No
+external project installation or additional review panel is in scope.
+
+Selected executable cases:
+| Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | CI 34504393785; packages/platejs/src/react/utils/BlockPlaceholderPlugin.spec.tsx | Focus the mounted view, explicitly blur, let reconciliation finish, focus again and type | Unfocused view has no block placeholder until a later focus request | existing-contract: original post-blur placeholder assertions and DOM blur | e2e-required: JSDOM scheduler tests do not reproduce browser focus induced by Selection.setBaseAndExtent | exact-route: /focus-blur; Chromium and Chrome on macOS; runtime-modes: writable mounted StrictMode, no suggestions or history; fixture-scope: complete two-paragraph original fixture across DIV/P/SECTION hosts | apps/plite/tests/plite-browser/focus-blur.test.ts; pnpm --filter plite exec node scripts/run-plite-browser.mjs direct --project=chromium tests/plite-browser/focus-blur.test.ts | completed | dirty:e92dceb4feb941b65da762cef12df921be41158d | Final publication |
+
+Failed fix history:
+| Case ID | Attempt | Failure signal | Failure kind | Prior claim invalidated | Regression repair | Workflow test | Architecture trigger | Best API / layer plan | Resume state |
+|---|---|---|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | 1 | 9/15 mounted browser cases regain focus after blur | final-verification | yes: DOM-only green cannot close mounted behavior | repair-now: .agents/rules/regression/scripts/validate-regression-plan.mjs traces selection writes | pass: node --test .agents/rules/regression/scripts/validate-regression-plan.test.mjs | yes: timer-focus-correctness | best-api and plite-plan: existing focus authority gates passive reconciliation, decision above | reproduced: native matrix trace on unchanged product bytes; diagnostic: after blur BODY becomes editor during selection layout export; focus-state-trace: native + dom-api + react-context; selection-focus-trace: selection-write + active-before + active-after; selection-focus-result: selection-reconciler setBaseAndExtent refocuses editor; runtime-owner: pass; mutation-owner: pass |
+
+Architecture pressure:
+| Case ID | Failed fix count | Triggers | Verdict | Best API | Layer plan | Proof |
+|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | 1 | timer-focus-correctness | escalate | required: best-api: retain semantic focus/blur, cut passive unfocused selection export | plite-plan: attempt 2 slice above | pass: 20 exact Chrome rows plus final strict Plite and five-project matrix; DOM sibling repair preserves incidental settlement |
+
+Proof-host readiness:
+| Case ID | Source owner | Runner / route / host | Freshness evidence | Generated/export boundary | Result |
+|---|---|---|---|---|---|
+| ci-focus-explicit-blur | packages/plitejs/src/dom/plugin/dom-editor.ts and src/react/editable/selection-reconciler.ts | exact-route: /focus-blur; owned static server PID 6808 http://127.0.0.1:3399, cwd apps/plite; repository direct browser runner | doctor app digest ed9ab43e5539c82dd7d11a16ed0017b10b6bd4c0eaa3d875580529d42db1dad3; fresh app and browser inputs | source aliases built by owned Next exporter; no generated edits | pass: frozen attempt 1 host, rebuild required after attempt 2 |
+
+Methodology deltas:
+| Case | Miss or owner checked | Decision | Durable owner/change | Focused proof | Trigger/result |
+|---|---|---|---|---|---|
+| ci-focus-explicit-blur | explicit focus traces miss selection-induced native focus | repair-now |  .agents/rules/regression/scripts/validate-regression-plan.mjs, rule and methodology; generated mirrors via pnpm install | pass: 148 tests; focus-workflow-red.log and focus-workflow-final.log | executable negative packet fails; complete diagnostic packet passes |
+
+Reporter evidence inventory:
+| Case ID | Source role | Source reference | Phase | Claim | Disposition | Oracle anchors | Executable anchor | Result |
+|---|---|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | base-acceptance | packages/platejs/src/react/utils/BlockPlaceholderPlugin.spec.tsx | after-action | Explicit blur clears the block placeholder and focused state | required | dom-native@after-action, focus@after-action | test: apps/plite/tests/plite-browser/focus-blur.test.ts#explicit blur cancels queued focus | pass: 20 exact-Chrome rows and final configured matrix |
+| ci-focus-explicit-blur | base-acceptance | packages/plitejs/test/dom/dom-coverage.ts | follow-up | A later explicit focus remains usable with preserved selection | required | follow-up-input@follow-up | test: apps/plite/tests/plite-browser/focus-blur.test.ts#explicit blur cancels queued focus | pass: later explicit focus and native typing; 20 exact-Chrome rows and final matrix |
+
+Reporter oracle matrix:
+| Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
+|---|---|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | model | after-action | no | N/A: focus state repair, no document mutation claimed | N/A: focus state repair | N/A: focus state repair | N/A: focus state repair | N/A: focus state repair |
+| ci-focus-explicit-blur | dom-native | after-action | yes | Mounted public blur clears original paragraph placeholder attributes and class; runtime-owner: mounted useEditor command owner; mutation-owner: public DOM blur | Placeholder survives passive reconciliation | Browser with real Selection behavior | test: apps/plite/tests/plite-browser/focus-blur.test.ts#explicit blur cancels queued focus | pass: runtime-owner: pass; mutation-owner: pass; placeholder stays absent after queued selection work |
+| ci-focus-explicit-blur | focus | after-action | yes | Native editor focus and focus-state stay false after explicit blur and queued work | Editor regains native focus through selection export | Browser mounted view and DOM scheduler | test: apps/plite/tests/plite-browser/focus-blur.test.ts#explicit blur cancels queued focus | pass: explicit blur remains unfocused after queued callbacks |
+| ci-focus-explicit-blur | follow-up-input | follow-up | yes | Later explicit focus inserts text into the preserved empty second paragraph | Focus remains canceled or text goes into the first paragraph | Browser native typing | test: apps/plite/tests/plite-browser/focus-blur.test.ts#explicit blur cancels queued focus | pass: later explicit focus and native typing; 20 exact-Chrome rows and final matrix |
+| ci-focus-explicit-blur | pointer-feedback | after-action | no | N/A: no pointer affordance change | N/A: no pointer affordance change | N/A: no pointer affordance change | N/A: no pointer affordance change | N/A: no pointer affordance change |
+| ci-focus-explicit-blur | popup | after-action | no | N/A: no popup | N/A: no popup | N/A: no popup | N/A: no popup | N/A: no popup |
+| ci-focus-explicit-blur | geometry-paint | after-action | no | N/A: attribute and native focus contract, no pixel claim | N/A: attribute and native focus contract, no pixel claim | N/A: attribute and native focus contract, no pixel claim | N/A: attribute and native focus contract, no pixel claim | N/A: attribute and native focus contract, no pixel claim |
+| ci-focus-explicit-blur | subscription-lifecycle | after-action | no | N/A: no subscription implementation change | N/A: no subscription implementation change | N/A: no subscription implementation change | N/A: no subscription implementation change | N/A: no subscription implementation change |
+| ci-focus-explicit-blur | runtime-errors | after-action | no | N/A: native focus assertion is the reported failure, runtime exceptions still fail runner | N/A: native focus assertion is the reported failure, runtime exceptions still fail runner | N/A: native focus assertion is the reported failure, runtime exceptions still fail runner | N/A: native focus assertion is the reported failure, runtime exceptions still fail runner | N/A: native focus assertion is the reported failure, runtime exceptions still fail runner |
+
+Proof receipts:
+| Case ID | Attempt | Claim | Command | Result | Ref | Input digest | Input count | Inputs | Host | Latest input mtime | Proof started | Proof ended | Retries | Receipt ID |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ci-focus-explicit-blur | 2 | completed | "env" "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3399" "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "pnpm" "--filter" "plite" "exec" "node" "scripts/run-plite-browser.mjs" "direct" "--project=chromium" "tests/plite-browser/focus-blur.test.ts" "tests/plite-browser/runtime-entrypoints.test.ts" "--repeat-each=5" | pass: exit 0 in 12108ms | dirty:e92dceb4feb941b65da762cef12df921be41158d | sha256:4a03fd4ce5983c23454b39b569a5b1286be9e3208d37d17520a75a67f088b188 | 15 | apps/plite/next.config.ts,apps/plite/out/.plite-proof-build.json,apps/plite/playwright.config.ts,apps/plite/scripts/run-plite-browser.mjs,apps/plite/src/app/focus-blur/page.tsx,apps/plite/src/runtime-entrypoint-proof.generated.ts,apps/plite/tests/plite-browser/focus-blur.test.ts,apps/plite/tests/plite-browser/runtime-entrypoints.test.ts,packages/platejs/src/react/utils/BlockPlaceholderPlugin.spec.tsx,packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx,packages/plitejs/src/dom/plugin/dom-editor.ts,packages/plitejs/src/react/editable/runtime-root-engine.ts,packages/plitejs/src/react/editable/selection-reconciler.ts,packages/plitejs/test/dom/dom-coverage.ts,packages/plitejs/test/react/selection-reconciler-contract.test.tsx | pid:6847;started:2026-09-10T20:05:49.000Z;base-url:http://127.0.0.1:3399;browser:exact-chrome;browser-executable:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome;browser-version:Google Chrome 152.0.7977.83 | 2026-09-10T18:07:32.807Z | 2026-09-10T20:06:09.608Z | 2026-09-10T20:06:21.717Z | 0 | sha256:2d00d111ddb9a823a839f6dce6c5f7b3ba799c230d1c24fdb21106dfe0ed5646 |
+
+Affected corpus replay:
+| Owner | Affected cases | Pre-edit baseline | Last owner edit | Combined command | Receipt input digest | Result |
+|---|---|---|---|---|---|---|
+| Plite DOM and mounted selection | ci-focus-explicit-blur | red: original native 9/15 refocus and deterministic queued callback cases | 2026-09-10T18:07:32.807Z | "env" "PLAYWRIGHT_BASE_URL=http://127.0.0.1:3399" "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "pnpm" "--filter" "plite" "exec" "node" "scripts/run-plite-browser.mjs" "direct" "--project=chromium" "tests/plite-browser/focus-blur.test.ts" "tests/plite-browser/runtime-entrypoints.test.ts" "--repeat-each=5" | sha256:4a03fd4ce5983c23454b39b569a5b1286be9e3208d37d17520a75a67f088b188 | pass: 20 final exact-Chrome executions; full affected AI corpus and configured matrix also pass as linked below |
+
+Gate failure closure:
+| Gate | Failure signal | Classification | Resolution | Final rerun |
+|---|---|---|---|---|
+| native focus | 9/15 browser cases refocus | product | passive selection export gated on existing live view focus | pass: 20 exact-Chrome rows; focus-final-native-receipt.log |
+| plite app typecheck | generated runtime proof nominal descriptor incompatible | existing generated fixture type contract | generated export-reflection adapter asserts the nominally validated plugin input type; source generator owns output | pass: pnpm --filter plite typecheck; focus-app-types-final.log |
+
+
+Final focused candidate evidence (publication remains held):
+- Full `pnpm check`: 93 typecheck tasks, 2,125 Bun tests and 516 Node tests,
+  all passing in `check-focus-final.log`.
+- Plite DOM partition: 241 cases; Plate React-core: 294 cases; Plite React
+  partition: 1,252 cases; all pass.
+- Two additional Android callback tests reproduce native refocus before the
+  queued frame and between frame/spellcheck export. Both are red before the
+  callback guard and green afterward; the complete reconciler contract has
+  26 passing cases. Five existing isolated export tests explicitly provide
+  their focused-view precondition while retaining every prior assertion.
+- Final source-built host PID 24419 on port 3399 passes 20 exact Chrome
+  152.0.7977.83 rows: three host variants plus runtime entrypoints, five
+  repetitions each, zero retries. The receipt binds all 15 named inputs.
+- Regression workflow proof: all 148 tests pass and generated mirrors match.
+
+A newly started affected-www corpus reports the AI menu's Escape action closes
+its shell without restoring focus to the mounted editor. The performance owner
+is tracing that exact case on frozen product bytes before proposing a repair.
+This prevents publication despite the focused candidate passing. The remaining
+case and its original native evidence are owned by
+`docs/plans/2026-09-10-editor-performance-follow-through.md`; do not erase the
+broader requirement or borrow the narrow blur proof to close it. Both DOM focus
+and selection-reconciler sources remain frozen during that diagnosis.
+
+Excluded staged content:
+Another actor staged broad Comments/Tailwind/docs work during verification.
+No commit or staging action from this task has occurred in this attempt. The
+publication operation must preserve those excluded index entries and working
+bytes, using only the final explicit repair paths after every required gate
+passes. Do not commit the entire index or restore excluded files.
+
+Final publication intake: the completed performance handoff closes the AI affected corpus (65 exact-Chrome executions), strict Plite and all five configured browser projects (2,395 passes, 623 declared skips, no missing/duplicate/unexpected cases). The final AI repair preserves model-only update semantics, binds close focus to the mounted API, and makes copied acceptance controls request focus explicitly. Browser fixture repairs establish visible pointer/row preconditions without changing product behavior. See `artifacts/2026-09-10-editor-performance-follow-through/handoff-verification-summary.json` and the source readback for exact commands and hashes. This supersedes the earlier AI publication hold.
+
+The user confirms the other task finished and explicitly requests fixing CI and pushing, with no messages to other tasks. Completed Comments and Tailwind changes have local completion records and are included with their generated output and dependency changes. Unfinished authored-change/structural-diff research and temporary release status remain excluded. A fresh root check precedes publication; remote CI remains the final gate.
+
+Publication checks: fresh `pnpm check` passes (`.audit/felix-next-push/check-publication-final.log`); final source-built exact-Chrome replay passes 20/20 with zero retries (`focus-publication-receipt.log`); Regression semantic completion, generated changelog consistency and exact workflow mirrors pass. Commit scope contains 101 completed paths. Twenty research/temporary paths and their index entries are preserved separately. Remote CI is still pending publication.

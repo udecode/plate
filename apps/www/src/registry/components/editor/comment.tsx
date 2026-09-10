@@ -409,7 +409,10 @@ function CommentMessageRow({
   const user = useCommentUser(message.userId);
 
   return (
-    <div className="group/comment-message" data-comment-message={message.id}>
+    <div
+      className="focus-within:[&>div>.plite-comment-actions]:pointer-events-auto focus-within:[&>div>.plite-comment-actions]:opacity-100 hover:[&>div>.plite-comment-actions]:pointer-events-auto hover:[&>div>.plite-comment-actions]:opacity-100"
+      data-comment-message={message.id}
+    >
       <div className="relative flex items-center">
         <Avatar className="size-5">
           <AvatarImage alt={user?.name} src={user?.avatarUrl} />
@@ -431,7 +434,7 @@ function CommentMessageRow({
         {mine && !editing && (
           <div
             className={cn(
-              'pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 group-focus-within/comment-message:pointer-events-auto group-focus-within/comment-message:opacity-100 group-hover/comment-message:pointer-events-auto group-hover/comment-message:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
+              'plite-comment-actions pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
               menuOpen && 'pointer-events-auto opacity-100'
             )}
           >

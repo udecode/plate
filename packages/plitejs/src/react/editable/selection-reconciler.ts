@@ -1024,6 +1024,10 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
+    if (!ReactEditor.isFocused(editor)) {
+      return undefined;
+    }
+
     if (runtime.externalText.focusSelection()) return undefined;
 
     if (isEditableOutsideFocusBoundarySettling(state)) {
@@ -1346,6 +1350,8 @@ export const useEditableSelectionReconciler = ({
       () => {
         if (ensureSelection) {
           const ensureDomSelection = (forceChange?: boolean) => {
+            if (!ReactEditor.isFocused(editor)) return;
+
             try {
               const el = ReactEditor.assertDOMNode(editor, editor);
               if (!shouldSkipSelectionFocus(editor)) {

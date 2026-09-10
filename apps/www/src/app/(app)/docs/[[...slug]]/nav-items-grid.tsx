@@ -170,7 +170,7 @@ export function NavItemsGrid({
                 >
                   <a
                     className={cn(
-                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
+                      'opacity-0 hover:opacity-100 [@media(hover:hover)]:[.group:hover_&]:opacity-100'
                     )}
                     onClick={(e) =>{  e.stopPropagation(); }}
                     href={`#${group.title.toLowerCase().replace(/ /g, '-')}`}
