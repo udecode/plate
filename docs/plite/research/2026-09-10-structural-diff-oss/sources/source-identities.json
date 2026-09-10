@@ -1,0 +1,298 @@
+{
+  "refs": {
+    "jsondiffpatch": "a60db8a232f92ee4b987c14f43f77402885d1a5a",
+    "prosemirror-changeset": "e215757276357b64cf74f536552f3a5ef292fa1a",
+    "delta": "dc17ca03e1d68ee729c8cd1ff790ebf96eb0fbec",
+    "node-diff3": "8226c27e074909241d72276c21215505a931665f",
+    "gumtree": "dc2088281765e456b3574d230881c5a25ff93481",
+    "mergiraf": "b9a78df83d48a89961310dde67898dd1b355690e",
+    "trimerge": "8f5002584bc892d5dbb5b813e4241323e6593eef",
+    "spork": "c1b35d81c44d61d883da7ca91ae0088b6b8f3f2f",
+    "difftastic": "274d0a8f57291477cfbfb27bace0d82395d15c97",
+    "diff-match-patch": "62f2e689f498f9c92dbc588c58750addec9b1654",
+    "loro": "d5da57dd2a91d735656808cbbe2a3f1c755c2441",
+    "automerge": "1618c976ca23fca8282c4a69ebbb0bb0c3f27ab1",
+    "vscode": "df2411cf7d8f2e0cfc79109a3bc8eaab2c69165b"
+  },
+  "files": [
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/arrays.ts",
+      "ranges": "1,105;190,290",
+      "sha256": "8e2541578185b69dd5f2002605320f0d5ee49d1e1ce3994dc82ad6521bcc5450",
+      "head": "a60db8a232f92ee4b987c14f43f77402885d1a5a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/lcs.ts",
+      "ranges": "1,115",
+      "sha256": "b7f4ccdefa9680bc38429e0dc86e5453b4bd9057ef2c6b40b1c19f688e4b020d",
+      "head": "a60db8a232f92ee4b987c14f43f77402885d1a5a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "prosemirror-changeset",
+      "path": "src/changeset.ts",
+      "ranges": "1,90;135,165",
+      "sha256": "786fa0ee02a60dd04a27e6532f5fcd7aacfc1c0b7a9ad06647752c96cb21b673",
+      "head": "e215757276357b64cf74f536552f3a5ef292fa1a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "prosemirror-changeset",
+      "path": "src/simplify.ts",
+      "ranges": "1,120",
+      "sha256": "89fd759477018fd0a41d7d5bf5576b85a5707407757f0561df59e01949d6fb96",
+      "head": "e215757276357b64cf74f536552f3a5ef292fa1a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "delta",
+      "path": "src/Delta.ts",
+      "ranges": "330,440",
+      "sha256": "bfa22306baf3d562caaf3de719b1afd9de695e8b4dd5c5f6d1dccc36e75029ef",
+      "head": "dc17ca03e1d68ee729c8cd1ff790ebf96eb0fbec",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "src/diff3.mjs",
+      "ranges": "330,475",
+      "sha256": "91c4048e99cb1aa7081eeab8304d765ea439151dadaf0d71daf780f4d2cdd013",
+      "head": "8226c27e074909241d72276c21215505a931665f",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/matchers/MappingStore.java",
+      "ranges": "30,105",
+      "sha256": "037cf478df5ab36492b0e796788122dfb507666bd282e4a26a693f5ba6bd2049",
+      "head": "dc2088281765e456b3574d230881c5a25ff93481",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/actions/ChawatheScriptGenerator.java",
+      "ranges": "70,165",
+      "sha256": "aef014e87a32a2d294fe66471f007471335fb044bf7fee49b9e5e2af84046723",
+      "head": "dc2088281765e456b3574d230881c5a25ff93481",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/main/java/com/github/gumtreediff/matchers/heuristic/gt/GreedyBottomUpMatcher.java",
+      "ranges": "40,125",
+      "sha256": "34ffc44de893fe1794151820463af4c040570ff149f69a101d6a646d6514ddf8",
+      "head": "dc2088281765e456b3574d230881c5a25ff93481",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "src/matching.rs",
+      "ranges": "1,28;82,100",
+      "sha256": "c569d9bf0aa21dcbe85f0c9da8992f13eeaa1fef911eaf125ded6905499fbd7a",
+      "head": "b9a78df83d48a89961310dde67898dd1b355690e",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "src/structured.rs",
+      "ranges": "1,138",
+      "sha256": "5655fbc2c3d3fc03ccc953fef9a68b2c0ba1b720ccd128c53d81c0827f40b00c",
+      "head": "b9a78df83d48a89961310dde67898dd1b355690e",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "src/trimerge-array.ts",
+      "ranges": "1,60",
+      "sha256": "e61e826cb6d2a22c3a72640f8c375034c2b939fd8adf502972efe758ce575a37",
+      "head": "8f5002584bc892d5dbb5b813e4241323e6593eef",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "src/trimerge-ordered-map.ts",
+      "ranges": "1,140",
+      "sha256": "913723ea7ea32729f11f2cf5ff1f9f17f69bbff693a3ef01ffd3c498ac2581dd",
+      "head": "8f5002584bc892d5dbb5b813e4241323e6593eef",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "spork",
+      "path": "src/main/kotlin/se/kth/spork/base3dm/TdmMerge.kt",
+      "ranges": "1,104",
+      "sha256": "60a7f75731f0459f3c02dc06d4ef8e255a5073be0a44c25e807df8342f2b778a",
+      "head": "c1b35d81c44d61d883da7ca91ae0088b6b8f3f2f",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "difftastic",
+      "path": "src/diff/shortest_path.rs",
+      "ranges": "56,112;217,250",
+      "sha256": "44420466a18ff16fa8e201ce74baf99003acebb4439afa6e48d9b0d10c37ab7d",
+      "head": "274d0a8f57291477cfbfb27bace0d82395d15c97",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "difftastic",
+      "path": "manual/src/tricky_cases.md",
+      "ranges": "1,100",
+      "sha256": "3f127ac2610048a519daad2e213eeed2d2b0cc2988aba31cb33970898cb80116",
+      "head": "274d0a8f57291477cfbfb27bace0d82395d15c97",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "diff-match-patch",
+      "path": "javascript/diff_match_patch_uncompressed.js",
+      "ranges": "1810,1913",
+      "sha256": "9a79cf031ac7c2e366416181051acb3e6d2cacf79c5354148f4c71ea20c7e4a3",
+      "head": "62f2e689f498f9c92dbc588c58750addec9b1654",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/src/lib.rs",
+      "ranges": "1470,1499;3260,3315",
+      "sha256": "e2373b73e459c6dfcfb8a30ce2880a9dc86f5bf7dcb0bba2e001c26826264a8d",
+      "head": "d5da57dd2a91d735656808cbbe2a3f1c755c2441",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "automerge",
+      "path": "javascript/src/implementation.ts",
+      "ranges": "1050,1147;1550,1603",
+      "sha256": "a986ae23fdaeb8d0b30d95338fa66753aac024c449f759bfd764feb19f4183f3",
+      "head": "1618c976ca23fca8282c4a69ebbb0bb0c3f27ab1",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "gumtree",
+      "path": "core/src/test/java/com/github/gumtreediff/test/TestActionGenerator.java",
+      "ranges": "1,115",
+      "sha256": "d12984f359dcb1b0b0a58b5dff0d743b747ceb5d5a2183fc522df703e6450853",
+      "head": "dc2088281765e456b3574d230881c5a25ff93481",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/tests/contracts/tree_concurrent_delete_move.rs",
+      "ranges": "1,97",
+      "sha256": "e2c6fddb3351edb6757c1ac4a8920d7f252a3ba6845d1d085e51654849b90d32",
+      "head": "d5da57dd2a91d735656808cbbe2a3f1c755c2441",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "loro",
+      "path": "crates/loro/tests/contracts/movable_list_diff_apply.rs",
+      "ranges": "1,160",
+      "sha256": "40dbece54eda1dfd37506922f2666eee815cd82b1b295351c50638ef017e24cd",
+      "head": "d5da57dd2a91d735656808cbbe2a3f1c755c2441",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "vscode",
+      "path": "src/vs/editor/common/diff/defaultLinesDiffComputer/computeMovedLines.ts",
+      "ranges": "1,160",
+      "sha256": "ecee81cd97f4b4386a2fe37f6f7fc031a53ffaade7d0f642e7a902132951a2c5",
+      "head": "df2411cf7d8f2e0cfc79109a3bc8eaab2c69165b",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "delta",
+      "path": "test/delta/diff.ts",
+      "ranges": "1,160",
+      "sha256": "2524b89c5eb83bea9bd04daf7c836e0a3107c5acf516165e00de03e4473df080",
+      "head": "dc17ca03e1d68ee729c8cd1ff790ebf96eb0fbec",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "src/diff3.mjs",
+      "ranges": "190,330",
+      "sha256": "91c4048e99cb1aa7081eeab8304d765ea439151dadaf0d71daf780f4d2cdd013",
+      "head": "8226c27e074909241d72276c21215505a931665f",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/filters/texts.ts",
+      "ranges": "1,172",
+      "sha256": "bf160e705ea0178c30e5420a3c501c8634f069ebeebec917674243072701b612",
+      "head": "a60db8a232f92ee4b987c14f43f77402885d1a5a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "jsondiffpatch",
+      "path": "packages/jsondiffpatch/src/index.ts",
+      "ranges": "1,53",
+      "sha256": "859032e062ed363470485b313d7dd089931ef6eb2a0abf359bd5ac9569c64292",
+      "head": "a60db8a232f92ee4b987c14f43f77402885d1a5a",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "trimerge",
+      "path": "package.json",
+      "ranges": "1,81",
+      "sha256": "1727ff0d08855a0de26ba9b3cfb7fec3e452a6e1d5dbea26acb4a5dd225268ee",
+      "head": "8f5002584bc892d5dbb5b813e4241323e6593eef",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "node-diff3",
+      "path": "package.json",
+      "ranges": "1,59",
+      "sha256": "a82940a55c82afb2f07654dd95af087f53a6285e2358a5b7c9ee6c6baf270481",
+      "head": "8226c27e074909241d72276c21215505a931665f",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "mergiraf",
+      "path": "Cargo.toml",
+      "ranges": "1,80",
+      "sha256": "ca323927aa8b6952a99f8dfb46b369ad2ef82f5118ed405bf5fd35a7cd5403e2",
+      "head": "b9a78df83d48a89961310dde67898dd1b355690e",
+      "matchesHead": true,
+      "trackedAtHead": true
+    },
+    {
+      "repo": "diff-match-patch",
+      "path": "javascript/diff_match_patch_uncompressed.js",
+      "ranges": "2215,2236",
+      "sha256": "9a79cf031ac7c2e366416181051acb3e6d2cacf79c5354148f4c71ea20c7e4a3",
+      "head": "62f2e689f498f9c92dbc588c58750addec9b1654",
+      "matchesHead": true,
+      "trackedAtHead": true
+    }
+  ]
+}

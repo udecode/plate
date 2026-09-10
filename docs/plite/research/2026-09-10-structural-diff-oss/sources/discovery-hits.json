@@ -1,0 +1,205 @@
+[
+  {
+    "description": "a structural diff that understands syntax 🟥🟩",
+    "fullName": "Wilfred/difftastic",
+    "stargazersCount": 25877,
+    "updatedAt": "2026-09-10T14:03:37Z",
+    "url": "https://github.com/Wilfred/difftastic"
+  },
+  {
+    "description": "Structural diff for JSON files",
+    "fullName": "andreyvit/json-diff",
+    "stargazersCount": 1202,
+    "updatedAt": "2026-08-20T20:51:23Z",
+    "url": "https://github.com/andreyvit/json-diff"
+  },
+  {
+    "description": "Structural diffs for clojure source code",
+    "fullName": "ladderlife/autochrome",
+    "stargazersCount": 189,
+    "updatedAt": "2026-07-16T07:14:28Z",
+    "url": "https://github.com/ladderlife/autochrome"
+  },
+  {
+    "description": "",
+    "fullName": "Luni-4/json-structural-diff",
+    "stargazersCount": 13,
+    "updatedAt": "2026-07-12T06:00:12Z",
+    "url": "https://github.com/Luni-4/json-structural-diff"
+  },
+  {
+    "description": "A .NET library to perform structural diff between two objects",
+    "fullName": "d-edge/Diffract",
+    "stargazersCount": 60,
+    "updatedAt": "2026-08-03T15:30:13Z",
+    "url": "https://github.com/d-edge/Diffract"
+  },
+  {
+    "description": "A Neovim plugin that displays difftastic's structural diffs in a side-by-side view with syntax highlighting.",
+    "fullName": "clabby/difftastic.nvim",
+    "stargazersCount": 112,
+    "updatedAt": "2026-09-10T06:21:44Z",
+    "url": "https://github.com/clabby/difftastic.nvim"
+  },
+  {
+    "description": "Get the structural diff of two JSON objects",
+    "fullName": "IndigoUnited/node-diff-json-structure",
+    "stargazersCount": 15,
+    "updatedAt": "2023-04-17T16:13:55Z",
+    "url": "https://github.com/IndigoUnited/node-diff-json-structure"
+  },
+  {
+    "description": "Compare Scratch projects and scripts. Returns a structural diff (tree). JS/Node.",
+    "fullName": "scratchblocks/scratch-diff",
+    "stargazersCount": 9,
+    "updatedAt": "2026-05-23T02:21:03Z",
+    "url": "https://github.com/scratchblocks/scratch-diff"
+  },
+  {
+    "description": "A React.js component that renders a structural diff of two JSON values",
+    "fullName": "relex/json-diff-react",
+    "stargazersCount": 8,
+    "updatedAt": "2025-08-14T08:59:03Z",
+    "url": "https://github.com/relex/json-diff-react"
+  },
+  {
+    "description": "Efficient, type-safe, (almost) zero-allocation structural diffing.",
+    "fullName": "redbadger/difficient",
+    "stargazersCount": 14,
+    "updatedAt": "2026-08-07T07:46:01Z",
+    "url": "https://github.com/redbadger/difficient"
+  },
+  {
+    "description": "LSDiff: Logical Structural Diff",
+    "fullName": "SEAL-UCLA/lsdiff",
+    "stargazersCount": 0,
+    "updatedAt": "2022-07-18T00:50:35Z",
+    "url": "https://github.com/SEAL-UCLA/lsdiff"
+  },
+  {
+    "description": "Typesafe structural diffing of haskell datratypes using generics",
+    "fullName": "arianvp/generics-mrsop-diff",
+    "stargazersCount": 9,
+    "updatedAt": "2021-09-06T07:11:52Z",
+    "url": "https://github.com/arianvp/generics-mrsop-diff"
+  },
+  {
+    "description": "A Vim plugin for managing three-way merges.",
+    "fullName": "sjl/splice.vim",
+    "stargazersCount": 235,
+    "updatedAt": "2026-06-16T06:45:00Z",
+    "url": "https://github.com/sjl/splice.vim"
+  },
+  {
+    "description": "Javascript/typescript library for performing three-way merges and diffs",
+    "fullName": "movableink/three-way-merge",
+    "stargazersCount": 25,
+    "updatedAt": "2026-09-05T09:50:15Z",
+    "url": "https://github.com/movableink/three-way-merge"
+  },
+  {
+    "description": "A JavaScript library for text diffing and three-way-merge",
+    "fullName": "bhousel/node-diff3",
+    "stargazersCount": 103,
+    "updatedAt": "2026-09-10T01:34:35Z",
+    "url": "https://github.com/bhousel/node-diff3"
+  },
+  {
+    "description": "A three-way-merge tool for IFC files",
+    "fullName": "brunopostle/ifcmerge",
+    "stargazersCount": 88,
+    "updatedAt": "2026-08-16T04:01:03Z",
+    "url": "https://github.com/brunopostle/ifcmerge"
+  },
+  {
+    "description": "Three-way merge JSON structures",
+    "fullName": "trimerge/trimerge",
+    "stargazersCount": 24,
+    "updatedAt": "2025-11-03T14:04:26Z",
+    "url": "https://github.com/trimerge/trimerge"
+  },
+  {
+    "description": "Three-way merge .pacnew file",
+    "fullName": "5long/p3wm",
+    "stargazersCount": 16,
+    "updatedAt": "2026-09-08T05:23:17Z",
+    "url": "https://github.com/5long/p3wm"
+  },
+  {
+    "description": "A graph-based refactoring-aware three-way merging tool for Java programs.",
+    "fullName": "Symbolk/IntelliMerge",
+    "stargazersCount": 24,
+    "updatedAt": "2025-08-05T19:30:07Z",
+    "url": "https://github.com/Symbolk/IntelliMerge"
+  },
+  {
+    "description": "",
+    "fullName": "bantic/three-way-merger",
+    "stargazersCount": 1,
+    "updatedAt": "2020-04-10T16:28:13Z",
+    "url": "https://github.com/bantic/three-way-merger"
+  },
+  {
+    "description": "A Vim9.1 plugin for managing three-way merges; pure vim9script.",
+    "fullName": "errael/splice9",
+    "stargazersCount": 15,
+    "updatedAt": "2026-06-16T07:08:50Z",
+    "url": "https://github.com/errael/splice9"
+  },
+  {
+    "description": "Three way merge for gettext po file.",
+    "fullName": "JulienPalard/po3way",
+    "stargazersCount": 6,
+    "updatedAt": "2026-05-18T12:56:42Z",
+    "url": "https://github.com/JulienPalard/po3way"
+  },
+  {
+    "description": "A library to perform three-way merge in Go",
+    "fullName": "charlesvdv/go-three-way-merge",
+    "stargazersCount": 3,
+    "updatedAt": "2025-10-24T00:48:56Z",
+    "url": "https://github.com/charlesvdv/go-three-way-merge"
+  },
+  {
+    "description": "Three-way merge for PHP array data",
+    "fullName": "jwadhams/merge-a-trois",
+    "stargazersCount": 5,
+    "updatedAt": "2023-02-20T20:45:57Z",
+    "url": "https://github.com/jwadhams/merge-a-trois"
+  },
+  {
+    "description": "backup: https://codeberg.org/mergiraf/mergiraf",
+    "fullName": "qundao/mirror-mergiraf",
+    "stargazersCount": 63,
+    "updatedAt": "2026-09-09T08:06:55Z",
+    "url": "https://github.com/qundao/mirror-mergiraf"
+  },
+  {
+    "description": "to be merged to https://codeberg.org/mergiraf/mergiraf",
+    "fullName": "perkee/mergiraf",
+    "stargazersCount": 10,
+    "updatedAt": "2026-09-09T14:29:03Z",
+    "url": "https://github.com/perkee/mergiraf"
+  },
+  {
+    "description": "",
+    "fullName": "predohenr/mergiraf-semi",
+    "stargazersCount": 1,
+    "updatedAt": "2026-08-26T16:18:02Z",
+    "url": "https://github.com/predohenr/mergiraf-semi"
+  },
+  {
+    "description": "A conda-smithy repository for mergiraf.",
+    "fullName": "conda-forge/mergiraf-feedstock",
+    "stargazersCount": 0,
+    "updatedAt": "2026-09-01T16:14:10Z",
+    "url": "https://github.com/conda-forge/mergiraf-feedstock"
+  },
+  {
+    "description": "",
+    "fullName": "matheusvtna/mergiraf4swift",
+    "stargazersCount": 0,
+    "updatedAt": "2025-12-16T03:19:18Z",
+    "url": "https://github.com/matheusvtna/mergiraf4swift"
+  }
+]

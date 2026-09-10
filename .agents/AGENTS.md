@@ -28,6 +28,7 @@ Tiny copy edits need only direct text/link verification.
 
 ## Git
 
+- **Copyright:** Commit only material permitted under applicable EU copyright law. Copying or adapting third-party code, tests, fixtures or documentation requires a verified license, permission or other valid legal basis, with all applicable conditions satisfied, including notices and source-disclosure obligations. Lawful references, independent implementations and compliant reuse are allowed; omit material whose legal basis remains unresolved.
 - Task owns Git authority under `.agents/rules/task/references/workflow.md`. Before nontrivial mutation, check only `git branch --show-current`; no proactive status or checkout hygiene. A skill or plan does not authorize publication. Never add, commit, push or create a PR without the active request granting it.
 - **PR scope:** Use the entire current checkout, including all modified and untracked files, unless the user explicitly narrows it. Do not create a worktree, isolate files or switch checkouts without authorization.
 - **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.

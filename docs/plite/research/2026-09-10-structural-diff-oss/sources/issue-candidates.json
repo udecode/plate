@@ -1,0 +1,71 @@
+[
+  {
+    "number": 439,
+    "state": "closed",
+    "title": "gen.treesitter-ng:4.0.0-beta6 does not work on Windows",
+    "url": "https://github.com/GumTreeDiff/gumtree/issues/439",
+    "discussionRead": false
+  },
+  {
+    "number": 354,
+    "state": "closed",
+    "title": "use treesitter parse ast failed",
+    "url": "https://github.com/GumTreeDiff/gumtree/issues/354",
+    "discussionRead": false
+  },
+  {
+    "number": 310,
+    "state": "closed",
+    "title": "Empty EditScript from non-empty diff",
+    "url": "https://github.com/GumTreeDiff/gumtree/issues/310",
+    "discussionRead": false
+  },
+  {
+    "number": 254,
+    "state": "open",
+    "title": "Patching an array using the objectHash",
+    "url": "https://github.com/benjamine/jsondiffpatch/issues/254",
+    "discussionRead": true
+  },
+  {
+    "number": 324,
+    "state": "open",
+    "title": "After configuring \"objectHash\", jsondiffpatch.formatters.html ShowUnchanged does not take effect",
+    "url": "https://github.com/benjamine/jsondiffpatch/issues/324",
+    "discussionRead": false
+  },
+  {
+    "number": 436,
+    "state": "open",
+    "title": "Diffing heavily nested array data with objectHash only works if there is a usable identifier",
+    "url": "https://github.com/benjamine/jsondiffpatch/issues/436",
+    "discussionRead": false
+  },
+  {
+    "number": 520,
+    "state": "open",
+    "title": "Support --color-moved",
+    "url": "https://github.com/Wilfred/difftastic/issues/520",
+    "discussionRead": false
+  },
+  {
+    "number": 508,
+    "state": "open",
+    "title": "Highlight moved, novel regions",
+    "url": "https://github.com/Wilfred/difftastic/issues/508",
+    "discussionRead": true
+  },
+  {
+    "number": 999,
+    "state": "open",
+    "title": "suboptimal handling for code moved into a new function",
+    "url": "https://github.com/Wilfred/difftastic/issues/999",
+    "discussionRead": false
+  },
+  {
+    "number": 82,
+    "url": "https://github.com/ASSERT-KTH/spork/issues/82",
+    "discussionRead": true,
+    "source": "linked from inspected code"
+  }
+]

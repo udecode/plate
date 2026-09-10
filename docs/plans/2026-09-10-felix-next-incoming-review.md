@@ -325,9 +325,9 @@ Publication checklist:
 - [x] Establish and checkpoint the included/excluded file and dependency boundary using independent source hashes.
 - [x] Pass the serialized root check and actual CI package/public-type/CLI gates on the final candidate.
 - [x] Verify generated registry/API output, the production website, full website types and the affected real browser journeys.
-- [ ] Verify the exact index candidate and unchanged tested source, then commit and push.
-- [ ] Read back the remote ref and actual CI state; restore and verify all excluded work and dependencies.
-- [ ] Reconcile the source-linked obligations, decision trail, plan and native goal.
+- [x] Verify the exact index candidate and unchanged tested source, then commit and push.
+- [x] Read back the remote ref and actual CI state; preserve and verify all excluded work and dependencies.
+- [x] Reconcile the source-linked obligations, decision trail, plan and native goal.
 
 Publication source obligations:
 Task owns actual Git authority, `pnpm check`, current-checkout proof and final
@@ -634,3 +634,5 @@ Final publication intake: the completed performance handoff closes the AI affect
 The user confirms the other task finished and explicitly requests fixing CI and pushing, with no messages to other tasks. Completed Comments and Tailwind changes have local completion records and are included with their generated output and dependency changes. Unfinished authored-change/structural-diff research and temporary release status remain excluded. A fresh root check precedes publication; remote CI remains the final gate.
 
 Publication checks: fresh `pnpm check` passes (`.audit/felix-next-push/check-publication-final.log`); final source-built exact-Chrome replay passes 20/20 with zero retries (`focus-publication-receipt.log`); Regression semantic completion, generated changelog consistency and exact workflow mirrors pass. Commit scope contains 101 completed paths. Twenty research/temporary paths and their index entries are preserved separately. Remote CI is still pending publication.
+
+Final remote closure: `ec1ce5bf509922176ad08995f29860e6d9ef8ee0` is published at `origin/next`. Main CI `34524496720`, Plite CI `34524496732` (all four Chromium shards and coverage), ReleaseOrVersionPR `34524496629`, and Vercel all report success on that exact commit. All 20 excluded working files and index entries matched immediately after this task committed. A later readback detects concurrent changes in the excluded structural-diff research; this task leaves those files untouched. No messages were sent to other tasks after the user prohibited them. This local closeout records results obtained after the published commit.
