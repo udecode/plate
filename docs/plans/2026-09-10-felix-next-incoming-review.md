@@ -423,8 +423,33 @@ is required, and emitted JavaScript remains identical. No runtime expression
 or public API changed; no rule was globally disabled.
 
 The corrected full local check passes typed lint, all 93 package typecheck
-tasks, 2,125 Bun tests and 516 Node tests with no failures. Remote follow-up
-state is recorded at final readback. All CI-repair inputs are fingerprinted in
-`.audit/felix-next-push/typed-lint-source-fix/candidate.json`. Publish only those
-five config/test/comment files and this plan; the resumed Tailwind and
-Comments work stays local.
+tasks, 2,125 Bun tests and 516 Node tests with no failures. Published follow-up
+`d785ce1022` clears all 163 previous remote typed-lint annotations. Its release
+job and Vercel deployment pass. Main CI rejects the local HTML exception as
+unused, while all four Chromium shards stop at test discovery because their
+fresh checkout lacks `plitejs/dist/index.js`. No browser behavior assertion
+ran in those failed shards.
+
+The final lint repair uses the rule's existing `typesToIgnore` option for the
+exact erased `EditorCoreStateView` type and removes the unstable inline
+directive. The rule remains enabled; TypeScript still checks the asserted
+contract. This avoids platform-dependent unused-directive failures without
+changing runtime expressions. The CI producer builds the canonical four
+runtime packages once and includes their dist outputs in its cache and shared
+artifact. Shards receive those outputs before discovering Node-side tests;
+the existing app and proof-manifest checks retain their own freshness rules.
+
+The focused strict typed-lint check and complete `pnpm check` pass: 93 package
+typecheck tasks, 2,125 Bun tests and 516 Node tests, with zero failures. All four
+canonical runtime package builds pass, and Playwright discovers all 752
+Chromium tests across 51 files. Workflow YAML parsing and idempotent scoped
+formatting pass. This test listing proves imports and discovery, not browser
+behavior; the live remote follow-up must still pass.
+
+Original failures, source fingerprints and new logs remain in
+`.audit/felix-next-push/typed-lint-source-fix/`. The final three source/config
+hashes are in `final-ci-setup-candidate.json`; full check output is in
+`check-stable-option.log`. Publish only this workflow, lint configuration,
+HTML comment removal and plan. The resumed Tailwind and Comments work stays
+local. The auxiliary strict lint-policy audit still reports the same existing
+findings outside these changes; its result is not counted as passing.

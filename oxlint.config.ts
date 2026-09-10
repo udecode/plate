@@ -518,6 +518,11 @@ export default defineConfig({
     },
   ],
   rules: {
+    // Value-type invariance requires this erasure; contextual assignability in tsgolint can incorrectly reject it.
+    'typescript/no-unnecessary-type-assertion': [
+      'error',
+      { typesToIgnore: ['EditorCoreStateView'] },
+    ],
     // P0: enforcing the rule can change behavior or hide correctness.
     // P1: the rule rejects a valid recurring pattern or compatibility boundary.
     // P2: the rule enforces syntax or naming without a safety benefit.

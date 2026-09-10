@@ -195,10 +195,16 @@ jobs:
         with:
           path: |
             apps/plite/out
+            packages/cli/dist
+            packages/platejs/dist
+            packages/plitejs/dist
             packages/test/dist
-          key: plite-browser-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: plite-browser-build-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
-            plite-browser-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            plite-browser-build-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Build packages for browser test discovery
+        run: pnpm plite:packages:build
 
       - name: Build browser package
         run: node apps/plite/scripts/build-browser-if-stale.mjs
@@ -212,6 +218,9 @@ jobs:
           name: plite-browser-build
           path: |
             apps/plite/out
+            packages/cli/dist
+            packages/platejs/dist
+            packages/plitejs/dist
             packages/test/dist
           include-hidden-files: true
           retention-days: 3
