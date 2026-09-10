@@ -323,7 +323,7 @@ Publication checklist:
 - [x] Read live remote checks and coordinate every active same-checkout product writer.
 - [x] Diagnose the remote release-helper and benchmark-page deployment failures, retaining exact logs.
 - [x] Establish and checkpoint the included/excluded file and dependency boundary using independent source hashes.
-- [ ] Pass the serialized root check and actual CI package/public-type/CLI gates on the final candidate.
+- [x] Pass the serialized root check and actual CI package/public-type/CLI gates on the final candidate.
 - [x] Verify generated registry/API output, the production website, full website types and the affected real browser journeys.
 - [ ] Verify the exact index candidate and unchanged tested source, then commit and push.
 - [ ] Read back the remote ref and actual CI state; restore and verify all excluded work and dependencies.
@@ -377,8 +377,8 @@ browser receipts reused below.
 | Affected www browser journeys | 65/65 pass: 13 cases repeated five times | `frozen-final-www-browser.log` in performance artifacts |
 | Native CodeMirror interaction | Viewing to Editing, typing and Undo pass; no errors | `frozen-native-codemirror.json` in performance artifacts |
 | CI package gates | Source types, package tests, runner/benchmark contracts, 48 benchmark targets and packed public types pass | `frozen-final-plite-strict.log` in performance artifacts |
-| Serialized root check | Running | `check-frozen-serialized.log` |
-| Explicit CLI tests | Pending | Performance task receipt pending |
+| Serialized root check | Exit 0: 2,125 Bun tests, 515 Node tests, no failures | `check-frozen-serialized.log` |
+| Explicit CLI tests | Exit 0: 86 tests, 263 assertions | `frozen-cli-test.log` in performance artifacts |
 | Full strict/matrix closure | Incomplete; not claimed by this push | Separate performance plan remains open |
 
 Verification qualifications:
@@ -390,3 +390,16 @@ no HTML parser edit or suppression is retained. The final HTML source is
 byte-identical to the frozen build input. The final root check runs only after
 package writers stop. An auxiliary lint-policy audit reported existing findings
 in unchanged files/config; no policy-audit green result is claimed.
+
+Publication interleaving:
+An external actor committed and pushed `b77cba1680bbf17d5ddbbf134a15b02766304831`
+(`v2`) during final checks. This thread did not create that commit. Its product
+source matches the frozen candidate, but it omitted the required untracked
+Tailwind patch and README. Its CI and release jobs fail at dependency install
+with the missing patch path; the exact logs are retained. It also committed the
+active planning documents and later workflow guide, so those files can no
+longer be described as excluded from that external commit. This thread leaves
+that published history intact and adds the exact patch bytes used by the green
+local checks. The generated release-status working change remains unstaged.
+The Tailwind implementation and three Comments example source files remain
+checkpointed for immediate restoration after the patch follow-up.
