@@ -346,7 +346,7 @@ export type SchemaElementInput = Readonly<{
   readOnly?: boolean;
   selectable?: boolean;
   slice?: SchemaElementSlicePolicy;
-  void?: 'block' | 'editable-island' | 'inline' | 'markable-inline';
+  void?: 'block' | 'inline' | 'markable-inline';
 }>;
 
 export type SchemaElement<
@@ -378,7 +378,6 @@ export type EditorSchemaContentRoot = Readonly<{
 export type EditorSchemaElement = Readonly<{
   behavior: Readonly<{
     atom: boolean;
-    editableIsland: boolean;
     inline: boolean;
     isolating: boolean;
     keyboardSelectable: boolean;
@@ -671,8 +670,8 @@ export type EditorSchemaExtension<
 }>;
 
 type SchemaDefinitionOf<TSchema extends EditorSchemaSource> =
-  TSchema extends EditorSchemaSourceProvider<infer TDeclaration>
-    ? TDeclaration
+  TSchema extends EditorSchemaSourceProvider<infer TDeclarationFactory>
+    ? ReturnType<TDeclarationFactory>
     : TSchema extends { schema: infer TSchemaDeclaration }
       ? TSchemaDeclaration extends (...args: any[]) => infer TDeclaration
         ? Extract<TDeclaration, EditorSchemaDeclaration>
@@ -1651,20 +1650,21 @@ export type SchemaDescendantInValue<V extends readonly unknown[]> =
       : never;
 
 /**
- * Type-only schema forwarding for extension slots.
+ * Deferred type-only schema forwarding for extension slots.
  *
  * @internal
  */
 export interface EditorSchemaExtensionProvider<
-  TSchema extends EditorSchemaExtension = EditorSchemaExtension,
+  TSchemaFactory extends () => EditorSchemaExtension =
+    () => EditorSchemaExtension,
 > {
-  readonly '~schema.extensions': TSchema;
+  readonly '~schema.extensions': TSchemaFactory;
 }
 
 type SchemaDeclarationOf<TInput> = TInput extends readonly unknown[]
   ? SchemaDeclarationOf<TInput[number]>
-  : TInput extends EditorSchemaExtensionProvider<infer TSchema>
-    ? TSchema['schema']
+  : TInput extends EditorSchemaExtensionProvider<infer TSchemaFactory>
+    ? ReturnType<TSchemaFactory>['schema']
     : TInput extends { schema: infer TSchema }
       ? TSchema extends (...args: any[]) => infer TResult
         ? TResult extends EditorSchemaDeclaration

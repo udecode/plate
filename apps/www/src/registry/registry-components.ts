@@ -64,7 +64,7 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['ai@6'],
+    dependencies: ['@ai-sdk/gateway@3', 'ai@6'],
     files: [
       {
         path: 'app/api/ai/copilot/route.ts',
@@ -115,7 +115,7 @@ export const registryComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react@3', '@faker-js/faker', 'platejs', 'ai@6'],
+    dependencies: ['@ai-sdk/react@3', 'platejs', 'ai@6'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
@@ -123,7 +123,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'use-chat',
-    registryDependencies: ['@plate/discussion'],
+    registryDependencies: ['@plate/comment'],
     type: 'registry:component',
   },
   {

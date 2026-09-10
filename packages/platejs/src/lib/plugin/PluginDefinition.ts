@@ -8,6 +8,7 @@ import type {
   EditorExtensionDefinition,
   EditorExtensionReference,
   EditorReadMethodTree,
+  EditorUpdatePolicy,
   Editor as PliteEditor,
   Element,
   Path,
@@ -59,8 +60,7 @@ export type BasePluginDefinition = Readonly<{
   conflicts?: ReadonlyArray<EditorExtensionReference | PluginReference>;
   contributions?: true;
   corrections?: true;
-  /** Exact transient payload merged into leaves by this plugin's decorator. */
-  decorate?: object;
+  decorate?: true;
   dependencies?: ReadonlyArray<EditorExtensionReference | PluginReference>;
   editOnly?: true;
   effectTypes?: true;
@@ -83,7 +83,6 @@ export type BasePluginDefinition = Readonly<{
   targetPlugins?: ReadonlyArray<PluginReference | string>;
   prepareDocument?: true;
   update?: object;
-  useHooks?: true;
   validate?: true;
 }>;
 
@@ -215,7 +214,9 @@ export type BaseInjectProps = {
 
 export type PluginBase<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = EditorSchemaSourceProvider<InferPluginSchemaContribution<C>> & {
+> = EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>> & {
+  /** Component or intrinsic HTML tag rendered for this plugin's schema node. */
+  component?: NodeComponent;
   /** Unique name for this plugin. */
   name: C['name'];
   /** Plugins that must be installed before this plugin. */
@@ -240,44 +241,18 @@ export type PluginBase<
   /** Plugins targeted by this plugin's schema and render behavior. */
   readonly targetPlugins: InferTargetPlugins<C>;
   render: Nullable<{
-    /**
-     * Renders a component above the `Editable` component but within the `Plite`
-     * wrapper. Useful for adding UI elements that should appear above the
-     * editable area.
-     */
-    aboveEditable?: NodeComponent<{ children: any }>;
-    /**
-     * Renders a component above the `Plite` wrapper. This is the outermost
-     * render position in the editor structure.
-     */
-    abovePlite?: NodeComponent<{ children: any }>;
-    /**
-     * Specifies the HTML tag name to use when rendering the node component.
-     * Only used when the resolved plugin has no custom node component.
-     *
-     * @default 'div' for elements, 'span' for leaves
-     */
-    as?: keyof HTMLElementTagNameMap;
-    /**
-     * Renders a component below marked leaves when `schema.mark` is declared and
-     * `isDecoration: false`. The plugin's root `component` renders decoration
-     * leaves when `isDecoration: true`.
-     */
-    leaf?: NodeComponent;
-    /**
-     * Internal resolved slot for the plugin's root `component`.
-     *
-     * Renders a component for:
-     *
-     * - Element nodes when `schema.element` is declared
-     * - Below text nodes when `schema.mark` and `isDecoration: false`
-     * - Below leaves when `schema.mark` and `isDecoration: true`
-     *
-     * @internal
-     */
-    node?: NodeComponent;
-    /** Render marked values as leaves by default, or once per text node. */
-    isDecoration?: boolean;
+    mark?: Readonly<{
+      /** Optional secondary leaf renderer when the primary component is placed around text. */
+      leafComponent?: NodeComponent;
+      /** Render the primary component around each leaf or once around the text node. */
+      placement?: 'leaf' | 'text';
+    }>;
+  }>;
+  slots: Nullable<{
+    /** Wraps the Editable content and its lifecycle effects. */
+    wrapContent?: NodeComponent<{ children: any }>;
+    /** Wraps the complete Plite root for the mounted Plate view. */
+    wrapRoot?: NodeComponent<{ children: any }>;
   }>;
   rules: {
     /**
@@ -514,7 +489,8 @@ type PluginRuntimeContext<
   /** Capability identity and API/update namespace. */
   name: C['name'];
   /** One-shot updates owned by the current plugin, without its name namespace. */
-  update: InferOwnUpdate<C>;
+  update: InferOwnUpdate<C> &
+    ((policy: EditorUpdatePolicy) => InferOwnUpdate<C>);
   /** State-bound reads owned by the current plugin. */
   read: InferOwnRead<C>;
   /** Mutable editor-local state and pure named selectors owned by this plugin. */
@@ -647,6 +623,12 @@ export type EditOnlyConfig = {
    * @default true (when `editOnly` is an object or `true` boolean)
    */
   render?: boolean;
+  /**
+   * If true, structural slots are only active when the editor is not read-only.
+   *
+   * @default true (when `editOnly` is an object or `true` boolean)
+   */
+  slots?: boolean;
 };
 
 export type GetInjectNodePropsOptions = {
@@ -683,13 +665,6 @@ export type InferRead<P> = P extends {
 
 export type InferUpdate<P> = P extends { update: infer U extends object }
   ? U
-  : {};
-
-/** Transient leaf fields produced by one plugin's decorator. */
-export type InferPluginDecoration<P> = P extends {
-  decorate: infer TDecoration extends object;
-}
-  ? TDecoration
   : {};
 
 export type InferEnabled<P> = P extends { enabled?: infer E }
@@ -895,9 +870,8 @@ export type InferOwnUpdate<P extends AnyBasePluginDefinition> = InferUpdate<P>;
  */
 export type NodeComponent<T = any> =
   | ((props: T) => any)
-  | (new (props: T) => any);
-
-export type NodeComponents = Record<string, NodeComponent>;
+  | (new (props: T) => any)
+  | keyof HTMLElementTagNameMap;
 
 type CodecDataSource = Readonly<{
   files: Readonly<{

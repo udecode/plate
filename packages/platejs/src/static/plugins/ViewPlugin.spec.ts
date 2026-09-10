@@ -1,6 +1,6 @@
 import type { Descendant } from '../../core';
 import { createStaticEditor } from '../editor/withStatic';
-import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
+import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment.internal';
 import { ViewPlugin } from './ViewPlugin';
 
 describe('ViewPlugin', () => {

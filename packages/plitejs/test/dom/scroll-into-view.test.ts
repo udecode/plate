@@ -15,6 +15,7 @@ mock.module('scroll-into-view-if-needed', () => ({
 }));
 
 const {
+  createDOMPhaseScheduler,
   DOMEditor,
   EDITOR_TO_DOM_SCROLL,
   EDITOR_TO_ELEMENT,
@@ -118,6 +119,78 @@ test('scrollIntoView accepts a native DOM range target', () => {
     scrollMode: 'if-needed',
   });
   expect(leafElement.getBoundingClientRect()).toBe(leafRect);
+});
+
+test.each([
+  ['ordinary scrolling', 'if-needed', 0],
+  ['navigation before selection settles', 'always', 0],
+  ['navigation after selection settles', 'always', 1],
+] as const)(
+  'cancels %s before it moves the viewport',
+  (_name, scrollMode, frames) => {
+    const root = document.createElement('div');
+    const editor = {} as DOMEditorType;
+    const scheduler = createDOMPhaseScheduler({ getWindow: () => null });
+    const { domRange } = createDOMRange();
+
+    DOMEditor.resolveDOMRange = mock(() => domRange);
+    EDITOR_TO_ELEMENT.set(editor, root);
+    const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+
+    try {
+      const cancel = DOMEditor.scrollIntoView(
+        editor,
+        { offset: 0, path: [0, 0] },
+        { scrollMode }
+      );
+      for (let frame = 0; frame < frames; frame++) scheduler.flush();
+      expect(scrollIntoViewIfNeeded).not.toHaveBeenCalled();
+
+      cancel();
+      cancel();
+      scheduler.flush();
+      scheduler.flush();
+
+      expect(scrollIntoViewIfNeeded).not.toHaveBeenCalled();
+      expect(scheduler.pending()).toBe(0);
+    } finally {
+      scheduler.destroy();
+      uninstall();
+      EDITOR_TO_ELEMENT.delete(editor);
+    }
+  }
+);
+
+test('an old scroll cleanup leaves the newer target scheduled', () => {
+  const root = document.createElement('div');
+  const editor = {} as DOMEditorType;
+  const scheduler = createDOMPhaseScheduler({ getWindow: () => null });
+  const { domRange } = createDOMRange();
+  const latestPoint: Point = { offset: 4, path: [0, 0] };
+
+  DOMEditor.resolveDOMRange = mock(() => domRange);
+  EDITOR_TO_ELEMENT.set(editor, root);
+  const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+
+  try {
+    const cancelOld = DOMEditor.scrollIntoView(editor, {
+      offset: 0,
+      path: [0, 0],
+    });
+    DOMEditor.scrollIntoView(editor, latestPoint);
+    cancelOld();
+    scheduler.flush();
+
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledTimes(1);
+    expect(DOMEditor.resolveDOMRange).toHaveBeenCalledWith(editor, {
+      anchor: latestPoint,
+      focus: latestPoint,
+    });
+  } finally {
+    scheduler.destroy();
+    uninstall();
+    EDITOR_TO_ELEMENT.delete(editor);
+  }
 });
 
 test('scrollIntoView returns early when the target cannot be mounted', () => {

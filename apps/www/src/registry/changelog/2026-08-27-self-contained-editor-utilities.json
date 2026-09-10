@@ -54,7 +54,6 @@
     {
       "name": "select-editor",
       "files": [
-        "apps/www/src/registry/components/editor/select-command-score.ts",
         "apps/www/src/registry/components/editor/select-command.tsx",
         "apps/www/src/registry/components/editor/select-editor.tsx"
       ],
@@ -63,9 +62,15 @@
     },
     {
       "name": "use-on-click-outside",
-      "files": ["apps/www/src/registry/hooks/use-on-click-outside.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for use-on-click-outside."
+        }
+      ]
     }
   ],
   "entries": [

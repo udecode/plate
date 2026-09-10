@@ -1,0 +1,8 @@
+kind	count	decision	notes
+desktop-only	207	kept-scoped	Desktop proof rows stay scoped because raw mobile/device proof is explicitly deferred.
+chromium-only	93	kept-scoped	Mostly CDP, reporter, clipboard, perf, huge-document, and experimental pagination proof lanes.
+mobile-only	2	kept-scoped	Viewport/mobile-touch rows are scoped and do not claim raw-device mobile proof.
+not-firefox	3	kept-scoped	Native Firefox behavior differs for these rows; adjacent cross-browser rows cover executable proof where available.
+webkit-only	2	kept-scoped	WebKit compositionend-specific rows are intentionally WebKit-only.
+other	11	kept-scoped	Named WebKit/Firefox clipboard, focus, event-routing, macOS, and native-partial-replacement limits.
+unconditional	1	kept-after-proof	Runtime fallback branch in inline word-Backspace parity row; focused desktop command passed 3/3, so no fake coverage.

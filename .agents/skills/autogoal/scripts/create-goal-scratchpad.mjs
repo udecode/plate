@@ -4,7 +4,6 @@ import { existsSync } from 'node:fs';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { initProjectTemplates } from './init-templates.mjs';
 
 const ALLOWED_FLAGS = new Set([
   'date',
@@ -21,12 +20,6 @@ const ALLOWED_FLAGS = new Set([
 const LIST_FLAGS = new Set(['with']);
 const NEWLINE_PATTERN = /\r?\n/;
 const LEADING_NEWLINES_PATTERN = /^\n+/;
-const PACK_SECTION_NAMES = [
-  'Start Gates',
-  'Work Checklist',
-  'Completion Gates',
-];
-const PRIMARY_TEMPLATE_SECTION_PATTERN = /^Primary template:\s*$/m;
 const TABLE_GATE_HEADER_PATTERN = /^gate$/i;
 const SECTION_START_PATTERN = /^[A-Z][A-Za-z /-]+:\s*$/;
 const HEADING_PATTERN = /^#{1,6}\s+\S/;
@@ -44,7 +37,6 @@ if (args.help) {
 
 if (args.title) {
   const root = findRepoRoot(process.cwd());
-  await initProjectTemplates(root, { silent: true });
   const templatePath = resolveTemplatePath(root, args.template);
   const packs = resolvePackPaths(root, args.with ?? []);
   const date = args.date ?? localDateString();
@@ -382,8 +374,14 @@ function resolvePackPaths(root, packNames) {
 }
 
 function insertCompositionMetadata(content, { packs, root, templatePath }) {
-  if (PRIMARY_TEMPLATE_SECTION_PATTERN.test(content)) {
-    return content;
+  for (const name of ['Primary template', 'Applied packs']) {
+    let section = findSectionRange(content, name);
+    while (section) {
+      const lines = content.split(NEWLINE_PATTERN);
+      lines.splice(section.start, section.end - section.start);
+      content = lines.join('\n');
+      section = findSectionRange(content, name);
+    }
   }
 
   const primaryTemplate = path.relative(root, templatePath);
@@ -405,10 +403,25 @@ ${appliedPacks}`;
 function mergePackSections(content, packs) {
   let merged = content;
 
-  for (const sectionName of PACK_SECTION_NAMES) {
-    const entries = packs.flatMap((pack) =>
-      getPackEntries(pack.content, sectionName)
-    );
+  for (const sectionName of ['Start Gates', 'Work Checklist', 'Completion Gates']) {
+    let needsTableHeader =
+      sectionName !== 'Work Checklist' &&
+      !getSectionBlock(merged, sectionName)
+        .split(NEWLINE_PATTERN)
+        .some((line) => isTableHeaderRow(getTableCells(line)));
+    const entries = [];
+
+    for (const pack of packs) {
+      const packEntries = getPackEntries(
+        pack.content,
+        sectionName,
+        needsTableHeader
+      );
+      entries.push(...packEntries);
+      if (packEntries.some((line) => isTableHeaderRow(getTableCells(line)))) {
+        needsTableHeader = false;
+      }
+    }
 
     if (entries.length > 0) {
       merged = appendSectionEntries(merged, sectionName, entries);
@@ -418,7 +431,7 @@ function mergePackSections(content, packs) {
   return merged;
 }
 
-function getPackEntries(packContent, sectionName) {
+function getPackEntries(packContent, sectionName, includeTableHeader = false) {
   const block = getSectionBlock(packContent, sectionName);
 
   if (!block) {
@@ -440,8 +453,8 @@ function getPackEntries(packContent, sectionName) {
 
     return (
       cells.length > 0 &&
-      !isTableSeparatorRow(cells) &&
-      !isTableHeaderRow(cells)
+      (includeTableHeader ||
+        (!isTableSeparatorRow(cells) && !isTableHeaderRow(cells)))
     );
   });
 }
@@ -607,8 +620,8 @@ threshold, verification, constraints, boundaries, or blocked condition through
 the CLI. After creation, edit the generated docs/plans file and fill the
 template fields there.
 
-Before creating a plan, missing generic templates are initialized under
-docs/plans/templates/. Use --template task to resolve project templates first,
+Template lookup does not initialize or overwrite project templates.
+Use --template task to resolve project templates first,
 then built-in templates under .agents/skills/autogoal/assets/templates/.
 Use --with docs --with browser to materialize pack rows from project packs
 first, then built-in packs. Runtime goal plans live under docs/plans/.`);

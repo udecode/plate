@@ -5,7 +5,7 @@ import { jsx } from '../..';
 jsx;
 
 export const run = (editor) => {
-  editor.selection.clear();
+  editor.selection.set(null);
 };
 export const input = (
   <editor>

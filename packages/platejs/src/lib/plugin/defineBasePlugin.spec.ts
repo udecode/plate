@@ -1,8 +1,4 @@
-import {
-  defineExtension,
-  property,
-  getInstalledEditorExtension,
-} from '../../core';
+import { defineExtension, property } from '../../core';
 import { createEditor } from '../editor';
 import { defineBasePlugin } from './defineBasePlugin';
 
@@ -92,7 +88,6 @@ describe('defineBasePlugin', () => {
       plugins: [NativePlugin],
       initialValue: value,
     });
-    const installed = getInstalledEditorExtension(editor, 'native')!;
     const ForeignNativeExtension = defineExtension('native', {});
 
     expect(Object.isFrozen(NativeExtension)).toBe(true);
@@ -100,9 +95,6 @@ describe('defineBasePlugin', () => {
     expect(editor.api.native).toBe(editor.extension(NativePlugin).api);
     expect(editor.api.native).toBe(
       Reflect.apply(editor.extension, editor, [NativeExtension]).api
-    );
-    expect(editor.api.native).toBe(
-      Reflect.apply(editor.extension, editor, [installed]).api
     );
     expect(editor.api.native.name()).toBe('native');
     expect(editor.read.native.childCount()).toBe(1);
@@ -232,9 +224,16 @@ describe('defineBasePlugin', () => {
     const Plugin = defineBasePlugin('baseComponent', {
       component: Component,
     });
+    const IntrinsicPlugin = defineBasePlugin('intrinsicComponent', {
+      component: 'h2',
+    });
     const editor = createEditor({ plugins: [Plugin] });
 
-    expect(editor.plugin(Plugin).render.node).toBe(Component);
+    expect(editor.plugin(Plugin).component).toBe(Component);
+    expect(
+      createEditor({ plugins: [IntrinsicPlugin] }).plugin(IntrinsicPlugin)
+        .component
+    ).toBe('h2');
 
     expect(() =>
       Reflect.apply(Plugin.extend, undefined, [
@@ -244,19 +243,6 @@ describe('defineBasePlugin', () => {
       ])
     ).toThrow(
       'declare the default in the constructor or replace it through terminal .configure({ component })'
-    );
-    expect(() =>
-      Reflect.apply(defineBasePlugin, undefined, [
-        'invalidRenderNode',
-        {
-          render: {
-            // @plate-schema-adoption-negative-render-node
-            node: () => null,
-          },
-        },
-      ])
-    ).toThrow(
-      'Use top-level `component` in defineBasePlugin/definePlatePlugin'
     );
   });
 
@@ -276,7 +262,7 @@ describe('defineBasePlugin', () => {
     });
     const resolved = editor.plugin(Plugin);
 
-    expect(Reflect.get(resolved.render, 'node')).toBe(Replacement);
+    expect(resolved.component).toBe(Replacement);
     expect(resolved.initialState).toEqual({ value: 2 });
   });
 

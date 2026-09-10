@@ -78,4 +78,6 @@ Advanced library code can install descriptor-based read middleware and grouped t
 
 Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live editor, prefer `editor.read.<group>.<method>()` for one-shot reads, grouped `state.*` reads for custom read logic, `editor.update.<group>.<method>()` for one-shot writes, and grouped `tx.*` writes for composed commands. Extension `read` factories return callable method trees built once per configuration; methods read live state when invoked.
 
-DOM, React, history, hyperscript, layout, diff, and testing APIs live on explicit `plitejs/*` subpaths. There is no public `/internal` entrypoint.
+DOM, React, annotations, history, hyperscript, layout, diff, and testing APIs live on explicit `plitejs/*` subpaths. There is no public `/internal` entrypoint.
+
+React components create annotation stores with `usePliteAnnotationStore` from `plitejs/react`. Framework adapters with an independent lifetime use `createPliteAnnotationStore` from `plitejs/annotations`; the React root does not export the imperative constructor.

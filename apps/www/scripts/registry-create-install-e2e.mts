@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import http from 'node:http';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +13,29 @@ const repoRoot = path.resolve(appRoot, '../..');
 const shadcnOrigin = 'https://ui.shadcn.com';
 const shadcnBin = path.join(appRoot, 'node_modules/.bin/shadcn');
 const pnpmEntrypoint = process.env.npm_execpath;
+const supportedItems = [
+  'editor-basic',
+  'ai',
+  'dnd',
+  'table',
+  'editor-ai',
+] as const;
+const requestedItems = process.argv.slice(2);
+
+if (requestedItems.includes('--help')) {
+  console.info(
+    'Usage: pnpm --filter www test:create-install [editor-basic|ai|dnd|table|editor-ai ...]'
+  );
+  process.exit(0);
+}
+const items = requestedItems.length
+  ? [...new Set(requestedItems)]
+  : ['editor-basic'];
+for (const item of items) {
+  if (!supportedItems.some((supported) => supported === item)) {
+    throw new Error(`Unsupported registry proof item: ${item}`);
+  }
+}
 
 if (!pnpmEntrypoint) {
   throw new Error('Run this gate through pnpm so it can resolve pnpm itself.');
@@ -64,10 +88,26 @@ async function copyPackages(sourceRoot: string, targetRoot: string) {
     const target = path.join(targetRoot, entry.name);
     const packageJson = JSON.parse(
       await fs.readFile(packageJsonPath, 'utf-8')
-    ) as { files?: string[] };
+    ) as {
+      dependencies?: Record<string, string>;
+      dependenciesMeta?: Record<string, { injected?: boolean }>;
+      files?: string[];
+    };
+
+    for (const [dependency, version] of Object.entries(
+      packageJson.dependencies ?? {}
+    )) {
+      if (version.startsWith('workspace:')) {
+        packageJson.dependenciesMeta ??= {};
+        packageJson.dependenciesMeta[dependency] = { injected: true };
+      }
+    }
 
     await fs.mkdir(target, { recursive: true });
-    await fs.copyFile(packageJsonPath, path.join(target, 'package.json'));
+    await fs.writeFile(
+      path.join(target, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
 
     try {
       await fs.cp(path.join(source, 'dist'), path.join(target, 'dist'), {
@@ -215,21 +255,34 @@ if (!address || typeof address === 'string') {
 }
 
 const registryUrl = `http://127.0.0.1:${address.port}/r`;
-const cases = [
+const styles = [
   { base: 'base', code: 'b0', style: 'nova' },
   { base: 'radix', code: 'b1VlIttI', style: 'luma' },
 ] as const;
+const cases = items.flatMap((item) =>
+  styles.map((style) => ({ ...style, item }))
+);
 
 try {
   for (const testCase of cases) {
-    const name = `plate-${testCase.base}-${testCase.style}`;
+    const name = `plate-${testCase.item}-${testCase.base}-${testCase.style}`;
     const start = plateRequests.length;
+    const environment = {
+      CI: '1',
+      PATH: `${binRoot}:${process.env.PATH}`,
+      REGISTRY_URL: registryUrl,
+      npm_config_link_workspace_packages: 'true',
+      npm_config_prefer_workspace_packages: 'true',
+      npm_config_user_agent: 'pnpm/10.18.3',
+    };
 
     await run(
       shadcnBin,
       [
         'create',
-        '@plate/editor-basic',
+        testCase.item === 'editor-ai'
+          ? '@plate/editor-ai'
+          : '@plate/editor-basic',
         '--preset',
         testCase.code,
         '--base',
@@ -244,18 +297,92 @@ try {
         projectsRoot,
       ],
       projectsRoot,
-      {
-        CI: '1',
-        PATH: `${binRoot}:${process.env.PATH}`,
-        REGISTRY_URL: registryUrl,
-        npm_config_link_workspace_packages: 'true',
-        npm_config_prefer_workspace_packages: 'true',
-        npm_config_user_agent: 'pnpm/10.18.3',
-      }
+      environment
     );
 
     const project = path.join(projectsRoot, name);
-    const expectedPath = `/r/${testCase.base}-${testCase.style}/editor-basic.json`;
+    if (
+      testCase.item === 'ai' ||
+      testCase.item === 'dnd' ||
+      testCase.item === 'table'
+    ) {
+      await run(
+        shadcnBin,
+        [
+          'add',
+          `@plate/${testCase.item}`,
+          ...(testCase.item === 'table' ? ['@plate/dnd'] : []),
+          '--yes',
+          '--overwrite',
+          '--cwd',
+          project,
+        ],
+        project,
+        environment
+      );
+      const appDirectory = await Promise.any(
+        ['app', 'src/app'].map(async (directory) => {
+          const candidate = path.join(project, directory);
+          await fs.access(candidate);
+          return candidate;
+        })
+      );
+      const kit =
+        testCase.item === 'ai'
+          ? 'AIKit'
+          : testCase.item === 'table'
+            ? 'TableKit'
+            : 'DndKit';
+      const initialValue =
+        testCase.item === 'table'
+          ? [
+              {
+                type: 'table',
+                columnWidths: [120, 180],
+                children: ['First', 'Second'].map((row) => ({
+                  type: 'tableRow',
+                  children: ['left', 'right'].map((column) => ({
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [{ text: `${row} ${column}` }],
+                      },
+                    ],
+                  })),
+                })),
+              },
+            ]
+          : [
+              { type: 'paragraph', children: [{ text: 'First block' }] },
+              { type: 'paragraph', children: [{ text: 'Second block' }] },
+            ];
+      const proofDirectory = path.join(appDirectory, 'kit-proof');
+      await fs.mkdir(proofDirectory, { recursive: true });
+      await fs.writeFile(
+        path.join(proofDirectory, 'page.tsx'),
+        `'use client';
+
+import { Plate, useCreateEditor } from 'platejs/react';
+import { ${kit} } from '@/components/editor/${testCase.item}';
+${testCase.item === 'table' ? "import { DndKit } from '@/components/editor/dnd';\n" : ''}
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+export default function KitProof() {
+  const editor = useCreateEditor({
+    plugins: ${testCase.item === 'table' ? '[...TableKit, ...DndKit]' : kit},
+    initialValue: ${JSON.stringify(initialValue)},
+  });
+  return (
+    <Plate editor={editor}>
+      <EditorContainer><Editor /></EditorContainer>
+    </Plate>
+  );
+}
+`
+      );
+    }
+    const expectedPath = `/r/${testCase.base}-${testCase.style}/${testCase.item}.json`;
     const requests = plateRequests.slice(start);
 
     if (!requests.includes(expectedPath)) {
@@ -279,13 +406,43 @@ try {
     );
     const packageJson = JSON.parse(
       await fs.readFile(path.join(project, 'package.json'), 'utf-8')
-    ) as { dependencies?: Record<string, string> };
+    ) as {
+      dependencies?: Record<string, string>;
+      dependenciesMeta?: Record<string, { injected?: boolean }>;
+    };
     const plateDependency = packageJson.dependencies?.platejs;
 
     if (!plateDependency?.startsWith('workspace:')) {
       throw new Error(
         `${name} did not install the local platejs artifact: ${plateDependency}`
       );
+    }
+
+    packageJson.dependenciesMeta = {
+      ...packageJson.dependenciesMeta,
+      platejs: { injected: true },
+    };
+    await fs.writeFile(
+      path.join(project, 'package.json'),
+      JSON.stringify(packageJson, null, 2)
+    );
+    await run(process.execPath, [pnpmEntrypoint, 'install'], project);
+
+    const consumerRequire = createRequire(path.join(project, 'package.json'));
+    const plateRequire = createRequire(
+      consumerRequire.resolve('platejs/package.json')
+    );
+    const peerModules = ['react', 'react-dom'];
+    if (packageJson.dependencies?.['react-dnd']) peerModules.push('react-dnd');
+
+    for (const peer of peerModules) {
+      const consumerPath = await fs.realpath(consumerRequire.resolve(peer));
+      const platePath = await fs.realpath(plateRequire.resolve(peer));
+      if (consumerPath !== platePath) {
+        throw new Error(
+          `${name} resolved separate ${peer} modules: ${consumerPath} and ${platePath}`
+        );
+      }
     }
 
     await run(
@@ -301,7 +458,15 @@ try {
     console.info(
       JSON.stringify({
         editorPath,
+        item: testCase.item,
+        kitProofRoute:
+          testCase.item === 'ai' ||
+          testCase.item === 'dnd' ||
+          testCase.item === 'table'
+            ? '/kit-proof'
+            : null,
         name,
+        peerModules,
         plateDependency,
         requests: requests.length,
       })

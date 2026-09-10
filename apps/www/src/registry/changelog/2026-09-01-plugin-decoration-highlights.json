@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-01-plugin-decoration-highlights",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-01-plugin-decoration-highlights.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Render editor highlights through plugin decorations",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "preview-markdown-demo",
+      "files": [
+        "apps/www/src/registry/examples/preview-markdown-demo.tsx",
+        "apps/www/src/registry/examples/values/preview-md-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-01-find-render-editor-highlights-through-5e51d04b",
+      "kind": "wiring",
+      "summary": "Render editor highlights through plugin decorations.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "find",
+        "code-block",
+        "remote-cursor-overlay",
+        "preview-markdown-demo",
+        "collaboration-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-01",
+          "entry": "2026-09-01-plugin-decoration-highlights",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

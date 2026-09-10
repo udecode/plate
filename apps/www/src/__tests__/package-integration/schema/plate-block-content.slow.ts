@@ -1,7 +1,6 @@
 import {
   BaseBlockquotePlugin,
   BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
   createEditor,
   ElementApi,
 } from 'platejs';
@@ -16,7 +15,6 @@ import {
 const structuralPlugins = [
   BaseTableRowPlugin,
   BaseTableCellPlugin,
-  BaseCodeLinePlugin,
   BaseColumnItemPlugin,
 ] as const;
 

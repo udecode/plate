@@ -1,0 +1,3 @@
+surface	result	decision	notes
+README/docs/package READMEs	no hits	kept-clean	No stale compatibility, migration, alias, beta, or changelog-style language found.
+package source	one internal contract-name hit	kept-scoped	`compat-alias-hard-cut-contract` is internal release-proof contract naming, not public API docs.

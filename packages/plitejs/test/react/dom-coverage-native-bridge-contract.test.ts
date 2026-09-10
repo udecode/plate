@@ -1,4 +1,6 @@
 import {
+  type Value,
+  type TextSelection,
   defineEditorSchema,
   type Descendant,
   type Range,
@@ -7,10 +9,10 @@ import {
 import type { ClipboardEvent, DragEvent } from 'react';
 
 import {
-  DOMCoverage,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  IS_FOCUSED,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
 import {
@@ -28,6 +30,7 @@ import {
   applyEditableDrop,
   applyEditablePaste,
 } from '../../src/react/editable/clipboard-input-strategy';
+import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -98,6 +101,16 @@ const getNodeKey = (editor: ReactRuntimeEditor, path: number[]) => {
   return nodeKey;
 };
 
+const testRuntimes = new WeakMap<ReactRuntimeEditor, EditableDOMRuntime>();
+const getTestRuntime = (editor: ReactRuntimeEditor) => {
+  let runtime = testRuntimes.get(editor);
+  if (!runtime) {
+    runtime = new EditableDOMRuntime({ editor });
+    testRuntimes.set(editor, runtime);
+  }
+  return runtime;
+};
+
 const mountEditorRoot = (editor: ReactRuntimeEditor) => {
   const root = document.createElement('div');
 
@@ -109,6 +122,9 @@ const mountEditorRoot = (editor: ReactRuntimeEditor) => {
   });
   document.body.append(root);
 
+  const runtime = getTestRuntime(editor);
+  runtime.setRoot(root);
+  runtime.connect();
   EDITOR_TO_ELEMENT.set(editor, root);
   EDITOR_TO_WINDOW.set(editor, window);
   ELEMENT_TO_NODE.set(root, editor);
@@ -145,7 +161,7 @@ const decodeFragmentPayload = (payload: string) =>
   JSON.parse(decodeURIComponent(window.atob(payload)));
 
 const createHiddenSelectionEditor = () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
 
   editorReplace(editor, {
     children: createChildren(),
@@ -156,14 +172,13 @@ const createHiddenSelectionEditor = () => {
     },
   });
 
-  DOMCoverage.registerBoundary(editor, {
+  getTestRuntime(editor).domCoverage.registerBoundary({
     anchor: { nodeKey: getNodeKey(editor, [0, 0]), type: 'summary-slot' },
     boundaryId: 'section-body',
     copyPolicy: 'model',
-    coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
+    coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
     coveredRuntimeRanges: [
       {
-        kind: 'text',
         anchor: getNodeKey(editor, [0, 1]),
         focus: getNodeKey(editor, [0, 1]),
       },
@@ -181,7 +196,7 @@ const createHiddenSelectionEditor = () => {
 };
 
 const createStagedSelectionEditor = () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
 
   editorReplace(editor, {
     children: [
@@ -201,14 +216,13 @@ const createStagedSelectionEditor = () => {
     },
   });
 
-  DOMCoverage.registerBoundary(editor, {
+  getTestRuntime(editor).domCoverage.registerBoundary({
     anchor: { nodeKey: getNodeKey(editor, [1]), type: 'placeholder' },
     boundaryId: 'rendering-staged:pending',
     copyPolicy: 'materialize',
-    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [
       {
-        kind: 'text',
         anchor: getNodeKey(editor, [1]),
         focus: getNodeKey(editor, [1]),
       },
@@ -226,7 +240,7 @@ const createStagedSelectionEditor = () => {
 };
 
 const cleanupEditorRoot = (editor: ReactRuntimeEditor, root: HTMLElement) => {
-  DOMCoverage.clear(editor);
+  getTestRuntime(editor).destroy();
   EDITOR_TO_ELEMENT.delete(editor);
   EDITOR_TO_WINDOW.delete(editor);
   ELEMENT_TO_NODE.delete(root);
@@ -241,16 +255,16 @@ const createClipboardEvent = (
   ({
     clipboardData,
     nativeEvent: { clipboardData },
-    preventDefault: jest.fn(),
-    stopPropagation: jest.fn(),
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
     target,
   }) as unknown as ClipboardEvent<HTMLDivElement>;
 
 const createDragEvent = (target: EventTarget, dataTransfer: FakeDataTransfer) =>
   ({
     dataTransfer,
-    preventDefault: jest.fn(),
-    stopPropagation: jest.fn(),
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
     target,
   }) as unknown as DragEvent<HTMLDivElement>;
 
@@ -265,7 +279,7 @@ const runCrossEditorTextDrop = ({
   editSource?: boolean;
   failFirstDrop?: boolean;
 } = {}) => {
-  const source = createEditor({
+  const source = createEditor<Value>({
     initialValue: [
       {
         type: 'paragraph',
@@ -273,7 +287,7 @@ const runCrossEditorTextDrop = ({
       },
     ],
   });
-  const target = createEditor({
+  const target = createEditor<Value>({
     initialValue: [
       {
         type: 'paragraph',
@@ -281,7 +295,7 @@ const runCrossEditorTextDrop = ({
       },
     ],
   });
-  const bystander = createEditor({
+  const bystander = createEditor<Value>({
     initialValue: [
       {
         type: 'paragraph',
@@ -313,13 +327,13 @@ const runCrossEditorTextDrop = ({
     draggedRange: null,
     isDraggingInternally: false,
   };
-  const dropRange: Range = {
+  const dropRange: TextSelection = {
     kind: 'text',
     anchor: { offset: 'Charlie'.length, path: [0, 0] },
     focus: { offset: 'Charlie'.length, path: [0, 0] },
   };
   let resolvedDropRange: Range | null = failFirstDrop ? null : dropRange;
-  const resolveEventRange = jest
+  const resolveEventRange = vi
     .spyOn(ReactEditor, 'resolveEventRange')
     .mockImplementation(() => resolvedDropRange);
 
@@ -434,7 +448,11 @@ describe('DOM coverage native bridge', () => {
     const root = mountEditorRoot(editor);
     const target = mountVisibleDragTarget(root);
     const dataTransfer = new FakeDataTransfer();
-    const state = { isDraggingInternally: false };
+    const state = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
 
     try {
       applyEditableDragStart({
@@ -505,7 +523,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('drop inserts plain text data at the resolved event range', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -524,10 +542,9 @@ describe('DOM coverage native bridge', () => {
     const root = mountEditorRoot(editor);
     const dataTransfer = new FakeDataTransfer();
     const event = createDragEvent(root, dataTransfer);
-    const resolveEventRange = jest
+    const resolveEventRange = vi
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValue({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -539,7 +556,11 @@ describe('DOM coverage native bridge', () => {
         editor,
         event,
         readOnly: false,
-        state: { isDraggingInternally: false },
+        state: {
+          draggedBlock: false,
+          draggedRange: null,
+          isDraggingInternally: false,
+        },
       });
 
       expect(event.preventDefault).toHaveBeenCalled();
@@ -595,10 +616,9 @@ describe('DOM coverage native bridge', () => {
       draggedRange: null,
       isDraggingInternally: false,
     };
-    const resolveEventRange = jest
+    const resolveEventRange = vi
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValue({
-        kind: 'text',
         anchor: { offset: 'Target'.length, path: [2, 0] },
         focus: { offset: 'Target'.length, path: [2, 0] },
       });
@@ -655,7 +675,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('internal collapsed text drop does not delete the source character', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -673,15 +693,14 @@ describe('DOM coverage native bridge', () => {
 
     const root = mountEditorRoot(editor);
     const dataTransfer = new FakeDataTransfer();
-    const draggedRange: Range = {
+    const draggedRange: TextSelection = {
       kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
-    const resolveEventRange = jest
+    const resolveEventRange = vi
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValue({
-        kind: 'text',
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
       });
@@ -709,7 +728,7 @@ describe('DOM coverage native bridge', () => {
 
   test('internal expanded text drop moves the captured source range', () => {
     const text = 'This is editable plain text, just like a <textarea>!';
-    const editor = createEditor({
+    const editor = createEditor<Value>({
       initialValue: [
         {
           type: 'paragraph',
@@ -733,10 +752,9 @@ describe('DOM coverage native bridge', () => {
       draggedRange: null,
       isDraggingInternally: false,
     };
-    const resolveEventRange = jest
+    const resolveEventRange = vi
       .spyOn(ReactEditor, 'resolveEventRange')
       .mockReturnValue({
-        kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       });
@@ -819,69 +837,85 @@ describe('DOM coverage native bridge', () => {
     });
   });
 
-  test('repeated external plain text drops preserve earlier inserted text', () => {
-    const editor = createEditor();
+  test.each([false, true])(
+    'repeated external plain text drops preserve earlier text and repair the caret when focused is %s',
+    (focused) => {
+      const editor = createEditor<Value>();
 
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'Original text' }],
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'Original text' }],
+          },
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
         },
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-    });
-
-    const root = mountEditorRoot(editor);
-    const resolveEventRange = jest
-      .spyOn(ReactEditor, 'resolveEventRange')
-      .mockReturnValueOnce({
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      })
-      .mockReturnValueOnce({
-        kind: 'text',
-        anchor: { offset: 'First '.length, path: [0, 0] },
-        focus: { offset: 'First '.length, path: [0, 0] },
       });
 
-    try {
-      for (const text of ['First ', 'Second ']) {
-        const dataTransfer = new FakeDataTransfer();
-        const event = createDragEvent(root, dataTransfer);
-
-        dataTransfer.setData('text/plain', text);
-
-        const result = applyEditableDrop({
-          editor,
-          event,
-          readOnly: false,
-          state: { isDraggingInternally: false },
+      const root = mountEditorRoot(editor);
+      IS_FOCUSED.set(editor, focused);
+      const resolveEventRange = vi
+        .spyOn(ReactEditor, 'resolveEventRange')
+        .mockReturnValueOnce({
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        })
+        .mockReturnValueOnce({
+          anchor: { offset: 'First '.length, path: [0, 0] },
+          focus: { offset: 'First '.length, path: [0, 0] },
         });
 
-        expect(event.preventDefault).toHaveBeenCalled();
-        expect(result.command).toMatchObject({ kind: 'insert-data' });
-      }
+      try {
+        for (const text of ['First ', 'Second ']) {
+          const dataTransfer = new FakeDataTransfer();
+          const event = createDragEvent(root, dataTransfer);
 
-      expect(editorString(editor, [])).toBe('First Second Original text');
-      expect(editorGetSnapshot(editor).selection).toEqual({
-        kind: 'text',
-        anchor: { offset: 'First Second '.length, path: [0, 0] },
-        focus: { offset: 'First Second '.length, path: [0, 0] },
-      });
-    } finally {
-      resolveEventRange.mockRestore();
-      cleanupEditorRoot(editor, root);
+          dataTransfer.setData('text/plain', text);
+
+          const result = applyEditableDrop({
+            editor,
+            event,
+            readOnly: false,
+            state: {
+              draggedBlock: false,
+              draggedRange: null,
+              isDraggingInternally: false,
+            },
+          });
+
+          expect(event.preventDefault).toHaveBeenCalled();
+          expect(result.command).toMatchObject({ kind: 'insert-data' });
+          expect(result.repair).toEqual({
+            focus: true,
+            kind: 'repair-caret',
+            selectionSourceTransition: {
+              preferModelSelection: true,
+              reason: 'model-command',
+              selectionSource: 'model-owned',
+            },
+          });
+        }
+
+        expect(editorString(editor, [])).toBe('First Second Original text');
+        expect(editorGetSnapshot(editor).selection).toEqual({
+          kind: 'text',
+          anchor: { offset: 'First Second '.length, path: [0, 0] },
+          focus: { offset: 'First Second '.length, path: [0, 0] },
+        });
+      } finally {
+        IS_FOCUSED.delete(editor);
+        resolveEventRange.mockRestore();
+        cleanupEditorRoot(editor, root);
+      }
     }
-  });
+  );
 
   test('drag and drop on internal controls does not run editor-owned handling', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -901,7 +935,11 @@ describe('DOM coverage native bridge', () => {
     const button = mountInternalControlDragTarget(root);
     const dragData = new FakeDataTransfer();
     const dropData = new FakeDataTransfer();
-    const dragState = { isDraggingInternally: false };
+    const dragState = {
+      draggedBlock: false,
+      draggedRange: null,
+      isDraggingInternally: false,
+    };
     const dropEvent = createDragEvent(button, dropData);
 
     dropData.setData('text/plain', 'Dropped text');
@@ -936,7 +974,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('drop is ignored when the editor is read-only', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -963,7 +1001,11 @@ describe('DOM coverage native bridge', () => {
         editor,
         event,
         readOnly: true,
-        state: { isDraggingInternally: false },
+        state: {
+          draggedBlock: false,
+          draggedRange: null,
+          isDraggingInternally: false,
+        },
       });
 
       expect(event.preventDefault).toHaveBeenCalled();
@@ -980,7 +1022,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('paste is ignored when the editor is read-only', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -1024,7 +1066,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('read-only paste prevents native default even when custom handler returns handled', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -1043,7 +1085,7 @@ describe('DOM coverage native bridge', () => {
     const root = mountEditorRoot(editor);
     const clipboard = new FakeDataTransfer();
     const event = createClipboardEvent(root, clipboard);
-    const onPaste = jest.fn(() => true);
+    const onPaste = vi.fn(() => true);
 
     clipboard.setData('text/plain', 'Pasted text');
 
@@ -1066,7 +1108,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('paste is ignored when the application handler owns the event', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -1111,7 +1153,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('paste uses clipboard data mutated by an unhandled app paste callback', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editorReplace(editor, {
       children: [
@@ -1162,12 +1204,14 @@ describe('DOM coverage native bridge', () => {
 
     staleDom.textContent = 'STALE PENDING DOM';
     document.body.append(staleDom);
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason, options) => {
-      materialized.push(
-        `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
-      );
-      return true;
-    });
+    getTestRuntime(editor).domCoverage.setMaterializeHandler(
+      (boundary, reason, options) => {
+        materialized.push(
+          `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
+        );
+        return true;
+      }
+    );
 
     try {
       applyEditableCopy({
@@ -1198,12 +1242,14 @@ describe('DOM coverage native bridge', () => {
     clipboard.setData('text/plain', 'Pasted omega');
     staleDom.textContent = 'STALE PENDING DOM';
     document.body.append(staleDom);
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason, options) => {
-      materialized.push(
-        `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
-      );
-      return true;
-    });
+    getTestRuntime(editor).domCoverage.setMaterializeHandler(
+      (boundary, reason, options) => {
+        materialized.push(
+          `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
+        );
+        return true;
+      }
+    );
 
     try {
       const result = applyEditablePaste({
@@ -1226,7 +1272,7 @@ describe('DOM coverage native bridge', () => {
   });
 
   test('cutting a selected block void writes model data, deletes once, and requests model-owned repair', () => {
-    const editor = createEditor();
+    const editor = createEditor<Value>();
 
     editor.install(blockImageSchema);
     editorReplace(editor, {

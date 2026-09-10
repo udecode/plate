@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-05-code-control-paths",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-05-code-control-paths.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Code block copy and drawing controls resolve their current document position when used.",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing",
+      "files": ["apps/www/src/registry/components/editor/code-drawing.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-05-code-block-copy-drawing-controls-resolve-6d9ae46c",
+      "kind": "wiring",
+      "summary": "Code block copy and drawing controls resolve their current document position when used.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block", "code-drawing"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-code-control-paths",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

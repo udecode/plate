@@ -10,13 +10,16 @@ metadata:
 
 # Slate Migration
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use this when the user wants a full autonomous migration loop for Slate v2,
 especially when migrating Plate code, examples, docs, tests, public APIs, or
 changesets to the current Slate v2 shape.
 
-This is the migration lane. `auto` supervises broad quality loops and
+This is the migration lane. `task autonomous` supervises broad quality loops and
 `benchmark` owns measured performance work; `slate-migration` owns migration closure: API mapping, stale symbol removal,
 guide updates, changeset truth, package proof, examples, docs, and missed
 migration workflow repair.
@@ -38,7 +41,7 @@ Every discovered migration gap updates the durable owner:
 - tests/oracles when proof is missing;
 - migration guide when users need a documented step;
 - changesets when package users need release-facing migration info;
-- `vision` when the gap is reusable taste;
+- `VISION.md` when the gap is reusable taste;
 - `.agents/rules/slate-migration.mdc` or its template when the loop missed a
   recurring expectation.
 
@@ -64,38 +67,39 @@ Every discovered migration gap updates the durable owner:
 - The user asks performance measurement or optimization unrelated to migration
   closure: use `benchmark`.
 - The user asks broad behavior/quality automation unrelated to migration
-  closure: use `auto`.
+  closure: use `task autonomous`.
 - The task is only writing a package changeset for an already-understood diff:
   use `changeset`.
-- The work is only a docs page unrelated to migration: use `docs-creator`.
+- The work is only a docs page unrelated to migration: use Plate Docs.
 
 ## Invocation Modes
 
-Use the same mode semantics as `auto`.
+Use the same mode semantics as `task autonomous`.
 
 - **Full-loop mode:** default when no duration is given. Run one complete
   migration loop until a real stopping checkpoint or completion threshold.
-- **Timed mode:** when the user says `1h`, `2h`, `overnight`, or similar. Treat
-  the duration as minimum active runtime. Do not stop early because the first
-  migration packet closed; switch to the next migration owner or supervision
-  mode.
+- **Timed mode:** record the user's stated budget or deadline as an upper
+  bound. Only an explicit minimum is a minimum. Select in-scope migration
+  packets that fit with proof and cleanup; stop on completion or at the bound,
+  recording unfinished proof without claiming closure.
 - **Batch-loop mode:** stack soft stopping checkpoints and continue through
   safe migration owners.
 - **Repair mode:** when arguments start with `repair <gap>`. Patch the
   migration workflow source owner so future runs catch the gap.
 
-## Goal Contract
+## Task Plan Contract
 
-Use `autogoal` for non-trivial migration work.
+Reuse one Task file plan for non-trivial migration work. Apply the project's standing Autogoal request for long-running migrations. The helper below
+creates a file; migration depth or a measurable outcome is not goal authority.
 
-Goal handle:
+Plan objective:
 
 ```txt
 Migrate <surface> to Slate v2; done when API map, source/docs/changesets/tests,
 stale-symbol audit, and review gates pass; plan docs/plans/<path>.md.
 ```
 
-Create the plan with the dedicated template:
+When no suitable Task plan exists, create the file with the dedicated template:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -118,15 +122,15 @@ changeset expectations, migration-guide expectations, and final handoff shape.
 
 For every migration run, read the smallest set that owns the current decision:
 
-- latest user request and active goal plan;
-- `vision`;
+- latest user request and active Task plan;
+- `VISION.md`;
 - `content/docs/plite/migration.mdx`;
 - current Plite public source under `packages/plitejs` and `packages/test`,
   plus the affected Plate adapter entrypoint under `packages/platejs`;
 - target Plate package/example/docs owners under `packages/**`, `apps/**`,
   `docs/**`, or the named surface;
 - `.agents/rules/changeset.mdc` before writing or repairing changesets;
-- `.agents/rules/docs-creator.mdc` before repairing user-facing docs;
+- `.agents/rules/plate-docs.mdc` before repairing user-facing docs;
 - relevant previous plans/research only when they are named or directly
   connected to the surface.
 
@@ -233,8 +237,8 @@ If the migration loop misses a recurring expectation, patch the owner:
   changeset rules were actually wrong;
 - wrong source of truth -> this skill;
 - weak proof command -> this skill or the owning package script;
-- stale taste rule -> `vision`;
-- generic goal lifecycle miss -> `autogoal repair`.
+- stale taste rule -> `VISION.md`;
+- generic task lifecycle miss -> Task; repair Autogoal for lifecycle or checklist-retention gaps in goal-backed work.
 
 After changing `.agents/rules/**`, run `pnpm install`, verify generated
 `.agents/skills/**/SKILL.md`, and record the repair in the active plan.
@@ -244,13 +248,18 @@ After changing `.agents/rules/**`, run `pnpm install`, verify generated
 Stop when:
 
 - the migration completion threshold passes;
-- the active packet is verified, reverted, or quarantined and the timed minimum
-  runtime has elapsed;
-- a public API fork needs `best-api`; a runtime/adoption fork needs
-  `plite-plan`;
-- a required user taste decision is missing from `vision` and no safe
+- the stated budget/deadline is reached, with the current packet safely
+  checkpointed and its proof status recorded;
+- an explicitly requested minimum has elapsed and the active packet is
+  verified, reverted or quarantined;
+- a required user taste decision is missing from `VISION.md` and no safe
   alternate migration work remains;
-- commit, PR, external credential, or destructive cleanup authority is needed.
+- a required publication action, external credential or destructive cleanup
+  lacks actual user authority and no useful in-scope work remains.
+
+Route public API decisions to `best-api` and runtime/adoption decisions to
+`plite-plan` within the same Task. Existing execution authorization covers
+these transitions. Do not invent new migration work to fill a timebox.
 
 Do not stop because one package compiles while docs, changesets, stale-symbol
 audits, or user-visible examples remain unchecked.

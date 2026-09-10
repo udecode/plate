@@ -1,0 +1,6 @@
+repo	path	status	notes
+lexical	/Users/zbeyens/git/lexical	local-read	composition, beforeinput, clipboard, selection, and E2E helper leads
+prosemirror	/Users/zbeyens/git/prosemirror	local-read	view composition webtests and beforeinput/input handlers
+tiptap	/Users/zbeyens/git/tiptap	local-skimmed	drag-handle and paste-rule hits were less direct for this shard
+monaco-editor	/Users/zbeyens/git/monaco-editor	local-skimmed	most hits were TypeScript language-service/editor noise, not rich editor oracle leads
+slate-v2	/Users/zbeyens/git/plate-2/.tmp/slate-v2	local-coverage	coverage matched promoted composition and target-range invariants

@@ -86,7 +86,7 @@ after snapshot indexes.
 Choose the change kind your consumer needs. `nodeKeys("presence")` returns
 identities added to or removed from a document root. Moving a node within that
 root changes its path, not its presence. Use `"node"` for changed node values,
-`"path"` for path changes, and `"projection"` for combined rendering impact.
+`"path"` for path changes, and `"decoration"` for transient range-paint impact.
 Presence queries inspect changed ranges without enumerating shifted paths.
 Whole-value replacement compares the replaced roots.
 

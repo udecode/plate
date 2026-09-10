@@ -1,4 +1,4 @@
-import { stripHtmlClassNames } from './stripHtmlClassNames';
+import { stripHtmlClassNames } from './stripHtmlClassNames.internal';
 
 describe('stripHtmlClassNames', () => {
   it('keeps only plite classes by default', () => {

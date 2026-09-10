@@ -26,10 +26,10 @@
   "include": ["../src/**/*"],
   "references": [
     {
-      "path": "../../platejs/tsconfig.entrypoints/proxies.json"
+      "path": "../../platejs/tsconfig.entrypoints/root.json"
     },
     {
-      "path": "../../platejs/tsconfig.entrypoints/root.json"
+      "path": "../../platejs/tsconfig.entrypoints/testing.json"
     }
   ]
 }

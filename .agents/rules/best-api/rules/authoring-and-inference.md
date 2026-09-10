@@ -130,6 +130,11 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   that discards sibling capabilities and reopens recursive
   whole-editor comparisons. Erase only inside a named runtime implementation,
   after the public call signature has preserved exact inference.
+- Prove store and binding inputs with inferred document data, an installed
+  extension, and their own inferred payload in the same call. A bare default
+  `Editor` parameter names one concrete capability tuple; it is not an
+  existential runtime boundary. Reject arbitrary runtime objects and unknown
+  payload fields in the same compile-only fixture.
 - Publication-dependent activation work is `afterPublish`; cleanup remains
   activation-owned. Do not hide activation behind a vague lifecycle bucket.
 - `validate` checks the assembled descriptor/editor context; it never receives
@@ -294,11 +299,19 @@ ownership and raw node shape. When a consumer plugin installs the component
 being typed, use the stable imported owner descriptor rather than the
 self-referential configured value; access consumer-local store/API additions
 through their scoped hooks inside the component.
-An owning leaf descriptor also infers the optional transient fields returned
-by its `decorate` callback. Keep `props.text` schema-only and expose those
-fields only on `props.leaf`. Never recover a known decoration field with
-`Reflect.get`, a cast, or a restated structural leaf type; fix the decorator or
-descriptor carrier instead.
+An owning leaf descriptor infers schema marks only. A plugin's
+`decorate: { read, observe?, attributes? }` descriptor returns keyed ranges with
+render-safe attributes. Decoration output never adds fields to `props.leaf` or
+`props.text`, and it never activates a leaf renderer. Never recover Decoration
+state with `Reflect.get`, a cast, or a restated structural leaf type; use the
+source's attributes or a separate Widget owner. Copied presentation configures
+`decorate.attributes` with an inferred object/callback/null input while retaining
+the required semantic reader and its observer.
+Whole-element view paint uses the owning Plate plugin's
+`render.useViewElementAttributes` hook program. It returns sparse safe
+attributes by exact `NodeKey`; Plate owns the private keyed runtime. Per-node
+`render.attributes` and `inject.nodeProps.transformProps` callbacks stay pure
+and hook-free.
 Wrapper and selector APIs follow the same law. Pass the descriptor directly to
 `RenderNodeWrapper<typeof FooPlugin>`,
 `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
@@ -306,6 +319,14 @@ Wrapper and selector APIs follow the same law. Pass the descriptor directly to
 must come from that descriptor. Never extract `DefinitionOf`, restate an
 element type, or cast inside a consumer just to recover fields already owned by
 the plugin schema.
+
+`useElementSelector` receives the descriptor-owned element payload and an
+optional previous derived value. It does not subscribe to position. Select a
+live path projection with `usePath(path => path.at(-1))`, using its equality
+option when the result is an object. A renderer that needs only the row index
+must not rerender when an ancestor path prefix changes. Keep full `usePath()`
+for output that depends on the complete path, and resolve event-only paths
+inside the event handler.
 
 The low-level React bridge is `react({ dom })`: one required object containing
 the exact DOM descriptor it depends on. Keep one explicit erased

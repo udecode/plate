@@ -25,7 +25,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -39,25 +39,32 @@ The fastest way to add table functionality is with the `TableKit`, which include
 - [`TableRowElement`](/docs/components/table): Renders table rows.
 - [`TableCellElement`](/docs/components/table): Renders `tableCell` nodes as `<td>` or `<th>` from the node's `header` property.
 
-### Add Kit
+### Add kit
 
-Add the kit to your plugins:
+The copied row controls use `DndKit` for drag-and-drop. Install both registry
+items and add both kits to your plugins:
+
+```bash
+pnpm dlx shadcn@latest add @plate/table @plate/dnd
+```
 
 ```tsx
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 import { TableKit } from '@/components/editor/table';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     ...TableKit,
+    ...DndKit,
   ],
 });
 ```
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -67,7 +74,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugin
+### Add plugin
 
 Include `TablePlugin` in your Plate plugins array when creating the editor.
 
@@ -85,13 +92,14 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
-Configure the table owner and add complete row or cell descriptors when you need to replace a dependency's component or configuration.
+Configure the table owner and add complete row or cell descriptors when you need to replace a dependency's component or configuration. The copied row renderer requires `DndKit`.
 
 ```tsx
 import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 import {
   TableCellElement,
   TableElement,
@@ -101,6 +109,7 @@ import {
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
+    ...DndKit,
     TablePlugin.configure({
       component: TableElement,
       initialState: {
@@ -123,16 +132,50 @@ const editor = createEditor({
 
 Column widths are stored once on the table's `columnWidths`. Table renderers read
 that vector in the table renderer; `null` preserves an unknown imported width
-without treating it as zero pixels. Pointer previews use transient
-overrides, then commit through
-`editor.plugin(TablePlugin).update.setColumnWidth`. Row resizing follows the
-same pattern with each row's `height`.
+without treating it as zero pixels. `useTableResize` from `platejs/table/react`
+owns the pointer gesture and commits through
+`editor.plugin(TablePlugin).update.resize`. The renderer owns transient size
+overrides and visual indicators. Row resizing stores each row's `height`.
 
-### Add Toolbar Button
+### Custom resizing
+
+`api.createResize(table, target)` captures the starting sizes and returns a
+function that calculates a preview from a pixel delta. Interior column
+boundaries preserve the adjacent columns' combined width. The left boundary
+exchanges first-column width for indentation. Previews do not change the editor.
+
+```tsx
+import { TablePlugin } from 'platejs/table/react';
+
+const table = editor.read.nodes.get([0], { type: TablePlugin });
+
+if (table) {
+  const resize = editor.plugin(TablePlugin).api.createResize(table[0], {
+    edge: 'right',
+    colIndex: 0,
+  });
+  editor.plugin(TablePlugin).update.resize(resize(24), { at: table[0] });
+}
+```
+
+The target is `{ edge: 'right', colIndex }`, `{ edge: 'left' }`, or
+`{ edge: 'bottom', rowIndex, height }`. Supply the measured starting row height
+for a row target. Row previews remain positive. Columns respect `minColumnWidth`;
+imported columns below that minimum retain their starting width as the lower bound.
+
+For pointer input, call `useTableResize({ element, tableRef, onResize,
+onResizeEnd })` in the table renderer. It returns a start function taking the
+pointer event and target; the hook measures row height for bottom handles.
+`onResize` receives the preview for local rendering. `onResizeEnd` clears those
+overrides after completion or cancellation. A primary pointer release commits
+once; cancellation, window blur, read-only changes, table replacement and
+unmount discard the gesture.
+
+### Add toolbar button
 
 You can add [`TableToolbarButton`](/docs/components/table-toolbar-button) to your [Toolbar](/docs/toolbar) to insert tables.
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table elements:
 
@@ -144,7 +187,7 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 }
 ```
 
-### Disable Merging Example
+### Disable merging example
 
 <ComponentPreview name="table-nomerge-demo" />
 
@@ -609,7 +652,7 @@ Checks if the border of a table cell or the table itself is hidden based on the 
 </APIReturns>
 </API>
 
-## Editing Behavior
+## Editing behavior
 
 `TablePlugin` owns keyboard, clipboard, deletion, paste, normalization, and selection behavior. Use its scoped update portal for table mutations; installing the plugin activates the rest.
 

@@ -1,10 +1,18 @@
 ---
-description: Diagnose and iteratively repair Plate/Plite performance with an ordered all-lane benchmark loop. Use for current-vs-main, Plate-vs-Plite, Plite-vs-Slate, mount/editing, example sweeps, stress, or any performance regression. Runs every applicable lane by default, pauses at a proven cause, fixes and reruns it, then resumes breadth.
+description: Review Plate/Plite performance designs or diagnose, compare, fix and rerun measured performance through the ordered benchmark lanes. Use review for plans; measurement runs every applicable lane unless explicitly narrowed.
 ---
 
 # Benchmark
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
+
+For `review <scope-or-plan>`, read the full [performance review method](./references/performance-review.md)
+and only its applicable rule leaves. This mode inspects the plan and proof
+requirements without starting a measurement or implementation loop. Continue
+below when the request calls for measurement, causal diagnosis or a repair.
 
 Read [methodology.md](./references/methodology.md) completely before
 creating a goal, running a benchmark, or changing runtime code.
@@ -27,6 +35,8 @@ resumes after the fix is green.
 
 ## Public Surface
 
+- `$benchmark review <scope-or-plan>`: review cohorts, budgets, interaction,
+  memory, native-behavior and production proof requirements without execution.
 - `$benchmark [scope]`: discover and run all applicable lanes in diagnostic
   order. A scope narrows fixtures and owners, not the default lane inventory.
 - `$benchmark only <lane-or-target>`: explicitly narrow the run. Keep every
@@ -52,8 +62,6 @@ Resume a matching active Benchmark goal instead of adding a public resume mode.
 
 ## Do Not Use When
 
-- The user only wants performance/scalability review criteria in a plan: use
-  `performance` as the review lens.
 - The problem is correctness-only with no timing claim: use `regression` or
   `patch`.
 - One public API/runtime boundary must be chosen before measurement can be
@@ -67,14 +75,14 @@ Resume a matching active Benchmark goal instead of adding a public resume mode.
 | --- | --- |
 | `benchmark` | baseline identity, lane discovery/order, comparison fairness, metric repair, causal gate, durable-fix checkpoint, measured rerun/resume loop, and benchmark handoff |
 | benchmark targets/runners | executable workloads, metric output, correctness commands, and durable result artifacts |
-| `performance` | cohorts, repeated-unit budgets, interaction percentiles, degradation/native-behavior review, and RUM/trace expectations |
+| `benchmark review` | cohorts, repeated-unit budgets, interaction percentiles, degradation/native-behavior review, and RUM/trace expectations |
 | `regression` / `patch` | missing or failing correctness oracle and behavior repair, not timing diagnosis |
 | `best-api` plus `plite-plan` / `plate-plan` | best long-term public API or runtime architecture required by a proven hot owner, including breaking/adoption decisions |
 | `codex-autoresearch` | optional packet/log/dashboard machinery after Benchmark selects one metric and correctness guard |
-| `auto` | broader quality supervision and ergonomic routing into Benchmark |
+| `task autonomous` | broader quality supervision and ergonomic routing into Benchmark |
 
-Do not delegate benchmark selection or causal ownership back to `auto`,
-`performance`, `regression`, or `slate-ar`. They may supply evidence or worker
+Do not delegate benchmark selection or causal ownership back to `task autonomous`,
+`benchmark review`, `regression`, or `slate-ar`. They may supply evidence or worker
 capacity without becoming a second supervisor.
 
 ## Pre-Acceptance Architecture Probe
@@ -116,9 +124,8 @@ the design decision only; it never proves the shipped implementation.
 Read-only explanation of existing artifacts does not create a goal. A
 pre-acceptance architecture probe records its contract and evidence in the
 matching active architecture goal; do not create a competing Benchmark goal.
-Any standalone run that measures, repairs a harness, changes code, or iterates
-uses `autogoal` with `docs/plans/templates/benchmark.md` in one-shot execution
-mode unless the user explicitly asks for collaborative planning:
+A standalone measurement or repair run uses the Task-owned file template below.
+It preserves Benchmark's semantic contract without creating a native goal:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -130,6 +137,14 @@ The first checkpoint copies every user requirement, resolves candidate and
 baseline authority, discovers every default lane, and fills the lane table.
 The plan is run coordination. Benchmark targets and result artifacts remain
 metric authority; executable tests remain correctness authority.
+
+Complete plans include `## Interaction Coverage` with `first-interaction`,
+`settled-interaction`, `route-scope`, and `reporter-profile` results, each
+`pass: <proof>` or `N/A: <concrete reason>`. Preserve the live reporter tab before
+reload or viewport changes. A page-scrolling complaint covers outer scrolling
+and embedded scrollers, including first exposure. A clean browser or warmed
+target cannot certify an untested reporter profile or phase. After a reporter
+contradiction, Regression repairs this contract before another product patch.
 
 Validate plan state at each conclusive-cause and resume checkpoint:
 
@@ -156,6 +171,15 @@ Within that order:
 4. When a lane is red but the cause is not conclusive, run the cheapest next
    isolating lane or diagnostic. Do not patch from correlation.
 5. When the conclusive-cause gate passes, pause later lanes immediately.
+
+Routine DX and CI verification uses the affected correctness owners. It does
+not inherit this full benchmark loop. During an architecture handoff, compare
+the effective loaded inputs before reopening a completed lane. An unrelated
+React edit cannot invalidate unchanged headless Yjs implementation proof.
+If an absolute shared-host timing limit fails without a matched regression,
+retain that failure and stop unchanged retries. Report the performance result
+as inconclusive; do not relabel it green or require a quiet user workstation.
+Use a paired baseline/candidate run for a new causal speed claim.
 
 For a reporter-visible rerender or render-storm claim, record an exact-route,
 phase-specific repeated-component inventory before owner isolation. Count
@@ -197,7 +221,7 @@ contract before changing product code:
    correctness work to `patch`, `regression`, or `tdd`.
 4. Run `best-api` for every `public-api` or `runtime-architecture` cause, then
    route adoption to `plite-plan`, `plate-plan`, or both. A bounded package
-   owner may implement directly; broad cross-owner execution may use `auto`.
+   owner may implement directly; broad cross-owner execution may use `task autonomous`.
 5. Before stability, default to `hard-cut: <material lasting value>` when the
    best target breaks current API or architecture. Preserve compatibility only
    as `preserve: <hard law> - <reason>`, where the hard law is correctness,
@@ -250,7 +274,7 @@ completion claim.
 
 ## Correctness And Native Behavior
 
-Before keeping a fix, load only the relevant `performance` rule files for
+Before keeping a fix, load only the relevant `benchmark review` rule files for
 cohorts, interaction metrics, repeated units, staged readiness, degradation,
 and native behavior. Use real keyboard/browser input for user-facing editing
 claims. Programmatic transforms may isolate runtime cost but stay labeled as
@@ -284,8 +308,8 @@ node .agents/rules/plate-next/scripts/sync-resources.mjs --check
 
 For a runtime benchmark run, verification is the exact lane command,
 correctness guard, comparable baseline artifact, post-fix rerun, and any
-browser/native proof required by the claim. End non-trivial implementation
-packets with P1 `autoreview`.
+browser/native proof required by the claim. Task owns any applicable review;
+Benchmark packets do not add or reset that budget.
 
 ## Handoff
 

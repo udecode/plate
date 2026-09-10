@@ -6,23 +6,35 @@
 - `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `pnpm install` to sync. Never edit `SKILL.md` directly.
 - Be concise in all interactions and commit messages. Never sacrifice precision or readability for brevity.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
-- Prefer the best long-term durable architecture that materially fixes the owning problem over the nearest compatible or local patch. Before stability, break APIs and abstractions when that buys materially better lasting value; preserve only hard correctness, security, serialized-data, native-behavior, or runtime laws.
+- **Redesign from First Principles.** Start API and architecture decisions from the current user job and hard laws. Ask what we would build if those requirements had been present from the start. Choose the best durable target before planning adoption; current machinery, accepted plans and proposed abstractions must earn their place.
 - For every API or architecture plan, review, or feedback request, run the maximum-value hard-cut counterfactual before presenting a local improvement. Treat each current or proposed public noun, namespace, plugin, abstraction, owner, layer, and package as deletable; test delete, merge, inline, and reuse of an existing canonical owner. Retain one only for a hard law, an explicit user constraint, or a proven independent current user job. Compatibility and implementation difficulty affect adoption order, never the target. Lead harsh honest feedback with the strongest materially justified cut even when its blast radius is large. This rule applies repo-wide, not only to packages.
 
-## Technical prose
+## Current phase
 
-These rules apply to user-facing technical prose: docs, commit messages, PR descriptions, reports, proposals, and replies. They do not constrain analysis, investigation, code, API names, or quoted text.
+**Redesign from First Principles is the governing principle of `next`, the
+Plate v2 beta redesign.** Apply the full
+[principle](.agents/skills/principle-redesign-from-first-principles/SKILL.md)
+and [project doctrine](docs/vision/common.md#redesign-from-first-principles)
+before selecting an API or architecture target. Break APIs and replace
+architecture when that produces materially better lasting value. Preserve hard
+laws and explicit user constraints, then prove adoption. Reuse a settled
+comparison while its requirements and evidence hold; this is not a demand to
+rewrite sound code. Production release is not imminent. Revisit this phase
+policy when v2 ships. Release Lanes applies only to an actual release or
+branch-sync request.
 
-- Lead with the decision or outcome. Give the reason before implementation details.
-- Prefer common words. Use one project term for one concept. Define unavoidable jargon on first use. If a term recurs or is ambiguous, define it in the owning doc and reuse it exactly.
-- Use active voice, short sentences, and short single-topic paragraphs. Prefer 20 words or fewer when clarity survives; never sacrifice precision to hit a word limit.
-- For an implementation proposal or handoff, cover these points when they apply: symptom or objective, root cause or owner, chosen fix, governing invariant, material alternatives rejected, blast radius, verification, and remaining risk.
-- Never make the reader inspect the diff to understand why the approach is correct and safe.
+## Writing
+
+Technical Writing owns general prose, author voice and preservation. Plate Docs
+owns public documentation style, page design, examples, installation/API teaching,
+MDX and navigation. Use `plate-docs` for that work; it loads Technical Writing
+and only the needed local references. Task retains scope and completion.
+Tiny copy edits need only direct text/link verification.
 
 ## Git
 
-- **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
-- **Push scope:** When you do commit and push, include unrelated dirty files outside src; those are often manual user changes or synced skill/docs updates, so do not silently leave them behind.
+- Task owns Git authority under `.agents/rules/task/references/workflow.md`. Before nontrivial mutation, check only `git branch --show-current`; no proactive status or checkout hygiene. A skill or plan does not authorize publication. Never add, commit, push or create a PR without the active request granting it.
+- **PR scope:** Use the entire current checkout, including all modified and untracked files, unless the user explicitly narrows it. Do not create a worktree, isolate files or switch checkouts without authorization.
 - **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.
 - **PR branch:** If the user explicitly says to open or create a PR, do not ask for confirmation. If the current branch is `main`, create a new `codex/` branch first, then commit/push/open the PR. If already on a non-`main` branch, proceed directly.
 - **Merge override:** If the user explicitly says to merge it, do it. Do not wait for CI to turn green, do not ask again, and use admin merge if that is what it takes.
@@ -30,7 +42,7 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 - **PR titles:** Do not prefix PR titles with agent markers such as `[codex]` or `[ai]`. If AI assistance matters, put it in the PR body.
 - **Bug-fix PR evidence:** Before landing or claiming a bug-fix PR is fixed, require symptom evidence, root cause in code, fix path, and regression test or explicit manual proof with a reason no test fits.
 - **GitHub multiline bodies:** For multiline `gh` comments, close messages, or PR bodies, use `--body-file`, stdin, or a heredoc with real newlines. Never pass literal `\n` in shell strings.
-- **Public issue status:** After a user-selected non-security public behavior issue passes its reporter-valid proof gates, always post one concise status comment. Local-only or unpushed work is a candidate, not fixed/completed. Fixed/completed wording and the `completed` label require exact-case replay on the final pushed ref, with matching proof-file fingerprints. A fresh reporter contradiction invalidates earlier green proof. State the exact local/commit/PR status, leave the issue open unless closure is separately authorized, and never imply the fix is shipped.
+- **Public issue status:** After a user-selected non-security public behavior issue passes its reporter-valid proof gates, prepare one concise status comment. Send it only with explicit message authority. Local-only or unpushed work is a candidate, not fixed/completed. Fixed/completed wording and the `completed` label require exact-case replay on the final pushed ref, with matching proof-file fingerprints. A fresh reporter contradiction invalidates earlier green proof. State the exact local/commit/PR status, leave the issue open unless closure is separately authorized, and never imply the fix is shipped.
 - **Failed-fix interrupt:** When a claimed candidate/kept/completed bug fix fails exact replay/final verification or receives a reporter contradiction, stop product edits and automatically run `regression repair <case-id>: <missed invariant or proof failure>` before retrying. Expected red-before-green is not a failed fix. A second failed fix, or a Regression architecture trigger, requires `best-api` and the owning Plite/Plate plan before another implementation attempt.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
@@ -38,11 +50,12 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 ## Packages
 
 - DX: Optimize for clear, low-friction developer experience without speculative machinery. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
-- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow `.agents/rules/docs-creator.mdc` for writing tone/structure.
+- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Technical Writing owns prose; Plate Docs owns the public documentation method.
 - Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles. Fix the source registry, package, or workflow inputs and let CI regenerate templates. If local verification rewrites template files, restore them before handoff.
 - Barrels: If you change package exports, move public files, add/remove files under exported folders, or CI says `pnpm brl` produced changes, run `pnpm brl` before final verification/commit and include the generated barrel updates.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
+- Inline local component prop types at the signature. Keep named prop types for real cross-file or published contracts; Plate UI owns the convention. Apply it during implementation and review, without a dedicated lint gate.
 - Type inference is mandatory for Plate/Plite callback APIs. Do not add explicit callback parameter annotations like `(tx: EditorUpdateTransaction)` to silence TypeScript when the API should infer them; fix the owning generic/API type instead. Explicit annotations are only acceptable at exported public signatures or true external boundary adapters.
 
 ## Tooling
@@ -59,284 +72,99 @@ These rules apply to user-facing technical prose: docs, commit messages, PR desc
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
 - For `react-dnd` / DnD fixes, do not treat a follow-up Bun `Invalid hook call`, `resolveDispatcher()`, or mixed `.bun` + `.pnpm` React stack as proof the DnD fix is wrong. In this repo, run `pnpm run reinstall` once before reopening the diagnosis; that failure shape is usually local env rot, not duplicate deps or broken DnD logic.
 
-## Skill
+## Workflow and skills
 
-Use those skills when relevant:
+The user's standing instruction requests Autogoal for every long-running workflow, whether invoked through Task, a specialist skill, or plain language, unless they opt out. This includes substantial audits, planning, research, verification, maintenance, migrations and release work. Apply Autogoal at intake or when scope grows, without another invocation or confirmation. Assume Codex will not retain every strict checklist through long execution: capture all applicable source-linked obligations in one existing goal plan, update them at checkpoints, and reconcile the original checklists before closure. Short work must still check every applicable requirement directly, without a new goal or plan solely for that purpose. Improve retains its own standing goal request. A goal never expands audit, implementation, human-assignment, review, budget, scheduling or publication authority.
 
-Plate work follows one responsibility chain. Do not merge these owners or copy
-their doctrine into each other:
+Task is the single engineering lifecycle, including complex work and
+current-checkout closure. Read `.agents/rules/task/references/workflow.md`
+once for scope, plans, authority, proof and review. Task autonomous mode supervises
+explicitly requested autonomous work through the same plan and technical owners.
+Breadth does not grant publication, scheduling or another checkout.
 
-| Question                                                                      | Owner                                       |
-| ----------------------------------------------------------------------------- | ------------------------------------------- |
-| durable Plate/Plite architecture and accepted API law                         | root `VISION.md` and `docs/vision/plate.md` |
-| evidence-backed current architecture score and hard-cut verdict               | `plate-review`                              |
-| ideal reusable public call shape and API debt ranking                         | `best-api`                                  |
-| accepted API adoption, boundary, and proof plan                               | `plate-plan`                                |
-| end-to-end feature delivery across package, registry, docs, release, and proof | `plate-feature`                             |
-| plugin/entrypoint implementation, colocation, inference, and package proof    | `plate-plugin-creator`                      |
-| Plate React/component shape, copied UI, registry wiring, and browser proof    | `plate-ui`                                  |
-| current-state public teaching                                                 | `docs-creator`                              |
-| migration/adoption audit against the latest doctrine                          | `plate-next`                                |
+Use full Poteto Mode and its matched playbooks for substantive engineering.
+Keep the complete upstream method, examples, prompts and principle leaves;
+load the relevant ones when their decision arises. The Codex adapter maps
+actual tools and available models. No fixed panel or chain is required for
+every task. Show Me Your Work keeps a decision trail during long work; it
+links existing plan and proof receipts. Technical Writing owns prose and its preservation checks. Walkthrough presents existing final evidence.
+
+Plate and Plite retain these separate technical owners:
+
+| Decision or work | Owner |
+| --- | --- |
+| Durable architecture and product law | `VISION.md`, scoped `docs/vision/`, Task source-authority reference |
+| Whether an API or architecture proposal earns further work | `best-api-review`; `.agents/rules/task/references/best-api-review.md` owns Plate routing |
+| Public call shape and reusable API debt | Best API |
+| Accepted adoption and proof plan | Plate Plan or Plite Plan for the owning layer |
+| Complete Plate feature across packages, UI, docs and release | Plate Feature |
+| Plugin implementation, inference, colocation and package proof | Plate Plugin Creator |
+| Plate React/component law, copied UI and registry wiring | Plate UI |
+| Current public documentation | Plate Docs |
+| Migration/adoption audit and versioned doctrine | Plate Next |
+| Read-only architecture score, owner/lifetime/reachability evidence | Plate Review |
+| Code shape, hard cuts or external editor comparison | Architecture Cleanup, Hard Cut or Editor Audit |
+| One exact local behavior repair | Patch |
+| Explicit corpus/rewrite closure, proof receipts and failed-fix method repair | Regression |
+| Performance inventory, measurement, causal diagnosis and rerun | Benchmark; Benchmark review supplies the lens |
+| Actual package, browser, native editor, CLI and artifact proof | Verify Plate; Testing supplies test value and runner mechanics |
+| Public GitHub issue, PR or security queue | Maintainer; one Slate issue uses its full slate-issue mode |
+| Release promotion and direct main-to-next sync | Release Lanes with actual mode authority |
+| External evidence, test harvesting and research | Issue Harvester, ClawSweeper, Editor Test Harvester, Plite Research, Research Wiki |
+| Upstream UI adoption | Sync Shadcn for upstream; Sync Plate UI for downstream forks |
+| Incremental durable-law accounting | Sync Vision |
+
+An audit remains read-only unless its request authorizes repairs. Ordinary
+local bugs use Patch through Task; they do not require a corpus program.
+Benchmark and Regression retain their executable semantic schemas. Native
+goals follow the user's direct or standing request; reuse the same project plan
+and preserve domain detail without creating another lifecycle or review budget.
+Use an issue-prefixed filename for issue-backed plans and a dated filename
+otherwise. Read only the applicable template and supporting methods.
 
 The CLI/schema generator is optional advanced tooling. Ordinary editor setup,
-plugin authoring, registry UI, and public docs must not require generated
-application contracts. Vision and `best-api` own that API law; worker skills
-only apply it inside their layer.
+plugin authoring, registry UI and public docs must not require generated
+application contracts. Plate UI is the sole Plate React/component doctrine
+owner. Vercel skills supply selected tactics, never a second public shape or
+component model. Read `.agents/rules/task/references/external-skills.md` when
+using a protected external skill whose generic defaults need local routing.
 
-`plate-ui` is the sole Plate-specific React/component doctrine owner across
-packages and copied registry UI. `plate-plugin-creator` implements package
-mechanics and `plate-next` audits adoption; neither maintains a second hook or
-component model. Vercel React skills provide selected implementation tactics
-only and never override Plate public shape, ownership, or file topology.
+Any change to a reusable public API applies Best API's doctrine-repair method
+before closeout. Repair stale teaching in affected source rules, update the
+smallest Vision owner only when durable taste changed, append the required
+Plate Next doctrine version, regenerate and prove mirrors. A read-only task
+reports the required repair without implementing it. Preserve immutable
+version history and existing package attestations.
 
-Primary user-facing entrypoints:
+Keep repo-local skills specific to a recurring Plate job. Generic methods
+belong in Dotai and are installed by name. Never edit vendor/package skills,
+any Next dev loop copy or generated SKILL.md files. Full moved recipes remain
+with their canonical owner; do not restore removed aliases or wrapper skills.
+Apply Agent Native Reviewer after meaningful workflow changes. Create and
+Maintain Verification Skill operate on Verify Plate and the existing code,
+registry and proof inventory; they never create a second feature map.
 
-- `plate-feature` for creating or extending a Plate feature through package
-  semantics, React adapters, copied registry UI, composition, docs, release
-  artifacts, proof, and final Plate Next attestation from one manifest.
-- `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
-  prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
-  benchmark/performance comparison and timing root-cause loops to `benchmark`,
-  explicit regression-harness/rewrite-closure/test-fix-verify loops to
-  standalone `regression` through `auto regression`, one ordinary local
-  Plate/Plite behavior bug to `patch`, and
-  broad/internal Plate/Plite
-  quality prompts to `auto`.
-- `benchmark` as the sole ordered performance diagnosis/execution owner:
-  inventory all applicable lanes by default, run cheapest/highest-signal first,
-  pause at a proven cause, fix and rerun that lane, then resume breadth across
-  current/main Plate, Plate/Plite, Plite/Slate, mount, editing, examples, and
-  stress.
-- `regression` as the standalone master for evolving behavior inventories,
-  exact reproduction, test selection, one-case `patch` delegation, fix
-  verification, stability, packet decisions, and methodology self-repair.
-- `plate-next` for Plate v2 cleanup review: deeply audit migrated Plate files,
-  APIs, and packages against the Plite boundary, then cut old Slate/Plate
-  compatibility sludge or route the decision to `plate-plan`.
-- `autoclosure` for post-merge/current-tree until-clean closure.
-- `maintainer` for public Plate/Plite issue, PR, and security queue work.
-- `architecture-cleanup` for repo-grounded architecture/code cleanup,
-  deslop, simplification, and agent-navigation friction.
-- `plate-review` for read-only, reproducible architecture scorecards across a
-  full Plate/Plite scope, plugin family, entrypoint, package, or bounded
-  surface. It diagnoses ownership, lifetime, reachability, scale, and proof,
-  then routes the repair without implementing it.
-- `best-api` for blank-slate public API design, review, and P0-P3 audits
-  across Plate and Plite before adoption/implementation planning.
-- `editor-audit` for exhaustive source-level comparison of one or more local
-  editor architectures against live Plite and Plate.
-- `sync-vision` for updating reusable taste from changed inputs.
-- `openclaw-sync` for syncing agent setup from OpenClaw.
-- Never run `autoreview` while the current branch is `next`.
-- `autoreview` for review. Plate passes `--max-priority P1` by default; an
-  explicit P2 or P3 request passes that wider priority instead. Reviewer persona
-  skills are lenses behind P1 `autoreview`, not normal prompt targets. A Plate
-  review loop may invoke the helper at most three times for one unchanged
-  review scope: the initial review is invocation 1, and each fix-and-rerun is
-  another invocation. Internal partition passes or reviewers inside one helper
-  invocation count once. After invocation 3, stop and report any remaining
-  verified findings; do not claim clean or rename the same scope to reset the
-  counter.
+Task owns one Autoreview budget: explicit review requests or actual PR closure,
+P1 by default, P2/P3 only when requested, at most three helper invocations for
+one scope, and never on `next`. A clean unchanged result needs no second pass.
+Workers and goals cannot add reviews or reset the count. Best API's semantic
+public-shape review remains a separate technical decision. Inspect and fix
+verified in-scope defects regardless of whether structured review applies.
 
-Default routing:
+For public maintainer work, read `CONTRIBUTING.md`, the relevant issue/PR
+templates and `SECURITY.md`. The queue snapshot is ranking context; read live
+GitHub before acting. Exact reporter replay and final pushed-ref fingerprints
+govern public claims. Preserve private security evidence. Queue selection and
+local proof never authorize external messages by themselves.
 
-- If the prompt starts with `auto`, classify the rest first:
-  - `PR #123`, PR URL, `issue #123`, issue URL, `all PRs`, `all issues`,
-    `queue`, `repo heartbeat`, `security`, `GHSA`, or `CVE` -> `maintainer`
-    with the preserved target/mode.
-  - `current tree`, `post-merge`, `teammate branch`, `external PR`,
-    `ready-to-commit`, or `until-clean` -> `autoclosure`.
-  - `regression <bug|surface|corpus>`, regression harness, rewrite closure,
-    corpus replay, or explicit reproduce-test-fix-verify loop -> `regression`.
-    Auto is only the ergonomic route; Regression owns executable case
-    selection, proof width, and methodology repair;
-    `patch` owns one normalized case implementation at a time.
-  - `benchmark <scope>`, `perf <scope>`, performance comparison, profiling, or
-    timing root-cause work -> `benchmark` with the preserved scope.
-  - `slate`, `plite`, `huge-document`, editor behavior/API/docs
-    quality -> `auto` Plite lane.
-  - `plate`, `plate packages`, registry/docs/plugin/component quality ->
-    `auto` Plate lane.
-- "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
-  next?" -> `maintainer heartbeat`.
-- Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
-  question -> `maintainer`, except one concrete Slate issue routes directly to
-  `resolve-slate-issue`.
-- One public Slate issue to reproduce, fix, ship to Plate `next`, and update ->
-  `resolve-slate-issue`.
-- One ordinary local Plate or Plite behavior bug or regression with no request
-  for a harness, corpus, rewrite-closure, or self-improving test-fix-verify loop
-  -> `patch`.
-- Regression-harness, rewrite-closure, corpus replay, or evolving
-  reproduce-classify-fix-verify methodology -> `regression`.
-- Benchmarking, profiling, performance regression diagnosis, current-vs-main,
-  Plate-vs-Plite, Plite-vs-Slate, mount/editing timing, benchmark repair, or
-  measured fix/rerun loops -> `benchmark`.
-- Internal Plate/Plite quality, behavior, browser proof, API cleanup, docs/API
-  cohesion, or long autonomous loop -> `auto`.
-- "architecture score", "score this architecture", or a current-system
-  architecture review scoped as all/plugin/entrypoint/package/surface ->
-  `plate-review`. A diff or PR review still routes to `autoreview`.
-- "best API", "cleanest API", "best DX/AX", public call-shape design/review,
-  or whether current API machinery should exist -> `best-api`.
-- Creating or adding a Plate feature/entrypoint through registry consumers, docs,
-  release artifacts, and proof -> `plate-feature`. An entrypoint-only implementation
-  routes to `plate-plugin-creator`; a React/registry-only implementation routes
-  to `plate-ui`; an adoption audit routes to `plate-next`.
-- "compare", "audit", or "pull from" one or more editor repositories at the
-  architecture/API/runtime level -> `editor-audit`. Test and issue behavior
-  mining stays with the harvesters.
-- Plate v2 cleanup review, "why does this migrated Plate helper exist?",
-  old Slate compatibility cuts in Plate foundation, or no-arg autopilot for the next
-  Plate-to-Plite cleanup packet -> `plate-next`.
-- Post-merge, current-tree, teammate branch, external PR, ready-to-commit, or
-  until-clean closure of already-applied work -> `autoclosure`.
-- Broad architecture cleanup, refactor opportunities, module consolidation,
-  deslop, simplicity, testability, or agent-navigation friction ->
-  `architecture-cleanup`, then route accepted candidates to `major-task`,
-  `best-api` when public shape is unresolved, then `plite-plan`, `plate-plan`,
-  `auto`, or a package owner for adoption/execution.
-- One ordinary local tooling, build, feature, refactor, docs, review, or
-  investigation task with no public queue decision -> `task`.
-- Public security/advisory language -> `maintainer security`.
-
-`autogoal` is the lifecycle kernel, not a routing brain. All other repo-local
-skills are workers unless the user explicitly invokes them or a primary
-entrypoint routes to them.
-
-Second-model tools such as global `oracle` are advisory worker capacity. Use
-them only from `autoreview` (P1 by default; P2/P3 when explicitly requested),
-`auto`, `maintainer`, or another primary
-entrypoint when a hard design/debug/API/release question needs an independent
-pass with a tight file set and dry-run token check. Oracle output never replaces
-source audit, tests, Browser proof, or the owning review gate.
-
-AI review findings are actionable only when grounded in the current checkout:
-the file is inside the reviewed scope, the cited line range still exists, and
-any quoted code still matches the file. Reject stale, out-of-scope, or
-non-matching findings instead of patching around reviewer hallucinations.
-
-- `autogoal` for any prompt with a verifiable and quantitative outcome. Always use
-  the autogoal skill before durable work when the task has a measurable completion
-  threshold. Codex tends to compact output and miss requirements from the prompt,
-  so the first autogoal checkpoint must copy every explicit requirement, scope
-  boundary, timing constraint, stop condition, deliverable, and final-handoff
-  section into the goal plan as checkable checkpoints before work starts
-- `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
-- `task` for normal repo task execution
-- `major-task` for heavyweight architecture, migration, or proposal work;
-  performance measurement belongs to `benchmark`, and source-level editor
-  architecture comparison belongs to `editor-audit`
-- `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
-- `plate-review` for read-only, evidence-backed Plate/Plite architecture
-  scoring. It owns bounded manifests, owner/lifetime/reachability traces,
-  deterministic weighted score receipts and hard caps, before/after target
-  shapes, urgency, and exact repair routing. It does not compare external
-  editors, review diffs, choose final public calls, or implement fixes.
-- `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
-- `best-api` for concrete Plate/Plite public API design, review, and ranked audits. It starts from ideal call sites, treats current machinery and compatibility as evidence rather than requirements, and hands accepted targets to the layer plan or implementation owner.
-- `plate-feature` for one end-to-end Plate feature manifest and phase flow across
-  package, React, copied registry UI, composition, docs, release artifacts,
-  proof, Plate Next attestation, and review. It coordinates existing doctrine
-  owners and never recreates package-generation tooling.
-- `editor-audit` for exhaustive one-to-many local editor architecture
-  comparison: source-derived atomic concepts, verified commit cursors,
-  material-value ranking, current/proposed shapes, incremental `sync`, and
-  explicit `best-api`/`plite-plan`/`plate-plan` routing. It does not discover
-  candidate repositories, own test/issue ledgers, or implement accepted work.
-- `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
-- `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
-- `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It patches safe issues and reruns proof/review within Plate's three-invocation P1 `autoreview` cap. If findings remain after invocation 3, it stops with a not-clean handoff. It is not the public queue brain and not the broad internal quality supervisor.
-- `maintainer` for the repo-local Plate/Plite public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
-- `resolve-slate-issue` for one public Slate issue: intake/classification,
-  delegation of local repair to `patch`, root check, Plate PR targeting
-  `next`, verified issue update, and integration/release-aware closure
-- `patch` as the sole one-case local Plate/Plite behavior-bug and regression
-  implementation owner: accept a normalized case from `regression` or a
-  coordinator, classify the owning lane, reproduce, add durable behavior proof,
-  fix the owning package, apply architecture pressure, verify, and return exact
-  red/green/stability/ref/fingerprint evidence without performing public GitHub
-  mutation
-- `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
-  threads/comments, use an autogoal feedback ledger, patch valid findings, end
-  with P1 `autoreview` by passing `--max-priority P1`, then reply/resolve only with current-checkout authority
-- Broad `maintainer heartbeat` / queue work should refresh
-  `docs/maintainer/queue.md` with
-  `.agents/rules/maintainer/scripts/queue-snapshot.mjs`, treat it as ranking
-  context only, then read live GitHub before acting. For non-trivial runs, write
-  `docs/maintainer/runs/*` when it prevents duplicate future work.
-- Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
-- `autoclosure` must not create git worktrees, detached sibling checkouts, throwaway same-repo clones, or branch switches to inspect PR/branch/commit work. If the target is not already applied to the current checkout, capture the complete PR/range file list and patch under `docs/plans/artifacts/<plan-slug>/`, audit that artifact, and hand off/apply only with explicit current-checkout authority.
-- `clawsweeper` for Plite issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
-- `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
-- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Plite coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Plite or Plate plan that pauses for review before execution
-- `plite-research` for Plite web/GitHub/OSS discovery, scalable repo scans,
-  research ledgers, dedupe, source synthesis, evidence grading, lead
-  prioritization, and promotion into narrower owners. Selected local editor
-  architecture comparisons route to `editor-audit`; it does not run Codex
-  Autoresearch packets
-- `regression` for standalone regression harness, rewrite closure, corpus
-  replay, reporter-complete oracles, exact reproduce-test-fix-verify, proof
-  receipts, affected-corpus stability, and automatic failed-fix methodology
-  repair.
-  It delegates one normalized case at a time to `patch`; `auto regression`
-  routes here and does not retain a second implementation.
-- `benchmark` for all Plate/Plite performance measurement and diagnosis:
-  default all-lane inventory, ordered execution, fair baseline/editor
-  comparison, conclusive-cause gate, one-owner fix, exact rerun, and resumed
-  breadth. `performance` is its review lens; target registries/runners are
-  executable workers; `auto`, `regression`, and `slate-ar` do not retain
-  competing benchmark loops.
-- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior,
-  visual proof, API cleanup, test repair, external issue/test harvests, skill
-  repair, docs consolidation, readiness, and ergonomic routing of
-  `auto regression <bug|surface|corpus>` to `regression` and measured work to
-  `benchmark`. The user should not need to micro-route worker skills.
-- `slate-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
-- `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
-- `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
-- `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony at any priority, including P1
-- `tdd`
-- @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/plate-review.mdc when reproducing a current Plate/Plite architecture score across all, plugin, entrypoint, package, or surface scope
-- @.agents/rules/best-api.mdc when choosing or reviewing reusable public API shape
-- @.agents/rules/editor-audit.mdc when comparing one or more editor source
-  architectures against Plite and Plate
-- @.agents/rules/plate-plan.mdc when turning an accepted Plate API target into a boundary/adoption/proof plan, or when Plate/Plite ownership and editor-behavior law are the actual decision
-
-Skill ownership:
-
-- Repo-local skills must be repo-specific. Generic shared workflows belong in global skills or the synced dotai owner.
-- Never create a wrapper skill that only renames an existing owner. Patch, merge, or delete overlap instead.
-- New local skill topology needs a recurring local workflow, a named owner gap, and a first validation command that does not depend on cloud-only infrastructure.
-- Any task that changes, removes, renames, or reinterprets a reusable public
-  API automatically runs `best-api repair` before closeout. Do not wait for a
-  second user prompt. Update the source rule, update the smallest relevant
-  Vision owner only when durable taste changed, audit every affected worker
-  skill for stale teaching, bump versioned doctrine when its source set
-  changed, regenerate skills with `pnpm install`, and prove source/mirror
-  parity plus zero stale examples for the changed contract. A read-only task
-  reports the exact required repair instead of writing it.
-- Do not keep repo-local helper skills whose only job is quick status,
-  continuation, or a renamed mode of another owner. Put that behavior into the
-  owning supervisor, template, or mode.
-
-Goal plans:
-
-- For issue-backed goal work, start the filename with the ticket number.
-  Example: `docs/plans/DEV-4510-fix-schema.md`
-- For non-ticket goal work, keep the date-based format.
-  Example: `docs/plans/2026-02-07-fix-schema.md`
-
-Browser usage:
-
-- When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
-- Use `[@Browser](plugin://browser@openai-bundled)` first for ordinary app QA. It is the fast path for route navigation, DOM checks, forms, screenshots, responsive checks, and browser-rendered UI proof.
-- Use `[@Chrome](plugin://chrome@openai-bundled)` directly when the ticket involves native browser/profile/OS behavior: downloads, print or print preview, file picker/uploads, clipboard, browser permissions/dialogs, extension/profile state, or exact Chrome rendering. Do not stop at Browser proof for these.
-- Use `[@Computer](plugin://computer-use@openai-bundled)` only when native Chrome/OS UI must be visually inspected or interacted with and Chrome automation cannot read it, such as print preview, save/open dialogs, or permission sheets.
-- If Browser hits a known limitation and native proof matters, switch to Chrome/Computer instead of lowering confidence or asking for user confirmation.
-- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for Browser/Chrome usage.
-- For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
+Verify Plate owns browser selection and the exact affected route/state.
+Use the actual available Browser/Chrome controls, with Chrome for native
+profile or OS behavior. Preserve original evidence and serving-checkout
+identity. Do not replace interactive proof with an unauthorized browser driver;
+existing repository Playwright runners retain their owned automated scope.
+For registry proof, prefer `/blocks/[id]-demo` where available. Report a real
+browser, native-device or recorder capability gap explicitly. No app launch
+or visual artifact is required for workflow/prose-only changes.
 
 ## Commands
 
@@ -409,4 +237,4 @@ pnpm --filter platejs lint:fix
 - `pnpm build` - Build all packages (only use when necessary)
 - `pnpm typecheck` - Root package typecheck. It should use source-first package graphs; if it needs a build, treat that as source-entry debt unless the check is explicitly artifact-facing.
 - `bun run test` - Run the fast default test suite during iteration
-- `bun test` - Run the full test suite only at the end of the complete task
+- `pnpm test:all` - Run all test lanes only when the affected contract or publication gate requires them.

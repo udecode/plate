@@ -1,12 +1,66 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { PlateContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
 import { definePlatePlugin } from '../../plugin';
+import { useEditor } from './useEditor';
 import { useEditorPlugin } from './useEditorPlugin';
 
 describe('useEditorPlugin', () => {
+  it('binds staged APIs to the mounted editor while keeping the plugin store shared', () => {
+    const OwnerPlugin = definePlatePlugin('mountedOwner', {
+      initialState: { count: 0 },
+      api: ({ editor, store }) => ({
+        owner: () => editor,
+        label: () => 'base',
+        count: () => store.get('count'),
+      }),
+    }).extend({
+      api: ({ api }) => ({ label: () => `${api.label()}:extended` }),
+    });
+    const editor = createEditor({ plugins: [OwnerPlugin] });
+    const owners: Array<ReturnType<typeof useEditor>> = [];
+    const portals: Array<
+      ReturnType<typeof useEditorPlugin<typeof OwnerPlugin>>
+    > = [];
+    function Capture({ index }: { index: number }) {
+      const view = useEditor();
+      const portal = useEditorPlugin(OwnerPlugin);
+      React.useLayoutEffect(() => {
+        owners[index] = view;
+        portals[index] = portal;
+      }, [index, portal, view]);
+      return <PlateContent aria-label={`owner-${index}`} />;
+    }
+    const rendered = render(
+      <>
+        <Plate editor={editor}>
+          <Capture index={0} />
+        </Plate>
+        <Plate editor={editor}>
+          <Capture index={1} />
+        </Plate>
+      </>
+    );
+
+    expect(owners[0]).not.toBe(owners[1]);
+    for (const [index, portal] of portals.entries()) {
+      expect(portal.api.owner()).toBe(owners[index]);
+      expect(portal.api.label()).toBe('base:extended');
+      expect(portal.api).toBe(owners[index].api.mountedOwner);
+      expect(portal.api.owner().api.dom.root()).toBe(
+        rendered.getByRole('textbox', { name: `owner-${index}` })
+      );
+    }
+    act(() => editor.plugin(OwnerPlugin).store.set({ count: 2 }));
+    expect(portals.map((portal) => portal.api.count())).toEqual([2, 2]);
+    expect(editor.plugin(OwnerPlugin).api.owner()).toBe(editor);
+    rendered.unmount();
+    expect(portals[0].api.owner().api.dom.root()).toBeNull();
+  });
+
   it('infers plugin-owned updates from the descriptor', () => {
     const duplicate = vi.fn();
     const BlockPlugin = definePlatePlugin('block', {

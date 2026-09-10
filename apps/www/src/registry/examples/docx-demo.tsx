@@ -1,7 +1,6 @@
 'use client';
 
 import { Plate, useCreateEditor } from 'platejs/react';
-import * as React from 'react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -19,7 +18,7 @@ import { deserializeDocxValue } from '@/registry/examples/values/deserialize-doc
 const docxPluginNames = new Set<string>(DocxKit.map((plugin) => plugin.name));
 
 const DocxFixedToolbarPlugin = FixedToolbarPlugin.configure({
-  render: {
+  slots: {
     beforeEditable: () => (
       <FixedToolbar>
         <FixedToolbarButtons>

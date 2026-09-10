@@ -8,7 +8,7 @@ editor own headers, footers, synced blocks, captions, side panels, and other
 editable regions without creating separate editor instances. Use roots when the
 content should share editor state, history, collaboration, schema, and commands.
 
-## Value Shape
+## Value shape
 
 The shortest editor value is still an array of blocks. Plite treats it as the
 primary document.
@@ -46,7 +46,7 @@ roots, resets omitted persisted meta, and clears selection when `selection` is
 omitted. An invalid combined payload returns `false` and publishes nothing.
 Use `tx.roots.*` only for a targeted named-root change.
 
-## Reading And Writing Roots
+## Reading and writing roots
 
 Read the primary document with `editor.read.children()`. Read an extra root by key.
 
@@ -68,7 +68,7 @@ editor.update((tx) => {
 Mutate the primary document with normal node and text transforms instead of
 `tx.roots`.
 
-## Rendering Roots
+## Rendering roots
 
 Pass `root` to `Editable` when one React tree renders a named root.
 
@@ -97,7 +97,7 @@ Use `usePliteRootState(root, selector)` for UI that reads one root without
 subscribing to every editor change. Use `usePliteRootEditor(root)` for commands
 that must run against a specific root.
 
-## Content Roots
+## Content roots
 
 Content roots attach a separately addressed editable root to an element in
 another root. `element.childRoots[slot]` stores the root key, and the detached

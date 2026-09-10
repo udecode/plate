@@ -1,5 +1,5 @@
 import { act, render } from '@testing-library/react';
-import type { Range } from 'plitejs';
+import type { Value, TextSelection } from 'plitejs';
 
 import {
   getChildren as editorGetChildren,
@@ -17,7 +17,7 @@ const initialValue = [
   { type: 'paragraph', children: [{ text: 'two' }] },
 ];
 
-const fallbackSelection: Range = {
+const fallbackSelection: TextSelection = {
   kind: 'text',
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 3 },
@@ -44,7 +44,7 @@ const domSelectionForText = (text: string) => {
 };
 
 test('target runtime imports the current DOM selection for implicit editor commands', async () => {
-  const editor = createEditor({ initialValue });
+  const editor = createEditor<Value>({ initialValue });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -90,7 +90,7 @@ test('target runtime imports the current DOM selection for implicit editor comma
 });
 
 test('Editable target runtime routes implicit block commands to the current DOM selection', async () => {
-  const editor = createEditor({ initialValue });
+  const editor = createEditor<Value>({ initialValue });
 
   act(() => {
     render(

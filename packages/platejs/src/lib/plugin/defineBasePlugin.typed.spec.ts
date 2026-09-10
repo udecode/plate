@@ -1,4 +1,10 @@
-import { property, schema, target, type SchemaElementTarget } from '../../core';
+import {
+  property,
+  schema,
+  target,
+  TextApi,
+  type SchemaElementTarget,
+} from '../../core';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
 import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
@@ -427,7 +433,7 @@ const assertTypedAuthoringContext = () => {
     read: () => ({
       ready: () => true as const,
     }),
-    render: { isDecoration: false },
+    render: { mark: { placement: 'text' } },
     rules: { selection: { affinity: 'outward' } },
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
@@ -632,9 +638,7 @@ const assertTypedWeakPluginOverrides = () => {
 
   defineBasePlugin('typedWeakContributor', {
     override: {
-      plugins: {
-        typedWeakTarget: exactOverride,
-      },
+      typedWeakTarget: exactOverride,
     },
   });
 
@@ -731,12 +735,6 @@ const assertTypedRenderOwnership = () => {
   defineBasePlugin('intrinsicRender', { component: CustomNode });
   // @ts-expect-error component defaults belong in the constructor or terminal configuration
   StaticPlugin.extend({ component: CustomNode });
-  defineBasePlugin('invalidBaseRender', {
-    render: {
-      // @ts-expect-error custom node components use the Plate component field
-      node: CustomNode,
-    },
-  });
   StaticPlugin.configure({
     component: CustomNode,
   });
@@ -746,6 +744,66 @@ const assertTypedRenderOwnership = () => {
 };
 
 void assertTypedRenderOwnership;
+
+const assertTypedDecorate = () => {
+  definePlatePlugin('typedDecoration', {
+    decorate: {
+      observe: ({ editor, plugin, refresh, store }) => {
+        editor.id satisfies string;
+        plugin.name satisfies 'typedDecoration';
+        store.get('active') satisfies boolean;
+        refresh({ nodeKeys: 'all' });
+
+        return () => {};
+      },
+      read: ({ editor, entry, plugin, store }) => {
+        editor.id satisfies string;
+        entry[1] satisfies readonly number[];
+        plugin.name satisfies 'typedDecoration';
+        store.get('active') satisfies boolean;
+
+        if (!TextApi.isText(entry[0])) return [];
+
+        return [
+          {
+            attributes: {
+              'aria-hidden': false,
+              'data-active': true,
+              className: 'typed-decoration',
+              style: { color: 'red' },
+            },
+            key: 'typed-decoration',
+            range: {
+              anchor: { offset: 0, path: entry[1] },
+              focus: { offset: entry[0].text.length, path: entry[1] },
+            },
+          },
+        ];
+      },
+    },
+    initialState: { active: true },
+  });
+
+  definePlatePlugin('invalidDecorationAttribute', {
+    decorate: {
+      read: () => [
+        {
+          attributes: {
+            // @ts-expect-error Decoration output rejects event handlers.
+            onClick: () => {},
+          },
+          key: 'invalid-decoration',
+          range: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 1, path: [0, 0] },
+          },
+        },
+      ],
+    },
+  });
+};
+
+void assertTypedDecorate;
 
 describe('defineBasePlugin', () => {
   it('preserves inferred capabilities through author stages and configuration', () => {

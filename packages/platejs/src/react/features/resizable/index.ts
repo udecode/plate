@@ -3,4 +3,3 @@
  */
 
 export * from './Resizable';
-export * from './resizeLength';

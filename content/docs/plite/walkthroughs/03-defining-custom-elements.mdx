@@ -7,7 +7,7 @@ The smallest editor can render a paragraph without a custom renderer, but real
 editors usually need block types such as paragraphs, quotes, code blocks, list
 items, cards, and embeds.
 
-## Starting Point
+## Starting point
 
 Start from the editor from the previous walkthrough:
 
@@ -39,7 +39,7 @@ const App = () => {
 };
 ```
 
-## Render Elements
+## Render elements
 
 Element renderers are normal React functions. Always spread `attributes` on the
 top-level DOM element and render `children`.
@@ -94,7 +94,7 @@ const App = () => {
 Keep renderer functions stable by defining them at module scope or memoizing
 them once.
 
-## Toggle A Block Type
+## Toggle a block type
 
 Use `editor.update(...)` and `tx.nodes.set(...)` to change the selected block.
 

@@ -12,6 +12,9 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/docx.tsbuildinfo"
   },
   "exclude": [
+    "../src/docx/export/**/*",
+    "../src/docx/import/**/*",
+    "../src/docx/html/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",
     "../src/**/*.slow.*",
@@ -25,7 +28,7 @@
       "path": "./core.json"
     },
     {
-      "path": "./static.json"
+      "path": "./docx-html.json"
     }
   ]
 }

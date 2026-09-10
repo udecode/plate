@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-prove-it-works",
+  "files": [
+    {
+      "upstream": "skills/principle-prove-it-works/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "9bbe6138505be34d81e9395d95d3639b384f71d71d65cc1903075126e1da1508",
+      "destinationSha256": "57aa4909cd07dcf0958082418ec2d076aceebc4adfda4d64891d8b1bba7c05b4",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-prove-it-works/SKILL.md\n+++ skills/principle-prove-it-works/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-prove-it-works\n description: \"Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Prove It Works\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

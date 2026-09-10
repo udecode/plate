@@ -11,7 +11,7 @@ import {
 } from '@hocuspocus/server';
 import * as Y from 'yjs';
 
-import { readPliteValueFromYjs } from '../../packages/platejs/src/yjs/core/document';
+import { readPliteValueFromYjs } from '../../../../packages/plitejs/src/yjs/core/document';
 
 type CollabContext = {
   documentName?: string;

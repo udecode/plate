@@ -78,6 +78,7 @@ import type { UnionToIntersection } from '../../internal/types';
 import type { AnyBasePlugin } from '../plugin/BasePlugin';
 import type {
   AnyBasePluginDefinition,
+  BasePluginDefinition,
   InferApi,
   InferDependencyDefinitions,
   InferDependencies,
@@ -104,7 +105,7 @@ import type {
   CoreEditorUpdate,
 } from './coreEditorCapabilityDefinition.internal';
 
-export type BasePluginInput = AnyBasePlugin | AnyBasePluginDefinition;
+export type BasePluginInput = PluginReference;
 
 type PluginDefinitionOf<P> =
   InternalPluginDefinitionOf<P> extends infer D
@@ -760,17 +761,18 @@ type PlateElementInsertOptions<
   TSchema,
   TSelector extends PlateNodeTypeSelector,
   TMutations = never,
-> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> & {
-  split?: Omit<
-    NonNullable<NodeInsertNodesOptions<Element>['split']>,
-    'match' | 'type'
-  > & {
-    match?: NodeMatch<
-      PlateElementInsertNode<TSchema, TMutations, NoInfer<TSelector>>
-    >;
-    type: TSelector & NoInfer<PlateElementSelectorGuard<TSelector>>;
+> = Omit<NodeInsertNodesOptions<Element>, 'match' | 'split' | 'type'> &
+  Pick<PlateBlockInsertOptions, 'after' | 'replaceEmpty'> & {
+    split?: Omit<
+      NonNullable<NodeInsertNodesOptions<Element>['split']>,
+      'match' | 'type'
+    > & {
+      match?: NodeMatch<
+        PlateElementInsertNode<TSchema, TMutations, NoInfer<TSelector>>
+      >;
+      type: TSelector & NoInfer<PlateElementSelectorGuard<TSelector>>;
+    };
   };
-};
 
 type PlateElementInsert<
   TConstruction extends object,
@@ -1235,13 +1237,13 @@ export type InternalPlateSchemaExtensionForPlugin<
   P extends AnyBasePluginDefinition,
 > = SchemaExtensionsOf<
   readonly [
-    EditorSchemaExtensionProvider<PlateSchemaExtension<P>>,
+    EditorSchemaExtensionProvider<() => PlateSchemaExtension<P>>,
     ...PlateDependencySchemaProviders<InferDependencies<P>>,
   ]
 >;
 
 type PlateSchemaSourceForInstalledDefinitions<D> = EditorSchemaSourceProvider<
-  PlateRawSchemaDeclaration<D>
+  () => PlateRawSchemaDeclaration<D>
 >;
 
 export type PlateSchemaSource<P> = PlateSchemaSourceForInstalledDefinitions<
@@ -1341,6 +1343,30 @@ export type InternalEditorDefinitionTextProperties<
     >
   >
 >;
+
+type EditorPropertyOwner<TPlugins extends readonly unknown[]> =
+  MergeInstalledPluginDefinitions<
+    CorePluginDefinition,
+    InferPlugins<TPlugins>
+  > extends { name: infer TName extends string }
+    ? TName
+    : never;
+
+/** Exact property projections for offline declaration emission. */
+export type EditorPropertyTypes<TPlugins extends readonly unknown[]> =
+  Readonly<{
+    elements: {
+      readonly [
+        TName in EditorPropertyOwner<TPlugins>
+      ]: InternalEditorDefinitionElementProperties<TPlugins, TName>;
+    };
+    owners: {
+      readonly [
+        TName in EditorPropertyOwner<TPlugins>
+      ]: InternalEditorDefinitionOwnedElementProperties<TPlugins, TName>;
+    };
+    text: InternalEditorDefinitionTextProperties<TPlugins>;
+  }>;
 
 type ElementPluginDefinition<D extends AnyBasePluginDefinition> =
   D extends unknown
@@ -1545,6 +1571,14 @@ export type PlateNodeInsertOptions = Omit<
   > & {
     type?: PlateNodeTypeSelector;
   };
+};
+
+/** Placement options for feature commands that insert whole blocks. */
+export type PlateBlockInsertOptions = PlateNodeInsertOptions & {
+  /** Insert after this block target; omit `at` when using `after`. */
+  after?: NodeTarget;
+  /** Replace an empty editable source when inserting after a block. */
+  replaceEmpty?: boolean;
 };
 
 type PlateElementForSelector<TSchema, TSelector> =
@@ -1944,7 +1978,7 @@ type PlateEditorApi<V extends Value, D> = Readonly<
 
 type PlateSchemaInstalledExtension<D> = {
   name: 'plate';
-} & EditorSchemaExtensionProvider<PlateSchemaExtension<D>>;
+} & EditorSchemaExtensionProvider<() => PlateSchemaExtension<D>>;
 
 type PlateInstalledExtension<V extends Value, D, S = D> = Readonly<{
   name: 'plate';
@@ -2725,10 +2759,11 @@ export type InternalPlateTextWithInstalledDefinitions<D> =
         import('../../facade').Text
       >;
 
-export type PlatePluginTransaction<P extends AnyBasePluginDefinition> =
-  PlatePluginTransactionForInstalledDefinitions<
-    InstalledRuntimePluginDefinitions<P>
-  >;
+export type PlatePluginTransaction<
+  P extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PlatePluginTransactionForInstalledDefinitions<
+  InstalledRuntimePluginDefinitions<P>
+>;
 
 /** Installed state capabilities visible while a plugin constructs a read group. */
 type PlatePluginReadStateForInstalledDefinitions<D> = PlateEditorStateView<

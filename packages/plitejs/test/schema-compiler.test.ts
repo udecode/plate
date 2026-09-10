@@ -987,11 +987,6 @@ describe('schema compiler', () => {
     for (const [id, element, message] of [
       ['missing-content', {}, /must declare content explicitly/u],
       [
-        'editable-island-content',
-        { void: 'editable-island' },
-        /must declare content explicitly/u,
-      ],
-      [
         'redundant-void-content',
         { content: schema.content.text(), void: 'block' },
         /derives its canonical empty text child/u,

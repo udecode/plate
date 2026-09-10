@@ -16,7 +16,6 @@ export type NavItem = {
 };
 
 export interface NavItemWithChildren extends NavItem {
-  headings?: string[];
   items?: NavItemWithChildren[];
 }
 

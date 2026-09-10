@@ -10,7 +10,7 @@ The [Huge Document](/examples/plite/huge-document) example is the local
 playground for document size, DOM strategy, selection, typing, and rendering
 cost.
 
-## Measure First
+## Measure first
 
 This guide mostly cares about **Interaction to Next Paint** (INP) while typing. If the INP is below roughly 100ms, typing should feel responsive. When it rises above that, the editor starts to feel sluggish.
 
@@ -26,7 +26,7 @@ Before you start optimizing, make sure you know which of these areas is most res
 2. If disabling any custom normalization logic improves performance, the normalization logic is the problem.
 3. Otherwise, it's likely to be React.
 
-## Optimizing Plite Core
+## Optimizing Plite core
 
 Usually, if the core Plite logic is causing a noticeable delay, it's because of [normalizing](../concepts/11-normalizing). If custom normalization logic is causing slowness in your app, consider whether the logic can be made more efficient.
 
@@ -36,14 +36,14 @@ Make sure you only normalize the node passed into `normalizeNode` and (occasiona
 
 ## Optimizing React
 
-### Reduce Renders
+### Reduce renders
 
 The `renderElement` prop and any React component it returns will re-render every time the element or any of its descendants changes. This is unavoidable. However, sometimes custom logic can cause React components to re-render more often than this, which can have a detrimental effect on performance.
 
 Prefer stable renderer functions passed through `Editable` props. Define
-`renderElement`, `renderLeaf`, `renderText`, and `renderSegment` at module
-scope, or memoize them once when they need editor-local data. Avoid creating
-renderer functions inside the editor component during render.
+`renderElement`, `renderLeaf`, and `renderText` at module scope, or memoize them
+once when they need editor-local data. Avoid creating renderer functions inside
+the editor component during render.
 
 If unmodified elements are being re-rendered, check to see if they are subscribing to any contexts or hooks that are causing unnecessary re-renders. You can also apply these techniques to any toolbars or other non-element React components that may be re-rendering in response to changes in the editor.
 
@@ -51,9 +51,9 @@ Hot editor UI should subscribe to the narrowest source it needs. Use
 `useEditorContext()` to access the provider editor, `useEditorSelection()` for
 selection-aware toolbar UI, and `useEditorSelector()` for derived editor-level
 toolbar state. Inside rendered editor content, prefer target-scoped hooks such
-as `useElementSelected()`, `useNodeSelector()`, `useTextSelector()`, and
-`useDecorationSelector()` so selection or decoration changes dirty only the
-affected runtime targets.
+as `useElementSelected()`, `useNodeSelector()`, and `useTextSelector()`. Use
+`usePliteAnnotation(id)` or `usePliteWidget(store, id)` for one targeted
+external item.
 
 If your components depend on custom React contexts containing non-primitive values (such as objects or arrays), ensure that these values are properly memoized so that components only re-render when these values change. In some circumstances, you may instead want to consider passing a ref object or an unchanging getter function to retrieve the latest value.
 
@@ -72,7 +72,7 @@ const onClick = () => {
 };
 ```
 
-### DOM Strategy
+### DOM strategy
 
 `Editable` keeps large documents DOM-bounded by default. Use
 `domStrategy="auto"` for bounded partial-DOM rendering. Plite groups off-DOM
@@ -91,12 +91,12 @@ For paginated documents, keep virtualization at the page boundary. See
 [Plite Pagination](../libraries/plite-pagination) for `PagedEditable` and
 page mount planning.
 
-Use projection sources for overlays instead of render-time decoration callbacks.
-Projection sources let decorations, annotations, widgets, diagnostics, and
-search results share the same range projection runtime without forcing
-everything through one `decorate` prop.
+Use stable `PliteDecorationSource` objects for inline paint. Plite subscribes
+once per source, rereads only affected input node keys after document edits, and
+wakes only text nodes whose merged attributes changed. Use `observe` for
+targeted refreshes from external stores.
 
-## Optimizing DOM Painting
+## Optimizing DOM painting
 
 In Chrome and Safari, painting large numbers of DOM nodes can be extremely slow, over 100x slower than the core Plite logic and React rendering combined in some cases. In Firefox, the impact of painting on performance is much less significant.
 

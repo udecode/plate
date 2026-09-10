@@ -1,0 +1,19 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+web-google-views	web	site.developers.google.com docs api suggestions accepted rejected suggestionsViewMode	primary sources	not captured	1	Google Docs	views	none
+web-editor-suggestions	web	rich text track changes ProseMirror suggestions GitHub manuscripts handlewithcare SuperDoc	primary sources	not captured	3	HWC; SuperDoc; ProseMirror	projection; capture	local clones
+web-ckeditor-features	web	site.ckeditor.com docs track changes integrations suggestion data revision history	primary sources	not captured	2	CKEditor	persistence; capture	custom feature docs
+web-automerge-history	web	site.automerge.org docs history actor changes text	primary sources	not captured	2	Automerge	authorship; history	local source
+web-loro-history	web	site.loro.dev docs version history undo rich text	primary sources	not captured	2	Loro	history	local source
+web-ckeditor-persistence	web	site.ckeditor.com docs track changes integration load save suggestions data	primary sources	not captured	2	none	persistence	none
+web-yjs14	web	site.yjs.dev v14 attribution suggestions DiffAttributionManager	primary sources	not captured	2	Yjs; y-prosemirror	projection	refresh upstream source
+web-yjs-attribution	web	site.discuss.yjs.dev suggestion mode attribution manager	primary sources	not captured	2	Yhub	authorship; history	local clone
+web-google-ui	web	site.support.google.com/docs suggest edits accept reject all changes	primary sources	not captured	2	none	views	none
+gh-pm-tracking	gh repository search	prosemirror track changes	limit 8	2	2 metadata only	none promoted	none	search suggest-changes
+gh-richtext-suggestions	gh repository search	rich text suggestions	limit 8	0	0	none	none	broader naming
+gh-manuscripts-owner	gh repository search	track-changes	owner manuscripts; limit 10	0	0	none	none	search manuscripts track
+gh-suggest-changes	gh repository search	suggest-changes	limit 8	8	1 source candidate	HWC	capture	local source
+gh-superdoc-owner	gh repository search	superdoc	owner superdoc-dev; limit 5	5	0 source candidates	none	none	resolve superdoc/docx-editor directly
+gh-manuscripts-track	gh repository search	manuscripts track	limit 8	8	1 source candidate	Atypon-OpenSource/manuscripts-track-changes-plugin	structure	local source
+gh-hwc-issues	gh issue search	repo:handlewithcarecollective/prosemirror-suggest-changes	limit 5	5	3 bodies	none	group identity; coverage	none
+gh-yjs-malformed	gh issue search	repo:yjs/yjs suggestion	malformed CLI query	error	0	none	none	retry with --repo
+gh-yjs-issues	gh issue search	suggestion	--repo yjs/yjs; limit 6	6	1 body	none	dependency-aware selection	binding issue 258 from source

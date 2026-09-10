@@ -36,7 +36,7 @@ export function HeadingElementDocx(
 
   return (
     <HeadingElementStatic {...props}>
-      {key && <span id={`plate_${key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`} />}
+      {key && <span id={key} />}
       {props.children}
     </HeadingElementStatic>
   );

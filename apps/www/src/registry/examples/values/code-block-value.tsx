@@ -12,66 +12,85 @@ export const codeBlockValue = (
       Showcase your code with syntax highlighting. Supports multiple programming
       languages with proper formatting and indentation.
     </hp>
-    <hcodeblock lang="javascript">
-      <hcodeline>{'// JavaScript example with async/await'}</hcodeline>
-      <hcodeline>{'async function fetchUserData(userId) {'}</hcodeline>
-      <hcodeline>{'  try {'}</hcodeline>
-      <hcodeline>
-        {'    const response = await fetch(`/api/users/${userId}`);'}
-      </hcodeline>
-      <hcodeline>{'    const userData = await response.json();'}</hcodeline>
-      <hcodeline>{'    return userData;'}</hcodeline>
-      <hcodeline>{'  } catch (error) {'}</hcodeline>
-      <hcodeline>{`    console.error('Failed to fetch user data:', error);`}</hcodeline>
-      <hcodeline>{'    throw error;'}</hcodeline>
-      <hcodeline>{'  }'}</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
+    <hcodeblock language="javascript">
+      {'// JavaScript example with async/await'}
+      {'\n'}
+      {'async function fetchUserData(userId) {'}
+      {'\n'}
+      {'  try {'}
+      {'\n'}
+      {'    const response = await fetch(`/api/users/${userId}`);'}
+      {'\n'}
+      {'    const userData = await response.json();'}
+      {'\n'}
+      {'    return userData;'}
+      {'\n'}
+      {'  } catch (error) {'}
+      {'\n'}
+      {`    console.error('Failed to fetch user data:', error);`}
+      {'\n'}
+      {'    throw error;'}
+      {'\n'}
+      {'  }'}
+      {'\n'}
+      {'}'}
     </hcodeblock>
     <hp>Python example with class definition:</hp>
-    <hcodeblock lang="python">
-      <hcodeline># Python class with type hints</hcodeline>
-      <hcodeline>from typing import List, Optional</hcodeline>
-      <hcodeline />
-      <hcodeline>class TaskManager:</hcodeline>
-      <hcodeline>{'    def __init__(self) -> None:'}</hcodeline>
-      <hcodeline>{'        self.tasks: List[str] = []'}</hcodeline>
-      <hcodeline />
-      <hcodeline>{'    def add_task(self, task: str) -> None:'}</hcodeline>
-      <hcodeline>{`        """Add a new task to the list."""`}</hcodeline>
-      <hcodeline>{'        self.tasks.append(task)'}</hcodeline>
-      <hcodeline />
-      <hcodeline>
-        {'    def get_task(self, index: int) -> Optional[str]:'}
-      </hcodeline>
-      <hcodeline>{`        """Get a task by index, return None if not found."""`}</hcodeline>
-      <hcodeline>
-        {
-          '        return self.tasks[index] if 0 <= index < len(self.tasks) else None'
-        }
-      </hcodeline>
+    <hcodeblock language="python">
+      # Python class with type hints{'\n'}from typing import List, Optional
+      {'\n\n'}
+      class TaskManager:{'\n'}
+      {'    def __init__(self) -> None:'}
+      {'\n'}
+      {'        self.tasks: List[str] = []'}
+      {'\n\n'}
+      {'    def add_task(self, task: str) -> None:'}
+      {'\n'}
+      {`        """Add a new task to the list."""`}
+      {'\n'}
+      {'        self.tasks.append(task)'}
+      {'\n\n'}
+      {'    def get_task(self, index: int) -> Optional[str]:'}
+      {'\n'}
+      {`        """Get a task by index, return None if not found."""`}
+      {'\n'}
+      {
+        '        return self.tasks[index] if 0 <= index < len(self.tasks) else None'
+      }
     </hcodeblock>
     <hp>CSS styling example:</hp>
-    <hcodeblock lang="css">
-      <hcodeline>{'/* Modern CSS with custom properties */'}</hcodeline>
-      <hcodeline>{':root {'}</hcodeline>
-      <hcodeline>{'  --primary-color: #3b82f6;'}</hcodeline>
-      <hcodeline>{'  --secondary-color: #64748b;'}</hcodeline>
-      <hcodeline>{'  --border-radius: 0.5rem;'}</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
-      <hcodeline />
-      <hcodeline>{'.card {'}</hcodeline>
-      <hcodeline>{'  background: white;'}</hcodeline>
-      <hcodeline>{'  border-radius: var(--border-radius);'}</hcodeline>
-      <hcodeline>
-        {'  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);'}
-      </hcodeline>
-      <hcodeline>{'  padding: 1.5rem;'}</hcodeline>
-      <hcodeline>{'  transition: transform 0.2s ease-in-out;'}</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
-      <hcodeline />
-      <hcodeline>{'.card:hover {'}</hcodeline>
-      <hcodeline>{'  transform: translateY(-2px);'}</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
+    <hcodeblock language="css">
+      {'/* Modern CSS with custom properties */'}
+      {'\n'}
+      {':root {'}
+      {'\n'}
+      {'  --primary-color: #3b82f6;'}
+      {'\n'}
+      {'  --secondary-color: #64748b;'}
+      {'\n'}
+      {'  --border-radius: 0.5rem;'}
+      {'\n'}
+      {'}'}
+      {'\n\n'}
+      {'.card {'}
+      {'\n'}
+      {'  background: white;'}
+      {'\n'}
+      {'  border-radius: var(--border-radius);'}
+      {'\n'}
+      {'  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);'}
+      {'\n'}
+      {'  padding: 1.5rem;'}
+      {'\n'}
+      {'  transition: transform 0.2s ease-in-out;'}
+      {'\n'}
+      {'}'}
+      {'\n\n'}
+      {'.card:hover {'}
+      {'\n'}
+      {'  transform: translateY(-2px);'}
+      {'\n'}
+      {'}'}
     </hcodeblock>
   </fragment>
 );

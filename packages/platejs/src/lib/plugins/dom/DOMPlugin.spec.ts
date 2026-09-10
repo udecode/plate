@@ -1,5 +1,5 @@
 import { DocumentChange } from '../../../core';
-import { DOMEditor } from '../../../dom';
+import { DOMEditor } from '../../../dom/plite-dom.internal';
 import { createEditor } from '../../editor';
 import { DOMPlugin } from './DOMPlugin';
 
@@ -12,7 +12,7 @@ describe('DOMPlugin', () => {
 
   it('scrolls enabled canonical changes while auto-scrolling is active', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -50,7 +50,7 @@ describe('DOMPlugin', () => {
 
   it('skips scrolling when the current change kind is disabled', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -76,7 +76,7 @@ describe('DOMPlugin', () => {
 
   it('scrolls inserted nodes when structure changes are enabled', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -103,7 +103,7 @@ describe('DOMPlugin', () => {
 
   it('scrolls an explicit text target instead of an unrelated selection', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -143,7 +143,7 @@ describe('DOMPlugin', () => {
       source.read.lastCommit()!.changes.toJSON()
     );
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -166,7 +166,7 @@ describe('DOMPlugin', () => {
 
   it('passes explicit scroll options through to Plite DOM', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {
@@ -195,7 +195,7 @@ describe('DOMPlugin', () => {
 
   it('passes boolean scroll options through to Plite DOM', () => {
     const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
+      () => () => {}
     );
     const editor = createEditor({
       selection: {

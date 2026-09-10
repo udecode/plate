@@ -22,12 +22,6 @@
             "AnchorDeletionPolicy",
             "AnchorOptions",
             "AnchorValue",
-            "AnyBasePlugin",
-            "AnyBasePluginContext",
-            "AnyBasePluginDefinition",
-            "AnyBasePluginPortal",
-            "AnyInjectNodeProps",
-            "AnyPluginBase",
             "ApplyDeepToNodesOptions",
             "AutoScrollChangeKind",
             "AutoScrollChangesMap",
@@ -38,7 +32,6 @@
             "BaseBoldPlugin",
             "BaseCodeBlockPlugin",
             "BaseCodeHighlightPlugin",
-            "BaseCodeLinePlugin",
             "BaseCodePlugin",
             "BaseElement",
             "BaseFontBackgroundColorPlugin",
@@ -103,7 +96,6 @@
             "CodeHighlightLowlight",
             "CodeHighlightPluginState",
             "CodeRules",
-            "CodeSyntaxText",
             "CollapseSelectionCommand",
             "CompatibleEditorCommand",
             "ConfiguredBasePlugin",
@@ -112,8 +104,6 @@
             "CorePlugins",
             "CreateEditorOptions",
             "CreateLinkNodeOptions",
-            "DOMPlugin",
-            "DOMPluginBase",
             "DebugApi",
             "DebugDefinition",
             "DebugErrorType",
@@ -121,7 +111,6 @@
             "DebugPluginState",
             "DeclaredPluginShortcutInput",
             "Decorate",
-            "DecoratedRange",
             "DefinitionOf",
             "DeleteCommand",
             "DeleteFragmentCommand",
@@ -135,13 +124,11 @@
             "DescendantIn",
             "DescendantOf",
             "DocumentChange",
-            "DocumentChangeRelocation",
             "DocumentMigration",
             "DocumentMigrationContext",
             "DocumentMigrationResult",
             "DocumentMigrations",
             "DomApi",
-            "DomDefinition",
             "DomPluginState",
             "DomPluginUpdate",
             "EditOnlyConfig",
@@ -385,7 +372,6 @@
             "ExitBreakPlugin",
             "ExtensionsOf",
             "FragmentPropMode",
-            "GeneratedEditorTypeProvider",
             "GetCorePluginsOptions",
             "GetFragmentPropOptions",
             "GetInjectNodePropsOptions",
@@ -400,11 +386,8 @@
             "HistoryDefinition",
             "HistoryPlugin",
             "HorizontalRuleRules",
-            "HotkeyCallback",
             "Hotkeys",
             "HotkeysEvent",
-            "HotkeysOptions",
-            "HotkeysTrigger",
             "HtmlApi",
             "HtmlAttributes",
             "HtmlCodecHooks",
@@ -458,14 +441,9 @@
             "InsertTextCommand",
             "InsertTextInputRule",
             "InsertTextInputRuleContext",
-            "InternalEditorDefinitionElementProperties",
-            "InternalEditorDefinitionOwnedElementProperties",
-            "InternalEditorDefinitionTextProperties",
-            "InternalPluginDefinitionOf",
             "ItalicRules",
             "JsonEditorValue",
             "JsonNode",
-            "Keys",
             "LeafEdge",
             "LeafPosition",
             "LeafStaticProps",
@@ -513,7 +491,6 @@
             "NodeChildEntry",
             "NodeChildrenOptions",
             "NodeComponent",
-            "NodeComponents",
             "NodeDescendantsOptions",
             "NodeDuplicateOptions",
             "NodeElementsOptions",
@@ -554,8 +531,6 @@
             "NodeUnsetNodesOptions",
             "NodeUnwrapNodesOptions",
             "NodeWrapNodesOptions",
-            "NormalizePluginSelectors",
-            "NormalizePluginState",
             "NormalizeRules",
             "NormalizeTypesDefinition",
             "NormalizeTypesPlugin",
@@ -565,7 +540,6 @@
             "OutdentListOptions",
             "OverrideDefinition",
             "OverridePlugin",
-            "OverridePluginUpdate",
             "PLUGINS",
             "PartialBasePlugin",
             "Path",
@@ -576,15 +550,12 @@
             "PersistedDocumentInput",
             "PlateDomApi",
             "PlateError",
-            "PlateNodeCodecContribution",
             "PlateNodeInsertOptions",
-            "PlatePluginCache",
             "PlatePluginOwnUpdate",
             "PlatePluginReadState",
             "PlatePluginState",
             "PlatePluginTransaction",
             "PlatePluginUpdate",
-            "PlateRuntime",
             "PlateSchemaElement",
             "PluginBaseContext",
             "PluginDependency",
@@ -602,6 +573,10 @@
             "PluginSelectors",
             "PluginShortcutInput",
             "PluginStore",
+            "PliteDecoration",
+            "PliteDecorationAttributes",
+            "PliteDecorationRefresh",
+            "PliteDecorationSource",
             "Point",
             "PointApi",
             "PointEntry",
@@ -646,7 +621,6 @@
             "ReplaceSliceCommand",
             "ResolvedInputRule",
             "ResolvedInputRulesMeta",
-            "ResolvedPlatePlugin",
             "RootKey",
             "SanitizeUrlOptions",
             "SchemaBuiltInGroupName",
@@ -798,21 +772,14 @@
             "WrapLinkOptions",
             "applyDeepToNodes",
             "areEditorSchemaIdentitiesEqual",
-            "assertEditorJsonValue",
             "collapseWhiteSpace",
-            "compileEditorApplicationSchema",
-            "compileEditorExtension",
             "containsCompleteEditorSchema",
             "createBlockFenceInputRule",
             "createBlockStartInputRule",
-            "createDocumentChangeFromRootSections",
             "createEditor",
-            "createEditorEffect",
-            "createEditorSchemaContract",
             "createEditorView",
             "createHotkey",
             "createMarkInputRule",
-            "createPluginContext",
             "createRuleFactory",
             "createTextSubstitutionInputRule",
             "decodeEditorEffect",
@@ -836,30 +803,14 @@
             "editorReads",
             "encodeEditorEffect",
             "evaluateCommand",
-            "getCandidateEditorExtensionApi",
-            "getCollabEffects",
-            "getCompiledEditorSchema",
             "getCompiledEditorSchemaFromApi",
-            "getCompiledPlateContainerTypes",
-            "getCompiledPlatePlugin",
-            "getCompiledPropertyMergeStrategy",
-            "getCompiledSchemaPropertyId",
             "getCorePlugins",
-            "getDocumentChangeRelocations",
-            "getDocumentChangeRootKeys",
             "getEditorCommitSnapshot",
-            "getEditorExtensionRegistry",
             "getEditorRuntimeOwner",
-            "getExactDocumentChangeRelocation",
             "getFragmentProp",
             "getHtmlComments",
             "getInjectMatch",
-            "getInstalledEditorExtension",
-            "getPlateNodeCodecContributions",
-            "getPlateRuntime",
             "getPluginNodeClass",
-            "getPluginNodeProps",
-            "getResolvedPluginTargetTypes",
             "getSchemaElementSourceReference",
             "getSelectionDOMRange",
             "getSelectionRange",
@@ -870,8 +821,8 @@
             "invertEffect",
             "isEditor",
             "isEditorExtension",
-            "isHotkey",
             "isHtmlBlockElement",
+            "isHotkey",
             "isHtmlComment",
             "isHtmlElement",
             "isHtmlInlineElement",
@@ -886,15 +837,10 @@
             "matchBlockStart",
             "matchDelimitedInline",
             "mergeDeepToNodes",
+            "nanoid",
             "migrateDocument",
             "migrateElementIds",
-            "nanoid",
-            "normalizeRootKey",
-            "omitPluginContext",
-            "pipePreparedInsertDataQuery",
             "postCleanHtml",
-            "prepareHtmlPluginContext",
-            "prepareHtmlRegistry",
             "preserveCompiledSchemaPropertyIdentity",
             "probeCommandNativeEquivalent",
             "property",
@@ -907,7 +853,6 @@
             "reportEditorLifecycleError",
             "restoreEditorSchemaContract",
             "runTrustedUpdate",
-            "scheduleAfterCommitNotification",
             "schema",
             "screenReaderAnnouncementEffect",
             "setEditorMaxLength",
@@ -924,7 +869,8 @@
             "txOnly",
             "txRead",
             "valueCodecs",
-            "withTransactionSpecDraftRead"
+            "withTransactionSpecDraftRead",
+            "compileEditorSchemaContract"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {
@@ -936,7 +882,8 @@
             "isDefined": "/docs/api/utils",
             "isUrl": "/docs/api/utils",
             "sanitizeUrl": "/docs/api/utils",
-            "setDebugValueScrubber": "/docs/plite/api/scrubber"
+            "setDebugValueScrubber": "/docs/plite/api/scrubber",
+            "PlateBlockInsertOptions": "/docs/api/core#plateblockinsertoptions"
           }
         },
         "./callout": {
@@ -949,31 +896,46 @@
             "filterWords",
             "FilterWordsOptions",
             "triggerCombobox",
-            "TriggerComboboxCommands",
             "TriggerComboboxEditor",
             "TriggerComboboxOptions",
             "TriggerComboboxPluginState"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "BaseComboboxPlugin": "/docs/combobox"
+          }
         },
-        "./comment": {
-          "exclude": [
-            "BaseCommentDefinition",
-            "BaseCommentPlugin",
-            "CommentText",
-            "getCommentCount",
-            "getCommentKey",
-            "getCommentKeyId",
-            "getCommentKeys",
-            "getDraftCommentKey",
-            "getTransientCommentKey",
-            "isCommentKey",
-            "isCommentNodeById",
-            "isCommentText"
-          ],
+        "./comments": {
+          "exclude": [],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "BaseCommentsPlugin": "/docs/comment",
+            "CommentMessage": "/docs/comment",
+            "CommentTarget": "/docs/comment",
+            "CommentThread": "/docs/comment",
+            "CommentUser": "/docs/comment",
+            "CommentsChange": "/docs/comment",
+            "CommentsPluginState": "/docs/comment",
+            "CommentsSnapshot": "/docs/comment",
+            "PendingComment": "/docs/comment"
+          }
+        },
+        "./comments/react": {
+          "exclude": [],
+          "excludeReason": "No curated reference page owns this symbol yet.",
+          "include": {
+            "CommentsPlugin": "/docs/comment"
+          }
+        },
+        "./compiler": {
+          "exclude": [],
+          "excludeReason": "No curated reference page owns this symbol yet.",
+          "include": {
+            "compileEditor": "/docs/editor#compile-schema-artifacts",
+            "EditorCompilation": "/docs/editor#compile-schema-artifacts",
+            "EditorPropertyTypes": "/docs/editor#compile-schema-artifacts",
+            "GeneratedEditorTypeProvider": "/docs/editor#compile-schema-artifacts"
+          }
         },
         "./date": {
           "exclude": [
@@ -983,6 +945,17 @@
             "getDateDisplayLabel",
             "normalizeDateValue",
             "parseCanonicalDateValue"
+          ],
+          "excludeReason": "No curated reference page owns this symbol yet.",
+          "include": {}
+        },
+        "./details": {
+          "exclude": [
+            "BaseDetailsPlugin",
+            "BaseDetailsPluginState",
+            "BaseDetailsSummaryPlugin",
+            "DetailsElement",
+            "DetailsSummaryElement"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
@@ -1056,7 +1029,23 @@
             "VideoPluginState"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "ALLOWED_FILE_TYPES": "/docs/media",
+            "AllowedFileType": "/docs/media",
+            "FileSize": "/docs/media",
+            "InsertMediaOptions": "/docs/media",
+            "MediaItemConfig": "/docs/media",
+            "MediaKeys": "/docs/media",
+            "MediaUpload": "/docs/media",
+            "MediaUploadResult": "/docs/media",
+            "MediaUploadState": "/docs/media",
+            "MediaUploadTransport": "/docs/media",
+            "PlaceholderPluginState": "/docs/media",
+            "SizeUnit": "/docs/media",
+            "UploadConfig": "/docs/media",
+            "UploadError": "/docs/media",
+            "UploadErrorCode": "/docs/media"
+          }
         },
         "./mention": {
           "exclude": [
@@ -1090,18 +1079,18 @@
             "InlineSuggestionData",
             "InsertSuggestionData",
             "RemoveSuggestionData",
-            "ResolvedSuggestion",
             "SUGGESTION_SKIP_TAG",
             "SUGGESTION_TRANSIENT_KEY",
             "SuggestionData",
-            "SuggestionDescription",
             "SuggestionElement",
             "SuggestionText",
             "SuggestionUpdatePolicy",
             "UpdateSuggestionData"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "SuggestionReview": "/docs/suggestion"
+          }
         },
         "./table": {
           "exclude": [
@@ -1135,7 +1124,9 @@
             "TableSelectionNeighborDirection",
             "TableSelectionView",
             "TableSelectionViewMetrics",
-            "TableStoreSizeOverrides"
+            "TableStoreSizeOverrides",
+            "TableResize",
+            "TableResizeTarget"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
@@ -1143,7 +1134,9 @@
         "./tag": {
           "exclude": ["BaseTagPlugin", "TagElement", "TagItem"],
           "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
+          "include": {
+            "BaseMultiSelectPlugin": "/docs/multi-select"
+          }
         },
         "./toc": {
           "exclude": [
@@ -1151,17 +1144,6 @@
             "Heading",
             "TocDefinition",
             "TocPluginState"
-          ],
-          "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {}
-        },
-        "./details": {
-          "exclude": [
-            "BaseDetailsPlugin",
-            "BaseDetailsPluginState",
-            "BaseDetailsSummaryPlugin",
-            "DetailsElement",
-            "DetailsSummaryElement"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}

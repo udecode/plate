@@ -17,28 +17,12 @@ import {
   StarIcon,
   XIcon,
 } from 'lucide-react';
-import {
-  AGridSection,
-  EmojiFloatingIndexSearch,
-  EmojiInlineLibrary,
-  type EmojiLibrary,
-  type GridElements,
-  type GridRow,
-  type IEmojiLibrary,
-  type IGrid,
-  DEFAULT_EMOJI_LIBRARY,
-  Grid,
-} from 'platejs/emoji';
+import { createEmojiSearch } from 'platejs/emoji';
 import { EmojiPlugin } from 'platejs/emoji/react';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Tooltip,
   TooltipContent,
@@ -46,6 +30,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import {
+  FloatingPopover,
+  FloatingPopoverContent,
+  FloatingPopoverTrigger,
+} from '@/registry/components/editor/floating-popover';
 
 const defaultEmojiData = emojiMartData as unknown as EmojiMartData;
 
@@ -177,223 +166,24 @@ const i18n: i18nProps = {
   },
 };
 
-type FrequentEmojiStorageProps = {
-  key?: string;
-  limit?: number;
-  prefix?: string;
+type EmojiPickerSection = {
+  id: EmojiCategoryList;
+  rows: string[][];
 };
 
-type IFrequentEmojiStorage = {
-  get: () => FrequentEmojis;
-  getList: () => string[];
-  set: (value: FrequentEmojis) => void;
-  update: (emojiId: string) => FrequentEmojis;
-};
+function readFrequentEmojis(key: string): FrequentEmojis {
+  if (typeof window === 'undefined') return DEFAULT_FREQUENTLY_USED_EMOJI;
 
-class LocalStorage<T> {
-  private readonly defaultValue: T;
-  private readonly key: string;
+  const value = window.localStorage.getItem(key);
 
-  constructor(key: string, defaultValue: T) {
-    this.defaultValue = defaultValue;
-    this.key = key;
-  }
+  if (!value) return DEFAULT_FREQUENTLY_USED_EMOJI;
 
-  get(): T {
-    if (typeof window === 'undefined') return this.defaultValue;
+  try {
+    return JSON.parse(value);
+  } catch {
+    window.localStorage.removeItem(key);
 
-    const value = window.localStorage.getItem(this.key);
-
-    if (!value) return this.defaultValue;
-
-    try {
-      return JSON.parse(value);
-    } catch {
-      window.localStorage.removeItem(this.key);
-
-      return this.defaultValue;
-    }
-  }
-
-  set(value: T) {
-    window.localStorage.setItem(this.key, JSON.stringify(value));
-  }
-}
-
-class FrequentEmojiStorage implements IFrequentEmojiStorage {
-  protected defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI;
-  protected key = EmojiCategory.Frequent;
-  protected limit = 8;
-  protected localStorage: LocalStorage<FrequentEmojis>;
-  protected prefix = 'emoji';
-
-  constructor(
-    props: FrequentEmojiStorageProps,
-    defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI
-  ) {
-    this.defaultValue = defaultValue;
-    this.limit = props.limit ?? this.limit;
-    this.localStorage = new LocalStorage(
-      `${props.prefix ?? this.prefix}:${props.key ?? this.key}`,
-      defaultValue
-    );
-  }
-
-  get(): FrequentEmojis {
-    const data = this.localStorage.get();
-
-    return Object.fromEntries(
-      Object.keys(data)
-        .sort((a, b) => data[b] - data[a])
-        .map((key) => [key, data[key]])
-    );
-  }
-
-  getList(): string[] {
-    return Object.keys(this.get()).slice(0, this.limit);
-  }
-
-  set(value: FrequentEmojis) {
-    this.localStorage.set(value);
-  }
-
-  update(emojiId: string) {
-    const previous = this.localStorage.get();
-    const emojis = {
-      ...previous,
-      [emojiId]: (previous[emojiId] ?? 0) + 1,
-    };
-
-    this.localStorage.set(emojis);
-
-    return emojis;
-  }
-}
-
-type EmojiFloatingGridType = IGrid<
-  React.RefObject<HTMLDivElement | null>,
-  EmojiCategoryList
->;
-
-class EmojiFloatingGrid extends Grid<
-  React.RefObject<HTMLDivElement | null>,
-  EmojiCategoryList
-> {}
-
-class EmojiGridSectionWithRoot extends AGridSection<
-  React.RefObject<HTMLDivElement | null>,
-  EmojiCategoryList
-> {
-  protected createRootRef() {
-    this._root = React.createRef<HTMLDivElement>();
-  }
-}
-
-class EmojiFloatingGridBuilder {
-  private readonly elements: GridElements<EmojiCategoryList>;
-  private readonly grid = new EmojiFloatingGrid();
-  private readonly localStorage: IFrequentEmojiStorage;
-  private readonly sections: EmojiCategoryList[];
-  private readonly settings: EmojiSettingsType;
-
-  constructor(
-    localStorage: IFrequentEmojiStorage,
-    sections: EmojiCategoryList[],
-    elements: GridElements<EmojiCategoryList>,
-    settings: EmojiSettingsType
-  ) {
-    this.elements = elements;
-    this.localStorage = localStorage;
-    this.sections = sections;
-    this.settings = settings;
-  }
-
-  build() {
-    if (this.settings.showFrequent.value) {
-      const id = EmojiCategory.Frequent;
-
-      this.grid.addSection(
-        id,
-        new EmojiGridSectionWithRoot(id, this.settings.perLine.value),
-        { [id]: this.localStorage.getList() }
-      );
-    }
-
-    for (const id of this.sections) {
-      if (this.elements[id]?.length) {
-        this.grid.addSection(
-          id,
-          new EmojiGridSectionWithRoot(id, this.settings.perLine.value),
-          this.elements
-        );
-      }
-    }
-
-    return this.grid;
-  }
-}
-
-interface IEmojiFloatingLibrary extends IEmojiLibrary {
-  getGrid: () => EmojiFloatingGridType;
-  indexOf: (focusedCategory: EmojiCategoryList) => number;
-  updateFrequentCategory: (emojiId: string) => void;
-}
-
-class EmojiFloatingLibrary
-  extends EmojiInlineLibrary
-  implements IEmojiFloatingLibrary
-{
-  private readonly categories: EmojiCategoryList[] = defaultCategories;
-  private readonly emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
-  private readonly grid: EmojiFloatingGridType;
-  private readonly localStorage: IFrequentEmojiStorage;
-
-  private constructor(
-    settings: EmojiSettingsType,
-    localStorage: IFrequentEmojiStorage,
-    library: EmojiLibrary = DEFAULT_EMOJI_LIBRARY
-  ) {
-    super(library);
-
-    this.localStorage = localStorage;
-    this.categories = settings.categories.value ?? this.categories;
-
-    for (const category of library.categories) {
-      const categoryId = this.categories.find((id) => id === category.id);
-
-      if (categoryId) this.emojis[categoryId] = category.emojis;
-    }
-
-    this.grid = new EmojiFloatingGridBuilder(
-      this.localStorage,
-      this.categories,
-      this.emojis,
-      settings
-    ).build();
-  }
-
-  static getInstance(
-    settings: EmojiSettingsType,
-    localStorage: IFrequentEmojiStorage,
-    library = DEFAULT_EMOJI_LIBRARY
-  ) {
-    return new EmojiFloatingLibrary(settings, localStorage, library);
-  }
-
-  getGrid() {
-    return this.grid;
-  }
-
-  indexOf(focusedCategory: EmojiCategoryList) {
-    return Math.max(0, this.grid.indexOf(focusedCategory));
-  }
-
-  updateFrequentCategory(emojiId: string) {
-    this.localStorage.update(emojiId);
-    this.grid.updateSection(
-      EmojiCategory.Frequent,
-      this.localStorage.getList()
-    );
+    return DEFAULT_FREQUENTLY_USED_EMOJI;
   }
 }
 
@@ -408,6 +198,7 @@ type EmojiPickerStateProps = {
   visibleCategories: MapEmojiCategoryList;
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
+  frequentEmojis?: { key: string; counts: FrequentEmojis };
 };
 
 type EmojiPickerStateDispatch = {
@@ -497,7 +288,8 @@ export type EmojiPickerOptions = {
 };
 
 type EmojiPickerState<T extends React.ReactElement = React.ReactElement> = {
-  emojiLibrary: IEmojiFloatingLibrary;
+  emojis: EmojiMartData['emojis'];
+  sections: EmojiPickerSection[];
   hasFound: boolean;
   i18n: i18nProps;
   icons: EmojiIconList<T>;
@@ -530,27 +322,59 @@ const useEmojiPickerController = ({
   EmojiPickerState,
   'icons'
 > => {
-  const [emojiLibrary, indexSearch] = React.useMemo(() => {
-    const innerEmojiLibrary = EmojiFloatingLibrary.getInstance(
-      settings,
-      new FrequentEmojiStorage({
-        key: settings.showFrequent.key,
-        limit: settings.showFrequent.limit,
-        prefix: settings.showFrequent.prefix,
-      }),
-      data
-    );
-
-    return [
-      innerEmojiLibrary,
-      EmojiFloatingIndexSearch.getInstance(innerEmojiLibrary),
-    ] as const;
-  }, [data, settings]);
-  const editor = useEditor();
   const [state, dispatch] = React.useReducer(
     emojiPickerReducer,
     emojiPickerInitialState
   );
+  const storageKey = `${settings.showFrequent.prefix ?? 'emoji'}:${settings.showFrequent.key ?? EmojiCategory.Frequent}`;
+  const sections = React.useMemo(() => {
+    const frequentIds = (counts: FrequentEmojis) =>
+      Object.keys(counts)
+        .sort((a, b) => counts[b] - counts[a])
+        .slice(0, settings.showFrequent.limit ?? 8);
+    const rows = (ids: string[]) =>
+      Array.from(
+        { length: Math.ceil(ids.length / settings.perLine.value) },
+        (_, i) =>
+          ids.slice(
+            i * settings.perLine.value,
+            (i + 1) * settings.perLine.value
+          )
+      );
+    const pickerSections: EmojiPickerSection[] = [];
+
+    if (settings.showFrequent.value) {
+      pickerSections.push({
+        id: EmojiCategory.Frequent,
+        rows: rows(
+          frequentIds(
+            state.frequentEmojis?.key === storageKey
+              ? state.frequentEmojis.counts
+              : readFrequentEmojis(storageKey)
+          )
+        ),
+      });
+    }
+
+    const categories = new Map(
+      data.categories.map((category) => [category.id, category.emojis])
+    );
+
+    for (const id of settings.categories.value ?? defaultCategories) {
+      const emojis = categories.get(id);
+
+      if (emojis?.length) {
+        pickerSections.push({
+          id,
+          rows: rows(emojis),
+        });
+      }
+    }
+
+    return pickerSections;
+  }, [data, settings, state.frequentEmojis, storageKey]);
+  const search = React.useMemo(() => createEmojiSearch(data), [data]);
+  const editor = useEditor();
   const contentRef = React.useRef<HTMLDivElement>(null);
   const contentRootRef = React.useRef<HTMLDivElement>(null);
   const refs = React.useMemo(
@@ -594,16 +418,18 @@ const useEmojiPickerController = ({
         return;
       }
 
+      const searchResult = search(value, { limit: 60 });
+
       dispatch({
         payload: {
-          hasFound: indexSearch.search(value).hasFound(),
-          searchResult: indexSearch.get(),
+          hasFound: searchResult.length > 0,
+          searchResult,
           searchValue: value,
         },
         type: 'UPDATE_SEARCH_RESULT',
       });
     },
-    [dispatch, indexSearch]
+    [dispatch, search]
   );
 
   const clearSearch = React.useCallback(() => {
@@ -619,15 +445,18 @@ const useEmojiPickerController = ({
 
   const updateFrequentEmojis = React.useCallback(
     (emojiId: string) => {
-      emojiLibrary.updateFrequentCategory(emojiId);
+      const previous = readFrequentEmojis(storageKey);
+      const counts = { ...previous, [emojiId]: (previous[emojiId] ?? 0) + 1 };
+      window.localStorage.setItem(storageKey, JSON.stringify(counts));
       dispatch({
         payload: {
+          frequentEmojis: { key: storageKey, counts },
           isOpen: closeOnSelect ? false : state.isOpen,
         },
         type: 'UPDATE_FREQUENT_EMOJIS',
       });
     },
-    [closeOnSelect, dispatch, emojiLibrary, state.isOpen]
+    [closeOnSelect, dispatch, storageKey, state.isOpen]
   );
 
   const onSelectEmoji = React.useCallback(
@@ -645,8 +474,9 @@ const useEmojiPickerController = ({
   const scrollCategoryIntoView = React.useCallback(
     (categoryId: EmojiCategoryList) => {
       const contentRoot = contentRootRef.current;
-      const sectionRoot = emojiLibrary.getGrid().section(categoryId)
-        ?.root.current;
+      const sectionRoot = contentRef.current?.querySelector<HTMLDivElement>(
+        `[data-id="${categoryId}"]`
+      );
 
       if (!contentRoot || !sectionRoot || !contentRoot.contains(sectionRoot)) {
         return false;
@@ -660,12 +490,11 @@ const useEmojiPickerController = ({
 
       return true;
     },
-    [contentRootRef, emojiLibrary]
+    [contentRootRef, contentRef]
   );
 
   const handleCategoryClick = React.useCallback(
     (categoryId: EmojiCategoryList) => {
-      const grid = emojiLibrary.getGrid();
       pendingCategoryScrollRef.current = categoryId;
 
       dispatch({
@@ -675,9 +504,7 @@ const useEmojiPickerController = ({
           isSearching: false,
           searchValue: '',
           visibleCategories: new Map(
-            grid
-              .sections()
-              .map((section) => [section.id, section.id === categoryId])
+            sections.map((section) => [section.id, section.id === categoryId])
           ),
         },
         type: 'SET_FOCUSED_AND_VISIBLE_CATEGORIES',
@@ -687,7 +514,7 @@ const useEmojiPickerController = ({
         pendingCategoryScrollRef.current = null;
       }
     },
-    [dispatch, emojiLibrary, scrollCategoryIntoView]
+    [dispatch, sections, scrollCategoryIntoView]
   );
 
   React.useLayoutEffect(() => {
@@ -733,8 +560,8 @@ const useEmojiPickerController = ({
         { root: contentRootRef.current, threshold: 0 }
       );
 
-      for (const section of emojiLibrary.getGrid().sections()) {
-        if (section.root.current) observer.observe(section.root.current);
+      for (const section of contentRef.current?.children ?? []) {
+        observer.observe(section);
       }
     }, 0);
 
@@ -744,7 +571,7 @@ const useEmojiPickerController = ({
     };
   }, [
     contentRootRef,
-    emojiLibrary,
+    sections,
     state.isOpen,
     state.isSearching,
     setFocusedAndVisibleSections,
@@ -753,7 +580,8 @@ const useEmojiPickerController = ({
   return {
     clearSearch,
     emoji: state.emoji,
-    emojiLibrary,
+    emojis: data.emojis,
+    sections,
     i18n,
     refs,
     settings,
@@ -800,7 +628,7 @@ export function EmojiPicker({
   });
 
   return (
-    <Popover
+    <FloatingPopover
       open={picker.isOpen}
       onOpenChange={(open) => {
         if (!disabled) picker.setIsOpen(open);
@@ -808,10 +636,10 @@ export function EmojiPicker({
     >
       {children}
 
-      <PopoverContent className="z-100 w-auto border-0 p-0">
+      <FloatingPopoverContent className="z-100 w-auto border-0 p-0">
         <EmojiPickerPanel picker={picker} />
-      </PopoverContent>
-    </Popover>
+      </FloatingPopoverContent>
+    </FloatingPopover>
   );
 }
 
@@ -820,14 +648,15 @@ export function EmojiPickerTrigger({
 }: {
   children: React.ReactElement;
 }) {
-  return <PopoverTrigger asChild>{children}</PopoverTrigger>;
+  return <FloatingPopoverTrigger>{children}</FloatingPopoverTrigger>;
 }
 
 function EmojiPickerPanel({ picker }: { picker: EmojiPickerController }) {
   const {
     clearSearch,
     emoji,
-    emojiLibrary,
+    emojis,
+    sections,
     focusedCategory,
     handleCategoryClick,
     hasFound,
@@ -851,7 +680,7 @@ function EmojiPickerPanel({ picker }: { picker: EmojiPickerController }) {
     >
       <EmojiPickerNavigation
         onClick={handleCategoryClick}
-        emojiLibrary={emojiLibrary}
+        sections={sections}
         focusedCategory={focusedCategory}
         i18n={innerI18n}
         icons={emojiPickerIcons}
@@ -870,7 +699,8 @@ function EmojiPickerPanel({ picker }: { picker: EmojiPickerController }) {
       <EmojiPickerContent
         onMouseOver={onMouseOver}
         onSelectEmoji={onSelectEmoji}
-        emojiLibrary={emojiLibrary}
+        emojis={emojis}
+        sections={sections}
         i18n={innerI18n}
         isSearching={isSearching}
         refs={refs}
@@ -935,17 +765,19 @@ function EmojiButton({
 }
 
 function RowOfButtons({
-  emojiLibrary,
+  emojis,
   row,
+  index: rowIndex,
   onMouseOver,
   onSelectEmoji,
 }: {
-  row: GridRow;
-} & Pick<EmojiPickerState, 'emojiLibrary' | 'onMouseOver' | 'onSelectEmoji'>) {
+  row: string[];
+  index: number;
+} & Pick<EmojiPickerState, 'emojis' | 'onMouseOver' | 'onSelectEmoji'>) {
   return (
-    <div key={row.id} className="flex" data-index={row.id}>
-      {row.elements.map((emojiId, index) => {
-        const emoji = emojiLibrary.getEmoji(emojiId);
+    <div className="flex" data-index={rowIndex}>
+      {row.map((emojiId, index) => {
+        const emoji = emojis[emojiId];
 
         if (!emoji) return null;
 
@@ -964,7 +796,8 @@ function RowOfButtons({
 }
 
 function EmojiPickerContent({
-  emojiLibrary,
+  emojis,
+  sections,
   i18n: innerI18n2,
   isSearching = false,
   refs,
@@ -975,7 +808,8 @@ function EmojiPickerContent({
   onSelectEmoji,
 }: Pick<
   EmojiPickerState,
-  | 'emojiLibrary'
+  | 'emojis'
+  | 'sections'
   | 'i18n'
   | 'isSearching'
   | 'onMouseOver'
@@ -1003,45 +837,41 @@ function EmojiPickerContent({
 
   const EmojiList = React.useCallback(
     () =>
-      emojiLibrary
-        .getGrid()
-        .sections()
-        .map((section) => {
-          const categoryId = section.id;
-          const { buttonSize } = settings;
+      sections.map((section) => {
+        const categoryId = section.id;
+        const { buttonSize } = settings;
 
-          return (
-            <div
-              key={categoryId}
-              ref={section.root}
-              style={{ width: getRowWidth }}
-              data-id={categoryId}
-            >
-              <div className="sticky -top-px z-1 bg-popover/90 p-1 py-2 text-sm font-semibold backdrop-blur-xs">
-                {innerI18n2.categories[categoryId]}
-              </div>
-              <div
-                className="relative flex flex-wrap"
-                style={{ height: section.getRows().length * buttonSize.value }}
-              >
-                {isCategoryVisible(categoryId) &&
-                  section
-                    .getRows()
-                    .map((row: GridRow) => (
-                      <RowOfButtons
-                        key={row.id}
-                        onMouseOver={onMouseOver}
-                        onSelectEmoji={onSelectEmoji}
-                        emojiLibrary={emojiLibrary}
-                        row={row}
-                      />
-                    ))}
-              </div>
+        return (
+          <div
+            key={categoryId}
+            style={{ width: getRowWidth }}
+            data-id={categoryId}
+          >
+            <div className="sticky -top-px z-1 bg-popover/90 p-1 py-2 text-sm font-semibold backdrop-blur-xs">
+              {innerI18n2.categories[categoryId]}
             </div>
-          );
-        }),
+            <div
+              className="relative flex flex-wrap"
+              style={{ height: section.rows.length * buttonSize.value }}
+            >
+              {isCategoryVisible(categoryId) &&
+                section.rows.map((row, index) => (
+                  <RowOfButtons
+                    key={row[0]}
+                    onMouseOver={onMouseOver}
+                    onSelectEmoji={onSelectEmoji}
+                    emojis={emojis}
+                    index={index}
+                    row={row}
+                  />
+                ))}
+            </div>
+          </div>
+        );
+      }),
     [
-      emojiLibrary,
+      emojis,
+      sections,
       getRowWidth,
       innerI18n2.categories,
       isCategoryVisible,
@@ -1222,17 +1052,14 @@ function EmojiPickerPreview({
 }
 
 function EmojiPickerNavigation({
-  emojiLibrary,
+  sections,
   focusedCategory,
   i18n: innerI18n8,
   icons,
   onClick,
 }: {
   onClick: (id: EmojiCategoryList) => void;
-} & Pick<
-  EmojiPickerState,
-  'emojiLibrary' | 'focusedCategory' | 'i18n' | 'icons'
->) {
+} & Pick<EmojiPickerState, 'sections' | 'focusedCategory' | 'i18n' | 'icons'>) {
   return (
     <TooltipProvider>
       <nav
@@ -1240,36 +1067,33 @@ function EmojiPickerNavigation({
         className="mb-2.5 border-0 border-b border-solid border-b-border p-1.5"
       >
         <div className="relative flex items-center justify-evenly">
-          {emojiLibrary
-            .getGrid()
-            .sections()
-            .map(({ id }) => (
-              <Tooltip key={id}>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className={cn(
-                      'h-fit rounded-full fill-current p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground',
-                      id === focusedCategory &&
-                        'pointer-events-none bg-accent fill-current text-accent-foreground'
-                    )}
-                    onClick={() => {
-                      onClick(id);
-                    }}
-                    aria-label={innerI18n8.categories[id]}
-                    type="button"
-                  >
-                    <span className="inline-flex size-5 items-center justify-center">
-                      {icons.categories[id].outline}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  {innerI18n8.categories[id]}
-                </TooltipContent>
-              </Tooltip>
-            ))}
+          {sections.map(({ id }) => (
+            <Tooltip key={id}>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={cn(
+                    'h-fit rounded-full fill-current p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground',
+                    id === focusedCategory &&
+                      'pointer-events-none bg-accent fill-current text-accent-foreground'
+                  )}
+                  onClick={() => {
+                    onClick(id);
+                  }}
+                  aria-label={innerI18n8.categories[id]}
+                  type="button"
+                >
+                  <span className="inline-flex size-5 items-center justify-center">
+                    {icons.categories[id].outline}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {innerI18n8.categories[id]}
+              </TooltipContent>
+            </Tooltip>
+          ))}
         </div>
       </nav>
     </TooltipProvider>

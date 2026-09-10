@@ -7,9 +7,9 @@ Create the editor with its initial document and plugin tuple. Configure
 editor-wide runtime policy here; configure feature behavior on its owning
 plugin.
 
-## Basic Editor Configuration
+## Basic editor configuration
 
-To create a basic Plate editor, you can use the `createEditor` function, or `useCreateEditor` in a React component:
+Use `createEditor` to create a Plate editor, or `useCreateEditor` in a React component:
 
 ```ts
 import { createEditor } from 'platejs/react';
@@ -19,7 +19,7 @@ const editor = createEditor({
 });
 ```
 
-### Initial Value
+### Initial value
 
 Set the initial content of the editor:
 
@@ -50,9 +50,9 @@ const editor = createEditor({
 });
 ```
 
-For a comprehensive list of plugins that support HTML string deserialization, refer to the [Plugin Deserialization Rules](/docs/html#plugin-deserialization-rules) section.
+See [Plugin Deserialization Rules](/docs/html#plugin-html-codec-overview) for the plugins that support HTML string deserialization.
 
-### Schema Identity
+### Schema identity
 
 Plate compiles the document schema from the installed plugins. Omit `schema`
 for ordinary editors. `editor.read.schema.identity()` returns a derived
@@ -85,7 +85,7 @@ editor.read.schema.identity();
 Bump `version` whenever the named lineage changes schema semantics. Reusing an
 ID and version with a different fingerprint is an identity mismatch.
 
-### Custom Primary Root
+### Custom primary root
 
 Omit `schema.root` for Plate's standard nonempty paragraph root. Declare it
 only when the application needs a different top-level grammar.
@@ -125,7 +125,7 @@ increment `version` and add the document migration before loading documents
 that use the earlier root grammar. Generated `Value` types include every legal
 root variant; `min` and `max` remain runtime validation rules.
 
-### Document Migrations
+### Document migrations
 
 Persist schema identity beside the document, then declare one application-owned
 migration chain. Target-version steps run in ascending order before installed
@@ -136,22 +136,20 @@ import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
   migratePlateV54,
-  migratePlateV55,
 } from 'platejs/migrations';
 
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
-import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
 
 export const EditorKit = [ParagraphPlugin] as const;
 
 export const EditorSchema = {
   id: 'acme-document',
-  version: 55,
+  version: 54,
 } as const;
 
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
-  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
-  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  sourceFingerprints: { 53: v53Fingerprint },
+  steps: { 54: migratePlateV54 },
   unversioned: 53,
 });
 ```
@@ -186,7 +184,7 @@ const persisted = {
 };
 ```
 
-A document at version 53 loaded by a version 55 editor runs steps 54 and 55.
+A document at version 53 loaded by a version 54 editor runs step 54.
 Plate rejects a missing step, a different schema ID, a future version, or a
 fingerprint mismatch instead of fitting incompatible data. Every historical
 envelope version needs its exact generated fingerprint in
@@ -199,7 +197,7 @@ envelope version needs its exact generated fingerprint in
   mix peers from different schema versions.
 </Callout>
 
-### Remote Initial Value
+### Remote initial value
 
 Fetch remote content before constructing the editor. The loader owns aborts,
 stale responses, retries, and errors; the editor receives one synchronous
@@ -226,9 +224,9 @@ Render `DocumentEditor` only after your route or data loader resolves the
 document. See [Controlled Editor Value](/docs/controlled) for an abort-aware
 client loader and explicit replacement patterns.
 
-### Adding Plugins
+### Adding plugins
 
-You can add plugins to your editor by including them in the `plugins` array:
+Include plugins in the `plugins` array:
 
 ```ts
 const editor = createEditor({
@@ -236,7 +234,7 @@ const editor = createEditor({
 });
 ```
 
-### Exact Generated Editor Types
+### Exact generated editor types
 
 Raw plugin arrays keep plugin APIs, reads, updates, stores, and individual
 element shapes inferred. Use a generated editor contract when the application
@@ -272,8 +270,7 @@ export const EditorSchema = {
 application schema by their validated runtime shapes. Their export names belong
 to your app, not the compiler contract.
 
-The editor-level `schema` may
-remap an element type, content, groups, or an existing property's target, and
+The editor-level `schema` may remap an element type, content, groups, or an existing property's target, and
 it may add application-owned properties. Plugin-owned property keys and value
 laws stay fixed; changing one requires a new field and an explicit migration.
 
@@ -375,7 +372,39 @@ when any document needs migration. `--stdin` writes the migrated envelope to
 standard output and never mutates storage. Envelope selections are mapped and
 preserved through the same document and preparation pipeline.
 
-### Max Length
+### Compile schema artifacts
+
+Use `compileEditor` in build tooling that needs schema identity, property
+contracts and final plugin bindings. Ordinary editors use `createEditor` or
+`useCreateEditor` directly.
+
+```ts title="scripts/compile-editor.ts" showLineNumbers
+import { writeFileSync } from 'node:fs';
+import { compileEditor } from 'platejs/compiler';
+
+import { EditorKit, EditorSchema } from '../src/editor';
+
+const artifact = compileEditor({ plugins: EditorKit, schema: EditorSchema });
+
+writeFileSync('editor.schema.json', JSON.stringify(artifact.schema, null, 2));
+```
+
+The result contains recursively frozen JSON data:
+
+| Field | Content |
+| --- | --- |
+| `schema` | Validated schema contract, identity and fingerprint. |
+| `bindings` | Installed capability names, final element types and mark keys; `authoredToggle` identifies an authored toggle command. |
+
+Compilation evaluates configuration, API factories and validators. It does
+not activate extensions or generate an initial document. The result contains
+no editor, stores or callbacks. `schema` is optional, as with editor creation.
+
+`plate generate` also emits exact application types. Its type-only
+`EditorPropertyTypes` and `GeneratedEditorTypeProvider` imports belong to
+advanced tooling and generated files.
+
+### Max length
 
 Set the maximum length of the editor:
 
@@ -385,7 +414,7 @@ const editor = createEditor({
 });
 ```
 
-## Advanced Configuration
+## Advanced configuration
 
 ### Editor ID
 
@@ -397,10 +426,9 @@ const editor = createEditor({
 });
 ```
 
-Pass the same ID to controller-aware hooks when selecting a specific mounted
-editor, for example `useEditor({ id: 'my-custom-editor-id' })`.
+The ID labels the model for application code. Use contextual `useEditor()` for the selected mounted view, or bind existing controls with `<EditorProvider editor={editor}>`. See [Plate Controller](/docs/api/core/plate-controller) for shared UI.
 
-### Node Identity
+### Node identity
 
 Every live descendant has an editor-scoped `NodeKey`. Node keys include
 text nodes, survive moves and immutable updates, and disappear when the node is
@@ -491,15 +519,13 @@ const editor = createEditor({
 });
 ```
 
-### Navigation Feedback
+### Navigation feedback
 
-Plate also includes a built-in navigation feedback plugin for "you landed here"
-UX after TOC jumps, footnote navigation, search jumps, and custom outline
-movement.
+Plate's navigation feedback plugin shows "you landed here" feedback after TOC
+jumps, footnote navigation, search jumps, and custom outline movement.
 
-This feature is enabled by default. You only need to touch the
-`navigationFeedback` option when you want to change the flash duration or turn
-the plugin off.
+Navigation feedback is enabled by default. Use `navigationFeedback` to change
+the flash duration or turn the plugin off.
 
 #### Configuration
 
@@ -516,7 +542,7 @@ const editor = createEditor({
   `navigationFeedback` for its editor-level configuration.
 </Callout>
 
-#### Disabling Navigation Feedback
+#### Disabling navigation feedback
 
 ```ts
 const editor = createEditor({
@@ -534,7 +560,7 @@ const editor = createEditor({
 });
 ```
 
-Note that normalization may take a few dozen milliseconds for large documents, such as the playground value.
+Normalization may take a few dozen milliseconds for large documents, such as the playground value.
 
 ### Auto-selection
 
@@ -546,23 +572,22 @@ const editor = createEditor({
 });
 ```
 
-This is not the same as auto-focus: you can select text without focusing the editor.
+Auto-selection can select text without focusing the editor.
 
-### Component Overrides
+### Components
 
-Override default components for plugins:
+Bind each component to its owning plugin descriptor:
 
 ```ts
 const editor = createEditor({
-  plugins: [HeadingPlugin],
-  components: {
-    paragraph: CustomParagraphComponent,
-    heading: CustomHeadingComponent,
-  },
+  plugins: [
+    ParagraphPlugin.configure({ component: CustomParagraphComponent }),
+    HeadingPlugin.configure({ component: CustomHeadingComponent }),
+  ],
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
 When your app imports the target, configure that descriptor directly:
 
@@ -578,7 +603,7 @@ const editor = createEditor({
 });
 ```
 
-### Weak Peer Overrides
+### Weak peer overrides
 
 A package plugin may need to adapt another installed package without importing
 it or controlling the consumer's editor kit:
@@ -589,10 +614,8 @@ import { definePlatePlugin } from 'platejs/react';
 
 const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
   override: {
-    plugins: {
-      [PLUGINS.trailingBlock]: {
-        enabled: false,
-      },
+    [PLUGINS.trailingBlock]: {
+      enabled: false,
     },
   },
 });
@@ -602,7 +625,7 @@ The override applies only when the target is installed; a missing target is
 ignored. It cannot change `name`, `dependencies`, or nest another `override`.
 Direct target configuration wins.
 
-### Replace Dependency Defaults
+### Replace dependency defaults
 
 A complete explicit descriptor can replace a lower-precedence core or
 dependency definition with the same name. Inside one plugin array, terminal
@@ -620,12 +643,12 @@ const editor = createEditor({
 });
 ```
 
-## Typed Editor
+## Typed editor
 
 `createEditor` derives the document value and plugin APIs from the installed
 plugin tuple. `initialValue` is checked against that schema-derived value.
 
-### Plugins Type
+### Plugins type
 
 ```ts
 const AppKit = [TablePlugin, LinkPlugin] as const;
@@ -639,30 +662,30 @@ editor.update((tx) => {
 });
 ```
 
-### Value Type
+### Value type
 
-Use `Editor<typeof Kit>` when another module needs the editor type and
-`ValueOf<MyEditor>` when a named value type improves readability. Do not repeat
-the schema as handwritten element interfaces.
+Create the editor with its plugin tuple and initial document, then derive
+`typeof editor` and `ValueOf<typeof editor>` from that inferred instance.
 
 ```ts
 import type { ValueOf } from 'platejs';
-import type { Editor } from 'platejs/react';
+import { createEditor, LinkPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
-export type MyEditor = Editor<typeof AppKit>;
-export type MyValue = ValueOf<MyEditor>;
-
-const value: MyValue = [{
-  type: 'paragraph',
-  children: [{ text: 'Hello, Plate!' }],
-}];
-
 const editor = createEditor({
   plugins: AppKit,
-  initialValue: value,
+  initialValue: [
+    {
+      type: 'paragraph',
+      children: [{ text: 'Hello, Plate!' }],
+    },
+  ],
 });
+
+export type MyEditor = typeof editor;
+export type MyValue = ValueOf<typeof editor>;
 ```
 
 A component reads the current editor from context without repeating its plugin

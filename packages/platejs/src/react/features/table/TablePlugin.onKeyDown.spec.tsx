@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
@@ -10,12 +11,8 @@ import {
 } from '#platejs-test-internal';
 
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
-import {
-  Plate,
-  PlateContent,
-  definePlatePlugin,
-  pipeHandler,
-} from '../../core';
+import { Plate, PlateContent, definePlatePlugin } from '../../core';
+import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;

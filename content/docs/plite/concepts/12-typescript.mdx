@@ -8,7 +8,7 @@ element and text shapes for your editor, create a `Value` from the element
 union, then pass that value to `createEditor<Value>()` or
 `useEditor<Value>()` when React owns the editor lifetime.
 
-## Defining Element And Text Types
+## Defining element and text types
 
 ```typescript
 import { type ElementOf, type TextOf, type ValueOf } from "plitejs";
@@ -41,7 +41,7 @@ const useCustomEditor = () => {
 };
 ```
 
-## Annotating Initial Values
+## Annotating initial values
 
 Annotate the editor's initial value with your value type.
 
@@ -70,7 +70,7 @@ const App = () => {
 };
 ```
 
-## Working With Nodes
+## Working with nodes
 
 Use exported helper types to derive the document types from an editor instead
 of duplicating unions at every call site.
@@ -93,7 +93,7 @@ const isParagraph = (node: Node) =>
   ElementApi.isElement(node) && node.type === "paragraph";
 ```
 
-## Multiple Document Models
+## Multiple document models
 
 Use a different `Value` type for each editor model.
 

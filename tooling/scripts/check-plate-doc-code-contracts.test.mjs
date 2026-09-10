@@ -22,6 +22,51 @@ test('extracts only JavaScript and TypeScript code fences', () => {
   );
 });
 
+test('audits tilde fences with metadata and reports the source line', () => {
+  const source = [
+    '# Example',
+    '',
+    '  ~~~tsx title="editor.tsx"',
+    '  createEditor({ value: [] });',
+    '  ~~~~',
+  ].join('\r\n');
+
+  assert.deepEqual(
+    auditPlateDocCode(source).map(({ line, reason }) => ({ line, reason })),
+    [{ line: 4, reason: 'editor construction does not accept value' }]
+  );
+});
+
+test('requires matching fence markers and a long enough closing fence', () => {
+  const source = [
+    '````md',
+    '```tsx',
+    'createEditor({ value: [] });',
+    '```',
+    '````',
+    '~~~tsx',
+    'const value = `',
+    '```',
+    '~~',
+    '`;',
+    '~~~~',
+    '```ts',
+    'createEditor();',
+  ].join('\n');
+
+  assert.deepEqual(
+    extractJavaScriptCodeFences(source).map(({ code, language, line }) => ({
+      code,
+      language,
+      line,
+    })),
+    [
+      { code: 'const value = `\n```\n~~\n`;\n', language: 'tsx', line: 7 },
+      { code: 'createEditor();', language: 'ts', line: 13 },
+    ]
+  );
+});
+
 test('derives editor schema identity when direct construction omits it', () => {
   const source = [
     '```tsx',
@@ -47,6 +92,21 @@ test('rejects invalid editor options', () => {
   ].join('\n');
 
   assert.equal(auditPlateDocCode(source).length, 2);
+});
+
+test('checks the memoized React editor constructor', () => {
+  const source = [
+    '```tsx',
+    "import { useCreateEditor } from 'platejs/react';",
+    'useCreateEditor({ value: [] });',
+    'useCreateEditor({ plugins: [] });',
+    '```',
+  ].join('\n');
+
+  assert.deepEqual(
+    auditPlateDocCode(source).map(({ reason }) => reason),
+    ['editor construction does not accept value']
+  );
 });
 
 test('rejects removed and invalid editor initialization shapes', () => {

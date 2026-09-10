@@ -1,0 +1,5 @@
+repo_key	path	kind	license_note	used_for
+lexical	/Users/zbeyens/git/lexical	local-checkout	MIT	Inline paste, decorator/native input paste, image-caption child editor paste regressions.
+prosemirror-view	/Users/zbeyens/git/prosemirror-view	local-checkout	MIT	Clipboard slice serialization/parsing, transform hooks, slice metadata handling.
+prosemirror-tables	/Users/zbeyens/git/prosemirror-tables	local-checkout	MIT	Rectangular table-cell copy/paste algebra.
+tiptap	/Users/zbeyens/git/tiptap	local-checkout	MIT	Paste transform-chain API and product link-paste handler.

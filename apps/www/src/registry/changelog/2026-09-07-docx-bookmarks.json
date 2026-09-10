@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-docx-bookmarks",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-docx-bookmarks.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep DOCX bookmark names inside each document conversion",
+  "targets": [
+    {
+      "name": "docx",
+      "files": ["apps/www/src/registry/components/editor/docx.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "heading-static",
+      "files": ["apps/www/src/registry/components/editor/heading-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-docx-keep-bookmark-names-inside-24df8030",
+      "kind": "wiring",
+      "summary": "Install the paste and import plugins; call `exportToDocx` with a document snapshot from the export action.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-docx-bookmarks",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-07-docx-bookmarks-2",
+      "kind": "wiring",
+      "summary": "Emit ordinary HTML anchors and let the converter assign unique bookmark names within each DOCX document.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx-export", "heading-static", "toc"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-docx-bookmarks",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

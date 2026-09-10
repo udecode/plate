@@ -1,6 +1,7 @@
 'use client';
 
 import type { DialogProps } from '@radix-ui/react-dialog';
+import { createMarkdownRenderer } from 'fumadocs-core/content/md';
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
   ArrowRight,
@@ -14,6 +15,8 @@ import type { Route } from 'next';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 import { copyToClipboardWithMeta } from '@/components/copy-button';
 import {
@@ -59,6 +62,19 @@ const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
 const WHITESPACE_REGEX = /\s+/;
 const DOC_SEARCH_DEBOUNCE_MS = 300;
 const MIN_DOC_SEARCH_LENGTH = 2;
+const searchMarkdown = createMarkdownRenderer({
+  remarkRehypeOptions: { allowDangerousHtml: true },
+  rehypePlugins: [
+    rehypeRaw,
+    [
+      rehypeSanitize,
+      {
+        tagNames: ['p', 'span', 'mark', 'strong', 'em', 'code', 'br'],
+        attributes: {},
+      },
+    ],
+  ],
+});
 const commandMenuCopyableRegistryNames = new Set(
   `
   ai align autoformat basic-blocks
@@ -422,7 +438,11 @@ function SearchResults({
                 keywords={[item.content, ...(item.breadcrumbs ?? []), search]}
                 value={`${item.content} ${item.type} ${content[group]} ${search}`}
               >
-                <div className="line-clamp-1 text-sm">{item.content}</div>
+                <div className="line-clamp-1 text-sm [&_mark]:bg-transparent [&_mark]:text-foreground [&_mark]:underline">
+                  <searchMarkdown.Markdown>
+                    {item.content}
+                  </searchMarkdown.Markdown>
+                </div>
               </CommandMenuItem>
             );
           })}

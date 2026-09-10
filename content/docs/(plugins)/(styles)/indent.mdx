@@ -18,7 +18,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -32,7 +32,7 @@ The fastest way to add indent functionality is with the `IndentKit`, which inclu
 - Sets a custom offset of `24px` for indentation spacing.
 - Provides Tab/Shift+Tab keyboard shortcuts for indenting and outdenting.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -50,7 +50,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -60,7 +60,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugin
+### Add plugin
 
 Include `IndentPlugin` in your Plate plugins array when creating the editor.
 
@@ -76,7 +76,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 You can configure the `IndentPlugin` to target specific elements and customize indentation behavior.
 
@@ -115,7 +115,7 @@ const editor = createEditor({
 - `initialState.unit`: Unit for indentation values (default: `'px'`).
 - `initialState.indentMax`: Maximum number of indentations allowed.
 
-### Add Toolbar Button
+### Add toolbar button
 
 You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to your [Toolbar](/docs/toolbar) to control indentation.
 
@@ -217,7 +217,7 @@ Used to provide options for setting the indentation of a block of text.
   </APIOptions>
 </API>
 
-## Toolbar Buttons
+## Toolbar buttons
 
 Toolbar components call the descriptor-scoped updates directly:
 

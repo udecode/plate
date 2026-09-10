@@ -1,0 +1,2 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+web-codemirror-drawn-selection	web	CodeMirror draw selection hide native selection viewport source	web search	20	4	codemirror-reference,codemirror-focused-widget-discussion	focused-widget-native-selection-exception	none; promote focused widget oracle

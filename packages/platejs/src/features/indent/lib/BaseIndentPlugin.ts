@@ -24,7 +24,7 @@ export type IndentChangeOptions = {
 
 export type IndentPluginState = {
   /** Maximum number of indentation. */
-  indentMax?: number;
+  indentMax: number | null;
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
    *
@@ -40,6 +40,7 @@ export type IndentPluginState = {
 };
 
 const initialState: IndentPluginState = {
+  indentMax: null,
   offset: 24,
   unit: 'px',
 };

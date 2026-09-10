@@ -1,8 +1,25 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
+
 import { siteConfig } from '@/config/site';
+import { cn } from '@/lib/utils';
 
 export function SiteFooter() {
+  const pathname = usePathname()?.replace(/^\/cn(?=\/|$)/, '') || '/';
+
+  if (pathname === '/docs' || pathname.startsWith('/docs/')) return null;
+
   return (
-    <footer className="group-has-[.docs-nav]/body:pb-20 group-has-[.section-soft]/body:bg-surface/40 group-has-[[data-home-page]]/layout:bg-muted group-has-[[data-slot=designer]]/body:hidden group-has-[[data-slot=designer]]/layout:hidden group-has-[[data-slot=docs]]/body:hidden group-has-[[data-slot=docs]]/layout:hidden group-has-[.docs-nav]/body:sm:pb-0 dark:bg-transparent dark:group-has-[.section-soft]/body:bg-surface/40 3xl:fixed:bg-transparent">
+    <footer
+      className={cn(
+        pathname === '/' && 'bg-muted',
+        pathname === '/editors' || pathname.startsWith('/editors/')
+          ? 'bg-surface/40'
+          : 'dark:bg-transparent',
+        '3xl:fixed:bg-transparent'
+      )}
+    >
       <div className="container-wrapper px-4 xl:px-6">
         <div className="flex h-(--footer-height) items-center justify-center">
           <p className="px-1 text-center text-sm leading-loose text-muted-foreground">

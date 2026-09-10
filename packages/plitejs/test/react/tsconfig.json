@@ -1,6 +1,11 @@
 {
-  "extends": "../../../../tooling/config/tsconfig.base.json",
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*"],
+  "exclude": [],
   "compilerOptions": {
-    "types": ["@testing-library/jest-dom", "vitest/globals"]
+    "incremental": false,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["node", "@testing-library/jest-dom/vitest", "vitest/globals"]
   }
 }

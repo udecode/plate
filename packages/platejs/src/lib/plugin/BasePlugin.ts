@@ -1,6 +1,5 @@
 import type {
   ContentSlice,
-  DecoratedRange,
   DefinitionOf as PliteDefinitionOf,
   Descendant,
   Element,
@@ -21,6 +20,9 @@ import type {
   NodeMatch,
   NodeTypeSelector,
   Path,
+  PliteDecoration,
+  PliteDecorationAttributes,
+  PliteDecorationRefresh,
   PropertyValueDescriptor,
   PropertyValueOf,
   SchemaElementProperty,
@@ -72,14 +74,12 @@ import type {
   InferApi,
   InferConflicts,
   InferDependencies,
-  InferPluginDecoration,
   InferPluginStoreState,
   InferRead,
   InferSelectors,
   InferUpdate,
   MatchRules,
   NodeComponent,
-  NodeComponents,
   HtmlParserOptions,
   HtmlPluginContext,
   BasePluginDefinition,
@@ -100,6 +100,7 @@ import type {
 } from './PluginDefinition';
 import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
 import type { MergePluginDefinitions } from './pluginDefinitionMerge.internal';
+import type { RequiredPluginState } from './pluginInitialState.internal';
 import type { ElementWith } from './pluginNodeTypes';
 import type {
   InferExactPluginSchemaContribution,
@@ -146,34 +147,44 @@ type ErasedPluginInject = {
 export type ErasedPluginCallable<TResult = unknown> = (
   ...args: never[]
 ) => TResult;
+type ErasedDecorate = Readonly<{
+  attributes?:
+    | PliteDecorationAttributes
+    | ErasedPluginCallable<PliteDecorationAttributes>
+    | null;
+  observe?: ErasedPluginCallable<() => void>;
+  read: ErasedPluginCallable<readonly PliteDecoration[]>;
+}>;
 type ErasedPluginOn = Record<
   string,
   ErasedPluginCallable<HandlerReturnType> | null | undefined
 >;
 type ErasedPluginRender = {
-  aboveEditable?: NodeComponent<{ children: any }> | null;
-  aboveNodes?:
+  attributes?: unknown;
+  mark?: Readonly<{
+    leafAttributes?: unknown;
+    leafComponent?: NodeComponent | null;
+    placement?: 'leaf' | 'text' | null;
+    textAttributes?: unknown;
+  }> | null;
+  useViewElementAttributes?: unknown;
+};
+type ErasedPluginSlots = {
+  afterContainer?: NodeComponent | null;
+  afterEditable?: NodeComponent | null;
+  afterNodeChildren?: ErasedPluginCallable | null;
+  beforeContainer?: NodeComponent | null;
+  beforeEditable?: NodeComponent | null;
+  wrapContent?: NodeComponent<{ children: any }> | null;
+  wrapNode?:
     | ErasedPluginCallable
     | Readonly<{
         component: NodeComponent;
         match?: ErasedPluginCallable<boolean>;
       }>
     | null;
-  abovePlite?: NodeComponent<{ children: any }> | null;
-  afterContainer?: NodeComponent | null;
-  afterEditable?: NodeComponent | null;
-  as?: keyof HTMLElementTagNameMap | null;
-  beforeContainer?: NodeComponent | null;
-  beforeEditable?: NodeComponent | null;
-  belowNodes?: ErasedPluginCallable | null;
-  belowRootNodes?: ErasedPluginCallable | null;
-  isDecoration?: boolean | null;
-  leaf?: NodeComponent | null;
-  leafProps?: unknown;
-  node?: NodeComponent | null;
-  nodeProps?: unknown;
-  textSync?: boolean | null;
-  textProps?: unknown;
+  wrapNodeChildren?: ErasedPluginCallable | null;
+  wrapRoot?: NodeComponent | null;
 };
 type ErasedPluginRules = {
   break?: BreakRules;
@@ -204,11 +215,12 @@ export type AnyBasePlugin = {
   api?: object | ErasedPluginCallable<object>;
   codecs?: object | ErasedPluginCallable<object> | null;
   commands?: ErasedPluginCallable;
+  component?: NodeComponent | null;
   configure: ErasedPluginCallable;
   conflicts: readonly AnyPluginDependencyDescriptor[];
   contributions?: readonly unknown[];
   corrections?: readonly unknown[];
-  decorate?: ErasedPluginCallable<DecoratedRange[] | undefined> | null;
+  decorate?: ErasedDecorate | null;
   dependencies: readonly AnyPluginDependencyDescriptor[];
   editOnly?: boolean | object;
   effectTypes?: readonly unknown[];
@@ -220,10 +232,7 @@ export type AnyBasePlugin = {
   initialState: object;
   name: string;
   on: ErasedPluginOn;
-  override: {
-    components?: NodeComponents;
-    plugins?: Record<string, ErasedBasePluginOverride>;
-  };
+  override: Record<string, ErasedBasePluginOverride>;
   read?: ErasedPluginCallable<EditorReadMethodTree>;
   readMiddleware?: ErasedPluginCallable;
   render: ErasedPluginRender;
@@ -231,13 +240,13 @@ export type AnyBasePlugin = {
   readonly schema: unknown;
   selectors: object;
   shortcuts: Record<string, EditorShortcut | null | undefined>;
+  slots: ErasedPluginSlots;
   stateFields?: NonNullable<
     EditorExtensionDefinitionInput<Editor>['stateFields']
   >;
   targetPlugins: ReadonlyArray<PluginReference | string>;
   prepareDocument?: ErasedPluginCallable<EditorDocumentValue | Value> | null;
   update?: ErasedPluginCallable<object>;
-  useHooks?: ErasedPluginCallable | null;
   validate?: ErasedPluginCallable;
 } & PluginReference;
 export type AnyPluginBase = Omit<AnyBasePlugin, 'configure' | 'extend'>;
@@ -268,17 +277,35 @@ export type AnyBasePluginContext = Omit<DynamicBasePluginPortal, 'schema'> & {
   readonly schema: PluginAuthorSchemaView;
 };
 
-/**
- * Property used by Plate to decorate editor ranges. If the function returns
- * undefined then no ranges are modified. If the function returns an array the
- * returned ranges are merged with the ranges called by other plugins.
- */
-export type Decorate<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-  TDecoration extends object = InferPluginDecoration<C>,
-> = (
-  ctx: BasePluginContext<C> & { entry: NodeEntry }
-) => Array<DecoratedRange & TDecoration> | undefined;
+export type Decorate<C extends AnyBasePluginDefinition = BasePluginDefinition> =
+  Readonly<{
+    /** Pure presentation applied after read. Observation remains owned by observe. */
+    attributes?:
+      | PliteDecorationAttributes
+      | ((
+          ctx: BasePluginContext<C> & {
+            decoration: PliteDecoration;
+            entry: NodeEntry;
+          }
+        ) => PliteDecorationAttributes)
+      | null;
+    observe?: (
+      ctx: BasePluginContext<C> & {
+        refresh: (input: PliteDecorationRefresh) => void;
+      }
+    ) => () => void;
+    read: (
+      ctx: BasePluginContext<C> & { entry: NodeEntry }
+    ) => readonly PliteDecoration[];
+  }>;
+
+type DecorateInput<C extends AnyBasePluginDefinition> = Omit<
+  Decorate<C>,
+  'read'
+> &
+  (C extends { decorate: true }
+    ? Partial<Pick<Decorate<C>, 'read'>>
+    : Pick<Decorate<C>, 'read'>);
 
 // -----------------------------------------------------------------------------
 
@@ -295,6 +322,7 @@ export type InjectNodeProps<
   ) => boolean;
   transformClassName?: (options: TransformOptions<C>) => string | undefined;
   transformNodeValue?: (options: TransformOptions<C>) => unknown;
+  /** Pure render transform. React hooks are not supported. */
   transformProps?: (
     options: TransformOptions<C> & { props: GetInjectNodePropsReturnType }
   ) => AnyObject | undefined;
@@ -303,7 +331,10 @@ export type InjectNodeProps<
 
 type BaseRenderNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = (0 extends 1 & C ? AnyBasePluginContext : BasePluginContext<C>) & {
+> = Omit<
+  0 extends 1 & C ? AnyBasePluginContext : BasePluginContext<C>,
+  'slots'
+> & {
   attributes?: AnyObject;
   className?: string;
   nodeProps?: AnyObject;
@@ -929,11 +960,14 @@ export type DefinePluginCodecs<C extends AnyBasePluginDefinition> = {
 
 export type PartialBasePlugin<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<Partial<PluginBase<C>>, 'initialState' | 'render'> & {
+> = Omit<
+  Partial<PluginBase<C>>,
+  'decorate' | 'initialState' | 'render' | 'slots'
+> & {
+  decorate?: DecorateInput<C> | null;
   initialState?: Partial<InferPluginStoreState<C>>;
-  render?: Partial<
-    Omit<NonNullable<BasePluginAuthorFields<C>['render']>, 'node'>
-  >;
+  render?: Partial<NonNullable<BasePluginAuthorFields<C>['render']>>;
+  slots?: Partial<NonNullable<BasePluginAuthorFields<C>['slots']>>;
 };
 
 /**
@@ -944,6 +978,7 @@ export type PartialBasePlugin<
  * public generic below recursively expand itself.
  */
 type ErasedBasePluginOverride = Partial<{
+  component: NodeComponent;
   decorate: unknown;
   editOnly: unknown;
   enabled: boolean;
@@ -955,6 +990,7 @@ type ErasedBasePluginOverride = Partial<{
   rules: object;
   selectors: object;
   shortcuts: object;
+  slots: object;
   targetPlugins: ReadonlyArray<PluginReference | string>;
   prepareDocument: unknown;
 }>;
@@ -1012,9 +1048,10 @@ export type RenderStaticNodeWrapperProps<
         }
     : never;
 
-export type BasePluginContextEditor<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = InternalBaseEditorWithPlatePlugins<Value, C>;
+/** Cache the full invariant editor shape across author callback comparisons. */
+export interface BasePluginContextEditor<
+  in out C extends AnyBasePluginDefinition = BasePluginDefinition,
+> extends InternalBaseEditorWithPlatePlugins<Value, C> {}
 
 export type BasePluginImplementationContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -1110,7 +1147,7 @@ type BasePluginCorrection<C extends AnyBasePluginDefinition> = Omit<
 
 type BasePluginAuthorFields<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<PluginBase<C>, 'dependencies' | 'render'> &
+> = Omit<PluginBase<C>, 'dependencies' | 'render' | 'slots'> &
   BaseNativeExtensionFields<C> & {
     api?: (context: BasePluginContext<C>) => InferApi<C>;
     conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
@@ -1139,64 +1176,58 @@ type BasePluginAuthorFields<
     inject: Nullable<{
       nodeProps?: InjectNodeProps<C>;
     }>;
-    override: {
-      components?: NodeComponents;
-      /**
-       * Weakly adapts already-installed foreign plugins by name.
-       *
-       * Missing targets are ignored. Direct target configuration remains the
-       * authoritative, inferred path.
-       */
-      plugins?: Record<string, ErasedBasePluginOverride>;
-    };
-    render: Omit<PluginBase<C>['render'], 'node'> &
-      Readonly<{ node?: never }> &
+    /**
+     * Weakly adapts already-installed foreign plugins by name.
+     *
+     * Missing targets are ignored. Direct target configuration remains the
+     * authoritative, inferred path.
+     */
+    override: Record<string, ErasedBasePluginOverride>;
+    render: Nullable<{
+      /** Adds attributes to the primary element, leaf, or text renderer. */
+      attributes?: NodeStaticProps<WithAnyName<C>>;
+      /** Configures rendering for a schema mark. */
+      mark?:
+        | Readonly<{
+            /** Adds attributes to the leaf host while the mark is active. */
+            leafAttributes?: LeafStaticProps<WithAnyName<C>>;
+            leafComponent?: never;
+            /** The primary component renders around each leaf by default. */
+            placement?: 'leaf';
+            /** Adds attributes to the text host while the mark is active. */
+            textAttributes?: TextStaticProps<WithAnyName<C>>;
+          }>
+        | Readonly<{
+            /** Adds attributes to the leaf host while the mark is active. */
+            leafAttributes?: LeafStaticProps<WithAnyName<C>>;
+            /** Optional secondary component rendered around active leaves. */
+            leafComponent?: NodeComponent;
+            /** The primary component renders once around the text node. */
+            placement: 'text';
+            /** Adds attributes to the text host while the mark is active. */
+            textAttributes?: TextStaticProps<WithAnyName<C>>;
+          }>;
+    }>;
+    slots: Omit<PluginBase<C>['slots'], 'wrapContent' | 'wrapRoot'> &
       Nullable<{
-        /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
-         * wrapper React node as its parent. Useful for wrapping or decorating
-         * nodes with additional UI elements.
-         *
-         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-         * in the wrapper function. It is not equivalent to a React component.
-         */
-        aboveNodes?: RenderStaticNodeWrapper<C>;
-        /**
-         * When other plugins' `node` components are rendered, this function can
-         * return an optional wrapper function that turns a `node`'s props to a
-         * wrapper React node. The wrapper node is the `node`'s child and its
-         * original children's parent. Useful for wrapping or decorating nodes
-         * with additional UI elements.
-         *
-         * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-         * in the wrapper function. It is not equivalent to a React component.
-         */
-        belowNodes?: RenderStaticNodeWrapper<C>;
         /** Renders a component after the main editor container. */
         afterContainer?: () => any;
-        /**
-         * Renders a component after the `Editable` component. This is the last
-         * render position within the editor structure.
-         */
+        /** Renders a component after the Editable. */
         afterEditable?: () => any;
+        /** Renders content after a node's children. */
+        afterNodeChildren?: (props: RenderStaticNodeWrapperProps<C>) => any;
         /** Renders a component before the main editor container. */
         beforeContainer?: () => any;
-        /** Renders a component before the `Editable` component. */
+        /** Renders a component before the Editable. */
         beforeEditable?: () => any;
-        /**
-         * Function to render content below the root element but above its
-         * children. Similar to belowNodes but renders directly in the element
-         * rather than wrapping. Multiple plugins can provide this, and all
-         * their content will be rendered in sequence.
-         */
-        belowRootNodes?: (props: RenderStaticNodeWrapperProps<C>) => any;
-        /** Override `data-plite-leaf` element attributes. */
-        leafProps?: LeafStaticProps<WithAnyName<C>>;
-        /** Override rendered element/text/leaf attributes. */
-        nodeProps?: NodeStaticProps<WithAnyName<C>>;
-        /** Override `data-plite-node="text"` element attributes. */
-        textProps?: TextStaticProps<WithAnyName<C>>;
+        /** Wraps the Editable content and its lifecycle effects. */
+        wrapContent?: NodeComponent<{ children: any }>;
+        /** Wraps a rendered node. */
+        wrapNode?: RenderStaticNodeWrapper<C>;
+        /** Wraps a rendered node's children. */
+        wrapNodeChildren?: RenderStaticNodeWrapper<C>;
+        /** Wraps the complete Plite root for this Plate view. */
+        wrapRoot?: NodeComponent<{ children: any }>;
       }>;
     rules: {
       /**
@@ -1229,10 +1260,7 @@ type BasePluginAuthorFields<
 type ProjectBasePluginFields<C extends AnyBasePluginDefinition> = Readonly<{
   [
     TKey in Extract<
-      Exclude<
-        keyof C,
-        BasePluginRuntimeField | 'decorate' | 'prepareDocument' | 'useHooks'
-      >,
+      Exclude<keyof C, BasePluginRuntimeField | 'decorate' | 'prepareDocument'>,
       keyof BasePluginAuthorFields<C>
     >
   ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
@@ -1243,8 +1271,7 @@ type ProjectBasePluginContextualFields<C extends AnyBasePluginDefinition> =
     [
       TKey in Extract<
         keyof C,
-        ('decorate' | 'prepareDocument' | 'useHooks') &
-          keyof BasePluginAuthorFields<C>
+        ('decorate' | 'prepareDocument') & keyof BasePluginAuthorFields<C>
       >
     ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
   }>;
@@ -1262,28 +1289,31 @@ type BasePluginRuntimeField =
   | 'schema'
   | 'selectors'
   | 'shortcuts'
+  | 'slots'
   | 'targetPlugins';
 
 type BasePluginRuntimeShell<C extends AnyBasePluginDefinition> = Pick<
   BasePluginAuthorFields<C>,
-  Exclude<BasePluginRuntimeField, 'inject' | 'on' | 'render'>
+  Exclude<BasePluginRuntimeField, 'inject' | 'on' | 'render' | 'slots'>
 >;
 
 /** Context-bound fields kept outside the renderer-neutral core. */
 type BasePluginContextualDescriptor<C extends AnyBasePluginDefinition> = Pick<
   BasePluginAuthorFields<C>,
-  'inject' | 'on' | 'render'
+  'inject' | 'on' | 'render' | 'slots'
 > &
   ProjectBasePluginContextualFields<C>;
 
 /** Nominal identity carried across renderer adapters. */
 type BasePluginDescriptorCarrier<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = EditorExtensionWitnessFor<LowerBasePlugin<C>> &
+> = EditorExtensionWitnessFor<() => LowerBasePlugin<C>> &
   BasePluginInstalledCapabilityWitness<C> &
   InferPluginNodeTypeProvider<C> &
-  EditorSchemaExtensionProvider<InternalPlateSchemaExtensionForPlugin<C>> &
-  EditorSchemaSourceProvider<InferPluginSchemaContribution<C>> &
+  EditorSchemaExtensionProvider<
+    () => InternalPlateSchemaExtensionForPlugin<C>
+  > &
+  EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>> &
   PluginReference<C['name']> &
   PluginDefinitionWitness<C>;
 
@@ -1304,7 +1334,6 @@ type BasePluginRuntimeDescriptor<
   | 'schema'
   | 'prepareDocument'
   | 'update'
-  | 'useHooks'
 > &
   BasePluginRuntimeShell<C> &
   ProjectBasePluginFields<C>;
@@ -1342,11 +1371,13 @@ export interface BasePlugin<
   extends
     BasePluginRuntime,
     BasePluginMethods<C>,
-    EditorExtensionWitnessFor<LowerBasePlugin<C>>,
+    EditorExtensionWitnessFor<() => LowerBasePlugin<C>>,
     BasePluginInstalledCapabilityWitness<C>,
     InferPluginNodeTypeProvider<C>,
-    EditorSchemaExtensionProvider<InternalPlateSchemaExtensionForPlugin<C>>,
-    EditorSchemaSourceProvider<InferPluginSchemaContribution<C>>,
+    EditorSchemaExtensionProvider<
+      () => InternalPlateSchemaExtensionForPlugin<C>
+    >,
+    EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>>,
     PluginReference<C['name']>,
     PluginDefinitionWitness<C> {
   api?: (context: BasePluginContext<C>) => InferApi<C>;
@@ -1416,6 +1447,7 @@ export type BasePluginDefinitionInput<
 type BasePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
   BasePluginInputFields<C>,
   | 'api'
+  | 'decorate'
   | 'dependencies'
   | 'initialState'
   | 'key'
@@ -1427,6 +1459,7 @@ type BasePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
   | 'update'
 > & {
   api?: (context: BasePluginContext<C>) => object;
+  decorate?: DecorateInput<C>;
   component?: never;
   initialState?: object | ((context: BasePluginContext<C>) => object);
   read?: (
@@ -1464,7 +1497,6 @@ type BasePluginStageInput<
   TRead extends PluginReadMethodTree<C>,
   TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
   TUpdate extends object,
-  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
@@ -1477,9 +1509,13 @@ type BasePluginStageInput<
   Readonly<{
     api?: (context: BasePluginContext<C>) => TApi;
     conflicts?: BasePluginStageConflictInput<TConflictNames>;
-    decorate?: Decorate<C, TDecoration>;
+    decorate?: DecorateInput<C>;
     enabled?: TEnabled;
-    initialState?: S | ((context: BasePluginContext<C>) => S);
+    initialState?:
+      | (S & RequiredPluginState<NoInfer<S>>)
+      | ((
+          context: BasePluginContext<C>
+        ) => S & RequiredPluginState<NoInfer<S>>);
     read?: (
       context: BasePluginContext<C> & {
         state: PlatePluginReadState<C>;
@@ -1540,7 +1576,6 @@ type BasePluginStageContribution<
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
-  TDecoration extends object,
   TConflictNames extends readonly string[],
   TEnabled extends boolean,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
@@ -1563,7 +1598,7 @@ type BasePluginStageContribution<
     ? Readonly<{ update: TUpdate }>
     : Readonly<Record<never, never>>) &
   ('decorate' extends TKeys
-    ? Readonly<{ decorate: TDecoration }>
+    ? Readonly<{ decorate: true }>
     : Readonly<Record<never, never>>) &
   ('conflicts' extends TKeys
     ? Readonly<{
@@ -1588,7 +1623,6 @@ type BasePluginStageDefinition<
   TRead extends object = {},
   TSelectors extends object = {},
   TUpdate extends object = {},
-  TDecoration extends object = {},
   TConflictNames extends readonly string[] = readonly [],
   TEnabled extends boolean = boolean,
   TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
@@ -1607,7 +1641,6 @@ type BasePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
-    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -1625,7 +1658,6 @@ type BasePluginStageDefinition<
       PluginSelectorMethods<TSelectors>
     >,
     TUpdate,
-    TDecoration,
     TConflictNames,
     TEnabled,
     TTargetPlugins
@@ -1641,6 +1673,7 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   | 'conflicts'
   | 'contributions'
   | 'corrections'
+  | 'decorate'
   | 'dependencies'
   | 'enabled'
   | 'effectTypes'
@@ -1659,6 +1692,7 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
 > & {
   /** Replace this descriptor's node component for static or live consumers. */
   component?: NodeComponent;
+  decorate?: DecorateInput<C> | null;
   enabled?: boolean;
   initialState?: Partial<InferPluginStoreState<C>>;
   targetPlugins?: ReadonlyArray<PluginReference | string>;
@@ -1675,14 +1709,24 @@ export type BasePluginPortal<
     update: PlatePluginUpdate<C, S>;
   };
 
-export type BasePluginContext<
+// Author capabilities replace consumer methods; do not build that portal first.
+type BasePluginContextFields<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<BasePluginPortal<C>, keyof PluginBaseContext<C>> &
+> = Omit<
+  ResolvedPlatePlugin<C>,
+  keyof PluginPortalContext<C> | keyof PluginBaseContext<C> | 'schema'
+> &
   PluginBaseContext<C> & {
     defineCodecs: DefinePluginCodecs<C>;
     editor: BasePluginContextEditor<C>;
     plugin: ResolvedPlatePlugin<C>;
   };
+
+export type BasePluginContext<
+  in out C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = {
+  [K in keyof BasePluginContextFields<C>]: BasePluginContextFields<C>[K];
+};
 
 interface BasePluginMethods<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -1700,7 +1744,6 @@ interface BasePluginMethods<
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
-    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
@@ -1717,7 +1760,6 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
-      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins,
@@ -1732,7 +1774,6 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
-      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins
@@ -1740,7 +1781,9 @@ interface BasePluginMethods<
   > &
     EditorExtensionTypeProviderOf<this>;
   extend<const TExtension extends EditorExtensionReference>(
-    extension: (context: BasePluginContext<C>) => TExtension
+    extension: (
+      context: BasePluginContext<C>
+    ) => TExtension & Readonly<{ decorate?: never }>
   ): BasePlugin<
     MergePluginDefinitions<
       C,
@@ -1768,27 +1811,27 @@ interface BasePluginMethods<
     const TRead extends PluginReadMethodTree<C> = {},
     const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
     const TUpdate extends object = {},
-    const TDecoration extends object = {},
     const TConflictNames extends readonly string[] = readonly [],
     const TEnabled extends boolean = boolean,
     const TTargetPlugins extends ReadonlyArray<PluginReference | string> =
       readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
-    extension: BasePluginStageInput<
-      C,
-      TKeys,
-      S,
-      TApi,
-      TRead,
-      TSelectors,
-      TUpdate,
-      TDecoration,
-      TConflictNames,
-      TEnabled,
-      TTargetPlugins,
-      TShortcuts
-    >
+    // Invalid callbacks must not fall through to the object overload.
+    extension: Readonly<{ call?: never }> &
+      BasePluginStageInput<
+        C,
+        TKeys,
+        S,
+        TApi,
+        TRead,
+        TSelectors,
+        TUpdate,
+        TConflictNames,
+        TEnabled,
+        TTargetPlugins,
+        TShortcuts
+      >
   ): BasePlugin<
     BasePluginStageDefinition<
       C,
@@ -1798,7 +1841,6 @@ interface BasePluginMethods<
       TRead,
       TSelectors,
       TUpdate,
-      TDecoration,
       TConflictNames,
       TEnabled,
       TTargetPlugins
@@ -1832,20 +1874,22 @@ export type TransformOptions<
 > = BaseTransformOptions & BasePluginContext<C>;
 
 type EditorShortcutOptions = {
-  keys?: (Array<Array<{} & string>> | readonly string[] | string) | null;
+  keys?: ReadonlyArray<readonly string[]> | readonly string[] | string | null;
   delimiter?: string;
   description?: string;
-  document?: Document;
   enabled?: Trigger;
   enableOnContentEditable?: boolean;
-  enableOnFormTags?: boolean;
+  enableOnFormTags?:
+    | ReadonlyArray<
+        'INPUT' | 'SELECT' | 'TEXTAREA' | 'input' | 'select' | 'textarea'
+      >
+    | boolean;
   ignoreEventWhenPrevented?: boolean;
   ignoreModifiers?: boolean;
   keydown?: boolean;
   keyup?: boolean;
   preventDefault?: Trigger;
   priority?: number;
-  scopes?: readonly string[] | string;
   splitKey?: string;
   useKey?: boolean;
   ignoreEventWhen?: (e: KeyboardEvent) => boolean;

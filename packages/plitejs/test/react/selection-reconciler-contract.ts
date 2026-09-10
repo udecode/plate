@@ -3,15 +3,13 @@ import assert from 'node:assert/strict';
 import { createEditor } from 'plitejs';
 import { describe, it } from 'vitest';
 
-import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
+import { replace as editorReplace } from '../../src/internal';
 import { syncSelectionForBeforeInput } from '../../src/react/editable/selection-reconciler';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../src/react/plugin/react-editor';
+import { readTextSelection as editorGetSelection } from './read-text-selection';
 
 const createRootWithoutSelection = () =>
   ({ getSelection: () => null }) as unknown as Document;
@@ -107,7 +105,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -147,7 +145,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -187,7 +185,7 @@ describe('selection reconciler', () => {
     const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     };

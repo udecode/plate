@@ -1,5 +1,11 @@
-import type { DOMHandlerProp } from '../plugin/DOMHandlers';
-import { DOM_HANDLERS } from './dom-attributes';
+import type { DOMHandlers } from '../plugin/DOMHandlers';
+import { DOM_HANDLERS } from './dom-attributes.internal';
+
+type DOMHandlerProp = {
+  [K in keyof DOMHandlers]-?: K extends 'domBeforeInput'
+    ? 'onDOMBeforeInput'
+    : `on${Capitalize<K>}`;
+}[keyof DOMHandlers];
 
 type ListedDOMHandler = (typeof DOM_HANDLERS)[number];
 

@@ -1,0 +1,5 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+prosemirror/prosemirror-view	https://github.com/ProseMirror/prosemirror-view	github	MIT	high	2026	source,contenteditable,domchange,selection	/Users/zbeyens/git/prosemirror-view	read	8	Direct DOM change tests import browser-mutated DOM back into editor state.
+codemirror/view	https://github.com/codemirror/view	github	MIT	high	2026	source,contenteditable,domchange,composition	/Users/zbeyens/git/codemirror-view	read	9	Direct DOM mutation and composition tests cover ambiguous text changes, DOM preservation, CRLF, widget boundaries.
+facebook/lexical	https://github.com/facebook/lexical	github	MIT	high	2026	source,e2e,regression,recorder,ime,clipboard	/Users/zbeyens/git/lexical	read	7	Test recorder and regression suites pressure replayable browser steps, HTML snapshots, selection snapshots, Safari composition/delete.
+slate-v2-local	local:.tmp/slate-v2	local	MIT	local	2026	source,stress,slate-browser	.tmp/slate-v2	read	8	Existing generated stress and slate-browser replay helpers are strong but lack direct DOM-mutation import stress family.

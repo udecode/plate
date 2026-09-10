@@ -1,28 +1,9 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
+import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+
 const expectedSelection = 'Experience a modern';
 const introText = 'Experience a modern rich-text editor built with';
-
-const recordRuntimeErrors = (page: Page) => {
-  const errors: string[] = [];
-  const onConsole = (message: { text: () => string; type: () => string }) => {
-    if (message.type() === 'error') errors.push(message.text());
-  };
-  const onPageError = (error: Error) => {
-    errors.push(error.stack ?? error.message);
-  };
-
-  page.on('console', onConsole);
-  page.on('pageerror', onPageError);
-
-  return {
-    assertNone: () => expect(errors).toEqual([]),
-    stop: () => {
-      page.off('console', onConsole);
-      page.off('pageerror', onPageError);
-    },
-  };
-};
 
 const getEditor = (page: Page) =>
   page.locator('[data-plite-editor="true"][contenteditable="true"]');
@@ -121,7 +102,7 @@ test('floating Bold applies the mark without losing the selection', async ({
 
   await expect(boldButton).toHaveCount(1);
 
-  const runtimeErrors = recordRuntimeErrors(page);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, boldButton);
@@ -153,7 +134,7 @@ test('floating Comment marks the target and opens the reply editor', async ({
 
   await expect(commentButton).toHaveCount(1);
 
-  const runtimeErrors = recordRuntimeErrors(page);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, commentButton);
@@ -201,7 +182,7 @@ test('floating Turn Into opens without losing the selection', async ({
 
   await expect(turnIntoButton).toHaveCount(1);
 
-  const runtimeErrors = recordRuntimeErrors(page);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, turnIntoButton);

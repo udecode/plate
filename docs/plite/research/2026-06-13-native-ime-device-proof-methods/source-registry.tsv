@@ -1,0 +1,9 @@
+source_key	kind	url_or_path	evidence_grade	notes
+w3c-webdriver-ime	web	https://github.com/w3c/webdriver/issues/1683	A	WebDriver issue says IME simulation is not supported by current actions model.
+wpt-input-events-untestable	web	https://github.com/web-platform-tests/wpt/issues/13464	B	Input Events test authors record user-interaction and contenteditable/WebDriver limits.
+cdp-input-domain	web	https://chromedevtools.github.io/devtools-protocol/tot/Input/	B	Chromium Input domain includes keyboard/editing and IME composition hooks, but scope is Chromium.
+appium-unicode	web	https://appium.github.io/appium.io/docs/en/writing-running-appium/other/unicode/	B	Appium Unicode text path can bypass or replace normal keyboard behavior.
+appium-android-ime-actions	web	https://appium.readthedocs.io/en/latest/en/writing-running-appium/android/android-ime/	B	Appium can execute Android editor actions on focused elements.
+android-input-method	web	https://developer.android.com/develop/ui/views/touch-and-input/creating-input-method	A	Android IME docs and InputConnection reference expose InputMethodService plus text, composition, deletion, and selection-update primitives.
+easylogic-contenteditable	web	https://github.com/easylogic/contenteditable	B	Contenteditable incident catalog is useful for environment matrix and unknown coverage.
+prosemirror-android	web	https://discuss.prosemirror.net/t/contenteditable-on-android-is-the-absolute-worst/3810	B	Mature editor discussion reinforces Android/contenteditable/IME fragility.

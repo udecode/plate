@@ -25,9 +25,39 @@ export const getSelectionRect = async (
 
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    const clientRect = Array.from(range.getClientRects()).find(
-      (candidate) => candidate.width > 0 || candidate.height > 0
-    );
+    const forwardLineRect = (() => {
+      if (
+        !range.collapsed ||
+        range.startContainer.nodeType !== Node.TEXT_NODE ||
+        range.startOffset <= 0
+      ) {
+        return null;
+      }
+
+      const text = range.startContainer as Text;
+
+      if (
+        range.startOffset >= text.length ||
+        text.data[range.startOffset - 1] !== '\n'
+      ) {
+        return null;
+      }
+
+      const forwardRange = range.cloneRange();
+
+      forwardRange.setEnd(text, range.startOffset + 1);
+
+      return (
+        Array.from(forwardRange.getClientRects()).find(
+          (candidate) => candidate.height > 0
+        ) ?? null
+      );
+    })();
+    const clientRect =
+      forwardLineRect ??
+      Array.from(range.getClientRects()).find(
+        (candidate) => candidate.width > 0 || candidate.height > 0
+      );
     const usableRect =
       clientRect ??
       (rect.width > 0 || rect.height > 0 ? rect : null) ??
@@ -76,7 +106,7 @@ export const getSelectionRect = async (
 
     return {
       height: usableRect.height,
-      width: usableRect.width,
+      width: forwardLineRect ? 0 : usableRect.width,
       x: usableRect.x,
       y: usableRect.y,
     };

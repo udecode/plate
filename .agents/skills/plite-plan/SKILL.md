@@ -10,6 +10,9 @@ metadata:
 
 # Plite Plan
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use Plite Plan for substrate architecture, adoption, execution, and proof after
@@ -26,21 +29,39 @@ Choose one mode from the arguments. Default to `--standard`.
   shape is the decision. Do not create a goal or call the result
   execution-ready. Promote to standard when the decision spans multiple
   owners, public breaks, or uncertain browser/runtime behavior.
-- `--standard`: create or continue one Plite Plan goal and plan. Run the three
+- `--standard`: create or continue one Task-owned Plite plan. Run the three
   phases continuously in the current activation unless interrupted or blocked.
 - `--deep`: use the standard workflow and add only the research, Benchmark
   evidence/packet, browser stress, or red-team work justified by the named risk. Do not add more
   lifecycle phases or generic editor comparison. Use `editor-audit` first when
   source-level comparison against one or more editor architectures is required.
 
-A plan path does not by itself authorize implementation. Execution starts only
-when the user explicitly accepts a ready plan and invokes `plite-plan` against
-that exact path. Create a new one-shot execution goal for the accepted plan.
+A planning request stops at the ready plan. A plan path alone does not authorize
+implementation. An execution request or a clear "go" accepting the current plan
+does; continue in this task without requiring the user to repeat the skill name.
+When planning and execution are already authorized, readiness is an internal
+checkpoint before implementation.
+
+A primary supervisor may delegate accepted execution without another user turn
+only when its invocation already carries explicit source-mutation authority and
+its required decision gate has accepted the target. `task autonomous architecture
+<scope> execute` qualifies only after its bounded challenge records the final
+target, `challenge delta`, exact Plite packet, proof, and current goal/plan.
+Continue that goal and plan; do not create a worker goal or ask the user to
+reinvoke Plite Plan. Without every field, remain planning-only and return the
+missing gate to the supervisor.
 
 ## Ownership
 
 Read root `VISION.md` and `docs/vision/plite.md` for doctrine; do not duplicate
 their full ownership tables in the plan.
+
+Consume the [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
+comparison before planning adoption. Existing operations, state models,
+history and collaboration protocols must earn reuse; replace them when the
+current job and hard laws justify a better target. Reuse an accepted comparison
+while its requirements and evidence hold. A missing primitive is design work,
+not a reason to preserve a weaker caller workaround.
 
 `editor-audit` owns exhaustive external editor architecture comparison.
 `best-api` owns the ideal public call surface. Plite Plan consumes those targets
@@ -57,6 +78,13 @@ the same plan and repair the target before continuing.
 - Keep Plite unopinionated. Do not solve a Plate product concern in substrate.
 - Do not hide a missing Plite primitive behind Plate glue. Name the substrate
   gap and its Plate adoption pressure explicitly.
+- Plan transient inline paint through one provider-owned
+  `<Plite decorations>` list of `PliteDecorationSource` descriptors. Each source
+  returns keyed ranges with render-safe attributes and may observe an external
+  owner for targeted node-key refresh. `Editable` only renders the compiled
+  result. Keep annotation context independent through
+  `PliteAnnotationProvider`; require a feature-owned adapter for annotation
+  paint.
 - For canonical state whose presentation differs by mounted view, first test
   whether the exact Plite React view can derive that choice from its runtime or
   DOM lifecycle. If it can, plan private view state plus a literal DOM protocol;
@@ -89,7 +117,8 @@ the same plan and repair the target before continuing.
 
 ## Standard And Deep Setup
 
-Use `autogoal` with `docs/plans/templates/plite-plan.md`.
+Reuse the active Task plan. When no suitable plan exists, create a file from
+`docs/plans/templates/plite-plan.md`:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -107,9 +136,13 @@ Use a short objective:
 Close <Plite decision>; done when binary readiness gates pass; plan docs/plans/<path>.md.
 ```
 
-Autogoal owns lifecycle, evidence integrity, blocking, and the final mechanical
-check. Plite Plan owns substrate decisions, Plate/collaboration adoption,
-execution slices, and Plite-specific proof.
+Task owns lifecycle and authority. The helper creates and checks a file; native goals follow the user's direct or standing request. Plite Plan owns substrate decisions,
+Plate/collaboration adoption, execution slices, and Plite-specific proof.
+
+When a primary supervisor delegates with an active goal, keep that goal. Add
+the Plite Plan readiness fields and decision rows to its plan instead of
+creating a second template or duplicating the same decisions. If the parent
+plan cannot express a required gate, repair it before continuing.
 
 ## Read Order
 
@@ -248,11 +281,12 @@ open gate, not a decimal.
 
 ## Accepted-Plan Execution
 
-After explicit acceptance:
+After standalone acceptance or a qualifying delegated supervisor gate:
 
 1. Read the accepted plan and current source; repair stale plan claims before
    implementation.
-2. Create a new one-shot execution goal naming the plan and target owners.
+2. Record execution authority and the Plite packet in the same plan. Preserve
+   the active native goal and its full objective.
 3. Implement the vertical slices in order, using focused proof first.
 4. Hard-cut rejected surfaces and sweep callers, exports, tests, docs, examples,
    browser proof, and benchmarks. Leave no compatibility path unless the
@@ -275,4 +309,7 @@ For ready standard/deep plans, link the plan and concisely report:
 - focused proof and unresolved execution risks;
 - execution order and what needs user acceptance.
 
-Stop after planning handoff. Never silently begin implementation.
+Standalone planning stops after handoff and never silently begins
+implementation. Delegated planning returns its readiness result to the primary
+supervisor; continue in the same activation only when the supervisor already
+records explicit execution authority and every gate above.

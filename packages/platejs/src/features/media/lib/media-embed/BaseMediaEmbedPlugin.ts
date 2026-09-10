@@ -45,6 +45,7 @@ export type MediaEmbedPluginState = MediaPluginState & {
 };
 
 const initialState: MediaEmbedPluginState = {
+  isUrl: null,
   transformUrl: parseIframeUrl,
 };
 

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "create-verification-skill",
+  "files": [
+    {
+      "upstream": "skills/create-verification-skill/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "644f2551403c1bca01a2855b34611b6e7be0ce0dc5b204514c376c0f6a6e6ac4",
+      "destinationSha256": "b7e50f0d08472cdd1a20067c5601ab68235cf7215a73ee5db6c4e9c22b224e2a",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Resolve the true owned source and generator before creating a skill. Reuse an existing canonical inventory and retain user-facing drive/gotcha coverage; app repairs require task scope."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/create-verification-skill/SKILL.md\n+++ skills/create-verification-skill/SKILL.md\n@@ -1,12 +1,13 @@\n ---\n name: create-verification-skill\n description: \"Generate a project-local verification skill that drives your app the way a user does \u2014 any language, framework, or platform. Use for /create-verification-skill, \\\"make a control skill for this repo\\\", or when a project has no scripted way to prove UI/CLI/service behavior.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Create a verification skill\n \n-Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.cursor/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.\n+Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill (`.agents/skills/verify-<app>/`) tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.\n \n ## 1. Interview the repo, not the user\n \n@@ -18,11 +19,11 @@\n - **Observe:** what evidence can be captured? Screenshots, terminal transcripts, response bodies, logs, exit codes, DB state.\n - **Isolate:** can two instances run side by side (ports, data dirs, profiles)? If not, say so in the generated skill: refusing to double-drive a shared instance beats corrupting the user's session.\n \n-If the checkout doesn't build or start as-is, fix that first (or report it precisely) before generating; a skill written against a broken base teaches wrong steps. When an irrelevant missing asset blocks startup (a static dir the API never serves, a sample config), the generated skill may create it, clearly marked as verification scaffolding, and remove it in cleanup.\n+If the checkout doesn't build or start as-is, repair it only within the authorized scope (otherwise report it precisely) before generating; a skill written against a broken base teaches wrong steps. When an irrelevant missing asset blocks startup (a static dir the API never serves, a sample config), the generated skill may create it, clearly marked as verification scaffolding, and remove it in cleanup.\n \n ## 2. Generate the skill\n \n-Write `.cursor/skills/verify-<app>/SKILL.md` with YAML frontmatter (`name: verify-<app>` and a `description` that names the app, the surface, and when to reach for it \u2014 without frontmatter the skill never registers) and these sections, each grounded in what the interview actually found (no placeholders left):\n+Locate the repository-owned skill source and generator first. Write there and regenerate the installed .agents/skills/verify-<app>/SKILL.md; write that installed path directly only when it is itself the canonical source. Use YAML frontmatter (`name: verify-<app>` and a `description` that names the app, the surface, and when to reach for it \u2014 without frontmatter the skill never registers) and these sections, each grounded in what the interview actually found (no placeholders left):\n \n - **Launch:** the exact command that starts the app for verification, and how to tell it's ready (a log line, a port answering, a prompt). Include teardown. For a short-lived CLI or TUI there is no server to keep alive: launch means build the binary (or install deps) once, then start each drive in its own isolated PTY or tmux session.\n - **Doctor:** one read-only check that answers \"is this instance worth driving?\" \u2014 process up, right version/build, port owned by us, auth valid. An agent runs this first whenever anything looks off.\n@@ -33,7 +34,7 @@\n \n ## 3. Seed the feature map\n \n-Create `.cursor/skills/verify-<app>/features/README.md` plus one file per user-facing feature you can identify (aim for the top 3-5 to start, from routes, commands, menus, or docs). Follow the shape in [`references/feature-map-example/`](references/feature-map-example/), with a README index and one file per feature. Each file answers, from the user's point of view: what the feature is, how to reach it, how to drive it with the harness, and what observable end state proves it works. The four H2s are `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`. The map is the repo's maintained verification source; a proof that drives one convenient entry point is incomplete when the map lists others.\n+Reuse the existing canonical feature inventory when one exists. Otherwise create features/README.md plus one file per user-facing feature in the owned skill source (aim for the top 3-5 to start, from routes, commands, menus, or docs). Follow the shape in [`references/feature-map-example/`](references/feature-map-example/), with a README index and one file per feature. Each file answers, from the user's point of view: what the feature is, how to reach it, how to drive it with the harness, and what observable end state proves it works. The four H2s are `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`. An existing typed/generated inventory keeps its current source owner and must expose equivalent user-entry, driving, expected-result, and gotcha detail. The map is the repo's maintained verification source; a proof that drives one convenient entry point is incomplete when the map lists others.\n \n ## 4. Prove the generated skill before handing it over\n \n"
+    },
+    {
+      "upstream": "skills/create-verification-skill/references/feature-map-example/README.md",
+      "destination": "references/feature-map-example/README.md",
+      "upstreamSha256": "cb7bd782cf89968a4ba3d58a5151db837430db92d19a6f52a906973b77b516ba",
+      "destinationSha256": "cb7bd782cf89968a4ba3d58a5151db837430db92d19a6f52a906973b77b516ba",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/create-verification-skill/references/feature-map-example/create-note.md",
+      "destination": "references/feature-map-example/create-note.md",
+      "upstreamSha256": "644a44c74f35d38c2feb7cd05a0121fdebbb623e8dc376c185b565a581d1ccf7",
+      "destinationSha256": "644a44c74f35d38c2feb7cd05a0121fdebbb623e8dc376c185b565a581d1ccf7",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/create-verification-skill/references/feature-map-example/search.md",
+      "destination": "references/feature-map-example/search.md",
+      "upstreamSha256": "6e87b9e7f2791a7776ba1bb83f371cd285c306c67f19d245cc4dd6ca3015c823",
+      "destinationSha256": "6e87b9e7f2791a7776ba1bb83f371cd285c306c67f19d245cc4dd6ca3015c823",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

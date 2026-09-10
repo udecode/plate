@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-04-preserve-suggestion-replies-through-history",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-04-preserve-suggestion-replies-through-history.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve discussion state across edits and failed saves",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-04-comment-preserve-suggestion-replies-through-50680473",
+      "kind": "fix",
+      "summary": "Preserve discussion state across edits and failed saves",
+      "details": [
+        "Keep suggestion replies through undo and redo, selected comment groups through edits, and composer drafts until saves succeed. Bind independent document views to their own anchors."
+      ],
+      "migrationNotes": [],
+      "targets": ["comment", "discussion", "suggestion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-04",
+          "entry": "2026-09-04-preserve-suggestion-replies-through-history",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

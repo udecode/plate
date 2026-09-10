@@ -20,6 +20,8 @@
     "../src/pagination/react.*",
     "../src/react/**/*",
     "../src/testing/**/*",
+    "../src/yjs/**/*",
+    "../src/yjs/react/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",
     "../src/**/*.slow.*",
@@ -27,6 +29,6 @@
     "../src/**/__tests__/**"
   ],
   "extends": "../tsconfig.json",
-  "include": ["../src/**/*"],
+  "include": ["../src/annotations/**/*", "../src/**/*"],
   "references": []
 }

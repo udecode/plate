@@ -20,10 +20,11 @@ export type NormalizeTypesPluginState = {
    * is not `strictType` or `type`: set the node type to `strictType` or `type`.
    */
   rules: NormalizeTypesRule[];
-  onError?: (err: unknown) => void;
+  onError: ((err: unknown) => void) | null;
 };
 
 const initialState: NormalizeTypesPluginState = {
+  onError: null,
   rules: [],
 };
 

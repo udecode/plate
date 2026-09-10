@@ -8,9 +8,8 @@ import {
   Plite,
   type PliteDecorationSource,
   useEditor,
-  usePliteRangeDecorationSource,
 } from 'plitejs/react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import {
   InputGroup,
@@ -50,18 +49,39 @@ const SearchHighlightingExample = () => {
       },
     ],
   });
-  const searchSource = usePliteRangeDecorationSource(editor, {
-    data: { highlight: true as const },
-    id: 'search-highlighting',
-    dirtiness: 'text',
-    revision: search,
-    read: ({ snapshot }) =>
-      search
-        ? NodeApi.findTextRanges({ children: snapshot.children }, search, {
-            caseSensitive: false,
-          })
-        : [],
-  });
+  const searchSource = useMemo<PliteDecorationSource<Editor<CustomValue>>>(
+    () => ({
+      id: 'search-highlighting',
+      read: ({ entry: [node, path] }) => {
+        if (!search || !NodeApi.isText(node)) return [];
+
+        const ranges = [];
+        const haystack = node.text.toLocaleLowerCase();
+        const needle = search.toLocaleLowerCase();
+        let start = haystack.indexOf(needle);
+
+        while (start !== -1) {
+          const end = start + needle.length;
+
+          ranges.push({
+            attributes: {
+              className: 'plite-search-highlighting-highlight',
+              'data-cy': 'search-highlighted',
+            },
+            key: `search:${path.join('.')}:${start}:${end}`,
+            range: {
+              anchor: { offset: start, path },
+              focus: { offset: end, path },
+            },
+          });
+          start = haystack.indexOf(needle, end);
+        }
+
+        return ranges;
+      },
+    }),
+    [search]
+  );
 
   return (
     <>
@@ -91,28 +111,10 @@ const SearchHighlightingEditor = memo(
     searchSource,
   }: {
     editor: Editor<CustomValue>;
-    searchSource: PliteDecorationSource<{ highlight: true }>;
+    searchSource: PliteDecorationSource<Editor<CustomValue>>;
   }) => (
-    <Plite decorationSources={[searchSource]} editor={editor}>
-      <Editable
-        id="search-highlighting"
-        renderLeaf={Leaf}
-        renderSegment={(segment, children) =>
-          segment.slices.some(
-            (slice) =>
-              (slice.data as { highlight?: true } | undefined)?.highlight
-          ) ? (
-            <span
-              className="plite-search-highlighting-highlight"
-              data-cy="search-highlighted"
-            >
-              {children}
-            </span>
-          ) : (
-            children
-          )
-        }
-      />
+    <Plite decorations={[searchSource]} editor={editor}>
+      <Editable id="search-highlighting" renderLeaf={Leaf} />
     </Plite>
   )
 );

@@ -1,10 +1,7 @@
 import { defineBasePlugin } from 'platejs';
-import {
-  createEditor,
-  toPlatePlugin,
-  useEditorPluginStore,
-  usePluginStore,
-} from 'platejs/react';
+import { createEditor, toPlatePlugin, usePluginStore } from 'platejs/react';
+
+import { useEditorPluginStore } from '../src/react/stores/plate/usePluginStore';
 
 type SuggestionPluginState = {
   activeId: string | null;

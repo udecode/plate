@@ -9,7 +9,8 @@ import { Hotkeys } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DOMCoverage } from '../../src/dom/internal';
+import { createDOMPhaseScheduler } from '../../src/dom/internal';
+import { getNodeKey } from '../../src/internal';
 import { isSelectAllHotkey } from '../../src/react/dom-strategy/dom-strategy-commands';
 import { getTextDirection } from '../../src/react/editable/caret-engine';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -17,6 +18,10 @@ import {
   getModelOwnedHistoryFocusRepair,
   resolveHistoryFocusEditor,
 } from '../../src/react/editable/history-focus';
+import {
+  createEditableInputControllerState,
+  createEditableInputController,
+} from '../../src/react/editable/input-state';
 import {
   applyEditableKeyDown as applyRuntimeEditableKeyDown,
   shouldDeferBackspaceToNativeInput,
@@ -27,8 +32,9 @@ import {
 } from '../../src/react/editable/mutation-controller';
 import { isNativeVerticalKeyFastPathFullyMounted } from '../../src/react/editable/runtime-keyboard-events';
 import { unregisterContentRootOwnerViewEditor } from '../../src/react/hooks/use-plite-runtime';
+import type { ReactRuntimeEditor as ReactEditorType } from '../../src/react/plugin/react-editor';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
-import { createPliteProjectionGraph } from '../../src/react/projection-graph';
+import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -39,13 +45,38 @@ type ApplyEditableKeyDownOptions = Parameters<
   typeof applyRuntimeEditableKeyDown
 >[0];
 const testRuntimes = new Set<EditableDOMRuntime>();
+const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
+const createTestScheduler = () => {
+  const scheduler = createDOMPhaseScheduler();
+  testSchedulers.add(scheduler);
+  return scheduler;
+};
+const getTestRuntime = (editor: ApplyEditableKeyDownOptions['editor']) => {
+  const known = [...testRuntimes].find((runtime) => runtime.editor === editor);
+  if (known) return known;
+  const runtime = new EditableDOMRuntime({ editor });
+  testRuntimes.add(runtime);
+  return runtime;
+};
 const applyEditableKeyDown = (
   options: Omit<ApplyEditableKeyDownOptions, 'domPhaseScheduler'> &
     Partial<Pick<ApplyEditableKeyDownOptions, 'domPhaseScheduler'>>
 ) => {
-  const runtime = new EditableDOMRuntime({ editor: options.editor });
-
-  testRuntimes.add(runtime);
+  const runtime = getTestRuntime(options.editor);
+  if (!runtime.connected) {
+    const target = options.event.target as Node | null;
+    const element =
+      target?.nodeType === 1 ? (target as Element) : target?.parentElement;
+    const root =
+      options.event.currentTarget ??
+      element?.closest<HTMLElement>('[data-plite-editor]') ??
+      document.createElement('div');
+    if (!root.isConnected) document.body.append(root);
+    root.setAttribute('data-plite-editor', 'true');
+    runtime.setRoot(root);
+    runtime.connect();
+  }
+  Object.assign(options.event, { currentTarget: runtime.rootElement! });
 
   return applyRuntimeEditableKeyDown({
     ...options,
@@ -54,7 +85,12 @@ const applyEditableKeyDown = (
 };
 
 afterEach(() => {
-  for (const runtime of testRuntimes) runtime.destroy();
+  for (const scheduler of testSchedulers) scheduler.destroy();
+  testSchedulers.clear();
+  for (const runtime of testRuntimes) {
+    runtime.destroy();
+    runtime.rootElement?.remove();
+  }
   testRuntimes.clear();
 });
 
@@ -99,7 +135,7 @@ const createRealmKeyEvent = ({
 
   document.body.append(frame);
   const frameDocument = frame.contentDocument!;
-  const frameWindow = frame.contentWindow!;
+  const frameWindow = frame.contentWindow! as Window & typeof globalThis;
   const target = frameDocument.createElement('div');
 
   Object.defineProperty(frameWindow.navigator, 'userAgent', {
@@ -145,11 +181,10 @@ const contentRootExtension = defineEditorSchema(
         content: schema.content.text({ default: 'text', min: 1 }),
       },
       'content-card': {
-        content: schema.content.open(),
         contentRoots: {
           body: schema.content.not(schema.content.text()),
         },
-        void: 'editable-island',
+        void: 'block',
       },
     },
     id: 'keyboard-content-root-test',
@@ -315,7 +350,10 @@ describe('keyboard input strategy', () => {
     expect(
       isNativeVerticalKeyFastPathFullyMounted({
         domStrategyRuntime: {
-          mountedTopLevelNodeKeys: new Set(['a', 'b']),
+          mountedTopLevelNodeKeys: new Set([
+            getNodeKey(editor, [0])!,
+            getNodeKey(editor, [1])!,
+          ]),
           mountedTopLevelRanges: [{ endIndex: 1, startIndex: 0 }],
         },
         editor,
@@ -324,7 +362,11 @@ describe('keyboard input strategy', () => {
     expect(
       isNativeVerticalKeyFastPathFullyMounted({
         domStrategyRuntime: {
-          mountedTopLevelNodeKeys: new Set(['a', 'b', 'c']),
+          mountedTopLevelNodeKeys: new Set([
+            getNodeKey(editor, [0])!,
+            getNodeKey(editor, [1])!,
+            getNodeKey(editor, [2])!,
+          ]),
           mountedTopLevelRanges: [
             { endIndex: 0, startIndex: 0 },
             { endIndex: 2, startIndex: 1 },
@@ -346,7 +388,7 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 2 },
       },
       initialValue,
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const event = reactKeyEvent(keyEvent('ArrowDown', { shiftKey: true }));
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
@@ -400,7 +442,7 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 2 },
       },
       initialValue,
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const event = reactKeyEvent(keyEvent('ArrowDown', { shiftKey: true }));
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
@@ -503,7 +545,7 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 2 },
       },
       initialValue,
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const event = reactKeyEvent(keyEvent('ArrowDown', { shiftKey: true }));
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
@@ -552,7 +594,7 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 2 },
       },
       initialValue,
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const root = document.createElement('div');
     const block = document.createElement('div');
     const textHost = document.createElement('span');
@@ -744,7 +786,7 @@ describe('keyboard input strategy', () => {
     }) as ReactEditorType;
     const root = document.createElement('div');
     const nested = document.createElement('div');
-    const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
+    const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
     const event = reactKeyEvent(keyEvent('Backspace'));
     const assertDOMNode = vi
       .spyOn(ReactEditor, 'assertDOMNode')
@@ -761,7 +803,6 @@ describe('keyboard input strategy', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
-        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 1 } },
         focus: { point: { path: [0, 0], offset: 3 } },
       })
@@ -802,10 +843,10 @@ describe('keyboard input strategy', () => {
         roots: { 'card:body': [paragraph('Shared mission statement')] },
       },
     });
-    const mainEditor = createEditorView(runtime) as ReactEditorType;
+    const mainEditor = createEditorView(runtime) as unknown as ReactEditorType;
     const bodyEditor = createEditorView(runtime, {
       root: 'card:body',
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const owner = {
       childRoot: 'card:body',
       ownerPath: [1],
@@ -891,10 +932,10 @@ describe('keyboard input strategy', () => {
         roots: { 'card:body': [paragraph('Shared mission statement')] },
       },
     });
-    const mainEditor = createEditorView(runtime) as ReactEditorType;
+    const mainEditor = createEditorView(runtime) as unknown as ReactEditorType;
     const bodyEditor = createEditorView(runtime, {
       root: 'card:body',
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const owner = {
       childRoot: 'card:body',
       ownerPath: [1],
@@ -1032,7 +1073,7 @@ describe('keyboard input strategy', () => {
         focus: { path: [0, 0], offset: 4 },
       },
       initialValue: [paragraph('test')],
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
 
     editor.update.text.insert('!');
 
@@ -1161,7 +1202,7 @@ describe('keyboard input strategy', () => {
         results.push(
           applyEditableKeyDown({
             androidInputManagerRef: { current: null },
-            editor: mainEditor as ReactEditorType,
+            editor: mainEditor as unknown as ReactEditorType,
             event,
             forceRender: vi.fn(),
             getMountedViewEditor,
@@ -1199,8 +1240,8 @@ describe('keyboard input strategy', () => {
       extensions: [history()],
       initialValue: [paragraph('Before'), paragraph('After')],
     });
-    const editor = createEditorView(runtime) as ReactEditorType;
-    const graph = createPliteProjectionGraph([
+    const editor = createEditorView(runtime) as unknown as ReactEditorType;
+    const graph = createPliteViewBoundaryGraph([
       { path: [0], root: 'main' },
       { path: [1], root: 'main' },
     ]);
@@ -1320,16 +1361,17 @@ describe('keyboard input strategy', () => {
 
     expect(
       applyModelOwnedNativeHistoryEvent({
-        editor: headerEditor as ReactEditorType,
+        editor: headerEditor,
         event: { inputType: 'historyUndo' } as InputEvent,
       })
     ).toBe(true);
 
     expect(
       getModelOwnedHistoryFocusRepair({
-        editor: headerEditor as ReactEditorType,
+        editor: headerEditor as unknown as ReactEditorType,
         getActiveContentRootOwner: (root) => (root === 'header' ? owner : null),
-        getContentRootOwnerViewEditor: () => mainEditor as ReactEditorType,
+        getContentRootOwnerViewEditor: () =>
+          mainEditor as unknown as ReactEditorType,
         getMountedViewEditor: () => null,
       })
     ).toEqual({
@@ -1448,7 +1490,7 @@ describe('keyboard input strategy', () => {
       initialValue: Array.from({ length: 2501 }, (_, index) =>
         paragraph(index === 2500 ? 'Condico' : 'filler')
       ),
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const root = document.createElement('div');
     const textHost = document.createElement('span');
     const text = document.createTextNode('Condico');
@@ -1519,19 +1561,19 @@ describe('keyboard input strategy', () => {
       initialValue: Array.from({ length: 2501 }, (_, index) =>
         paragraph(index === 2500 ? 'Condico' : 'filler')
       ),
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const root = document.createElement('div');
     const textHost = document.createElement('span');
     const text = document.createTextNode('CXondico');
     const range = document.createRange();
     const domSelection = document.getSelection();
     const event = reactKeyEvent(keyEvent('X'));
-    const inputController = {
+    const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
-      state: {
+      state: Object.assign(createEditableInputControllerState(), {
         pendingNativeTextInputRepairPathKey: '2500,0',
-      },
-    } as any;
+      }),
+    }) as any;
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
@@ -1596,7 +1638,7 @@ describe('keyboard input strategy', () => {
       initialValue: Array.from({ length: 2501 }, (_, index) =>
         paragraph(index === 2500 ? 'Condico' : 'filler')
       ),
-    }) as ReactEditorType;
+    }) as unknown as ReactEditorType;
     const root = document.createElement('div');
     const textHost = document.createElement('span');
     const text = document.createTextNode('Condico');
@@ -1690,11 +1732,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'inactive-tab',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [0, 1], focus: [0, 1] }],
+      coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1732,7 +1774,7 @@ describe('keyboard input strategy', () => {
         },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -1778,11 +1820,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'closed-accordion',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 1] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 1] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1814,7 +1856,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [2, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -1856,11 +1898,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'closed-accordion',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1892,7 +1934,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 1, path: [2, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -1931,11 +1973,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-word',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1967,7 +2009,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 'Next'.length, path: [2, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2006,11 +2048,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-word',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2042,7 +2084,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 'Intro visible before hidden '.length, path: [0, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2083,13 +2125,13 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'same-owner-hidden-ranges',
       copyPolicy: 'model',
       coveredPathRanges: [
-        { kind: 'text', anchor: [1, 0], focus: [1, 0] },
-        { kind: 'text', anchor: [2, 0], focus: [2, 0] },
+        { anchor: [1, 0], focus: [1, 0] },
+        { anchor: [2, 0], focus: [2, 0] },
       ],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
@@ -2122,7 +2164,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [3, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2162,11 +2204,11 @@ describe('keyboard input strategy', () => {
       .spyOn(Hotkeys, 'isMoveLineForward')
       .mockReturnValue(true);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2198,7 +2240,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [2, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
       isMoveLineForward.mockRestore();
@@ -2236,11 +2278,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2272,7 +2314,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [1, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2310,11 +2352,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2346,7 +2388,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [1, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2384,11 +2426,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2420,7 +2462,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [1, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2457,11 +2499,11 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    DOMCoverage.registerBoundary(editor, {
+    getTestRuntime(editor).domCoverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId: 'hidden-line',
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: [1, 0], focus: [1, 0] }],
+      coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -2493,7 +2535,7 @@ describe('keyboard input strategy', () => {
         focus: { offset: 0, path: [1, 0] },
       });
     } finally {
-      DOMCoverage.clear(editor);
+      getTestRuntime(editor).domCoverage.destroy();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
@@ -2550,6 +2592,7 @@ describe('keyboard input strategy', () => {
         .mockReturnValue(false);
 
       const result = innerApplyEditableKeyDown({
+        domPhaseScheduler: createTestScheduler(),
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -2654,6 +2697,7 @@ describe('keyboard input strategy', () => {
         .mockReturnValue(false);
 
       const result = innerApplyEditableKeyDown2({
+        domPhaseScheduler: createTestScheduler(),
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -2762,7 +2806,7 @@ describe('keyboard input strategy', () => {
 
         document.body.append(frame);
         const frameDocument = frame.contentDocument!;
-        const frameWindow = frame.contentWindow!;
+        const frameWindow = frame.contentWindow! as Window & typeof globalThis;
         const target = frameDocument.createElement('div');
 
         Object.defineProperty(frameWindow.navigator, 'userAgent', {
@@ -2794,6 +2838,7 @@ describe('keyboard input strategy', () => {
           .mockReturnValue(false);
 
         const result = innerApplyEditableKeyDown3({
+          domPhaseScheduler: createTestScheduler(),
           androidInputManagerRef: { current: null },
           editor,
           event,

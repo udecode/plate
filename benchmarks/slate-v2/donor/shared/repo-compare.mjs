@@ -1,7 +1,7 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 
 const nodeExecutable = process.versions.bun
   ? execFileSync('node', ['-p', 'process.execPath'], { encoding: 'utf8' }).trim()
@@ -89,14 +89,15 @@ export const buildRepo = async (repo, packageManager, filter) => {
 const linkWorkspacePackages = async (repo, runDirectory) => {
   const nodeModules = resolve(runDirectory, 'node_modules');
 
-  for (const packageName of [
-    'platejs',
-    'plitejs',
-    'slate',
-    'slate-react',
-    'slate-history',
+  for (const [packageName, directoryName] of [
+    ['platejs', 'platejs'],
+    ['@platejs/test', 'test'],
+    ['plitejs', 'plitejs'],
+    ['slate', 'slate'],
+    ['slate-react', 'slate-react'],
+    ['slate-history', 'slate-history'],
   ]) {
-    const packageDirectory = resolve(repo, 'packages', packageName);
+    const packageDirectory = resolve(repo, 'packages', directoryName);
 
     try {
       const manifest = JSON.parse(
@@ -108,10 +109,12 @@ const linkWorkspacePackages = async (repo, runDirectory) => {
       continue;
     }
 
-    await mkdir(nodeModules, { recursive: true });
+    const packageLink = resolve(nodeModules, packageName);
+
+    await mkdir(dirname(packageLink), { recursive: true });
     await symlink(
       packageDirectory,
-      resolve(nodeModules, packageName),
+      packageLink,
       process.platform === 'win32' ? 'junction' : 'dir'
     );
   }

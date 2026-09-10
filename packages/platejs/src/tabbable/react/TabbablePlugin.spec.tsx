@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
@@ -5,7 +6,10 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 import type { Node, Path } from '../../core';
 import { createEditor, definePlatePlugin } from '../../react/core';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
-import { createTabIndexRestorationQueue } from './TabbableEffects.internal';
+import {
+  createTabIndexRestorationQueue,
+  findTabDestination,
+} from './TabbableEffects.internal';
 import { TabbablePlugin } from './TabbablePlugin';
 
 jsxt;
@@ -88,7 +92,7 @@ describe('TabbablePlugin', () => {
   });
 });
 
-describe('TabbablePlugin.read.findDestination', () => {
+describe('tab destination selection', () => {
   const input = (
     <editor>
       <hp>Line 1</hp>
@@ -153,81 +157,97 @@ describe('TabbablePlugin.read.findDestination', () => {
 
   it('focuses the next DOM node at the same path', () => {
     expect(
-      editor.plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: entry2a,
-        direction: 'forward',
-        tabbableEntries,
-      })
+      editor.read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: entry2a,
+          direction: 'forward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ domNode: entry2b.domNode, type: 'dom-node' });
   });
 
   it('returns to the active path when moving backward from its first DOM node', () => {
     expect(
-      editor.plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: entry2a,
-        direction: 'backward',
-        tabbableEntries,
-      })
+      editor.read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: entry2a,
+          direction: 'backward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ path: [4, 0], type: 'path' });
   });
 
   it('returns to the next editor path after the final DOM node at a path', () => {
     expect(
-      editor.plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: entry2b,
-        direction: 'forward',
-        tabbableEntries,
-      })
+      editor.read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: entry2b,
+          direction: 'forward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ path: [5, 0], type: 'path' });
   });
 
   it('focuses the previous DOM node at the same path', () => {
     expect(
-      editor.plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: entry2b,
-        direction: 'backward',
-        tabbableEntries,
-      })
+      editor.read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: entry2b,
+          direction: 'backward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ domNode: entry2a.domNode, type: 'dom-node' });
   });
 
   it('focuses the next tabbable after the selection', () => {
     expect(
-      createEditorAt([2, 0]).plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: null,
-        direction: 'forward',
-        tabbableEntries,
-      })
+      createEditorAt([2, 0]).read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: null,
+          direction: 'forward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ domNode: entry2a.domNode, type: 'dom-node' });
   });
 
   it('focuses the previous tabbable before the selection', () => {
     expect(
-      createEditorAt([2, 0]).plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: null,
-        direction: 'backward',
-        tabbableEntries,
-      })
+      createEditorAt([2, 0]).read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: null,
+          direction: 'backward',
+          tabbableEntries,
+        })
+      )
     ).toEqual({ domNode: entry1.domNode, type: 'dom-node' });
   });
 
   it('returns null before the first tabbable when moving backward', () => {
     expect(
-      createEditorAt([0, 0]).plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: null,
-        direction: 'backward',
-        tabbableEntries,
-      })
+      createEditorAt([0, 0]).read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: null,
+          direction: 'backward',
+          tabbableEntries,
+        })
+      )
     ).toBeNull();
   });
 
   it('returns null after the last tabbable when moving forward', () => {
     expect(
-      createEditorAt([6, 0]).plugin(TabbablePlugin).read.findDestination({
-        activeTabbableEntry: null,
-        direction: 'forward',
-        tabbableEntries,
-      })
+      createEditorAt([6, 0]).read((state) =>
+        findTabDestination(state, {
+          activeTabbableEntry: null,
+          direction: 'forward',
+          tabbableEntries,
+        })
+      )
     ).toBeNull();
   });
 });

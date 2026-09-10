@@ -4,6 +4,9 @@ description: Master Plate React/UI architecture for package primitives, componen
 
 # Plate UI
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 This is the sole owner of Plate-specific React and component architecture.
 Package and migration skills route here instead of maintaining another hook,
 component, or React rulebook.
@@ -28,10 +31,10 @@ layering, open-code preservation, and registry wiring.
 
 | Owner                  | Scope                                                               |
 | ---------------------- | ------------------------------------------------------------------- |
-| `vision` / `best-api`  | durable doctrine and reusable public call shape                     |
+| `VISION.md` / `best-api`  | durable doctrine and reusable public call shape                     |
 | `plate-plugin-creator` | package plugin mechanics and package proof                          |
 | `plate-ui`             | all Plate React/component law, copied UI, wiring, and browser proof |
-| `docs-creator`         | current-state public teaching                                       |
+| Plate Docs         | current-state public teaching                                       |
 
 Continue here whenever a Plate package or registry task makes a React,
 component, hook, provider, store, primitive, or composition decision. Package
@@ -105,6 +108,49 @@ schema law, and application typing remain outside this skill.
     `PlateContent` inherit the behavior without another prop. Copied UI marks
     owned focus targets and styles neutral output hooks; it does not install a
     plugin, kit, store, parallel state payload, or redundant controlled input.
+20. **Feature decorations enter through plugins.** Reusable Plate paint uses
+    the owning plugin's `decorate: { read, observe?, attributes? }` descriptor and
+    render-safe attributes. `Plate`, `PlateContent`, and `PlateStatic` do not
+    accept raw decoration or paint-renderer props. Copied UI configures the
+    plugin's `decorate.attributes` with a safe object or pure inferred callback.
+    Keep feature selectors in that copied feature, outside generic Editor skins.
+    Presentation configuration preserves the semantic reader and observer;
+    `null` clears inherited presentation. Keep static presets server-safe and
+    omit live interaction styles when the static job does not need them.
+    Keep one copied color resolver for related selections, carets, and labels;
+    use keyed reads and follow `best-api` for stage ordering.
+21. **Whole-element view attributes have one hook host.** Cross-cutting Plate
+    features author sparse `{ key, attributes }[]` through
+    `render.useViewElementAttributes`. Plate owns the private keyed runtime and
+    compiled-plugin precedence. Per-node render and injection callbacks remain
+    pure; components and slots still own structure.
+22. **Feature kits own required React integration.** Installing a copied kit
+    installs its session, provider, and exact-view cleanup. Ordinary assemblies
+    render Plate and Editor without feature roots or ref plumbing. Reuse
+    the existing feature plugin's `slots.wrapRoot` with its actual `editableRef`.
+    Sibling presentation slots preserve that integration. Explicitly replacing
+    `wrapRoot` owns its integration and cleanup; compose the existing wrapper
+    with JSX when adding presentation. Do not add companion integration plugins
+    or slot arrays solely to preserve an intentionally replaced wrapper.
+    An AI session
+    owns one editor object and survives a sibling view detaching; DOM cleanup
+    owns each mounted Editable and its ownerDocument. A feature-local session
+    may track attached views when its lifetime crosses React owners. Keep that
+    membership private; do not create a generic registry or hook runner.
+    Read-only periods retain the adapter but fence submission and late writes.
+    The last view detaching retires captured resources. Controlled read-only
+    state belongs on both Plate and Editor. Reuse supplied DnD managers and
+    preserve lazy activation. Generic editor components must not import
+    optional feature SDKs, backends, or copied UI.
+23. **Provider state stays behind semantic hooks.** Public consumers use editor,
+    mount, selection, plugin and container-ref contracts. Plate and its content
+    own registration and lifecycle writes; controller lookup handles stay
+    private. `useEditorContainerRef` identifies the Plate container, not the
+    exact Editable view. Contextual hooks select the exact mounted command view;
+    use a passive `EditorProvider` for captured controls and explicit editor
+    arguments for typed selectors. Preserve scoped selection and ref cleanup. Use
+    `useEditorHasSelection()` for selection presence and `useEditorSelection()`
+    for the range; copied presence-only controls do not own commit invalidation.
 
 ## Critical Rules
 
@@ -117,7 +163,10 @@ schema law, and application typing remain outside this skill.
 
 ### Ownership & Extraction → [ownership.md](./rules/ownership.md)
 
-- Extract package code for transforms, queries, serialization, stable controllers, and public hooks reused across surfaces.
+- Extract package code for semantic algorithms, transforms, queries,
+  serialization, and durable headless controllers. Current consumer count is
+  evidence of reuse, not a veto on semantic ownership; apply the extraction
+  test below before using it to reject a boundary.
 - Trace reuse through wrappers to terminal product consumers. A package import,
   export, docs page, test, or package component that only forwards behavior to
   copied registry UI does not establish independent package ownership.
@@ -135,8 +184,9 @@ schema law, and application typing remain outside this skill.
   split it. Keep only subscription/observer/imperative DOM/cleanup behavior in
   the package with the smallest required lifecycle input; a side-effect-only
   adapter returns `void`. Derive layout and visual state during render, and keep
-  transient overrides, rounding, refs/styles returned only as props, and event
-  handlers in the copied component family.
+  transient rendering overrides, visual rounding, refs/styles returned only as
+  props, and presentation event wiring in the copied component family. Domain
+  constraints and neutral interaction lifecycle stay with their semantic owner.
 - Keep one-off shadcn composition, labels, popover state, and local visual treatment in the app component.
 - Keep application endpoints, visible copy, upload quotas, arbitrary media
   limits, feature-specific accessibility labels, colors, borders, and stacking
@@ -147,7 +197,8 @@ schema law, and application typing remain outside this skill.
   registry UI. Style each through ordinary DOM props such as `className`; do
   not add a public root, provider, render prop, or `*ClassName` prop merely to
   pass presentation into independent parts.
-- Never create a package hook just to hide JSX, avoid typing work, or move logic used by one component only.
+- Never create a package hook merely to hide JSX, avoid typing work, or relocate
+  renderer-specific logic. One current consumer can use a durable contract.
 - If extraction makes the component harder to compare with upstream shadcn/open code, keep it local.
 - Package cleanup must not paste a package-owned transform, query, navigation
   controller, or other semantic algorithm into registry JSX. Keep or publish
@@ -177,7 +228,9 @@ schema law, and application typing remain outside this skill.
   node-wrapper props never expose `path`: a normal prop cannot be both stable
   for sibling edits and live for later callbacks.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
-  element moves. Account for that
+  element moves. Use `usePath(path => path.at(-1))` when only the local index
+  affects output. Derive node fields with
+  `useElementSelector(FooPlugin, node => node.field)`. Account for each
   dependency in the repeated-unit subscription budget.
 - Prefer direct `editor.api.<name>` / `editor.update.<group>` when concrete
   host-owned app code infers that surface from its local editor construction.
@@ -188,10 +241,14 @@ schema law, and application typing remain outside this skill.
   whose metadata explicitly depends on `editor-kit` may import the host's
   ordinary plugin composition, but copied UI may not. The `editor-kit` name is
   registry packaging, never an application runtime API noun.
-  For an optional descriptor, check `editor.plugin(plugin).installed` before
-  accessing its portal. Do not infer optional availability from root
+  For imperative access to an optional descriptor, check
+  `editor.plugin(plugin).installed` before accessing its portal. For a render
+  dependency whose typed descriptor may be absent, check installation in the
+  parent before mounting a child that calls `usePluginStore`. Select another
+  registered editor through the selector's `{ id }` option. Do not infer optional availability from root
   `editor.api`, node types, schema properties, or caught access errors. Do not
-  add local wrapper helpers around either path.
+  copy portal, store, or `useSyncExternalStore` plumbing into a local wrapper
+  hook.
 - Copied registry structural selectors pass their imported package descriptor
   directly: `type: FooPlugin` or descriptor arrays. Never resolve
   `editor.plugin(FooPlugin).schema.type`, a `PLUGINS.*` portal, or a local
@@ -201,7 +258,7 @@ schema law, and application typing remain outside this skill.
   for AST construction/comparison, serialization or external data, genuinely
   dynamic actions, and optional plugins whose descriptor is intentionally not
   a dependency.
-- If a node renderer forwards to `PlateElement` or `SlateElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
+- If a node renderer forwards to `PlateElement` or `PliteElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
 - Type every plugin-bound renderer from its stable owner descriptor:
   `PlateElementProps<typeof FooPlugin>` / `PlateLeafProps<typeof FooPlugin>`
   for live renderers and the matching `Plite*Props<typeof BaseFooPlugin>` for
@@ -215,8 +272,8 @@ schema law, and application typing remain outside this skill.
   Same-file reuse does not earn a named `*Props` alias. Keep one only when it
   is exported through a real cross-file or published entrypoint contract; do
   not export it merely to avoid inlining. Honest state and domain types may be
-  selected inside an inline shape. Enforce this with
-  `node tooling/scripts/check-inline-component-props.mjs`.
+  selected inside an inline shape. Apply this convention during implementation
+  and review; it does not require a whole-repository lint gate.
 - Split kits only where the kit itself owns different static/base and live
   renderers or behavior. Share runtime-neutral policy kits across both
   consumers, and compose renderer-specific peer kits in the owning editor
@@ -300,6 +357,27 @@ examples for the rejected call shape. Do not ship a local registry workaround
 while package doctrine says something else, and do not wait for a later cleanup
 prompt.
 
+Copied controls call semantic plugin commands through `useEditor()` and the
+installed descriptor; only rendered state earns a narrow `usePluginStore`
+subscription. A search bar
+owns its deferred input effect. Do not expose that effect through a controller
+hook consumed by every button. Keep focus in the component's exact mounted
+editor context; a model-scoped plugin command may clear state without owning
+the caller's focus target.
+
+For Find UI, `slots.wrapRoot` owns each Editable's open bar, draft and command
+context. Custom opening controls consume that context inside its Editable
+slots. They never subscribe to results or run deferred searches. Committed
+queries and matches remain in `BaseFindPlugin`; only the focused bar scrolls
+its view, and unmounting a view leaves that shared query intact.
+
+For Comments, pass complete serializable records to the package plugin through
+`initialState.initialThreads`; the package binds editor ranges and owns live
+actions and subscriptions. Copied `CommentKit` owns styling, and `DiscussionKit`
+adds the combined review composition. UI uses the existing Plate provider and
+installed descriptor; consumers do not create a channel, provider, or binding
+effect. User actions remain the path for new comments and replies.
+
 For copied UI mounted in a sibling render slot, accept only that slot's exact
 ref. If the component is the complete common composition, own its default
 children and register the component directly. A callback earns its place only
@@ -316,6 +394,11 @@ Floating UI middleware and virtual-reference adaptation in copied UI, import
 the positioning library directly, and never recover geometry from the global
 DOM selection or an implicit active editor.
 
+For scrolling to a known match or selection, pass its semantic range to the
+exact view's `editor.api.dom.scrollIntoView` and return its cancellation function
+from the effect. Do not query decoration markers or wrap the DOM API in another
+animation frame; the mounted DOM owner schedules the request.
+
 For inactive canonical selection, mark only the owned external focus target or
 ancestor with `data-plite-keep-selection-visible`. `Editor`/`PlateContent`
 inherits the built-in lifecycle and copied UI styles
@@ -326,22 +409,22 @@ item whose only artifact is that policy.
 
 ## Extraction Test
 
-Extract to a package only if at least one is true:
+Classify responsibilities before counting consumers. Extract when the code
+owns document invariants, semantic calculations, transforms, serialization,
+navigation, or a durable headless interaction/DOM/accessibility contract. One
+current consumer is sufficient when the contract works independently of that
+renderer. A web DOM contract does not require a hypothetical native sibling.
 
-1. The code owns document semantics, serialization, transforms, or navigation contracts.
-2. Multiple UI surfaces or platforms need the same behavior contract.
-3. The code is a stable semantic controller reused by multiple family members
-   or surfaces and its output is not tied to one shadcn component's markup.
-4. The same logic would otherwise be duplicated across packages or adapters.
-5. A future native consumer could plausibly use the same conceptual contract.
+Reuse the existing feature's scoped API before adding an export or package.
+Package implementation files need coherent ownership, not public visibility.
+An extraction should let another presentation consume the behavior without
+reimplementing its correctness rules.
 
-Keep it local if any of these are true:
-
-1. The code only serves one component.
-2. The return shape is mostly labels, JSX wiring, class decisions, or popover/menu state.
-3. The main reason to extract is "this file feels long" or "types are annoying".
-4. The extraction would hide open-code structure from users.
-5. The abstraction only makes sense in React/web and has no plausible native sibling.
+Keep labels, JSX wiring, classes, local menus, visual calculations and transient
+rendering state in copied UI. Split mixed owners instead of moving the entire
+prop bag. File length, awkward types and speculative reuse alone justify
+neither package publication nor a new abstraction. Multiple subcomponents of
+one copied family do not establish independent reuse.
 
 ## Key Patterns
 
@@ -357,23 +440,22 @@ function MediaImage(props: PlateElementProps<typeof ImagePlugin>) {
 const tableResize = useTableResizeController();
 
 // Good: host-owned app code outside copied registry UI uses its inferred editor.
-const api = editor.api.comment;
-const update = editor.update.comment;
+const api = editor.api.comments;
 
 // Good: generic UI code can use an exact descriptor.
-const genericApi = editor.plugin(CommentPlugin).api;
+const genericApi = editor.plugin(SuggestionPlugin).api;
 
 // Good: optional generic integration keeps the typed portal and checks it.
-const optionalComment = editor.plugin(CommentPlugin);
+const optionalSuggestion = editor.plugin(SuggestionPlugin);
 
-if (optionalComment.installed) {
-  optionalComment.api.open();
+if (optionalSuggestion.installed) {
+  optionalSuggestion.api.createIdentity();
 }
 
 // Good: package core owns commands/state, platform UI composes locally.
 const canToggleBold = bridgeState.canToggleBold;
-const onPress = () => editor.toggleBold();
-return <Button disabled={!canToggleBold}>Bold</Button>;
+const onPress = () => editor.plugin(BoldPlugin).update.toggle();
+return <Button disabled={!canToggleBold} onClick={onPress}>Bold</Button>;
 
 // Good: base/live split stays explicit.
 export const BaseFootnoteKit = [
@@ -393,7 +475,7 @@ export const FootnoteKit = [
 
 // Good: runtime-neutral policy is shared by both editor presets.
 export const MarkdownKit = [
-  MarkdownPlugin.configure({ options: { remarkPlugins: [remarkGfm] } }),
+  MarkdownPlugin.configure({ initialState: { remarkPlugins: [remarkGfm] } }),
 ];
 
 // Bad: package hook exists only to feed one shadcn component's local UI.
@@ -439,8 +521,8 @@ const { dialogTitle, menuItems, onOpenChange, popoverOpen } =
     automatic `best-api repair` chain before closeout.
 13. Verify the smallest honest surface:
 
-- component spec for UI-only changes
-- package build/typecheck when package code changed
+- affected component proof; add a regression only when Testing's value test applies
+- source-first package typecheck when package code changed; build for artifact proof
 - browser verification when the surface is interactive
 
 ## Audit References

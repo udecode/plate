@@ -68,7 +68,6 @@ describe('root interaction resolver', () => {
     expect(
       resolveRootInteractionMouseUp({
         eventRange: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -139,7 +138,6 @@ describe('root interaction resolver', () => {
     expect(
       resolveRootInteractionMouseUp({
         eventRange: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -178,7 +176,6 @@ describe('root interaction resolver', () => {
     expect(
       resolveRootInteractionMouseUp({
         eventRange: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -187,7 +184,6 @@ describe('root interaction resolver', () => {
       })
     ).toEqual({
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },

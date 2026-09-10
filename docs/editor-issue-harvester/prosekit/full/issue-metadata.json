@@ -1,0 +1,843 @@
+{
+  "checkedAt": "2026-09-09T17:59:27.205228+00:00",
+  "stateCoverage": "all",
+  "issues": [
+    {
+      "number": 1,
+      "title": "Dependency Dashboard",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1",
+      "labels": "",
+      "updatedAt": "2026-09-08T19:20:29Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 42,
+      "title": "The Ultimate Question of Life, the Universe, and Everything",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/42",
+      "labels": "",
+      "updatedAt": "2023-08-27T16:43:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 202,
+      "title": "tiptap fork ?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/202",
+      "labels": "",
+      "updatedAt": "2023-12-09T03:18:13Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 293,
+      "title": "Language selector doesn't work with Firefox",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/293",
+      "labels": "",
+      "updatedAt": "2024-01-08T23:47:59Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 294,
+      "title": "Exporting extensions/utils",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/294",
+      "labels": "",
+      "updatedAt": "2024-01-09T16:18:34Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 295,
+      "title": "Draggable placeholder ?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/295",
+      "labels": "",
+      "updatedAt": "2024-01-08T23:54:10Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 301,
+      "title": "Best way to watch for change, focus and blur ?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/301",
+      "labels": "",
+      "updatedAt": "2024-01-09T19:35:56Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 313,
+      "title": "Helpers and help",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/313",
+      "labels": "",
+      "updatedAt": "2024-01-11T16:16:30Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 385,
+      "title": "bump shiki to 1.0.0 in @prosekit/extensions",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/385",
+      "labels": "",
+      "updatedAt": "2024-02-15T10:45:53Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 390,
+      "title": "Missing enter-rule export",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/390",
+      "labels": "",
+      "updatedAt": "2024-02-16T06:26:11Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 394,
+      "title": "Exposing unocss-shortcut ?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/394",
+      "labels": "",
+      "updatedAt": "2024-02-24T22:45:40Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 396,
+      "title": "Changing the editor state",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/396",
+      "labels": "",
+      "updatedAt": "2024-07-29T13:25:32Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 397,
+      "title": "Extend node spec",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/397",
+      "labels": "",
+      "updatedAt": "2024-07-29T13:30:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 398,
+      "title": "Remove a node ?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/398",
+      "labels": "",
+      "updatedAt": "2024-06-10T08:38:32Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 452,
+      "title": "PopoverContent placement",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/452",
+      "labels": "",
+      "updatedAt": "2024-04-24T17:17:59Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 470,
+      "title": "Handle AutocompletePopover events",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/470",
+      "labels": "",
+      "updatedAt": "2024-05-06T16:25:58Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 493,
+      "title": "example: align text example",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/493",
+      "labels": "",
+      "updatedAt": "2024-05-17T10:35:38Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 511,
+      "title": "Themes",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/511",
+      "labels": "",
+      "updatedAt": "2025-04-28T06:55:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 519,
+      "title": "Notes for Nuxt",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/519",
+      "labels": "",
+      "updatedAt": "2024-07-15T07:45:56Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 529,
+      "title": "Shift tooltip position ",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/529",
+      "labels": "",
+      "updatedAt": "2024-05-28T11:57:31Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 587,
+      "title": "Vue Injection Warn",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/587",
+      "labels": "",
+      "updatedAt": "2024-06-25T10:59:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 607,
+      "title": "[Svelte]: `[HMR][Svelte] Unrecoverable HMR error in <Root>: next update will trigger a full reload`, `Uncaught (in promise) Error: Function called outside component initialization`",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/607",
+      "labels": "",
+      "updatedAt": "2024-07-07T06:17:31Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 647,
+      "title": "Add docs for `isActive`",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/647",
+      "labels": "documentation",
+      "updatedAt": "2026-05-04T09:11:31Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 649,
+      "title": "Improve VSCode development experience for examples ",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/649",
+      "labels": "",
+      "updatedAt": "2024-07-11T02:24:47Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 689,
+      "title": "Empty selection should not trigger inline menu",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/689",
+      "labels": "",
+      "updatedAt": "2024-07-21T11:27:10Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 693,
+      "title": "How should we understand `Facet` and `Extension`?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/693",
+      "labels": "",
+      "updatedAt": "2024-07-24T03:30:18Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 700,
+      "title": "The inferred type of 'defineExtension' cannot be named without a reference to ...",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/700",
+      "labels": "",
+      "updatedAt": "2024-07-24T18:34:15Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 708,
+      "title": "Is it necessary to create a helpers or utils package?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/708",
+      "labels": "",
+      "updatedAt": "2024-07-29T13:41:10Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 738,
+      "title": "cli `gen` cannot automatically generate a new component's story to the `astrobook` `src` directory.",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/738",
+      "labels": "",
+      "updatedAt": "2024-08-12T14:56:56Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 759,
+      "title": "Show keyboard shortcuts in the table menu",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/759",
+      "labels": "enhancement",
+      "updatedAt": "2024-10-30T11:40:24Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 761,
+      "title": "Add end-to-end test for table handle",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/761",
+      "labels": "enhancement",
+      "updatedAt": "2025-12-08T00:53:25Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 771,
+      "title": "Improve the position of block handle",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/771",
+      "labels": "",
+      "updatedAt": "2025-01-14T10:49:15Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 781,
+      "title": "add `table` extension docs",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/781",
+      "labels": "",
+      "updatedAt": "2024-09-09T14:30:19Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 791,
+      "title": "Example for file dropping",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/791",
+      "labels": "",
+      "updatedAt": "2024-10-20T21:27:04Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 799,
+      "title": "Cannot select the first character in the table cell",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/799",
+      "labels": "",
+      "updatedAt": "2024-09-27T01:38:54Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 805,
+      "title": "Issue with addLink command of Link extension",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/805",
+      "labels": "",
+      "updatedAt": "2024-10-11T08:55:05Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 826,
+      "title": "Tooltips won't disappear when \"reduce motion\" is on ",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/826",
+      "labels": "bug",
+      "updatedAt": "2024-10-30T11:44:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 839,
+      "title": "Changing mark by clicking inline popover button will shift the popover ",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/839",
+      "labels": "",
+      "updatedAt": "2025-12-08T00:53:34Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 843,
+      "title": "Support mark view using React, Vue etc",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/843",
+      "labels": "",
+      "updatedAt": "2024-12-19T06:17:50Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 877,
+      "title": "Support for Extending ReactNodeView to Implement Footnotes (Similar to ProseMirror Footnote Example)",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/877",
+      "labels": "",
+      "updatedAt": "2024-12-23T02:54:24Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 895,
+      "title": "Block handle dragging image doesn't work when the editor contains many lines",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/895",
+      "labels": "",
+      "updatedAt": "2025-04-05T06:16:01Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 909,
+      "title": "Rendering virtual DOM in prosemirror.",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/909",
+      "labels": "",
+      "updatedAt": "2025-03-18T17:37:29Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 931,
+      "title": "Heading keymaps",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/931",
+      "labels": "",
+      "updatedAt": "2025-03-16T10:24:18Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 940,
+      "title": "Block handle doesn't work well with tables",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/940",
+      "labels": "",
+      "updatedAt": "2025-03-22T05:51:20Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 976,
+      "title": "Autocomplete does not remember dismissal across moving selection between nodes",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/976",
+      "labels": "",
+      "updatedAt": "2025-04-17T15:44:27Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1001,
+      "title": "Shift+enter for newline without new block",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1001",
+      "labels": "",
+      "updatedAt": "2025-05-07T07:11:20Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1020,
+      "title": "Can't press enter in the prosekit editor",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1020",
+      "labels": "",
+      "updatedAt": "2025-05-18T20:38:54Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1026,
+      "title": "Prosekit props from editor does not work with React Compiler",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1026",
+      "labels": "",
+      "updatedAt": "2025-05-31T07:47:46Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1061,
+      "title": "Delete the first line when there is any characters left",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1061",
+      "labels": "",
+      "updatedAt": "2025-06-13T14:23:26Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1062,
+      "title": "Bug: Slash menu triggers when selecting text with /",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1062",
+      "labels": "",
+      "updatedAt": "2025-07-06T05:16:56Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1066,
+      "title": "Bug: Drag and drop does not work correctly with lists",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1066",
+      "labels": "",
+      "updatedAt": "2025-06-13T08:53:39Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1069,
+      "title": "Bug: Some key maps don't work",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1069",
+      "labels": "",
+      "updatedAt": "2025-06-13T22:38:10Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1072,
+      "title": "Feat: add examples to change the background and the text color",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1072",
+      "labels": "good first issue",
+      "updatedAt": "2026-05-04T09:11:30Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1073,
+      "title": "Feat: A migration tool for BlockNote and TipTap json format",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1073",
+      "labels": "",
+      "updatedAt": "2026-05-04T09:11:31Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1075,
+      "title": "Directly insert a link without the need to press another key",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1075",
+      "labels": "",
+      "updatedAt": "2025-08-14T14:29:25Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1076,
+      "title": "Directly open link on click",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1076",
+      "labels": "",
+      "updatedAt": "2025-06-13T14:26:15Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1077,
+      "title": "The first Ctrl + A should select only the entire block",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1077",
+      "labels": "good first issue",
+      "updatedAt": "2025-11-24T10:23:47Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1081,
+      "title": "Add Block Side Menu example",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1081",
+      "labels": "",
+      "updatedAt": "2025-06-17T13:05:49Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1085,
+      "title": "Add LLLMs.txt",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1085",
+      "labels": "documentation, help wanted",
+      "updatedAt": "2025-06-29T12:52:20Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1118,
+      "title": "Feat: move node command",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1118",
+      "labels": "",
+      "updatedAt": "2025-07-04T23:39:05Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1121,
+      "title": "Table handle icons moves unexpectedly",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1121",
+      "labels": "",
+      "updatedAt": "2025-08-01T20:07:22Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1122,
+      "title": "Table drag preview size changes",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1122",
+      "labels": "",
+      "updatedAt": "2025-07-07T11:15:34Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1125,
+      "title": "Cannot save code block languages to markdown",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1125",
+      "labels": "",
+      "updatedAt": "2025-07-09T15:27:01Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1141,
+      "title": "Drag handles should not move during scrolling",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1141",
+      "labels": "",
+      "updatedAt": "2025-08-02T12:17:03Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1153,
+      "title": "Safari drag preview is broken",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1153",
+      "labels": "",
+      "updatedAt": "2025-08-16T17:18:58Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1159,
+      "title": "Drag and drop issue list",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1159",
+      "labels": "",
+      "updatedAt": "2025-08-16T21:25:25Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1169,
+      "title": "Use defineNodeSpec api to redefine the ordered list structure.",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1169",
+      "labels": "",
+      "updatedAt": "2025-08-11T08:49:21Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1182,
+      "title": "Dnd indicator should not display when dragging a table column",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1182",
+      "labels": "",
+      "updatedAt": "2025-08-16T21:24:21Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1183,
+      "title": "Table handle icon position is wrong",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1183",
+      "labels": "",
+      "updatedAt": "2025-08-16T13:53:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1184,
+      "title": "Table dnd preview doesn't work on Firefox",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1184",
+      "labels": "",
+      "updatedAt": "2025-08-16T12:56:16Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1185,
+      "title": "Image size should not changes",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1185",
+      "labels": "",
+      "updatedAt": "2025-08-16T17:18:46Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1218,
+      "title": "TypeScript: Editor<Union<...>> not assignable to Editor<any> due to private 'instance' when passing to <ProseKit editor={...}>",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1218",
+      "labels": "",
+      "updatedAt": "2025-09-15T05:35:30Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1219,
+      "title": "Commit viewer resets when using Loro doc extension streaming updates (diff initialized with initial state then re-mapped/reset by later Loro changes)",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1219",
+      "labels": "",
+      "updatedAt": "2025-09-19T07:56:56Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1266,
+      "title": "Cannot save task list to markdown",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1266",
+      "labels": "",
+      "updatedAt": "2025-10-29T14:29:49Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1270,
+      "title": "How to delete a table?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1270",
+      "labels": "",
+      "updatedAt": "2026-05-04T09:11:32Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1272,
+      "title": "Custom extensions?",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1272",
+      "labels": "",
+      "updatedAt": "2026-05-04T09:11:32Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1306,
+      "title": "[doc]\uff1adoc website so laggy",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1306",
+      "labels": "",
+      "updatedAt": "2025-11-15T07:15:25Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1322,
+      "title": "Developing some AI kits for ProseKit?",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1322",
+      "labels": "",
+      "updatedAt": "2025-11-12T08:03:04Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1326,
+      "title": "Prosekit.dev -- Editor inoperable",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1326",
+      "labels": "",
+      "updatedAt": "2025-11-19T12:06:48Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1370,
+      "title": "Allow initializing `defaultContent` with `Element`",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1370",
+      "labels": "",
+      "updatedAt": "2025-12-05T15:35:10Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1378,
+      "title": "Access all files in examples",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1378",
+      "labels": "",
+      "updatedAt": "2026-01-11T04:49:07Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1383,
+      "title": "Perf: Drag preview for the code block takes a long time to appear",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1383",
+      "labels": "",
+      "updatedAt": "2026-03-15T11:12:16Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1392,
+      "title": "Tables containing tableHeaderCells cannot be dragged properly.",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1392",
+      "labels": "",
+      "updatedAt": "2025-12-24T04:38:58Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1427,
+      "title": "Cannot find `prosekit/extensions/background-color` and `prosekit/extensions/text-color`",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1427",
+      "labels": "",
+      "updatedAt": "2026-02-08T05:40:36Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1428,
+      "title": "Math / Latex extension",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1428",
+      "labels": "",
+      "updatedAt": "2026-02-18T04:27:31Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1432,
+      "title": "[Svelte]: Order of `resolve.extensions` in Vite config affects build",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1432",
+      "labels": "",
+      "updatedAt": "2026-02-10T08:21:17Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1439,
+      "title": "[Svelte 5] `state_unsafe_mutation` when editor component is conditionally rendered and removed",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1439",
+      "labels": "",
+      "updatedAt": "2026-02-09T14:40:33Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1444,
+      "title": "Support percentage-based width/height in ResizableRoot",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1444",
+      "labels": "",
+      "updatedAt": "2026-02-11T13:27:25Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1498,
+      "title": "Support for formats & pages",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1498",
+      "labels": "",
+      "updatedAt": "2026-03-22T14:18:27Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1500,
+      "title": "Support for multi column layout",
+      "state": "OPEN",
+      "url": "https://github.com/prosekit/prosekit/issues/1500",
+      "labels": "",
+      "updatedAt": "2026-05-25T14:23:51Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1598,
+      "title": "Allow custom anchor element on AutocompleteRoot",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1598",
+      "labels": "",
+      "updatedAt": "2026-05-29T19:35:05Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1657,
+      "title": "Bug: React installation error",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1657",
+      "labels": "",
+      "updatedAt": "2026-05-28T17:03:59Z",
+      "metadataStatus": "new-unchecked"
+    },
+    {
+      "number": 1670,
+      "title": "[Bug] defineVirtualSelection shows incorrect selection after editor blur with react-colorful in popover",
+      "state": "CLOSED",
+      "url": "https://github.com/prosekit/prosekit/issues/1670",
+      "labels": "",
+      "updatedAt": "2026-07-06T09:43:50Z",
+      "metadataStatus": "new-unchecked"
+    }
+  ]
+}

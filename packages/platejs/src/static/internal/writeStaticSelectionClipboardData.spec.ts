@@ -5,9 +5,9 @@ import type { Descendant } from '../../core';
 import { createDataTransfer } from '../../testing';
 import { PlateStatic } from '../components/PlateStatic';
 import { createStaticEditor } from '../editor/withStatic';
-import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
-import * as getSelectedDomNodeModule from '../utils/getSelectedDomNode';
-import * as isSelectOutsideModule from '../utils/isSelectOutside';
+import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment.internal';
+import * as getSelectedDomNodeModule from '../utils/getSelectedDomNode.internal';
+import * as isSelectOutsideModule from '../utils/isSelectOutside.internal';
 import { writeStaticSelectionClipboardData } from './writeStaticSelectionClipboardData';
 
 describe('writeStaticSelectionClipboardData', () => {

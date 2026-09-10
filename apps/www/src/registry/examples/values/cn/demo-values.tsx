@@ -13,7 +13,6 @@ import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
 import { deserializeHtmlValue } from './deserialize-html-value';
 import { deserializeMdValue } from './deserialize-md-value';
-import { discussionValue } from './discussion-value';
 import { dndValue } from './dnd-value';
 import { editableVoidsValue } from './editable-voids-value';
 import { emojiValue } from './emoji-value';
@@ -50,7 +49,6 @@ const values = {
   copilot: copilotValue,
   csv: deserializeCsvValue,
   date: dateValue,
-  discussion: discussionValue,
   dnd: dndValue,
   docx: deserializeDocxValue,
   'editable-voids': editableVoidsValue,

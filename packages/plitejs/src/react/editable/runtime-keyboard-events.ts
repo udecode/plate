@@ -9,7 +9,7 @@ import type { EditableKeyDownHandler } from '../components/editable';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
 import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
@@ -89,24 +89,6 @@ const isProjectedEditingCaptureKey = (event: KeyboardEvent<HTMLDivElement>) =>
   (event.key === 'Backspace' ||
     event.key === 'Delete' ||
     event.key === 'Enter');
-
-const measureRuntimeKeyDownPhase = <T>(id: string, run: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return run();
-  }
-
-  const startedAt = performance.now();
-
-  try {
-    return run();
-  } finally {
-    recordPliteReactRender({
-      duration: performance.now() - startedAt,
-      id,
-      kind: 'runtime-time',
-    });
-  }
-};
 
 export const shouldFlushPendingNativeTextInputForKeyDown = (
   decision: ReturnType<typeof prepareEditableKeyDownKernel>,
@@ -294,7 +276,7 @@ export const useRuntimeKeyboardEvents = ({
         event.key === 'ArrowUp' || event.key === 'ArrowDown';
       const isPhysicalVerticalMove =
         isVerticalArrowKey && !event.altKey && !event.ctrlKey && !event.metaKey;
-      const snapshotSelection = measureRuntimeKeyDownPhase(
+      const snapshotSelection = profilePliteReactDuration(
         'keydown.snapshot-selection',
         () => editorGetSnapshot(editor).selection
       );
@@ -318,7 +300,7 @@ export const useRuntimeKeyboardEvents = ({
       if (!isPhysicalVerticalMove) {
         verticalNavigation.clearVerticalGoal();
       }
-      const modelOwnsVerticalShift = measureRuntimeKeyDownPhase(
+      const modelOwnsVerticalShift = profilePliteReactDuration(
         'keydown.model-owns-vertical-shift',
         () =>
           event.shiftKey &&
@@ -329,7 +311,7 @@ export const useRuntimeKeyboardEvents = ({
             event,
           })
       );
-      const nativeMountedVerticalShift = measureRuntimeKeyDownPhase(
+      const nativeMountedVerticalShift = profilePliteReactDuration(
         'keydown.native-mounted-vertical-shift',
         () =>
           event.shiftKey &&
@@ -341,7 +323,7 @@ export const useRuntimeKeyboardEvents = ({
             selection: snapshotRange,
           })
       );
-      const modelOwnsContentRootVerticalShift = measureRuntimeKeyDownPhase(
+      const modelOwnsContentRootVerticalShift = profilePliteReactDuration(
         'keydown.model-owns-content-root-vertical-shift',
         () =>
           shouldModelOwnContentRootVerticalSelection({
@@ -352,7 +334,7 @@ export const useRuntimeKeyboardEvents = ({
             selection: snapshotRange,
           })
       );
-      const modelOwnsContentRootVerticalMove = measureRuntimeKeyDownPhase(
+      const modelOwnsContentRootVerticalMove = profilePliteReactDuration(
         'keydown.model-owns-content-root-vertical-move',
         () =>
           isVerticalArrowKey &&
@@ -395,15 +377,13 @@ export const useRuntimeKeyboardEvents = ({
         return;
       }
 
-      const decision = measureRuntimeKeyDownPhase(
-        'keydown.prepare-kernel',
-        () =>
-          prepareEditableKeyDownKernel({
-            editor,
-            event,
-            inputController,
-            domStrategyRuntime,
-          })
+      const decision = profilePliteReactDuration('keydown.prepare-kernel', () =>
+        prepareEditableKeyDownKernel({
+          editor,
+          event,
+          inputController,
+          domStrategyRuntime,
+        })
       );
 
       if (shouldFlushPendingNativeTextInputForKeyDown(decision, event)) {
@@ -412,16 +392,16 @@ export const useRuntimeKeyboardEvents = ({
 
       recordEditableInputIntent(inputController, decision.intent);
       if (shouldApplyKeyDownSelectionPolicy(decision, event, inputController)) {
-        measureRuntimeKeyDownPhase('keydown.apply-selection-policy', () => {
+        profilePliteReactDuration('keydown.apply-selection-policy', () => {
           runtime.selection.applyKeyDownSelectionPolicy(decision);
         });
       }
 
-      measureRuntimeKeyDownPhase('keydown.trace-begin-frame', () => {
+      profilePliteReactDuration('keydown.trace-begin-frame', () => {
         runtime.trace.beginKeyDownEventFrame(decision);
       });
 
-      const keyDownWorkerResult = measureRuntimeKeyDownPhase(
+      const keyDownWorkerResult = profilePliteReactDuration(
         'keydown.apply-editable-keydown',
         () =>
           applyEditableKeyDown({
@@ -449,7 +429,7 @@ export const useRuntimeKeyboardEvents = ({
       if (keyDownWorkerResult.repair) {
         const { repair } = keyDownWorkerResult;
 
-        measureRuntimeKeyDownPhase('keydown.request-repair', () => {
+        profilePliteReactDuration('keydown.request-repair', () => {
           runtime.repair.requestEditableRepair(
             repair,
             keyDownWorkerResult.focusEditor
@@ -491,7 +471,7 @@ export const useRuntimeKeyboardEvents = ({
           { timing: 'timeout' }
         );
       }
-      measureRuntimeKeyDownPhase('keydown.trace-record', () => {
+      profilePliteReactDuration('keydown.trace-record', () => {
         runtime.trace.recordKeyDownTrace({
           decision,
           eventKey: event.key,

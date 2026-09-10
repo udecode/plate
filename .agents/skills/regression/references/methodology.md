@@ -22,7 +22,7 @@ Load this reference whenever the `regression` skill runs.
 - [Mandatory Methodology Delta](#mandatory-methodology-delta)
 - [Honest Claims And Stops](#honest-claims-and-stops)
 
-Regression is the durable supervisor. `patch` is the only one-case
+Regression owns the executable regression method under Task. `patch` is the only one-case
 implementation worker. Executable tests are the permanent behavior record.
 
 ## Outcome
@@ -55,7 +55,7 @@ Use one owner for each fact:
 | Behavior that must not regress | Executable test and owning source |
 | Issue origin and public status | GitHub issue/PR |
 | Integration state | Exact pushed ref, CI, and fresh runtime replay |
-| Current multi-step coordination | Active Autogoal plan |
+| Current multi-step coordination | Active Task plan |
 | Methodology | Regression source rule and this reference |
 
 Never create a sidecar TSV, JSON file, database, manifest, or manual case
@@ -71,7 +71,7 @@ the broader integrated, shipped, released, and public-status claims.
 
 ## Start Contract
 
-For non-trivial work, create or continue one Autogoal with
+For non-trivial work, reuse or create one Task file plan with
 `docs/plans/templates/regression.md`. Record:
 
 - target bug, surface, or corpus;
@@ -117,6 +117,15 @@ Before a behavior claim:
    owning CI/runtime evidence.
 7. If the real route cannot render without a stub, alias, bypass, or generated
    edit, keep the case blocked or quarantined and repair the proof host.
+
+For a reporter-named route, bind one literal `exact-route:` across the selected
+case environment and Proof-host readiness row. The final proof command must
+name that route, and at least one receipt input must contain it as an executable
+navigation target. A standalone demo, block route, docs wrapper substitute, or
+other proxy host cannot certify the reporter route even when it renders the
+same component. After a route-based reporter contradiction, the failed-fix
+resume state records `exact-route-reproduction: red` or `pass` before another
+product attempt.
 
 Generated output is never a convenient source owner. Fix source and run its
 generator.
@@ -196,6 +205,42 @@ that never mounts in the reporter route cannot satisfy this gate.
 Treat prior behavior, older releases, upstream Slate, and recordings as
 evidence. Current accepted product/editor law decides the oracle.
 
+For independent editors, map every mounted root to its editor and complete
+fixture in applicable `model` and `dom-native` oracles using `editor-bindings:`.
+The model oracle must also name `isolated-edit-and-undo:` and prove that editing
+and undoing each document leaves every other document unchanged. Completion
+requires matching `pass` results. A mount count can pass with every root bound
+to the same document. Shared-document views do not require document isolation.
+
+For same-model or same-root views with focus, toolbar, controller or read-only
+behavior, model identity is insufficient. Record `view-bindings:` in the model
+and focus oracles: each mount maps to its command editor, root, DOM element and
+current permissions. The model oracle includes `current-view-permissions:` and
+`stale-mount:`; the focus oracle includes `exact-view-focus:`. Prove that a
+captured action cannot edit a retired/replaced mount or bypass a later read-only
+change, and returns focus to its exact surviving mount. Completion requires
+each marker's `pass` result. A model-level focus boolean cannot certify this
+contract; ordinary shared-document rendering without these interactions does
+not acquire this gate.
+
+For multi-root undo/redo, distinguish a history-driven root transition from
+retiring the control's explicit editor target. The focus oracle includes
+`history-root-transition:` for repeated document undo that changes roots and
+`history-target-retirement:` for canceling restoration after the bound editor
+changes or unmounts. Require both markers to pass; one fixed-root toolbar test
+cannot certify ambient document-history lifetime.
+
+For a toolbar field committed with Enter, follow that commit with Undo while
+the field still owns focus. The `field-commit-once:` model oracle reads the
+result again after focus restoration blurs the input. A committed draft must
+not be applied again by blur and overwrite the undo result.
+
+For toolbar field focus with a pending editor focus retry, the
+`field-focus-handoff:` oracle keeps the field focused through the queued frame
+and settlement callbacks, then sends a follow-up key without another click.
+Check the key's field value and unchanged editor content. A successful blur
+commit alone can hide an earlier focus theft if text arrived before the retry.
+
 A report that names only the bad state authorizes only that forbidden state.
 It cannot select a positive replacement behavior. If multiple materially
 different outcomes satisfy the negative report and no reporter or accepted
@@ -240,6 +285,15 @@ component family and repeated visible unit. A wrapper-local Profiler, one
 optimized component, or pointer latency alone remains a proxy and cannot close
 the route-wide claim. Before completion, account for every family above 5% of
 added work and at least 90% overall; keep the remainder open and named.
+
+For any render-count, rerender, or profiler-event claim, trace the measurement
+path itself. Inventory every production file that emits, routes, filters,
+aggregates, or renders a measured event kind. Put the paths in the applicable
+oracle as `measurement-owner-inputs:` before proof and record
+`measurement-owner-closure: pass` in the completed result. At least one final
+proof receipt for the case must include every named path. Feature-only
+fingerprints are stale evidence when a shared renderer or profiler owner can
+change the count without touching the feature.
 
 The inventory is transient coordination, not a durable registry. Executable
 tests remain the permanent behavior authority.
@@ -442,6 +496,14 @@ results include `physical-hit-target: pass`, `click-delivery: pass`, and
 `selection-origin: pass`. A `locator.click()`, element-dispatched click, or
 programmatically created caret cannot certify the contradicted physical path.
 
+Do not add a physical pointer path to setup unless the case's source, action,
+or outcome claims that path. When selection is setup-only, use
+the smallest deterministic browser setup such as `locator.selectText()` or
+native-keyboard selection, assert the seeded state, then exercise the claimed
+action. Setup-only pointer gestures add an unrelated failure mode and cannot
+widen the result. The physical-hit law above still governs every claimed or
+reporter-identified pointer path.
+
 If reporter video visibly identifies a browser family, profile, extension, or
 browser-owned overlay, that visible state is part of the exact environment even
 when the reporter does not name it in prose. Add
@@ -583,6 +645,12 @@ rerun. Completion requires `pass: <evidence>` from that same gate on the final
 bytes. A failure called unrelated is still red; partial progress before it
 cannot authorize completion.
 
+When a fix filters records from one batched observer or event delivery, filter
+records independently. Put an ignored presentation attribute and a critical
+`childList` mutation in the same observer delivery, then assert both outcomes
+with distinct selectors. A selector that conflates the ignored and critical
+records cannot authorize the filter.
+
 Use repeated retry-free warm runs for flaky, native, lifecycle, compositor,
 focus, selection, DnD, or device risks. Default to five. One failure keeps the
 case open.
@@ -672,6 +740,11 @@ tamper-evident receipt ID. Completion validation recomputes the digest from
 those current paths. The helper refuses a failed command or inputs that change
 during proof.
 
+Render-count and profiler-event receipts also include every path declared in
+`measurement-owner-inputs:`. That measurement boundary covers event emitters,
+routers, filters, aggregators, and the rendered owner; listing only the feature
+action or browser test cannot close the claim.
+
 For a managed browser host, the proof command must include the exact literal
 `--base-url`, for example through `PLAYWRIGHT_BASE_URL=<url>`. Merely writing a
 host label with the intended port while the command uses its default URL is a
@@ -691,7 +764,7 @@ host mismatch and cannot produce or validate a receipt.
 A kept case is `completed` locally when all applicable proof and plan gates
 pass. A run is `completed` when every selected case has a terminal decision,
 every required kept case is completed, no required runnable case remains, and
-the canonical Autogoal gates pass. Commit and push are not local completion
+the canonical file-plan gates pass. Commit and push are not local completion
 gates.
 
 Deferred, blocked, reverted, and quarantined selected cases do not become goal
@@ -720,6 +793,12 @@ Patch. Run the actual failing assertion on frozen product bytes and name
 whether product nondeterminism, interaction delivery, host readiness, or oracle
 sampling caused the red. Repeated green runs without a phase/result diagnostic
 cannot resume product edits.
+
+For focus-state subscription or context repairs, record
+`focus-state-trace: native + dom-api + react-context`. Compare all three after
+native or public-API focus without a synthetic focus-event supplement, and
+check each mounted view independently. This exposes missing notifications
+even when native focus and the imperative API agree.
 
 For a failed popup or toolbar focus case, that frozen-byte diagnostic also
 captures native `focusin` and `focusout`, then samples the focus owner at mount,
@@ -851,7 +930,7 @@ final decision. A durable child owns one bounded case or read-only proof packet.
 - Parallelize read-only audits only when artifacts and hosts are disjoint.
 - Reuse the same child for same-case follow-ups.
 
-## Canonical Autogoal Gates
+## Canonical File-Plan Gates
 
 The runtime plan must use these headings:
 
@@ -914,7 +993,7 @@ Stop a case when completed, reverted, quarantined, deferred with owner, or
 blocked with no safe move. Complete the goal locally when every selected
 executable case has a valid terminal decision, every kept case is completed,
 no required runnable case remains, methodology deltas resolve, canonical
-Autogoal gates pass, and the requested time/batch policy is satisfied.
+file-plan gates pass, and the requested time/batch policy is satisfied.
 
 Do not freeze one run's cases, refs, blockers, metrics, or conclusions into
 reusable methodology.

@@ -17,13 +17,14 @@ use<Family>.ts[x]      optional single semantic controller
 - `<Family>.tsx` owns the main component, family-only subcomponents, variants,
   render helpers, component-local constants, and direct React/Plate hook calls
   inside simple subcomponents.
-- Create `use<Family>` only when one semantic controller coordinates multiple
-  family members or is reused by multiple surfaces. It may own subscriptions,
+- Create `use<Family>` when one semantic controller coordinates multiple family
+  members, serves multiple surfaces, or owns a durable headless lifecycle. It may own subscriptions,
   effects, commands, and derived domain state. Its return type is the family
-  contract; export it only for real cross-surface reuse. Do not expose a raw
+  contract; publish it under the ownership extraction test. Do not expose a raw
   store or prop factory beside it.
-- A hook called by one component and returning refs, event handlers, styles,
-  or a state-shaped prop bag is not a controller. Inline it into that component.
+- A hook that only returns one renderer's refs, presentation handlers, styles,
+  or state-shaped prop bag stays in that component. A durable interaction
+  controller may have one current consumer; classify its job before its callers.
   When several independent registry items need the same interactive family,
   publish a semantic compound component with private context instead of making
   callers spread controller state into sibling components.

@@ -10,7 +10,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from '../../src/react/editable/content-root-navigation';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -29,11 +29,10 @@ const contentRootExtension = defineEditorSchema(
         content: schema.content.text({ default: 'text', min: 1 }),
       },
       'content-card': {
-        content: schema.content.open(),
         contentRoots: {
           body: schema.content.not(schema.content.text()),
         },
-        void: 'editable-island',
+        void: 'block',
       },
     },
     id: 'content-root-navigation-test',
@@ -159,7 +158,7 @@ describe('content root navigation', () => {
           writePliteViewSelection(
             mainEditor,
             createPliteViewSelection(
-              createContentRootProjectionGraph(
+              createContentRootViewBoundaryGraph(
                 mainEditor,
                 findContentRootOwners(mainEditor)
               ),
@@ -202,7 +201,6 @@ describe('content root navigation', () => {
       event,
       isRTL: false,
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -270,12 +268,11 @@ describe('content root navigation', () => {
             content: schema.content.text({ default: 'text', min: 1 }),
           },
           'content-card': {
-            content: schema.content.open(),
             contentRoots: {
               body: schema.content.type('paragraph'),
               caption: schema.content.type('paragraph'),
             },
-            void: 'editable-island',
+            void: 'block',
           },
         },
         id: 'content-root-navigation-multi-slot-test',
@@ -311,7 +308,9 @@ describe('content root navigation', () => {
     ) as unknown as ReactRuntimeEditor;
     const indexedReads: number[] = [];
     const editor = Object.create(mainEditor) as ReactRuntimeEditor;
-    const read: ReactRuntimeEditor['read'] = (reader) =>
+    const read: (...args: Parameters<ReactRuntimeEditor['read']>) => unknown = (
+      reader
+    ) =>
       mainEditor.read((state) => {
         const value = state.value();
         const children = new Proxy(value.children, {
@@ -339,7 +338,9 @@ describe('content root navigation', () => {
         return reader(guardedState);
       });
 
-    Object.defineProperty(editor, 'read', { value: read });
+    Object.defineProperty(editor, 'read', {
+      value: Object.assign(read, mainEditor.read),
+    });
 
     expect(findContentRootOwners(editor)).toEqual([
       { childRoot: 'card:body', ownerPath: [1], ownerRoot: 'main' },
@@ -641,13 +642,12 @@ describe('content root navigation', () => {
       ownerPath: [1],
       ownerRoot: 'main',
     } as const;
-    const graph = createContentRootProjectionGraph(mainEditor, [owner]);
+    const graph = createContentRootViewBoundaryGraph(mainEditor, [owner]);
 
     selectPoint(mainEditor, { path: [0, 0], offset: 'Before'.length });
     writePliteViewSelection(
       mainEditor,
       createPliteViewSelection(graph, {
-        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 'Before'.length } },
         focus: {
           owner,
@@ -762,13 +762,12 @@ describe('content root navigation', () => {
       ownerPath: [1],
       ownerRoot: 'main',
     } as const;
-    const graph = createContentRootProjectionGraph(mainEditor, [owner]);
+    const graph = createContentRootViewBoundaryGraph(mainEditor, [owner]);
 
     selectPoint(mainEditor, { path: [0, 0], offset: 0 });
     writePliteViewSelection(
       mainEditor,
       createPliteViewSelection(graph, {
-        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 0 } },
         focus: {
           owner,
@@ -839,9 +838,8 @@ describe('content root navigation', () => {
       ownerPath: [0, 1],
       ownerRoot: 'main',
     } as const;
-    const graph = createContentRootProjectionGraph(mainEditor, [owner]);
+    const graph = createContentRootViewBoundaryGraph(mainEditor, [owner]);
     const selection = createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: { point: { path: [0, 0, 0], offset: 'Before'.length } },
       focus: {
         owner,
@@ -885,9 +883,8 @@ describe('content root navigation', () => {
     const nestedOwner = owners.find(
       (owner) => owner.childRoot === 'nested:body'
     )!;
-    const graph = createContentRootProjectionGraph(mainEditor, owners);
+    const graph = createContentRootViewBoundaryGraph(mainEditor, owners);
     const selectionIntoNested = createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: { point: { path: [0, 0], offset: 'Before'.length } },
       focus: {
         owner: nestedOwner,
@@ -899,7 +896,6 @@ describe('content root navigation', () => {
       },
     });
     const selectionOutOfNested = createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: {
         owner: nestedOwner,
         point: {

@@ -10,6 +10,9 @@ metadata:
 
 # Plite Research
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use this when Plite needs external prior art, better testing strategy,
@@ -41,7 +44,7 @@ answers if the search is managed like engineering work.
 
 ## Boundary
 
-- `auto`: supervisor. Decides when a research checkpoint is needed
+- `task autonomous`: supervisor. Decides when a research checkpoint is needed
   and which promoted owner runs next.
 - `plite-research`: discovery and synthesis. Owns web/GitHub/OSS search,
   ledgers, source reading, dedupe, evidence grades, scoring, and promotion.

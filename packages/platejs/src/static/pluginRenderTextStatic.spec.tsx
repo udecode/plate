@@ -6,29 +6,31 @@ import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
   pluginRenderTextStatic,
-} from './pluginRenderTextStatic';
+} from './pluginRenderTextStatic.internal';
 
 describe('pluginRenderTextStatic', () => {
-  const CommentPlugin = defineBasePlugin('comment', {
+  const TonePlugin = defineBasePlugin('tone', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
-      isDecoration: false,
-      textProps: {
-        className: 'comment-text',
-        'data-tone': 'warm',
+      mark: {
+        placement: 'text',
+        textAttributes: {
+          className: 'comment-text',
+          'data-tone': 'warm',
+        },
       },
     },
   });
 
   it('returns children when the text does not match the plugin', () => {
     const editor = createStaticEditor({
-      plugins: [CommentPlugin],
+      plugins: [TonePlugin],
     });
 
     expect(
       pluginRenderTextStatic(
         editor,
-        editor.plugin(CommentPlugin)
+        editor.plugin(TonePlugin)
       )({
         attributes: { 'data-plite-node': 'text', ref: null },
         children: 'plain',
@@ -37,23 +39,21 @@ describe('pluginRenderTextStatic', () => {
     ).toBe('plain');
   });
 
-  it('uses component overrides for matching text nodes', () => {
+  it('uses the configured component for matching text nodes', () => {
     const CustomText = ({ children }: { children: React.ReactNode }) => (
       <mark data-kind="custom">{children}</mark>
     );
-    const editor = createStaticEditor({
-      components: {
-        comment: CustomText,
-      },
-      plugins: [CommentPlugin],
+    const ConfiguredTonePlugin = TonePlugin.configure({
+      component: CustomText,
     });
+    const editor = createStaticEditor({ plugins: [ConfiguredTonePlugin] });
     const result = pluginRenderTextStatic(
       editor,
-      editor.plugin(CommentPlugin)
+      editor.plugin(ConfiguredTonePlugin)
     )({
       attributes: { 'data-plite-node': 'text', ref: null },
       children: 'hi',
-      text: { comment: true, text: 'hi' },
+      text: { text: 'hi', tone: true },
     } satisfies RenderTextProps);
 
     expect(result).toEqual(
@@ -66,7 +66,7 @@ describe('pluginRenderTextStatic', () => {
 
   it('merges plugin text props before delegating to renderText', () => {
     const editor = createStaticEditor({
-      plugins: [CommentPlugin],
+      plugins: [TonePlugin],
     });
     let renderTextCalled = false;
     const result = pipeRenderTextStatic(editor, {
@@ -85,7 +85,7 @@ describe('pluginRenderTextStatic', () => {
     })({
       attributes: { 'data-plite-node': 'text', className: 'base', ref: null },
       children: 'hi',
-      text: { comment: true, text: 'hi' },
+      text: { text: 'hi', tone: true },
     } satisfies RenderTextProps);
 
     expect(renderTextCalled).toBe(true);

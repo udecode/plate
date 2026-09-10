@@ -24,6 +24,22 @@ import {
 
 const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
 
+function encodeUrlInput(url: string) {
+  try {
+    return url
+      .split(/(%[\dA-Fa-f]{2})/)
+      .map((part) =>
+        /^%[\dA-Fa-f]{2}$/.test(part)
+          ? part
+          : encodeURI(part).replaceAll('%25', '%')
+      )
+      .join('');
+  } catch (error) {
+    if (error instanceof URIError) return url;
+    throw error;
+  }
+}
+
 export type LinkAttributes = Record<string, unknown> & {
   className?: string;
   download?: boolean | string;
@@ -42,13 +58,15 @@ export type BaseLinkPluginState = {
   /** Keeps selected text on pasting links by default. */
   keepSelectedTextOnPaste: boolean;
   /** Configures the range used to find text before the selection. */
-  rangeBeforeOptions: Parameters<Editor['read']['points']['before']>[1];
+  rangeBeforeOptions: NonNullable<
+    Parameters<Editor['read']['points']['before']>[1]
+  >;
   /** Resolves an href that differs from the displayed URL. */
-  getUrlHref?: (url: string) => string | undefined;
+  getUrlHref: ((url: string) => string | undefined) | null;
   /** Validates link text. */
   isUrl: (text: string) => boolean;
-  /** Transforms URL input before validation. */
-  transformInput?: (url: string) => string | undefined;
+  /** Transforms URI-encoded URL input before validation in upsert. */
+  transformInput: ((url: string) => string | undefined) | null;
 };
 
 export type CreateLinkNodeOptions = {
@@ -78,6 +96,7 @@ export type UpsertLinkOptions = {
   insertNodesOptions?: TextInsertFragmentOptions;
   /** Insert text when the selection is already in a link. */
   insertTextInLink?: boolean;
+  /** Skips validation while preserving URL input preparation. */
   skipValidation?: boolean;
   unwrapNodesOptions?: UnwrapLinkOptions;
   wrapNodesOptions?: Omit<WrapLinkOptions, 'url'>;
@@ -133,6 +152,8 @@ const initialState: BaseLinkPluginState = {
   dangerouslySkipSanitization: false,
   isUrl: defaultIsUrl,
   keepSelectedTextOnPaste: true,
+  getUrlHref: null,
+  transformInput: null,
   rangeBeforeOptions: {
     afterMatch: true,
     matchBlockStart: true,
@@ -287,7 +308,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
     selection: { affinity: 'directional' },
   },
   render: {
-    nodeProps: ({ element, store }) => {
+    attributes: ({ element, store }) => {
       const {
         allowedSchemes,
         dangerouslySkipSanitization,
@@ -308,7 +329,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
     },
   },
 })
-  .extend(({ api, plugin, schema: { type } }) => ({
+  .extend(({ api, plugin, schema: { type }, store }) => ({
     update: ({ tx }) => ({
       exitEnd: () => {
         const selection = tx.selection();
@@ -415,7 +436,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         target,
         text,
         unwrapNodesOptions,
-        url,
+        url: inputUrl,
         wrapNodesOptions,
       }: UpsertLinkOptions) => {
         const selection = tx.selection();
@@ -428,10 +449,16 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         });
 
         if (insertTextInLink && linkAbove) {
-          tx.text.insert(url, { at: selection });
+          tx.text.insert(inputUrl, { at: selection });
 
           return true;
         }
+        const encodedInput = encodeUrlInput(inputUrl);
+        const { transformInput } = store.get();
+        const url = transformInput
+          ? (transformInput(encodedInput) ?? '')
+          : encodedInput;
+
         if (!skipValidation && !api.validateUrl(url)) return undefined;
 
         const nextText = isDefined(text) && text.length === 0 ? url : text;
@@ -779,13 +806,7 @@ export const LinkRules = {
 
         if (!match) return undefined;
 
-        const [, linkText, rawUrl] = match;
-        const { transformInput } = editor.plugin(BaseLinkPlugin).store.get();
-        const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
-
-        if (!url || !editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
-          return undefined;
-        }
+        const [, linkText, url] = match;
 
         const startPoint = editor.read.points.before(selection, {
           distance: match[0].length,
@@ -803,7 +824,6 @@ export const LinkRules = {
       apply: (context, match) => {
         const inserted = context.tx.link.upsert({
           insertNodesOptions: { at: match.range },
-          skipValidation: true,
           text: match.text,
           url: match.url,
         });

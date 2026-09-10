@@ -23,10 +23,16 @@ export const registryBlocks: Registry['items'] = [
     ],
     name: 'editor-ai',
     registryDependencies: [
+      'tooltip',
       '@plate/editor',
+      '@plate/comment',
+      '@plate/discussion',
+      '@plate/use-mobile',
       '@plate/media-uploadthing-api',
       '@plate/settings-dialog',
       '@plate/editor-plugins',
+      '@plate/ai',
+      '@plate/dnd',
     ],
     type: 'registry:block',
   },
@@ -105,10 +111,6 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
-        path: 'examples/values/discussion-value.tsx',
-        type: 'registry:example',
-      },
-      {
         path: 'examples/values/date-value.tsx',
         type: 'registry:example',
       },
@@ -145,6 +147,10 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:example',
       },
       {
+        path: 'examples/values/suggestion-value.tsx',
+        type: 'registry:example',
+      },
+      {
         path: 'examples/values/table-value.tsx',
         type: 'registry:example',
       },
@@ -166,6 +172,8 @@ export const registryBlocks: Registry['items'] = [
       '@plate/editor-plugins',
       '@plate/editor-plugins-static',
       '@plate/use-object-url',
+      '@plate/ai',
+      '@plate/dnd',
     ],
     type: 'registry:block',
   },

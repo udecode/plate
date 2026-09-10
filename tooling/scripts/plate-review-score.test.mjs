@@ -252,5 +252,10 @@ test('keeps source, generated skill, modes, rubric, and caps in sync', () => {
   const sourceAgents = readFileSync(join(root, '.agents/AGENTS.md'), 'utf-8');
   const generatedAgents = readFileSync(join(root, 'AGENTS.md'), 'utf-8');
   assert.ok(generatedAgents.endsWith(sourceAgents));
-  assert.match(sourceAgents, /architecture score[\s\S]*`plate-review`/);
+  const architectureScoreOwner = sourceAgents
+    .split('\n')
+    .find((row) => /^\|\s*Read-only architecture score\b/.test(row))
+    ?.split('|')[2]
+    ?.trim();
+  assert.equal(architectureScoreOwner, 'Plate Review');
 });

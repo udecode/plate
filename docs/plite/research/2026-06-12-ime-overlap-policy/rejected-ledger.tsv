@@ -1,0 +1,4 @@
+lead_key	repo_key	source_ref	reason_rejected
+ime-overlap-policy:merge-overlapping-composition	none	none	Merging stale IME composition with overlapping app/model edits has no strong source precedent in inspected editors and is harder to prove than cancellation.
+ime-overlap-policy:runtime-patch-now	github/prosemirror/prosemirror-view	prosemirror-composition-overlap-tests	ProseMirror gives strong pressure, but Slate v2 still needs explicit policy/taste before changing runtime semantics.
+ime-overlap-policy:lifecycle-support-as-overlap-authority	github/microsoft/vscode	vscode-composition-context	Lifecycle protection strengthens active-composition proof gates, but it does not replace ProseMirror as the explicit overlap-cancellation authority for Slate policy.

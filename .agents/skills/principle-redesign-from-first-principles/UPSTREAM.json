@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-redesign-from-first-principles",
+  "files": [
+    {
+      "upstream": "skills/principle-redesign-from-first-principles/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "9ae97b35d6338cc9e34c7023c995a39cb7afdaf4bfd41e1d3d665da04d7515d5",
+      "destinationSha256": "85cb7d5b015f089b17b9b43b11192a8457b040d510fa7a3cec5a7d7203e8ca9f",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-redesign-from-first-principles/SKILL.md\n+++ skills/principle-redesign-from-first-principles/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-redesign-from-first-principles\n description: \"Apply when integrating a new requirement into an existing design. Redesign as if the requirement had been a foundational assumption from day one, instead of bolting it on.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Redesign From First Principles\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

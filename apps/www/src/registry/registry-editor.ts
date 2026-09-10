@@ -62,6 +62,7 @@ export const editorComponents: Registry['items'] = [
     registryDependencies: [
       'button',
       'command',
+      '@plate/comment',
       '@plate/floating-popover',
       '@plate/editor',
       '@plate/use-chat',
@@ -112,7 +113,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'use-file-picker@2.1.2'],
+    dependencies: ['platejs', 'use-file-picker@2.1.2', 'mammoth', 'validator'],
     description: 'A toolbar button to import editor content from a file.',
     files: [
       {
@@ -131,7 +132,19 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'html2canvas-pro', 'pdf-lib', 'lucide-react'],
+    dependencies: [
+      'platejs',
+      'html2canvas-pro',
+      'pdf-lib',
+      'lucide-react',
+      'color-name',
+      'html-to-vdom',
+      'jszip',
+      'juice',
+      'mime-types',
+      'virtual-dom',
+      'xmlbuilder2',
+    ],
     description:
       'A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).',
     files: [
@@ -195,6 +208,7 @@ export const editorComponents: Registry['items'] = [
     dependencies: ['platejs', 'lodash'],
     description:
       'A color picker toolbar button with text and background color controls.',
+    devDependencies: ['@types/lodash'],
     files: [
       {
         path: 'components/editor/font-color-toolbar-button.tsx',
@@ -222,7 +236,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [],
+    dependencies: ['lucide-react', 'platejs'],
     description: 'A toolbar button for adding inline comments.',
     files: [
       {
@@ -238,7 +252,7 @@ export const editorComponents: Registry['items'] = [
             'https://pro.platejs.org/docs/components/comment-toolbar-button',
         },
       ],
-      examples: ['discussion-demo', 'floating-toolbar-demo', 'discussion-pro'],
+      examples: ['discussion-demo', 'floating-toolbar-demo'],
     },
     name: 'comment-toolbar-button',
     registryDependencies: ['@plate/comment', '@plate/toolbar'],
@@ -246,47 +260,10 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'date-fns'],
-    description:
-      'A popover interface for managing discussions: comments, replies, suggestions.',
-    files: [
-      {
-        path: 'components/editor/block-discussion.tsx',
-        type: 'registry:component',
-      },
-      {
-        path: 'lib/block-discussion-index.ts',
-        type: 'registry:lib',
-      },
-    ],
-    meta: {
-      docs: [
-        { route: '/docs/comment' },
-        { route: 'https://pro.platejs.org/docs/components/block-discussion' },
-      ],
-      examples: ['discussion-demo', 'discussion-pro'],
-    },
-    name: 'block-discussion',
-    registryDependencies: [
-      'button',
-      '@plate/floating-popover',
-      'avatar',
-      'dropdown-menu',
-      '@plate/editor',
-      '@plate/highlight-style',
-      '@plate/comment',
-      '@plate/discussion',
-      '@plate/suggestion',
-      '@plate/basic-marks',
-    ],
-    title: 'Block Discussion',
-    type: 'registry:component',
-  },
-  {
     dependencies: [
       'platejs',
-      '@radix-ui/react-dialog',
       '@radix-ui/react-primitive',
+      '@radix-ui/react-slot',
       'fzf@0.5.2',
     ],
     description: 'An editor to select tags.',
@@ -298,10 +275,6 @@ export const editorComponents: Registry['items'] = [
       {
         path: 'components/editor/select-command.tsx',
         type: 'registry:component',
-      },
-      {
-        path: 'components/editor/select-command-score.ts',
-        type: 'registry:lib',
       },
     ],
     meta: {
@@ -332,7 +305,12 @@ export const editorComponents: Registry['items'] = [
       examples: ['emoji-demo', 'emoji-pro'],
     },
     name: 'emoji-picker',
-    registryDependencies: ['button', 'popover', 'tooltip', '@plate/emoji'],
+    registryDependencies: [
+      'button',
+      'tooltip',
+      '@plate/emoji',
+      '@plate/floating-popover',
+    ],
     title: 'Emoji Picker',
     type: 'registry:component',
   },
@@ -688,9 +666,8 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
-    description:
-      'Remote Yjs selections and carets positioned over the Plate editor.',
+    dependencies: ['platejs', 'yjs'],
+    description: 'Copied Yjs selection highlights, carets, and labels.',
     files: [
       {
         path: 'components/editor/remote-cursor-overlay.tsx',
@@ -735,6 +712,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['platejs'],
     description: 'Provider-neutral anchored floating content for Plate UI.',
     files: [
       {
@@ -757,6 +735,10 @@ export const editorComponents: Registry['items'] = [
         target: '@components/editor/toolbar.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/toolbar-overlay.tsx',
+        type: 'registry:component',
+      },
     ],
     meta: {
       // Add links here if needed
@@ -777,7 +759,6 @@ export const editorComponents: Registry['items'] = [
     ],
     meta: {
       docs: [{ route: '/docs/suggestion' }],
-      examples: ['discussion-demo', 'discussion-pro'],
     },
     name: 'suggestion-toolbar-button',
     registryDependencies: ['@plate/toolbar'],
@@ -935,7 +916,7 @@ export const editorNodes: Registry['items'] = [
       examples: ['basic-blocks-demo', 'basic-nodes-pro'],
     },
     name: 'heading',
-    registryDependencies: ['@plate/highlight-style'],
+    registryDependencies: [],
     title: 'Heading',
     type: 'registry:component',
   },
@@ -1208,14 +1189,7 @@ export const editorNodes: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      'platejs',
-      '@uploadthing/react@7.3.3',
-      'sonner',
-      'uploadthing@7.7.4',
-      'use-file-picker@2.1.2',
-      'zod',
-    ],
+    dependencies: ['platejs', 'sonner', 'use-file-picker@2.1.2', 'zod'],
     description: 'A placeholder for media upload progress indication.',
     files: [
       {
@@ -1233,7 +1207,7 @@ export const editorNodes: Registry['items'] = [
       examples: ['media-demo', 'media-pro'],
     },
     name: 'media-placeholder',
-    registryDependencies: ['@plate/uploadthing', '@plate/use-object-url'],
+    registryDependencies: ['@plate/use-object-url'],
     title: 'Media Placeholder',
     type: 'registry:component',
   },

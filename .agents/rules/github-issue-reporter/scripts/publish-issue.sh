@@ -249,6 +249,9 @@ fi
 if ! jq -e --arg title "$title" '.title == $title' "$verified" >/dev/null; then
   post_create_verification_failed "title mismatch"
 fi
+if ! jq -e --slurpfile intended "$payload" '.body == $intended[0].body' "$verified" >/dev/null; then
+  post_create_verification_failed "body mismatch"
+fi
 if [[ -n "$labels" ]]; then
   IFS=',' read -r -a label_items <<<"$labels"
   for label in "${label_items[@]}"; do

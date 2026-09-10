@@ -23,7 +23,7 @@ Trailing Block inserts a required block when the last node at a target level is 
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 Add `TrailingBlockPlugin` when users need a safe place to continue typing after blocks such as headings, tables, media, or columns.
 
@@ -50,7 +50,7 @@ export const editor = createEditor({
 
 There is no dedicated trailing-block UI. The plugin is a normalizer.
 
-## Configure The Type
+## Configure the type
 
 Use `type` when the trailing block should be something other than the default paragraph.
 
@@ -68,7 +68,7 @@ export const trailingBlockPlugin = TrailingBlockPlugin.configure(
 
 The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most editors can use the plugin directly.
 
-## Match The Previous Block
+## Match the previous block
 
 Use `match` to limit insertion based on the current last block.
 
@@ -93,7 +93,7 @@ Install the referenced H1 capability beside the configured plugin. A trailing
 paragraph is then inserted when the last block is an H1. Without `match`, any
 last block whose type differs from the trailing type can trigger insertion.
 
-## Nested Level
+## Nested level
 
 `level` changes where the plugin looks for the last node.
 
@@ -113,10 +113,10 @@ TrailingBlockPlugin.configure({
 
 Use nested levels when a constrained container must always end with a text block.
 
-## Custom Insert
+## Custom insert
 
 `initialState.insert` lets another plugin wrap the generated insertion. The registry
-suggestion kit contributes this option through `override.plugins` only when the
+suggestion kit contributes this option through `override[PLUGINS.trailingBlock]` only when the
 editor also installs `TrailingBlockPlugin`.
 
 ```tsx

@@ -1,0 +1,4 @@
+lead_key	source_key	reason	disposition
+selected-text-url-autolink	tiptap-link	Autolinking selected text on URL paste is product/plugin behavior, not generic Slate core editor behavior.	Route to Plate link plugin only if that lane is requested.
+datatransfer-helper-pressure	local-paste-files	No stronger portable invariant than current slate-browser clipboard helpers and slate-dom DataTransfer-style contracts.	Deduped to existing proof.
+feature-table-clipboard-pressure	local-paste-files	Useful table feature-lane comparison, but not a generic rich HTML paste runtime patch.	Deduped to table-fragment semantics owner.

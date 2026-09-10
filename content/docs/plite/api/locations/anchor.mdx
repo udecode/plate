@@ -7,7 +7,7 @@ An anchor keeps a path, point, or range mapped through canonical
 `DocumentChange` values. Choose its API by lifetime: `editor.anchor` is
 persistent, while `tx.anchor` is limited to one transaction callback.
 
-## Persistent Anchors
+## Persistent anchors
 
 #### `editor.anchor(value, options) => Anchor`
 
@@ -24,14 +24,17 @@ const target = editor.anchor(selection, {
 
 `deletion` is required:
 
-- `"drop"` resolves to `null` when the target is deleted.
-- `"nearest"` resolves to the nearest valid location.
+- `"drop"` resolves to `null` when the target is deleted. Undo does not
+  resurrect the dropped value.
+- `"nearest"` resolves to the nearest valid location. Saved undo and redo
+  restore the exact value recorded on each side of the history batch.
 
 Paths and points accept `"backward"` or `"forward"` association. Ranges also
 accept `"inward"` and `"outward"`. Pass `root` for a rootless value that belongs
 to a named document root.
 
-Persistent anchors remain active across commits until `release()` is called.
+Persistent anchors remain active across commits and history actions until
+`release()` is called.
 
 ```typescript
 const current = target.resolve();
@@ -45,7 +48,7 @@ Both return `null` after a dropped target or release.
 Use persistent anchors for application-owned runtime state such as local
 annotations. Release them when their owner is removed.
 
-## Transaction Anchors
+## Transaction anchors
 
 #### `tx.anchor(value, options) => EditorTransactionAnchor`
 

@@ -84,7 +84,7 @@ export const TABLE_PERF_SMOKE_BUDGETS = {
   },
   'table-selection-40x40-10x10': {
     selection: {
-      dragHandles: 1,
+      rowDragHandles: 0,
       maxMs: 100,
       p95Ms: 100,
       p99Ms: 100,

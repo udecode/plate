@@ -1,105 +1,65 @@
 import React, {
   useCallback,
+  useContext,
   useInsertionEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import ReactDOM from 'react-dom';
 
 import {
-  createEditorView,
-  type Editor,
   type EditorCommit,
   type EditorCommitContext,
   type EditorSnapshot,
   isEditor,
   type NamedRootKey,
-  type NodeKey,
-  type Path,
   type RootKey,
   type Selection,
   SelectionApi,
   type Value,
 } from '../..';
-import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
-import type { PliteAnnotationStore } from '../annotation-store';
+import { PliteContentRootOwnerContext } from '../context';
 import {
-  composeDecorationSources,
-  composeProjectionSources,
+  DecorationContext,
+  DecorationRegistrationContext,
+  type PliteDecorationRegistrar,
+} from '../decoration-context';
+import {
+  createPliteDecorationManager,
   type PliteDecorationSource,
 } from '../decoration-source';
 import {
   getEditorRuntimeOwner,
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
+  setEditorReadOnly,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
-import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
-import { createRootSelectionCache } from '../hooks/root-selection-cache';
 import { EditorContext } from '../hooks/use-editor-context';
 import { FocusedContext } from '../hooks/use-editor-focused';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
-import {
-  EditorSelectorContext,
-  useEditorSelectorContext,
-} from '../hooks/use-editor-selector';
+import { EditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import { PliteAnnotationStoreContext } from '../hooks/use-plite-annotations';
-import {
-  invalidateUnsyncedMountedTextDOM,
-  syncChangedTextToDOM,
-  syncPliteNodePathBindingsToDOM,
-} from '../hooks/use-plite-node-ref';
 import {
   createReactRuntimeViewEditor,
-  createPliteViewEffectQueue,
-  type PliteContentRootOwner,
-  PliteRuntimeContext,
+  createEditorCommitPublicationQueue,
+  resetEditorCommitPublicationQueue,
+  publishEditorCommitInVersionOrder,
+  PliteRuntimeProvider,
   type PliteRuntimeValue,
-  unregisterContentRootOwnerViewEditor,
+  useRequiredPliteRuntimeContext,
   useMountedEditorRuntimeOwner,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type {
   EditorContextValue,
   Editor as ReactEditorType,
 } from '../plugin/with-react';
-import { ProjectionContext } from '../projection-context';
-import { recordPliteReactRender } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
-import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
-import { EditorAnnouncementLiveRegion } from './editor-announcement-live-region';
-
-const now = () => globalThis.performance?.now?.() ?? Date.now();
-
-const profileRuntimeDuration = <T,>(id: string, callback: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return callback();
-  }
-
-  const start = now();
-
-  try {
-    return callback();
-  } finally {
-    recordPliteReactRender({
-      duration: now() - start,
-      id,
-      kind: 'runtime-time',
-    });
-  }
-};
-
-type RuntimeContentRootOwner = PliteContentRootOwner & {
-  ownerPath: Path;
-};
-
-const getContentRootOwnerKey = (owner: RuntimeContentRootOwner) =>
-  `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${owner.childRoot}`;
+import { createPliteViewSelectionDecorationSource } from '../view-selection-decoration';
 
 const isRootValueChanged = (root: RootKey, commit: EditorCommit) =>
   commit.changed.has('document', toPublicRootOption(root));
@@ -145,71 +105,6 @@ const useCommittedChangeCallbackCell = <
   return cell;
 };
 
-type PendingEditorCommit<V extends Value> = {
-  commit: EditorCommit;
-  snapshot: EditorSnapshot<V>;
-};
-
-type EditorCommitPublicationQueue<V extends Value> = {
-  lastVersion: number;
-  pending: Map<number, PendingEditorCommit<V>>;
-  publishing: boolean;
-};
-
-const createEditorCommitPublicationQueue = <V extends Value>(
-  lastVersion: number
-): EditorCommitPublicationQueue<V> => ({
-  lastVersion,
-  pending: new Map(),
-  publishing: false,
-});
-
-const resetEditorCommitPublicationQueue = <V extends Value>(
-  queue: EditorCommitPublicationQueue<V>,
-  lastVersion: number
-) => {
-  queue.lastVersion = lastVersion;
-  queue.pending.clear();
-  queue.publishing = false;
-};
-
-const publishEditorCommitInVersionOrder = <V extends Value>(
-  queue: EditorCommitPublicationQueue<V>,
-  commit: EditorCommit,
-  snapshot: EditorSnapshot<V>,
-  publish: (commit: EditorCommit, snapshot: EditorSnapshot<V>) => void,
-  options: { allowVersionGap?: boolean } = {}
-) => {
-  if (commit.version <= queue.lastVersion) return;
-
-  queue.pending.set(commit.version, { commit, snapshot });
-  if (queue.publishing) return;
-
-  queue.publishing = true;
-
-  try {
-    let allowVersionGap = options.allowVersionGap ?? false;
-
-    while (queue.pending.size > 0) {
-      let nextVersion = queue.lastVersion + 1;
-      let next = queue.pending.get(nextVersion);
-
-      if (!next && allowVersionGap) {
-        nextVersion = Math.min(...queue.pending.keys());
-        next = queue.pending.get(nextVersion);
-      }
-      if (!next) break;
-
-      queue.pending.delete(nextVersion);
-      queue.lastVersion = nextVersion;
-      publish(next.commit, next.snapshot);
-      allowVersionGap = false;
-    }
-  } finally {
-    queue.publishing = false;
-  }
-};
-
 /** Canonical commit payload observed by a Plite React provider. */
 export type PliteCommitContext<
   V extends Value = Value,
@@ -240,9 +135,10 @@ export type PliteProps<
 > = {
   /** Editor runtime owned for this provider's mounted lifetime. */
   editor?: ReactEditorType<V, TExtensions>;
-  annotationStore?: PliteAnnotationStore<any, any> | null;
   children: React.ReactNode;
-  decorationSources?: ReadonlyArray<PliteDecorationSource<any>> | null;
+  decorations?: ReadonlyArray<
+    PliteDecorationSource<ReactEditorType<V, TExtensions>>
+  > | null;
   onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
     context: PliteSelectionChangeContext<V, TExtensions>
@@ -291,7 +187,7 @@ export const Plite = <
       throw new Error('[Plite] editor is invalid!');
     }
 
-    return <PliteRuntimeView {...props} runtimeContext={runtimeContext} />;
+    return <PliteRuntimeView {...props} />;
   }
 
   if (
@@ -305,7 +201,6 @@ export const Plite = <
       <PliteRuntimeView
         {...props}
         root={editorRoot === 'main' ? undefined : editorRoot}
-        runtimeContext={runtimeContext}
       />
     );
   }
@@ -317,24 +212,28 @@ const PliteRuntimeView = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly unknown[],
 >({
-  annotationStore = null,
   children,
-  decorationSources = null,
+  decorations = null,
   onCommit,
   onSelectionChange,
   onValueChange,
   readOnly = false,
   root,
-  runtimeContext,
+  directEditor,
 }: PliteProps<V, TExtensions> & {
-  runtimeContext: NonNullable<
-    ReturnType<typeof useOptionalPliteRuntimeContext>
-  >;
+  directEditor?: ReactEditorType<V, TExtensions>;
 }) => {
+  const runtimeContext = useRequiredPliteRuntimeContext();
   const { getView, registerViewEditor } = runtimeContext;
   const editor = useMemo(() => {
+    if (directEditor) {
+      return directEditor as unknown as NonNullable<
+        ReturnType<typeof runtimeContext.getMountedViewEditor>
+      >;
+    }
+
     const view = getView({
-      readOnly,
+      readOnly: true,
       root,
     });
 
@@ -343,36 +242,51 @@ const PliteRuntimeView = <
     setPliteViewSelectionStoreKey(viewEditor, runtimeContext.runtime.editor);
 
     return viewEditor;
-  }, [getView, readOnly, root, runtimeContext.runtime.editor]);
+  }, [directEditor, getView, root, runtimeContext.runtime.editor]);
   const reactEditor = editor;
+  useInsertionEffect(() => {
+    if (directEditor) return undefined;
+    setEditorReadOnly(reactEditor, readOnly);
+    return () => setEditorReadOnly(reactEditor, true);
+  }, [directEditor, reactEditor, readOnly]);
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const isFocused = ReactEditor.isFocused(reactEditor);
+  const contentRootOwner = useContext(PliteContentRootOwnerContext);
+  const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useIsomorphicLayoutEffect(
     () => registerViewEditor(reactEditor, viewRoot),
     [reactEditor, registerViewEditor, viewRoot]
   );
   usePliteChangeCallbacks({
+    enabled: !directEditor,
     editor: reactEditor,
     onCommit,
     onSelectionChange,
     onValueChange,
     root: viewRoot,
   });
-  const projectionContextValue = useMemo(() => {
-    if (!annotationStore) {
-      return composeDecorationSources(decorationSources);
-    }
-
-    return composeProjectionSources([
-      ...(decorationSources ?? []),
-      annotationStore.projectionStore,
-    ]);
-  }, [annotationStore, decorationSources]);
-
+  const viewSelectionDecoration = useMemo(
+    () =>
+      createPliteViewSelectionDecorationSource(reactEditor, contentRootOwner),
+    [contentRootOwner, reactEditor]
+  );
+  const allDecorations = useMemo(
+    () => [
+      ...(decorations ?? []),
+      viewSelectionDecoration as unknown as PliteDecorationSource<
+        ReactEditorType<V, TExtensions>
+      >,
+    ],
+    [decorations, viewSelectionDecoration]
+  );
+  const decorationManager = usePliteDecorationManager(
+    reactEditor as unknown as ReactEditorType<V, TExtensions>,
+    allDecorations
+  );
+  const registerDecorationSource = useDecorationRegistrar(decorationManager);
   return (
     <EditorSelectorContext value={runtimeContext.selectorContext}>
-      <ProjectionContext value={projectionContextValue}>
-        <PliteAnnotationStoreContext value={annotationStore}>
+      <DecorationContext value={decorationManager}>
+        <DecorationRegistrationContext value={registerDecorationSource}>
           <EditorContext
             value={reactEditor as unknown as EditorContextValue<any>}
           >
@@ -380,8 +294,8 @@ const PliteRuntimeView = <
               <FocusedContext value={isFocused}>{children}</FocusedContext>
             </ReadOnlyContext>
           </EditorContext>
-        </PliteAnnotationStoreContext>
-      </ProjectionContext>
+        </DecorationRegistrationContext>
+      </DecorationContext>
     </EditorSelectorContext>
   );
 };
@@ -391,12 +305,14 @@ const usePliteChangeCallbacks = <
   TExtensions extends readonly unknown[],
   TRuntimeExtensions extends readonly unknown[],
 >({
+  enabled,
   editor,
   onCommit,
   onSelectionChange,
   onValueChange,
   root,
 }: {
+  enabled: boolean;
   editor: ReactRuntimeEditor<V, TRuntimeExtensions>;
   onCommit?: (context: PliteCommitContext<V, TExtensions>) => void;
   onSelectionChange?: (
@@ -425,6 +341,8 @@ const usePliteChangeCallbacks = <
   );
 
   useIsomorphicLayoutEffect(() => {
+    if (!enabled) return undefined;
+
     lastSnapshotRef.current = editorBaseline.snapshot;
     resetEditorCommitPublicationQueue(
       commitPublicationQueue,
@@ -502,6 +420,7 @@ const usePliteChangeCallbacks = <
   }, [
     changeCallbacksCell,
     commitPublicationQueue,
+    enabled,
     editor,
     editorBaseline,
     root,
@@ -511,64 +430,19 @@ const usePliteChangeCallbacks = <
 const PliteSingleEditor = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly unknown[],
->(
-  props: PliteProps<V, TExtensions> & {
-    editor: ReactEditorType<V, TExtensions>;
-  }
-) => {
-  const {
-    annotationStore = null,
-    decorationSources = null,
-    editor,
-    children,
-    onCommit,
-    onSelectionChange,
-    onValueChange,
-    readOnly = false,
-  } = props;
-
-  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 typecheck-boundary] Widening the deeply generic editor before the runtime guard prevents TypeScript from recursively comparing the full extension graph.
+>({
+  editor,
+  onCommit,
+  onSelectionChange,
+  onValueChange,
+  ...props
+}: PliteProps<V, TExtensions> & {
+  editor: ReactEditorType<V, TExtensions>;
+}) => {
+  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 typecheck-boundary] Widening before the guard avoids recursively comparing the extension graph.
   if (!isEditor(editor as unknown)) {
     throw new Error('[Plite] editor is invalid!');
   }
-
-  const reactEditor = editor as unknown as ReactRuntimeEditor<V, TExtensions>;
-  const { selectorContext, onChange: handleSelectorChange } =
-    useEditorSelectorContext();
-  const {
-    focused: isFocused,
-    focusVersion,
-    refreshFocused,
-  } = useRuntimeFocusState(reactEditor);
-  const editorBaselineVersion = useMemo(
-    () => editorGetLastCommit(editor)?.version ?? 0,
-    [editor]
-  );
-  const committedEditorRef = useRef(editor);
-  const changeCallbacks = useMemo(
-    () => ({ onCommit, onSelectionChange, onValueChange }),
-    [onCommit, onSelectionChange, onValueChange]
-  );
-  const changeCallbacksCell = useCommittedChangeCallbackCell(changeCallbacks);
-  const [commitPublicationQueue] = useState(() =>
-    createEditorCommitPublicationQueue<V>(editorBaselineVersion)
-  );
-  const mountedViewEditorsRef = useRef(
-    new Map<RootKey, Set<typeof reactEditor>>()
-  );
-  const activeViewEditorsRef = useRef(new Map<RootKey, typeof reactEditor>());
-  const contentRootOwnersRef = useRef(
-    new Map<typeof reactEditor, RuntimeContentRootOwner>()
-  );
-  const contentRootOwnerViewEditorsRef = useRef(
-    new Map<string, typeof reactEditor>()
-  );
-  const activeContentRootOwnersRef = useRef(
-    new Map<RootKey, RuntimeContentRootOwner>()
-  );
-  const [viewEffectQueue] = useState(createPliteViewEffectQueue);
-  const [viewEffectVersion, setViewEffectVersion] = useState(0);
-  const [lastSelectionCache] = useState(createRootSelectionCache);
 
   const runtime = useMemo(
     () =>
@@ -585,437 +459,87 @@ const PliteSingleEditor = <
       }) as PliteRuntimeValue<V, TExtensions>,
     [editor]
   );
-  const getView = useCallback(
-    (options = {}) => createEditorView(runtime.editor, options),
-    [runtime]
+  const changeCallbacks = useMemo(
+    () => ({ onCommit, onSelectionChange, onValueChange }),
+    [onCommit, onSelectionChange, onValueChange]
   );
-  const registerViewEditor = useCallback(
-    (viewEditor: typeof reactEditor, root: RootKey) => {
-      const viewEditors = mountedViewEditorsRef.current.get(root) ?? new Set();
-      const rootViewEditors =
-        EDITOR_TO_ROOT_VIEW_EDITORS.get(editor) ?? new Set();
+  const changeCallbacksCell = useRef(changeCallbacks);
 
-      viewEditors.add(viewEditor);
-      mountedViewEditorsRef.current.set(root, viewEditors);
-      if (!activeViewEditorsRef.current.has(root)) {
-        activeViewEditorsRef.current.set(root, viewEditor);
-      }
-      rootViewEditors.add(viewEditor as unknown as Editor);
-      EDITOR_TO_ROOT_VIEW_EDITORS.set(editor, rootViewEditors);
+  useInsertionEffect(() => {
+    changeCallbacksCell.current = changeCallbacks;
+  }, [changeCallbacks]);
 
-      return () => {
-        viewEditors.delete(viewEditor);
-        rootViewEditors.delete(viewEditor as unknown as Editor);
-        const owner = contentRootOwnersRef.current.get(viewEditor);
-
-        contentRootOwnersRef.current.delete(viewEditor);
-        if (owner) {
-          unregisterContentRootOwnerViewEditor(
-            contentRootOwnerViewEditorsRef.current,
-            owner,
-            viewEditor
-          );
-        }
-
-        if (activeViewEditorsRef.current.get(root) === viewEditor) {
-          const nextEditor = viewEditors.values().next().value;
-
-          if (nextEditor) {
-            activeViewEditorsRef.current.set(root, nextEditor);
-          } else {
-            activeViewEditorsRef.current.delete(root);
-          }
-        }
-        if (viewEditors.size === 0) {
-          mountedViewEditorsRef.current.delete(root);
-        }
-        if (rootViewEditors.size === 0) {
-          EDITOR_TO_ROOT_VIEW_EDITORS.delete(editor);
-        }
-      };
-    },
-    [editor]
-  );
-  const setActiveViewEditor = useCallback(
-    (viewEditor: typeof reactEditor, root: RootKey) => {
-      const viewEditors = mountedViewEditorsRef.current.get(root);
-
-      if (viewEditors?.has(viewEditor) || root === 'main') {
-        activeViewEditorsRef.current.set(root, viewEditor);
-        const owner = contentRootOwnersRef.current.get(viewEditor);
-
-        if (owner) {
-          activeContentRootOwnersRef.current.set(root, owner);
-        }
-      }
-    },
-    []
-  );
-  const getMountedViewEditor = useCallback(
-    (root: RootKey) => {
-      const viewEditors = mountedViewEditorsRef.current.get(root);
-      const activeViewEditor = activeViewEditorsRef.current.get(root);
-      const viewEditor =
-        activeViewEditor && viewEditors?.has(activeViewEditor)
-          ? activeViewEditor
-          : viewEditors?.values().next().value;
-
-      return viewEditor ?? (root === 'main' ? reactEditor : null);
-    },
-    [reactEditor]
-  );
-  const registerContentRootOwner = useCallback(
-    (viewEditor: typeof reactEditor, owner: RuntimeContentRootOwner) => {
-      contentRootOwnersRef.current.set(viewEditor, owner);
-      contentRootOwnerViewEditorsRef.current.set(
-        getContentRootOwnerKey(owner),
-        viewEditor
-      );
-
-      return () => {
-        if (contentRootOwnersRef.current.get(viewEditor) === owner) {
-          contentRootOwnersRef.current.delete(viewEditor);
-          unregisterContentRootOwnerViewEditor(
-            contentRootOwnerViewEditorsRef.current,
-            owner,
-            viewEditor
-          );
-        }
-      };
-    },
-    []
-  );
-  const getContentRootOwnerViewEditor = useCallback(
-    (owner: RuntimeContentRootOwner) =>
-      contentRootOwnerViewEditorsRef.current.get(
-        getContentRootOwnerKey(owner)
-      ) ?? null,
-    []
-  );
-  const getActiveContentRootOwner = useCallback((root: RootKey) => {
-    const activeOwner = activeContentRootOwnersRef.current.get(root);
-
-    if (
-      activeOwner &&
-      contentRootOwnerViewEditorsRef.current.has(
-        getContentRootOwnerKey(activeOwner)
-      )
-    ) {
-      return activeOwner;
-    }
-
-    const activeViewEditor = activeViewEditorsRef.current.get(root);
-
-    return activeViewEditor
-      ? (contentRootOwnersRef.current.get(activeViewEditor) ?? null)
-      : null;
-  }, []);
-  const getLastSelectionForRoot = useCallback(
-    (root: RootKey) => lastSelectionCache.get(root),
-    [lastSelectionCache]
-  );
-  const registerViewEffect = useCallback(
-    (effect: () => void) => {
-      const unregister = viewEffectQueue.register(effect);
-
-      setViewEffectVersion((version) => version + 1);
-
-      return unregister;
-    },
-    [viewEffectQueue]
-  );
-  const syncMountedRootChangesToDOM = useCallback((commit: EditorCommit) => {
-    if (mountedViewEditorsRef.current.size === 0) {
-      return {
-        changedTextCount: 0,
-        invalidatedNodeKeys: [] as NodeKey[],
-        requiresGlobalRender: false,
-        syncedTextCount: 0,
-      };
-    }
-
-    let changedTextCount = 0;
-    const invalidatedNodeKeys = new Set<NodeKey>();
-    let requiresGlobalRender = false;
-    let syncedTextCount = 0;
-
-    for (const [root, viewEditors] of mountedViewEditorsRef.current) {
-      const publicRoot = toPublicRootOption(root);
-      const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
-      const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
-      const historyAffectedNodeKeys = [
-        ...changedTextNodeKeys,
-        ...changedPathNodeKeys,
-        ...commit.changed.nodeKeys('node', publicRoot),
-      ];
-      let didSyncEveryView = changedTextNodeKeys.length > 0;
-
-      for (const viewEditor of viewEditors) {
-        const runtimeEditor = viewEditor as unknown as Editor;
-        if (commit.annotations['history.action'] !== undefined) {
-          invalidateUnsyncedMountedTextDOM(
-            runtimeEditor,
-            historyAffectedNodeKeys
-          ).forEach((nodeKey) => {
-            invalidatedNodeKeys.add(nodeKey);
-          });
-        }
-        const textSync = syncChangedTextToDOM(
-          runtimeEditor,
-          changedTextNodeKeys,
-          { allowProjected: changedPathNodeKeys.length === 0 }
-        );
-        requiresGlobalRender ||= textSync.requiresGlobalRender;
-        textSync.invalidatedNodeKeys.forEach((nodeKey) => {
-          invalidatedNodeKeys.add(nodeKey);
-        });
-
-        if (textSync.syncedTextCount < textSync.changedTextCount) {
-          didSyncEveryView = false;
-        }
-        if (changedPathNodeKeys.length > 0) {
-          syncPliteNodePathBindingsToDOM(runtimeEditor, changedPathNodeKeys);
-        }
-      }
-
-      changedTextCount += changedTextNodeKeys.length;
-      if (didSyncEveryView) syncedTextCount += changedTextNodeKeys.length;
-    }
-
-    return {
-      changedTextCount,
-      invalidatedNodeKeys: [...invalidatedNodeKeys],
-      requiresGlobalRender,
-      syncedTextCount,
-    };
-  }, []);
-  const handleCommittedEditorChange = useCallback(
+  const observeCommit = useCallback(
     (commit: EditorCommit, snapshot: EditorSnapshot<V>) => {
-      lastSelectionCache.record(
-        commit.selectionAfter,
-        commit.selectionAfterRoot
-      );
-
-      const maybeBatchUpdates =
-        REACT_MAJOR_VERSION < 18
-          ? ReactDOM.unstable_batchedUpdates
-          : (callback: () => void) => {
-              callback();
-            };
-
-      maybeBatchUpdates(() => {
-        const runtimeEditor = reactEditor as unknown as Editor;
-
-        profileRuntimeDuration('focused-state', () => {
-          refreshFocused();
-        });
-        const mainPathNodeKeys = commit.changed.nodeKeys('path');
-        const invalidatedNodeKeys =
-          commit.annotations['history.action'] !== undefined
-            ? invalidateUnsyncedMountedTextDOM(runtimeEditor, [
-                ...commit.changed.nodeKeysAll('text'),
-                ...commit.changed.nodeKeysAll('path'),
-                ...commit.changed.nodeKeysAll('node'),
-              ])
-            : [];
-        const textSync = profileRuntimeDuration('dom-text-sync', () =>
-          syncChangedTextToDOM(runtimeEditor, commit.changed.nodeKeys('text'), {
-            allowProjected: mainPathNodeKeys.length === 0,
-          })
-        );
-        const rootTextSync = profileRuntimeDuration('dom-root-text-sync', () =>
-          syncMountedRootChangesToDOM(commit)
-        );
-        if (mainPathNodeKeys.length > 0) {
-          profileRuntimeDuration('dom-path-sync', () => {
-            syncPliteNodePathBindingsToDOM(runtimeEditor, mainPathNodeKeys);
-          });
-        }
-        profileRuntimeDuration('change-callbacks', () => {
-          const {
-            onCommit: innerOnCommit2,
-            onSelectionChange: innerOnSelectionChange2,
-            onValueChange: innerOnValueChange2,
-          } = changeCallbacksCell.current;
-
-          if (
-            !innerOnCommit2 &&
-            !innerOnSelectionChange2 &&
-            !innerOnValueChange2
-          ) {
-            return;
-          }
-
-          const valueChanged = isRootValueChanged('main', commit);
-          const selectionChanged = isRootSelectionChanged('main', commit);
-
-          const context = {
-            commit,
-            editor,
-            snapshot,
-          } as unknown as PliteCommitContext<V, TExtensions>;
-
-          innerOnCommit2?.(context);
-
-          if (valueChanged) {
-            innerOnValueChange2?.({
-              ...context,
-              value: snapshot.children,
-            });
-          }
-
-          if (selectionChanged) {
-            innerOnSelectionChange2?.({
-              ...context,
-              selection: snapshot.selection,
-            });
-          }
-        });
-
-        profileRuntimeDuration('selector-dispatch', () => {
-          handleSelectorChange(
-            textSync.requiresGlobalRender || rootTextSync.requiresGlobalRender
-              ? undefined
-              : commit,
-            [
-              ...getSchemaInvalidatedNodeKeys(editor, commit),
-              ...textSync.invalidatedNodeKeys,
-              ...invalidatedNodeKeys,
-              ...rootTextSync.invalidatedNodeKeys,
-            ]
-          );
-        });
-
-        if (viewEffectQueue.hasEffects()) {
-          setViewEffectVersion((version) => version + 1);
-        }
-      });
-    },
-    [
-      editor,
-      changeCallbacksCell,
-      handleSelectorChange,
-      lastSelectionCache,
-      reactEditor,
-      refreshFocused,
-      syncMountedRootChangesToDOM,
-      viewEffectQueue,
-    ]
-  );
-
-  useIsomorphicLayoutEffect(() => {
-    if (committedEditorRef.current !== editor) {
-      committedEditorRef.current = editor;
-      resetEditorCommitPublicationQueue(
-        commitPublicationQueue,
-        editorBaselineVersion
-      );
-    }
-
-    const onContextChange: Parameters<typeof editor.subscribeCommit>[0] = (
-      commit,
-      snapshot
-    ) => {
-      publishEditorCommitInVersionOrder(
-        commitPublicationQueue,
+      const callbacks = changeCallbacksCell.current;
+      const context = {
         commit,
+        editor,
         snapshot,
-        handleCommittedEditorChange
-      );
-    };
+      } as unknown as PliteCommitContext<V, TExtensions>;
 
-    const unsubscribe = editor.subscribeCommit(onContextChange);
-    const latestCommit = editorGetLastCommit(editor);
-
-    if (
-      latestCommit &&
-      latestCommit.version > commitPublicationQueue.lastVersion
-    ) {
-      publishEditorCommitInVersionOrder(
-        commitPublicationQueue,
-        latestCommit,
-        editorGetSnapshot(editor),
-        handleCommittedEditorChange,
-        { allowVersionGap: true }
-      );
-    }
-
-    return unsubscribe;
-  }, [
-    commitPublicationQueue,
-    editor,
-    editorBaselineVersion,
-    handleCommittedEditorChange,
-  ]);
-
-  const projectionContextValue = useMemo(() => {
-    if (!annotationStore) {
-      return composeDecorationSources(decorationSources);
-    }
-
-    return composeProjectionSources([
-      ...(decorationSources ?? []),
-      annotationStore.projectionStore,
-    ]);
-  }, [annotationStore, decorationSources]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (viewEffectVersion === 0) {
-      return;
-    }
-
-    viewEffectQueue.flush();
-  }, [viewEffectQueue, viewEffectVersion]);
-
-  const runtimeContextValue = useMemo(
-    () => ({
-      focusVersion,
-      focused: isFocused,
-      getActiveContentRootOwner,
-      getContentRootOwnerViewEditor,
-      getLastSelectionForRoot,
-      getMountedViewEditor,
-      getView,
-      registerContentRootOwner,
-      registerViewEffect,
-      registerViewEditor,
-      runtime,
-      selectorContext,
-      setActiveViewEditor,
-    }),
-    [
-      getMountedViewEditor,
-      getActiveContentRootOwner,
-      getContentRootOwnerViewEditor,
-      getLastSelectionForRoot,
-      getView,
-      focusVersion,
-      isFocused,
-      registerContentRootOwner,
-      registerViewEffect,
-      registerViewEditor,
-      runtime,
-      selectorContext,
-      setActiveViewEditor,
-    ]
+      callbacks.onCommit?.(context);
+      if (isRootValueChanged('main', commit)) {
+        callbacks.onValueChange?.({ ...context, value: snapshot.children });
+      }
+      if (isRootSelectionChanged('main', commit)) {
+        callbacks.onSelectionChange?.({
+          ...context,
+          selection: snapshot.selection,
+        });
+      }
+    },
+    [changeCallbacksCell, editor]
   );
 
   return (
-    <EditorSelectorContext value={selectorContext}>
-      <ProjectionContext value={projectionContextValue}>
-        <PliteAnnotationStoreContext value={annotationStore}>
-          <PliteRuntimeContext value={runtimeContextValue as any}>
-            <EditorAnnouncementLiveRegion editor={editor} />
-            <EditorContext
-              value={reactEditor as unknown as EditorContextValue<any>}
-            >
-              <ReadOnlyContext value={readOnly}>
-                <FocusedContext value={isFocused}>{children}</FocusedContext>
-              </ReadOnlyContext>
-            </EditorContext>
-          </PliteRuntimeContext>
-        </PliteAnnotationStoreContext>
-      </ProjectionContext>
-    </EditorSelectorContext>
+    <PliteRuntimeProvider runtime={runtime} onCommit={observeCommit}>
+      <PliteRuntimeView {...props} directEditor={editor} />
+    </PliteRuntimeProvider>
   );
 };
+
+const usePliteDecorationManager = <E,>(
+  editor: E,
+  sources: ReadonlyArray<PliteDecorationSource<E>> | null
+) => {
+  const manager = useMemo(
+    () => createPliteDecorationManager(editor, sources ?? []),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- Sources reconcile through setSources; manager lifetime follows only the editor runtime.
+    [editor]
+  );
+  const lifecycleVersionRef = useRef(0);
+  const currentManagerRef = useRef(manager);
+
+  useIsomorphicLayoutEffect(() => {
+    manager.setSources(sources ?? []);
+  }, [manager, sources]);
+  useInsertionEffect(() => {
+    currentManagerRef.current = manager;
+    lifecycleVersionRef.current += 1;
+    const lifecycleVersion = lifecycleVersionRef.current;
+    const unmount = manager.mount();
+
+    return () => {
+      unmount();
+      queueMicrotask(() => {
+        if (
+          currentManagerRef.current !== manager ||
+          lifecycleVersionRef.current === lifecycleVersion
+        ) {
+          manager.destroy();
+        }
+      });
+    };
+  }, [manager]);
+
+  return manager;
+};
+
+const useDecorationRegistrar = <E,>(
+  manager: ReturnType<typeof createPliteDecorationManager<E>>
+) =>
+  useCallback<PliteDecorationRegistrar>(
+    (source) => manager.registerSource(source),
+    [manager]
+  );

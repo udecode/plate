@@ -51,8 +51,8 @@ Benchmark output should move toward native `METRIC` and `ARTIFACT` lines. Until 
 - `benchmarks/targets/history/slate-v2-latest.json`
 - `benchmarks/targets/reports/slate-v2.md`
 
-These are the target-registry replacement for Evidence Kit's active health/report surface. They summarize target status from registered artifacts. They do not run expensive benchmarks.
+These files summarize recorded artifacts for each target. Report generation does not execute benchmarks or establish source freshness and passing budgets.
 
-Artifact existence is sticky: a target stays present when the artifact exists locally or in the latest known generated history. This keeps partial local caches from turning unrelated target rows red during focused benchmark work.
+An artifact is recorded when it exists locally or appears in the latest known generated history. Historical receipts remain recorded when a local cache is absent. This records past evidence without claiming the file is currently available or the current source passes its budget.
 
 `pnpm bench:targets:dry-run -- <target-id>` checks the registry, builds the report model in memory, and asks Autoresearch for a setup plan for that target. Use it before starting a real optimization loop.

@@ -8,14 +8,14 @@ import {
   LinkIcon,
 } from 'lucide-react';
 import { PLUGINS, isUrl } from 'platejs';
-import {
+import type {
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseImagePlugin,
   BaseVideoPlugin,
 } from 'platejs/media';
 import { PlaceholderPlugin } from 'platejs/media/react';
-import { type Editor, useEditor } from 'platejs/react';
+import { useEditor } from 'platejs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
@@ -84,29 +84,6 @@ type MediaPlugin =
   | typeof BaseFilePlugin
   | typeof BaseImagePlugin
   | typeof BaseVideoPlugin;
-
-function insertMedia(
-  editor: Editor,
-  plugin: MediaPlugin,
-  input: { name?: string; url: string }
-) {
-  switch (plugin.name) {
-    case BaseAudioPlugin.name: {
-      return editor.plugin(plugin).update.insert(input);
-    }
-    case BaseFilePlugin.name: {
-      return editor.plugin(plugin).update.insert(input);
-    }
-    case BaseImagePlugin.name: {
-      return editor.plugin(plugin).update.insert(input);
-    }
-    case BaseVideoPlugin.name: {
-      return editor.plugin(plugin).update.insert(input);
-    }
-  }
-
-  throw new Error('Unsupported media plugin.');
-}
 
 export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
   const pluginName = plugin.name;
@@ -214,7 +191,7 @@ function MediaUrlDialogContent({
       url,
     };
 
-    insertMedia(editor, plugin, input);
+    editor.plugin(plugin).update.insert(input);
 
     return undefined;
   }, [url, editor, plugin, setOpen]);

@@ -1,0 +1,4 @@
+lead_key	source	evidence	slate_v2_coverage	decision
+triple-click-hanging-selection	lexical:LexicalEvents.ts; slate:Editor.unhangRange docs	Triple-click can visually select one block while native/model focus leaks to the next block.	`.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`, `richtext.test.ts`, `select.test.ts`	promoted-covered
+firefox-dom-range-normalization	lexical:LexicalSelection.ts	Firefox can produce element-point DOM ranges for selections that should map to text points.	Inline route rows and visual-native smoke assert strict model endpoints while normalizing selected-text whitespace.	promoted-kept
+inline-link-selection-normalization	lexical-link:LexicalLinkNode.ts	Inline link transforms preserve selection with normalized boundary points.	Slate v2 inline triple-click/backspace/paste rows plus visual-native screenshot proof.	promoted-covered

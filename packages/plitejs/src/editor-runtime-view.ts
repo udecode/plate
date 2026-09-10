@@ -641,13 +641,10 @@ const withViewTransaction = <V extends Value>(
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.duplicate(options as never);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
-      insertAfter: (
-        nodes: ElementIn<V> | ReadonlyArray<ElementIn<V>>,
-        options?: { at?: NodeSelection | NodeTarget }
-      ) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.insertAfter(nodes, options);
-        }),
+      insertAfter: (nodes, options) =>
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.insertAfter(nodes, options)
+        ),
       reset: (options) =>
         runImplicitSelectionMutation(options, () => {
           transaction.blocks.reset(options);
@@ -985,6 +982,11 @@ const createViewRuntime = <V extends Value>(
     range: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.range(...args)),
     read: (fn) => baseRuntime.read((state) => fn(projectState(state))),
+    setViewState: (key, value) => {
+      const changed = viewState[key] !== value;
+      viewState[key] = value;
+      return changed;
+    },
     runCommand: createCommandDispatch(() => {
       if (viewState.readOnly) {
         throw new Error('Cannot update a read-only editor view.');
@@ -1111,6 +1113,8 @@ const createEditorViewRuntime = <
   const viewRead = createEditorReadApi<V, TExtensions>((fn) =>
     viewRuntime.read((state) => fn(state as EditorStateView<V, TExtensions>))
   );
+  // Compiled schema methods belong to the shared model, including layered descriptor accessors.
+  viewRead.schema = sourceEditor.read.schema;
   const viewUpdate = createEditorUpdateApi<V, TExtensions>(
     (fn, policy) => {
       if (viewState.readOnly) {
@@ -1187,6 +1191,12 @@ const createEditorViewRuntime = <
     update: viewUpdate,
   };
 
+  for (const key of Reflect.ownKeys(sourceEditor)) {
+    const descriptor = Object.getOwnPropertyDescriptor(sourceEditor, key);
+    if (descriptor && !Object.hasOwn(view, key)) {
+      Object.defineProperty(view, key, descriptor);
+    }
+  }
   viewEditor = view;
 
   setEditorRuntime(

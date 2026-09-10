@@ -1,0 +1,7 @@
+repo_key	local_path	remote	license_or_status	why_used
+local/slate-v2	.tmp/slate-v2	local private alpha	private-alpha current tree	Current Slate v2 DOM strategy, huge-document tests, and benchmark surfaces.
+github/codemirror/view	../codemirror-view	https://github.com/codemirror/view	MIT	Strong source-level viewport, height-map, scroll-anchor, and missing-DOM coordinate architecture.
+github/ProseMirror/prosemirror-view	../prosemirror-view	https://github.com/ProseMirror/prosemirror-view	MIT	Behavioral baseline already used by cross-editor huge-document benchmark.
+github/facebook/lexical	../lexical	https://github.com/facebook/lexical	MIT	Behavioral baseline already used by cross-editor huge-document benchmark.
+github/microsoft/monaco-editor	../monaco-editor	https://github.com/microsoft/monaco-editor	MIT	Rejected in this packet because the clone exposes wrapper/package surface, not enough internal viewport architecture.
+

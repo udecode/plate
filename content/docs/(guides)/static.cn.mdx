@@ -33,7 +33,7 @@ description: 一个支持 RSC/SSR 的最小化、记忆化、只读版本的 Pla
 
 ### 安装
 
-启用静态渲染最快的方式是使用 `BaseEditorKit`，它包含预配置的基础插件，可与服务端渲染无缝配合。
+`BaseEditorKit` 包含配置好静态渲染的基础插件。
 
 <ComponentSource name="editor-plugins-static" />
 
@@ -72,7 +72,7 @@ export default function MyStaticPage() {
 
 ### 创建 Plite 编辑器
 
-使用 `createEditor` 初始化 Plite 编辑器实例，配置所需的插件和组件。这类似于为交互式 `<Plate>` 组件使用 `useCreateEditor`。
+使用 `createEditor` 初始化 Plite 编辑器实例，并传入已绑定组件的插件。这类似于为交互式 `<Plate>` 组件使用 `useCreateEditor`。
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createEditor } from 'platejs';
@@ -101,7 +101,7 @@ const editor = createEditor({
 ```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
-import type { PliteElementProps } from 'platejs/static';
+import { PliteElement, type PliteElementProps } from 'platejs/static';
 
 export function ParagraphElementStatic(
   props: PliteElementProps<typeof BaseParagraphPlugin>
@@ -115,31 +115,29 @@ export function ParagraphElementStatic(
 ```
 为标题、图片、链接等创建类似的静态组件。
 
-### 将插件名称映射到静态组件
+### 绑定静态组件
 
-创建一个将插件名称或节点类型映射到相应静态 React 组件的对象，然后将其传递给编辑器。
+在所属 base plugin 上配置每个服务端安全组件。
 
-```ts title="components/static-components.ts"
+```ts title="components/static-editor-kit.ts"
+import { BaseHeadingPlugin, BaseParagraphPlugin } from 'platejs';
 import { ParagraphElementStatic } from './ui/paragraph-static';
 import { HeadingElementStatic } from './ui/heading-static';
-// ... import other static components
 
-export const staticComponents = {
-  p: ParagraphElementStatic,
-  h1: HeadingElementStatic,
-  // ... add mappings for all your element and leaf types
-};
+export const StaticEditorKit = [
+  BaseParagraphPlugin.configure({ component: ParagraphElementStatic }),
+  BaseHeadingPlugin.configure({ component: HeadingElementStatic }),
+];
 ```
 
 ### 渲染 `<PlateStatic>`
 
-使用 `<PlateStatic>` 组件，提供配置了组件的 `editor` 实例。
+使用 `<PlateStatic>` 组件，并传入插件描述符已拥有静态组件的 `editor` 实例。
 
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { createEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
-import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-import { staticComponents } from '@/components/static-components';
+import { StaticEditorKit } from '@/components/static-editor-kit';
 
 export default async function MyStaticPage() {
   // Example: Fetch or define editor value
@@ -149,8 +147,7 @@ export default async function MyStaticPage() {
   ];
 
   const editor = createEditor({
-    plugins: [...BaseBasicBlocksKit],
-    components: staticComponents,
+    plugins: StaticEditorKit,
     initialValue,
   });
 
@@ -167,7 +164,7 @@ export default async function MyStaticPage() {
 ### 记忆化详情
 
 `<PlateStatic>` 通过记忆化提升性能：
--   每个 `<ElementStatic>` 和 `<LeafStatic>` 都被 `React.memo` 包裹。
+-   静态元素和叶子的渲染使用 `React.memo`。
 -   **引用相等性：** 未更改的节点引用可防止重新渲染。
 
 </Steps>
@@ -260,7 +257,6 @@ export function InteractiveViewer({ value }) {
 import { createEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-import { staticComponents } from '@/components/static-components'; // Your static components mapping
 
 export default async function Page() {
   // Fetch or define content server-side
@@ -271,7 +267,6 @@ export default async function Page() {
 
   const editor = createEditor({
     plugins: [...BaseBasicBlocksKit],
-    components: staticComponents,
     initialValue: serverContent,
   });
 
@@ -293,12 +288,10 @@ export default async function Page() {
 import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-import { staticComponents } from '@/components/static-components';
 
 async function getDocumentAsHtml(value: any[]) {
   const editor = createEditor({
     plugins: [...BaseBasicBlocksKit],
-    components: staticComponents,
     initialValue: value,
   });
 
@@ -327,7 +320,7 @@ import type { Editor } from 'platejs';
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * The Plate editor instance, created via `createEditor`.
-   * Must include plugins and components relevant to the content being rendered.
+   * Must include component-bound plugins relevant to the content being rendered.
    */
   editor: Editor;
 
@@ -338,7 +331,7 @@ interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
--   **`editor`**：使用 `createEditor` 创建的 `Editor` 实例，包含组件配置。
+-   **`editor`**：使用 `createEditor` 创建的 `Editor` 实例，包含内容所需的已绑定组件插件。
 
 ## 后续步骤
 

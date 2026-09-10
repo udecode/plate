@@ -7,7 +7,7 @@ import {
   type Value,
 } from '../../core';
 import { createEditor as createProductEditor } from '../../react/core';
-import { BaseAIPlugin } from '../lib/BaseAIPlugin';
+import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (
@@ -133,6 +133,71 @@ describe('AIChatPlugin submit', () => {
         }),
       })
     );
+  });
+
+  it('regenerates a submitted request before a preview has been applied', () => {
+    const regenerate = mock(async () => {});
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage);
+    const chat = {
+      messages: [],
+      regenerate,
+      sendMessage,
+    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+    const selection = editor.read.selection();
+    const children = editor.read.children();
+
+    editor.plugin(AIChatPlugin).store.set({ chat });
+    editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
+    editor.plugin(AIChatPlugin).api.reload();
+
+    expect(regenerate).toHaveBeenCalledTimes(1);
+    expect(regenerate).toHaveBeenCalledWith({
+      body: {
+        ctx: expect.objectContaining({ selection }),
+      },
+    });
+    expect(editor.read.children()).toEqual(children);
+    expect(editor.read.selection()).toEqual(selection);
+  });
+
+  it('refuses regeneration when preview rollback cannot safely restore the document', () => {
+    const regenerate = mock(async () => {});
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage);
+
+    editor.plugin(AIChatPlugin).store.set({
+      chat: { messages: [], regenerate, sendMessage } as unknown as NonNullable<
+        AIChatDefinition['initialState']['chat']
+      >,
+    });
+    editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
+    editor.plugin(BaseAIPlugin).update.beginPreview();
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.nodes.replaceChildren(
+        [
+          {
+            [AI_PREVIEW_KEY]: true,
+            type: 'paragraph',
+            children: [{ ai: true, text: 'first preview' }],
+          },
+          { type: 'paragraph', children: [{ text: 'unrelated edit' }] },
+          {
+            [AI_PREVIEW_KEY]: true,
+            type: 'paragraph',
+            children: [{ ai: true, text: 'second preview' }],
+          },
+        ],
+        { at: [], count: tx.children().length, index: 0 }
+      );
+    });
+    const children = structuredClone(editor.read.children());
+
+    editor.plugin(AIChatPlugin).api.reload();
+
+    expect(regenerate).not.toHaveBeenCalled();
+    expect(editor.read.children()).toEqual(children);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(true);
   });
 
   it('preserves backward node selection when regenerating', () => {

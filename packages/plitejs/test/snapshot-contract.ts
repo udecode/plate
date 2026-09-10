@@ -3219,6 +3219,55 @@ it('skips canonical rebuilding for exact same-parent block moves', () => {
   assert.equal(editorGetSnapshot(editor).children.length, 1000);
 });
 
+it('keeps text-only representation repair inside the changed text parent', () => {
+  const target = 5000;
+  const editor = createEditor({
+    initialValue: [
+      {
+        type: 'block',
+        children: Array.from({ length: 10_000 }, (_value, index) => ({
+          ...(index % 2 === 0 ? { bold: true } : {}),
+          text: `line-${index}`,
+        })),
+      },
+    ],
+  });
+  const before = editorGetSnapshot(editor);
+  const profilerGlobal = globalThis as typeof globalThis & {
+    __PLITE_REACT_RENDER_PROFILER__?: {
+      record: (event: { id: string }) => void;
+    };
+  };
+  const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+  const events: string[] = [];
+
+  profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    record: ({ id }) => events.push(id),
+  };
+
+  try {
+    editorInsertText(editor, 'X', {
+      at: { offset: 4, path: [0, target] },
+    });
+  } finally {
+    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+  }
+
+  const after = editorGetSnapshot(editor);
+
+  assert.equal(
+    events.filter((id) => id === 'representation-text-locality-hit').length,
+    1
+  );
+  assert.equal(after.children[0].children[target].text, 'lineX-5000');
+  assert.equal(after.children[0].children.length, 10_000);
+  assert.equal(after.children[0].children[0], before.children[0].children[0]);
+  assert.notEqual(
+    after.children[0].children[target],
+    before.children[0].children[target]
+  );
+});
+
 it('supports path-based insertNodes/removeNodes transforms in one outer transaction', () => {
   const editor = createEditor();
 

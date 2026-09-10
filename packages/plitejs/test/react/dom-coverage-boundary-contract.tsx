@@ -1,27 +1,22 @@
 // Test-local source assertion.
 import { act, render, waitFor } from '@testing-library/react';
-import { type Descendant, NodeApi } from 'plitejs';
+import { type Value, NodeApi } from 'plitejs';
 import React from 'react';
 
-import { DOMCoverage } from '../../src/dom/internal';
 import {
   replace as editorReplace,
   string as editorString,
 } from '../../src/internal';
-import {
-  createEditor,
-  Editable,
-  EditableElement,
-  Plite,
-} from '../../src/react';
+import { createEditor, Editable, PliteElement, Plite } from '../../src/react';
 import {
   DOMCoverageBoundaryRange,
   DOMCoverageSelfBoundary,
 } from '../../src/react/components/dom-coverage-boundary';
 import { isPliteReactDevelopmentEnvironment } from '../../src/react/components/editable-text-blocks';
+import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { createLargeBoundarySurface } from './render-probes/dom-coverage-render-probe';
 
-const createNestedChildren = (): Descendant[] => [
+const createNestedChildren = (): Value => [
   {
     type: 'section',
     children: [
@@ -41,7 +36,7 @@ const createNestedChildren = (): Descendant[] => [
   },
 ];
 
-const createHeaderFooterChildren = (): Descendant[] => [
+const createHeaderFooterChildren = (): Value => [
   {
     type: 'header',
     children: [{ text: 'Hidden header' }],
@@ -56,9 +51,7 @@ const createHeaderFooterChildren = (): Descendant[] => [
   },
 ];
 
-const createLargeHiddenBoundaryChildren = (
-  hiddenCount = 1000
-): Descendant[] => [
+const createLargeHiddenBoundaryChildren = (hiddenCount = 1000): Value => [
   {
     type: 'section',
     children: [
@@ -81,6 +74,93 @@ const createLargeHiddenBoundaryChildren = (
 const BoundaryVisibilityContext = React.createContext(false);
 
 describe('DOM coverage private boundary harness', () => {
+  test.each(['left', 'right'])(
+    'keeps coverage independent when the %s view unmounts first',
+    async (removed) => {
+      const editor = createEditor({ initialValue: createNestedChildren() });
+      const view = (id: string) => (
+        <Editable
+          key={id}
+          id={id}
+          renderElement={({ children, element }) => {
+            if (element.type !== 'section') {
+              return (
+                <PliteElement style={{ position: 'relative' }}>
+                  {children}
+                </PliteElement>
+              );
+            }
+            const nodes = React.Children.toArray(children);
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {nodes[0]}
+                <DOMCoverageBoundaryRange
+                  boundaryId="local-body"
+                  content={nodes.slice(1)}
+                  copyPolicy={id === 'left' ? 'model' : 'exclude'}
+                  from={1}
+                >
+                  Collapsed body
+                </DOMCoverageBoundaryRange>
+              </PliteElement>
+            );
+          }}
+        />
+      );
+      const rendered = render(
+        <Plite editor={editor}>
+          {view('left')}
+          {view('right')}
+        </Plite>
+      );
+      const left = getMountedEditableDOMRuntime(
+        editor,
+        rendered.container.querySelector('#left')!
+      )!;
+      const right = getMountedEditableDOMRuntime(
+        editor,
+        rendered.container.querySelector('#right')!
+      )!;
+      await waitFor(() => {
+        expect(left.domCoverage.getBoundary('local-body')?.copyPolicy).toBe(
+          'model'
+        );
+        expect(right.domCoverage.getBoundary('local-body')?.copyPolicy).toBe(
+          'exclude'
+        );
+      });
+      expect(left.domCoverage).not.toBe(right.domCoverage);
+      for (const runtime of [left, right]) {
+        const point = runtime.domCoverage.resolveDOMPointOrBoundary({
+          path: [1, 0],
+          offset: 2,
+        });
+        expect(point.type).toBe('dom-point');
+        if (point.type === 'dom-point') {
+          expect(runtime.rootElement?.contains(point.domPoint[0])).toBe(true);
+        }
+        const sibling = runtime === left ? right : left;
+        const placeholder = sibling.rootElement!.querySelector(
+          '[data-plite-dom-coverage-boundary]'
+        )!;
+        expect(
+          runtime.domCoverage.resolvePlitePointFromBoundary([placeholder, 0])
+        ).toBeNull();
+      }
+      const remaining = removed === 'left' ? 'right' : 'left';
+      rendered.rerender(<Plite editor={editor}>{view(remaining)}</Plite>);
+      expect(
+        (removed === 'left' ? left : right).domCoverage.getBoundaries()
+      ).toEqual([]);
+      expect(
+        (remaining === 'left' ? left : right).domCoverage.getBoundaries()
+      ).toHaveLength(1);
+      rendered.unmount();
+      expect(left.domCoverage.getBoundaries()).toEqual([]);
+      expect(right.domCoverage.getBoundaries()).toEqual([]);
+    }
+  );
+
   test('renderElement dev coverage guard treats missing process env as production-safe', () => {
     const originalProcess = Object.getOwnPropertyDescriptor(
       globalThis,
@@ -126,7 +206,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -135,18 +215,26 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toMatchObject({
         boundaryId: 'section-body',
         copyPolicy: 'model',
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
@@ -158,17 +246,19 @@ describe('DOM coverage private boundary harness', () => {
     expect(rendered.container.textContent).toContain('Visible beta');
     expect(rendered.container.textContent).not.toContain('Hidden alpha');
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, {
-        path: [0, 1, 0],
-        offset: 0,
-      })?.boundaryId
+      (
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint({
+          path: [0, 1, 0],
+          offset: 0,
+        }) ?? null
+      )?.boundaryId
     ).toBe('section-body');
   });
 
   test('BoundaryRange registers before dev safety reports omitted children', async () => {
     const editor = createEditor();
     const errors: string[] = [];
-    const errorSpy = jest
+    const errorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation((message: unknown) => {
         errors.push(String(message));
@@ -189,7 +279,7 @@ describe('DOM coverage private boundary harness', () => {
                 const childNodes = React.Children.toArray(children);
 
                 return (
-                  <EditableElement>
+                  <PliteElement style={{ position: 'relative' }}>
                     {childNodes[0]}
                     <DOMCoverageBoundaryRange
                       boundaryId="section-body"
@@ -198,18 +288,26 @@ describe('DOM coverage private boundary harness', () => {
                     >
                       Collapsed body
                     </DOMCoverageBoundaryRange>
-                  </EditableElement>
+                  </PliteElement>
                 );
               }
 
-              return <EditableElement>{children}</EditableElement>;
+              return (
+                <PliteElement style={{ position: 'relative' }}>
+                  {children}
+                </PliteElement>
+              );
             }}
           />
         </Plite>
       );
 
       await waitFor(() => {
-        expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
+        expect(
+          getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+            'section-body'
+          ) ?? null
+        ).not.toBeNull();
       });
 
       await act(async () => {
@@ -243,7 +341,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -253,11 +351,15 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -266,13 +368,21 @@ describe('DOM coverage private boundary harness', () => {
     const rendered = render(<Surface hidden />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
     });
 
     rendered.rerender(<Surface hidden={false} />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toBeNull();
       expect(rendered.container.textContent).toContain('Hidden alpha');
     });
   });
@@ -312,17 +422,29 @@ describe('DOM coverage private boundary harness', () => {
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'hidden-header')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'hidden-header'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [0], focus: [0] }],
       });
-      expect(DOMCoverage.getBoundary(editor, 'hidden-footer')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'hidden-footer'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [2], focus: [2] }],
       });
     });
@@ -384,7 +506,11 @@ describe('DOM coverage private boundary harness', () => {
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -393,7 +519,9 @@ describe('DOM coverage private boundary harness', () => {
     let boundaryId = '';
 
     await waitFor(() => {
-      const boundary = DOMCoverage.getBoundaries(editor).find(
+      const boundary = (
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).find(
         (candidate) =>
           candidate.ownerPath.length === 1 && candidate.ownerPath[0] === 0
       );
@@ -407,15 +535,19 @@ describe('DOM coverage private boundary harness', () => {
     expect(boundaryId).toMatch(/^content-boundary:/);
 
     const range = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 'Hidden header'.length, path: [0, 0] },
     };
 
     expect(
-      DOMCoverage.materializeBoundary(editor, boundaryId, 'selection', {
-        range,
-      })
+      getMountedEditableDOMRuntime(editor)!.domCoverage.materializeBoundary(
+        boundaryId,
+        'selection',
+        {
+          range,
+        }
+      )
     ).toMatchObject({ status: 'handled' });
     expect(materialized).toEqual([`${boundaryId}:selection:Hidden header`]);
   });
@@ -457,7 +589,11 @@ describe('DOM coverage private boundary harness', () => {
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -465,12 +601,16 @@ describe('DOM coverage private boundary harness', () => {
 
     await waitFor(() => {
       expect(
-        DOMCoverage.getBoundary(editor, 'slot-hidden-header')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'slot-hidden-header'
+        ) ?? null
       ).toMatchObject({
         coveredPathRanges: [{ anchor: [0], focus: [0] }],
       });
       expect(
-        DOMCoverage.getBoundary(editor, 'slot-hidden-footer')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'slot-hidden-footer'
+        ) ?? null
       ).toMatchObject({
         coveredPathRanges: [{ anchor: [2], focus: [2] }],
       });
@@ -502,7 +642,7 @@ describe('DOM coverage private boundary harness', () => {
 
       if (element.type === 'section') {
         return (
-          <EditableElement>
+          <PliteElement style={{ position: 'relative' }}>
             {slots.contentBoundary({
               boundaryId: 'context-section-body',
               mounted,
@@ -512,11 +652,13 @@ describe('DOM coverage private boundary harness', () => {
                 type: 'children',
               },
             })}
-          </EditableElement>
+          </PliteElement>
         );
       }
 
-      return <EditableElement>{children}</EditableElement>;
+      return (
+        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+      );
     };
     const Surface = ({ mounted }: { mounted: boolean }) => (
       <BoundaryVisibilityContext value={mounted}>
@@ -532,7 +674,9 @@ describe('DOM coverage private boundary harness', () => {
 
     await waitFor(() => {
       expect(
-        DOMCoverage.getBoundary(editor, 'context-section-body')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'context-section-body'
+        ) ?? null
       ).not.toBeNull();
       expect(rendered.container.textContent).not.toContain('Hidden alpha');
     });
@@ -541,7 +685,9 @@ describe('DOM coverage private boundary harness', () => {
 
     await waitFor(() => {
       expect(
-        DOMCoverage.getBoundary(editor, 'context-section-body')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'context-section-body'
+        ) ?? null
       ).toBeNull();
       expect(rendered.container.textContent).toContain('Hidden alpha');
     });
@@ -564,7 +710,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <slots.contentBoundary
                     boundaryId="slot-section-body"
@@ -573,11 +719,15 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Body hidden by slot
                   </slots.contentBoundary>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -585,7 +735,9 @@ describe('DOM coverage private boundary harness', () => {
 
     await waitFor(() => {
       expect(
-        DOMCoverage.getBoundary(editor, 'slot-section-body')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'slot-section-body'
+        ) ?? null
       ).toMatchObject({
         copyPolicy: 'model',
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
@@ -623,7 +775,7 @@ describe('DOM coverage private boundary harness', () => {
           renderElement={(props) => {
             if (props.element.type === 'section') {
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   <props.slots.contentBoundary
                     boundaryId="lazy-child-range-before"
                     mounted={false}
@@ -637,7 +789,7 @@ describe('DOM coverage private boundary harness', () => {
                     renderPlaceholder={() => null}
                     scope={{ from: 252, to: 499, type: 'children' }}
                   />
-                </EditableElement>
+                </PliteElement>
               );
             }
 
@@ -645,7 +797,11 @@ describe('DOM coverage private boundary harness', () => {
               renderedItemCount += 1;
             }
 
-            return <EditableElement>{props.children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {props.children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -676,7 +832,7 @@ describe('DOM coverage private boundary harness', () => {
                 const childNodes = React.Children.toArray(children);
 
                 return (
-                  <EditableElement>
+                  <PliteElement style={{ position: 'relative' }}>
                     {childNodes[0]}
                     <DOMCoverageBoundaryRange
                       boundaryId="section-body"
@@ -685,11 +841,15 @@ describe('DOM coverage private boundary harness', () => {
                     >
                       Collapsed body
                     </DOMCoverageBoundaryRange>
-                  </EditableElement>
+                  </PliteElement>
                 );
               }
 
-              return <EditableElement>{children}</EditableElement>;
+              return (
+                <PliteElement style={{ position: 'relative' }}>
+                  {children}
+                </PliteElement>
+              );
             }}
           />
         </Plite>
@@ -699,19 +859,30 @@ describe('DOM coverage private boundary harness', () => {
     const rendered = render(<Surface />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
       expect(
-        DOMCoverage.getBoundaries(editor).filter(
-          (boundary) => boundary.boundaryId === 'section-body'
-        )
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
+      expect(
+        (
+          getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ??
+          []
+        ).filter((boundary) => boundary.boundaryId === 'section-body')
       ).toHaveLength(1);
     });
 
     rendered.unmount();
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toBeNull();
-      expect(DOMCoverage.getBoundaries(editor)).toHaveLength(0);
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).toHaveLength(0);
     });
   });
 
@@ -732,7 +903,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId={boundaryId}
@@ -741,11 +912,15 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
@@ -754,21 +929,35 @@ describe('DOM coverage private boundary harness', () => {
     const rendered = render(<Surface boundaryId="section-body" />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
-      expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).toHaveLength(1);
     });
 
     rendered.rerender(<Surface boundaryId="section-body-next" />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toBeNull();
       expect(
-        DOMCoverage.getBoundary(editor, 'section-body-next')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body-next'
+        ) ?? null
       ).toMatchObject({
         boundaryId: 'section-body-next',
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
       });
-      expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).toHaveLength(1);
     });
   });
 
@@ -789,7 +978,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -798,18 +987,26 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
       });
     });
@@ -827,15 +1024,23 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [1, 1], focus: [1, 1] }],
         ownerPath: [1],
       });
       expect(
-        DOMCoverage.getBoundaryForPoint(editor, {
-          path: [1, 1, 0],
-          offset: 0,
-        })?.boundaryId
+        (
+          getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint(
+            {
+              path: [1, 1, 0],
+              offset: 0,
+            }
+          ) ?? null
+        )?.boundaryId
       ).toBe('section-body');
     });
   });
@@ -857,7 +1062,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -866,18 +1071,26 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
       });
     });
@@ -889,15 +1102,23 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toMatchObject({
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toMatchObject({
         coveredPathRanges: [{ anchor: [1, 1], focus: [1, 1] }],
         ownerPath: [1],
       });
       expect(
-        DOMCoverage.getBoundaryForPoint(editor, {
-          path: [1, 1, 0],
-          offset: 0,
-        })?.boundaryId
+        (
+          getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint(
+            {
+              path: [1, 1, 0],
+              offset: 0,
+            }
+          ) ?? null
+        )?.boundaryId
       ).toBe('section-body');
     });
   });
@@ -919,7 +1140,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -928,18 +1149,26 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
     });
 
     await act(async () => {
@@ -949,8 +1178,14 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).toBeNull();
-      expect(DOMCoverage.getBoundaries(editor)).toHaveLength(0);
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).toHaveLength(0);
     });
   });
 
@@ -976,9 +1211,13 @@ describe('DOM coverage private boundary harness', () => {
     const rendered = render(<Surface hidden />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
       expect(
-        DOMCoverage.getBoundary(editor, 'large-section-body')
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+      ).toHaveLength(1);
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'large-section-body'
+        ) ?? null
       ).toMatchObject({
         coveredPathRanges: [{ anchor: [0, 1], focus: [0, hiddenCount] }],
       });
@@ -991,7 +1230,11 @@ describe('DOM coverage private boundary harness', () => {
     rendered.rerender(<Surface hidden={false} />);
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'large-section-body')).toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'large-section-body'
+        ) ?? null
+      ).toBeNull();
       expect(rendered.container.textContent).toContain('Hidden item 999');
     });
 
@@ -1031,7 +1274,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <EditableElement>
+                <PliteElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -1040,18 +1283,26 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </EditableElement>
+                </PliteElement>
               );
             }
 
-            return <EditableElement>{children}</EditableElement>;
+            return (
+              <PliteElement style={{ position: 'relative' }}>
+                {children}
+              </PliteElement>
+            );
           }}
         />
       </Plite>
     );
 
     await waitFor(() => {
-      expect(DOMCoverage.getBoundary(editor, 'section-body')).not.toBeNull();
+      expect(
+        getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+          'section-body'
+        ) ?? null
+      ).not.toBeNull();
     });
 
     renderCounts.visibleSibling = 0;
@@ -1077,7 +1328,7 @@ describe('DOM coverage private boundary harness', () => {
   test('renderElement dropping editable children without a boundary reports a dev safety error', async () => {
     const editor = createEditor();
     const errors: string[] = [];
-    const errorSpy = jest
+    const errorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation((message: unknown) => {
         errors.push(String(message));
@@ -1095,10 +1346,18 @@ describe('DOM coverage private boundary harness', () => {
             id="dom-coverage-boundary-dev-safety"
             renderElement={({ element }) => {
               if (element.type === 'section') {
-                return <EditableElement>Section shell only</EditableElement>;
+                return (
+                  <PliteElement style={{ position: 'relative' }}>
+                    Section shell only
+                  </PliteElement>
+                );
               }
 
-              return <EditableElement>Leaf shell only</EditableElement>;
+              return (
+                <PliteElement style={{ position: 'relative' }}>
+                  Leaf shell only
+                </PliteElement>
+              );
             }}
           />
         </Plite>

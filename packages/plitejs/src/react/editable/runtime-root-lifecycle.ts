@@ -4,14 +4,17 @@ import { containsShadowAware, getSelection, isDOMNode } from '../../dom';
 import { type DOMPhaseScheduler, IS_FOCUSED } from '../../dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import type { EditableDOMRuntime } from './editable-dom-runtime';
+import {
+  type EditableDOMRuntime,
+  isDOMTargetInAnotherSelectionView,
+} from './editable-dom-runtime';
 import {
   type EditableInputControllerState,
   getEditableInputTimestamp,
 } from './input-controller';
 import { attachEditableGlobalDragLifecycleListeners } from './input-router';
 import { setEditorFocused } from './runtime-editor-api';
-import { attachEditableSelectionChangeListener } from './selection-reconciler';
+import { writeRuntimeSelection } from './runtime-mutation-state';
 
 export const attachEditableOutsideFocusBoundaryListener = ({
   domPhaseScheduler,
@@ -35,12 +38,31 @@ export const attachEditableOutsideFocusBoundaryListener = ({
   const releaseRootOwnedNativeState = () => {
     const rootElement = rootRef.current;
 
-    if (!rootElement) {
+    if (!rootElement?.isConnected) {
       return false;
     }
 
     let hadRootOwnedNativeState = false;
     const { activeElement } = targetDocument;
+    const root = rootElement.getRootNode() as Document | ShadowRoot;
+    const selection = getSelection(root);
+
+    if (
+      readOnly &&
+      (isDOMTargetInAnotherSelectionView(editor, rootElement, activeElement) ||
+        isDOMTargetInAnotherSelectionView(
+          editor,
+          rootElement,
+          selection?.anchorNode ?? null
+        ) ||
+        isDOMTargetInAnotherSelectionView(
+          editor,
+          rootElement,
+          selection?.focusNode ?? null
+        ))
+    ) {
+      return undefined;
+    }
     const hasReadOnlyModelSelection =
       readOnly && Boolean(editor.read((innerState) => innerState.selection()));
 
@@ -53,8 +75,6 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       hadRootOwnedNativeState = true;
     }
 
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
-    const selection = getSelection(root);
     const selectionInRoot =
       selection &&
       (containsShadowAware(rootElement, selection.anchorNode) ||
@@ -80,9 +100,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     publishFocusState();
 
     if (hasReadOnlyModelSelection) {
-      editor.update((tx) => {
-        tx.selection.set(null);
-      });
+      writeRuntimeSelection(editor, null);
     }
 
     return true;
@@ -149,6 +167,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
   targetDocument.addEventListener('focusin', handleFocusIn);
 
   return () => {
+    outsideFocusBoundaryRevision += 1;
     if (targetWindow?.PointerEvent) {
       targetDocument.removeEventListener(
         'pointerdown',
@@ -161,23 +180,18 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 };
 
 export const useEditableRootGlobalLifecycle = ({
+  readOnly,
   runtime,
-  scheduleOnDOMSelectionChange,
 }: {
+  readOnly: boolean;
   runtime: EditableDOMRuntime;
-  scheduleOnDOMSelectionChange: () => void;
 }) => {
-  const { domPhaseScheduler, editor, readOnly, rootRef, state } = runtime;
+  const { domPhaseScheduler, editor, rootRef, state } = runtime;
 
   useIsomorphicLayoutEffect(() => {
-    const window = ReactEditor.getWindow(editor);
-    const detachSelectionChangeListener = attachEditableSelectionChangeListener(
-      {
-        scheduleOnDOMSelectionChange,
-        state,
-        targetDocument: window.document,
-      }
-    );
+    const window =
+      rootRef.current?.ownerDocument.defaultView ??
+      ReactEditor.getWindow(editor);
     const detachGlobalDragLifecycleListeners =
       attachEditableGlobalDragLifecycleListeners({
         editor,
@@ -196,17 +210,8 @@ export const useEditableRootGlobalLifecycle = ({
       });
 
     return runtime.installDisposable('global-listeners', () => {
-      detachSelectionChangeListener();
       detachGlobalDragLifecycleListeners();
       detachOutsideFocusBoundaryListener();
     });
-  }, [
-    domPhaseScheduler,
-    editor,
-    readOnly,
-    rootRef,
-    runtime,
-    scheduleOnDOMSelectionChange,
-    state,
-  ]);
+  }, [domPhaseScheduler, editor, readOnly, rootRef, runtime, state]);
 };

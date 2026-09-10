@@ -7,9 +7,10 @@ import { createEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor as createReactEditor } from '../../react/editor/withPlate';
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
-import { getPlateRuntime } from './compilePlateModel';
+import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 import { getPluginStore } from './pluginStore';
 import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
 
@@ -33,16 +34,6 @@ describe('resolvePlugins', () => {
     createEditor({ plugins: [Plugin] });
 
     expect(calls).toBe(1);
-  });
-
-  it('initializes independent plugins in application order', () => {
-    expect(
-      getSortedKeys([
-        defineBasePlugin('a', {}),
-        defineBasePlugin('b', {}),
-        defineBasePlugin('c', {}),
-      ])
-    ).toEqual(['a', 'b', 'c']);
   });
 
   it('installs required dependencies', () => {
@@ -487,40 +478,42 @@ describe('resolvePlugins', () => {
     );
   });
 
-  it('fills plugin cache buckets for node, render, hook, rule, and handler metadata', () => {
+  it('fills plugin cache buckets for node, render, view attributes, rule, and handler metadata', () => {
     const editor = createEditor({
       plugins: [
-        Object.assign(
-          definePlatePlugin('cachey', {
-            schema: {
-              mark: property.boolean({ default: false, omitDefault: true }),
+        definePlatePlugin('cachey', {
+          schema: {
+            mark: property.boolean({ default: false, omitDefault: true }),
+          },
+          decorate: { read: () => [] },
+          on: {
+            nodeChange: () => {},
+            textChange: () => {},
+          },
+          prepareDocument: ({ document }) => document,
+          render: {
+            mark: {
+              leafAttributes: { 'data-leaf': 'x' } as any,
+              placement: 'text',
+              textAttributes: { 'data-text': 'y' } as any,
             },
-            decorate: () => [],
-            on: {
-              nodeChange: () => {},
-              textChange: () => {},
-            },
-            prepareDocument: ({ document }) => document,
-            render: {
-              isDecoration: false,
-              leafProps: { 'data-leaf': 'x' } as any,
-              textProps: { 'data-text': 'y' } as any,
-              aboveEditable: () => null,
-              aboveNodes: () => () => null,
-              abovePlite: () => null,
-              afterContainer: () => null,
-              afterEditable: () => null,
-              beforeContainer: () => null,
-              beforeEditable: () => null,
-              belowNodes: () => () => null,
-              belowRootNodes: () => null,
-            },
-            rules: {
-              match: () => true,
-            },
-          }),
-          { useHooks: () => {} }
-        ) as any,
+            useViewElementAttributes: () => [],
+          },
+          slots: {
+            afterContainer: () => null,
+            afterEditable: () => null,
+            afterNodeChildren: () => null,
+            beforeContainer: () => null,
+            beforeEditable: () => null,
+            wrapContent: () => null,
+            wrapNode: () => () => null,
+            wrapNodeChildren: () => () => null,
+            wrapRoot: () => null,
+          },
+          rules: {
+            match: () => true,
+          },
+        }),
       ],
     });
 
@@ -531,47 +524,82 @@ describe('resolvePlugins', () => {
     expect(getPlateRuntime(editor).pluginCache.on.textChange).toContain(
       'cachey'
     );
-    expect(getPlateRuntime(editor).pluginCache.node.textMarks).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.node.leafProps).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.node.textProps).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.prepareDocument).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.render.aboveEditable).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.render.aboveNodes).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.render.abovePlite).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.render.afterContainer).toContain(
-      'cachey'
-    );
-    expect(getPlateRuntime(editor).pluginCache.render.afterEditable).toContain(
+    expect(getPlateRuntime(editor).pluginCache.node.textRenderers).toContain(
       'cachey'
     );
     expect(
-      getPlateRuntime(editor).pluginCache.render.beforeContainer
+      getPlateRuntime(editor).pluginCache.node.leafAttributeMarks
     ).toContain('cachey');
-    expect(getPlateRuntime(editor).pluginCache.render.beforeEditable).toContain(
+    expect(
+      getPlateRuntime(editor).pluginCache.node.textAttributeMarks
+    ).toContain('cachey');
+    expect(getPlateRuntime(editor).pluginCache.prepareDocument).toContain(
       'cachey'
     );
-    expect(getPlateRuntime(editor).pluginCache.render.belowNodes).toContain(
+    expect(getPlateRuntime(editor).pluginCache.slots.wrapContent).toContain(
       'cachey'
     );
-    expect(getPlateRuntime(editor).pluginCache.render.belowRootNodes).toContain(
+    expect(getPlateRuntime(editor).pluginCache.slots.wrapNode).toContain(
       'cachey'
     );
+    expect(getPlateRuntime(editor).pluginCache.slots.wrapRoot).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.slots.afterContainer).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.slots.afterEditable).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.slots.beforeContainer).toContain(
+      'cachey'
+    );
+    expect(getPlateRuntime(editor).pluginCache.slots.beforeEditable).toContain(
+      'cachey'
+    );
+    expect(
+      getPlateRuntime(editor).pluginCache.slots.wrapNodeChildren
+    ).toContain('cachey');
+    expect(
+      getPlateRuntime(editor).pluginCache.slots.afterNodeChildren
+    ).toContain('cachey');
     expect(getPlateRuntime(editor).pluginCache.rules.match).toContain('cachey');
-    expect(getPlateRuntime(editor).pluginCache.useHooks).toContain('cachey');
+    expect(
+      getPlateRuntime(editor).pluginCache.useViewElementAttributes
+    ).toContain('cachey');
+  });
+
+  it('compiles node-prop injection by node kind', () => {
+    const ElementTargetedPlugin = defineBasePlugin('elementTargeted', {
+      inject: { nodeProps: {} },
+      targetPlugins: [BaseParagraphPlugin],
+    });
+    const BlockPlugin = defineBasePlugin('blockInjection', {
+      inject: { isBlock: true, nodeProps: {} },
+    });
+    const LeafPlugin = defineBasePlugin('leafInjection', {
+      inject: { isLeaf: true, nodeProps: {} },
+    });
+    const GeneralPlugin = defineBasePlugin('generalInjection', {
+      inject: { nodeProps: {} },
+    });
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        ElementTargetedPlugin,
+        BlockPlugin,
+        LeafPlugin,
+        GeneralPlugin,
+      ],
+    });
+    const { nodeProps } = getPlateRuntime(editor).pluginCache.inject;
+
+    expect(nodeProps.element).toEqual([
+      'elementTargeted',
+      'blockInjection',
+      'generalInjection',
+    ]);
+    expect(nodeProps.text).toEqual(['leafInjection', 'generalInjection']);
   });
 
   it('creates a shortcut handler from plugin-specific tx commands', () => {
@@ -1062,7 +1090,7 @@ describe('resolveAndSortPlugins', () => {
 });
 
 describe('applyPluginOverrides', () => {
-  it('uses peer components only when the target has no component', () => {
+  it('applies flat peer components in source order', () => {
     const OriginalComponent = () => null;
     const OverrideComponent = () => null;
     const HighPriorityComponent = () => null;
@@ -1072,12 +1100,10 @@ describe('applyPluginOverrides', () => {
       plugins: [
         definePlatePlugin('a', {
           override: {
-            components: {
-              b: OverrideComponent,
-              c: OverrideComponent,
-              d: OverrideComponent,
-              e: OverrideComponent,
-            },
+            b: { component: OverrideComponent },
+            c: { component: OverrideComponent },
+            d: { component: OverrideComponent },
+            e: { component: OverrideComponent },
           },
         }),
         definePlatePlugin('b', {
@@ -1089,10 +1115,8 @@ describe('applyPluginOverrides', () => {
         }),
         definePlatePlugin('e', {
           override: {
-            components: {
-              b: HighPriorityComponent,
-              d: HighPriorityComponent,
-            },
+            b: { component: HighPriorityComponent },
+            d: { component: HighPriorityComponent },
           },
         }),
         definePlatePlugin('f', {
@@ -1101,14 +1125,11 @@ describe('applyPluginOverrides', () => {
       ],
     });
 
-    expect(editor.plugin('b').render.node).toBe(OriginalComponent);
-
-    // No initial component, so it gets set
-    expect(editor.plugin('c').render.node).toBe(OverrideComponent);
-
-    expect(editor.plugin('d').render.node).toBe(OriginalComponent);
-
-    expect(editor.plugin('f').render.node).toBe(PreservedOriginalComponent);
+    expect(editor.plugin('b').component).toBe(OverrideComponent);
+    expect(editor.plugin('c').component).toBe(OverrideComponent);
+    expect(editor.plugin('d').component).toBe(OverrideComponent);
+    expect(editor.plugin('e').component).toBe(OverrideComponent);
+    expect(editor.plugin('f').component).toBe(PreservedOriginalComponent);
     expect(() => editor.plugin('missing').name).toThrow(
       'Plate plugin "missing" is not installed.'
     );
@@ -1127,15 +1148,45 @@ describe('applyPluginOverrides', () => {
   });
 
   describe('weak plugin overrides', () => {
+    it('replaces a present target component and yields to terminal target configuration', () => {
+      const Original = () => null;
+      const Weak = () => null;
+      const Terminal = () => null;
+      const Target = defineBasePlugin('componentOverrideTarget', {
+        component: Original,
+      });
+      const Contributor = defineBasePlugin('componentOverrideContributor', {
+        override: {
+          [Target.name]: { component: Weak },
+        },
+      });
+
+      expect(
+        getCompiledPlatePlugin(
+          createEditor({ plugins: [Contributor, Target] }),
+          Target.name
+        )?.component
+      ).toBe(Weak);
+      expect(
+        getCompiledPlatePlugin(
+          createEditor({
+            plugins: [Contributor, Target.configure({ component: Terminal })],
+          }),
+          Target.name
+        )?.component
+      ).toBe(Terminal);
+      expect(
+        createEditor({ plugins: [Contributor] }).plugin(Target).installed
+      ).toBe(false);
+    });
+
     it('ignores missing targets without installing them', () => {
       const Contributor = defineBasePlugin('missingTargetContributor', {
         override: {
-          plugins: {
-            missingTarget: {
-              dependencies: [],
-              enabled: false,
-            } as any,
-          },
+          missingTarget: {
+            dependencies: [],
+            enabled: false,
+          } as any,
         },
       });
       const editor = createEditor({ plugins: [Contributor] });
@@ -1163,12 +1214,10 @@ describe('applyPluginOverrides', () => {
       });
       const Contributor = defineBasePlugin('strongTargetContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: {
-                peerOnly: 'weak',
-                source: 'weak',
-              },
+          [Target.name]: {
+            initialState: {
+              peerOnly: 'weak',
+              source: 'weak',
             },
           },
         },
@@ -1190,37 +1239,29 @@ describe('applyPluginOverrides', () => {
       });
       const Low = defineBasePlugin('lowWeakContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: { priorityWinner: 'low' },
-            },
+          [Target.name]: {
+            initialState: { priorityWinner: 'low' },
           },
         },
       });
       const High = defineBasePlugin('highWeakContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: { priorityWinner: 'high' },
-            },
+          [Target.name]: {
+            initialState: { priorityWinner: 'high' },
           },
         },
       });
       const First = defineBasePlugin('firstWeakContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: { sourceWinner: 'first' },
-            },
+          [Target.name]: {
+            initialState: { sourceWinner: 'first' },
           },
         },
       });
       const Second = defineBasePlugin('secondWeakContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: { sourceWinner: 'second' },
-            },
+          [Target.name]: {
+            initialState: { sourceWinner: 'second' },
           },
         },
       });
@@ -1241,10 +1282,8 @@ describe('applyPluginOverrides', () => {
       const Contributor = defineBasePlugin('disabledWeakContributor', {
         enabled: false,
         override: {
-          plugins: {
-            [Target.name]: {
-              initialState: { source: 'disabled contributor' },
-            },
+          [Target.name]: {
+            initialState: { source: 'disabled contributor' },
           },
         },
       });
@@ -1259,11 +1298,9 @@ describe('applyPluginOverrides', () => {
       const Target = defineBasePlugin('topologyTarget', {});
       const Contributor = defineBasePlugin('topologyContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              dependencies: [],
-            } as any,
-          },
+          [Target.name]: {
+            dependencies: [],
+          } as any,
         },
       });
 
@@ -1276,11 +1313,9 @@ describe('applyPluginOverrides', () => {
       const Target = defineBasePlugin('weakSchemaTarget', {});
       const Contributor = defineBasePlugin('weakSchemaContributor', {
         override: {
-          plugins: {
-            [Target.name]: {
-              schema: { mark: property.boolean() },
-            } as any,
-          },
+          [Target.name]: {
+            schema: { mark: property.boolean() },
+          } as any,
         },
       });
 
@@ -1296,9 +1331,7 @@ describe('applyPluginOverrides', () => {
       });
       const Contributor = defineBasePlugin('weakRequiredContributor', {
         override: {
-          plugins: {
-            [Dependency.name]: { enabled: false },
-          },
+          [Dependency.name]: { enabled: false },
         },
       });
 
@@ -1313,9 +1346,7 @@ describe('applyPluginOverrides', () => {
       }).configure({ enabled: true });
       const Contributor = defineBasePlugin('strongEnabledContributor', {
         override: {
-          plugins: {
-            [Target.name]: { enabled: false },
-          },
+          [Target.name]: { enabled: false },
         },
       });
       const editor = createEditor({
@@ -1486,7 +1517,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       enumerable: true,
       get: () => 100,
     });
-    Object.defineProperty(nested.render, 'node', {
+    Object.defineProperty(nested, 'component', {
       enumerable: true,
       get: () => () => null,
     });
@@ -1495,7 +1526,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       'Plate plugin "rootAccessor" descriptor path "priority" must be data-only. Accessor properties are not supported.'
     );
     expect(() => createEditor({ plugins: [nested] })).toThrow(
-      'Plate plugin "nestedAccessor" descriptor path "render.node" must be data-only. Accessor properties are not supported.'
+      'Plate plugin "nestedAccessor" descriptor path "component" must be data-only. Accessor properties are not supported.'
     );
   });
 
@@ -1509,17 +1540,16 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     const plugin = definePlatePlugin('forwardRefHost', {
       component: Node,
     }).configure({
-      override: { components: { paragraph: OverrideNode } },
+      override: { paragraph: { component: OverrideNode } },
     });
     const editor = createReactEditor({ plugins: [directPlugin, plugin] });
     const published = getPlateRuntime(editor).plugins.forwardRefHost;
 
-    expect(
-      getPlateRuntime(editor).plugins.directForwardRefHost.render.node
-    ).toBe(DirectNode);
-    expect(published.render.node).toBe(Node);
-    expect(published.override.components?.paragraph).toBe(OverrideNode);
-    expect(Object.isFrozen(published.render)).toBe(true);
+    expect(getPlateRuntime(editor).plugins.directForwardRefHost.component).toBe(
+      DirectNode
+    );
+    expect(published.component).toBe(Node);
+    expect(published.override.paragraph?.component).toBe(OverrideNode);
     expect(Object.isFrozen(Node)).toBe(false);
     expect(Object.isFrozen(OverrideNode)).toBe(false);
   });
@@ -1532,7 +1562,12 @@ describe('mergePlugins behavior in resolvePlugins', () => {
 
     cycle.self = cycle;
     const Owner = defineBasePlugin('stateOwner', {
-      initialState: { cycle, first: Target, second: Target },
+      initialState: {
+        cycle,
+        entries: [{ target: Target }],
+        first: Target,
+        second: Target,
+      },
     });
     const editor = createEditor({ plugins: [Target, Owner] });
     const publishedState = editor.plugin(Owner).initialState;
@@ -1543,10 +1578,18 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     });
     expect(targetReference).toBe(publishedState.second);
     expect(targetReference).toBe(publishedState.cycle.target);
+    expect(targetReference).toBe(publishedState.entries[0].target);
     expect(publishedState.cycle.self).toBe(publishedState.cycle);
     expect(targetReference).not.toBe(Target);
     expect(Object.isFrozen(targetReference)).toBe(true);
     expect(editor.plugin(Owner).store.get('first')).toBe(targetReference);
+    const secondEditor = createEditor({ plugins: [Target, Owner] });
+    const secondReference =
+      secondEditor.plugin(Owner).initialState.entries[0].target;
+    expect(secondReference).not.toBe(targetReference);
+    expect(secondReference).toBe(
+      secondEditor.plugin(Owner).store.get('entries')[0].target
+    );
 
     const ContextOwner = defineBasePlugin('contextStateOwner', {
       initialState: { target: null as unknown as typeof Target },

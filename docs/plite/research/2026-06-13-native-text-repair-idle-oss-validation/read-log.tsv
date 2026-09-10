@@ -1,0 +1,18 @@
+source	file	lines	finding
+prosemirror-view	src/domobserver.ts	52-72	MutationObserver callback normally flushes immediately; old IE and Safari composition table-cell paths defer with flushSoon.
+prosemirror-view	src/domobserver.ts	83-94	flushSoon uses a 20ms timer and forceFlush cancels it for immediate repair.
+prosemirror-view	src/domobserver.ts	174-248	flush reads mutations and selection, marks dirty ranges, handles platform BR quirks, then calls readDOMChange/updateState synchronously.
+prosemirror-view	src/input.ts	457-512	Composition start flushes first; composition end either force-flushes bad Safari composition or schedules pending record flush by microtask.
+prosemirror-view	src/input.ts	807-825	Beforeinput fallback timer is limited to a Chrome Android deleteContentBackward edge after uneditable content.
+prosemirror-view	src/domchange.ts	81-145	readDOMChange maps DOM changes/selection into transactions immediately on the observer flush path.
+prosemirror-view	src/domchange.ts	198-254	20ms delayed work is platform-specific composition or IE selection repair, not regular text input latency.
+prosemirror-view	CHANGELOG.md	2017	Project history explicitly favors synchronous display updates for regular non-composition input to reduce flicker.
+prosemirror-view	CHANGELOG.md	2265	Project history keeps simple typing/backspacing browser-owned where possible for platform input behavior.
+lexical-plain-text	src/index.ts	321-332	When beforeinput exists, Lexical avoids blocking default Enter behavior on iOS/Safari/WebKit.
+lexical-rich-text	src/index.ts	933-944	Rich-text Enter follows the same beforeinput/browser-default rule.
+lexical-core	src/LexicalEvents.ts	633-652	beforeinput dispatches command synchronously except composition/Firefox clipboard exceptions.
+lexical-core	src/LexicalEvents.ts	937-953	input stops propagation and runs updateEditorSync immediately.
+lexical-core	src/LexicalUpdates.ts	1041-1054	Dirty editor updates commit sync when requested or schedule commit by microtask after cloned-state updates.
+lexical-core	src/LexicalUtils.ts	140-146	Microtask scheduler uses queueMicrotask or Promise fallback.
+lexical-core	src/LexicalUtils.ts	805-818	20ms timeout is Android/composition cleanup for removing an empty node after composition.
+lexical-docs	packages/lexical-website/docs/faq.md	40-48	Lexical documents reconciliation as queueMicrotask-like batching for one logical event.

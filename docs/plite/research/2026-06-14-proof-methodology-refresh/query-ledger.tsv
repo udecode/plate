@@ -1,0 +1,5 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+existing-ledger-review	local-docs	Review existing selection/proof methodology ledgers before new discovery	docs/slate-v2/research lead-ledger/promoted-ledger	5 ledgers sampled	5	0	1	source-audit-local-helper
+source-audit-local-helper	local-source	rg exact helper names and read slate-browser source/tests/docs	packages/slate-browser source/test/README	focused	3 files	1	1	run-focused-proof
+focused-proof	local-command	bun test native event trace plus slate-browser typecheck	slate-browser package	2 commands	2	0	0	record-covered-existing
+broad-rg-miss	local-docs	rg event-trace/selection terms over docs and raw research	too broad, output-heavy	large/truncated	0	0	0	log slowdown and avoid repeating

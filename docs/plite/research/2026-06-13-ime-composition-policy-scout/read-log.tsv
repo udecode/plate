@@ -1,0 +1,12 @@
+read_id	source_key	command_or_url	ranges_or_lines	result
+r001	codemirror-view-input	sed / rg	45-63, 170-185, 816-843, 901-903	Composition uses lifecycle counters plus pending key/change flags; Safari ordering and missing compositionend are explicitly handled.
+r002	prosemirror-view-input	sed / rg	430-535, 650-664	ProseMirror ignores key input in or near composition, tracks pending composition changes, schedules cleanup, and avoids scripted paste handling during composition outside Android.
+r003	prosemirror-viewdesc	sed	769-826	View desc sync protects active composition DOM before rendering changed children.
+r004	prosemirror-view-input-2	sed	454-525	Composition start/end updates composing state, composition IDs, pending changes, and timeout cleanup.
+r005	lexical-utils	sed	487-514	Composition key change marks previous and current composition nodes writable.
+r006	lexical-updates	sed	198-340, 965-986	Active composition node is skipped by transforms and composition-key changes force sync flushing.
+r007	lexical-events	sed	630-690, 1016-1034	Lexical lets the browser own composition beforeinput and has platform-specific composition cleanup.
+r008	slate-richtext-ime	rg / sed	1868-2077	Slate current rows cover non-overlap or same-point native IME model changes, not accepted overlap cancellation.
+r009	slate-ime-plan	sed	1-171	Runtime overlap execution is explicitly blocked until user accepts or revises the policy.
+r010	w3c-ui-events	web-open	1390-1457	Spec evidence says keyboard events cannot be the sole IME authority.
+r011	w3c-input-events-115	web-open	200-204	Input Events discussion shows insertCompositionText commit/cancel behavior needs scoped browser proof.

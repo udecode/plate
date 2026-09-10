@@ -1,0 +1,26 @@
+---
+id: 2026-09-02-comments-ownership
+date: 2026-09-02
+status: draft
+kind: behavior
+summary: 'Review comments and suggestions in application-owned Floating Discussion'
+change: { 'type': 'source', 'date': '2026-09-02', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-02-comment-application-owned-threads-durable-0b4456da","kind":"behavior","migrationNotes":["Install `DiscussionKit` for Floating Discussion and per-block affordances.","Replace `block-discussion` with `discussion`."]} -->
+
+- **`comment`**, **`comment-toolbar-button`**, **`discussion`**, **`discussion-demo`**, **`editor`**, **`editor-static`**: Open each block's combined comments and suggestions in Floating Discussion, including exact overlaps, block-caret creation, and static or read-only highlights.
+<!-- entry: {"id":"2026-09-02-discussion-review-suggestions","kind":"behavior","migrationNotes":[]} -->
+- **`discussion`**, **`suggestion`**: Show suggestion authors, changes, attached comment threads, and Accept or Reject actions beside ordinary comments.
+<!-- entry: {"id":"2026-09-02-ai-comments-shared-channel","kind":"wiring","migrationNotes":[]} -->
+- **`comment`**, **`discussion`**, **`use-chat`**, **`editor-ai`**: Stage AI comments for Accept or Reject before publishing their thread records.
+<!-- entry: {"id":"2026-09-02-editor-ai-responsive-discussion-layout","kind":"fix","migrationNotes":[]} -->
+- **`editor-ai`**: Keep the toolbar above the editor and use Floating Discussion on narrow screens without collapsing the editing surface.
+<!-- entry: {"id":"2026-09-09-comments-record-loading","kind":"behavior","migrationNotes":[]} -->
+- **`comment`**, **`discussion`**, **`discussion-demo`**, **`editor-ai`**: Load fetched thread records through `CommentsPlugin.configure({ initialState: { initialThreads } })`, preserving ranges, authors and timestamps. Read records for saving through `api.getThreads`.
+<!-- entry: {"id":"2026-09-02-plate-to-html-suggestions","kind":"fix","migrationNotes":[]} -->
+- **`plate-to-html`**, **`suggestion`**: Preserve inserted and removed suggestion markup in static HTML exports.
+<!-- entry: {"id":"2026-09-02-docx-code-fidelity","kind":"fix","migrationNotes":[]} -->
+- **`code-block-static`**, **`docx-export`**, **`export-toolbar-button`**, **`docx-demo`**: Preserve code token colors and indentation through the copied DOCX export preset.

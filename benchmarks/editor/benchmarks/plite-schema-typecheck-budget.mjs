@@ -27,13 +27,13 @@ const Plugin${index} = defineBasePlugin('schemaTypeBudget${index}', {
 
   const pluginsDeclaration =
     plugins === 1000
-      ? 'const plugins: readonly AnyBasePlugin[] = ['
+      ? 'const plugins: readonly BasePluginInput[] = ['
       : 'const plugins = [';
 
   return `import {
   createEditor,
   defineBasePlugin,
-  type AnyBasePlugin,
+  type BasePluginInput,
 } from 'platejs';
 import { schema } from 'platejs';
 ${declarations}

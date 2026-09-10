@@ -310,6 +310,7 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
+  getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
   htmlString: string;
   relationshipFilename: string;
   tableRowCantSplit: boolean;
@@ -1513,7 +1514,8 @@ const buildRunOrHyperLink = async (
     if (isInternalLink) {
       // For internal links, use w:anchor attribute instead of r:id
       // Remove the # prefix
-      const anchorName = href.slice(1);
+      const anchorName =
+        docxDocumentInstance?.getBookmark(href.slice(1))?.name ?? href.slice(1);
       hyperlinkFragment = fragment({
         namespaceAlias: { w: namespaces.w },
       })
@@ -1861,9 +1863,6 @@ const computeImageDimensions = (
   attributes.height = modifiedHeight;
 };
 
-// Track bookmark IDs globally to ensure unique IDs across the document
-let globalBookmarkIdCounter = 0;
-
 const buildParagraph = async (
   vNode: VNodeType | VTextType | null,
   attributes: ParagraphAttributes,
@@ -1884,18 +1883,16 @@ const buildParagraph = async (
     buildParagraphProperties(modifiedAttributes);
   paragraphFragment.import(paragraphPropertiesFragment);
 
-  // Add bookmark start if bookmarkId is provided
-  const bookmarkId = attributes?.bookmarkId;
-  let bookmarkNumericId: number | null = null;
-  if (bookmarkId) {
-    bookmarkNumericId = globalBookmarkIdCounter;
-    globalBookmarkIdCounter += 1;
+  const bookmark = attributes?.bookmarkId
+    ? docxDocumentInstance?.getBookmark(attributes.bookmarkId)
+    : undefined;
+  if (bookmark) {
     const bookmarkStartFragment = fragment({
       namespaceAlias: { w: namespaces.w },
     })
       .ele('@w', 'bookmarkStart')
-      .att('@w', 'id', String(bookmarkNumericId))
-      .att('@w', 'name', bookmarkId)
+      .att('@w', 'id', String(bookmark.id))
+      .att('@w', 'name', bookmark.name)
       .up();
     paragraphFragment.import(bookmarkStartFragment);
   }
@@ -2190,13 +2187,12 @@ const buildParagraph = async (
     }
   }
 
-  // Add bookmark end if bookmarkId was provided
-  if (bookmarkId && bookmarkNumericId !== null) {
+  if (bookmark) {
     const bookmarkEndFragment = fragment({
       namespaceAlias: { w: namespaces.w },
     })
       .ele('@w', 'bookmarkEnd')
-      .att('@w', 'id', String(bookmarkNumericId))
+      .att('@w', 'id', String(bookmark.id))
       .up();
     paragraphFragment.import(bookmarkEndFragment);
   }

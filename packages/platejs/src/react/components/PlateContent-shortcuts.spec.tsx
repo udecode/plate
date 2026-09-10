@@ -72,44 +72,5 @@ describe('PlateContent shortcuts', () => {
       expect(editableHandler).toHaveBeenCalledTimes(1);
       expect(ancestorHandler).toHaveBeenCalledTimes(1);
     });
-
-    it('keeps decorate stable across rerenders with unchanged inputs', () => {
-      const decorate = mock(() => []);
-      const editor = createEditor();
-
-      let currentDecorate: any;
-      const renderEditable = (editable: React.ReactElement) => {
-        currentDecorate = (editable.props as any).decorate;
-
-        return editable;
-      };
-      const view = render(
-        <Plate editor={editor}>
-          <PlateContent decorate={decorate} renderEditable={renderEditable} />
-        </Plate>
-      );
-      const decorateProp = currentDecorate!;
-      const entry = [editor.read.children()[0], [0]] as any;
-
-      expect(decorateProp).toBeDefined();
-
-      const initialCallCount = decorate.mock.calls.length;
-
-      decorateProp(entry);
-      expect(decorate).toHaveBeenCalledTimes(initialCallCount + 1);
-
-      view.rerender(
-        <Plate editor={editor}>
-          <PlateContent decorate={decorate} renderEditable={renderEditable} />
-        </Plate>
-      );
-
-      expect(currentDecorate).toBe(decorateProp);
-
-      const rerenderCallCount = decorate.mock.calls.length;
-
-      currentDecorate!(entry);
-      expect(decorate).toHaveBeenCalledTimes(rerenderCallCount + 1);
-    });
   });
 });

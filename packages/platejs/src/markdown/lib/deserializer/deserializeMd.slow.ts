@@ -164,16 +164,7 @@ describe('editor.api.markdown.deserialize', () => {
     ).toEqual({
       children: [
         {
-          children: [
-            {
-              children: [{ text: 'const x = 1;' }],
-              type: 'codeLine',
-            },
-            {
-              children: [{ text: 'console.log(x)' }],
-              type: 'codeLine',
-            },
-          ],
+          children: [{ text: 'const x = 1;\nconsole.log(x)' }],
           language: 'ts',
           type: 'codeBlock',
         },

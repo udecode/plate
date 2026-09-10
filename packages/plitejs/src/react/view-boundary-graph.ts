@@ -6,37 +6,40 @@ import {
   type Range,
   type RootKey,
 } from '..';
-import {
-  createPliteProjectionGraph,
-  getPliteProjectionOwnerKey,
-  type PliteProjectedPoint,
-  PliteProjectionGraph,
-  type PliteProjectionGraphModel,
-  type PliteProjectionGraphNodeInput,
-  type PliteProjectionGraphRangeEndpoint,
-  type PliteProjectionGraphRangeSegment,
-  type PliteProjectionGraphRangeSegments,
-  type PliteProjectionOwner,
-} from './projection-graph';
 import { getPointRoot, MAIN_ROOT_KEY } from './root-key';
+import {
+  createPliteViewBoundaryGraph,
+  getPliteViewBoundaryOwnerKey,
+  type PliteViewBoundaryPoint,
+  PliteViewBoundaryGraph,
+  type PliteViewBoundaryGraphModel,
+  type PliteViewBoundaryGraphNodeInput,
+  type PliteViewBoundaryRangeEndpoint,
+  type PliteViewBoundaryRangeSegment,
+  type PliteViewBoundaryRangeSegments,
+  type PliteViewBoundaryOwner,
+} from './view-boundary-graph-core';
 
-export type PliteViewBoundaryOwner = PliteProjectionOwner;
-export type PliteViewBoundaryGraphNodeInput = PliteProjectionGraphNodeInput;
-export type PliteViewBoundaryGraphModel = PliteProjectionGraphModel;
-export type PliteViewBoundaryPoint = PliteProjectedPoint;
-export type PliteViewBoundaryRangeEndpoint = PliteProjectionGraphRangeEndpoint;
-export type PliteViewBoundaryRangeSegment = PliteProjectionGraphRangeSegment;
-export type PliteViewBoundaryRangeSegments = PliteProjectionGraphRangeSegments;
+export {
+  createPliteViewBoundaryGraph,
+  getPliteViewBoundaryOwnerKey,
+  PliteViewBoundaryGraph,
+};
+export type {
+  PliteViewBoundaryGraphModel,
+  PliteViewBoundaryGraphNodeInput,
+  PliteViewBoundaryOwner,
+  PliteViewBoundaryPoint,
+  PliteViewBoundaryRangeEndpoint,
+  PliteViewBoundaryRangeSegment,
+  PliteViewBoundaryRangeSegments,
+};
 
 export type PliteViewBoundarySelectionTargetInput = Readonly<{
   anchor: PliteViewBoundaryPoint;
   focus: PliteViewBoundaryPoint;
   segments: PliteViewBoundaryRangeSegments;
 }>;
-
-export const createPliteViewBoundaryGraph = createPliteProjectionGraph;
-export const getPliteViewBoundaryOwnerKey = getPliteProjectionOwnerKey;
-export const PliteViewBoundaryGraph = PliteProjectionGraph;
 
 export const createPliteViewBoundaryRootMap = (value: {
   children: readonly Descendant[];
@@ -67,7 +70,7 @@ export const clonePliteViewBoundaryOwner = (
       })
     : null;
 
-export const clonePliteViewBoundaryProjectedPoint = (
+export const clonePliteViewBoundaryPointWithOwner = (
   point: PliteViewBoundaryPoint
 ): PliteViewBoundaryPoint =>
   Object.freeze({
@@ -196,7 +199,7 @@ export const hasAmbiguousPliteViewBoundarySegments = (
 export const resolvePliteViewBoundarySegmentEndpoint = (
   roots: Readonly<Record<string, readonly Descendant[]>>,
   segment: PliteViewBoundaryRangeSegment,
-  endpoint: PliteProjectionGraphRangeEndpoint
+  endpoint: PliteViewBoundaryRangeEndpoint
 ): Point | null => {
   if (endpoint.kind === 'point') {
     return rootPlitePoint(endpoint.point, segment.root);

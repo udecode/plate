@@ -44,7 +44,9 @@ test('find: decorated input keeps exact history and follow-up typing', async ({
     await page.keyboard.press('ControlOrMeta+z');
 
     await editor.assert.modelBlockTexts(expectedAfterType);
-    await editor.assert.text(expectedAfterType.join(''));
+    await expect(root.locator('[data-plite-node="element"]')).toHaveText(
+      expectedAfterType
+    );
     await editor.assert.focusOwner('editor');
 
     await editor.type('x');

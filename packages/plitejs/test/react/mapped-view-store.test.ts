@@ -1,6 +1,6 @@
 import { runInNewContext } from 'node:vm';
 
-import { areMappedViewDataEqual } from '../../src/react/mapped-view-store';
+import { areMappedViewDataEqual } from '../../src/internal/view/mapped-view-store';
 
 test('mapped view data compares canonical JSON across realms and key order', () => {
   const foreignData = runInNewContext(`(() => {

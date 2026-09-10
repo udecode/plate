@@ -1,4 +1,5 @@
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 import {
   createEditor,
@@ -146,7 +147,9 @@ const output = `${JSON.stringify(
 )}\n`;
 
 if (outputArgument) {
-  writeFileSync(outputArgument.slice('--output='.length), output);
+  const outputPath = outputArgument.slice('--output='.length);
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, output);
 } else {
   process.stdout.write(output);
 }

@@ -1,4 +1,4 @@
-import { stripPliteDataAttributes } from './stripPliteDataAttributes';
+import { stripPliteDataAttributes } from './stripPliteDataAttributes.internal';
 
 describe('stripPliteDataAttributes', () => {
   it('removes Plite renderer data attributes and test ids', () => {

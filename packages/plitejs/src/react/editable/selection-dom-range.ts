@@ -1,5 +1,16 @@
-import { PathApi, type Point, type Range, type NodeKey } from '../..';
+import {
+  PathApi,
+  type Point,
+  type Range,
+  type NodeKey,
+  type Path,
+} from '../..';
 import { isDOMElement, isDOMText } from '../../dom';
+import {
+  getPliteTextHostStrings,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowOffset,
+} from '../../dom/internal';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import {
   type Editor,
@@ -16,6 +27,29 @@ const resolvePliteTextPointFromDOMPoint = (
     requireCurrentRuntimeBinding = false,
   }: { requireCurrentRuntimeBinding?: boolean } = {}
 ): Point | null => {
+  if (anchorNode) {
+    const flowEntry = resolveDOMTextFlowEntry(anchorNode, anchorOffset);
+
+    if (flowEntry) {
+      const path = [...flowEntry.path] as Path;
+      const pliteNode = readRuntimeText(editor, path);
+
+      if (!pliteNode) return null;
+      if (requireCurrentRuntimeBinding) {
+        const currentPath = editorGetPathByNodeKey(
+          editor,
+          flowEntry.nodeKey as NodeKey
+        );
+
+        if (!currentPath || !PathApi.equals(currentPath, path)) return null;
+      }
+
+      return {
+        path,
+        offset: Math.max(0, Math.min(pliteNode.text.length, flowEntry.offset)),
+      };
+    }
+  }
   const anchorElement = isDOMText(anchorNode)
     ? anchorNode.parentElement
     : isDOMElement(anchorNode)
@@ -26,7 +60,7 @@ const resolvePliteTextPointFromDOMPoint = (
     '[data-plite-string], [data-plite-zero-width]'
   );
 
-  if (!textHost || !stringHost) {
+  if (!anchorNode || !textHost || !stringHost) {
     return null;
   }
 
@@ -48,13 +82,24 @@ const resolvePliteTextPointFromDOMPoint = (
     }
   }
 
+  const textFlowOffset = resolveDOMTextFlowOffset(
+    textHost as HTMLElement,
+    anchorNode,
+    anchorOffset
+  );
+
+  if (textFlowOffset != null) {
+    return {
+      path,
+      offset: Math.max(0, Math.min(pliteNode.text.length, textFlowOffset)),
+    };
+  }
+
   if (!isDOMText(anchorNode)) {
     return null;
   }
 
-  const strings = Array.from(
-    textHost.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
-  );
+  const strings = getPliteTextHostStrings(textHost);
   let offset = 0;
 
   for (const string of strings) {

@@ -44,11 +44,11 @@ Insert a void divider between sections.
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 <Steps>
 
-### Add The Kit
+### Add the kit
 
 `BasicBlocksKit` is the normal app/editor kit. It installs the React plugins and the matching registry UI components.
 
@@ -64,7 +64,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add Static Rendering
+### Add static rendering
 
 Use `BaseBasicBlocksKit` in static or server-safe rendering paths.
 
@@ -104,7 +104,7 @@ export const staticEditor = createStaticEditor({
 The package owns each capability. The registry owns the app preset and keeps its
 plugin selection, rendering, input rules, and shortcuts editable.
 
-## Included Plugins
+## Included plugins
 
 | Block | Plugin | Registry Component | Notes |
 |-------|--------|--------------------|-------|
@@ -113,7 +113,7 @@ plugin selection, rendering, input rules, and shortcuts editable.
 | Blockquote | `BlockquotePlugin` | `BlockquoteElement` | Uses a wrapping transform and `mod+shift+period`. |
 | Horizontal rule | `HorizontalRulePlugin` | `HrElement` | Void block; supports dash and underscore markdown rules. |
 
-## Markdown Shortcuts
+## Markdown shortcuts
 
 | Shortcut | Result |
 |----------|--------|
@@ -124,7 +124,7 @@ plugin selection, rendering, input rules, and shortcuts editable.
 
 See [`Plugin Input Rules`](/docs/plugin-input-rules) for the rule engine and trigger model.
 
-## Manual Setup
+## Manual setup
 
 Use manual setup when you want the package plugins without the registry kit.
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createStableIdMappedSource } from '../../src/react/stable-id-mapped-source';
+import { createStableIdMappedSource } from '../../src/internal/view/stable-id-mapped-source';
 
 type Item = Readonly<{
   bucket: string;
@@ -203,14 +203,14 @@ describe('stable ID mapped source', () => {
     const ids = ['🙂', '__proto__', '', 'ab', 'a'];
     const items = ids.map((id, value) => ({ id, value }));
     const source = createStableIdMappedSource(items, {
-      getId: (item) => item.id,
-      isEntityEqual: Object.is,
-      isItemEqual: Object.is,
-      isOutputEqual: Object.is,
       map: (item) => ({
         entity: item.value < 0 ? undefined : item.value,
         outputs: item.value < 0 ? [] : [{ key: item.id, value: item.value }],
       }),
+      getId: (item) => item.id,
+      isEntityEqual: Object.is,
+      isItemEqual: Object.is,
+      isOutputEqual: Object.is,
     });
     const before = source.getSnapshot();
 
@@ -236,7 +236,7 @@ describe('stable ID mapped source', () => {
     const visits: unknown[] = [];
     const receiver = {};
 
-    restored.byId.forEach(function recordVisit(value, id, map) {
+    restored.byId.forEach(function recordVisit(this: unknown, value, id, map) {
       visits.push([value, id, map === restored.byId, this === receiver]);
     }, receiver);
 
@@ -252,15 +252,15 @@ describe('stable ID mapped source', () => {
     let revision = 0;
     const items = [{ id: 'wide' }];
     const source = createStableIdMappedSource(items, {
-      getId: (item) => item.id,
-      isItemEqual: Object.is,
-      isOutputEqual: Object.is,
       map: () => ({
         outputs: Array.from({ length: count }, (_, index) => ({
           key: `bucket-${index}`,
           value: revision,
         })),
       }),
+      getId: (item) => item.id,
+      isItemEqual: Object.is,
+      isOutputEqual: Object.is,
     });
     const before = source.getWork();
 
@@ -329,6 +329,28 @@ describe('stable ID mapped source', () => {
     expect(source.getSnapshot().byOutputKey.right).toBe(rightBucket);
   });
 
+  it('reports an affected output key when an entity changes inside the same bucket', () => {
+    let offset = 0;
+    const items = [{ bucket: 'text-node', id: 'comment', value: 1 }] as const;
+    const source = createStableIdMappedSource(items, {
+      map: (item) => ({
+        entity: { offset },
+        outputs: [{ key: item.bucket, value: true }],
+      }),
+      getId: (item) => item.id,
+      isEntityEqual: (left, right) => left.offset === right.offset,
+      isItemEqual: Object.is,
+      isOutputEqual: Object.is,
+    });
+
+    offset = 1;
+    const result = source.refresh(items, { forceIds: ['comment'] });
+
+    expect(result.changedEntityIds).toEqual(['comment']);
+    expect(result.changedOutputKeys).toEqual([]);
+    expect(result.affectedOutputKeys).toEqual(['text-node']);
+  });
+
   it('applies a trusted keyed delta without scanning unrelated inputs', () => {
     let itemComparisons = 0;
     let mappings = 0;
@@ -338,14 +360,6 @@ describe('stable ID mapped source', () => {
       value: index,
     }));
     const source = createStableIdMappedSource(items, {
-      getId: (item) => item.id,
-      isEntityEqual: (left, right) => left.value === right.value,
-      isItemEqual: (left, right) => {
-        itemComparisons += 1;
-
-        return left.value === right.value;
-      },
-      isOutputEqual: (left, right) => left.value === right.value,
       map: (item) => {
         mappings += 1;
 
@@ -354,6 +368,14 @@ describe('stable ID mapped source', () => {
           outputs: [{ key: item.bucket, value: item }],
         };
       },
+      getId: (item) => item.id,
+      isEntityEqual: (left, right) => left.value === right.value,
+      isItemEqual: (left, right) => {
+        itemComparisons += 1;
+
+        return left.value === right.value;
+      },
+      isOutputEqual: (left, right) => left.value === right.value,
     });
     const stableBucket = source.getSnapshot().byOutputKey['bucket-999'];
 
@@ -389,19 +411,42 @@ describe('stable ID mapped source', () => {
     expect(source.getSnapshot().allIds).toEqual(['b', 'a']);
   });
 
+  it('reports affected output keys when source order changes identical values', () => {
+    const items = [
+      { bucket: 'same', id: 'a', value: 1 },
+      { bucket: 'same', id: 'b', value: 2 },
+    ] as const;
+    const source = createStableIdMappedSource(items, {
+      map: (item) => ({
+        entity: { id: item.id },
+        outputs: [{ key: item.bucket, value: true }],
+      }),
+      getId: (item) => item.id,
+      isEntityEqual: (left, right) => left.id === right.id,
+      isItemEqual: Object.is,
+      isOutputEqual: Object.is,
+    });
+
+    const result = source.refresh([items[1], items[0]]);
+
+    expect(result.orderChanged).toBe(true);
+    expect(result.changedOutputKeys).toEqual([]);
+    expect(result.affectedOutputKeys).toEqual(['same']);
+  });
+
   it('leaves the published snapshot intact when mapping throws', () => {
     let shouldThrow = false;
-    const items = [{ bucket: 'left', id: 'a', value: 1 }] as const;
+    const items: readonly Item[] = [{ bucket: 'left', id: 'a', value: 1 }];
     const source = createStableIdMappedSource(items, {
-      getId: (item) => item.id,
-      isEntityEqual: Object.is,
-      isItemEqual: (left, right) => left.value === right.value,
-      isOutputEqual: Object.is,
       map: (item) => {
         if (shouldThrow) throw new Error('map failed');
 
         return { entity: item, outputs: [] };
       },
+      getId: (item) => item.id,
+      isEntityEqual: Object.is,
+      isItemEqual: (left, right) => left.value === right.value,
+      isOutputEqual: Object.is,
     });
     const before = source.getSnapshot();
 
@@ -421,6 +466,13 @@ describe('stable ID mapped source', () => {
     const source = createStableIdMappedSource(
       [{ bucket: 'left', id: 'a', value: 1 }],
       {
+        map: (item) => ({
+          entity: item,
+          outputs: [
+            { key: 'stable', value: item },
+            { key: item.bucket, value: item },
+          ],
+        }),
         getId: (item) => item.id,
         isEntityEqual: (left, right) => left.value === right.value,
         isItemEqual: (left, right) => left.value === right.value,
@@ -432,13 +484,6 @@ describe('stable ID mapped source', () => {
 
           return left.value === right.value;
         },
-        map: (item) => ({
-          entity: item,
-          outputs: [
-            { key: 'stable', value: item },
-            { key: item.bucket, value: item },
-          ],
-        }),
       }
     );
     const before = source.getSnapshot();

@@ -1,0 +1,5 @@
+id	lead	reason
+j001	Use generic Playwright performance blog patterns as proof.	Too generic; no source ownership and does not distinguish browser long task from Slate-owned profiler/timer work.
+j002	Copy ProseMirror delayed selection sync into Slate runtime.	Wrong abstraction; ProseMirror source is evidence that drag/browser selection is subtle, not a license to add hidden debounce.
+j003	Open a pagination/virtualization architecture lane from this research.	Out of scope; current packet is benchmark attribution and selection-oracle claim width.
+j004	Treat the first 139.8ms typeAfterDelete trace as runtime regression.	Two repeat traces and managed Playwright behavior proof were green; the single spike had no Slate profiler/timer ownership.

@@ -26,10 +26,10 @@ const slugSeparatorPattern = /[^a-z0-9]+/g;
 const trimDashPattern = /^-+|-+$/g;
 
 const targetFiles = Object.freeze([
-  'integration/examples/richtext.test.ts',
-  'integration/examples/tables.test.ts',
-  'integration/examples/inlines.test.ts',
-  'integration/examples/paste-html.test.ts',
+  'richtext.test.ts',
+  'tables.test.ts',
+  'inlines.test.ts',
+  'paste-html.test.ts',
 ]);
 
 const fixtureFamilies = Object.freeze([
@@ -57,8 +57,14 @@ const fixtureFamilies = Object.freeze([
 const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
-const currentTests = await listReplayTests(currentRepo, currentPackageManager);
-const legacyTests = await listReplayTests(legacyRepo, legacyPackageManager);
+const currentTests = await listReplayTests(currentRepo, currentPackageManager, {
+  config: 'apps/plite/playwright.config.ts',
+  directory: 'donor/examples',
+});
+const legacyTests = await listReplayTests(legacyRepo, legacyPackageManager, {
+  config: 'playwright.config.ts',
+  directory: 'integration/examples',
+});
 const currentByKey = new Map(currentTests.map((test) => [test.key, test]));
 const legacyByKey = new Map(legacyTests.map((test) => [test.key, test]));
 const allKeys = [...new Set([...currentByKey.keys(), ...legacyByKey.keys()])]
@@ -78,6 +84,7 @@ const summary = {
   config: {
     files: targetFiles,
     project,
+    proofKind: 'test-discovery',
   },
   counts: {
     currentTests: currentTests.length,
@@ -91,20 +98,31 @@ await writeBenchmarkArtifact(artifactPath, summary);
 
 console.log(JSON.stringify(summary, null, 2));
 
-async function listReplayTests(repo, packageManager) {
+async function listReplayTests(repo, packageManager, { config, directory }) {
   const { command, args } = listCommandFor(packageManager);
-  const result = await run(command, args, repo);
+  const result = await run(
+    command,
+    [...args, '--config', config, '--reporter=list'],
+    repo
+  );
+  const selectedFiles = targetFiles.map((file) => `${directory}/${file}`);
 
-  return result.stdout
+  const tests = result.stdout
     .split('\n')
     .map((line) => parseListedTest(line))
-    .filter((test) => test && targetFiles.includes(test.file))
+    .filter((test) => test && selectedFiles.includes(test.file))
     .map((test) => ({
       ...test,
       family: classifyFamily(`${test.suite} ${test.title}`),
       key: `${fileId(test.file)}/${slug(test.title)}`,
     }))
     .sort((left, right) => left.key.localeCompare(right.key));
+
+  if (tests.length === 0) {
+    throw new Error(`No rich-text replay tests discovered in ${repo} with ${config}`);
+  }
+
+  return tests;
 }
 
 function listCommandFor(packageManager) {

@@ -5,7 +5,7 @@ description: "Move an upstream Slate 0.x editor to the Plite runtime without kee
 
 This guide walks through moving an upstream Slate 0.x editor to the Plite runtime. The migration is mostly a runtime migration: create the editor with an initial value, read with `editor.read(...)`, write with `editor.update(...)`, and render through the React runtime.
 
-## On This Page
+## On this page
 
 - [Should You Migrate This Editor?](#should-you-migrate-this-editor)
 - [First Migration Slice](#first-migration-slice)
@@ -15,7 +15,7 @@ This guide walks through moving an upstream Slate 0.x editor to the Plite runtim
 - [Proof Before Deleting The Old Path](#proof-before-deleting-the-old-path)
 - [Validation Checklist](#validation-checklist)
 
-## Should You Migrate This Editor?
+## Should you migrate this editor?
 
 Migrate when the runtime solves a real ownership problem in your editor. Do not
 migrate just to rename APIs.
@@ -34,7 +34,7 @@ migrate just to rename APIs.
 Keep the old editor path alive until the new path proves the same user-visible
 behavior. If that sounds expensive, the migration is not ready.
 
-## First Migration Slice
+## First migration slice
 
 Port the thinnest useful editor before touching every command or reusable
 feature:
@@ -50,7 +50,7 @@ feature:
 Do not start with comments, collaboration, pagination, custom mobile input, or
 every reusable feature. Those belong after the basic editor behaves correctly.
 
-## Before You Begin
+## Before you begin
 
 Start with the smallest editor surface that users can type in, save, and undo.
 Migrate commands, custom elements, and persistence after that editor is stable.
@@ -65,7 +65,7 @@ You should have:
 Do not start by porting every reusable feature. That is how migrations turn
 into archaeology.
 
-## Migration Map
+## Migration map
 
 | Slate 0.x                                                            | Plite runtime                                                                            |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -80,10 +80,9 @@ into archaeology.
 | `useSelected`, `useFocused`, `useReadOnly`                           | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
 | `onChange(value)` as the primary persistence hook                    | `onValueChange({ value })`, or `editor.read.value()` for the full document                                 |
 | editor-only `children` persistence                                   | primary `children`, optional extra `roots`, and optional document `state`                                 |
-| `decorate` for simple local ranges                                   | `<Editable decorate={...} />`                                                                             |
-| `decorate` for shared, external, frequent, or source-scoped overlays | `usePliteDecorationSource`, `usePliteRangeDecorationSource`, or `usePliteAnnotationStore`                 |
+| `decorate` ranges                                                    | A keyed `PliteDecorationSource` passed to `<Plite decorations>`                                           |
 
-## Step 1: Install The Packages
+## Step 1: install the packages
 
 For the beta package set, install the core editor, DOM helpers, React
 renderer, and React peer packages.
@@ -108,10 +107,10 @@ Package ownership is split deliberately:
   DOM repair, and the React editor extension.
 - `plitejs/history` owns the history extension and history API.
 - `plitejs/hyperscript` owns JSX fixtures for tests.
-- `platejs/yjs` owns the Yjs adapter, awareness, provider lifecycle bridge, and
+- `plitejs/yjs` owns the Yjs adapter, awareness, provider lifecycle bridge, and
   remote cursor hooks. App code owns provider packages and server policy.
 
-## Step 2: Create The Editor
+## Step 2: create the editor
 
 The editor owns its initial value. `<Plite>` receives an editor that already
 exists.
@@ -173,7 +172,7 @@ const editor = createEditor({
 });
 ```
 
-## Step 3: Move Reads And Writes Into The Runtime
+## Step 3: move reads and writes into the runtime
 
 The runtime separates reads from writes. One-shot reads use
 `editor.read.<group>.<method>()`, and grouped reads use `editor.read(...)`.
@@ -229,7 +228,7 @@ const isCollapsed = selection ? RangeApi.isCollapsed(selection) : false;
 const isText = TextApi.isText(node);
 ```
 
-## Step 4: Migrate Custom Elements
+## Step 4: migrate custom elements
 
 Renderers are still React functions. The critical rule is unchanged: spread
 `attributes` on the top-level DOM element and render `children`.
@@ -269,7 +268,7 @@ const App = () => {
 
 Keep renderer functions stable. Define them at module scope or memoize them once.
 
-## Step 5: Migrate Leaves, Text, And Placeholders
+## Step 5: migrate leaves, text, and placeholders
 
 Custom leaf and text renderers still receive Plite attributes and children.
 Keep the renderer small and pass Plite's props through.
@@ -302,7 +301,7 @@ you replace Plite's rendering primitives and still need the required DOM
 attributes attached. Normal apps should start with `renderElement`, `renderLeaf`,
 and `placeholder`.
 
-## Step 6: Migrate Event Handlers
+## Step 6: migrate event handlers
 
 `Editable` owns the default browser behavior. App handlers can run before Plite
 and decide whether Plite continues.
@@ -343,7 +342,7 @@ Use `onDOMBeforeInput` for browser input types that need editor context.
 />
 ```
 
-## Step 7: Migrate React Hooks
+## Step 7: migrate React hooks
 
 Use editor hooks for editor-wide UI and element hooks for rendered nodes.
 
@@ -386,7 +385,7 @@ const ImageElement = ({ attributes, children }) => {
 };
 ```
 
-## Step 8: Migrate DOM And React Editor Calls
+## Step 8: migrate DOM and React editor calls
 
 Do not import `ReactEditor` as a value object for DOM bridge calls. Use the
 editor API or renderer hooks.
@@ -431,7 +430,7 @@ React extension.
 const composing = editor.api.react.isComposing();
 ```
 
-## Step 9: Migrate History
+## Step 9: migrate history
 
 The normal React setup includes history. Use the history hook for UI controls.
 
@@ -487,7 +486,7 @@ const App = () => {
 };
 ```
 
-## Step 10: Persist The Right Value
+## Step 10: persist the right value
 
 For a single-root editor, save the `value` passed to `<Plite onValueChange>`.
 
@@ -554,7 +553,7 @@ Omit `root` for the primary editable. Pass `root` only for extra roots.
 </Plite>
 ```
 
-## Step 11: Migrate Document Meta
+## Step 11: migrate document meta
 
 Use `defineStateField` for document-level state that should travel with the
 document, such as title, layout settings, review mode, spellcheck metadata, or
@@ -611,7 +610,7 @@ editor.update((tx) => {
 });
 ```
 
-## Step 12: Migrate Extra Roots
+## Step 12: migrate extra roots
 
 Use extra roots when one editor owns multiple editable regions that share
 history, schema, commands, and document meta.
@@ -658,12 +657,13 @@ const HeaderChrome = ({ children }) => {
 };
 ```
 
-## Step 13: Migrate Hyperscript Tests
+## Step 13: migrate hyperscript tests
 
 Keep hyperscript in tests and fixtures. Runtime editor code should use normal
 Plite node values.
 
 ```tsx
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from "plitejs/hyperscript";
 
@@ -691,7 +691,7 @@ const h = createHyperscript({
 const paragraph = h("paragraph", {}, "hello");
 ```
 
-## Step 14: Check Import Boundaries
+## Step 14: check import boundaries
 
 Use public package imports. Do not deep import from package internals.
 
@@ -721,7 +721,7 @@ import { createHyperscript, jsx } from "plitejs/hyperscript";
 The `Editor` export in `plitejs/react` includes the React and DOM capabilities.
 Use `editor.api.dom.*` and `editor.api.react.*` instead of static bridge calls.
 
-## Proof Before Deleting The Old Path
+## Proof before deleting the old path
 
 Delete old Plite code only after the new path proves the behavior users depend
 on. Model assertions are useful, but they do not prove browser selection,
@@ -740,7 +740,7 @@ For selection-sensitive editors, run browser proof before deleting the old path.
 For app-only commands, focused unit tests can be enough after one browser path
 has proven the runtime integration.
 
-## Validation Checklist
+## Validation checklist
 
 Run the migration in behavior order:
 
@@ -757,7 +757,7 @@ Run the migration in behavior order:
 The migration is complete when the editor behaves the same from the user's point
 of view and the codebase no longer depends on old helper aliases.
 
-## API Reference Links
+## API reference links
 
 - [Installing Plite](walkthroughs/01-installing-plite)
 - [Adding Event Handlers](walkthroughs/02-adding-event-handlers)

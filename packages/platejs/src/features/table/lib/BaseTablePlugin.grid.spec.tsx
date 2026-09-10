@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
@@ -19,6 +20,7 @@ import type {
 } from './BaseTablePlugin';
 import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 import { createTableContext } from './internal/context';
+import { readTableGridCompilerMetrics } from './internal/grid';
 
 describe('table grid queries', () => {
   const value: Value = [
@@ -45,6 +47,42 @@ describe('table grid queries', () => {
   ];
 
   describe('getCellIndices', () => {
+    it('reads every cell coordinate without recompiling the table for each cell', () => {
+      const dimension = 10;
+      const editor = createTestTableEditor({
+        plugins: getTestTablePlugins(),
+        initialValue: [
+          {
+            type: 'table',
+            children: Array.from({ length: dimension }, () => ({
+              type: 'tableRow',
+              children: Array.from({ length: dimension }, () => ({
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text: '' }] }],
+              })),
+            })),
+          },
+        ],
+      });
+      const plugin = editor.plugin(BaseTablePlugin);
+      plugin.update.setColumnWidth({ colIndex: 0, width: 104 }, { at: [0] });
+      const before = readTableGridCompilerMetrics();
+      for (let row = 0; row < dimension; row++) {
+        for (let col = 0; col < dimension; col++) {
+          const entry = editor.read.nodes.get([0, row, col], {
+            type: BaseTableCellPlugin,
+          });
+          assert.ok(entry);
+          const key = editor.key(entry[0]);
+          expect(plugin.read.getCellIndices(entry[0])).toEqual({ row, col });
+          expect(plugin.read.getCellIndicesByKey(key)).toEqual({ row, col });
+        }
+      }
+      expect(
+        readTableGridCompilerMetrics().compileCount - before.compileCount
+      ).toBeLessThanOrEqual(1);
+    });
+
     it('derives cells from the immutable initial value', () => {
       const initialValue = structuredClone(value);
       const inputSnapshot = structuredClone(initialValue);

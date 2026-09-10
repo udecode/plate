@@ -264,10 +264,9 @@ const deletedArchitecturePatterns = [
 ];
 
 const manualYjsSoakRunnerSignals = [
-  'scripts/proof/yjs-collaboration-soak.mjs',
-  'scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs',
-  'scripts/proof/persistent-browser-soak.mjs',
-  'scripts/proof/yjs-hocuspocus-production-soak.mjs',
+  'tooling/plite/donor/proof/yjs-collaboration-soak.mjs',
+  'tooling/plite/donor/proof/yjs-hocuspocus-persistent-room-soak.mjs',
+  'tooling/plite/donor/proof/yjs-hocuspocus-production-soak.mjs',
 ];
 
 const yjsSoakScriptAliases = [

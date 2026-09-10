@@ -175,7 +175,7 @@ One `DocumentChange` can atomically mutate the primary document and named roots.
 Public base-editor reads default to the primary root; root-bound runtime views
 scope local commands without changing canonical ownership.
 
-`platejs/yjs` translates between Yjs and canonical changes, preserves provider,
+`plitejs/yjs` translates between Yjs and canonical changes, preserves provider,
 awareness, offline, root, and history behavior. Yjs events translate into
 canonical changes, and local canonical changes translate into Yjs deltas.
 
@@ -190,7 +190,8 @@ Pagination and virtualization do not own a parallel document model.
 - `plitejs/react`: React host, input, projection, and rendering
 - `plitejs/history`: inverse-change history
 - `plitejs/pagination`: layout and pagination planning
-- `platejs/yjs`: Yjs collaboration adapter
+- `plitejs/yjs`: Yjs collaboration adapter
+- `platejs/yjs`: exact Plite Yjs facade with Plate plugin policy
 - `@platejs/test`: Node-safe fixtures plus React, DOM, Playwright, and proof helpers
 - `platejs`: Plate plugin conventions and product-facing composition
 

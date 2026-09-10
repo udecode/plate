@@ -12,20 +12,22 @@ import {
 } from '../../shared/stats.mjs';
 
 const siteOutRoot = fileURLToPath(
-  new URL('../../../../../apps/plite/out', import.meta.url)
+  new URL('../../../../../apps/plite/out', import.meta.url),
 );
 const blocks = Number(process.env.PLITE_BROWSER_TRACE_BLOCKS || 5000);
 const iterations = Number(process.env.PLITE_BROWSER_TRACE_ITERATIONS || 3);
 const typeOps = Number(process.env.PLITE_BROWSER_TRACE_TYPE_OPS || 10);
 const port = Number(process.env.PLITE_BROWSER_TRACE_PORT || 0);
 const nativeSurfaceTimeoutMs = Number(
-  process.env.PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS || 10_000
+  process.env.PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS || 10_000,
 );
 const materializationTimeoutMs = Number(
-  process.env.PLITE_BROWSER_TRACE_MATERIALIZATION_TIMEOUT_MS || 15_000
+  process.env.PLITE_BROWSER_TRACE_MATERIALIZATION_TIMEOUT_MS || 15_000,
 );
 const headless = process.env.PLITE_BROWSER_TRACE_HEADLESS !== '0';
 const skipBuild = process.env.PLITE_BROWSER_TRACE_SKIP_BUILD === '1';
+const nativeStructuralEnabled = process.env.PLITE_BROWSER_TRACE_NATIVE_STRUCTURAL === '1';
+const nativeCPUProfile = process.env.PLITE_BROWSER_TRACE_NATIVE_CPU_PROFILE === '1';
 const selectAllDeleteEnabled =
   process.env.PLITE_BROWSER_TRACE_SELECT_ALL_DELETE === '1';
 const selectAllDeleteAllowFailure =
@@ -43,7 +45,7 @@ const runStartedAt = new Date().toISOString();
 
 if (!selectAllDeleteInputModes.has(selectAllDeleteInputMode)) {
   throw new Error(
-    `Unsupported PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE=${JSON.stringify(selectAllDeleteInputMode)}`
+    `Unsupported PLITE_BROWSER_TRACE_AFTER_DELETE_INPUT_MODE=${JSON.stringify(selectAllDeleteInputMode)}`,
   );
 }
 const selectedSurfaces = new Set(
@@ -53,7 +55,7 @@ const selectedSurfaces = new Set(
   )
     .split(',')
     .map((surface) => surface.trim())
-    .filter(Boolean)
+    .filter(Boolean),
 );
 
 const latestArtifactPath =
@@ -109,6 +111,12 @@ const surfaces = [
     path: `/dev/editor-perf?blocks=${blocks}&chunking=false&chunk_size=1000&content_visibility=none&scenario_workload=huge-mixed-block&scenario=plate-basic`,
   },
   {
+    expectedStrategy: 'full',
+    key: 'pliteFull',
+    label: 'Plite full DOM',
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=full`,
+  },
+  {
     key: 'defaultAuto',
     label: 'v2 auto',
     path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=auto`,
@@ -157,7 +165,7 @@ const nextPaint = (page) =>
             resolve(performance.now());
           });
         });
-      })
+      }),
   );
 
 const startStaticServer = async () => {
@@ -168,7 +176,7 @@ const startStaticServer = async () => {
           cleanUrls: true,
           directoryListing: false,
           public: siteOutRoot,
-        })
+        }),
       )
       .catch((error) => {
         console.error('Browser trace server request failed:', error);
@@ -285,7 +293,7 @@ const installTraceObserver = async (page) => {
 
         const scheduledAt = performance.now();
         const scheduledStack = compactTimerStack(
-          new Error('Scheduled benchmark timer').stack
+          new Error('Scheduled benchmark timer').stack,
         );
         const timerDelay = Number(delay) || 0;
 
@@ -309,7 +317,7 @@ const installTraceObserver = async (page) => {
             }
           },
           delay,
-          ...args
+          ...args,
         );
       };
     }
@@ -369,7 +377,7 @@ const installTraceObserver = async (page) => {
         pendingMouseDownEvent = entry;
         trace.mouseDownEvents.push(entry);
       },
-      true
+      true,
     );
     target.document.addEventListener(
       'mousedown',
@@ -393,7 +401,7 @@ const installTraceObserver = async (page) => {
 
         pendingMouseDownEvent = null;
       },
-      false
+      false,
     );
     target.document.addEventListener(
       'beforeinput',
@@ -407,7 +415,7 @@ const installTraceObserver = async (page) => {
           time: performance.now(),
         });
       },
-      true
+      true,
     );
     target.document.addEventListener(
       'input',
@@ -421,7 +429,7 @@ const installTraceObserver = async (page) => {
           time: performance.now(),
         });
       },
-      true
+      true,
     );
 
     const compactPerformanceAttribution = (entries) =>
@@ -500,7 +508,7 @@ const waitForEditorReady = async (page) => {
       return !!root?.__pliteBrowserHandle?.selectRange;
     },
     undefined,
-    { timeout: 30_000 }
+    { timeout: 30_000 },
   );
 };
 
@@ -524,20 +532,19 @@ const waitForNativeSurface = async (page, surface) => {
         const readNumber = (testId) => {
           const value = Number(
             document.querySelector(`[data-test-id="${testId}"]`)?.textContent ??
-              0
+              0,
           );
 
           return Number.isFinite(value) ? value : 0;
         };
         const effectiveStrategy = document.querySelector(
-          '[data-test-id="huge-document-effective-strategy"]'
+          '[data-test-id="huge-document-effective-strategy"]',
         )?.textContent;
         const activeScenario = document.querySelector(
-          '[data-test-id="editor-perf-active-scenario"]'
+          '[data-test-id="editor-perf-active-scenario"]',
         )?.textContent;
         const mountedTopLevelCount = measureTopLevelDOM
-          ? root.querySelectorAll(':scope > [data-plite-node="element"]')
-              .length
+          ? root.querySelectorAll(':scope > [data-plite-node="element"]').length
           : readNumber('huge-document-mounted-top-level-count');
 
         if (expectedScenario && activeScenario !== expectedScenario) {
@@ -567,7 +574,7 @@ const waitForNativeSurface = async (page, surface) => {
         expectedStrategy: surface.expectedStrategy,
         measureTopLevelDOM: surface.measureTopLevelDOM,
       },
-      { timeout: nativeSurfaceTimeoutMs }
+      { timeout: nativeSurfaceTimeoutMs },
     )
     .then(() => true)
     .catch(() => false);
@@ -613,7 +620,7 @@ const waitForNativeSurface = async (page, surface) => {
     {
       expectedBlocks: blocks,
       measureTopLevelDOM: surface.measureTopLevelDOM,
-    }
+    },
   );
 
   return {
@@ -669,9 +676,7 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
           : [],
         movement: entry.movement ?? null,
         nativeAllowed: entry.nativeAllowed ?? null,
-        intentsCount: Array.isArray(entry.intents)
-          ? entry.intents.length
-          : 0,
+        intentsCount: Array.isArray(entry.intents) ? entry.intents.length : 0,
         ownership: entry.ownership ?? null,
         repairPolicy: entry.repairPolicy ?? null,
         selectionAfter: entry.selectionAfter ?? null,
@@ -690,12 +695,12 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
       });
       const block = root
         ?.querySelector(
-          `[data-plite-node="text"][data-plite-path="${index},0"]`
+          `[data-plite-node="text"][data-plite-path="${index},0"]`,
         )
         ?.closest('[data-plite-node="element"]');
       const selectedText =
         domSelection?.anchorNode?.parentElement?.closest(
-          '[data-plite-node="element"]'
+          '[data-plite-node="element"]',
         )?.textContent ?? null;
 
       return {
@@ -725,7 +730,7 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
         profilerEvents: traceSnapshot?.profilerEvents?.slice(-20) ?? null,
       };
     },
-    { beforeTypeState, index: lane.blockIndex }
+    { beforeTypeState, index: lane.blockIndex },
   );
 
 const summarizeProfilerEvents = (events = []) => {
@@ -781,7 +786,7 @@ const summarizeProfilerEvents = (events = []) => {
     ([leftKey, left], [rightKey, right]) =>
       right.durationMs - left.durationMs ||
       right.count - left.count ||
-      leftKey.localeCompare(rightKey)
+      leftKey.localeCompare(rightKey),
   );
 
   const retainedBuckets = new Map(sortedBuckets.slice(0, 20));
@@ -812,7 +817,7 @@ const summarizeTraceEvents = (events = []) => {
       ? sortedGaps[
           Math.min(
             sortedGaps.length - 1,
-            Math.ceil(sortedGaps.length * 0.95) - 1
+            Math.ceil(sortedGaps.length * 0.95) - 1,
           )
         ]
       : 0;
@@ -928,7 +933,7 @@ const summarizeAttributionEntries = (entries, readParts) => {
         ? attribution.duration
         : 0;
       current.forcedStyleAndLayoutDurationMs += Number.isFinite(
-        attribution.forcedStyleAndLayoutDuration
+        attribution.forcedStyleAndLayoutDuration,
       )
         ? attribution.forcedStyleAndLayoutDuration
         : 0;
@@ -943,7 +948,7 @@ const summarizeAttributionEntries = (entries, readParts) => {
       ...bucket,
       durationMs: round(bucket.durationMs),
       forcedStyleAndLayoutDurationMs: round(
-        bucket.forcedStyleAndLayoutDurationMs
+        bucket.forcedStyleAndLayoutDurationMs,
       ),
     }));
 };
@@ -960,7 +965,7 @@ const summarizeAttributionTotals = (entries, readParts) => {
         ? attribution.duration
         : 0;
       forcedStyleAndLayoutDurationMs += Number.isFinite(
-        attribution.forcedStyleAndLayoutDuration
+        attribution.forcedStyleAndLayoutDuration,
       )
         ? attribution.forcedStyleAndLayoutDuration
         : 0;
@@ -978,19 +983,19 @@ const summarizeLongTaskAttributionTotals = (entries) => {
   const totalDurationMs = entries.reduce(
     (total, entry) =>
       total + (Number.isFinite(entry.duration) ? entry.duration : 0),
-    0
+    0,
   );
   const attributionTotals = summarizeAttributionTotals(
     entries,
-    (entry) => entry.attribution ?? []
+    (entry) => entry.attribution ?? [],
   );
   const attributedDurationMs = Math.min(
     totalDurationMs,
-    attributionTotals.durationMs
+    attributionTotals.durationMs,
   );
   const unattributedDurationMs = Math.max(
     0,
-    totalDurationMs - attributedDurationMs
+    totalDurationMs - attributedDurationMs,
   );
   let attributionClaimWidth = 'attributed';
 
@@ -1014,7 +1019,7 @@ const readBlockText = async (page, blockIndex) =>
   page.evaluate((index) => {
     const root = document.querySelector('[data-plite-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`,
     );
     const block = textElement?.closest('[data-plite-node="element"]');
 
@@ -1033,7 +1038,7 @@ const waitForModelBlockText = async (
   page,
   blockIndex,
   expectedText,
-  context
+  context,
 ) => {
   await page
     .waitForFunction(
@@ -1047,13 +1052,13 @@ const waitForModelBlockText = async (
         );
       },
       { expectedText, index: blockIndex },
-      { timeout: 10_000 }
+      { timeout: 10_000 },
     )
     .catch(async (error) => {
       const modelText = await readModelBlockText(page, blockIndex);
 
       throw new Error(
-        `Model typing assertion timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}: expected=${JSON.stringify(expectedText)} actual=${JSON.stringify(modelText)}; ${error.message}`
+        `Model typing assertion timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}: expected=${JSON.stringify(expectedText)} actual=${JSON.stringify(modelText)}; ${error.message}`,
       );
     });
 
@@ -1095,7 +1100,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
         );
       },
       { expected },
-      { timeout }
+      { timeout },
     )
     .catch(async (error) => {
       const selection = await page.evaluate(() => {
@@ -1105,7 +1110,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
       });
 
       throw new Error(
-        `Selection assertion timed out for ${context}: expected=${JSON.stringify(expected)} actual=${JSON.stringify(selection)}; ${error.message}`
+        `Selection assertion timed out for ${context}: expected=${JSON.stringify(expected)} actual=${JSON.stringify(selection)}; ${error.message}`,
       );
     });
 };
@@ -1113,7 +1118,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
 const waitForCollapsedEmptyDocument = async (
   page,
   context,
-  timeout = 10_000
+  timeout = 10_000,
 ) => {
   await page
     .waitForFunction(
@@ -1134,7 +1139,7 @@ const waitForCollapsedEmptyDocument = async (
         );
       },
       undefined,
-      { timeout }
+      { timeout },
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate(() => {
@@ -1149,7 +1154,7 @@ const waitForCollapsedEmptyDocument = async (
       });
 
       throw new Error(
-        `Collapsed empty document assertion timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`
+        `Collapsed empty document assertion timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`,
       );
     });
 };
@@ -1158,7 +1163,7 @@ const waitForDocumentBoundaryRestore = async (
   page,
   expected,
   context,
-  timeout = 30_000
+  timeout = 30_000,
 ) => {
   await page
     .waitForFunction(
@@ -1179,7 +1184,7 @@ const waitForDocumentBoundaryRestore = async (
         );
       },
       { expected },
-      { timeout }
+      { timeout },
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate((lastIndex) => {
@@ -1194,7 +1199,7 @@ const waitForDocumentBoundaryRestore = async (
       }, expected.lastIndex);
 
       throw new Error(
-        `Document boundary restore timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`
+        `Document boundary restore timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`,
       );
     });
 };
@@ -1221,9 +1226,7 @@ const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
       lastIntents: Array.isArray(entry.intents)
         ? entry.intents.slice(-3).map(compactIntent)
         : [],
-      intentsCount: Array.isArray(entry.intents)
-        ? entry.intents.length
-        : 0,
+      intentsCount: Array.isArray(entry.intents) ? entry.intents.length : 0,
       ownership: entry.ownership ?? null,
       selectionAfter: entry.selectionAfter ?? null,
       selectionBefore: entry.selectionBefore ?? null,
@@ -1234,14 +1237,11 @@ const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
       targetOwner: entry.targetOwner ?? null,
     });
     const compactHistoryBatch = (batch) => {
-      const intents = Array.isArray(batch?.intents)
-        ? batch.intents
-        : [];
+      const intents = Array.isArray(batch?.intents) ? batch.intents : [];
       const intentTypes = {};
 
       for (const intent of intents) {
-        intentTypes[intent?.type] =
-          (intentTypes[intent?.type] ?? 0) + 1;
+        intentTypes[intent?.type] = (intentTypes[intent?.type] ?? 0) + 1;
       }
 
       return {
@@ -1342,20 +1342,20 @@ const summarizeTracePhase = async (page) => {
       (typeof event.duration === 'number' && Number.isFinite(event.duration)
         ? event.duration
         : 0),
-    0
+    0,
   );
   const durations = {
     longAnimationFrameDurationMs: (trace?.longAnimationFrames ?? []).reduce(
       (total, entry) => total + entry.duration,
-      0
+      0,
     ),
     longAnimationFrameMaxMs: Math.max(
       0,
-      ...(trace?.longAnimationFrames ?? []).map((entry) => entry.duration)
+      ...(trace?.longAnimationFrames ?? []).map((entry) => entry.duration),
     ),
     longTaskDurationMs: longTasks.reduce(
       (total, entry) => total + entry.duration,
-      0
+      0,
     ),
     longTaskMaxMs: Math.max(0, ...longTasks.map((entry) => entry.duration)),
   };
@@ -1369,12 +1369,12 @@ const summarizeTracePhase = async (page) => {
     inputEvents: summarizeTraceEvents(trace?.inputEvents ?? []),
     longAnimationFrameAttribution: summarizeAttributionEntries(
       trace?.longAnimationFrames ?? [],
-      (entry) => entry.scripts ?? []
+      (entry) => entry.scripts ?? [],
     ),
     longAnimationFrameCount: trace?.longAnimationFrames?.length ?? 0,
     longTaskAttribution: summarizeAttributionEntries(
       longTasks,
-      (entry) => entry.attribution ?? []
+      (entry) => entry.attribution ?? [],
     ),
     longTaskCount: longTasks.length,
     mouseDownCount: trace?.mouseDownEvents?.length ?? 0,
@@ -1388,8 +1388,8 @@ const summarizeTracePhase = async (page) => {
           (typeof event.duration === 'number' && Number.isFinite(event.duration)
             ? event.duration
             : 0),
-        0
-      )
+        0,
+      ),
     ),
     timerEventCount: trace?.timerEvents?.length ?? 0,
     timers: summarizeTimerEvents(trace?.timerEvents ?? []),
@@ -1418,7 +1418,7 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
 
   if (typeof firstText !== 'string' || typeof lastText !== 'string') {
     throw new Error(
-      `Select-all/delete setup failed for ${surfaceKey}: first=${JSON.stringify(firstText)} last=${JSON.stringify(lastText)}`
+      `Select-all/delete setup failed for ${surfaceKey}: first=${JSON.stringify(firstText)} last=${JSON.stringify(lastText)}`,
     );
   }
 
@@ -1429,7 +1429,7 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
   const capturePhase = async (phase) => {
     phaseDiagnostics[phase] = await readDocumentBoundaryDiagnostics(
       page,
-      lastIndex
+      lastIndex,
     );
   };
   const captureTracePhase = async (phase) => {
@@ -1446,7 +1446,7 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
     page,
     expectedSelection,
     `${surfaceKey}/select-all`,
-    15_000
+    15_000,
   );
   const selectAllReadyTime = await page.evaluate(() => performance.now());
   const selectAllPaintTime = await nextPaint(page);
@@ -1501,7 +1501,7 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
       page,
       { firstText, lastIndex, lastText },
       `${surfaceKey}/undo-delete`,
-      45_000
+      45_000,
     );
   } catch (error) {
     if (!selectAllDeleteAllowFailure) {
@@ -1516,7 +1516,7 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
     handleUndoAfterKeyboardFailure = await measureHandleUndoRestore(
       page,
       { firstText, lastIndex, lastText },
-      `${surfaceKey}/handle-undo-after-keyboard-failure`
+      `${surfaceKey}/handle-undo-after-keyboard-failure`,
     );
   }
   const undoDeleteReadyTime = await page.evaluate(() => performance.now());
@@ -1585,7 +1585,7 @@ const getScrollParentSnapshot = async (page) =>
           (element) =>
             element instanceof HTMLElement &&
             element.contains(root) &&
-            element.scrollHeight > element.clientHeight
+            element.scrollHeight > element.clientHeight,
         )
       : null;
 
@@ -1621,30 +1621,30 @@ const requestCollapsedSelection = async (page, blockIndex, offset) =>
       handle.selectRange(selection);
       root.focus();
     },
-    { index: blockIndex, offset }
+    { index: blockIndex, offset },
   );
 
 const getMaterializationDiagnostics = async (page, blockIndex) =>
   page.evaluate((index) => {
     const root = document.querySelector('[data-plite-editor="true"]');
     const virtualizer = root?.querySelector(
-      '[data-plite-dom-strategy-virtualizer="true"]'
+      '[data-plite-dom-strategy-virtualizer="true"]',
     );
     const scrollParent = root
       ? Array.from(document.querySelectorAll('*')).find(
           (element) =>
             element instanceof HTMLElement &&
             element.contains(root) &&
-            element.scrollHeight > element.clientHeight
+            element.scrollHeight > element.clientHeight,
         )
       : null;
     const textElements = Array.from(
-      root?.querySelectorAll('[data-plite-node="text"]') ?? []
+      root?.querySelectorAll('[data-plite-node="text"]') ?? [],
     );
 
     return {
       exactPathExists: !!root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`,
       ),
       handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
       handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
@@ -1680,7 +1680,7 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
     const materialized = await page.evaluate((index) => {
       const root = document.querySelector('[data-plite-editor="true"]');
       const isMaterialized = !!root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`,
       );
 
       if (!isMaterialized) {
@@ -1714,7 +1714,7 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
   const diagnostics = await getMaterializationDiagnostics(page, blockIndex);
 
   throw new Error(
-    `Text materialization timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}; diagnostics=${JSON.stringify(diagnostics)}`
+    `Text materialization timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}; diagnostics=${JSON.stringify(diagnostics)}`,
   );
 };
 
@@ -1728,7 +1728,7 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
       }
 
       const textElement = root.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`,
       );
 
       if (!textElement) {
@@ -1737,7 +1737,7 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
 
       const walker = document.createTreeWalker(
         textElement,
-        NodeFilter.SHOW_TEXT
+        NodeFilter.SHOW_TEXT,
       );
       const textNode = walker.nextNode();
 
@@ -1756,7 +1756,7 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
       document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
       root.__pliteBrowserHandle?.importDOMSelection?.();
     },
-    { index: blockIndex, offset }
+    { index: blockIndex, offset },
   );
 
 const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
@@ -1765,7 +1765,7 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
       const root = document.querySelector('[data-plite-editor="true"]');
       const selection = document.getSelection();
       const textElements = Array.from(
-        root?.querySelectorAll('[data-plite-node="text"]') ?? []
+        root?.querySelectorAll('[data-plite-node="text"]') ?? [],
       );
       const getClosestTextElement = (node) =>
         node instanceof Element
@@ -1779,11 +1779,11 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
             (element) =>
               element instanceof HTMLElement &&
               element.contains(root) &&
-              element.scrollHeight > element.clientHeight
+              element.scrollHeight > element.clientHeight,
           )
         : null;
       const targetElement = root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`
+        `[data-plite-node="text"][data-plite-path="${index},0"]`,
       );
 
       return {
@@ -1832,7 +1832,7 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
             : null,
       };
     },
-    { index: blockIndex, offset }
+    { index: blockIndex, offset },
   );
 
 const waitForDOMSelectionPath = async (
@@ -1840,7 +1840,7 @@ const waitForDOMSelectionPath = async (
   blockIndex,
   offset,
   context,
-  phase
+  phase,
 ) => {
   await page
     .waitForFunction(
@@ -1848,7 +1848,7 @@ const waitForDOMSelectionPath = async (
         const root = document.querySelector('[data-plite-editor="true"]');
         const selection = document.getSelection();
         const textElement = selection?.anchorNode?.parentElement?.closest(
-          '[data-plite-node="text"]'
+          '[data-plite-node="text"]',
         );
         const handleSelection =
           root?.__pliteBrowserHandle?.getSelection?.() ?? null;
@@ -1881,17 +1881,17 @@ const waitForDOMSelectionPath = async (
         );
       },
       { index: blockIndex, offset },
-      { timeout: nativeSurfaceTimeoutMs }
+      { timeout: nativeSurfaceTimeoutMs },
     )
     .catch(async (error) => {
       const diagnostics = await getDOMSelectionPathDiagnostics(
         page,
         blockIndex,
-        offset
+        offset,
       );
 
       throw new Error(
-        `DOM selection sync timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration}/${phase} at block ${blockIndex} offset ${offset}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`
+        `DOM selection sync timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration}/${phase} at block ${blockIndex} offset ${offset}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`,
       );
     });
 };
@@ -1901,13 +1901,13 @@ const selectCollapsed = async (page, blockIndex, offset, context) => {
   const beforePaintMaterialization = await waitForMaterializedText(
     page,
     blockIndex,
-    context
+    context,
   );
   await nextPaint(page);
   const afterPaintMaterialization = await waitForMaterializedText(
     page,
     blockIndex,
-    context
+    context,
   );
   await syncDOMSelection(page, blockIndex, offset);
   await waitForDOMSelectionPath(
@@ -1915,7 +1915,7 @@ const selectCollapsed = async (page, blockIndex, offset, context) => {
     blockIndex,
     offset,
     context,
-    'before-paint'
+    'before-paint',
   );
   const readyTime = await page.evaluate(() => performance.now());
   await nextPaint(page);
@@ -1924,21 +1924,21 @@ const selectCollapsed = async (page, blockIndex, offset, context) => {
     blockIndex,
     offset,
     context,
-    'after-paint'
+    'after-paint',
   );
 
   return {
     materializationDurationMs: Math.max(
       beforePaintMaterialization.durationMs,
-      afterPaintMaterialization.durationMs
+      afterPaintMaterialization.durationMs,
     ),
     materializationFrameCount: Math.max(
       beforePaintMaterialization.frameCount,
-      afterPaintMaterialization.frameCount
+      afterPaintMaterialization.frameCount,
     ),
     materializationScrollTopDelta: Math.max(
       beforePaintMaterialization.scrollTopDelta ?? 0,
-      afterPaintMaterialization.scrollTopDelta ?? 0
+      afterPaintMaterialization.scrollTopDelta ?? 0,
     ),
     readyTime,
   };
@@ -1949,7 +1949,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
   const point = await page.evaluate((index) => {
     const root = document.querySelector('[data-plite-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`,
     );
 
     if (!(textElement instanceof HTMLElement)) {
@@ -2016,13 +2016,13 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
         );
       },
       { beforeSelection, index: blockIndex },
-      { timeout: 5000 }
+      { timeout: 5000 },
     )
     .catch(async (error) => {
       const diagnostics = await getMaterializationDiagnostics(page, blockIndex);
 
       throw new Error(
-        `Click selection timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`
+        `Click selection timed out for ${context.surfaceKey}/${context.laneKey}/iteration-${context.iteration} at block ${blockIndex}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`,
       );
     });
 
@@ -2062,7 +2062,7 @@ const measureInteraction = async (page, lane, context) => {
     {
       ...context,
       laneKey: lane.key,
-    }
+    },
   );
   const selectPaint = await nextPaint(page);
   const materializedOffset = lane.offset + 1;
@@ -2074,7 +2074,7 @@ const measureInteraction = async (page, lane, context) => {
     {
       ...context,
       laneKey: lane.key,
-    }
+    },
   );
   const materializedSelectPaint = await nextPaint(page);
   const preClickBlockIndex =
@@ -2095,7 +2095,7 @@ const measureInteraction = async (page, lane, context) => {
   const beforeTypeState = await page.evaluate((index) => {
     const root = document.querySelector('[data-plite-editor="true"]');
     const textHost = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-plite-node="text"][data-plite-path="${index},0"]`,
     );
     const selection = document.getSelection();
     const anchorElement =
@@ -2133,7 +2133,7 @@ const measureInteraction = async (page, lane, context) => {
     page,
     lane.blockIndex,
     expectedText,
-    context
+    context,
   );
 
   await page
@@ -2141,7 +2141,7 @@ const measureInteraction = async (page, lane, context) => {
       ({ expectedText, index }) => {
         const root = document.querySelector('[data-plite-editor="true"]');
         const textElement = root?.querySelector(
-          `[data-plite-node="text"][data-plite-path="${index},0"]`
+          `[data-plite-node="text"][data-plite-path="${index},0"]`,
         );
         const block = textElement?.closest('[data-plite-node="element"]');
         const text =
@@ -2150,13 +2150,13 @@ const measureInteraction = async (page, lane, context) => {
         return text === expectedText;
       },
       { expectedText, index: lane.blockIndex },
-      { timeout: 10_000 }
+      { timeout: 10_000 },
     )
     .catch(async (error) => {
       const diagnostics = await getLaneDiagnostics(page, lane, beforeTypeState);
 
       throw new Error(
-        `Typing assertion timed out for ${context.surfaceKey}/${lane.key}/iteration-${context.iteration} at block ${lane.blockIndex}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`
+        `Typing assertion timed out for ${context.surfaceKey}/${lane.key}/iteration-${context.iteration} at block ${lane.blockIndex}: ${error.message}; diagnostics=${JSON.stringify(diagnostics)}`,
       );
     });
 
@@ -2170,7 +2170,7 @@ const measureInteraction = async (page, lane, context) => {
   const longTaskDurationMs = longTasks.reduce(
     (total, entry) =>
       total + (Number.isFinite(entry.duration) ? entry.duration : 0),
-    0
+    0,
   );
   const longTaskAttributionTotals =
     summarizeLongTaskAttributionTotals(longTasks);
@@ -2180,7 +2180,7 @@ const measureInteraction = async (page, lane, context) => {
     ...(trace?.inputEvents ?? [])
       .filter((event) => event.inputType === 'insertText')
       .map((event) => event.time)
-      .filter(Number.isFinite)
+      .filter(Number.isFinite),
   );
   const typeToPaintMs =
     lastInputAt > 0 ? paintTime - lastInputAt : paintTime - typeStart;
@@ -2189,7 +2189,7 @@ const measureInteraction = async (page, lane, context) => {
     const diagnostics = await getLaneDiagnostics(page, lane, beforeTypeState);
 
     throw new Error(
-      `Native typing did not update ${context.surfaceKey}/${lane.key}/iteration-${context.iteration}: expected=${JSON.stringify(expectedText)} actual=${JSON.stringify(afterText)} before=${JSON.stringify(beforeText)}; diagnostics=${JSON.stringify(diagnostics)}`
+      `Native typing did not update ${context.surfaceKey}/${lane.key}/iteration-${context.iteration}: expected=${JSON.stringify(expectedText)} actual=${JSON.stringify(afterText)} before=${JSON.stringify(beforeText)}; diagnostics=${JSON.stringify(diagnostics)}`,
     );
   }
 
@@ -2211,7 +2211,7 @@ const measureInteraction = async (page, lane, context) => {
     longAnimationFrameCount: trace?.longAnimationFrames?.length ?? 0,
     longAnimationFrameMaxMs: Math.max(
       0,
-      ...(trace?.longAnimationFrames ?? []).map((entry) => entry.duration)
+      ...(trace?.longAnimationFrames ?? []).map((entry) => entry.duration),
     ),
     longTaskCount: longTasks.length,
     longTaskDurationMs,
@@ -2243,12 +2243,114 @@ const measureInteraction = async (page, lane, context) => {
   };
 };
 
+const measureNativeStructural = async (page, lane, context) => {
+  const setup = await page.evaluate((startIndex) => {
+    const root = document.querySelector('[data-plite-editor="true"]');
+    const handle = root?.__pliteBrowserHandle;
+    const value = handle?.getValue().children;
+    const index = value?.findIndex(
+      (node, index) => index >= startIndex && node.type === 'paragraph',
+    );
+    if (index == null || index < 0) {
+      throw new Error('Native structural probe requires a paragraph');
+    }
+    const before = handle.getBlockTexts();
+    const untouched = new Map(
+      [...root.querySelectorAll('[data-plite-node="element"]')]
+        .filter((element) => element.getAttribute('data-plite-path') !== String(index))
+        .map((element) => [element.getAttribute('data-plite-node-key'), element]),
+    );
+    window.__pliteStructuralProof = { root, untouched };
+    return { before, index };
+  }, lane.blockIndex);
+  const { before, index } = setup;
+  const offset = 2;
+  const split = [...before];
+  split.splice(index, 1, before[index].slice(0, offset), before[index].slice(offset));
+  await selectCollapsed(page, index, offset, {
+    ...context,
+    laneKey: lane.key,
+  });
+  const check = async (expected, point) => page.evaluate(({ expected, point }) => {
+    const proof = window.__pliteStructuralProof;
+    const root = document.querySelector('[data-plite-editor="true"]');
+    const handle = root?.__pliteBrowserHandle;
+    const texts = handle?.getBlockTexts();
+    if (root !== proof.root || JSON.stringify(texts) !== JSON.stringify(expected)) {
+      throw new Error('Native structural model or root mismatch');
+    }
+    expected.forEach((text, index) => {
+      const element = handle.getElementByPath([index]);
+      if (element?.textContent?.replace(/\uFEFF/g, '') !== text) {
+        throw new Error(`Native structural DOM mismatch at ${index}`);
+      }
+    });
+    for (const [key, element] of proof.untouched) {
+      if (root.querySelector(`[data-plite-node-key="${key}"]`) !== element) {
+        throw new Error(`Native structural remounted untouched block ${key}`);
+      }
+    }
+    for (const selection of [handle.getSelection(), handle.getDOMSelection()]) {
+      for (const end of ['anchor', 'focus']) {
+        if (JSON.stringify(selection?.[end]?.path) !== JSON.stringify(point.path) ||
+          selection?.[end]?.offset !== point.offset) {
+          throw new Error(`Native structural caret mismatch: ${JSON.stringify(selection)}`);
+        }
+      }
+    }
+    if (document.activeElement !== root && !root.contains(document.activeElement)) {
+      throw new Error('Native structural lost focus');
+    }
+  }, { expected, point });
+  const measureKey = async (key) => {
+    await resetTrace(page);
+    const session = nativeCPUProfile ? await page.context().newCDPSession(page) : null;
+    if (session) {
+      await session.send('Profiler.enable');
+      await session.send('Profiler.start');
+    }
+    const start = await page.evaluate(() => performance.now());
+    await page.keyboard.press(key);
+    const toPaintMs = (await nextPaint(page)) - start;
+    if (session) {
+      const { profile } = await session.send('Profiler.stop');
+      await writeBenchmarkArtifact(
+        `${latestArtifactPath}.${context.surfaceKey}.${lane.key}.${context.iteration}.${key}.cpuprofile.json`,
+        profile,
+      );
+      await session.detach();
+    }
+    const trace = await getTraceSnapshot(page);
+    return { toPaintMs, profiler: summarizeProfilerEvents(trace?.profilerEvents) };
+  };
+  const splitResult = await measureKey('Enter');
+  await check(split, { path: [index + 1, 0], offset: 0 });
+  const mergeResult = await measureKey('Backspace');
+  await check(before, { path: [index, 0], offset });
+  const followUp = [...before];
+  followUp[index] = before[index].slice(0, offset) + 'z' + before[index].slice(offset);
+  await page.keyboard.type('z');
+  await nextPaint(page);
+  await check(followUp, { path: [index, 0], offset: offset + 1 });
+  await page.keyboard.press('Backspace');
+  await nextPaint(page);
+  await check(before, { path: [index, 0], offset });
+  return {
+    blockIndex: index,
+    splitToPaintMs: splitResult.toPaintMs,
+    mergeToPaintMs: mergeResult.toPaintMs,
+    splitProfiler: splitResult.profiler,
+    mergeProfiler: mergeResult.profiler,
+    guards: { modelEqualsDOM: true, untouchedDOMIdentity: true, caret: true, focus: true, followUpTyping: true },
+  };
+};
+
 const summarizeMetric = (samples, key) =>
   summarize(samples.map((sample) => sample[key]));
 
 const summarizeTagSamples = (samples, key) =>
   summarize(
-    samples.map((sample) => sample.domTags[key]).filter(Number.isFinite)
+    samples.map((sample) => sample.domTags[key]).filter(Number.isFinite),
   );
 
 const summarizeNumberSamples = (samples, key) =>
@@ -2268,15 +2370,15 @@ const summarizeProfilerBuckets = (samples) => {
       bucketName,
       {
         count: summarize(
-          samples.map((sample) => sample.profiler?.[bucketName]?.count ?? 0)
+          samples.map((sample) => sample.profiler?.[bucketName]?.count ?? 0),
         ),
         durationMs: summarize(
           samples.map(
-            (sample) => sample.profiler?.[bucketName]?.durationMs ?? 0
-          )
+            (sample) => sample.profiler?.[bucketName]?.durationMs ?? 0,
+          ),
         ),
       },
-    ])
+    ]),
   );
 };
 
@@ -2294,15 +2396,15 @@ const summarizeLane = (samples) => ({
   longTaskMaxMs: summarizeMetric(samples, 'longTaskMaxMs'),
   longTaskAttributedDurationMs: summarizeMetric(
     samples,
-    'longTaskAttributedDurationMs'
+    'longTaskAttributedDurationMs',
   ),
   longTaskAttributionEntryCount: summarizeMetric(
     samples,
-    'longTaskAttributionEntryCount'
+    'longTaskAttributionEntryCount',
   ),
   longTaskUnattributedDurationMs: summarizeMetric(
     samples,
-    'longTaskUnattributedDurationMs'
+    'longTaskUnattributedDurationMs',
   ),
   profiler: summarizeProfilerBuckets(samples),
   burstToPaintMs: summarizeMetric(samples, 'burstToPaintMs'),
@@ -2312,16 +2414,16 @@ const summarizeLane = (samples) => ({
   clickMouseDownEventMs: summarizeMetric(samples, 'clickMouseDownEventMs'),
   clickMouseDownEventMissing: summarizeMetric(
     samples,
-    'clickMouseDownEventMissing'
+    'clickMouseDownEventMissing',
   ),
   clickMouseMoveMs: summarizeMetric(samples, 'clickMouseMoveMs'),
   clickMouseDownPostEventMs: summarizeMetric(
     samples,
-    'clickMouseDownPostEventMs'
+    'clickMouseDownPostEventMs',
   ),
   clickMouseDownPreEventMs: summarizeMetric(
     samples,
-    'clickMouseDownPreEventMs'
+    'clickMouseDownPreEventMs',
   ),
   clickMouseUpMs: summarizeMetric(samples, 'clickMouseUpMs'),
   clickPaintWaitMs: summarizeMetric(samples, 'clickPaintWaitMs'),
@@ -2330,41 +2432,41 @@ const summarizeLane = (samples) => ({
   clickToSelectionReadyMs: summarizeMetric(samples, 'clickToSelectionReadyMs'),
   materializedSelectReadyMs: summarizeMetric(
     samples,
-    'materializedSelectReadyMs'
+    'materializedSelectReadyMs',
   ),
   materializedSelectMs: summarizeMetric(samples, 'materializedSelectMs'),
   materializedSelectMaterializationFrames: summarizeMetric(
     samples,
-    'materializedSelectMaterializationFrames'
+    'materializedSelectMaterializationFrames',
   ),
   materializedSelectMaterializationMs: summarizeMetric(
     samples,
-    'materializedSelectMaterializationMs'
+    'materializedSelectMaterializationMs',
   ),
   materializedSelectMaterializationScrollDelta: summarizeMetric(
     samples,
-    'materializedSelectMaterializationScrollDelta'
+    'materializedSelectMaterializationScrollDelta',
   ),
   modelBurstToPaintPerOpMs: summarizeMetric(
     samples,
-    'modelBurstToPaintPerOpMs'
+    'modelBurstToPaintPerOpMs',
   ),
   modelTypeToPaintMs: summarizeMetric(samples, 'modelTypeToPaintMs'),
   modelTypeToReadyMs: summarizeMetric(samples, 'modelTypeToReadyMs'),
   selectMaterializationFrames: summarizeMetric(
     samples,
-    'selectMaterializationFrames'
+    'selectMaterializationFrames',
   ),
   selectMaterializationMs: summarizeMetric(samples, 'selectMaterializationMs'),
   selectMaterializationScrollDelta: summarizeMetric(
     samples,
-    'selectMaterializationScrollDelta'
+    'selectMaterializationScrollDelta',
   ),
   selectReadyMs: summarizeMetric(samples, 'selectReadyMs'),
   selectMs: summarizeMetric(samples, 'selectMs'),
   interactionSequenceToPaintMs: summarizeMetric(
     samples,
-    'interactionSequenceToPaintMs'
+    'interactionSequenceToPaintMs',
   ),
   typeToPaintMs: summarizeMetric(samples, 'typeToPaintMs'),
   typeToUpdateMs: summarizeMetric(samples, 'typeToUpdateMs'),
@@ -2380,6 +2482,7 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
   const page = await context.newPage();
   const laneSamples = Object.fromEntries(lanes.map((lane) => [lane.key, []]));
   const nativeSurfaceSamples = [];
+  const structuralSamples = Object.fromEntries(lanes.map((lane) => [lane.key, []]));
   let selectAllDeleteSample = null;
   let selectAllDeleteSurfaceState = null;
 
@@ -2405,6 +2508,13 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
         if (iteration > 0) {
           laneSamples[lane.key].push(sample);
         }
+        if (nativeStructuralEnabled) {
+          const structural = await measureNativeStructural(page, lane, {
+            iteration,
+            surfaceKey: surface.key,
+          });
+          if (iteration > 0) structuralSamples[lane.key].push(structural);
+        }
       }
     }
 
@@ -2422,7 +2532,7 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
       };
       selectAllDeleteSample = await measureSelectAllDeleteFlow(
         selectAllPage,
-        surface.key
+        surface.key,
       );
       await selectAllPage.close();
     }
@@ -2432,11 +2542,13 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
 
   return {
     label: surface.label,
+    rawLaneSamples: laneSamples,
+    nativeStructural: nativeStructuralEnabled ? structuralSamples : null,
     lanes: Object.fromEntries(
       Object.entries(laneSamples).map(([key, samples]) => [
         key,
         summarizeLane(samples),
-      ])
+      ]),
     ),
     nativeSurface: {
       boundedCount: nativeSurfaceSamples
@@ -2447,15 +2559,15 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
         .filter((sample) => sample.complete).length,
       durationMs: summarizeNumberSamples(
         nativeSurfaceSamples.slice(1),
-        'durationMs'
+        'durationMs',
       ),
       navigationToReadyMs: summarizeNumberSamples(
         nativeSurfaceSamples.slice(1),
-        'navigationToReadyMs'
+        'navigationToReadyMs',
       ),
       observedBlocks: summarizeNumberSamples(
         nativeSurfaceSamples.slice(1),
-        'observedBlocks'
+        'observedBlocks',
       ),
       samples: nativeSurfaceSamples.slice(1).map((sample) => ({
         activeScenario: sample.activeScenario,
@@ -2494,9 +2606,10 @@ const run = async () => {
   const server = externalBaseUrl
     ? { close: async () => {}, url: externalBaseUrl }
     : await startStaticServer();
-  const browser = await chromium.launch({ headless });
+  let browser;
 
   try {
+    browser = await chromium.launch({ headless });
     const summary = {
       artifactPaths: {
         latest: latestArtifactPath,
@@ -2511,6 +2624,8 @@ const run = async () => {
         runLabel: runLabel || null,
         runStartedAt,
         selectAllDelete: selectAllDeleteEnabled,
+        nativeStructural: nativeStructuralEnabled,
+        nativeCPUProfile,
         typeOps,
       },
       surfaces: {},
@@ -2530,12 +2645,12 @@ const run = async () => {
     for (const [key, surface] of Object.entries(summary.surfaces)) {
       console.log(`\n${key} (${surface.label})`);
       console.log(
-        `nativeSurface navigationToReadyMs p95=${surface.nativeSurface.navigationToReadyMs.p95}, settleDurationMs p95=${surface.nativeSurface.durationMs.p95}, complete=${surface.nativeSurface.completeCount}, bounded=${surface.nativeSurface.boundedCount}, timedOut=${surface.nativeSurface.timeoutCount}, observedBlocks p95=${surface.nativeSurface.observedBlocks.p95}`
+        `nativeSurface navigationToReadyMs p95=${surface.nativeSurface.navigationToReadyMs.p95}, settleDurationMs p95=${surface.nativeSurface.durationMs.p95}, complete=${surface.nativeSurface.completeCount}, bounded=${surface.nativeSurface.boundedCount}, timedOut=${surface.nativeSurface.timeoutCount}, observedBlocks p95=${surface.nativeSurface.observedBlocks.p95}`,
       );
 
       for (const [laneKey, lane] of Object.entries(surface.lanes)) {
         console.log(
-          `${laneKey}: selectionReadyMs p95=${lane.selectReadyMs.p95}, selectToPaintMs p95=${lane.selectMs.p95}, selectMaterializationFrames p95=${lane.selectMaterializationFrames.p95}, selectMaterializationScrollDelta p95=${lane.selectMaterializationScrollDelta.p95}, materializedSelectionReadyMs p95=${lane.materializedSelectReadyMs.p95}, materializedSelectToPaintMs p95=${lane.materializedSelectMs.p95}, materializedSelectMaterializationFrames p95=${lane.materializedSelectMaterializationFrames.p95}, materializedSelectMaterializationScrollDelta p95=${lane.materializedSelectMaterializationScrollDelta.p95}, clickDispatchMs p95=${lane.clickDispatchMs.p95}, clickMouseMoveMs p95=${lane.clickMouseMoveMs.p95}, clickMouseDownMs p95=${lane.clickMouseDownMs.p95}, clickMouseDownPreEventMs p95=${lane.clickMouseDownPreEventMs.p95}, clickMouseDownEventMs p95=${lane.clickMouseDownEventMs.p95}, clickMouseDownPostEventMs p95=${lane.clickMouseDownPostEventMs.p95}, clickMouseUpMs p95=${lane.clickMouseUpMs.p95}, clickSelectionWaitMs p95=${lane.clickSelectionWaitMs.p95}, clickPaintWaitMs p95=${lane.clickPaintWaitMs.p95}, clickToSelectionReadyMs p95=${lane.clickToSelectionReadyMs.p95}, clickToPaintMs p95=${lane.clickToPaintMs.p95}, interactionSequenceToPaintMs p95=${lane.interactionSequenceToPaintMs.p95}, typeToPaintMs p95=${lane.typeToPaintMs.p95}, modelTypeToReadyMs p95=${lane.modelTypeToReadyMs.p95}, modelTypeToPaintMs p95=${lane.modelTypeToPaintMs.p95}, burstToPaintMs p95=${lane.burstToPaintMs.p95}, burstToPaintPerOpMs p95=${lane.burstToPaintPerOpMs.p95}, modelBurstToPaintPerOpMs p95=${lane.modelBurstToPaintPerOpMs.p95}, longTaskMaxMs p95=${lane.longTaskMaxMs.p95}, longTaskTotalMs p95=${lane.longTaskDurationMs.p95}, longTaskAttributedMs p95=${lane.longTaskAttributedDurationMs.p95}, longTaskUnattributedMs p95=${lane.longTaskUnattributedDurationMs.p95}, domNodes p95=${lane.domTags.domNodeCount.p95}, heapMB p95=${round(lane.domTags.jsHeapUsedMB.p95)}`
+          `${laneKey}: selectionReadyMs p95=${lane.selectReadyMs.p95}, selectToPaintMs p95=${lane.selectMs.p95}, selectMaterializationFrames p95=${lane.selectMaterializationFrames.p95}, selectMaterializationScrollDelta p95=${lane.selectMaterializationScrollDelta.p95}, materializedSelectionReadyMs p95=${lane.materializedSelectReadyMs.p95}, materializedSelectToPaintMs p95=${lane.materializedSelectMs.p95}, materializedSelectMaterializationFrames p95=${lane.materializedSelectMaterializationFrames.p95}, materializedSelectMaterializationScrollDelta p95=${lane.materializedSelectMaterializationScrollDelta.p95}, clickDispatchMs p95=${lane.clickDispatchMs.p95}, clickMouseMoveMs p95=${lane.clickMouseMoveMs.p95}, clickMouseDownMs p95=${lane.clickMouseDownMs.p95}, clickMouseDownPreEventMs p95=${lane.clickMouseDownPreEventMs.p95}, clickMouseDownEventMs p95=${lane.clickMouseDownEventMs.p95}, clickMouseDownPostEventMs p95=${lane.clickMouseDownPostEventMs.p95}, clickMouseUpMs p95=${lane.clickMouseUpMs.p95}, clickSelectionWaitMs p95=${lane.clickSelectionWaitMs.p95}, clickPaintWaitMs p95=${lane.clickPaintWaitMs.p95}, clickToSelectionReadyMs p95=${lane.clickToSelectionReadyMs.p95}, clickToPaintMs p95=${lane.clickToPaintMs.p95}, interactionSequenceToPaintMs p95=${lane.interactionSequenceToPaintMs.p95}, typeToPaintMs p95=${lane.typeToPaintMs.p95}, modelTypeToReadyMs p95=${lane.modelTypeToReadyMs.p95}, modelTypeToPaintMs p95=${lane.modelTypeToPaintMs.p95}, burstToPaintMs p95=${lane.burstToPaintMs.p95}, burstToPaintPerOpMs p95=${lane.burstToPaintPerOpMs.p95}, modelBurstToPaintPerOpMs p95=${lane.modelBurstToPaintPerOpMs.p95}, longTaskMaxMs p95=${lane.longTaskMaxMs.p95}, longTaskTotalMs p95=${lane.longTaskDurationMs.p95}, longTaskAttributedMs p95=${lane.longTaskAttributedDurationMs.p95}, longTaskUnattributedMs p95=${lane.longTaskUnattributedDurationMs.p95}, domNodes p95=${lane.domTags.domNodeCount.p95}, heapMB p95=${round(lane.domTags.jsHeapUsedMB.p95)}`,
         );
       }
 
@@ -2548,150 +2663,150 @@ const run = async () => {
           typeAfterDeleteTrace?.inputEvents ?? {};
 
         console.log(
-          `selectAllDelete: selectAllReadyMs=${round(proof.selectAllReadyMs)}, selectAllToPaintMs=${round(proof.selectAllToPaintMs)}, deleteReadyMs=${round(proof.deleteReadyMs)}, deleteToPaintMs=${round(proof.deleteToPaintMs)}, typeAfterDeleteInputMode=${proof.typeAfterDeleteInputMode}, typeAfterDeleteToPaintMs=${round(proof.typeAfterDeleteToPaintMs)}, typeAfterDeleteDispatchMs=${round(proof.typeAfterDeleteDispatchMs)}, typeAfterDeleteWaitForModelMs=${round(proof.typeAfterDeleteWaitForModelMs)}, typeAfterDeleteBeforeInputSpanMs=${round(typeAfterDeleteBeforeInputEvents.spanMs ?? 0)}, typeAfterDeleteBeforeInputMaxGapMs=${round(typeAfterDeleteBeforeInputEvents.maxGapMs ?? 0)}, typeAfterDeleteInputSpanMs=${round(typeAfterDeleteInputEvents.spanMs ?? 0)}, typeAfterDeleteInputMaxGapMs=${round(typeAfterDeleteInputEvents.maxGapMs ?? 0)}, typeAfterDeleteLongTaskMaxMs=${round(typeAfterDeleteTrace?.longTaskMaxMs ?? 0)}, typeAfterDeleteLongTaskAttributedMs=${round(typeAfterDeleteTrace?.longTaskAttributedDurationMs ?? 0)}, typeAfterDeleteLongTaskUnattributedMs=${round(typeAfterDeleteTrace?.longTaskUnattributedDurationMs ?? 0)}, typeAfterDeleteLongTaskClaim=${typeAfterDeleteTrace?.longTaskAttributionClaimWidth ?? 'none'}, typeAfterDeleteProfilerDurationMs=${round(typeAfterDeleteTrace?.profilerDurationMs ?? 0)}, undoTypeToPaintMs=${round(proof.undoTypeToPaintMs)}, undoDeleteReadyMs=${round(proof.undoDeleteReadyMs)}, undoDeleteToPaintMs=${round(proof.undoDeleteToPaintMs)}, undoDeleteRestored=${proof.undoDeleteRestored}, afterSelectAllDomNodes=${proof.afterSelectAllDomNodes}, afterDeleteDomNodes=${proof.afterDeleteDomNodes}, afterUndoDeleteDomNodes=${proof.afterUndoDeleteDomNodes}`
+          `selectAllDelete: selectAllReadyMs=${round(proof.selectAllReadyMs)}, selectAllToPaintMs=${round(proof.selectAllToPaintMs)}, deleteReadyMs=${round(proof.deleteReadyMs)}, deleteToPaintMs=${round(proof.deleteToPaintMs)}, typeAfterDeleteInputMode=${proof.typeAfterDeleteInputMode}, typeAfterDeleteToPaintMs=${round(proof.typeAfterDeleteToPaintMs)}, typeAfterDeleteDispatchMs=${round(proof.typeAfterDeleteDispatchMs)}, typeAfterDeleteWaitForModelMs=${round(proof.typeAfterDeleteWaitForModelMs)}, typeAfterDeleteBeforeInputSpanMs=${round(typeAfterDeleteBeforeInputEvents.spanMs ?? 0)}, typeAfterDeleteBeforeInputMaxGapMs=${round(typeAfterDeleteBeforeInputEvents.maxGapMs ?? 0)}, typeAfterDeleteInputSpanMs=${round(typeAfterDeleteInputEvents.spanMs ?? 0)}, typeAfterDeleteInputMaxGapMs=${round(typeAfterDeleteInputEvents.maxGapMs ?? 0)}, typeAfterDeleteLongTaskMaxMs=${round(typeAfterDeleteTrace?.longTaskMaxMs ?? 0)}, typeAfterDeleteLongTaskAttributedMs=${round(typeAfterDeleteTrace?.longTaskAttributedDurationMs ?? 0)}, typeAfterDeleteLongTaskUnattributedMs=${round(typeAfterDeleteTrace?.longTaskUnattributedDurationMs ?? 0)}, typeAfterDeleteLongTaskClaim=${typeAfterDeleteTrace?.longTaskAttributionClaimWidth ?? 'none'}, typeAfterDeleteProfilerDurationMs=${round(typeAfterDeleteTrace?.profilerDurationMs ?? 0)}, undoTypeToPaintMs=${round(proof.undoTypeToPaintMs)}, undoDeleteReadyMs=${round(proof.undoDeleteReadyMs)}, undoDeleteToPaintMs=${round(proof.undoDeleteToPaintMs)}, undoDeleteRestored=${proof.undoDeleteRestored}, afterSelectAllDomNodes=${proof.afterSelectAllDomNodes}, afterDeleteDomNodes=${proof.afterDeleteDomNodes}, afterUndoDeleteDomNodes=${proof.afterUndoDeleteDomNodes}`,
         );
       }
     }
 
     const laneSummaries = Object.values(summary.surfaces).flatMap((surface) =>
-      Object.values(surface.lanes)
+      Object.values(surface.lanes),
     );
     const maxTypeToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.typeToPaintMs.p95)
+      ...laneSummaries.map((lane) => lane.typeToPaintMs.p95),
     );
     const maxSelectToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.selectMs.p95)
+      ...laneSummaries.map((lane) => lane.selectMs.p95),
     );
     const maxSelectionReadyP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.selectReadyMs.p95)
+      ...laneSummaries.map((lane) => lane.selectReadyMs.p95),
     );
     const maxMaterializedSelectToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.materializedSelectMs.p95)
+      ...laneSummaries.map((lane) => lane.materializedSelectMs.p95),
     );
     const maxMaterializedSelectionReadyP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.materializedSelectReadyMs.p95)
+      ...laneSummaries.map((lane) => lane.materializedSelectReadyMs.p95),
     );
     const maxSelectMaterializationFramesP95 = Math.max(
-      ...laneSummaries.map((lane) => lane.selectMaterializationFrames.p95)
+      ...laneSummaries.map((lane) => lane.selectMaterializationFrames.p95),
     );
     const maxSelectMaterializationScrollDeltaP95 = Math.max(
-      ...laneSummaries.map((lane) => lane.selectMaterializationScrollDelta.p95)
+      ...laneSummaries.map((lane) => lane.selectMaterializationScrollDelta.p95),
     );
     const maxMaterializedSelectMaterializationFramesP95 = Math.max(
       ...laneSummaries.map(
-        (lane) => lane.materializedSelectMaterializationFrames.p95
-      )
+        (lane) => lane.materializedSelectMaterializationFrames.p95,
+      ),
     );
     const maxMaterializedSelectMaterializationScrollDeltaP95 = Math.max(
       ...laneSummaries.map(
-        (lane) => lane.materializedSelectMaterializationScrollDelta.p95
-      )
+        (lane) => lane.materializedSelectMaterializationScrollDelta.p95,
+      ),
     );
     const maxClickToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickToPaintMs.p95)
+      ...laneSummaries.map((lane) => lane.clickToPaintMs.p95),
     );
     const maxInteractionSequenceToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.interactionSequenceToPaintMs.p95)
+      ...laneSummaries.map((lane) => lane.interactionSequenceToPaintMs.p95),
     );
     const maxClickToSelectionReadyP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickToSelectionReadyMs.p95)
+      ...laneSummaries.map((lane) => lane.clickToSelectionReadyMs.p95),
     );
     const maxClickDispatchP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickDispatchMs.p95)
+      ...laneSummaries.map((lane) => lane.clickDispatchMs.p95),
     );
     const maxClickMouseMoveP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseMoveMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseMoveMs.p95),
     );
     const maxClickMouseDownP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseDownMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseDownMs.p95),
     );
     const maxClickMouseDownEventP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseDownEventMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseDownEventMs.p95),
     );
     const maxClickMouseDownEventMissingP95 = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseDownEventMissing.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseDownEventMissing.p95),
     );
     const maxClickMouseDownPostEventP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseDownPostEventMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseDownPostEventMs.p95),
     );
     const maxClickMouseDownPreEventP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseDownPreEventMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseDownPreEventMs.p95),
     );
     const maxClickMouseUpP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickMouseUpMs.p95)
+      ...laneSummaries.map((lane) => lane.clickMouseUpMs.p95),
     );
     const maxClickSelectionWaitP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickSelectionWaitMs.p95)
+      ...laneSummaries.map((lane) => lane.clickSelectionWaitMs.p95),
     );
     const maxClickPaintWaitP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.clickPaintWaitMs.p95)
+      ...laneSummaries.map((lane) => lane.clickPaintWaitMs.p95),
     );
     const maxBurstToPaintPerOpP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.burstToPaintPerOpMs.p95)
+      ...laneSummaries.map((lane) => lane.burstToPaintPerOpMs.p95),
     );
     const maxModelTypeToPaintP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.modelTypeToPaintMs.p95)
+      ...laneSummaries.map((lane) => lane.modelTypeToPaintMs.p95),
     );
     const maxModelTypeToReadyP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.modelTypeToReadyMs.p95)
+      ...laneSummaries.map((lane) => lane.modelTypeToReadyMs.p95),
     );
     const maxModelBurstToPaintPerOpP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.modelBurstToPaintPerOpMs.p95)
+      ...laneSummaries.map((lane) => lane.modelBurstToPaintPerOpMs.p95),
     );
     const maxDomNodesP95 = Math.max(
-      ...laneSummaries.map((lane) => lane.domTags.domNodeCount.p95)
+      ...laneSummaries.map((lane) => lane.domTags.domNodeCount.p95),
     );
     const maxHeapMBP95 = Math.max(
-      ...laneSummaries.map((lane) => lane.domTags.jsHeapUsedMB.p95)
+      ...laneSummaries.map((lane) => lane.domTags.jsHeapUsedMB.p95),
     );
     const maxLongTaskP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.longTaskMaxMs.p95)
+      ...laneSummaries.map((lane) => lane.longTaskMaxMs.p95),
     );
     const maxLongTaskTotalP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.longTaskDurationMs.p95)
+      ...laneSummaries.map((lane) => lane.longTaskDurationMs.p95),
     );
     const maxLongTaskAttributedP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.longTaskAttributedDurationMs.p95)
+      ...laneSummaries.map((lane) => lane.longTaskAttributedDurationMs.p95),
     );
     const maxLongTaskUnattributedP95Ms = Math.max(
-      ...laneSummaries.map((lane) => lane.longTaskUnattributedDurationMs.p95)
+      ...laneSummaries.map((lane) => lane.longTaskUnattributedDurationMs.p95),
     );
     const maxRootMouseDownCaptureP95Ms = Math.max(
       ...laneSummaries.map((lane) =>
-        profilerDurationP95(lane, 'runtime-time:root-mousedown.capture')
-      )
+        profilerDurationP95(lane, 'runtime-time:root-mousedown.capture'),
+      ),
     );
     const maxRootMouseDownCoordinateP95Ms = Math.max(
       ...laneSummaries.map((lane) =>
         profilerDurationP95(
           lane,
-          'runtime-time:root-mousedown.resolve-coordinate-placement'
-        )
-      )
+          'runtime-time:root-mousedown.resolve-coordinate-placement',
+        ),
+      ),
     );
     const maxRootMouseDownStartRangeP95Ms = Math.max(
       ...laneSummaries.map((lane) =>
         profilerDurationP95(
           lane,
-          'runtime-time:root-mousedown.resolve-start-range'
-        )
-      )
+          'runtime-time:root-mousedown.resolve-start-range',
+        ),
+      ),
     );
     const maxRootMouseDownProjectedEndpointP95Ms = Math.max(
       ...laneSummaries.map((lane) =>
         profilerDurationP95(
           lane,
-          'runtime-time:root-mousedown.resolve-projected-drag-endpoint'
-        )
-      )
+          'runtime-time:root-mousedown.resolve-projected-drag-endpoint',
+        ),
+      ),
     );
     const maxRootMouseDownApplySelectionP95Ms = Math.max(
       ...laneSummaries.map((lane) =>
         profilerDurationP95(
           lane,
-          'runtime-time:root-mousedown.apply-place-native-selection'
-        )
-      )
+          'runtime-time:root-mousedown.apply-place-native-selection',
+        ),
+      ),
     );
     const printSurfaceMetrics = (surfaceKey, prefix) => {
       const surface = summary.surfaces[surfaceKey];
@@ -2702,461 +2817,465 @@ const run = async () => {
 
       const surfaceLaneSummaries = Object.values(surface.lanes);
       const maxSurfaceTypeToPaintP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.typeToPaintMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.typeToPaintMs.p95),
       );
       const maxSurfaceSelectToPaintP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.selectMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.selectMs.p95),
       );
       const maxSurfaceSelectionReadyP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.selectReadyMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.selectReadyMs.p95),
       );
       const maxSurfaceMaterializedSelectToPaintP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.materializedSelectMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.materializedSelectMs.p95),
       );
       const maxSurfaceMaterializedSelectionReadyP95Ms = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.materializedSelectReadyMs.p95
-        )
+          (lane) => lane.materializedSelectReadyMs.p95,
+        ),
       );
       const maxSurfaceSelectMaterializationFramesP95 = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.selectMaterializationFrames.p95
-        )
+          (lane) => lane.selectMaterializationFrames.p95,
+        ),
       );
       const maxSurfaceSelectMaterializationScrollDeltaP95 = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.selectMaterializationScrollDelta.p95
-        )
+          (lane) => lane.selectMaterializationScrollDelta.p95,
+        ),
       );
       const maxSurfaceMaterializedSelectMaterializationFramesP95 = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.materializedSelectMaterializationFrames.p95
-        )
+          (lane) => lane.materializedSelectMaterializationFrames.p95,
+        ),
       );
       const maxSurfaceMaterializedSelectMaterializationScrollDeltaP95 =
         Math.max(
           ...surfaceLaneSummaries.map(
-            (lane) => lane.materializedSelectMaterializationScrollDelta.p95
-          )
+            (lane) => lane.materializedSelectMaterializationScrollDelta.p95,
+          ),
         );
       const maxSurfaceClickToPaintP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickToPaintMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickToPaintMs.p95),
       );
       const maxSurfaceInteractionSequenceToPaintP95Ms = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.interactionSequenceToPaintMs.p95
-        )
+          (lane) => lane.interactionSequenceToPaintMs.p95,
+        ),
       );
       const maxSurfaceClickToSelectionReadyP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickToSelectionReadyMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickToSelectionReadyMs.p95),
       );
       const maxSurfaceClickDispatchP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickDispatchMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickDispatchMs.p95),
       );
       const maxSurfaceClickMouseMoveP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickMouseMoveMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickMouseMoveMs.p95),
       );
       const maxSurfaceClickMouseDownP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickMouseDownMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickMouseDownMs.p95),
       );
       const maxSurfaceClickMouseDownEventP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickMouseDownEventMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickMouseDownEventMs.p95),
       );
       const maxSurfaceClickMouseDownEventMissingP95 = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.clickMouseDownEventMissing.p95
-        )
+          (lane) => lane.clickMouseDownEventMissing.p95,
+        ),
       );
       const maxSurfaceClickMouseDownPostEventP95Ms = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.clickMouseDownPostEventMs.p95
-        )
+          (lane) => lane.clickMouseDownPostEventMs.p95,
+        ),
       );
       const maxSurfaceClickMouseDownPreEventP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickMouseDownPreEventMs.p95)
+        ...surfaceLaneSummaries.map(
+          (lane) => lane.clickMouseDownPreEventMs.p95,
+        ),
       );
       const maxSurfaceClickMouseUpP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickMouseUpMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickMouseUpMs.p95),
       );
       const maxSurfaceClickSelectionWaitP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickSelectionWaitMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickSelectionWaitMs.p95),
       );
       const maxSurfaceClickPaintWaitP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.clickPaintWaitMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.clickPaintWaitMs.p95),
       );
       const maxSurfaceBurstToPaintPerOpP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.burstToPaintPerOpMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.burstToPaintPerOpMs.p95),
       );
       const maxSurfaceModelTypeToPaintP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.modelTypeToPaintMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.modelTypeToPaintMs.p95),
       );
       const maxSurfaceModelTypeToReadyP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.modelTypeToReadyMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.modelTypeToReadyMs.p95),
       );
       const maxSurfaceModelBurstToPaintPerOpP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.modelBurstToPaintPerOpMs.p95)
+        ...surfaceLaneSummaries.map(
+          (lane) => lane.modelBurstToPaintPerOpMs.p95,
+        ),
       );
       const maxSurfaceDomNodesP95 = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.domTags.domNodeCount.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.domTags.domNodeCount.p95),
       );
       const maxSurfaceHeapMBP95 = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.domTags.jsHeapUsedMB.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.domTags.jsHeapUsedMB.p95),
       );
       const maxSurfaceLongTaskP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.longTaskMaxMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.longTaskMaxMs.p95),
       );
       const maxSurfaceLongTaskTotalP95Ms = Math.max(
-        ...surfaceLaneSummaries.map((lane) => lane.longTaskDurationMs.p95)
+        ...surfaceLaneSummaries.map((lane) => lane.longTaskDurationMs.p95),
       );
       const maxSurfaceLongTaskAttributedP95Ms = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.longTaskAttributedDurationMs.p95
-        )
+          (lane) => lane.longTaskAttributedDurationMs.p95,
+        ),
       );
       const maxSurfaceLongTaskUnattributedP95Ms = Math.max(
         ...surfaceLaneSummaries.map(
-          (lane) => lane.longTaskUnattributedDurationMs.p95
-        )
+          (lane) => lane.longTaskUnattributedDurationMs.p95,
+        ),
       );
       const maxSurfaceCoreNotifyListenersP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'core-time:notify-listeners')
-        )
+          profilerDurationP95(lane, 'core-time:notify-listeners'),
+        ),
       );
       const maxSurfaceCoreNotifyListenersCountP95 = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerCountP95(lane, 'core-time:notify-listeners')
-        )
+          profilerCountP95(lane, 'core-time:notify-listeners'),
+        ),
       );
       const maxSurfaceCoreNotifyCommitListenersP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'core-time:notify-commit-listeners')
-        )
+          profilerDurationP95(lane, 'core-time:notify-commit-listeners'),
+        ),
       );
       const maxSurfaceCoreNotifyExtensionCommitListenersP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
           profilerDurationP95(
             lane,
-            'core-time:notify-extension-commit-listeners'
-          )
-        )
+            'core-time:notify-extension-commit-listeners',
+          ),
+        ),
       );
       const maxSurfaceCoreNotifySnapshotListenersP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'core-time:notify-snapshot-listeners')
-        )
+          profilerDurationP95(lane, 'core-time:notify-snapshot-listeners'),
+        ),
       );
       const maxSurfaceCoreNotifySourceListenersP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'core-time:notify-source-listeners')
-        )
+          profilerDurationP95(lane, 'core-time:notify-source-listeners'),
+        ),
       );
       const maxSurfaceCoreListenerSnapshotP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'core-time:listener-snapshot')
-        )
+          profilerDurationP95(lane, 'core-time:listener-snapshot'),
+        ),
       );
       const maxSurfaceSelectorDispatchP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'runtime-time:selector-dispatch')
-        )
+          profilerDurationP95(lane, 'runtime-time:selector-dispatch'),
+        ),
       );
       const maxSurfaceSelectorDispatchCountP95 = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerCountP95(lane, 'runtime-time:selector-dispatch')
-        )
+          profilerCountP95(lane, 'runtime-time:selector-dispatch'),
+        ),
       );
       const maxSurfaceSelectorCheckCountP95 = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerCountP95(lane, 'selector:selector-dispatch-checks')
-        )
+          profilerCountP95(lane, 'selector:selector-dispatch-checks'),
+        ),
       );
       const maxSurfaceSelectorNotifyCountP95 = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerCountP95(lane, 'selector:selector-dispatch-notifies')
-        )
+          profilerCountP95(lane, 'selector:selector-dispatch-notifies'),
+        ),
       );
       const maxSurfaceSelectorSubscriptionCountP95 = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerCountP95(lane, 'selector:selector-dispatch-subscriptions')
-        )
+          profilerCountP95(lane, 'selector:selector-dispatch-subscriptions'),
+        ),
       );
       const maxSurfaceRootMouseDownCaptureP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
-          profilerDurationP95(lane, 'runtime-time:root-mousedown.capture')
-        )
+          profilerDurationP95(lane, 'runtime-time:root-mousedown.capture'),
+        ),
       );
       const maxSurfaceRootMouseDownCoordinateP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
           profilerDurationP95(
             lane,
-            'runtime-time:root-mousedown.resolve-coordinate-placement'
-          )
-        )
+            'runtime-time:root-mousedown.resolve-coordinate-placement',
+          ),
+        ),
       );
       const maxSurfaceRootMouseDownStartRangeP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
           profilerDurationP95(
             lane,
-            'runtime-time:root-mousedown.resolve-start-range'
-          )
-        )
+            'runtime-time:root-mousedown.resolve-start-range',
+          ),
+        ),
       );
       const maxSurfaceRootMouseDownProjectedEndpointP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
           profilerDurationP95(
             lane,
-            'runtime-time:root-mousedown.resolve-projected-drag-endpoint'
-          )
-        )
+            'runtime-time:root-mousedown.resolve-projected-drag-endpoint',
+          ),
+        ),
       );
       const maxSurfaceRootMouseDownApplySelectionP95Ms = Math.max(
         ...surfaceLaneSummaries.map((lane) =>
           profilerDurationP95(
             lane,
-            'runtime-time:root-mousedown.apply-place-native-selection'
-          )
-        )
+            'runtime-time:root-mousedown.apply-place-native-selection',
+          ),
+        ),
       );
 
       console.log(
         `METRIC ${prefix}_type_to_paint_p95_ms=${round(
-          maxSurfaceTypeToPaintP95Ms
-        )}`
+          maxSurfaceTypeToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_select_to_paint_p95_ms=${round(
-          maxSurfaceSelectToPaintP95Ms
-        )}`
+          maxSurfaceSelectToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selection_ready_p95_ms=${round(
-          maxSurfaceSelectionReadyP95Ms
-        )}`
+          maxSurfaceSelectionReadyP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_materialized_select_to_paint_p95_ms=${round(
-          maxSurfaceMaterializedSelectToPaintP95Ms
-        )}`
+          maxSurfaceMaterializedSelectToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_materialized_selection_ready_p95_ms=${round(
-          maxSurfaceMaterializedSelectionReadyP95Ms
-        )}`
+          maxSurfaceMaterializedSelectionReadyP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_select_materialization_frames_p95=${round(
-          maxSurfaceSelectMaterializationFramesP95
-        )}`
+          maxSurfaceSelectMaterializationFramesP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_select_materialization_scroll_delta_p95_px=${round(
-          maxSurfaceSelectMaterializationScrollDeltaP95
-        )}`
+          maxSurfaceSelectMaterializationScrollDeltaP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_materialized_select_materialization_frames_p95=${round(
-          maxSurfaceMaterializedSelectMaterializationFramesP95
-        )}`
+          maxSurfaceMaterializedSelectMaterializationFramesP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_materialized_select_materialization_scroll_delta_p95_px=${round(
-          maxSurfaceMaterializedSelectMaterializationScrollDeltaP95
-        )}`
+          maxSurfaceMaterializedSelectMaterializationScrollDeltaP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_to_paint_p95_ms=${round(
-          maxSurfaceClickToPaintP95Ms
-        )}`
+          maxSurfaceClickToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_interaction_sequence_to_paint_p95_ms=${round(
-          maxSurfaceInteractionSequenceToPaintP95Ms
-        )}`
+          maxSurfaceInteractionSequenceToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_to_selection_ready_p95_ms=${round(
-          maxSurfaceClickToSelectionReadyP95Ms
-        )}`
+          maxSurfaceClickToSelectionReadyP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_dispatch_p95_ms=${round(
-          maxSurfaceClickDispatchP95Ms
-        )}`
+          maxSurfaceClickDispatchP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_move_p95_ms=${round(
-          maxSurfaceClickMouseMoveP95Ms
-        )}`
+          maxSurfaceClickMouseMoveP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_down_p95_ms=${round(
-          maxSurfaceClickMouseDownP95Ms
-        )}`
+          maxSurfaceClickMouseDownP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_down_pre_event_p95_ms=${round(
-          maxSurfaceClickMouseDownPreEventP95Ms
-        )}`
+          maxSurfaceClickMouseDownPreEventP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_down_event_p95_ms=${round(
-          maxSurfaceClickMouseDownEventP95Ms
-        )}`
+          maxSurfaceClickMouseDownEventP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_down_post_event_p95_ms=${round(
-          maxSurfaceClickMouseDownPostEventP95Ms
-        )}`
+          maxSurfaceClickMouseDownPostEventP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_down_event_missing_p95=${round(
-          maxSurfaceClickMouseDownEventMissingP95
-        )}`
+          maxSurfaceClickMouseDownEventMissingP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_root_mousedown_capture_p95_ms=${round(
-          maxSurfaceRootMouseDownCaptureP95Ms
-        )}`
+          maxSurfaceRootMouseDownCaptureP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_root_mousedown_coordinate_p95_ms=${round(
-          maxSurfaceRootMouseDownCoordinateP95Ms
-        )}`
+          maxSurfaceRootMouseDownCoordinateP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_root_mousedown_start_range_p95_ms=${round(
-          maxSurfaceRootMouseDownStartRangeP95Ms
-        )}`
+          maxSurfaceRootMouseDownStartRangeP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_root_mousedown_projected_endpoint_p95_ms=${round(
-          maxSurfaceRootMouseDownProjectedEndpointP95Ms
-        )}`
+          maxSurfaceRootMouseDownProjectedEndpointP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_root_mousedown_apply_selection_p95_ms=${round(
-          maxSurfaceRootMouseDownApplySelectionP95Ms
-        )}`
+          maxSurfaceRootMouseDownApplySelectionP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_mouse_up_p95_ms=${round(
-          maxSurfaceClickMouseUpP95Ms
-        )}`
+          maxSurfaceClickMouseUpP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_selection_wait_p95_ms=${round(
-          maxSurfaceClickSelectionWaitP95Ms
-        )}`
+          maxSurfaceClickSelectionWaitP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_click_paint_wait_p95_ms=${round(
-          maxSurfaceClickPaintWaitP95Ms
-        )}`
+          maxSurfaceClickPaintWaitP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_burst_to_paint_per_op_p95_ms=${round(
-          maxSurfaceBurstToPaintPerOpP95Ms
-        )}`
+          maxSurfaceBurstToPaintPerOpP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_model_type_to_paint_p95_ms=${round(
-          maxSurfaceModelTypeToPaintP95Ms
-        )}`
+          maxSurfaceModelTypeToPaintP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_model_type_to_ready_p95_ms=${round(
-          maxSurfaceModelTypeToReadyP95Ms
-        )}`
+          maxSurfaceModelTypeToReadyP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_model_burst_to_paint_per_op_p95_ms=${round(
-          maxSurfaceModelBurstToPaintPerOpP95Ms
-        )}`
+          maxSurfaceModelBurstToPaintPerOpP95Ms,
+        )}`,
       );
       console.log(
-        `METRIC ${prefix}_dom_nodes_p95=${round(maxSurfaceDomNodesP95)}`
+        `METRIC ${prefix}_dom_nodes_p95=${round(maxSurfaceDomNodesP95)}`,
       );
       console.log(`METRIC ${prefix}_heap_mb_p95=${round(maxSurfaceHeapMBP95)}`);
       console.log(
         `METRIC ${prefix}_long_task_max_p95_ms=${round(
-          maxSurfaceLongTaskP95Ms
-        )}`
+          maxSurfaceLongTaskP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_long_task_total_p95_ms=${round(
-          maxSurfaceLongTaskTotalP95Ms
-        )}`
+          maxSurfaceLongTaskTotalP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_long_task_attributed_p95_ms=${round(
-          maxSurfaceLongTaskAttributedP95Ms
-        )}`
+          maxSurfaceLongTaskAttributedP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_long_task_unattributed_p95_ms=${round(
-          maxSurfaceLongTaskUnattributedP95Ms
-        )}`
+          maxSurfaceLongTaskUnattributedP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_listeners_p95_ms=${round(
-          maxSurfaceCoreNotifyListenersP95Ms
-        )}`
+          maxSurfaceCoreNotifyListenersP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_listeners_count_p95=${round(
-          maxSurfaceCoreNotifyListenersCountP95
-        )}`
+          maxSurfaceCoreNotifyListenersCountP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_commit_listeners_p95_ms=${round(
-          maxSurfaceCoreNotifyCommitListenersP95Ms
-        )}`
+          maxSurfaceCoreNotifyCommitListenersP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_extension_commit_listeners_p95_ms=${round(
-          maxSurfaceCoreNotifyExtensionCommitListenersP95Ms
-        )}`
+          maxSurfaceCoreNotifyExtensionCommitListenersP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_snapshot_listeners_p95_ms=${round(
-          maxSurfaceCoreNotifySnapshotListenersP95Ms
-        )}`
+          maxSurfaceCoreNotifySnapshotListenersP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_notify_source_listeners_p95_ms=${round(
-          maxSurfaceCoreNotifySourceListenersP95Ms
-        )}`
+          maxSurfaceCoreNotifySourceListenersP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_core_listener_snapshot_p95_ms=${round(
-          maxSurfaceCoreListenerSnapshotP95Ms
-        )}`
+          maxSurfaceCoreListenerSnapshotP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selector_dispatch_p95_ms=${round(
-          maxSurfaceSelectorDispatchP95Ms
-        )}`
+          maxSurfaceSelectorDispatchP95Ms,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selector_dispatch_count_p95=${round(
-          maxSurfaceSelectorDispatchCountP95
-        )}`
+          maxSurfaceSelectorDispatchCountP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selector_check_count_p95=${round(
-          maxSurfaceSelectorCheckCountP95
-        )}`
+          maxSurfaceSelectorCheckCountP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selector_notify_count_p95=${round(
-          maxSurfaceSelectorNotifyCountP95
-        )}`
+          maxSurfaceSelectorNotifyCountP95,
+        )}`,
       );
       console.log(
         `METRIC ${prefix}_selector_subscription_count_p95=${round(
-          maxSurfaceSelectorSubscriptionCountP95
-        )}`
+          maxSurfaceSelectorSubscriptionCountP95,
+        )}`,
       );
 
       if (surface.selectAllDelete) {
@@ -3168,300 +3287,300 @@ const run = async () => {
           typeAfterDeleteTrace?.inputEvents ?? {};
 
         console.log(
-          `METRIC ${prefix}_select_all_ready_ms=${round(proof.selectAllReadyMs)}`
+          `METRIC ${prefix}_select_all_ready_ms=${round(proof.selectAllReadyMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_select_all_to_paint_ms=${round(proof.selectAllToPaintMs)}`
+          `METRIC ${prefix}_select_all_to_paint_ms=${round(proof.selectAllToPaintMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_delete_ready_ms=${round(proof.deleteReadyMs)}`
+          `METRIC ${prefix}_delete_ready_ms=${round(proof.deleteReadyMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_delete_to_paint_ms=${round(proof.deleteToPaintMs)}`
+          `METRIC ${prefix}_delete_to_paint_ms=${round(proof.deleteToPaintMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_to_paint_ms=${round(proof.typeAfterDeleteToPaintMs)}`
+          `METRIC ${prefix}_type_after_delete_to_paint_ms=${round(proof.typeAfterDeleteToPaintMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_dispatch_ms=${round(proof.typeAfterDeleteDispatchMs)}`
+          `METRIC ${prefix}_type_after_delete_dispatch_ms=${round(proof.typeAfterDeleteDispatchMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_wait_for_model_ms=${round(proof.typeAfterDeleteWaitForModelMs)}`
+          `METRIC ${prefix}_type_after_delete_wait_for_model_ms=${round(proof.typeAfterDeleteWaitForModelMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_beforeinput_count=${round(typeAfterDeleteBeforeInputEvents.count ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_beforeinput_count=${round(typeAfterDeleteBeforeInputEvents.count ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_beforeinput_span_ms=${round(typeAfterDeleteBeforeInputEvents.spanMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_beforeinput_span_ms=${round(typeAfterDeleteBeforeInputEvents.spanMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_beforeinput_max_gap_ms=${round(typeAfterDeleteBeforeInputEvents.maxGapMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_beforeinput_max_gap_ms=${round(typeAfterDeleteBeforeInputEvents.maxGapMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_beforeinput_p95_gap_ms=${round(typeAfterDeleteBeforeInputEvents.p95GapMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_beforeinput_p95_gap_ms=${round(typeAfterDeleteBeforeInputEvents.p95GapMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_input_count=${round(typeAfterDeleteInputEvents.count ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_input_count=${round(typeAfterDeleteInputEvents.count ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_input_span_ms=${round(typeAfterDeleteInputEvents.spanMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_input_span_ms=${round(typeAfterDeleteInputEvents.spanMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_input_max_gap_ms=${round(typeAfterDeleteInputEvents.maxGapMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_input_max_gap_ms=${round(typeAfterDeleteInputEvents.maxGapMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_input_p95_gap_ms=${round(typeAfterDeleteInputEvents.p95GapMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_input_p95_gap_ms=${round(typeAfterDeleteInputEvents.p95GapMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_task_count=${round(typeAfterDeleteTrace?.longTaskCount ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_task_count=${round(typeAfterDeleteTrace?.longTaskCount ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_task_total_ms=${round(typeAfterDeleteTrace?.longTaskDurationMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_task_total_ms=${round(typeAfterDeleteTrace?.longTaskDurationMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_task_max_ms=${round(typeAfterDeleteTrace?.longTaskMaxMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_task_max_ms=${round(typeAfterDeleteTrace?.longTaskMaxMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_task_attributed_ms=${round(typeAfterDeleteTrace?.longTaskAttributedDurationMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_task_attributed_ms=${round(typeAfterDeleteTrace?.longTaskAttributedDurationMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_task_unattributed_ms=${round(typeAfterDeleteTrace?.longTaskUnattributedDurationMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_task_unattributed_ms=${round(typeAfterDeleteTrace?.longTaskUnattributedDurationMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_animation_frame_count=${round(typeAfterDeleteTrace?.longAnimationFrameCount ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_animation_frame_count=${round(typeAfterDeleteTrace?.longAnimationFrameCount ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_animation_frame_total_ms=${round(typeAfterDeleteTrace?.longAnimationFrameDurationMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_animation_frame_total_ms=${round(typeAfterDeleteTrace?.longAnimationFrameDurationMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_long_animation_frame_max_ms=${round(typeAfterDeleteTrace?.longAnimationFrameMaxMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_long_animation_frame_max_ms=${round(typeAfterDeleteTrace?.longAnimationFrameMaxMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_type_after_delete_profiler_duration_ms=${round(typeAfterDeleteTrace?.profilerDurationMs ?? 0)}`
+          `METRIC ${prefix}_type_after_delete_profiler_duration_ms=${round(typeAfterDeleteTrace?.profilerDurationMs ?? 0)}`,
         );
         console.log(
-          `METRIC ${prefix}_undo_type_to_paint_ms=${round(proof.undoTypeToPaintMs)}`
+          `METRIC ${prefix}_undo_type_to_paint_ms=${round(proof.undoTypeToPaintMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_undo_delete_ready_ms=${round(proof.undoDeleteReadyMs)}`
+          `METRIC ${prefix}_undo_delete_ready_ms=${round(proof.undoDeleteReadyMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_undo_delete_to_paint_ms=${round(proof.undoDeleteToPaintMs)}`
+          `METRIC ${prefix}_undo_delete_to_paint_ms=${round(proof.undoDeleteToPaintMs)}`,
         );
         console.log(
-          `METRIC ${prefix}_undo_delete_restored=${round(proof.undoDeleteRestored)}`
+          `METRIC ${prefix}_undo_delete_restored=${round(proof.undoDeleteRestored)}`,
         );
         console.log(
-          `METRIC ${prefix}_select_all_delete_after_select_all_dom_nodes=${round(proof.afterSelectAllDomNodes)}`
+          `METRIC ${prefix}_select_all_delete_after_select_all_dom_nodes=${round(proof.afterSelectAllDomNodes)}`,
         );
         console.log(
-          `METRIC ${prefix}_select_all_delete_after_delete_dom_nodes=${round(proof.afterDeleteDomNodes)}`
+          `METRIC ${prefix}_select_all_delete_after_delete_dom_nodes=${round(proof.afterDeleteDomNodes)}`,
         );
         console.log(
-          `METRIC ${prefix}_select_all_delete_after_undo_delete_dom_nodes=${round(proof.afterUndoDeleteDomNodes)}`
+          `METRIC ${prefix}_select_all_delete_after_undo_delete_dom_nodes=${round(proof.afterUndoDeleteDomNodes)}`,
         );
       }
     };
 
     console.log(
-      `METRIC react_huge_doc_type_to_paint_p95_ms=${round(maxTypeToPaintP95Ms)}`
+      `METRIC react_huge_doc_type_to_paint_p95_ms=${round(maxTypeToPaintP95Ms)}`,
     );
     console.log(
       `METRIC react_huge_doc_select_to_paint_p95_ms=${round(
-        maxSelectToPaintP95Ms
-      )}`
+        maxSelectToPaintP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selection_ready_p95_ms=${round(
-        maxSelectionReadyP95Ms
-      )}`
+        maxSelectionReadyP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_materialized_select_to_paint_p95_ms=${round(
-        maxMaterializedSelectToPaintP95Ms
-      )}`
+        maxMaterializedSelectToPaintP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_materialized_selection_ready_p95_ms=${round(
-        maxMaterializedSelectionReadyP95Ms
-      )}`
+        maxMaterializedSelectionReadyP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_select_materialization_frames_p95=${round(
-        maxSelectMaterializationFramesP95
-      )}`
+        maxSelectMaterializationFramesP95,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_select_materialization_scroll_delta_p95_px=${round(
-        maxSelectMaterializationScrollDeltaP95
-      )}`
+        maxSelectMaterializationScrollDeltaP95,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_materialized_select_materialization_frames_p95=${round(
-        maxMaterializedSelectMaterializationFramesP95
-      )}`
+        maxMaterializedSelectMaterializationFramesP95,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_materialized_select_materialization_scroll_delta_p95_px=${round(
-        maxMaterializedSelectMaterializationScrollDeltaP95
-      )}`
+        maxMaterializedSelectMaterializationScrollDeltaP95,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_to_paint_p95_ms=${round(
-        maxClickToPaintP95Ms
-      )}`
+        maxClickToPaintP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_interaction_sequence_to_paint_p95_ms=${round(
-        maxInteractionSequenceToPaintP95Ms
-      )}`
+        maxInteractionSequenceToPaintP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_to_selection_ready_p95_ms=${round(
-        maxClickToSelectionReadyP95Ms
-      )}`
+        maxClickToSelectionReadyP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_dispatch_p95_ms=${round(
-        maxClickDispatchP95Ms
-      )}`
+        maxClickDispatchP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_move_p95_ms=${round(
-        maxClickMouseMoveP95Ms
-      )}`
+        maxClickMouseMoveP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_down_p95_ms=${round(
-        maxClickMouseDownP95Ms
-      )}`
+        maxClickMouseDownP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_down_pre_event_p95_ms=${round(
-        maxClickMouseDownPreEventP95Ms
-      )}`
+        maxClickMouseDownPreEventP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_down_event_p95_ms=${round(
-        maxClickMouseDownEventP95Ms
-      )}`
+        maxClickMouseDownEventP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_down_post_event_p95_ms=${round(
-        maxClickMouseDownPostEventP95Ms
-      )}`
+        maxClickMouseDownPostEventP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_down_event_missing_p95=${round(
-        maxClickMouseDownEventMissingP95
-      )}`
+        maxClickMouseDownEventMissingP95,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_root_mousedown_capture_p95_ms=${round(
-        maxRootMouseDownCaptureP95Ms
-      )}`
+        maxRootMouseDownCaptureP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_root_mousedown_coordinate_p95_ms=${round(
-        maxRootMouseDownCoordinateP95Ms
-      )}`
+        maxRootMouseDownCoordinateP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_root_mousedown_start_range_p95_ms=${round(
-        maxRootMouseDownStartRangeP95Ms
-      )}`
+        maxRootMouseDownStartRangeP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_root_mousedown_projected_endpoint_p95_ms=${round(
-        maxRootMouseDownProjectedEndpointP95Ms
-      )}`
+        maxRootMouseDownProjectedEndpointP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_root_mousedown_apply_selection_p95_ms=${round(
-        maxRootMouseDownApplySelectionP95Ms
-      )}`
+        maxRootMouseDownApplySelectionP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_mouse_up_p95_ms=${round(
-        maxClickMouseUpP95Ms
-      )}`
+        maxClickMouseUpP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_selection_wait_p95_ms=${round(
-        maxClickSelectionWaitP95Ms
-      )}`
+        maxClickSelectionWaitP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_click_paint_wait_p95_ms=${round(
-        maxClickPaintWaitP95Ms
-      )}`
+        maxClickPaintWaitP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_burst_to_paint_per_op_p95_ms=${round(
-        maxBurstToPaintPerOpP95Ms
-      )}`
+        maxBurstToPaintPerOpP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_model_type_to_paint_p95_ms=${round(
-        maxModelTypeToPaintP95Ms
-      )}`
+        maxModelTypeToPaintP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_model_type_to_ready_p95_ms=${round(
-        maxModelTypeToReadyP95Ms
-      )}`
+        maxModelTypeToReadyP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_model_burst_to_paint_per_op_p95_ms=${round(
-        maxModelBurstToPaintPerOpP95Ms
-      )}`
+        maxModelBurstToPaintPerOpP95Ms,
+      )}`,
     );
     console.log(`METRIC react_huge_doc_dom_nodes_p95=${round(maxDomNodesP95)}`);
     console.log(`METRIC react_huge_doc_heap_mb_p95=${round(maxHeapMBP95)}`);
     console.log(
-      `METRIC react_huge_doc_long_task_max_p95_ms=${round(maxLongTaskP95Ms)}`
+      `METRIC react_huge_doc_long_task_max_p95_ms=${round(maxLongTaskP95Ms)}`,
     );
     console.log(
       `METRIC react_huge_doc_long_task_total_p95_ms=${round(
-        maxLongTaskTotalP95Ms
-      )}`
+        maxLongTaskTotalP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_long_task_attributed_p95_ms=${round(
-        maxLongTaskAttributedP95Ms
-      )}`
+        maxLongTaskAttributedP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_long_task_unattributed_p95_ms=${round(
-        maxLongTaskUnattributedP95Ms
-      )}`
+        maxLongTaskUnattributedP95Ms,
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_listeners_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'core-time:notify-listeners')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'core-time:notify-listeners'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_listeners_count_p95=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerCountP95(lane, 'core-time:notify-listeners')
-          )
-        )
-      )}`
+            profilerCountP95(lane, 'core-time:notify-listeners'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_commit_listeners_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'core-time:notify-commit-listeners')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'core-time:notify-commit-listeners'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_extension_commit_listeners_p95_ms=${round(
@@ -3469,83 +3588,83 @@ const run = async () => {
           ...laneSummaries.map((lane) =>
             profilerDurationP95(
               lane,
-              'core-time:notify-extension-commit-listeners'
-            )
-          )
-        )
-      )}`
+              'core-time:notify-extension-commit-listeners',
+            ),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_snapshot_listeners_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'core-time:notify-snapshot-listeners')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'core-time:notify-snapshot-listeners'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_notify_source_listeners_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'core-time:notify-source-listeners')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'core-time:notify-source-listeners'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_core_listener_snapshot_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'core-time:listener-snapshot')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'core-time:listener-snapshot'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selector_dispatch_p95_ms=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerDurationP95(lane, 'runtime-time:selector-dispatch')
-          )
-        )
-      )}`
+            profilerDurationP95(lane, 'runtime-time:selector-dispatch'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selector_dispatch_count_p95=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerCountP95(lane, 'runtime-time:selector-dispatch')
-          )
-        )
-      )}`
+            profilerCountP95(lane, 'runtime-time:selector-dispatch'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selector_check_count_p95=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerCountP95(lane, 'selector:selector-dispatch-checks')
-          )
-        )
-      )}`
+            profilerCountP95(lane, 'selector:selector-dispatch-checks'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selector_notify_count_p95=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerCountP95(lane, 'selector:selector-dispatch-notifies')
-          )
-        )
-      )}`
+            profilerCountP95(lane, 'selector:selector-dispatch-notifies'),
+          ),
+        ),
+      )}`,
     );
     console.log(
       `METRIC react_huge_doc_selector_subscription_count_p95=${round(
         Math.max(
           ...laneSummaries.map((lane) =>
-            profilerCountP95(lane, 'selector:selector-dispatch-subscriptions')
-          )
-        )
-      )}`
+            profilerCountP95(lane, 'selector:selector-dispatch-subscriptions'),
+          ),
+        ),
+      )}`,
     );
     printSurfaceMetrics('defaultAuto', 'react_huge_doc_auto');
     printSurfaceMetrics('plateFull', 'react_huge_doc_plate_full');
@@ -3553,14 +3672,17 @@ const run = async () => {
     printSurfaceMetrics('stagedDefault', 'react_huge_doc_staged_default');
     printSurfaceMetrics(
       'stagedContentVisibility',
-      'react_huge_doc_staged_content_visibility'
+      'react_huge_doc_staged_content_visibility',
     );
     printSurfaceMetrics('virtualized', 'react_huge_doc_virtualized');
 
     console.log(`\nWrote ${runArtifactPath}`);
   } finally {
-    await browser.close();
-    await server.close();
+    try {
+      await browser?.close();
+    } finally {
+      await server.close();
+    }
   }
 };
 

@@ -1,0 +1,5 @@
+repo	local_path	source	why	status
+ITenthusiasm/playwright-issue-firefox-fill	/Users/zbeyens/git/playwright-issue-firefox-fill	https://github.com/ITenthusiasm/playwright-issue-firefox-fill	Minimal Firefox `locator.fill()` contenteditable repro with model-owned `beforeinput` and selection update.	promoted-kept
+digabi/rich-text-editor	/Users/zbeyens/git/rich-text-editor	https://github.com/digabi/rich-text-editor	Playwright component tests for a rich-text editor; useful helper patterns but product-specific behavior.	rejected-product-specific
+easylogic/contenteditable	/Users/zbeyens/git/contenteditable	https://github.com/easylogic/contenteditable	Previously read contenteditable event-trace lab; already promoted to Slate event-trace proof law/helper.	kept-existing
+w3c/input-events	none	https://w3c.github.io/input-events/	Spec pressure for beforeinput/input/target ranges; already covered by Slate target-range rows and native event trace helper.	kept-existing

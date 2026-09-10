@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-03-code-block-text-flow",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-03-code-block-text-flow.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-03",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Use one text child for code blocks",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-demo",
+      "files": [
+        "apps/www/src/registry/examples/code-block-demo.tsx",
+        "apps/www/src/registry/examples/values/code-block-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-03-code-block-single-text-e96fe9bf",
+      "kind": "remove",
+      "summary": "Store multiline code in one text child and remove the code-line component and virtualization dependency.",
+      "details": [],
+      "migrationNotes": [
+        "Remove the code-line plugin and component when updating copied editor code."
+      ],
+      "targets": ["code-block", "code-block-static", "code-block-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-03",
+          "entry": "2026-09-03-code-block-text-flow",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

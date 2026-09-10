@@ -61,12 +61,6 @@
       ],
       [
         "element:codeBlock",
-        [
-          "codeLine"
-        ]
-      ],
-      [
-        "element:codeLine",
         []
       ],
       [
@@ -420,12 +414,6 @@
         ]
       ],
       [
-        "codeLine",
-        [
-          "element:codeBlock"
-        ]
-      ],
-      [
         "column",
         [
           "element:columnGroup"
@@ -739,7 +727,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -791,7 +778,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
@@ -859,7 +845,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -944,7 +929,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1013,7 +997,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1024,16 +1007,13 @@
           "voidKind": null
         },
         "content": {
-          "allowedElementTypes": [
-            "codeLine"
-          ],
-          "allowsText": false,
+          "allowedElementTypes": [],
+          "allowsText": true,
           "allowsUnknownElements": false,
           "defaultPlan": {
-            "kind": "element",
-            "type": "codeLine"
+            "kind": "text"
           },
-          "max": null,
+          "max": 1,
           "min": 1
         },
         "contentRoots": [],
@@ -1058,7 +1038,8 @@
           "all",
           "block",
           "element",
-          "plate:block-content"
+          "plate:block-content",
+          "textBlock"
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
@@ -1081,58 +1062,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
-          "inline": false,
-          "isolating": false,
-          "keyboardSelectable": false,
-          "markableVoid": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": false,
-          "voidKind": null
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": null,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ]
-        },
-        "groups": [
-          "all",
-          "block",
-          "element",
-          "textBlock"
-        ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
-        ],
-        "slice": {
-          "preserveContext": true,
-          "replaceWhenCovered": false
-        },
-        "type": "codeLine"
-      },
-      {
-        "behavior": {
-          "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1207,7 +1136,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1261,13 +1189,12 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
-          "keyboardSelectable": true,
+          "keyboardSelectable": false,
           "markableVoid": false,
           "readOnly": false,
-          "selectable": true,
+          "selectable": false,
           "void": true,
           "voidKind": "inline"
         },
@@ -1316,7 +1243,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1401,7 +1327,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -1460,7 +1385,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": true,
@@ -1514,7 +1438,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
@@ -1582,7 +1505,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1657,7 +1579,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -1716,7 +1637,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -1771,7 +1691,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -1851,7 +1770,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": true,
@@ -1902,7 +1820,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
@@ -1990,7 +1907,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2046,7 +1962,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2103,7 +2018,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
@@ -2175,7 +2089,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2232,7 +2145,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2291,7 +2203,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2369,7 +2280,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2422,7 +2332,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": true,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2481,7 +2390,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2543,7 +2451,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2601,7 +2508,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2684,7 +2590,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": false,
@@ -2739,7 +2644,6 @@
       {
         "behavior": {
           "atom": true,
-          "editableIsland": false,
           "inline": false,
           "isolating": false,
           "keyboardSelectable": true,
@@ -2790,7 +2694,6 @@
       {
         "behavior": {
           "atom": false,
-          "editableIsland": false,
           "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
@@ -2958,29 +2861,13 @@
       [
         "element:codeBlock",
         {
-          "allowedElementTypes": [
-            "codeLine"
-          ],
-          "allowsText": false,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "element",
-            "type": "codeLine"
-          },
-          "max": null,
-          "min": 1
-        }
-      ],
-      [
-        "element:codeLine",
-        {
           "allowedElementTypes": [],
           "allowsText": true,
           "allowsUnknownElements": false,
           "defaultPlan": {
             "kind": "text"
           },
-          "max": null,
+          "max": 1,
           "min": 1
         }
       ],
@@ -3567,13 +3454,6 @@
       [
         "element:codeBlock",
         {
-          "kind": "element",
-          "type": "codeLine"
-        }
-      ],
-      [
-        "element:codeLine",
-        {
           "kind": "text"
         }
       ],
@@ -3763,7 +3643,6 @@
           "blockquote",
           "callout",
           "codeBlock",
-          "codeLine",
           "column",
           "columnGroup",
           "date",
@@ -3801,7 +3680,6 @@
           "blockquote",
           "callout",
           "codeBlock",
-          "codeLine",
           "column",
           "columnGroup",
           "details",
@@ -3830,7 +3708,6 @@
           "blockquote",
           "callout",
           "codeBlock",
-          "codeLine",
           "column",
           "columnGroup",
           "date",
@@ -3909,7 +3786,7 @@
           "aiChat",
           "audio",
           "callout",
-          "codeLine",
+          "codeBlock",
           "file",
           "heading",
           "image",
@@ -4091,11 +3968,7 @@
         []
       ],
       [
-        "element:codeBlock\u0000codeLine",
-        []
-      ],
-      [
-        "element:codeLine\u0000\u0000text",
+        "element:codeBlock\u0000\u0000text",
         []
       ],
       [
@@ -4844,10 +4717,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:7b514f094be6c65e",
+  "fingerprint": "fnv1a64:5a791f5ba35945f9",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:7b514f094be6c65e",
+    "fingerprint": "fnv1a64:5a791f5ba35945f9",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -6734,28 +6607,6 @@
       },
       {
         "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:codeSyntax@7dfa8f6bcd561faf",
-        "key": "codeSyntax",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "codeSyntax",
-        "placement": "text",
-        "role": "content",
-        "target": null
-      },
-      {
-        "descriptor": {
           "kind": "string",
           "omitDefault": false,
           "required": false
@@ -6774,82 +6625,6 @@
         "placement": "text",
         "role": "content",
         "target": null
-      },
-      {
-        "descriptor": {
-          "kind": "boolean",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:comment_*@3803469ee50dda46",
-        "key": {
-          "kind": "prefix",
-          "prefix": "comment_"
-        },
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "comment",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:comment@8b8eac6aeb59fd1e",
-        "key": "comment",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "comment",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "boolean",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:commentTransient@fa9b54e77ec3ce5a",
-        "key": "commentTransient",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "comment",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
       },
       {
         "descriptor": {
@@ -7426,23 +7201,7 @@
         []
       ],
       [
-        "text:codeSyntax@7dfa8f6bcd561faf",
-        []
-      ],
-      [
         "text:color@6093816ecb087592",
-        []
-      ],
-      [
-        "text:comment_*@3803469ee50dda46",
-        []
-      ],
-      [
-        "text:comment@8b8eac6aeb59fd1e",
-        []
-      ],
-      [
-        "text:commentTransient@fa9b54e77ec3ce5a",
         []
       ],
       [
@@ -7550,14 +7309,6 @@
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
-        ]
-      ],
-      [
-        "codeLine",
-        [
-          "element:aiPreview@65af9e5e9f595296",
           "element:suggestion@293b45e36ede53d8",
           "element:suggestionTransient@2a17b5ef44f7caad"
         ]
@@ -8527,43 +8278,7 @@
         }
       ],
       [
-        "text:codeSyntax@7dfa8f6bcd561faf",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
         "text:color@6093816ecb087592",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:comment_*@3803469ee50dda46",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:comment@8b8eac6aeb59fd1e",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:commentTransient@fa9b54e77ec3ce5a",
         {
           "copy": "preserve",
           "inclusive": true,
@@ -8993,27 +8708,9 @@
             ]
           ],
           [
-            "codeSyntax",
-            [
-              "text:codeSyntax@7dfa8f6bcd561faf"
-            ]
-          ],
-          [
             "color",
             [
               "text:color@6093816ecb087592"
-            ]
-          ],
-          [
-            "comment",
-            [
-              "text:comment@8b8eac6aeb59fd1e"
-            ]
-          ],
-          [
-            "commentTransient",
-            [
-              "text:commentTransient@fa9b54e77ec3ce5a"
             ]
           ],
           [
@@ -9088,12 +8785,6 @@
             "prefix": "suggestion_",
             "propertyIds": [
               "text:suggestion_*@e58430868d4e66c3"
-            ]
-          },
-          {
-            "prefix": "comment_",
-            "propertyIds": [
-              "text:comment_*@3803469ee50dda46"
             ]
           }
         ]
@@ -9393,23 +9084,7 @@
         "replace"
       ],
       [
-        "text:codeSyntax@7dfa8f6bcd561faf",
-        "replace"
-      ],
-      [
         "text:color@6093816ecb087592",
-        "replace"
-      ],
-      [
-        "text:comment_*@3803469ee50dda46",
-        "replace"
-      ],
-      [
-        "text:comment@8b8eac6aeb59fd1e",
-        "replace"
-      ],
-      [
-        "text:commentTransient@fa9b54e77ec3ce5a",
         "replace"
       ],
       [
@@ -9470,11 +9145,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9496,11 +9167,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9522,11 +9189,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9548,11 +9211,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9574,37 +9233,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
-      [
-        "codeLine",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
-          "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9626,11 +9255,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9652,11 +9277,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9678,11 +9299,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9704,11 +9321,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9730,11 +9343,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9756,11 +9365,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9782,11 +9387,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9808,11 +9409,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9834,11 +9431,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9860,11 +9453,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9886,11 +9475,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9912,11 +9497,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9938,11 +9519,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9964,11 +9541,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -9990,11 +9563,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10016,11 +9585,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10042,11 +9607,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10068,11 +9629,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10094,11 +9651,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10120,11 +9673,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10146,11 +9695,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10172,11 +9717,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10198,11 +9739,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10224,11 +9761,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10250,11 +9783,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10276,11 +9805,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10302,11 +9827,7 @@
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
-          "text:codeSyntax@7dfa8f6bcd561faf",
           "text:color@6093816ecb087592",
-          "text:comment_*@3803469ee50dda46",
-          "text:comment@8b8eac6aeb59fd1e",
-          "text:commentTransient@fa9b54e77ec3ce5a",
           "text:fontFamily@b00b412164ea3c68",
           "text:fontSize@5b3b0f080627a70d",
           "text:highlight@b4c2a38d602e5889",
@@ -10333,7 +9854,6 @@
       "blockquote",
       "callout",
       "codeBlock",
-      "codeLine",
       "column",
       "columnGroup",
       "date",
@@ -10445,11 +9965,7 @@
       "text:backgroundColor@cb359bb332a9fb72",
       "text:bold@66c11ef06c87ed62",
       "text:code@6939885f562d0514",
-      "text:codeSyntax@7dfa8f6bcd561faf",
       "text:color@6093816ecb087592",
-      "text:comment_*@3803469ee50dda46",
-      "text:comment@8b8eac6aeb59fd1e",
-      "text:commentTransient@fa9b54e77ec3ce5a",
       "text:fontFamily@b00b412164ea3c68",
       "text:fontSize@5b3b0f080627a70d",
       "text:highlight@b4c2a38d602e5889",

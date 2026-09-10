@@ -1,0 +1,3 @@
+lead_key	owner	result	proof	status
+composition-freeze-proof	slate-browser / slate-react	Existing IME/composition guard coverage is enough for the active repair patch; future route failures can create a narrower row.	P37 richtext composition guard stress passed 6 Chromium rows and 2 WebKit cleanup rows; P60 later passed 11 Chromium IME rows and 2 WebKit cleanup rows.	kept-existing
+selection-rect-layer-proof	slate-browser / Playwright	Projected selection rectangle proof was promoted into `markerRects` snapshots and huge-document route assertions.	P47 added helper/API and route assertions; package core/typecheck/build, focused huge-document rows, and lint passed.	promoted-kept

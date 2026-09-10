@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+selection:pointer-native-dom-first-sync:docs-packet	P28	slate-auto	No new runtime patch; current P18/P21/P22 proof is the Slate-native promotion.	`bun run playwright playwright/integration/examples/visual-native-selection-smoke.test.ts --grep "inline link drag selection has one native highlight"`	promoted-kept

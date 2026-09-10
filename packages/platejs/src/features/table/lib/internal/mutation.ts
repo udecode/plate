@@ -157,11 +157,6 @@ type InsertRowIntent = TableTarget &
     select?: boolean;
   }>;
 
-type InsertTableIntent = Readonly<{
-  kind: 'insert-table';
-  options?: PlateNodeInsertOptions;
-}>;
-
 type RemoveColumnIntent = TableTarget &
   Readonly<{
     columnCount?: number;
@@ -206,7 +201,6 @@ type RepairIntent = Readonly<{
 export type TableIntent =
   | InsertColumnIntent
   | InsertRowIntent
-  | InsertTableIntent
   | MergeIntent
   | RemoveColumnIntent
   | RemoveRowIntent
@@ -717,37 +711,6 @@ const planInsertRow = (
     context,
     operations,
     intent.select ? { col: 0, row: insertRow } : undefined
-  );
-};
-
-const planInsertTable = (
-  context: TableContext,
-  intent: InsertTableIntent
-): TableMutationPlan => {
-  const options = intent.options ?? {};
-
-  return freezePlan(
-    [
-      {
-        kind: 'insert-node',
-        node: context.table,
-        options: {
-          ...(options.hanging === undefined
-            ? {}
-            : { hanging: options.hanging }),
-          ...(options.mode === undefined ? {} : { mode: options.mode }),
-          ...(options.split === undefined ? {} : { split: options.split }),
-          ...(options.voids === undefined ? {} : { voids: options.voids }),
-        },
-        path: freezePath(context.tablePath),
-      },
-    ],
-    options.select
-      ? selectionForTable(context.table, context.tablePath, {
-          col: 0,
-          row: 0,
-        })
-      : undefined
   );
 };
 
@@ -1362,9 +1325,6 @@ export const planTableMutation = (
     }
     case 'insert-row': {
       return planInsertRow(context, intent);
-    }
-    case 'insert-table': {
-      return planInsertTable(context, intent);
     }
     case 'merge': {
       return planMerge(context, intent);

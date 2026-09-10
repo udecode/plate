@@ -86,7 +86,6 @@ export function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {
 const plugins = [
   ParagraphPlugin.configure({ component: MyParagraphElement }),
   CodeBlockPlugin.configure({ component: MyCodeBlockElement }),
-  CodeLinePlugin.configure({ component: MyCodeLineElement }),
   CodeHighlightPlugin.configure({ component: MyCodeSyntaxLeaf }),
 ]
 ```
@@ -106,19 +105,29 @@ const plugins = [
 ];
 ```
 
-### 编辑器的 `components` 选项
+## 原生 HTML 组件
 
-您可以在`createEditor`（或`useCreateEditor`）中全局映射插件名称到组件。这对于在一个地方管理所有组件，或由多个插件组成的插件特别有用。
+只需要更改 HTML 标签时，直接把标签绑定到插件的 `component`。
 
-```tsx
-const editor = createEditor({
-  plugins: [ParagraphPlugin, CodeBlockPlugin /* ...其他插件 */],
-  components: {
-    [ParagraphPlugin.name]: MyParagraphElement,
-    [CodeBlockPlugin.name]: MyCodeBlockElement,
-    [CodeLinePlugin.name]: MyCodeLineElement,
-    [CodeHighlightPlugin.name]: MyCodeSyntaxLeaf,
-    // ...其他组件覆盖
+```ts title="quote-plugin.ts" showLineNumbers
+import { schema } from 'platejs';
+import { definePlatePlugin } from 'platejs/react';
+
+export const QuotePlugin = definePlatePlugin('quote', {
+  component: 'blockquote',
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
 });
 ```
+
+需要 class、嵌套控件、popover、toolbar、resize handle 或插件 state 时，使用自定义组件。
+
+## API 参考
+
+| API | 用途 | 说明 |
+| --- | --- | --- |
+| `PlateElement` | Element 节点。 | 默认渲染 `div`；接受 `as`、`className`、`style` 和 Plate render props。 |
+| `PlateLeaf` | Mark 和 decoration 文本。 | 默认渲染 `span`；用于声明 `schema.mark` 的插件。 |
+| `plugin.configure({ component: Component })` | 绑定普通节点组件。 | 在同一次终结配置中加入组件和所有用户覆盖。 |
+| `plugin.configure({ component: 'tag' })` | 使用原生 HTML 标签。 | 接受 `'blockquote'`、`'strong'` 或 `'code'` 等标签。 |

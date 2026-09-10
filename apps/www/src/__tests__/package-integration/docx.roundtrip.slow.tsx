@@ -4,16 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { jsx } from '@platejs/test';
-import {
-  BaseCodeHighlightPlugin,
-  type Node as PliteNode,
-  createEditor,
-  type Value,
-} from 'platejs';
-import { htmlToDocxBlob, DocxImportPlugin } from 'platejs/docx';
+import { type Node as PliteNode, createEditor, type Value } from 'platejs';
+import { exportToDocx } from 'platejs/docx/export';
+import { importDocx } from 'platejs/docx/import';
 import { renderStaticHtml } from 'platejs/static';
 
-import { CodeSyntaxLeafDocx } from '@/registry/components/editor/code-block-static';
 import { DocxExportKit } from '@/registry/components/editor/docx-export';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
@@ -21,7 +16,7 @@ jsx;
 
 const createTestEditor = (value?: Value) =>
   createEditor({
-    plugins: [...BaseEditorKit, DocxImportPlugin, ...DocxExportKit],
+    plugins: [...BaseEditorKit, ...DocxExportKit],
     initialValue: value,
   });
 
@@ -38,28 +33,20 @@ const importDocxBuffer = async (
   const arrayBuffer = new ArrayBuffer(buffer.byteLength);
   new Uint8Array(arrayBuffer).set(buffer);
 
-  const result = await editor.plugin(DocxImportPlugin).api.import(arrayBuffer);
+  const result = await importDocx(editor, arrayBuffer);
 
   return result.nodes;
 };
 
 const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
-  const html = await renderStaticHtml(createTestEditor(nodes as Value));
-  const blob = await htmlToDocxBlob(html);
+  const blob = await exportToDocx(nodes as Value, {
+    editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+  });
 
   return Buffer.from(await blob.arrayBuffer());
 };
 
 describe('docx roundtrip', () => {
-  it('keeps existing plugin state when DOCX renderers override components', () => {
-    const codeSyntax = createTestEditor().plugin(BaseCodeHighlightPlugin);
-
-    expect(codeSyntax.initialState.lowlight?.registered('typescript')).toBe(
-      true
-    );
-    expect(codeSyntax.render.node).toBe(CodeSyntaxLeafDocx);
-  });
-
   it('pairs TOC links with export-local heading bookmarks without persisted ids', async () => {
     const html = await renderStaticHtml(
       createTestEditor([
@@ -70,8 +57,8 @@ describe('docx roundtrip', () => {
     const document = new DOMParser().parseFromString(html, 'text/html');
     const href = document.querySelector('a')?.getAttribute('href');
 
-    expect(href).toMatch(/^#plate_/);
-    expect(document.querySelector(href!)).not.toBeNull();
+    expect(href?.startsWith('#')).toBe(true);
+    expect(document.getElementById(href!.slice(1))).not.toBeNull();
   });
 
   it.each(['headers', 'block_quotes', 'tables'])(

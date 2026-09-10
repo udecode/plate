@@ -323,12 +323,11 @@ export const getClipboardData = (
 export const getSelection = (root: Document | ShadowRoot): Selection | null => {
   const getRootSelection = (root as { getSelection?: () => Selection | null })
     .getSelection;
+  const rootSelection = getRootSelection?.call(root);
 
-  if (getRootSelection) {
-    return getRootSelection.call(root);
-  }
+  if (rootSelection) return rootSelection;
 
-  return document.getSelection();
+  return (root as ShadowRoot).ownerDocument?.getSelection() ?? null;
 };
 
 /** Replace the native range while preserving its exact direction. */

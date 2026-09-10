@@ -72,29 +72,12 @@ export const pluginInjectNodeProps = (
     nodeValue,
     value,
   });
-  const callTransformPropsWithoutInjecting = () => {
-    // `transformProps` may call React hooks. Keep the call order stable even
-    // when this node does not receive injected props.
-    if (typeof transformProps === 'function') {
-      Reflect.apply(transformProps, undefined, [
-        { ...getTransformOptions(), props: {} },
-      ]);
-    }
-  };
 
   const path = shouldResolvePathForMatch ? getElementPath(node) : undefined;
 
-  if (shouldResolvePathForMatch && !path) {
-    callTransformPropsWithoutInjecting();
+  if (shouldResolvePathForMatch && !path) return undefined;
 
-    return undefined;
-  }
-
-  if (!injectMatch(node, path)) {
-    callTransformPropsWithoutInjecting();
-
-    return undefined;
-  }
+  if (!injectMatch(node, path)) return undefined;
 
   const queryResult =
     typeof query === 'function'
@@ -111,11 +94,7 @@ export const pluginInjectNodeProps = (
         ])
       : undefined;
 
-  if (typeof query === 'function' && !queryResult) {
-    callTransformPropsWithoutInjecting();
-
-    return undefined;
-  }
+  if (typeof query === 'function' && !queryResult) return undefined;
 
   // early return if there is no reason to inject props
   if (

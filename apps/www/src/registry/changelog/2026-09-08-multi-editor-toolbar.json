@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-multi-editor-toolbar",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-multi-editor-toolbar.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Shared toolbars target the selected editable view.",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mark-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mark-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "history-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/history-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-toolbar-shared-toolbars-target-editable-0005eff0",
+      "kind": "fix",
+      "summary": "Shared toolbars target the selected editable view.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "toolbar",
+        "mark-toolbar-button",
+        "font-size-toolbar-button",
+        "history-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-multi-editor-toolbar",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

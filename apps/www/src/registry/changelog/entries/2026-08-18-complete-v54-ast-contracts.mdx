@@ -1,0 +1,18 @@
+---
+id: 2026-08-18-complete-v54-ast-contracts
+date: 2026-08-18
+status: draft
+kind: rename
+summary: 'Complete the v54 editor document profile'
+change: { 'type': 'source', 'date': '2026-08-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-08-18-date-align-editor-nodes-v54-96cac366","kind":"rename","migrationNotes":[]} -->
+
+- **`date`**, **`date-static`**, **`mention`**, **`mention-static`**, **`footnote`**, **`footnote-static`**, **`block-discussion`**: Store dates under one `value` and persisted associations under `ref`.
+<!-- entry: {"id":"2026-08-18-code-drawing-v54-fields-50af8491","kind":"rename","migrationNotes":[]} -->
+- **`code-drawing`**, **`code-drawing-static`**, **`math`**, **`math-static`**: Use flat lowercase drawing fields and store equation source under `latex`.
+<!-- entry: {"id":"2026-08-18-editor-profile-v54-68fbd5c2","kind":"rename","migrationNotes":[]} -->
+- **`column`**, **`media`**, **`table`**, **`list`**, **`editor-plugins`**, **`editor-ai`**: Apply the v54 migration, field ownership, and numeric-domain contracts.

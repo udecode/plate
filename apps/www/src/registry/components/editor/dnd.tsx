@@ -1,23 +1,17 @@
 'use client';
 
 import { GripVertical } from 'lucide-react';
-import {
-  ElementApi,
-  PathApi,
-  type Element,
-  type NodeKey,
-  type Path,
-} from 'platejs';
+import { ElementApi, PathApi, type Element, type Path } from 'platejs';
 import {
   DndPlugin,
   type DropLineDirection,
   useDraggable,
+  useDndPlugin,
   useDropLine,
 } from 'platejs/dnd/react';
 import { BaseColumnItemPlugin } from 'platejs/layout';
 import { PlaceholderPlugin } from 'platejs/media/react';
 import {
-  ListPlugin,
   type Editor,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
@@ -32,12 +26,13 @@ import {
   BaseTableRowPlugin,
 } from 'platejs/table';
 import * as React from 'react';
-import { DndProvider } from 'react-dnd';
+import { DndContext, DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -51,6 +46,7 @@ const UNDRAGGABLE_PLUGINS = [
 const DndInteractionContext = React.createContext({
   activate: () => {},
   active: false,
+  hasTableCellSelection: false,
 });
 
 const isBlockDraggable: NonNullable<
@@ -83,6 +79,7 @@ const BlockDraggableComponent = (props: RenderNodeWrapperProps) => {
       activate={interaction.activate}
       active={interaction.active}
       container={container}
+      hasTableCellSelection={interaction.hasTableCellSelection}
     />
   );
 };
@@ -98,11 +95,13 @@ function Draggable({
   activate,
   active,
   container,
+  hasTableCellSelection,
   ...props
 }: RenderNodeWrapperProps & {
   activate: () => void;
   active: boolean;
   container: DraggableContainer;
+  hasTableCellSelection: boolean;
 }) {
   const { children, editor, element } = props;
   const [dragButtonTop, setDragButtonTop] = React.useState(0);
@@ -121,13 +120,6 @@ function Draggable({
   }, []);
   const isInColumn = container === 'column';
   const isInTable = container === 'table';
-  const hasTableCellSelection = useEditorSelector((innerEditor) => {
-    const table = innerEditor.plugin(BaseTablePlugin);
-
-    return (
-      table.installed && (table.read.selection()?.cellKeys.length ?? 0) > 1
-    );
-  });
   const isContainer =
     ElementApi.isElement(element.children[0]) &&
     editor.read.schema.isBlock(element.children[0]);
@@ -351,7 +343,7 @@ function DragHandle({
 }) {
   const editor = useEditor();
   const element = useElement();
-  const list = editor.plugin(ListPlugin);
+  const dnd = editor.plugin(DndPlugin);
   const selectElement = () => {
     const path = editor.read.nodes.path(element);
 
@@ -387,71 +379,21 @@ function DragHandle({
 
             if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
 
-            const selectedBlocks = editor.read.nodes.blocks();
-            let selectionNodes = selectedBlocks;
-
-            // If current block is not in selection, use it as the starting point
-            const elementNodeKey = editor.key(element);
-
-            if (
-              !selectionNodes.some(
-                ([node]) => editor.key(node) === elementNodeKey
-              )
-            ) {
-              const path = editor.read.nodes.path(element);
-
-              if (!path) return;
-              selectionNodes = [[element, path]];
-            }
-
-            // Process selection nodes to include list children
-            const processedEntries =
-              list.installed &&
-              selectionNodes.some(([node]) => typeof node.listType === 'string')
-                ? list.read.expandItemsWithChildren(selectionNodes)
-                : selectionNodes;
-            const blocks = processedEntries.map(([node]) => node);
-
-            const elements = createDragPreviewElements(editor, blocks);
+            const elements = styleDragPreviewElements(
+              dnd.api.prepareDrag(element)
+            );
             previewRef.current?.append(...elements);
             previewRef.current?.classList.remove('hidden');
             previewRef.current?.classList.add('opacity-0');
             editor
               .plugin(DndPlugin)
               .store.set({ multiplePreviewRef: previewRef });
-            editor.update.selection.setNodes(
-              processedEntries.map(([node]) => node)
-            );
           }}
           onMouseEnter={() => {
             if (isDragging) return;
 
-            let selectedBlocks = editor.read.nodes.blocks();
-
-            // If current block is not in selection, use it as the starting point
+            const processedBlocks = dnd.read.dragEntries(element);
             const elementNodeKey = editor.key(element);
-
-            if (
-              !selectedBlocks.some(
-                ([node]) => editor.key(node) === elementNodeKey
-              )
-            ) {
-              const path = editor.read.nodes.path(element);
-
-              if (!path) {
-                setPreviewTop(0);
-                return;
-              }
-              selectedBlocks = [[element, path]];
-            }
-
-            // Process selection to include list children
-            const processedBlocks =
-              list.installed &&
-              selectedBlocks.some(([node]) => typeof node.listType === 'string')
-                ? list.read.expandItemsWithChildren(selectedBlocks)
-                : selectedBlocks;
-
             const keys = processedBlocks.map(([block]) => editor.key(block));
 
             if (keys.length > 1 && keys.includes(elementNodeKey)) {
@@ -502,122 +444,42 @@ function DropLine({
   );
 }
 
-const createDragPreviewElements = (
-  editor: Editor,
-  blocks: Element[]
-): HTMLElement[] => {
-  const elements: HTMLElement[] = [];
-  const keys: NodeKey[] = [];
+const styleDragPreviewElements = (
+  previews: Array<{ domNode: HTMLElement; preview: HTMLElement }>
+): HTMLElement[] =>
+  previews.map(({ domNode, preview }, index) => {
+    const document = domNode.ownerDocument;
+    const { scrollLeft } = domNode;
 
-  /**
-   * Remove data attributes so the preview is not recognized as Plate content.
-   */
-  const removeDataAttributes = (element: HTMLElement) => {
-    Array.from(element.attributes).forEach((attr) => {
-      if (attr.name.startsWith('data-plite')) {
-        element.removeAttribute(attr.name);
-      }
-    });
-
-    Array.from(element.children).forEach((child) => {
-      removeDataAttributes(child as HTMLElement);
-    });
-  };
-
-  const resolveElement = (node: Element, index: number) => {
-    const domNode = editor.api.dom.resolveDOMNode(node);
-
-    if (domNode == null) {
-      throw new Error(
-        'Cannot create a drag preview for a node without a DOM element'
-      );
+    if (scrollLeft > 0) {
+      const scrollWrapper = document.createElement('div');
+      scrollWrapper.style.overflow = 'hidden';
+      scrollWrapper.style.width = `${domNode.clientWidth}px`;
+      const innerContainer = document.createElement('div');
+      innerContainer.style.transform = `translateX(-${scrollLeft}px)`;
+      innerContainer.style.width = `${domNode.scrollWidth}px`;
+      while (preview.firstChild) innerContainer.append(preview.firstChild);
+      preview.style.padding = '0';
+      innerContainer.style.padding =
+        document.defaultView?.getComputedStyle(domNode).padding ?? '';
+      scrollWrapper.append(innerContainer);
+      preview.append(scrollWrapper);
     }
 
-    const newDomNode = domNode.cloneNode(true) as HTMLElement;
-
-    // Apply visual compensation for horizontal scroll
-    const applyScrollCompensation = (
-      original: HTMLElement,
-      cloned: HTMLElement
-    ) => {
-      const { scrollLeft } = original;
-
-      if (scrollLeft > 0) {
-        // Create a wrapper to handle the scroll offset
-        const scrollWrapper = document.createElement('div');
-        scrollWrapper.style.overflow = 'hidden';
-        scrollWrapper.style.width = `${original.clientWidth}px`;
-
-        // Create inner container with the full content
-        const innerContainer = document.createElement('div');
-        innerContainer.style.transform = `translateX(-${scrollLeft}px)`;
-        innerContainer.style.width = `${original.scrollWidth}px`;
-
-        // Move all children to the inner container
-        while (cloned.firstChild) {
-          innerContainer.append(cloned.firstChild);
-        }
-
-        // Apply the original element's styles to maintain appearance
-        const originalStyles = window.getComputedStyle(original);
-        cloned.style.padding = '0';
-        innerContainer.style.padding = originalStyles.padding;
-
-        scrollWrapper.append(innerContainer);
-        cloned.append(scrollWrapper);
-      }
-    };
-
-    applyScrollCompensation(domNode, newDomNode);
-
-    keys.push(editor.key(node));
     const wrapper = document.createElement('div');
-    wrapper.append(newDomNode);
+    wrapper.append(preview);
     wrapper.style.display = 'flow-root';
+    const previous = previews[index - 1]?.domNode.parentElement;
+    const current = domNode.parentElement;
 
-    const lastDomNode = blocks[index - 1];
-
-    if (lastDomNode) {
-      const previousDomNode = editor.api.dom.resolveDOMNode(lastDomNode);
-
-      if (previousDomNode == null) {
-        throw new Error('Cannot measure a dragged node without a DOM element');
-      }
-      if (previousDomNode.parentElement == null) {
-        throw new Error(
-          'Cannot measure a dragged node without a parent element'
-        );
-      }
-      if (domNode.parentElement == null) {
-        throw new Error(
-          'Cannot measure a drag preview without a parent element'
-        );
-      }
-
-      const lastDomNodeRect =
-        previousDomNode.parentElement.getBoundingClientRect();
-      const domNodeRect = domNode.parentElement.getBoundingClientRect();
-
-      const distance = domNodeRect.top - lastDomNodeRect.bottom;
-
-      // Check if the two elements are adjacent (touching each other)
-      if (distance > 15) {
-        wrapper.style.marginTop = `${distance}px`;
-      }
+    if (previous && current) {
+      const distance =
+        current.getBoundingClientRect().top -
+        previous.getBoundingClientRect().bottom;
+      if (distance > 15) wrapper.style.marginTop = `${distance}px`;
     }
-
-    removeDataAttributes(newDomNode);
-    elements.push(wrapper);
-  };
-
-  blocks.forEach((node, index) => {
-    resolveElement(node, index);
+    return wrapper;
   });
-
-  editor.plugin(DndPlugin).store.set({ draggingKey: keys });
-
-  return elements;
-};
 
 const calculatePreviewTop = (
   editor: Editor,
@@ -631,33 +493,17 @@ const calculatePreviewTop = (
 ): number => {
   const child = editor.api.dom.resolveDOMNode(element);
 
-  if (child == null) {
-    throw new Error(
-      'Cannot position a drag preview without the dragged DOM element'
-    );
-  }
-
+  if (!child) return 0;
   const editable = editor.api.dom.resolveDOMNode(editor);
+  const window = child.ownerDocument.defaultView;
+  if (!editable || !window) return 0;
 
-  if (editable == null) {
-    throw new Error(
-      'Cannot position a drag preview without the editor DOM element'
-    );
+  let firstDomNode: HTMLElement | null = null;
+  for (const block of blocks) {
+    firstDomNode = editor.api.dom.resolveDOMNode(block);
+    if (firstDomNode) break;
   }
-
-  const firstSelectedChild = blocks[0];
-
-  if (firstSelectedChild == null) {
-    throw new Error('Cannot position a drag preview without a selected block');
-  }
-
-  const firstDomNode = editor.api.dom.resolveDOMNode(firstSelectedChild);
-
-  if (firstDomNode == null) {
-    throw new Error(
-      'Cannot position a drag preview without the first selected DOM element'
-    );
-  }
+  if (!firstDomNode) return 0;
   // Get editor's top padding
   const editorPaddingTop = Number(
     window.getComputedStyle(editable).paddingTop.replace('px', '')
@@ -694,11 +540,8 @@ const calculatePreviewTop = (
 const calcDragButtonTop = (editor: Editor, element: Element): number => {
   const child = editor.api.dom.resolveDOMNode(element);
 
-  if (child == null) {
-    throw new Error(
-      'Cannot position a drag handle without the block DOM element'
-    );
-  }
+  const window = child?.ownerDocument.defaultView;
+  if (!child || !window) return 0;
 
   const currentMarginTopString = window.getComputedStyle(child).marginTop;
   const currentMarginTop = Number(currentMarginTopString.replace('px', ''));
@@ -706,7 +549,30 @@ const calcDragButtonTop = (editor: Editor, element: Element): number => {
   return currentMarginTop;
 };
 
-const DndRoot = ({ children }: { children: React.ReactNode }) => {
+const DndIntegration = ({
+  children,
+  editableRef,
+}: {
+  children: React.ReactNode;
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const [editableElement, setEditableElement] =
+    React.useState<HTMLDivElement | null>(null);
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- The stable ref can receive a different element during any commit.
+  React.useLayoutEffect(() => {
+    if (editableElement !== editableRef.current) {
+      setEditableElement(editableRef.current);
+    }
+  });
+  const { dragDropManager } = React.useContext(DndContext);
+  useDndPlugin(editableElement);
+  const hasTableCellSelection = useEditorSelector((innerEditor) => {
+    const table = innerEditor.plugin(BaseTablePlugin);
+
+    return (
+      table.installed && (table.read.selection()?.cellKeys.length ?? 0) > 1
+    );
+  });
   const isDragging = usePluginStore(DndPlugin, 'isDragging');
   const [active, setActive] = React.useState(false);
   const activate = React.useCallback(() => {
@@ -714,6 +580,9 @@ const DndRoot = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   React.useEffect(() => {
+    if (!editableElement) return undefined;
+
+    const document = editableElement.ownerDocument;
     const deactivate = () => {
       setActive(false);
     };
@@ -727,19 +596,26 @@ const DndRoot = ({ children }: { children: React.ReactNode }) => {
       document.removeEventListener('drop', deactivate);
       document.removeEventListener('mouseup', deactivate);
     };
-  }, []);
+  }, [editableElement]);
   const interaction = React.useMemo(
     () => ({
       activate,
       active: active || isDragging,
+      hasTableCellSelection,
     }),
-    [activate, active, isDragging]
+    [activate, active, hasTableCellSelection, isDragging]
   );
 
   return (
-    <DndInteractionContext value={interaction}>
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    </DndInteractionContext>
+    <TooltipProvider>
+      <DndInteractionContext value={interaction}>
+        {dragDropManager ? (
+          children
+        ) : (
+          <DndProvider backend={HTML5Backend}>{children}</DndProvider>
+        )}
+      </DndInteractionContext>
+    </TooltipProvider>
   );
 };
 
@@ -753,9 +629,9 @@ export const DndKit = [
           .update.insertMedia(dragItem.files, { at: target });
       },
     },
-    render: {
-      aboveNodes: BlockDraggable,
-      abovePlite: DndRoot,
+    slots: {
+      wrapNode: BlockDraggable,
+      wrapRoot: DndIntegration,
     },
   }),
 ];

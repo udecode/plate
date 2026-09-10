@@ -1,10 +1,5 @@
-import {
-  getPlateRuntime,
-  PLUGINS,
-  createEditor,
-  defineBasePlugin,
-  property,
-} from 'platejs';
+import { PLUGINS, createEditor, defineBasePlugin, property } from 'platejs';
+import { compileEditor } from 'platejs/compiler';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { createEditor as createReactEditor } from 'platejs/react';
 
@@ -34,22 +29,18 @@ describe('MarkdownKit', () => {
     }
   });
 
-  it('resolves configured mark keys from the installed schema', () => {
+  it('resolves the configured suggestion mark key from the installed schema', () => {
     const SuggestionMarkPlugin = defineBasePlugin(PLUGINS.suggestion, {
       schema: {
         mark: { key: 'suggestionMark', property: property.boolean() },
       },
     });
-    const CommentMarkPlugin = defineBasePlugin(PLUGINS.comment, {
-      schema: { mark: { key: 'commentMark', property: property.boolean() } },
-    });
     const editor = createEditor({
-      plugins: [SuggestionMarkPlugin, CommentMarkPlugin, ...MarkdownKit],
+      plugins: [SuggestionMarkPlugin, ...MarkdownKit],
     });
 
     expect(editor.plugin(MarkdownPlugin).store.get('plainMarks')).toEqual([
       'suggestionMark',
-      'commentMark',
     ]);
   });
 
@@ -80,9 +71,9 @@ describe('MarkdownKit', () => {
     const editor = createReactEditor({
       plugins: [...FootnoteKit, ...MarkdownKit],
     });
-    const names = getPlateRuntime(editor).pluginList.map(
-      (plugin) => plugin.name
-    );
+    const names = compileEditor({
+      plugins: [...FootnoteKit, ...MarkdownKit],
+    }).bindings.map((binding) => binding.name);
 
     for (const name of footnoteNames) {
       expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
@@ -95,9 +86,9 @@ describe('MarkdownKit', () => {
     const editor = createEditor({
       plugins: [...BaseFootnoteKit, ...MarkdownKit],
     });
-    const names = getPlateRuntime(editor).pluginList.map(
-      (plugin) => plugin.name
-    );
+    const names = compileEditor({
+      plugins: [...BaseFootnoteKit, ...MarkdownKit],
+    }).bindings.map((binding) => binding.name);
 
     for (const name of footnoteNames) {
       expect(names.filter((candidate) => candidate === name)).toHaveLength(1);

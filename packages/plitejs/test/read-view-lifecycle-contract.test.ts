@@ -6,9 +6,15 @@ import {
   createEditorView,
   defineExtension,
   type EditorStateView,
+  setEditorReadOnly,
 } from 'plitejs';
 
-import { setEditorStateViewTransform, txRead } from '../src/internal';
+import {
+  setEditorComposing,
+  setEditorFocused,
+  setEditorStateViewTransform,
+  txRead,
+} from '../src/internal';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string) => ({
@@ -17,6 +23,31 @@ const paragraph = (text: string) => ({
 });
 
 describe('read view lifecycle', () => {
+  it('checks current view permissions for captured commands without changing sibling views', () => {
+    const editor = createEditor({ initialValue: [paragraph('one')] });
+    const view = createEditorView(editor);
+    const sibling = createEditorView(editor);
+    const { insert } = view.update.text;
+
+    setEditorFocused(view, true);
+    setEditorComposing(view, true);
+    assert.equal(view.read.view.isFocused(), true);
+    assert.equal(view.read.view.isComposing(), true);
+    assert.equal(sibling.read.view.isFocused(), false);
+    assert.equal(sibling.read.view.isComposing(), false);
+
+    setEditorReadOnly(view, true);
+    assert.equal(view.read.view.isReadOnly(), true);
+    assert.equal(sibling.read.view.isReadOnly(), false);
+    assert.throws(
+      () => insert('!', { at: { path: [0, 0], offset: 3 } }),
+      /read-only/
+    );
+    assert.equal(editor.read.text.string([]), 'one');
+    setEditorReadOnly(view, false);
+    insert('!', { at: { path: [0, 0], offset: 3 } });
+    assert.equal(sibling.read.text.string([]), 'one!');
+  });
   it('builds one state view per published extension configuration', () => {
     let builds = 0;
     const editor = createEditor({
@@ -368,6 +399,43 @@ describe('read view lifecycle', () => {
       () => Reflect.apply(inheritedMethod, prototypeFacade, ['nested']),
       /method "__proto__\.hasOwnProperty" is not installed/
     );
+  });
+
+  it('supports compiled function invocation while retaining the method receiver', () => {
+    let updates = 0;
+    const editor = createEditor({
+      extensions: [
+        defineExtension('invocation', {
+          read: () => ({
+            nested: {
+              other: () => updates,
+              value() {
+                return this.other();
+              },
+            },
+          }),
+          update: () => ({
+            nested: {
+              other(amount: number) {
+                updates += amount;
+              },
+              value(amount: number) {
+                this.other(amount);
+              },
+            },
+          }),
+        }),
+      ],
+    });
+
+    const read = editor.read.invocation.nested.value;
+    const update = editor.update.invocation.nested.value;
+    const caller = { other: () => -1 };
+    assert.equal(read.call(caller), 0);
+    update.call(caller, 1);
+    assert.equal(read.apply(caller, []), 1);
+    update.apply(caller, [2]);
+    assert.equal(read(), 3);
   });
 
   it('rejects read groups with state-derived data properties', () => {

@@ -1,0 +1,3 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+q001	local-rg	paste clipboard composition beforeinput DataTransfer	insertFromPaste,ClipboardEvent,composition	local	local-slices	4	2	q002 table fragment paste only if current packet reopens
+q002	local-source	prosemirror codemirror lexical clipboard internals	source slices only	local	local-slices	3	1	none

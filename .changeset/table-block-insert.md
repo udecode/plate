@@ -31,7 +31,7 @@ editor.update.table.removeRow();
 editor.update.table.merge();
 ```
 
-Remove `nextBlock` from insertion options; use `{ at, select }` for exact placement and selection.
+Remove `nextBlock` from insertion options. Use `at` for exact placement or `after` for a live source block, with `select` and `replaceEmpty` controlling selection and empty text-block replacement. Implicit insertion places the table after the current containing table.
 
 Replace persisted `attributes.colspan` and `attributes.rowspan` with `colSpan` and `rowSpan`. HTML import and rendering continue to use lowercase DOM attributes.
 

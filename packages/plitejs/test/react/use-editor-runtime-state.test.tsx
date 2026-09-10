@@ -1,4 +1,5 @@
 import { act, render, renderHook, waitFor } from '@testing-library/react';
+import { TextApi } from 'plitejs';
 import type { Element } from 'plitejs';
 import { useLayoutEffect } from 'react';
 
@@ -20,7 +21,7 @@ describe('useEditorRuntimeState', () => {
         const [block] = state.children();
         const [textNode] = block.children;
 
-        return 'text' in textNode ? textNode.text : '';
+        return TextApi.isText(textNode) ? textNode.text : '';
       })
     );
 
@@ -122,7 +123,7 @@ describe('useEditorRuntimeState', () => {
           const [block] = state.children();
           const [textNode] = block.children;
 
-          return 'text' in textNode ? textNode.text : '';
+          return TextApi.isText(textNode) ? textNode.text : '';
         },
         { shouldUpdate: () => allow }
       );

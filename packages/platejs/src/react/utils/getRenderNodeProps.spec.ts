@@ -3,7 +3,7 @@ import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel'
 import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { createEditor } from '../editor/withPlate';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
-import { getRenderNodeProps } from './getRenderNodeProps';
+import { getRenderNodeProps } from './getRenderNodeProps.internal';
 
 describe('getRenderNodeProps', () => {
   it('keeps plain paragraph class merging on the fast path', () => {
@@ -46,7 +46,7 @@ describe('getRenderNodeProps', () => {
   it('keeps plugin props, allowed attrs, and injected node props on the full path', () => {
     const CustomParagraphPlugin = ParagraphPlugin.extend(() => ({
       render: {
-        nodeProps: (({ editor, element }: any) => {
+        attributes: (({ editor, element }: any) => {
           const innerTarget = element.attributes?.target;
 
           return {
@@ -118,5 +118,26 @@ describe('getRenderNodeProps', () => {
     expect(result.attributes?.className).toContain('plite-paragraph');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes?.className).toContain('plite-align-center');
+  });
+
+  it('keeps untargeted mark injection on text nodes', () => {
+    const ColorPlugin = defineBasePlugin('color', {
+      inject: { nodeProps: { styleKey: 'color' } },
+      schema: { mark: property.string() },
+    });
+    const editor = createEditor({ plugins: [ColorPlugin] });
+    const text = { color: 'red', text: 'hello' } as any;
+
+    const result = getRenderNodeProps({
+      editor,
+      props: {
+        attributes: {},
+        children: null,
+        text,
+      } as any,
+      readOnly: false,
+    });
+
+    expect(result.attributes?.style).toEqual({ color: 'red' });
   });
 });

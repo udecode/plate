@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-02-comments-ownership",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-02-comments-ownership.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-02",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Review comments and suggestions in application-owned Floating Discussion",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-demo",
+      "files": ["apps/www/src/registry/examples/discussion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-static",
+      "files": ["apps/www/src/registry/components/editor/editor-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plate-to-html",
+      "files": [
+        "apps/www/src/registry/blocks/plate-to-html/page.tsx",
+        "apps/www/src/registry/components/editor/plate-to-html-client-kit.ts",
+        "apps/www/src/registry/components/editor/plate-to-html-kit.ts",
+        "apps/www/src/registry/components/editor/plate-to-html.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-demo",
+      "files": [
+        "apps/www/src/registry/examples/docx-demo.tsx",
+        "apps/www/src/registry/examples/values/deserialize-docx-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-02-comment-application-owned-threads-durable-0b4456da",
+      "kind": "behavior",
+      "summary": "Open each block's combined comments and suggestions in Floating Discussion, including exact overlaps, block-caret creation, and static or read-only highlights.",
+      "details": [],
+      "migrationNotes": [
+        "Install `DiscussionKit` for Floating Discussion and per-block affordances.",
+        "Replace `block-discussion` with `discussion`."
+      ],
+      "targets": [
+        "comment",
+        "comment-toolbar-button",
+        "discussion",
+        "discussion-demo",
+        "editor",
+        "editor-static"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-02-discussion-review-suggestions",
+      "kind": "behavior",
+      "summary": "Show suggestion authors, changes, attached comment threads, and Accept or Reject actions beside ordinary comments.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion", "suggestion"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-02-ai-comments-shared-channel",
+      "kind": "wiring",
+      "summary": "Stage AI comments for Accept or Reject before publishing their thread records.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "discussion", "use-chat", "editor-ai"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-02-editor-ai-responsive-discussion-layout",
+      "kind": "fix",
+      "summary": "Keep the toolbar above the editor and use Floating Discussion on narrow screens without collapsing the editing surface.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-ai"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-09-comments-record-loading",
+      "kind": "behavior",
+      "summary": "Load fetched thread records through `CommentsPlugin.configure({ initialState: { initialThreads } })`, preserving ranges, authors and timestamps. Read records for saving through `api.getThreads`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "discussion", "discussion-demo", "editor-ai"],
+      "source": {
+        "line": 22,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-02-plate-to-html-suggestions",
+      "kind": "fix",
+      "summary": "Preserve inserted and removed suggestion markup in static HTML exports.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["plate-to-html", "suggestion"],
+      "source": {
+        "line": 24,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-02-docx-code-fidelity",
+      "kind": "fix",
+      "summary": "Preserve code token colors and indentation through the copied DOCX export preset.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "code-block-static",
+        "docx-export",
+        "export-toolbar-button",
+        "docx-demo"
+      ],
+      "source": {
+        "line": 26,
+        "row": 7,
+        "legacyRelease": {
+          "date": "2026-09-02",
+          "entry": "2026-09-02-comments-ownership",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

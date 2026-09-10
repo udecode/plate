@@ -1,0 +1,18 @@
+---
+id: 2026-09-03-fix-comment-anchor-history
+date: 2026-09-03
+status: draft
+kind: fix
+summary: 'Keep comments attached through destructive edits and history'
+change: { 'type': 'source', 'date': '2026-09-03', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-03-comment-keep-comments-attached-through-20b2de16","kind":"fix","migrationNotes":[]} -->
+
+- **`comment`**, **`discussion`**, **`discussion-demo`**: Keep comments reachable after complete text deletion, and restore exact highlights through undo and redo.
+
+<!-- entry: {"id":"2026-09-03-comment-static-thread-bodies","kind":"fix","migrationNotes":[]} -->
+
+- **`comment`**: Render thread message bodies with the static Plate view so replies do not mount nested editable runtimes.

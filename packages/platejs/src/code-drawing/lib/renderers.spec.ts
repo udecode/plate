@@ -87,14 +87,15 @@ describe('renderPlantUml', () => {
   it('encodes the diagram, fetches the svg, and returns a data url', async () => {
     const result = await renderCodeDrawing(
       'plantuml',
-      '@startuml\nAlice -> Bob\n@enduml'
+      '@startuml\nAlice -> Bob\n@enduml',
+      { plantUmlServer: 'https://diagrams.example.test/plantuml/' }
     );
 
     expect(plantUmlEncode).toHaveBeenCalledWith(
       '@startuml\nAlice -> Bob\n@enduml'
     );
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://www.plantuml.com/plantuml/svg/encoded:@startuml\nAlice -> Bob\n@enduml'
+      'https://diagrams.example.test/plantuml/svg/encoded:@startuml\nAlice -> Bob\n@enduml'
     );
     expect(result).toStartWith('data:image/svg+xml;base64,');
   });
@@ -106,7 +107,9 @@ describe('renderPlantUml', () => {
 
     try {
       await expect(
-        renderCodeDrawing('plantuml', '@startuml\nA\n@enduml')
+        renderCodeDrawing('plantuml', '@startuml\nA\n@enduml', {
+          plantUmlServer: 'https://diagrams.example.test/plantuml',
+        })
       ).rejects.toThrow('Failed to fetch PlantUml SVG');
       expect(consoleErrorMock).toHaveBeenCalled();
     } finally {
@@ -136,6 +139,25 @@ describe('renderMermaid', () => {
 });
 
 describe('renderCodeDrawing', () => {
+  it('removes the temporary renderer tree when drawing throws', async () => {
+    const before = document.body.childElementCount;
+    flowchartDrawSVG.mockImplementationOnce(() => {
+      throw new Error('Invalid chart');
+    });
+    await expect(renderCodeDrawing('flowchart', 'invalid')).rejects.toThrow(
+      'Invalid chart'
+    );
+    expect(document.body.childElementCount).toBe(before);
+  });
+
+  it('requires an explicit PlantUML server without making a request', async () => {
+    fetchMock.mockClear();
+    await expect(
+      renderCodeDrawing('plantuml', '@startuml\nA\n@enduml')
+    ).rejects.toThrow('PlantUML rendering requires a server URL');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('returns an empty string for blank content', async () => {
     await expect(renderCodeDrawing('mermaid', '   ')).resolves.toBe('');
   });

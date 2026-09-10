@@ -1,5 +1,7 @@
 # Release Lane Maintenance
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short release-lanes objective under 240 characters.
 
@@ -8,12 +10,6 @@ TODO: Fill generated plan path.
 
 Template:
 docs/plans/templates/release-lanes.md
-
-Primary template:
-docs/plans/templates/release-lanes.md
-
-Applied packs:
-- none
 
 Completion threshold:
 - Requested release lane mode is complete: status, sync, promote, verify, or full.
@@ -74,7 +70,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Skill analysis before edits | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Requested mode classified | pending | status / sync / promote / verify / full |
 | Remote state fetched | pending | `git fetch origin main next` result |
 | Release auth available | pending | `gh auth status` and npm read capability, or N/A for dry status |
@@ -113,7 +109,7 @@ Completion Gates:
 | Latest release state | pending | Read GitHub release and npm `latest` | pending |
 | Beta release state | pending | Read release workflow and npm `beta` | pending |
 | Stale sync PR cleanup | pending | Close stale sync PRs or record N/A | pending |
-| P1 autoreview | pending | Review the release-lane result with `--max-priority P1` and close accepted findings; P2/P3 are opt-in only | pending |
+| Task review decision | pending | Reuse Task's single authorized review result or N/A; P1 default, three-invocation scope cap, never on next; no review for direct release sync | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs <this plan>` | pending |
 
 Phase / pass table:

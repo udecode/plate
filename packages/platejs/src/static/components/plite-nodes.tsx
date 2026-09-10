@@ -13,7 +13,6 @@ import type {
   AnyBasePluginDefinition,
   BasePluginContext,
   BasePluginDefinition,
-  InferPluginDecoration,
   PluginReference,
   RenderElementProps,
   StaticRenderLeafProps as RenderLeafProps,
@@ -86,7 +85,7 @@ export type PliteElementProps<TPlugin extends PliteNodePropsDescriptor> =
 
 export type PliteNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = BasePluginContext<C> & {
+> = Omit<BasePluginContext<C>, 'slots'> & {
   /**
    * Optional ref to be merged with `attributes.ref`.
    *
@@ -208,7 +207,7 @@ type PliteLeafRenderProps<
   N extends Text = Text,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PliteNodeProps<C> &
-  RenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>> & {
+  RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   };
@@ -235,7 +234,7 @@ export const PliteLeaf = function PliteLeaf({
   ref,
   ...props
 }: (PliteNodeProps<any> &
-  RenderLeafProps<Text, Text & Partial<InferPluginDecoration<NoInfer<any>>>> & {
+  RenderLeafProps<Text, Text> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
@@ -263,7 +262,7 @@ export const PliteLeaf = function PliteLeaf({
   className,
   ...props
 }: (PliteNodeProps<C> &
-  RenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>> & {
+  RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &

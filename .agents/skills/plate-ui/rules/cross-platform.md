@@ -48,8 +48,12 @@ domain-sounding name does not rescue a prop bag used by one component.
 Split mixed hooks. Keep reusable subscription, observer, imperative DOM
 projection, and cleanup in a minimal package hook; a side-effect-only adapter
 takes the required ref/controller and returns `void`. The open UI derives
-renderer state and owns transient overrides, rounding, styles/refs used only as
-props, and event handlers. A pure calculation with one family owner stays local.
+renderer state and owns transient rendering overrides, visual rounding,
+styles/refs used only as props, and presentation event wiring. Semantic
+calculations and domain constraints belong to the core even with one current
+consumer. Neutral DOM/input lifecycle belongs to the platform adapter; a web
+contract needs no invented native counterpart. Apply the ownership extraction
+test before counting consumers.
 
 ---
 

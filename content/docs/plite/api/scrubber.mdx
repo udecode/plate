@@ -7,7 +7,7 @@ Plite formats some thrown error details with document values and nodes. Text
 fields are redacted by default. Apps that need stricter diagnostics can install
 a scrubber for additional fields.
 
-## Install A Scrubber
+## Install a scrubber
 
 ```typescript
 import { setDebugValueScrubber } from "plitejs";
@@ -26,11 +26,21 @@ setDebugValueScrubber(null);
 
 ## API
 
-<APIReference package="plitejs" symbol="setDebugValueScrubber" />
+### `setDebugValueScrubber`
+
+```typescript
+declare function setDebugValueScrubber(
+  scrubber: DebugValueScrubber | null | undefined
+): void;
+```
 
 Set the function used before Plite formats debug values.
 
-<APIReference package="plitejs" symbol="DebugValueScrubber" />
+### `DebugValueScrubber`
+
+```typescript
+type DebugValueScrubber = (key: string, value: unknown) => unknown;
+```
 
 The custom scrubber runs before Plite's default text redaction. Return the
 original value to let the default scrubber handle it.

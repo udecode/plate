@@ -1,8 +1,10 @@
 import {
   type ComponentPropsWithRef,
   type ForwardedRef,
+  useCallback,
   useEffect,
   useMemo,
+  useSyncExternalStore,
 } from 'react';
 
 import type { DOMRange } from '../../dom';
@@ -14,19 +16,24 @@ import type {
 } from '../components/editable';
 import { useFlushDeferredSelectorsOnRender } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { usePendingInsertionMarksEffect } from './composition-state';
+import { useDecorationDOMRepairBridge } from './decoration-repair-bridge';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
+import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import { useEditableRootRef } from './input-router';
 import {
   beginEditableNativeSelectionImport,
   finishEditableModelSelectionProjection,
   prepareEditableModelSelection,
 } from './input-state';
-import { useProjectionDOMRepairBridge } from './projection-repair-bridge';
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
-import { setEditorReadOnly } from './runtime-editor-api';
+import {
+  setEditorReadOnly,
+  subscribeEditorViewState,
+} from './runtime-editor-api';
 import { useEditableEventRuntime } from './runtime-event-engine';
 import { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
 import { useRuntimeRepairEngine } from './runtime-repair-engine';
@@ -93,7 +100,7 @@ export const useEditableRootRuntime = ({
   domStrategyRuntime,
   onDOMBeforeInput,
   onKeyDown,
-  readOnly,
+  readOnly: readOnlyProp,
   scrollSelectionIntoView,
 }: {
   autoFocus?: boolean;
@@ -110,8 +117,19 @@ export const useEditableRootRuntime = ({
     domRange: DOMRange
   ) => void;
 }) => {
+  const pliteRuntimeContext = useOptionalPliteRuntimeContext();
   useEditableRootCommitWakeup();
   useFlushDeferredSelectorsOnRender();
+
+  const viewReadOnly = useSyncExternalStore(
+    useCallback(
+      (listener) => subscribeEditorViewState(editor, listener),
+      [editor]
+    ),
+    () => editor.read.view.isReadOnly(),
+    () => readOnlyProp
+  );
+  const readOnly = readOnlyProp || viewReadOnly;
 
   const rootRuntimeState = useEditableRootRuntimeState({
     domStrategyRuntime,
@@ -127,8 +145,11 @@ export const useEditableRootRuntime = ({
   const { domPhaseScheduler, inputController, rootRef } = runtime;
 
   useIsomorphicLayoutEffect(() => {
+    setEditorReadOnly(editor, readOnlyProp);
+  }, [editor, readOnlyProp]);
+
+  useIsomorphicLayoutEffect(() => {
     IS_READ_ONLY.set(editor, readOnly);
-    setEditorReadOnly(editor, readOnly);
   }, [editor, readOnly]);
 
   useEffect(() => {
@@ -142,6 +163,7 @@ export const useEditableRootRuntime = ({
     scheduleOnDOMSelectionChange,
     selectionImportController,
   } = useEditableRootSelectionImport({
+    readOnly,
     runtime,
   });
 
@@ -157,7 +179,17 @@ export const useEditableRootRuntime = ({
     scrollSelectionIntoView,
   });
   runtime.updateSelectionExportAfterDOMCommitHandler(() => {
-    if (!ReactEditor.isFocused(editor)) return;
+    const root = runtime.rootElement;
+    const activeElement = root?.ownerDocument.activeElement;
+
+    if (
+      !root ||
+      (!ReactEditor.isFocused(editor) &&
+        activeElement !== root &&
+        !(activeElement && root.contains(activeElement)))
+    ) {
+      return;
+    }
 
     syncDOMSelectionToEditor({
       forceModelExport: true,
@@ -174,9 +206,27 @@ export const useEditableRootRuntime = ({
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
   });
-  useProjectionDOMRepairBridge({
-    inputController,
+  runtime.updateHistoryFocusHandler(() => {
+    const next = getModelOwnedHistoryFocusRepair({
+      editor,
+      getActiveContentRootOwner: pliteRuntimeContext?.getActiveContentRootOwner,
+      getContentRootOwnerViewEditor:
+        pliteRuntimeContext?.getContentRootOwnerViewEditor,
+      getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+    });
+    if (!next.repair) return;
+    if (next.focusEditor) {
+      repairRuntime.requestEditableRepair(next.repair, {
+        focusEditor: next.focusEditor,
+      });
+    } else if (!runtime.externalText.focusSelection()) {
+      runtime.rootElement?.focus({ preventScroll: true });
+      runtime.requestSelectionExportAfterDOMCommit();
+    }
+  });
+  useDecorationDOMRepairBridge({
     requestEditableRepair: repairRuntime.requestEditableRepair,
+    runtime,
   });
   runtime.publishDOMRepairQueue(repairRuntime.domRepairQueue);
   const traceRuntime = useRuntimeKernelTraceEngine({
@@ -250,9 +300,11 @@ export const useEditableRootRuntime = ({
   const eventRuntime = useEditableEventRuntime({
     callbacks,
     deferNativeTextInputRepair,
+    domStrategyRuntime,
     onDOMBeforeInput,
     onKeyDown,
     partialDOMBackedSelection,
+    readOnly,
     repair: repairRuntime,
     runtime,
     selection: selectionImportController,
@@ -299,14 +351,15 @@ export const useEditableRootRuntime = ({
   );
 
   useEditableRootGlobalLifecycle({
+    readOnly,
     runtime,
-    scheduleOnDOMSelectionChange,
   });
 
   const marks = editor.read((state) => state.marks());
   usePendingInsertionMarksEffect({ editor, marks });
 
   return {
+    readOnly,
     domPhaseScheduler,
     editableEventBindings,
     isComposing,

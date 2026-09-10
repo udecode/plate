@@ -2,8 +2,6 @@
 'platejs': major
 ---
 
-Require `platejs@>=54.0.0-beta.1` as a peer dependency.
-
 Require React and React DOM 19.2 or newer.
 
 Use editor-scoped `NodeKey` values for live AI selections, snapshots, and replacement targets. Correlate one request and response with small `blockRef` and table-cell `ref` tokens mapped to local node keys. Persisted IDs remain limited to references that must survive reloads, storage, editor destruction, or another client through `ElementIdPlugin`.
@@ -32,7 +30,7 @@ Use `{tableCellWithRef}` for selected-table prompt context. Table-cell updates u
 
 AI Chat controllers and Markdown services live in `aiChat.api`; document queries live in `aiChat.read`; its mutations live in `aiChat.update`. Mark undo-safe AI batches with `ai.update.markBatch()`. Remove standalone `findTextRangeInBlock` imports.
 
-The copied registry `AIChatEditor` publishes generated nodes as `previewValue` in the AI Chat store. `insertBelow` and `replaceSelection` read that owned preview and accept only formatting options; do not pass a preview editor into either command. Package consumers use `useChatChunk` for reusable streaming; the copied `ai-menu` item owns menu anchoring and product interaction policy.
+Bind the editor with `useAIChat({ editableRef, transport, onData })`. The package owns the stream cursor, generated preview, request cancellation, and writable-view lifetime across views sharing one editor; `AIChatEditor` renders that preview. `insertBelow` and `replaceSelection` read the owned preview and accept formatting options. The copied `ai-menu` owns anchoring, prompts, and product interaction policy. Replace `useChatChunk` with this editor binding.
 
 Export `AIChatPluginState` and `CopilotPluginState` as the complete mutable state contracts for their descriptors.
 

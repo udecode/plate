@@ -1,4 +1,10 @@
-import { createEditorView, DocumentChange, SelectionApi } from 'plitejs';
+import {
+  createEditorView,
+  DocumentChange,
+  SelectionApi,
+  type InitialValue,
+  type Value,
+} from 'plitejs';
 import { history } from 'plitejs/history';
 
 import {
@@ -41,9 +47,12 @@ const createInputController = () =>
   });
 
 test('browser handle applies direct text writes and canonical document changes', () => {
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'one' }] },
+  ];
   const editor = createEditor({
     extensions: [history()],
-    initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    initialValue,
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
   const forceRender = vi.fn();
@@ -68,7 +77,6 @@ test('browser handle applies direct text writes and canonical document changes',
   ]);
 
   element.__pliteBrowserHandle?.deleteTextAt({
-    kind: 'text',
     anchor: { offset: 3, path: [0, 0] },
     focus: { offset: 4, path: [0, 0] },
   });
@@ -83,7 +91,7 @@ test('browser handle applies direct text writes and canonical document changes',
 
   element.__pliteBrowserHandle?.applyChange(
     DocumentChange.between(before, after).toJSON(),
-    { history: 'skip', tags: 'remote-change' }
+    { tags: ['remote-change', 'history-skip'] }
   );
   expect(editor.read((state) => state.value())).toEqual(after);
   expect(element.__pliteBrowserHandle?.getLastCommit()).toMatchObject({
@@ -97,7 +105,7 @@ test('browser handle applies direct text writes and canonical document changes',
     {
       children: [{ type: 'paragraph', children: [{ text: 'value diff' }] }],
     },
-    { history: 'skip', tags: 'value-change' }
+    { tags: ['value-change', 'history-skip'] }
   );
   expect(editor.read((state) => state.children())).toEqual([
     { type: 'paragraph', children: [{ text: 'value diff' }] },
@@ -111,7 +119,7 @@ test('browser handle applies direct text writes and canonical document changes',
 });
 
 test('browser handle focuses its attached root when one runtime has multiple roots', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
@@ -164,7 +172,7 @@ test('browser handle undo and redo no-op when history is disabled', () => {
 });
 
 test('browser handle leaves text-only multi-root history to direct DOM sync', () => {
-  const before = {
+  const before: InitialValue = {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     roots: {
       shared: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
@@ -209,7 +217,7 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
 });
 
 test('browser handle selectAll selects the whole editor', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -237,7 +245,7 @@ test('browser handle selectAll selects the whole editor', () => {
 });
 
 test('browser handle preserves multi-node selection', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -271,7 +279,7 @@ test('browser handle preserves multi-node selection', () => {
 });
 
 test('browser handle keeps named-root selections local to its attached root', () => {
-  const runtime = createEditor({
+  const runtime = createEditor<Value>({
     initialValue: {
       children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
       roots: {
@@ -314,7 +322,7 @@ test('browser handle keeps named-root selections local to its attached root', ()
 });
 
 test('browser handle exposes model block texts independently of rendered DOM', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -339,7 +347,7 @@ test('browser handle exposes model block texts independently of rendered DOM', (
 });
 
 test('browser handle selectRange flushes pending native text repair first', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -368,7 +376,6 @@ test('browser handle selectRange flushes pending native text repair first', () =
   });
 
   element.__pliteBrowserHandle?.selectRange({
-    kind: 'text',
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
@@ -384,7 +391,7 @@ test('browser handle selectRange flushes pending native text repair first', () =
 });
 
 test('browser handle selectRange clears projected view selection', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -404,7 +411,6 @@ test('browser handle selectRange clears projected view selection', () => {
   });
 
   element.__pliteBrowserHandle?.setViewSelection({
-    kind: 'text',
     anchor: { point: { offset: 1, path: [0, 0] } },
     focus: { point: { offset: 1, path: [1, 0] } },
     graph: [
@@ -416,7 +422,6 @@ test('browser handle selectRange clears projected view selection', () => {
   expect(element.__pliteBrowserHandle?.getViewSelection()).not.toBeNull();
 
   element.__pliteBrowserHandle?.selectRange({
-    kind: 'text',
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
@@ -429,7 +434,7 @@ test('browser handle selectRange clears projected view selection', () => {
 });
 
 test('browser handle importDOMSelection clears projected view selection', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -449,7 +454,6 @@ test('browser handle importDOMSelection clears projected view selection', () => 
   });
 
   element.__pliteBrowserHandle?.setViewSelection({
-    kind: 'text',
     anchor: { point: { offset: 1, path: [0, 0] } },
     focus: { point: { offset: 1, path: [1, 0] } },
     graph: [
@@ -468,7 +472,7 @@ test('browser handle importDOMSelection clears projected view selection', () => 
 });
 
 test('browser handle selectAll marks partial-DOM-backed selections', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },

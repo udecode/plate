@@ -1,0 +1,3 @@
+repo_key	local_path	remote	license_or_status	why_used
+github/facebook/lexical	../lexical	https://github.com/facebook/lexical	MIT-local-source	Lexical issue and playground helpers expose Playwright-version-sensitive editor e2e timing and clipboard proof risks.
+github/microsoft/playwright	N/A	https://github.com/microsoft/playwright	issue-only	Issue search surface for editor automation regressions tied to Playwright behavior changes.

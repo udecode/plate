@@ -20,7 +20,7 @@ const fixtureDirectory = join(
 );
 const sourceEditorPath = join(
   repoRoot,
-  'apps/www/src/registry/components/editor/editor.ts'
+  'apps/www/src/registry/components/editor/plugins.ts'
 );
 const editorImport = relative(fixtureDirectory, sourceEditorPath)
   .replaceAll('\\', '/')
@@ -45,7 +45,9 @@ export const BenchmarkSchema = { id: 'plate-cli-benchmark', version: ${version} 
 try {
   mkdirSync(fixtureDirectory, { recursive: true });
   writeFileSync(entryPath, renderEditor(1));
+  const coldStart = performance.now();
   await generateEditor(entryPath, { cwd: repoRoot }, session);
+  const cold = (performance.now() - coldStart) / 1000;
   const runs: number[] = [];
 
   for (let version = 2; version <= runCount + 1; version++) {
@@ -86,6 +88,7 @@ try {
   process.stdout.write(
     `${JSON.stringify(
       {
+        cold,
         median: sorted[Math.floor(sorted.length / 2)],
         p95,
         runs,

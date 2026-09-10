@@ -6,9 +6,10 @@ description: "Write Plite test fixtures as JSX when nested editor state is clear
 `plitejs/hyperscript` creates Plite test fixtures with JSX. Use it when nested
 editor state is easier to read as markup than as raw JSON.
 
-## JSX Fixtures
+## JSX fixtures
 
 ```tsx
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from "plitejs/hyperscript";
 
@@ -46,7 +47,7 @@ const h = createHyperscript({
 const paragraph = h("paragraph", {}, "hello");
 ```
 
-## Creator Helpers
+## Creator helpers
 
 `jsx` is the default fixture factory. `createHyperscript` builds a custom
 factory. `createEditor`, `createEditorFixture`, and `createText` are low-level

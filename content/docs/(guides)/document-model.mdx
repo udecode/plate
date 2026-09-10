@@ -5,7 +5,7 @@ description: The canonical JSON contract for Plate documents, nodes, schemas, mi
 
 Plate stores editor-native JSON. Plite owns the tree contract; Plate plugins add schema-checked properties and codecs map documents to external formats.
 
-## Core Tree
+## Core tree
 
 ~~~ts
 type Text = { text: string };
@@ -24,7 +24,7 @@ type EditorDocumentValue = {
 
 Feature properties stay flat on their owning node. Runtime NodeKey values are editor state and are never serialized.
 
-## Application Schema
+## Application schema
 
 Persistence uses a named envelope:
 
@@ -48,9 +48,9 @@ The minimum is required and must be a positive integer. The descriptor must matc
 
 `defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes.
 
-Plate v55 runs `migratePlateV54` and `migratePlateV55` in order for documents from the frozen v53.3.6 profile. Existing v54 documents run only the v55 step.
+`migratePlateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block.
 
-## Representative Feature Shapes
+## Representative feature shapes
 
 Plate packages own local node shapes; the consuming application's plugin tuple and schema determine its complete grammar. Use `plate generate` when an application needs an exact committed `Value` type.
 
@@ -64,7 +64,7 @@ type HeadingElement = {
 type CodeBlockElement = {
   type: 'codeBlock';
   language?: string;
-  children: CodeLineElement[];
+  children: [Text];
 };
 
 type TableElement = {
@@ -151,7 +151,7 @@ Table column width has one owner: TableElement.columnWidths. HTML cell widths no
 
 Image naturalWidth and naturalHeight store source-image geometry; media width stores the user-selected rendered width. Media captions are direct children. Upload queues, progress, and placeholder identity stay in application state.
 
-## Standards Relationship
+## Standards relationship
 
 | Model | Plate relationship |
 | --- | --- |

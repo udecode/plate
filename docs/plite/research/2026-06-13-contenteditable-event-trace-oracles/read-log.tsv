@@ -1,0 +1,6 @@
+source_ref	path	lines	relevant_detail
+contenteditable-playground-event-trace	../contenteditable/src/components/Playground.tsx	1889-2029	Captures targetRanges, browser selection, beforeinput text-node snapshots, deleted rects, input DOM changes, and composition events through native capture listeners.
+contenteditable-case-anomaly-detector	../contenteditable/src/components/CasePlayground.tsx	300-575	Detects missing beforeinput, parent/container mismatch, data mismatch, selection jumps, text leak, node type change, composition mismatch, and sibling creation.
+contenteditable-dom-change-tracker	../contenteditable/src/utils/dom-change-tracker.ts	22-170	Calculates deleted rects from getTargetRanges or selection fallback; detects added/deleted/modified/moved text nodes after input.
+contenteditable-text-node-tracker	../contenteditable/src/utils/text-node-tracker.ts	1-95	Uses WeakMap text-node identity and parent signatures for beforeinput/input delta comparison.
+existing-contenteditable-catalog	/docs/slate-v2/research/2026-06-13-contenteditable-catalog-oracles/lead-ledger.tsv	1-5	Shows current Slate artifact already covers composition Enter and raw-IME deferrals; this packet avoids duplicating those rows.

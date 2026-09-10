@@ -9,7 +9,6 @@ import {
   useEditorFocused,
   useElementSelected,
 } from 'platejs/react';
-import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';

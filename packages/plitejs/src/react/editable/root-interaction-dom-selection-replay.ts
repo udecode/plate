@@ -1,3 +1,4 @@
+import { getSelection } from '../../dom';
 import { isGeckoDOMHost } from '../../dom/internal';
 
 export type ExpandedDOMSelectionSnapshot = {
@@ -9,10 +10,7 @@ export type ExpandedDOMSelectionSnapshot = {
 
 export const hasExpandedDOMSelectionInTarget = (target: HTMLElement) => {
   const rootNode = target.getRootNode() as Document | ShadowRoot;
-  const selection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : target.ownerDocument.getSelection();
+  const selection = getSelection(rootNode);
 
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
     return false;
@@ -32,10 +30,7 @@ export const getExpandedDOMSelectionInTarget = (
   target: HTMLElement
 ): ExpandedDOMSelectionSnapshot | null => {
   const rootNode = target.getRootNode() as Document | ShadowRoot;
-  const selection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : target.ownerDocument.getSelection();
+  const selection = getSelection(rootNode);
 
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
     return null;
@@ -72,10 +67,7 @@ export const restoreDOMSelectionInTarget = (
   }
 
   const rootNode = target.getRootNode() as Document | ShadowRoot;
-  const selection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : target.ownerDocument.getSelection();
+  const selection = getSelection(rootNode);
 
   if (!selection) {
     return false;
@@ -102,10 +94,7 @@ export const isPointInsideDOMSelection = ({
   target: HTMLElement;
 }) => {
   const rootNode = target.getRootNode() as Document | ShadowRoot;
-  const selection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : target.ownerDocument.getSelection();
+  const selection = getSelection(rootNode);
 
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
     return false;

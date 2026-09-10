@@ -8,9 +8,9 @@ import {
   PlateElement,
   useEditor,
   useEditorPlugin,
+  useEditorRootElement,
   useEditorScrollElement,
   useEditorSelector,
-  usePluginStore,
 } from 'platejs/react';
 import { TocPlugin } from 'platejs/toc/react';
 import * as React from 'react';
@@ -34,15 +34,16 @@ const headingItemVariants = cva(
   }
 );
 
-export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
-  const headingElementsRef = React.useRef<
-    Record<string, IntersectionObserverEntry>
-  >({});
-  const headingKeysRef = React.useRef(new WeakMap<Element, NodeKey>());
+export function TocElement({
+  isScroll = true,
+  topOffset = 80,
+  ...props
+}: PlateElementProps<typeof TocPlugin> & {
+  isScroll?: boolean;
+  topOffset?: number;
+}) {
   const editor = useEditor();
   const navigation = useEditorPlugin(NavigationFeedbackPlugin);
-  const isScroll = usePluginStore(TocPlugin, 'isScroll');
-  const topOffset = usePluginStore(TocPlugin, 'topOffset');
   const headingList = useEditorSelector(
     (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),
     {
@@ -65,78 +66,68 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
   const container = useEditorScrollElement(editor);
   const isScrollable =
     (container?.scrollHeight || 0) > (container?.clientHeight || 0);
-  const scrollContainer =
-    typeof window === 'object'
-      ? isScrollable
-        ? container
-        : window
-      : undefined;
-  const [status, setStatus] = React.useState(0);
+  const root = useEditorRootElement(editor);
+  const ownerWindow = root?.ownerDocument.defaultView;
+  const scrollContainer = isScrollable ? container : ownerWindow;
   const [activeKey, setActiveKey] = React.useState<NodeKey | null>(null);
-  const [selectedContent, setSelectedContent] = React.useState<{
-    key: NodeKey;
-    observedKey: NodeKey | null;
-  }>();
-  const activeContentKey =
-    selectedContent?.observedKey === activeKey
-      ? selectedContent.key
-      : activeKey;
 
+  // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- Disconnect releases both initial and refreshed observer bindings.
   React.useEffect(() => {
-    const observer = new IntersectionObserver(
+    if (!ownerWindow) return undefined;
+
+    let active = true;
+    const entries = new Map<NodeKey, IntersectionObserverEntry>();
+    const observed = new Map<NodeKey, Element>();
+    const keys = new WeakMap<Element, NodeKey>();
+    const observer = new ownerWindow.IntersectionObserver(
       (headings) => {
-        headingElementsRef.current = headings.reduce((map, heading) => {
-          const key = headingKeysRef.current.get(heading.target);
-
-          if (key) map[key] = heading;
-
-          return map;
-        }, headingElementsRef.current);
-
-        const firstVisible = Object.keys(headingElementsRef.current).find(
-          (key) => headingElementsRef.current[key].isIntersecting
+        if (!active) return;
+        headings.forEach((heading) => {
+          const key = keys.get(heading.target);
+          if (key && observed.get(key) === heading.target) {
+            entries.set(key, heading);
+          }
+        });
+        const firstVisible = headingList.find(
+          ({ key }) => entries.get(key)?.isIntersecting
         );
-
-        if (firstVisible) setActiveKey(firstVisible as NodeKey);
-        headingElementsRef.current = {};
+        if (firstVisible) setActiveKey(firstVisible.key);
       },
-      {
-        root: isScrollable ? container : undefined,
-        rootMargin: '0px 0px 0px 0px',
-      }
+      { root: isScrollable ? container : null }
     );
-
-    headingList.forEach(({ key }) => {
-      const node = editor.read.nodes.get(key)?.[0];
-
-      if (!node) return;
-
-      const element = editor.api.dom.resolveDOMNode(node);
-
-      if (element) {
-        headingKeysRef.current.set(element, key);
-        observer.observe(element);
-      }
-    });
-
+    const refresh = () => {
+      headingList.forEach(({ key }) => {
+        const node = editor.read.nodes.get(key)?.[0];
+        const element = node ? editor.api.dom.resolveDOMNode(node) : null;
+        const previous = observed.get(key);
+        if (previous === element) return;
+        if (previous) {
+          observer.unobserve(previous);
+          observed.delete(key);
+          entries.delete(key);
+        }
+        if (element) {
+          observed.set(key, element);
+          keys.set(element, key);
+          observer.observe(element);
+        }
+      });
+    };
+    refresh();
+    scrollContainer?.addEventListener('scroll', refresh, { passive: true });
     return () => {
+      active = false;
+      scrollContainer?.removeEventListener('scroll', refresh);
       observer.disconnect();
     };
-  }, [container, editor, headingList, isScrollable, status]);
-
-  React.useEffect(() => {
-    if (!scrollContainer) return undefined;
-
-    const scroll = () => {
-      setStatus(Date.now());
-    };
-
-    scrollContainer.addEventListener('scroll', scroll);
-
-    return () => {
-      scrollContainer.removeEventListener('scroll', scroll);
-    };
-  }, [scrollContainer]);
+  }, [
+    container,
+    editor,
+    headingList,
+    isScrollable,
+    ownerWindow,
+    scrollContainer,
+  ]);
 
   return (
     <PlateElement {...props} className="mb-1 p-0">
@@ -147,7 +138,7 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
               key={item.key}
               variant="ghost"
               className={headingItemVariants({
-                active: item.key === activeContentKey,
+                active: item.key === activeKey,
                 depth: item.depth as 1 | 2 | 3,
               })}
               onClick={(event) => {
@@ -161,10 +152,7 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
 
                 if (!element) return;
 
-                setSelectedContent({
-                  key: item.key,
-                  observedKey: activeKey,
-                });
+                setActiveKey(item.key);
 
                 const path = editor.read.nodes.path(item.key);
 
@@ -178,14 +166,15 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
                       scrollMode: 'always',
                     });
                   }
-                  navigation.update.flashTarget({
-                    target: { path, type: 'node' },
+                  navigation.api.flashTarget({
+                    key: item.key,
+                    attributes: {
+                      className: 'rounded-md bg-(--color-highlight)',
+                    },
                   });
                 }
               }}
-              aria-current={
-                item.key === activeContentKey ? 'location' : undefined
-              }
+              aria-current={item.key === activeKey ? 'location' : undefined}
             >
               {item.title}
             </Button>
@@ -204,9 +193,5 @@ export function TocElement(props: PlateElementProps<typeof TocPlugin>) {
 export const TocKit = [
   TocPlugin.configure({
     component: TocElement,
-    initialState: {
-      // isScroll: true,
-      topOffset: 80,
-    },
   }),
 ];

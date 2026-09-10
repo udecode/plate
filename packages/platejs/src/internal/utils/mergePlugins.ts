@@ -38,19 +38,20 @@ const htmlCodecSchemaFamilies = new WeakMap<
 
 const createPluginSchemaFamily = (): object => Object.freeze(() => {});
 
-const opaquePluginRenderKeys = new Set<PropertyKey>([
-  'aboveEditable',
-  'abovePlite',
+const opaquePluginSlotKeys = new Set<PropertyKey>([
   'afterContainer',
   'afterEditable',
+  'afterNodeChildren',
   'beforeContainer',
   'beforeEditable',
-  'leaf',
-  'node',
+  'wrapContent',
+  'wrapNode',
+  'wrapNodeChildren',
+  'wrapRoot',
 ]);
 
-export const isOpaquePluginRenderKey = (key: PropertyKey) =>
-  opaquePluginRenderKeys.has(key);
+export const isOpaquePluginSlotKey = (key: PropertyKey) =>
+  opaquePluginSlotKeys.has(key);
 
 const isObjectReference = (value: unknown): value is object =>
   (typeof value === 'object' && value !== null) || typeof value === 'function';
@@ -71,11 +72,24 @@ const collectOpaquePluginHostResources = (
   if (!isObjectReference(value) || visited.has(value)) return;
 
   visited.add(value);
+  const component = getDataProperty(value, 'component');
+
+  if (isObjectReference(component)) resources.add(component);
   const render = getDataProperty(value, 'render');
 
   if (isObjectReference(render)) {
-    opaquePluginRenderKeys.forEach((key) => {
-      const resource = getDataProperty(render, key);
+    const mark = getDataProperty(render, 'mark');
+    const leafComponent = isObjectReference(mark)
+      ? getDataProperty(mark, 'leafComponent')
+      : undefined;
+
+    if (isObjectReference(leafComponent)) resources.add(leafComponent);
+  }
+  const slots = getDataProperty(value, 'slots');
+
+  if (isObjectReference(slots)) {
+    opaquePluginSlotKeys.forEach((key) => {
+      const resource = getDataProperty(slots, key);
 
       if (isObjectReference(resource)) resources.add(resource);
     });
@@ -95,16 +109,7 @@ const collectOpaquePluginHostResources = (
   const override = getDataProperty(value, 'override');
 
   if (isObjectReference(override)) {
-    const components = getDataProperty(override, 'components');
-
-    if (isObjectReference(components)) {
-      Reflect.ownKeys(components).forEach((key) => {
-        const resource = getDataProperty(components, key);
-
-        if (isObjectReference(resource)) resources.add(resource);
-      });
-    }
-    collectPluginRecord(getDataProperty(override, 'plugins'));
+    collectPluginRecord(override);
   }
 
   const inject = getDataProperty(value, 'inject');
@@ -231,44 +236,90 @@ export const isNominalPluginReference = (
   value: unknown
 ): value is NominalPluginReference => isNominalPluginDescriptor(value);
 
+const immutablePluginData = new WeakSet<object>();
+
+export const isImmutablePluginData = (value: unknown): boolean =>
+  value === null ||
+  (typeof value !== 'object' && typeof value !== 'function') ||
+  (typeof value === 'object' && immutablePluginData.has(value));
+
+/** Reuse owned inert data; plugin references still need editor-local resolution. */
+export const freezePluginDataSnapshot = <T extends object>(
+  value: T,
+  inert = Reflect.ownKeys(value).every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return (
+      descriptor &&
+      Object.hasOwn(descriptor, 'value') &&
+      isImmutablePluginData(descriptor.value)
+    );
+  })
+): T => {
+  Object.freeze(value);
+  if (inert) immutablePluginData.add(value);
+  return value;
+};
+
 const cloneFrozenPluginDescriptor = <T>(
   value: T,
-  clones = new WeakMap<object, unknown>()
+  context = { clones: new WeakMap<object, unknown>(), inert: true },
+  track = true
 ): T => {
-  if (!value || typeof value !== 'object') return value;
+  context.inert = isImmutablePluginData(value);
+  if (!value || typeof value !== 'object' || context.inert) return value;
   if (isNominalPluginDescriptor(value)) return value;
 
-  const existing = clones.get(value);
+  const existing = context.clones.get(value);
 
   if (existing !== undefined) return existing as T;
   if (Array.isArray(value)) {
-    const clone = value.map((item) =>
-      cloneFrozenPluginDescriptor(item, clones)
-    );
-
-    clones.set(value, clone);
-
-    return Object.freeze(clone) as T;
+    const clone: unknown[] = [];
+    context.clones.set(value, clone);
+    let inert = true;
+    for (const item of value) {
+      // The array owns reuse; tracking every descendant duplicates that work.
+      const child = cloneFrozenPluginDescriptor(item, context, false);
+      clone.push(child);
+      inert &&= context.inert;
+    }
+    context.inert = inert;
+    return (
+      track ? freezePluginDataSnapshot(clone, inert) : Object.freeze(clone)
+    ) as T;
   }
 
   const prototype = Object.getPrototypeOf(value);
 
   if (prototype !== Object.prototype && prototype !== null) return value;
-  const clone: Record<PropertyKey, unknown> = {};
+  const clone: Record<PropertyKey, unknown> =
+    prototype === null ? Object.create(null) : {};
 
-  clones.set(value, clone);
+  context.clones.set(value, clone);
+  let inert = true;
   for (const key of Reflect.ownKeys(value)) {
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
 
-    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return value;
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) {
+      context.inert = false;
+      return value;
+    }
 
-    Object.defineProperty(clone, key, {
-      enumerable: descriptor.enumerable,
-      value: cloneFrozenPluginDescriptor(descriptor.value, clones),
-    });
+    const child = cloneFrozenPluginDescriptor(descriptor.value, context, track);
+    inert &&= context.inert;
+    if (descriptor.enumerable && key !== '__proto__') {
+      clone[key] = child;
+    } else {
+      Object.defineProperty(clone, key, {
+        enumerable: descriptor.enumerable,
+        value: child,
+      });
+    }
   }
 
-  return Object.freeze(clone) as T;
+  context.inert = inert;
+  return (
+    track ? freezePluginDataSnapshot(clone, inert) : Object.freeze(clone)
+  ) as T;
 };
 
 const isDeepFrozenDataValue = (

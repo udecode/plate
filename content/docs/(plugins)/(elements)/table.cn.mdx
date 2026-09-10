@@ -39,16 +39,22 @@ docs:
 
 ### 添加套件
 
-将套件添加到插件列表：
+表格行控件依赖 `DndKit` 实现拖放。安装两个注册表条目，并将两个套件添加到插件列表：
+
+```bash
+pnpm dlx shadcn@latest add @plate/table @plate/dnd
+```
 
 ```tsx
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 import { TableKit } from '@/components/editor/table';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
     ...TableKit,
+    ...DndKit,
   ],
 });
 ```
@@ -85,11 +91,12 @@ const editor = createEditor({
 
 ### 插件配置
 
-配置表格主插件；需要替换依赖的组件或配置时，再加入完整的行或单元格描述符：
+配置表格主插件；需要替换依赖的组件或配置时，再加入完整的行或单元格描述符。复制的行渲染器需要 `DndKit`：
 
 ```tsx
 import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 import {
   TableCellElement,
   TableElement,
@@ -99,6 +106,7 @@ import {
 const editor = createEditor({
   plugins: [
     // ...其他插件
+    ...DndKit,
     TablePlugin.configure({
       component: TableElement,
       initialState: {
@@ -119,10 +127,14 @@ const editor = createEditor({
 - `initialState.disableMerge`: 禁用单元格合并功能
 - `initialState.minColumnWidth`: 设置表格列的最小宽度
 
-列宽仅存储在表格的 `columnWidths` 中。表格渲染器通过
-表格渲染器读取该数组；拖动预览使用临时覆盖值，然后通过
-`editor.plugin(TablePlugin).update.setColumnWidth` 提交。行高调整使用相同方式，
-并写入每一行的 `height`。
+列宽仅存储在表格的 `columnWidths` 中；`null` 表示导入时未知的宽度，不代表零像素。
+`platejs/table/react` 的 `useTableResize` 管理指针操作，通过
+`editor.plugin(TablePlugin).update.resize` 一次提交尺寸。渲染器负责临时尺寸覆盖值和视觉指示器。
+行高存储在每一行的 `height` 中。
+
+自定义调整逻辑可调用 `api.createResize(table, target)`，用返回的函数根据像素偏移计算预览。
+预览不修改编辑器；相邻列保持总宽度，左边界在首列宽度和表格缩进之间分配空间。
+指针取消、窗口失焦、切换只读、表格替换或组件卸载都会丢弃当前拖动。
 
 ### 添加工具栏按钮
 

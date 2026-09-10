@@ -6,7 +6,7 @@ docs:
     title: Demo
 ---
 
-Block Placeholder injects a `placeholder` prop into the active empty block. It is block-level UI state, not stored document content. Use the editor-level `placeholder` prop for the globally empty editor state.
+Block Placeholder publishes a transient `placeholder` attribute on the active empty block. It is block-level UI state, not stored document content. Use the editor-level `placeholder` prop for the globally empty editor state.
 
 <ComponentPreview name="block-placeholder-demo" />
 
@@ -22,11 +22,11 @@ Block Placeholder injects a `placeholder` prop into the active empty block. It i
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 <Steps>
 
-### Add The Kit
+### Add the kit
 
 `BlockPlaceholderKit` configures `BlockPlaceholderPlugin` for paragraph blocks.
 
@@ -42,9 +42,9 @@ export const editor = createEditor({
 });
 ```
 
-### Style The Placeholder
+### Style the placeholder
 
-The registry kit uses a `before:` pseudo-element that reads the injected `placeholder` attribute.
+The registry kit uses a `before:` pseudo-element that reads the rendered `placeholder` attribute.
 
 ```tsx
 BlockPlaceholderPlugin.configure({
@@ -61,18 +61,18 @@ BlockPlaceholderPlugin.configure({
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `BlockPlaceholderPlugin` | `platejs/react` | Tracks the current placeholder target and injects block node props. |
+| `BlockPlaceholderPlugin` | `platejs/react` | Tracks the current placeholder target per mounted view and publishes rendered block attributes. |
 | `BlockPlaceholderKit` | Registry | Configures the default paragraph placeholder and styling. |
 | `block-placeholder-demo` | Registry example | Shows the placeholder on an empty paragraph inside a non-empty editor. |
 | `Editor` `placeholder` prop | `platejs/react` | Covers the globally empty editor state. |
 
-The plugin stores its current target in `_target`. That option is runtime state for rendering; do not serialize it.
+The active target belongs to each mounted editor view and never enters plugin state or document data.
 
-## Manual Setup
+## Manual setup
 
 <Steps>
 
-### Add The Plugin
+### Add the plugin
 
 `BlockPlaceholderPlugin` is available from `platejs/react`.
 
@@ -96,7 +96,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add Type-Specific Copy
+### Add type-specific copy
 
 Keys in `placeholders` are plugin names. The plugin resolves each `name` through
 `editor.plugin(name).schema.type` before matching the active block type.
@@ -116,7 +116,7 @@ BlockPlaceholderPlugin.configure({
 
 </Steps>
 
-## Visibility Rules
+## Visibility rules
 
 The plugin shows a placeholder only when every gate passes.
 
@@ -143,7 +143,7 @@ Use `query` when placeholders should skip nested content, tables, columns, or ap
 
 ## Styling
 
-The plugin injects two props on the target block:
+The plugin publishes two transient attributes on the target block:
 
 | Prop | Source |
 |------|--------|
@@ -161,9 +161,7 @@ className:
 
 | API | Package | Use |
 |-----|---------|-----|
-| `BlockPlaceholderPlugin` | `platejs/react` | Adds block placeholders through injected node props. |
+| `BlockPlaceholderPlugin` | `platejs/react` | Adds block placeholders through transient rendered attributes. |
 | `initialState.placeholders` | `Record<string, string>` | Maps plugin names to placeholder text. Package default: `{}`; copied `BlockPlaceholderKit` configures paragraph copy. |
 | `initialState.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
 | `initialState.className` | `string` | Class applied to the block only while its placeholder is active. |
-| `initialState._target` | Internal runtime state | Stores the current target node and placeholder string. |
-| `selectors.placeholder(node)` | Plugin selector | Returns the placeholder string for the current target node. |

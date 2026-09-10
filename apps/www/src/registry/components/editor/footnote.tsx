@@ -15,7 +15,6 @@ import {
   useEditorPlugin,
   useEditorSelector,
   useElementSelected,
-  useNavigationHighlight,
   usePath,
 } from 'platejs/react';
 import * as React from 'react';
@@ -48,27 +47,6 @@ import {
 } from '@/registry/components/editor/inline-combobox';
 
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
-
-const getNavigationAttributes = (
-  attributes: PlateElementProps<typeof FootnotePlugin>['attributes'],
-  navigationHighlight: ReturnType<typeof useNavigationHighlight>
-) => ({
-  ...attributes,
-  'data-nav-cycle': navigationHighlight
-    ? String(navigationHighlight.cycle)
-    : undefined,
-  'data-nav-highlight': navigationHighlight?.variant,
-  'data-nav-pulse': navigationHighlight
-    ? String(navigationHighlight.pulse)
-    : undefined,
-  'data-nav-target': navigationHighlight ? 'true' : undefined,
-  style: {
-    ...attributes.style,
-    ['--plate-nav-feedback-duration' as const]: navigationHighlight
-      ? `${navigationHighlight.duration}ms`
-      : undefined,
-  } as React.CSSProperties,
-});
 
 const getFootnotePreviewLabel = (text?: string) => {
   const normalized = text?.replace(/\s+/g, ' ').trim();
@@ -105,12 +83,14 @@ export function FootnoteReferenceElement(
 ) {
   const { element } = props;
   const path = usePath();
-  const { read: footnoteApi, update: footnoteUpdate } =
-    useEditorPlugin(FootnotePlugin);
+  const {
+    api: footnoteNavigation,
+    read: footnoteApi,
+    update: footnoteUpdate,
+  } = useEditorPlugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
-  const navigationHighlight = useNavigationHighlight(path);
   const fallbackResolved =
     ref && footnoteApi ? footnoteApi.isResolved({ ref }) : false;
   const fallbackPreviewText =
@@ -144,7 +124,7 @@ export function FootnoteReferenceElement(
       as="sup"
       className="group/footnote-ref mx-0.5 align-super"
       attributes={{
-        ...getNavigationAttributes(props.attributes, navigationHighlight),
+        ...props.attributes,
         contentEditable: false,
         draggable: true,
       }}
@@ -169,7 +149,7 @@ export function FootnoteReferenceElement(
                 event.preventDefault();
                 event.stopPropagation();
                 if (isResolved) {
-                  footnoteUpdate.focusDefinition({ ref });
+                  footnoteNavigation.focusDefinition({ ref });
 
                   return;
                 }
@@ -226,8 +206,11 @@ export function FootnoteDefinitionElement(
   const { element } = props;
   const path = usePath();
   const editor = useEditor();
-  const { read: footnoteApi, update: footnoteUpdate } =
-    useEditorPlugin(FootnotePlugin);
+  const {
+    api: footnoteNavigation,
+    read: footnoteApi,
+    update: footnoteUpdate,
+  } = useEditorPlugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -249,7 +232,6 @@ export function FootnoteDefinitionElement(
       referenceItems,
     };
   });
-  const navigationHighlight = useNavigationHighlight(definitionState?.path);
   const isDuplicateDefinition = !!definitionState?.isDuplicateDefinition;
   const duplicateReplacementRef = definitionState?.duplicateReplacementRef;
   const [referencePickerOpen, setReferencePickerOpen] = React.useState(false);
@@ -263,10 +245,6 @@ export function FootnoteDefinitionElement(
         'mt-1.5 flex items-start gap-1.5 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',
         isDuplicateDefinition &&
           'rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-2'
-      )}
-      attributes={getNavigationAttributes(
-        props.attributes,
-        navigationHighlight
       )}
     >
       <div contentEditable={false}>
@@ -303,7 +281,7 @@ export function FootnoteDefinitionElement(
                       return;
                     }
 
-                    footnoteUpdate.focusReference({ ref });
+                    footnoteNavigation.focusReference({ ref });
                   }}
                 >
                   {ref}
@@ -336,7 +314,7 @@ export function FootnoteDefinitionElement(
                             }}
                             onSelect={() => {
                               setReferencePickerOpen(false);
-                              footnoteUpdate.focusReference({
+                              footnoteNavigation.focusReference({
                                 ref,
                                 index: item.index,
                               });
@@ -397,8 +375,7 @@ export function FootnoteInputElement(
   props: PlateElementProps<typeof FootnoteInputPlugin>
 ) {
   const { element } = props;
-  const { read: footnoteApi, update: footnoteUpdate } =
-    useEditorPlugin(FootnotePlugin);
+  const { read: footnoteApi } = useEditorPlugin(FootnotePlugin);
   const [search, setSearch] = React.useState('');
 
   const refs = footnoteApi.refs?.() ?? [];
@@ -417,17 +394,6 @@ export function FootnoteInputElement(
       ref.includes(query) || preview.toLowerCase().includes(query.toLowerCase())
     );
   });
-
-  const insertSelectedFootnote = React.useCallback(
-    (ref: string) => {
-      footnoteUpdate.insert({
-        focusDefinition: false,
-        ref,
-        trigger: '[',
-      });
-    },
-    [footnoteUpdate]
-  );
 
   return (
     <PlateElement {...props} as="span">
@@ -449,8 +415,12 @@ export function FootnoteInputElement(
             {showCreateOption && (!query || numericQuery) ? (
               <InlineComboboxItem
                 value={`new-${proposedRef}`}
-                onClick={() => {
-                  insertSelectedFootnote(proposedRef);
+                onSelect={(tx) => {
+                  tx.plugin(FootnotePlugin).insert({
+                    focusDefinition: false,
+                    ref: proposedRef,
+                    trigger: '[',
+                  });
                 }}
               >
                 <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
@@ -466,8 +436,12 @@ export function FootnoteInputElement(
               <InlineComboboxItem
                 key={ref}
                 value={`footnote-${ref}`}
-                onClick={() => {
-                  insertSelectedFootnote(ref);
+                onSelect={(tx) => {
+                  tx.plugin(FootnotePlugin).insert({
+                    focusDefinition: false,
+                    ref,
+                    trigger: '[',
+                  });
                 }}
               >
                 <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">

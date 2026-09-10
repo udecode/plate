@@ -12,7 +12,9 @@ import type { ZustandStoreApi } from '../../lib/libs/zustand';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import {
   brandPluginDescriptor,
+  freezePluginDataSnapshot,
   getPluginSchemaFamily,
+  isImmutablePluginData,
   isNominalPluginDescriptor,
 } from '../utils/mergePlugins';
 import { getPlateRuntimeOwner } from './plateRuntime';
@@ -46,7 +48,7 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
   }
 
   const replace = (value: InferPluginStoreState<C>) => {
-    base.set('state', snapshotPluginState(value) as never);
+    base.set('state', snapshotPluginState(value, true) as never);
   };
   const store: PluginStore<C> = {
     get(key?: PropertyKey, ...args: unknown[]) {
@@ -92,14 +94,20 @@ const isMinimalPluginReference = (value: object) =>
 type PluginStateSnapshotContext = Readonly<{
   canonicalReferences?: WeakMap<object, Map<string, unknown>>;
   references: WeakMap<object, unknown>;
+  reuseSnapshots?: boolean;
   snapshots: WeakMap<object, unknown>;
 }>;
+
+// Frozen caller objects can still contain mutable descendants.
+const ownedStateSnapshots = new WeakSet<object>();
 
 const snapshotPluginStateValue = (
   value: unknown,
   context: PluginStateSnapshotContext
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
+  if (isImmutablePluginData(value)) return value;
+  if (context.reuseSnapshots && ownedStateSnapshots.has(value)) return value;
   if (isNominalPluginDescriptor(value)) {
     const family = getPluginSchemaFamily(value);
     const canonicalByName = family
@@ -146,7 +154,9 @@ const snapshotPluginStateValue = (
       ...value.map((item) => snapshotPluginStateValue(item, context))
     );
 
-    return Object.freeze(snapshot);
+    ownedStateSnapshots.add(snapshot);
+
+    return freezePluginDataSnapshot(snapshot);
   }
   const prototype = Object.getPrototypeOf(value);
 
@@ -169,13 +179,16 @@ const snapshotPluginStateValue = (
     });
   }
 
-  return Object.freeze(snapshot);
+  ownedStateSnapshots.add(snapshot);
+
+  return freezePluginDataSnapshot(snapshot);
 };
 
 /** Own one initial-state graph without retaining caller-owned plain data. */
-export const snapshotPluginState = <T>(value: T): T =>
+export const snapshotPluginState = <T>(value: T, reuseSnapshots = false): T =>
   snapshotPluginStateValue(value, {
     references: new WeakMap<object, unknown>(),
+    reuseSnapshots,
     snapshots: new WeakMap<object, unknown>(),
   }) as T;
 

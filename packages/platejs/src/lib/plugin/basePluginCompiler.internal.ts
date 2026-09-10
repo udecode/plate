@@ -1,5 +1,4 @@
 import type {
-  DecoratedRange,
   EditorExtensionReference,
   EditorSchemaExtension,
   EditorSchemaExtensionProvider,
@@ -134,7 +133,7 @@ export type BasePluginInstalledCapabilityWitness<
 /** Compact, nameable install contract for one Plate dependency. */
 type BasePluginDependencySchemaReference<TDependency> =
   TDependency extends EditorSchemaExtensionProvider<
-    infer TSchema extends EditorSchemaExtension
+    infer TSchema extends () => EditorSchemaExtension
   >
     ? EditorSchemaExtensionProvider<TSchema>
     : {};
@@ -296,20 +295,6 @@ type InputUpdate<TInput> = TInput extends { update: infer TUpdate }
   ? ObjectResult<TUpdate>
   : {};
 
-type DecorationPayload<TRange> = [TRange] extends [never]
-  ? {}
-  : TRange extends DecoratedRange
-    ? Omit<TRange, keyof DecoratedRange>
-    : {};
-
-type InputDecoration<TInput> = TInput extends { decorate: infer TDecorate }
-  ? Exclude<FactoryResult<TDecorate>, undefined> extends ReadonlyArray<
-      infer TRange
-    >
-    ? DecorationPayload<TRange>
-    : {}
-  : {};
-
 type InputSelectors<TInput> = TInput extends {
   selectors: infer TSelectors extends object;
 }
@@ -371,8 +356,7 @@ type BasePluginPresenceField =
   | 'rules'
   | 'shortcuts'
   | 'targetPlugins'
-  | 'prepareDocument'
-  | 'useHooks';
+  | 'prepareDocument';
 
 type NormalizedBasePluginField<
   TInput,
@@ -382,7 +366,7 @@ type NormalizedBasePluginField<
   : TKey extends 'api'
     ? InputApi<TInput>
     : TKey extends 'decorate'
-      ? InputDecoration<TInput>
+      ? true
       : TKey extends 'conflicts'
         ? InputConflicts<TInput>
         : TKey extends 'dependencies'

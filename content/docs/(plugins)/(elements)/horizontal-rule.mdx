@@ -27,11 +27,11 @@ Horizontal Rule adds a void `horizontalRule` block for separating sections. The 
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 <Steps>
 
-### Add Basic Blocks
+### Add basic blocks
 
 `BasicBlocksKit` installs `HorizontalRulePlugin` with the registry `HrElement` and both default input rules.
 
@@ -47,13 +47,13 @@ export const editor = createEditor({
 });
 ```
 
-### Render The Divider
+### Render the divider
 
 `horizontal-rule` renders the editable divider with selected/focused ring styles and a static companion component.
 
 <ComponentSource name="horizontal-rule" />
 
-### Add Static Rendering
+### Add static rendering
 
 Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 
@@ -74,17 +74,17 @@ Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 
 There is no package-specific `insertHorizontalRule` helper. App UI usually passes `PLUGINS.horizontalRule` to the same descriptor-aware block insertion helper used by other registry blocks.
 
-## Manual Setup
+## Manual setup
 
 <Steps>
 
-### Install Package
+### Install package
 
 ```bash
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add The Plugin
+### Add the plugin
 
 Use the React plugin when the editor renders the divider UI.
 
@@ -108,7 +108,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add Static Rendering
+### Add static rendering
 
 Use the base plugin with the static component in static rendering paths.
 
@@ -129,7 +129,7 @@ export const staticEditor = createStaticEditor({
 
 </Steps>
 
-## Value Shape
+## Value shape
 
 Horizontal rules are void block elements. Keep the empty text child so the node remains a valid Plite element.
 
@@ -155,7 +155,7 @@ const value = [
 | `type` | `'horizontalRule'` | Default persisted element type. Read the resolved type from `editor.plugin(BaseHorizontalRulePlugin).schema.type` in reusable code. |
 | `children` | `[{ text: '' }]` | Required child for the void element. |
 
-## Input Rules
+## Input rules
 
 `HorizontalRuleRules.markdown()` converts a paragraph into a `horizontalRule` block and inserts an empty paragraph after it.
 

@@ -21,7 +21,7 @@ describe('toPlatePlugin', () => {
     });
     const resolved = resolvePluginTest(plugin);
 
-    expect(resolved.render.node).toBe(Component);
+    expect(resolved.component).toBe(Component);
     expect(resolved.on.keyDown).toBe(keyDown);
     expect(resolved.initialState).toEqual({
       count: 1,
@@ -92,7 +92,7 @@ describe('toPlatePlugin', () => {
       })
     );
 
-    expect(resolved.render.node).toBe(Component);
+    expect(resolved.component).toBe(Component);
   });
 
   it('preserves terminal Base configuration through the React lift', () => {

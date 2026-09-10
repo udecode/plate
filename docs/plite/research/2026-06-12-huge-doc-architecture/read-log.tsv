@@ -1,0 +1,13 @@
+source_ref	repo_key	path	lines	read_for	verdict
+slate-v2-virtualized-example	local/slate-v2	.tmp/slate-v2/site/examples/ts/huge-document.tsx	47-58,177-190	Example-level virtualized configuration and bounded scroller.	Current example exposes strategy, overscan, threshold, estimated block size, and editor height.
+slate-v2-virtualized-plan	local/slate-v2	.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts	37-62,340-455,620-706	Virtualized planning, scroll root, overscan, retained selection endpoints, missing ranges, scroll-to-path.	Slate already owns hybrid virtualized architecture; proof naming is the gap.
+slate-v2-virtualized-boundary	local/slate-v2	.tmp/slate-v2/packages/slate-react/src/dom-strategy/virtualized-range-boundary.tsx	23-63	Missing DOM coverage boundary behavior.	Missing ranges use model copy and materialized selection policy.
+slate-v2-scroll-tests	local/slate-v2	.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	2506-2689	Route-local virtualized scroll stability proof.	Promote to first-party browser operation family.
+codemirror-visible-ranges	github/codemirror/view	../codemirror-view/src/editorview.ts	90-103	Public viewport/visible range contract.	CodeMirror makes drawn ranges explicit.
+codemirror-selection-viewports	github/codemirror/view	../codemirror-view/src/viewstate.ts	157-204	Selection endpoints outside main viewport.	CodeMirror creates extra one-line viewports to avoid DOM-selection gaps.
+codemirror-heightmap-viewport	github/codemirror/view	../codemirror-view/src/viewstate.ts	393-416	Height-map viewport computation and scroll target inclusion.	Useful architecture pressure for Slate scroll/viewport metrics.
+codemirror-big-scaler	github/codemirror/view	../codemirror-view/src/viewstate.ts	693-736	Large-document DOM height scaling.	Useful only as architecture pressure; do not copy blindly.
+codemirror-scroll-anchor	github/codemirror/view	../codemirror-view/src/editorview.ts	413-496	Measurement loop and scroll anchor preservation.	Promotes future scroll-anchor metric honesty.
+codemirror-coordinate-boundary	github/codemirror/view	../codemirror-view/src/editorview.ts	741-765	Precise versus estimated coordinate lookup when DOM is missing.	Promotes future estimated-coordinate contract.
+monaco-wrapper-scan	github/microsoft/monaco-editor	../monaco-editor/src	package scan	Look for editor viewport internals.	Rejected: this repo checkout is not the useful internal source for this packet.
+

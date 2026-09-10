@@ -1,4 +1,9 @@
-import { createContext, useContext, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  useContext,
+  useInsertionEffect,
+  useSyncExternalStore,
+} from 'react';
 
 import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -35,6 +40,14 @@ export const useClaimEditableDOMCommit = () => {
   const runtime = useContext(EditableDOMRuntimeContext);
 
   useIsomorphicLayoutEffect(() => {
+    runtime?.claimReactCommit();
+  });
+};
+
+export const useClaimEditableDOMInsertionCommit = () => {
+  const runtime = useContext(EditableDOMRuntimeContext);
+
+  useInsertionEffect(() => {
     runtime?.claimReactCommit();
   });
 };

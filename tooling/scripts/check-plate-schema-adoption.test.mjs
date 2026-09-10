@@ -113,6 +113,54 @@ test('allows the private block-content group only in its compiler owner', () => 
   );
 });
 
+test('keeps compiler exports private across filename and directory boundaries', () => {
+  for (const file of [
+    'packages/platejs/src/react/internal/index.ts',
+    'packages/platejs/src/static/internal/index.ts',
+    'packages/platejs/src/lib/plugin/types.internal.ts',
+  ]) {
+    assert.deepEqual(
+      auditPlateSchemaSource(
+        `export * from './types.internal'; export type { NormalizePlatePluginInput } from './types.internal';`,
+        file
+      ),
+      []
+    );
+    assert.deepEqual(
+      auditPlateSchemaSource(
+        'export type NormalizePlatePluginInput = string;',
+        file
+      ),
+      []
+    );
+  }
+
+  for (const file of [
+    'packages/platejs/src/index.tsx',
+    'packages/platejs/src/react/index.tsx',
+    'packages/platejs/src/static/index.ts',
+  ]) {
+    for (const specifier of [
+      './types.internal',
+      './internal',
+      './internal/types',
+    ]) {
+      assert.ok(
+        auditPlateSchemaSource(`export * from '${specifier}';`, file).some(
+          ({ reason }) => reason.includes('cannot star-export internal')
+        ),
+        `${file}: ${specifier}`
+      );
+    }
+    assert.ok(
+      auditPlateSchemaSource(
+        `export type { NormalizePlatePluginInput } from './internal/types';`,
+        file
+      ).some(({ reason }) => reason.includes('cannot be public-exported'))
+    );
+  }
+});
+
 test('rejects deleted plugin builders while allowing the foreign Zustand selector method', () => {
   for (const method of [
     'clone',
@@ -551,10 +599,13 @@ test('rejects explicit descriptor annotations on exported package plugins', () =
 });
 
 test('rejects static plugin API references in current docs and release prose', () => {
-  for (const file of ['.changeset/docx.md', 'content/docs/plugins/docx.mdx']) {
+  for (const file of [
+    '.changeset/markdown.md',
+    'content/docs/plugins/markdown.mdx',
+  ]) {
     assert.match(
       auditNamedSchemaLineageDocument(
-        'Use `DocxImportPlugin.api.import` for DOCX input.',
+        'Use `MarkdownPlugin.api.serialize` for Markdown output.',
         file
       )[0]?.reason ?? '',
       /installed editor portal/
@@ -562,8 +613,8 @@ test('rejects static plugin API references in current docs and release prose', (
   }
   assert.deepEqual(
     auditNamedSchemaLineageDocument(
-      'Use `editor.plugin(DocxImportPlugin).api.import` for DOCX input.',
-      '.changeset/docx.md'
+      'Use `editor.plugin(MarkdownPlugin).api.serialize` for Markdown output.',
+      '.changeset/markdown.md'
     ),
     []
   );
@@ -1465,7 +1516,7 @@ test('rejects raw registry runtime and configuration identities', () => {
     `const selected = props.plugin.type !== 'tableRow'`,
     `const selected = props.plugin.type !== editor.plugin(TableRowPlugin).type`,
     `MarkdownPlugin.configure({ initialState: { plainMarks: ['suggestion'] } })`,
-    `DocxPastePlugin.configure({ override: { components: { table: Table } } })`,
+    `DocxPlugin.configure({ override: { components: { table: Table } } })`,
     `Plugin.configure({ override: { plugins: { indent: {} } } })`,
   ]) {
     assert.notDeepEqual(auditPlateSchemaSource(source, file), [], source);
@@ -1476,7 +1527,7 @@ test('rejects raw registry runtime and configuration identities', () => {
     `const selected = node.type === editor.plugin(TablePlugin).schema.type`,
     `const selected = props.element.type !== editor.plugin(TableRowPlugin).schema.type`,
     `MarkdownPlugin.configure(({ editor }) => ({ initialState: { plainMarks: [editor.plugin(SuggestionPlugin).schema.key] } }))`,
-    `DocxPastePlugin.configure({ override: { components: { [PLUGINS.table]: Table } } })`,
+    `DocxPlugin.configure({ override: { components: { [PLUGINS.table]: Table } } })`,
     `Plugin.configure({ override: { plugins: { [IndentPlugin.name]: {} } } })`,
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), [], source);
@@ -1543,7 +1594,6 @@ test('allows only exact audited production extend stages at their owner path', (
         contributions: [],
       });
     defineBasePlugin('highlight', { }).extend({
-        corrections: [],
         on: {},
       });
   `;
@@ -1710,7 +1760,8 @@ test('allows only exact audited production extend stages at their owner path', (
       'packages/platejs/src/ai/react/AIChatPlugin.ts',
       `definePlatePlugin('aiChat', { })
         .extend(() => ({ api: () => ({}), read: () => ({}), selectors: {}, update: () => ({}) }))
-        .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }))`,
+        .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }));
+       editor.read.schema.property({});`,
     ],
     [
       'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
@@ -1752,21 +1803,6 @@ test('allows only exact audited production extend stages at their owner path', (
     assert.deepEqual(auditPlateSchemaSource(source, file), [], file);
   }
 
-  assert.deepEqual(
-    auditPlateSchemaSource(
-      `
-        export const BlockPlaceholderPlugin = definePlatePlugin(
-          'blockPlaceholder',
-          {}
-        )
-          .extend({ selectors: {} })
-          .extend({ inject: {}, useHooks });
-      `,
-      'packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx'
-    ),
-    []
-  );
-
   assert.match(
     auditPlateSchemaSource(
       `defineBasePlugin('markdown', { })
@@ -1784,7 +1820,7 @@ test('matches opaque shared-factory stages by exact callee identity', () => {
     auditPlateSchemaSource(
       `definePlatePlugin('diff', { })
         .extend(excludeDiffFragment())
-        .extend({ render: {} })`,
+        .extend({ slots: {} })`,
       owner
     ),
     []
@@ -2181,6 +2217,31 @@ test('keeps static/base component bindings free of Plate React adapters', () => 
 });
 
 test('accepts Base constructor components and rejects extension-stage components', () => {
+  for (const source of [
+    `const HighlightPlugin = defineBasePlugin('highlight', {});
+     HighlightPlugin.configure({ component: ParagraphStatic });`,
+    `const TonePlugin = defineBasePlugin('tone', {});
+     const Alias = TonePlugin;
+     Alias.configure({ component: ParagraphStatic });`,
+  ]) {
+    assert.deepEqual(
+      auditPlateSchemaSource(
+        source,
+        'packages/example/src/static/render.spec.tsx'
+      ),
+      []
+    );
+  }
+  assert.equal(
+    auditPlateSchemaSource(
+      `const TonePlugin = defineBasePlugin('tone', {});
+       function render(TonePlugin) {
+         TonePlugin.configure({ component: ParagraphStatic });
+       }`,
+      'packages/example/src/static/render.spec.tsx'
+    ).some((issue) => issue.reason.includes('owning BasePlugin')),
+    true
+  );
   assert.deepEqual(
     auditPlateSchemaSource(
       `defineBasePlugin('p', { component: ParagraphStatic, });`,
@@ -2262,59 +2323,6 @@ test('allows only the exact typed negative render.node contract', () => {
       'packages/platejs/src/lib/plugin/other.spec.ts'
     ).some((issue) => issue.reason.includes('root-level component')),
     true
-  );
-});
-
-test('allows only the exact marked runtime negative render.node contract', () => {
-  const source = `
-    Reflect.apply(defineBasePlugin, undefined, [
-      {
-        name: 'invalid-render-node',
-        render: {
-          // @plate-schema-adoption-negative-render-node
-          node: () => null,
-        },
-      },
-    ]);
-  `;
-  const file = 'packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts';
-
-  assert.deepEqual(auditPlateSchemaSource(source, file), []);
-
-  const unmarkedIssues = auditPlateSchemaSource(
-    source.replace(
-      '          // @plate-schema-adoption-negative-render-node\n',
-      ''
-    ),
-    file
-  );
-
-  assert.equal(
-    unmarkedIssues.some((issue) =>
-      issue.reason.includes('root-level component')
-    ),
-    true
-  );
-  assert.equal(
-    unmarkedIssues.some((issue) =>
-      issue.reason.includes(
-        'runtime render.node negative-contract allowlist expects 1 marked declaration but found 0'
-      )
-    ),
-    true
-  );
-  assert.equal(
-    auditPlateSchemaSource(
-      source,
-      'packages/platejs/src/lib/plugin/other.spec.ts'
-    ).some((issue) => issue.reason.includes('root-level component')),
-    true
-  );
-  assert.equal(
-    auditPlateSchemaSource(`${source}\n${source}`, file).filter((issue) =>
-      issue.reason.includes('root-level component')
-    ).length,
-    1
   );
 });
 
@@ -2622,10 +2630,12 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
   for (const [source, file] of [
     [
       `createEditor({ schema: importedLineage })`,
-      'packages/platejs/test/yjs/schema-identity-contract.spec.ts',
+      'packages/plitejs/test/yjs/schema-identity-contract.spec.ts',
     ],
     [
       `const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
+       createEditor({ schema: TestSchema });
+       createEditor({ schema: TestSchema });
        createEditor({ schema: TestSchema });
        createEditor({ schema: TestSchema });
        createEditor({ schema: TestSchema });

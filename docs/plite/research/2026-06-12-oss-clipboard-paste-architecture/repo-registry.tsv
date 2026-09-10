@@ -1,0 +1,5 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github/prosemirror/prosemirror-view	https://github.com/prosemirror/prosemirror-view	github	MIT	local-clone	local	clipboard,paste,composition,slice-metadata	/Users/zbeyens/git/prosemirror-view	read	9	Strong composition-specific paste guard and rich slice metadata.
+github/codemirror/view	https://github.com/codemirror/view	github	MIT	local-clone	local	clipboard,paste,dom-observer,linewise-paste	/Users/zbeyens/git/codemirror-view	read	8	Strong paste harness and DOM flush lessons.
+github/facebook/lexical	https://github.com/facebook/lexical	github	MIT	local-clone	local	clipboard,paste,beforeinput,mime-priority	/Users/zbeyens/git/lexical	read	7	Useful DataTransfer priority and paste command boundary.
+local/slate-v2	.local	workspace	private-alpha	local	clipboard,paste,composition,hidden-dom,staged-dom	/Users/zbeyens/git/plate-2/.tmp/slate-v2	read	10	Target owner and proof surface.

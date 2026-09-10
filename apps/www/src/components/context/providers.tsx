@@ -1,8 +1,6 @@
 'use client';
 
 import { Provider as JotaiProvider } from 'jotai';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -18,9 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableColorScheme
         enableSystem
       >
-        <TooltipProvider delayDuration={0}>
-          <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-        </TooltipProvider>
+        <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
       </ThemeProvider>
     </JotaiProvider>
   );

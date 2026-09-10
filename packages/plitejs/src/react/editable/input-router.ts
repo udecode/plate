@@ -10,6 +10,7 @@ import {
   type RefObject,
   useCallback,
   useEffect,
+  useInsertionEffect,
   useRef,
 } from 'react';
 
@@ -18,7 +19,12 @@ import { getSelection, isDOMElement, isDOMText } from '../../dom';
 import {
   type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
+  getPliteTextHostStrings,
   NODE_TO_ELEMENT,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowInsertTarget,
+  resolveDOMTextFlowOffset,
+  resolveDOMTextFlowRecordDOMText,
   setEditorDOMEditableElement,
   setEditorDOMRootElement,
   supportsDOMBeforeInput,
@@ -28,7 +34,7 @@ import {
   getPliteNodePathFromDOMElement,
 } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import { clearCrossEditorDragSession } from './cross-editor-drag-session';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
@@ -40,7 +46,10 @@ import {
   setEditablePendingNativeTextInputRepair,
 } from './input-state';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
-import { failInvariant } from './runtime-editor-api';
+import {
+  failInvariant,
+  getNodeKey as editorGetNodeKey,
+} from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
 import { armModelOwnedTextInputGuard } from './selection-controller';
@@ -71,24 +80,6 @@ const assignForwardedRef = <T>(
     ref(value);
   } else if (ref) {
     ref.current = value;
-  }
-};
-
-const profileDOMInputDuration = <T>(id: string, callback: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return callback();
-  }
-
-  const start = now();
-
-  try {
-    return callback();
-  } finally {
-    recordPliteReactRender({
-      duration: now() - start,
-      id,
-      kind: 'runtime-time',
-    });
   }
 };
 
@@ -483,9 +474,14 @@ const getTextHostSelectionOffset = ({
     return null;
   }
 
-  const strings = Array.from(
-    textHost.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
-  );
+  const textFlowOffset =
+    textHost instanceof HTMLElement
+      ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
+      : null;
+
+  if (textFlowOffset != null) return textFlowOffset;
+
+  const strings = getPliteTextHostStrings(textHost);
   let offset = 0;
 
   for (const string of strings) {
@@ -674,12 +670,22 @@ export const getDOMInputRepairTarget = (
   const domSelection = getSelection(root);
   const anchorNode = domSelection?.anchorNode ?? null;
   const anchorOffset = domSelection?.anchorOffset ?? null;
-  const textHost = isDOMText(anchorNode)
-    ? anchorNode.parentElement?.closest('[data-plite-node="text"]')
-    : isDOMElement(anchorNode)
-      ? anchorNode.closest('[data-plite-node="text"]')
+  const flowEntry =
+    anchorNode && anchorOffset != null
+      ? resolveDOMTextFlowEntry(anchorNode, anchorOffset)
       : null;
-  const path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
+  const textHost =
+    flowEntry?.host ??
+    (isDOMText(anchorNode)
+      ? anchorNode.parentElement?.closest('[data-plite-node="text"]')
+      : isDOMElement(anchorNode)
+        ? anchorNode.closest('[data-plite-node="text"]')
+        : null);
+  const path = flowEntry
+    ? ([...flowEntry.path] as Path)
+    : textHost
+      ? getPliteNodePathFromDOMElement(textHost)
+      : null;
   const runtimeSelection = readRuntimeSelectionRange(editor);
   const runtimePath =
     runtimeSelection && RangeApi.isCollapsed(runtimeSelection)
@@ -690,17 +696,11 @@ export const getDOMInputRepairTarget = (
     typeof nativeInput.data === 'string'
       ? nativeInput.data.length
       : 0;
-  const selectionOffset = textHost
-    ? getTextHostSelectionOffset({ anchorNode, anchorOffset, textHost })
-    : null;
-  const text = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
-
-  const canUseDOMTarget =
-    !!path &&
-    !!textHost &&
-    selectionOffset != null &&
-    text != null &&
-    rootElement.contains(textHost);
+  const selectionOffset =
+    flowEntry?.offset ??
+    (textHost
+      ? getTextHostSelectionOffset({ anchorNode, anchorOffset, textHost })
+      : null);
 
   if (options.preferRuntimeSelection) {
     const runtimeTarget = getRuntimeDOMInputRepairTarget({
@@ -714,6 +714,68 @@ export const getDOMInputRepairTarget = (
       return runtimeTarget;
     }
   }
+
+  const nativeText =
+    nativeInput?.inputType === 'insertText' &&
+    typeof nativeInput.data === 'string'
+      ? nativeInput.data
+      : null;
+  const flowInsertTarget =
+    nativeText &&
+    textHost instanceof HTMLElement &&
+    anchorNode &&
+    anchorOffset != null
+      ? resolveDOMTextFlowInsertTarget(
+          textHost,
+          anchorNode,
+          anchorOffset,
+          nativeText
+        )
+      : null;
+
+  if (
+    flowInsertTarget &&
+    typeof nativeText === 'string' &&
+    path &&
+    textHost &&
+    runtimeSelection &&
+    RangeApi.isCollapsed(runtimeSelection) &&
+    runtimeSelection.anchor.offset === flowInsertTarget.insertOffset &&
+    runtimeSelection.anchor.path.length === path.length &&
+    runtimeSelection.anchor.path.every((part, index) => part === path[index]) &&
+    rootElement.contains(textHost)
+  ) {
+    const pliteText = readRuntimeText(editor, path);
+
+    if (pliteText) {
+      const insert = {
+        offset: flowInsertTarget.insertOffset,
+        text: nativeText,
+      };
+
+      return {
+        insert,
+        path: [...path] as Path,
+        preferCapturedInsert: true,
+        selectionOffset: flowInsertTarget.selectionOffset,
+        text: applyTextInsert(pliteText.text, insert),
+      };
+    }
+  }
+
+  const text =
+    (flowEntry
+      ? resolveDOMTextFlowRecordDOMText(
+          textHost as HTMLElement,
+          flowEntry.nodeKey
+        )
+      : textHost?.textContent?.replace(/\uFEFF/g, '')) ?? null;
+  const canUseDOMTarget =
+    !!path &&
+    !!textHost &&
+    selectionOffset != null &&
+    text != null &&
+    rootElement.contains(textHost);
 
   if (
     canUseDOMTarget &&
@@ -741,8 +803,13 @@ export const getDOMInputRepairTarget = (
 
   if (runtimePath) {
     const runtimeTextHost = getPliteNodeElementByPath(editor, runtimePath);
+    const runtimeNodeKey = editorGetNodeKey(editor, runtimePath);
     const runtimeText =
-      runtimeTextHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
+      (runtimeTextHost
+        ? ((runtimeNodeKey
+            ? resolveDOMTextFlowRecordDOMText(runtimeTextHost, runtimeNodeKey)
+            : null) ?? runtimeTextHost.textContent?.replace(/\uFEFF/g, ''))
+        : null) ?? null;
 
     if (
       runtimeTextHost &&
@@ -793,8 +860,8 @@ const restoreReadOnlyDOMText = ({
         return;
       }
 
-      const strings = Array.from(
-        textElement.querySelectorAll<HTMLElement>('[data-plite-string="true"]')
+      const strings = getPliteTextHostStrings(textElement).filter(
+        (string) => string.getAttribute('data-plite-string') === 'true'
       );
 
       if (strings.length === 0) {
@@ -868,7 +935,7 @@ export const useEditableRootRef = ({
   onDOMInput: (event: Event) => void;
   onDOMSelectionChange: CancelableCallback;
   runtime: EditableDOMRuntime;
-  scheduleOnDOMSelectionChange: CancelableCallback;
+  scheduleOnDOMSelectionChange: CancelableCallback & (() => void);
 }) => {
   const { editor } = runtime;
 
@@ -876,10 +943,12 @@ export const useEditableRootRef = ({
     onDOMBeforeInput,
     onDOMInput,
   });
-  runtime.updateSelectionChangeHandlers({
-    onDOMSelectionChange,
-    scheduleOnDOMSelectionChange,
-  });
+  useInsertionEffect(() => {
+    runtime.updateSelectionChangeHandlers({
+      onDOMSelectionChange,
+      scheduleOnDOMSelectionChange,
+    });
+  }, [onDOMSelectionChange, runtime, scheduleOnDOMSelectionChange]);
 
   return useCallback(
     (node: HTMLDivElement | null) => {
@@ -1272,7 +1341,7 @@ export const useEditableDOMInputHandler = ({
   }, [flushDeferredTextInputRepairs, rootRef]);
   const onDOMInput = useCallback(
     (event: Event) => {
-      profileDOMInputDuration('dom-input-total', () => {
+      profilePliteReactDuration('dom-input-total', () => {
         const nativeInput = event as InputEvent;
 
         if (isInteractiveInternalTarget(editor, event.target)) {
@@ -1338,11 +1407,17 @@ export const useEditableDOMInputHandler = ({
           typeof nativeInput.data === 'string'
         ) {
           let pathKey = target?.path.join(',') ?? null;
+          const browserHandleDOMInput =
+            inputController?.state.modelSelectionPreference?.reason ===
+              'browser-handle' &&
+            !!target &&
+            readRuntimeText(editor, target.path)?.text !== target.text;
           const modelOwnsTextInput =
             (inputController?.state.modelOwnedTextInputGuard ?? 0) > 0 ||
             (inputController?.preferModelSelectionForInputRef.current ===
               true &&
-              inputController.state.selectionSource === 'model-owned');
+              inputController.state.selectionSource === 'model-owned' &&
+              !browserHandleDOMInput);
 
           if (modelOwnsTextInput) {
             if (inputController) {
@@ -1625,6 +1700,9 @@ export const useEditableFocusHandler = ({
 }) =>
   useCallback(
     (event: FocusEvent<HTMLDivElement>) => {
+      // React portals bubble through this view without belonging to its DOM.
+      if (!event.currentTarget.contains(event.target)) return;
+
       handleFocus(event);
     },
     [handleFocus]
@@ -1637,6 +1715,8 @@ export const useEditableMouseHandler = ({
 }) =>
   useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      if (!event.currentTarget.contains(event.target as Node)) return;
+
       handleMouse(event);
     },
     [handleMouse]

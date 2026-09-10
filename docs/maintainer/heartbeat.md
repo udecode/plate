@@ -57,7 +57,7 @@ Scan the smallest useful slice, in this order:
 3. Issues needing triage, duplicate/claim guard, or missing reproduction.
 4. Stale user-visible bugs with enough public intake for local Codex.
 5. Docs/setup breakage with clear proof.
-6. One internal `plite-auto` fallback checkpoint only when no public item is
+6. One internal `auto` fallback checkpoint only when no public item is
    safe and fallback is allowed.
 
 Do not pad the matrix with weak candidates. Three strong rows beat twenty noisy

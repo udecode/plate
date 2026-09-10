@@ -1,4 +1,4 @@
-import type { EditorCommit, Range } from 'plitejs';
+import type { TextSelection, EditorCommit } from 'plitejs';
 
 import {
   createEditableInputController,
@@ -64,12 +64,12 @@ describe('selection runtime', () => {
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
     });
-  const expandedSelection: Range = {
+  const expandedSelection: TextSelection = {
     kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 1, path: [0, 0] },
   };
-  const collapsedSelection: Range = {
+  const collapsedSelection: TextSelection = {
     kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 0, path: [0, 0] },
@@ -352,13 +352,13 @@ describe('selection runtime', () => {
 
   test('wires selector listener to DOM export policy', () => {
     const inputController = createInputController();
-    let listener: (() => void) | null = null;
+    const listener: { current: (() => void) | null } = { current: null };
     let cleanupCalls = 0;
     let syncCalls = 0;
 
     const unsubscribe = subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener) {
-        listener = nextListener;
+        listener.current = nextListener;
         return () => {
           cleanupCalls += 1;
         };
@@ -372,11 +372,11 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.();
+    listener.current?.();
     expect(syncCalls).toBe(1);
 
     inputController.state.selectionSource = 'dom-current';
-    listener?.();
+    listener.current?.();
     expect(syncCalls).toBe(1);
 
     unsubscribe();
@@ -387,12 +387,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     const syncOptions: Array<{ forceModelExport?: boolean } | undefined> = [];
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -411,7 +413,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: false,
         selectionChanged: true,
@@ -435,12 +437,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     const syncOptions: Array<{ forceModelExport?: boolean } | undefined> = [];
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -459,7 +463,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: false,
@@ -478,26 +482,28 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener: ((change?: EditorCommit) => void) | null = null;
-    let scheduled: (() => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
+    const scheduled: { current: (() => void) | null } = { current: null };
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener) {
-        listener = nextListener;
+        listener.current = nextListener;
         return () => {};
       },
       getModelSelection: () => expandedSelection,
       inputController,
       scheduleDOMExport(callback) {
-        scheduled = callback;
+        scheduled.current = callback;
       },
       syncDOMSelectionToEditor() {
         syncCalls += 1;
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: false,
@@ -506,7 +512,7 @@ describe('selection runtime', () => {
     );
     expect(syncCalls).toBe(0);
 
-    scheduled?.();
+    scheduled.current?.();
     expect(syncCalls).toBe(1);
   });
 
@@ -514,15 +520,17 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener: ((change?: EditorCommit) => void) | null = null;
-    let scheduled: (() => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
+    const scheduled: { current: (() => void) | null } = { current: null };
     let cleanupCalls = 0;
     let cancelCalls = 0;
     let syncCalls = 0;
 
     const unsubscribe = subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener) {
-        listener = nextListener;
+        listener.current = nextListener;
         return () => {
           cleanupCalls += 1;
         };
@@ -530,7 +538,7 @@ describe('selection runtime', () => {
       getModelSelection: () => expandedSelection,
       inputController,
       scheduleDOMExport(callback) {
-        scheduled = callback;
+        scheduled.current = callback;
 
         return () => {
           cancelCalls += 1;
@@ -541,7 +549,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: false,
@@ -550,7 +558,7 @@ describe('selection runtime', () => {
     );
 
     unsubscribe();
-    scheduled?.();
+    scheduled.current?.();
 
     expect(cancelCalls).toBe(1);
     expect(cleanupCalls).toBe(1);
@@ -561,12 +569,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.activeIntent = 'text-insert';
     inputController.state.selectionSource = 'model-owned';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -583,7 +593,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: true,
@@ -657,12 +667,14 @@ describe('selection runtime', () => {
   test('does not notify DOM export listener for synced text-only selection commits', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'model-owned';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -679,7 +691,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: true,
@@ -693,12 +705,14 @@ describe('selection runtime', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -716,7 +730,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: true,
         selectionChanged: true,
@@ -745,12 +759,14 @@ describe('selection runtime', () => {
   test('skips DOM export for selections owned by a synthetic partial-DOM lane', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'model-owned';
-    let listener: ((change?: EditorCommit) => void) | null = null;
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
     let syncCalls = 0;
 
     subscribeSelectionOnlyDOMExport({
       addSelectorEventListener(nextListener, options) {
-        listener = (change) => {
+        listener.current = (change) => {
           if (options?.shouldUpdate?.(change) ?? true) {
             nextListener(change);
           }
@@ -769,7 +785,7 @@ describe('selection runtime', () => {
       },
     });
 
-    listener?.(
+    listener.current?.(
       createChange({
         childrenChanged: false,
         selectionChanged: true,

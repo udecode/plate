@@ -6,7 +6,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -22,17 +21,6 @@ import {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const read = (path) => readFileSync(join(root, path), 'utf8');
-const frontmatterPattern = /^---\n([\s\S]*?)\n---/;
-
-const expectedGeneratedSkill = ({ name, sourcePath }) => {
-  const source = read(sourcePath);
-  const frontmatter = source.match(frontmatterPattern);
-
-  assert.ok(frontmatter);
-
-  return `---\n${frontmatter[1]}\nname: ${name}\nmetadata:\n  skiller:\n    source: ${sourcePath}\n---${source.slice(frontmatter[0].length)}`;
-};
-
 const laneRows = (overrides = {}) =>
   DEFAULT_BENCHMARK_LANES.map((lane, index) => {
     const row = overrides[lane] ?? {};
@@ -108,6 +96,13 @@ const plan = ({
 - slate-identity: ${source.slateIdentity ?? 'commit: slate-test'}
 - named-symptom: test action
 - final-artifacts: ${source.finalArtifacts ?? 'artifact: tmp/test-result.json'}
+
+## Interaction Coverage
+
+- first-interaction: pass: first trusted input in the reported host
+- settled-interaction: pass: repeated trusted input in the reported host
+- route-scope: pass: outer page and each embedded target
+- reporter-profile: pass: original browser profile, extensions enabled
 
 ## Comparison Signature
 
@@ -201,6 +196,18 @@ test('default inventory keeps every lane in diagnostic order', () => {
     validateBenchmarkPlan(missingLane).join('\n'),
     /must match default order/
   );
+});
+
+test('completion rejects warmed-only and substitute-profile interaction proof', () => {
+  for (const field of ['first-interaction', 'settled-interaction', 'route-scope', 'reporter-profile']) {
+    const failed = plan().replace(new RegExp(`^- ${field}:.*$`, 'm'), `- ${field}: pending`);
+    assert.match(validateBenchmarkPlan(failed, { complete: true }).join('\n'), new RegExp(`Interaction Coverage requires ${field}`));
+  }
+  const oldPacket = plan().replace(/## Interaction Coverage[\s\S]*?(?=## Comparison Signature)/, '');
+  assert.equal(validateBenchmarkPlan(oldPacket, { complete: true }).filter(error => error.startsWith('Interaction Coverage')).length, 4);
+  assert.equal(validateBenchmarkPlan(plan(), { complete: true }).filter(error => error.startsWith('Interaction Coverage')).length, 0);
+  const nonBrowser = plan().replace(/^- (first-interaction|settled-interaction|route-scope|reporter-profile):.*$/gm, '- $1: N/A: package-only computation without a browser');
+  assert.equal(validateBenchmarkPlan(nonBrowser, { complete: true }).filter(error => error.startsWith('Interaction Coverage')).length, 0);
 });
 
 test('route-wide rerender claims cannot close on one owner proxy', () => {
@@ -891,56 +898,6 @@ test('plan validator CLI is fail-closed and accepts the Benchmark template', () 
   assert.match(template.stdout, /structurally valid/);
 });
 
-test('Benchmark source, generated skill, routing, and removed perf owner agree', () => {
-  const sourcePath = '.agents/rules/benchmark.mdc';
-  const benchmarkRule = read(sourcePath);
-  const benchmarkMethodology = read(
-    '.agents/rules/benchmark/references/methodology.md'
-  );
-  const benchmarkTemplate = read('docs/plans/templates/benchmark.md');
-  const autoRule = read('.agents/rules/auto.mdc');
-  const agentsRule = read('.agents/AGENTS.md');
-  const majorTaskRule = read('.agents/rules/major-task.mdc');
-  const performanceRule = read('.agents/rules/performance.mdc');
-  const pliteResearchRule = read('.agents/rules/plite-research.mdc');
-  const regressionRule = read('.agents/rules/regression.mdc');
-  const slateArRule = read('.agents/rules/slate-ar.mdc');
-  const taskRule = read('.agents/rules/task.mdc');
-
-  assert.equal(
-    read('.agents/skills/benchmark/SKILL.md'),
-    expectedGeneratedSkill({ name: 'benchmark', sourcePath })
-  );
-  assert.match(benchmarkRule, /\(\.\/references\/methodology\.md\)/);
-  assert.ok(
-    existsSync(join(root, '.agents/skills/benchmark/references/methodology.md'))
-  );
-  assert.match(benchmarkRule, /all applicable lanes by default/i);
-  assert.match(benchmarkRule, /## Durable Fix Decision/);
-  assert.match(benchmarkRule, /## Pre-Acceptance Architecture Probe/);
-  assert.match(benchmarkRule, /best long-term target/i);
-  assert.doesNotMatch(benchmarkRule, /apply the smallest durable fix/i);
-  assert.match(
-    benchmarkMethodology,
-    /Public API and runtime architecture run `best-api`/
-  );
-  assert.match(benchmarkMethodology, /## Embedded Architecture Probe/);
-  assert.match(benchmarkTemplate, /- compatibility-verdict:/);
-  assert.match(autoRule, /route .*benchmark/i);
-  assert.match(
-    autoRule,
-    /Benchmark pauses on a `public-api` or `runtime-architecture` cause/
-  );
-  assert.match(agentsRule, /Benchmarking, profiling, performance regression/);
-  assert.match(taskRule, /performance comparison.*benchmark/is);
-  assert.match(majorTaskRule, /Performance Architecture After Benchmark/);
-  assert.doesNotMatch(majorTaskRule, /^### Performance And Optimization$/m);
-  assert.match(performanceRule, /review lens/i);
-  assert.match(regressionRule, /performance regression.*benchmark/i);
-  assert.doesNotMatch(pliteResearchRule, /`slate-ar perf(?:\s|`|<)/);
-  assert.doesNotMatch(slateArRule, /^## Perf Mode$/m);
-  assert.doesNotMatch(slateArRule, /`slate-ar perf(?:\s|`|<)/);
-});
 
 test('the performance pack blocks architecture closeout until executable scale evidence is resolved', () => {
   const fixtureRoot = mkdtempSync(join(tmpdir(), 'architecture-scale-pack-'));
@@ -1097,70 +1054,4 @@ Open risks:
   } finally {
     rmSync(fixtureRoot, { force: true, recursive: true });
   }
-});
-
-test('all changed worker skills match source and retain one benchmark owner', () => {
-  const changedSkills = [
-    'architecture-cleanup',
-    'auto',
-    'autoclosure',
-    'benchmark',
-    'best-api',
-    'maintainer',
-    'major-task',
-    'patch',
-    'performance',
-    'plate-feature',
-    'plate-plan',
-    'plate-plugin-creator',
-    'plite-plan',
-    'plite-research',
-    'regression',
-    'resolve-slate-issue',
-    'slate-ar',
-    'slate-migration',
-    'sync-main-to-next',
-    'task',
-  ];
-  const source = changedSkills
-    .map((name) => read(`.agents/rules/${name}.mdc`))
-    .join('\n');
-
-  for (const name of changedSkills) {
-    const workerSourcePath = `.agents/rules/${name}.mdc`;
-
-    assert.equal(
-      read(`.agents/skills/${name}/SKILL.md`),
-      expectedGeneratedSkill({ name, sourcePath: workerSourcePath })
-    );
-  }
-
-  assert.doesNotMatch(source, /`slate-ar perf(?:\s|`|<)/);
-  assert.doesNotMatch(source, /quality\/perf|perf\/research/);
-});
-
-test('repo-local workflow sources default to max-priority P1', () => {
-  const walk = (path) =>
-    readdirSync(join(root, path), { withFileTypes: true }).flatMap((entry) => {
-      const relativePath = join(path, entry.name);
-
-      if (entry.isDirectory()) return walk(relativePath);
-      if (!/\.(?:md|mdc|mjs)$/.test(entry.name)) return [];
-
-      return [relativePath];
-    });
-  const files = [
-    '.agents/AGENTS.md',
-    'VISION.md',
-    ...walk('.agents/rules'),
-    ...walk('docs/plans/templates'),
-    ...walk('docs/vision'),
-  ].filter((path) => path !== '.agents/rules/plate-next/versions.json');
-  const staleNeedle = ['--max-priority', 'P2'].join(' ');
-  const stale = files.filter((path) => read(path).includes(staleNeedle));
-
-  assert.deepEqual(stale, []);
-  assert.match(read('.agents/AGENTS.md'), /--max-priority P1/);
-  assert.match(read('docs/plans/templates/task.md'), /--max-priority P1/);
-  assert.match(read('.agents/rules/patch.mdc'), /--max-priority P1/);
 });

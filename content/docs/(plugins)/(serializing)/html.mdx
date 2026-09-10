@@ -11,7 +11,7 @@ owners, so this guide treats each direction separately.
 
 <ComponentPreview name="html-demo" />
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -21,7 +21,7 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 
 <ComponentSource name="editor-plugins-static" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs';
@@ -62,35 +62,20 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 
 <Steps>
 
-### Basic Usage
+### Basic usage
 
-Provide a server-side editor instance and configure your Plate components during editor creation.
+Provide a server-side editor instance with server-safe components bound to their owning plugins.
 
 ```tsx title="lib/generate-html.ts"
 import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // Static import
 // Import a server-safe registry kit (NOT from /react package paths)
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-// Import your STATIC components for rendering
-import { ParagraphElementStatic } from '@/components/editor/paragraph-static';
-import { HeadingElementStatic } from '@/components/editor/heading-static';
-// For a styled static output, you might use a wrapper like EditorStatic
-import { EditorStatic } from '@/components/editor/editor-static';
 
-// Map plugin names to their STATIC rendering components
-const components = {
-  p: ParagraphElementStatic, // 'p' is the default name for paragraphs
-  h1: HeadingElementStatic,
-  // ... add mappings for all your elements and marks
-};
-
-// Create a server-side editor instance with components
 const editor = createEditor({
   plugins: [
-    ...BaseBasicBlocksKit, // Paragraph, headings, blockquote, and horizontal rule
-    // ... add all other base plugins relevant to your content
+    ...BaseBasicBlocksKit,
   ],
-  components,
   initialValue: [
     { type: 'heading', level: 1, children: [{ text: 'My Title' }] },
     { type: 'paragraph', children: [{ text: 'My content.' }] },
@@ -98,17 +83,13 @@ const editor = createEditor({
 });
 
 async function getMyHtml() {
-  const html = await renderStaticHtml(editor, {
-    // Optional: Use a custom wrapper like EditorStatic for styling
-    // editorComponent: EditorStatic,
-    // props: { variant: 'none', className: 'p-4 m-4 border' },
-  });
+  const html = await renderStaticHtml(editor);
 
   return html;
 }
 ```
 
-### Styling Serialized HTML
+### Styling serialized HTML
 
 `renderStaticHtml` returns only the HTML rendered for the editor content itself.
 If you use styled components such as `EditorStatic` or custom static components
@@ -145,7 +126,7 @@ async function getFullHtmlDocument() {
   The serialization process converts Plate nodes to static HTML. Interactive features (React event handlers, client-side hooks) or components relying on browser APIs will not function in the serialized output.
 </Callout>
 
-### Using Static Components
+### Using static components
 
 For server-side serialization, you **must** use static versions of your components (no client-only code, no React hooks like `useEffect` or `useState`).
 
@@ -180,7 +161,7 @@ matching codecs.
 
 <Steps>
 
-### Basic Usage
+### Basic usage
 
 Call the root HTML API from a client-side Plate editor.
 
@@ -217,7 +198,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   model.
 </Callout>
 
-### Plugin HTML Codec Overview
+### Plugin HTML codec overview
 
 Each Plate plugin owns the HTML tags, styles, and attributes for its schema
 claim. The same `'text/html'` map returned by context-bound `defineCodecs`
@@ -237,7 +218,7 @@ handles decode and encode.
 | `<h1>` - `<h6>`                                            | [`HeadingPlugin`–`HeadingPlugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
 | `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyle` properties. |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
-| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `codeBlock` element. Content split into `codeLine`.          |
+| `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `codeBlock` with one newline-bearing text child.             |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
 | `<a>`                                                      | [`LinkPlugin`](/docs/link)            | Converts to `link` with a `url` property.                                |
 | `<img>`                                                    | [`ImagePlugin`](/docs/media)           | Converts to `image` with a `url` property.                               |
@@ -323,7 +304,7 @@ helper injects that target into every rule. Do not put `target` in the rule
 manually. One plugin may keep multiple HTML representations in a non-empty
 ordered `'text/html'` tuple inside the same map.
 
-### Whole-Input HTML Hooks
+### Whole-input HTML hooks
 
 Use `query`, `transformData`, and `transformFragment` on the plugin's
 `'text/html'` codec for work that needs the complete incoming payload. These
@@ -353,7 +334,7 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 <API name="renderStaticHtml">
 <APIParameters>
   <APIItem name="editor" type="Editor">
-    A server-side Plate editor instance, created via `createEditor` with components configured.
+    A server-side Plate editor instance created with component-bound plugins.
   </APIItem>
   <APIItem name="options" type="RenderStaticHtmlOptions" optional>
     Static React rendering options.
@@ -415,7 +396,7 @@ Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descen
 </APIReturns>
 </API>
 
-## Next Steps
+## Next steps
 
 -   Explore the [Static Rendering guide](/docs/static) for creating server-safe components.
 -   Review individual plugin documentation for specific HTML serialization/deserialization capabilities and default rules.

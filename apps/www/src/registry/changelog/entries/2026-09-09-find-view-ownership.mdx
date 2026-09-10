@@ -1,0 +1,14 @@
+---
+id: 2026-09-09-find-view-ownership
+date: 2026-09-09
+status: draft
+kind: fix
+summary: 'Find opens and focuses the requested editor view'
+change: { 'type': 'source', 'date': '2026-09-09', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-09-find-view-ownership","kind":"fix","migrationNotes":[]} -->
+
+- **`find`**, **`find-demo`**: Find opens independently in each editor view. Custom opening controls use `useFind` inside Editable slots, while `BaseFindPlugin` supplies shared queries and results. The demo includes a second view of the same document.

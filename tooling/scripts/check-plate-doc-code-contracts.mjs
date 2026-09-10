@@ -15,8 +15,8 @@ const compareStrings = (left, right) => {
 const repoRoot = resolve(import.meta.dirname, '../..');
 const editorConstructorNames = new Set([
   'createEditor',
-  'createEditor',
   'createStaticEditor',
+  'useCreateEditor',
   'useEditor',
   'useStaticEditor',
 ]);
@@ -34,8 +34,6 @@ const skippedDocsDirectoryNames = new Set([
   'releases',
 ]);
 const markdownFilePattern = /\.mdx?$/;
-const codeFencePattern =
-  /^ {0,3}```([^\n`]*)\r?\n([\s\S]*?)^ {0,3}```[^\n]*$/gm;
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^define(?:BasePlugin|Extension|PlatePlugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
@@ -207,25 +205,46 @@ const parseCodeFence = (code) =>
 
 export const extractJavaScriptCodeFences = (source) => {
   const fences = [];
-
-  for (const match of source.matchAll(codeFencePattern)) {
-    const language = (match[1] ?? '')
-      .trim()
-      .split(whitespacePattern, 1)[0]
-      .toLowerCase();
-
-    if (!codeFenceLanguages.has(language)) continue;
-
-    const code = match[2] ?? '';
-    const codeStart = (match.index ?? 0) + match[0].indexOf(code);
-
+  let opening;
+  const addFence = (end) => {
+    if (!codeFenceLanguages.has(opening.language)) return;
+    const { codeStart, language } = opening;
     fences.push({
-      code,
+      code: source.slice(codeStart, end),
       codeStart,
       language,
       line: getLineNumber(source, codeStart),
     });
+  };
+
+  for (const match of source.matchAll(/[^\r\n]*(?:\r?\n|$)/g)) {
+    const line = match[0].replace(/\r?\n$/, '');
+
+    if (opening) {
+      const closing = /^ {0,3}(`{3,}|~{3,})[ \t]*$/.exec(line);
+      if (
+        closing &&
+        closing[1].startsWith(opening.marker[0]) &&
+        closing[1].length >= opening.marker.length
+      ) {
+        addFence(match.index);
+        opening = undefined;
+      }
+      continue;
+    }
+
+    const start = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (!start || (start[1].startsWith('`') && start[2].includes('`'))) {
+      continue;
+    }
+    opening = {
+      codeStart: match.index + match[0].length,
+      language: start[2].trim().split(whitespacePattern, 1)[0].toLowerCase(),
+      marker: start[1],
+    };
   }
+
+  if (opening) addFence(source.length);
 
   return fences;
 };
@@ -1760,6 +1779,7 @@ const collectMarkdownFiles = (root) => {
 const collectCurrentDocs = () => [
   ...collectMarkdownFiles(join(repoRoot, 'content/docs')),
   join(repoRoot, 'content/docs/migration/plite-to-plate.mdx'),
+  join(repoRoot, 'content/docs/migration/plite-to-plate.cn.mdx'),
   ...readdirSync(join(repoRoot, 'packages'))
     .map((entry) => join(repoRoot, 'packages', entry, 'README.md'))
     .filter(existsSync),

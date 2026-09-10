@@ -27,7 +27,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -39,7 +39,7 @@ The fastest way to add font styling functionality is with the `FontKit`, which i
 
 - Includes all font plugins (`FontColorPlugin`, `FontBackgroundColorPlugin`, `FontSizePlugin`, `FontFamilyPlugin`) with sensible defaults.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -57,7 +57,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -67,7 +67,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 Include the font plugins in your Plate plugins array when creating the editor.
 
@@ -91,7 +91,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure The Color Default
+### Configure the color default
 
 Font plugins register string-valued text marks, so they follow the selected
 text instead of a block target list. Configure render props only when your UI
@@ -118,7 +118,7 @@ const editor = createEditor({
 `FontColorPlugin` defaults to `black`. HTML parsers read font styles directly
 onto text properties; block target injection does not constrain text marks.
 
-### Add Toolbar Button
+### Add toolbar button
 
 You can add [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) and [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) to your [Toolbar](/docs/toolbar) to control font color and size.
 

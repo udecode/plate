@@ -1,0 +1,4 @@
+lead_key	reason
+drag-handle-nodeview-routing	Drag-handle product behavior is not a core Slate v2 input/selection oracle for this packet.
+monaco-editor-selection-input	Monaco hits were mostly code editor/language-service implementation details, not portable rich editor invariants.
+raw-mobile-ime-proof	Raw device proof remains deferred until a real device lane exists.

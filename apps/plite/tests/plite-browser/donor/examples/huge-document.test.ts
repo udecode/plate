@@ -1307,26 +1307,34 @@ test.describe('huge document example', {
       await selectTextBlockOffsetDOM(editor, 0, 3);
 
       const steps: Array<{
+        nativeSelection: PliteBrowserHandleSelection | null;
         nativeTextLength: number;
         selection: PliteBrowserHandleSelection | null;
+        selectionBeforeSync: PliteBrowserHandleSelection | null;
         viewMarkerCount: number;
         viewMarkerPaths: Array<string | null>;
       }> = [];
+      const reverseSteps: typeof steps = [];
 
       await page.keyboard.down('Shift');
       try {
         for (let index = 0; index < 14; index += 1) {
           await page.keyboard.press('ArrowDown');
 
-          const selection = await editor.selection.get();
-          const viewSelection = await getViewSelectionSummary(editor);
-          const nativeSelection = await getNativeSelectionSummary(editor);
+          const beforeSync = await editor.selection.displayed();
+          expect(beforeSync.displayed).not.toBeNull();
+          await editor.assert.selection(beforeSync.displayed!);
+          const displayed = await editor.selection.displayed();
+          expect(displayed.model).toEqual(beforeSync.displayed);
+          expect(displayed.displayed).toEqual(beforeSync.displayed);
 
           steps.push({
-            nativeTextLength: nativeSelection.textLength,
-            selection,
-            viewMarkerCount: viewSelection.markerCount,
-            viewMarkerPaths: viewSelection.markerPaths,
+            nativeSelection: displayed.native.selection,
+            nativeTextLength: displayed.native.textLength,
+            selection: displayed.model,
+            selectionBeforeSync: beforeSync.model,
+            viewMarkerCount: displayed.view.markerCount,
+            viewMarkerPaths: displayed.view.markerPaths,
           });
         }
       } finally {
@@ -1337,20 +1345,74 @@ test.describe('huge document example', {
         await editor.assert.noDoubleSelectionHighlight();
       }
 
-      return steps;
+      await page.keyboard.down('Shift');
+      try {
+        for (let index = 0; index < 14; index += 1) {
+          await page.keyboard.press('ArrowUp');
+
+          const beforeSync = await editor.selection.displayed();
+          expect(beforeSync.displayed).not.toBeNull();
+          await editor.assert.selection(beforeSync.displayed!);
+          const displayed = await editor.selection.displayed();
+          expect(displayed.model).toEqual(beforeSync.displayed);
+          expect(displayed.displayed).toEqual(beforeSync.displayed);
+
+          reverseSteps.push({
+            nativeSelection: displayed.native.selection,
+            nativeTextLength: displayed.native.textLength,
+            selection: displayed.model,
+            selectionBeforeSync: beforeSync.model,
+            viewMarkerCount: displayed.view.markerCount,
+            viewMarkerPaths: displayed.view.markerPaths,
+          });
+        }
+      } finally {
+        await page.keyboard.up('Shift');
+      }
+      if (strategy === 'full') {
+        expect(reverseSteps.map((step) => step.selection)).toEqual([
+          ...steps.slice(0, -1).reverse().map((step) => step.selection),
+          {
+            anchor: { offset: 3, path: [0, 0] },
+            focus: { offset: 3, path: [0, 0] },
+          },
+        ]);
+      }
+      for (let index = 0; index < reverseSteps.length; index += 1) {
+        const selection = reverseSteps[index].selection!;
+        const previous = (index === 0 ? steps.at(-1) : reverseSteps[index - 1])!.selection!;
+        expect(selection.anchor).toEqual({ offset: 3, path: [0, 0] });
+        expect(
+          selection.focus.path[0] < previous.focus.path[0] ||
+          (selection.focus.path[0] === previous.focus.path[0] &&
+            selection.focus.offset < previous.focus.offset)
+        ).toBe(true);
+      }
+      expect(reverseSteps.at(-1)!.selection).toEqual({
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      });
+      await editor.assert.noDoubleSelectionHighlight();
+
+      return { reverseSteps, steps };
     };
 
-    const fullSteps = await collectSteps('full');
-    const stagedSteps = await collectSteps('staged');
+    const { reverseSteps: fullReverseSteps, steps: fullSteps } =
+      await collectSteps('full');
+    const { reverseSteps: stagedReverseSteps, steps: stagedSteps } =
+      await collectSteps('staged');
 
     await attachPliteBrowserJsonArtifact(
       testInfo,
       'staged-full-dom-vertical-selection-proof',
-      { fullSteps, stagedSteps }
+      { fullReverseSteps, fullSteps, stagedReverseSteps, stagedSteps }
     );
 
     expect(stagedSteps.map((step) => step.selection)).toEqual(
       fullSteps.map((step) => step.selection)
+    );
+    expect(stagedReverseSteps.at(-1)!.selection).toEqual(
+      fullReverseSteps.at(-1)!.selection
     );
     const finalStagedStep = stagedSteps.at(-1)!;
 
@@ -1359,7 +1421,6 @@ test.describe('huge document example', {
     expect(finalStagedStep.viewMarkerPaths).toContain(
       finalStagedStep.selection!.focus.path.join(',')
     );
-
   });
 
   test('keeps staged 10k select-all delete, typing, paste, and undo bounded', async ({

@@ -1,9 +1,9 @@
 import React from 'react';
 
 import type { Path, NodeKey, Range as PliteRange } from '../..';
-import { DOMCoverage, type DOMCoverageBoundary } from '../../dom/internal';
+import type { DOMCoverageBoundary } from '../../dom/internal';
 import type { VirtualizedTopLevelItem } from '../dom-strategy/use-virtualized-root-plan';
-import { useEditorContext } from '../hooks/use-editor-context';
+import { useEditableDOMRuntime } from '../hooks/use-claim-editable-dom-commit';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 
 const ROOT_GROUP_SIZE = 16;
@@ -303,7 +303,7 @@ export const EditableRootGroupPlaceholder = ({
   groupId: string;
   startIndex: number;
 }) => {
-  const editor = useEditorContext();
+  const coverage = useEditableDOMRuntime()?.domCoverage;
   const boundaryId = `rendering-staged:${groupId}`;
   const boundary = React.useMemo(
     () => ({
@@ -332,8 +332,8 @@ export const EditableRootGroupPlaceholder = ({
   );
 
   useIsomorphicLayoutEffect(
-    () => DOMCoverage.registerBoundary(editor, boundary),
-    [boundary, editor]
+    () => coverage?.registerBoundary(boundary),
+    [boundary, coverage]
   );
 
   return React.createElement('div', {

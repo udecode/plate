@@ -49,7 +49,6 @@ test('react clears pending selection before mounted-root Android insertText brid
     });
 
     EDITOR_TO_PENDING_SELECTION.set(editor, {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -61,7 +60,7 @@ test('react clears pending selection before mounted-root Android insertText brid
     assert.equal(EDITOR_TO_PENDING_SELECTION.has(editor), false);
     assert.equal(
       (
-        editor.read((state) => state.nodes.get([0, 0]))[0] as {
+        editor.read((state) => state.nodes.get([0, 0]))![0] as {
           text: string;
         }
       ).text,

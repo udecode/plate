@@ -14,6 +14,7 @@ export {
 } from './lib/editor/documentMigrations';
 export type {
   BasePluginInput,
+  PlateBlockInsertOptions,
   PlateNodeInsertOptions,
   PlatePluginOwnUpdate,
   PlatePluginReadState,
@@ -58,7 +59,6 @@ export type {
   RenderStaticNodeWrapper,
   RenderStaticNodeWrapperFunction,
   RenderStaticNodeWrapperProps,
-  ResolvedPlatePlugin,
   TextStaticProps,
   TransformOptions,
 } from './lib/plugin/BasePlugin';
@@ -95,7 +95,6 @@ export type {
   MatchRules,
   MergeRules,
   NodeComponent,
-  NodeComponents,
   NormalizeRules,
   PlateSchemaElement,
   PluginBaseContext,
@@ -120,7 +119,18 @@ export { defineBasePlugin } from './lib/plugin/defineBasePlugin';
 export * from './lib/plugins/HistoryPlugin';
 export * from './lib/plugins/affinity/index';
 export * from './lib/plugins/debug/index';
-export * from './lib/plugins/dom/index';
+export type {
+  AutoScrollChangeKind,
+  AutoScrollChangesMap,
+  AutoScrollOptions,
+  AutoScrollUpdate,
+  DomApi,
+  DomPluginState,
+  DomPluginUpdate,
+  PlateDomApi,
+  ScrollIntoViewTarget,
+  ScrollMode,
+} from './lib/plugins/dom/DOMPlugin';
 export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/element-state/index';
 export * from './lib/plugins/getCorePlugins';
@@ -140,45 +150,5 @@ export type * from './lib/types/index';
 export * from './lib/utils/index';
 export * from './utils/index';
 
-export type {
-  AnyBasePlugin,
-  AnyBasePluginContext,
-  AnyBasePluginPortal,
-  AnyInjectNodeProps,
-  AnyPluginBase,
-} from './lib/plugin/BasePlugin';
-export type {
-  AnyBasePluginDefinition,
-  NormalizePluginSelectors,
-  NormalizePluginState,
-} from './lib/plugin/PluginDefinition';
-export { createPluginContext } from './lib/plugin/createPluginContext.internal';
-export type { InternalPluginDefinitionOf } from './lib/plugin/pluginDefinitionLookup.internal';
-export {
-  compileEditorApplicationSchema,
-  getCompiledPlateContainerTypes,
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-  getResolvedPluginTargetTypes,
-} from './internal/plugin/compilePlateModel';
-export {
-  getPlateNodeCodecContributions,
-  type PlateNodeCodecContribution,
-} from './internal/plugin/collectPlateNodeCodecs';
-export type { GeneratedEditorTypeProvider } from './internal/editor/generatedEditorTypes';
-export type {
-  PlatePluginCache,
-  PlateRuntime,
-} from './internal/plugin/plateRuntime';
 export { isNominalPluginDescriptor } from './internal/utils/mergePlugins';
-export {
-  pipePreparedInsertDataQuery,
-  prepareHtmlPluginContext,
-  prepareHtmlRegistry,
-} from './lib/plugins/html/HtmlPlugin';
 export * from './lib/plugins/html/htmlDom';
-export type {
-  InternalEditorDefinitionElementProperties,
-  InternalEditorDefinitionOwnedElementProperties,
-  InternalEditorDefinitionTextProperties,
-} from './lib/editor/pluginRuntimeTypes';

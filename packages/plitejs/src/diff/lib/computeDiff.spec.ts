@@ -1729,3 +1729,122 @@ describe('computeDiff', () => {
     }
   );
 });
+
+it('preserves more distinct siblings than a UTF-16 token alphabet can hold', () => {
+  const source = Array.from({ length: 70_000 }, (_, id) => ({
+    id,
+    type: 'paragraph',
+    children: [{ text: `row ${id}` }],
+  }));
+  const target = structuredClone(source);
+  target.splice(35_000, 0, {
+    id: 70_000,
+    type: 'paragraph',
+    children: [{ text: 'inserted' }],
+  });
+  const result = computeDiff(source, target);
+
+  expect(result.filter((node) => !node.diff)).toEqual(source);
+  expect(result[35_000]).toEqual({
+    ...target[35_000],
+    diff: true,
+    diffIntent: { type: 'insert' },
+  });
+  expect(result).toHaveLength(target.length);
+});
+
+it('preserves inline atoms when text occupies every UTF-16 unit', () => {
+  const text = Array.from({ length: 65_536 }, (_, code) =>
+    String.fromCharCode(code)
+  ).join('');
+  const inline = {
+    id: 'before',
+    type: inlineVoidType,
+    children: [{ text: '' }],
+  };
+  const nextInline = { ...inline, id: 'after' };
+  const result = computeDiff(
+    [{ text }, inline],
+    [{ text, bold: true }, nextInline],
+    { isInline: (node) => node.type === inlineVoidType }
+  );
+
+  expect(result).toEqual([
+    {
+      text,
+      bold: true,
+      diff: true,
+      diffIntent: {
+        type: 'update',
+        properties: {},
+        newProperties: { bold: true },
+      },
+    },
+    { ...inline, diff: true, diffIntent: { type: 'delete' } },
+    { ...nextInline, diff: true, diffIntent: { type: 'insert' } },
+  ]);
+});
+
+it('matches equivalent property orders without hiding property differences', () => {
+  const source = [{ text: 'same', metadata: { second: 2, first: 1 } }];
+  expect(
+    computeDiff(source, [{ metadata: { first: 1, second: 2 }, text: 'same' }])
+  ).toEqual(source);
+  expect(
+    computeDiff(source, [{ metadata: { first: 1, second: 3 }, text: 'same' }])
+  ).toEqual([
+    {
+      text: 'same',
+      metadata: { first: 1, second: 3 },
+      diff: true,
+      diffIntent: {
+        type: 'update',
+        properties: { metadata: { second: 2, first: 1 } },
+        newProperties: { metadata: { first: 1, second: 3 } },
+      },
+    },
+  ]);
+});
+
+for (const metadata of [new Date(123), new Map([['x', 1]])]) {
+  it(`preserves deep equality for ${metadata.constructor.name} property values`, () => {
+    const source = { text: 'same', metadata };
+    const target = structuredClone(source);
+
+    expect(computeDiff([source], [target])).toEqual([source]);
+    expect(computeDiff([target], [source])).toEqual([target]);
+  });
+}
+
+it('reconstructs both versions after separated edits beyond the token alphabet', () => {
+  const source = Array.from({ length: 70_000 }, (_, id) => ({
+    id,
+    type: 'paragraph',
+    children: [{ text: `row ${id}` }],
+  }));
+  const target = structuredClone(source);
+  for (const index of [100, 35_000, 69_000]) {
+    target[index] = {
+      id: 70_000 + index,
+      type: 'replacement',
+      children: [{ text: `replacement ${index}` }],
+    };
+  }
+  const result = computeDiff(source, target);
+  const reconstruct = (excluded: 'delete' | 'insert') =>
+    result
+      .filter(
+        (node) =>
+          (node.diffIntent as { type: string } | undefined)?.type !== excluded
+      )
+      .map((node) =>
+        Object.fromEntries(
+          Object.entries(node).filter(
+            ([key]) => key !== 'diff' && key !== 'diffIntent'
+          )
+        )
+      );
+
+  expect(reconstruct('insert')).toEqual(source);
+  expect(reconstruct('delete')).toEqual(target);
+});

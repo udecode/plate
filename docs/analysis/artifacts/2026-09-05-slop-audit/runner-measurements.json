@@ -1,0 +1,200 @@
+{
+  "commands": {
+    "node": [
+      "node",
+      "--test",
+      "tooling/scripts/test-suite-routing.test.mjs"
+    ],
+    "bun": [
+      "bun",
+      "test",
+      "./tooling/scripts/test-suite-routing.test.mjs"
+    ],
+    "runner": [
+      "bun",
+      "tooling/scripts/test-fast.mjs",
+      "tooling/scripts/test-suite-routing.test.mjs"
+    ]
+  },
+  "samples": [
+    {
+      "cycle": 0,
+      "warmup": true,
+      "lane": "node",
+      "ms": 68.09266679920256,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 7.019417\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 2.610458\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 45.752459\n",
+      "stderr": ""
+    },
+    {
+      "cycle": 0,
+      "warmup": true,
+      "lane": "bun",
+      "ms": 207.19804195687175,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [200.00ms]\n"
+    },
+    {
+      "cycle": 0,
+      "warmup": true,
+      "lane": "runner",
+      "ms": 411.908624926582,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [208.00ms]\n"
+    },
+    {
+      "cycle": 1,
+      "warmup": false,
+      "lane": "runner",
+      "ms": 302.465041866526,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [210.00ms]\n"
+    },
+    {
+      "cycle": 1,
+      "warmup": false,
+      "lane": "bun",
+      "ms": 181.48445803672075,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [175.00ms]\n"
+    },
+    {
+      "cycle": 1,
+      "warmup": false,
+      "lane": "node",
+      "ms": 70.8692918997258,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 9.603041\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 2.672833\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 48.580167\n",
+      "stderr": ""
+    },
+    {
+      "cycle": 2,
+      "warmup": false,
+      "lane": "node",
+      "ms": 73.07045790366828,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 6.786125\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 5.222667\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 49.372792\n",
+      "stderr": ""
+    },
+    {
+      "cycle": 2,
+      "warmup": false,
+      "lane": "bun",
+      "ms": 180.43125001713634,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [173.00ms]\n"
+    },
+    {
+      "cycle": 2,
+      "warmup": false,
+      "lane": "runner",
+      "ms": 299.8359159100801,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [207.00ms]\n"
+    },
+    {
+      "cycle": 3,
+      "warmup": false,
+      "lane": "runner",
+      "ms": 305.38679216988385,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [212.00ms]\n"
+    },
+    {
+      "cycle": 3,
+      "warmup": false,
+      "lane": "bun",
+      "ms": 178.90399997122586,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [171.00ms]\n"
+    },
+    {
+      "cycle": 3,
+      "warmup": false,
+      "lane": "node",
+      "ms": 73.27487482689321,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 7.064875\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 5.290375\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 50.576292\n",
+      "stderr": ""
+    },
+    {
+      "cycle": 4,
+      "warmup": false,
+      "lane": "node",
+      "ms": 71.66699995286763,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 9.485625\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 2.82075\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 48.734666\n",
+      "stderr": ""
+    },
+    {
+      "cycle": 4,
+      "warmup": false,
+      "lane": "bun",
+      "ms": 177.02850000932813,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [170.00ms]\n"
+    },
+    {
+      "cycle": 4,
+      "warmup": false,
+      "lane": "runner",
+      "ms": 302.0108749624342,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [207.00ms]\n"
+    },
+    {
+      "cycle": 5,
+      "warmup": false,
+      "lane": "runner",
+      "ms": 296.48675001226366,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [203.00ms]\n"
+    },
+    {
+      "cycle": 5,
+      "warmup": false,
+      "lane": "bun",
+      "ms": 177.8266669716686,
+      "exit": 0,
+      "stdout": "bun test v1.3.12 (700fc117)\n",
+      "stderr": "\n 2 pass\n 0 fail\nRan 2 tests across 1 file. [170.00ms]\n"
+    },
+    {
+      "cycle": 5,
+      "warmup": false,
+      "lane": "node",
+      "ms": 66.84729200787842,
+      "exit": 0,
+      "stdout": "TAP version 13\n# Subtest: routes tooling slow contracts exclusively through the slow suite\nok 1 - routes tooling slow contracts exclusively through the slow suite\n  ---\n  duration_ms: 7.16725\n  type: 'test'\n  ...\n# Subtest: routes consolidated editor tests only through their package tasks\nok 2 - routes consolidated editor tests only through their package tasks\n  ---\n  duration_ms: 2.616959\n  type: 'test'\n  ...\n1..2\n# tests 2\n# suites 0\n# pass 2\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 44.499083\n",
+      "stderr": ""
+    }
+  ],
+  "sha256": {
+    "tooling/scripts/test-suite-routing.test.mjs": "980e7e44d7586383778b64acec8b451051f453bb08fd719b690c9549eaa330b1",
+    "tooling/scripts/test-fast.mjs": "61f5cd93a66489d402ed81ebbedae5503eaace453f501b7e10650ab60b06d77a",
+    "tooling/config/test-suites.mjs": "ea4831dda5366d4eb8ddf05fbb4171b18d685014d815570a35a7a0c3d3a9747e",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "tooling/config/bunTestSetup.ts": "f13784bb2c833e50d6d0e35fe0afcc2e19489e3f8e6fd294c0332d017f1a88d9",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718"
+  },
+  "versions": {
+    "node": "v22.22.1",
+    "bun": "1.3.12"
+  },
+  "medianMs": {
+    "node": 71.66699995286763,
+    "bun": 178.90399997122586,
+    "runner": 302.0108749624342
+  }
+}

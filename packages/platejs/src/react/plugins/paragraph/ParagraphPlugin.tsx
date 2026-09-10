@@ -1,6 +1,5 @@
 import { BaseParagraphPlugin } from '../../../lib';
-import { Key } from '../../hotkeys';
-import { toPlatePlugin } from '../../plugin/toPlatePlugin';
+import { toPlatePlugin } from '../../core';
 
 export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend({
   shortcuts: {
@@ -10,10 +9,7 @@ export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend({
           type: editor.plugin(BaseParagraphPlugin).schema.type,
         });
       },
-      keys: [
-        [Key.Mod, Key.Alt, '0'],
-        [Key.Mod, Key.Shift, '0'],
-      ],
+      keys: ['mod+alt+0', 'mod+shift+0'],
       preventDefault: true,
     },
   },

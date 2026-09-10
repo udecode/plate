@@ -1,5 +1,7 @@
 # performance-observability pack
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Use this pack when work can change latency, payload size, query count, database
 access, cache/index behavior, runtime pooling, repeated-unit work, subscription
 fan-out, background throughput, or scaling with data/document/DOM size.

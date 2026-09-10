@@ -1,6 +1,6 @@
 import { act, render, renderHook, waitFor } from '@testing-library/react';
 import _ from 'lodash';
-import { type EditorCommit, type NodeKey, TextApi } from 'plitejs';
+import { type EditorCommit, type NodeKey, NodeApi, TextApi } from 'plitejs';
 import {
   Component,
   type ReactNode,
@@ -11,10 +11,7 @@ import {
 
 import {
   getLastCommit as editorGetLastCommit,
-  getPathByNodeKey as editorGetPathByNodeKey,
-  getNodeKey as editorGetNodeKey,
   getSnapshot as editorGetSnapshot,
-  insertBreak as editorInsertBreak,
   isEditor as editorIsEditor,
   moveNodes as editorMoveNodes,
   replace as editorReplace,
@@ -33,12 +30,13 @@ import {
   useEditor,
   useTextSelector,
 } from '../../src/react';
-import { NodeKeyContext } from '../../src/react/context';
+import { ElementContext } from '../../src/react/context';
 import {
   usePlaceholderValue,
   useRootNodeKeys,
   useTopLevelSelectionIndex,
 } from '../../src/react/editable/root-selector-sources';
+import { useEditorSelectorContext } from '../../src/react/hooks/use-editor-selector';
 import { useGenericSelector } from '../../src/react/hooks/use-generic-selector';
 import {
   useMountedNodeRenderSelector,
@@ -55,7 +53,7 @@ class SelectorErrorBoundary extends Component<
   },
   { error: Error | null }
 > {
-  state = { error: null };
+  state: { error: Error | null } = { error: null };
 
   componentDidCatch(error: Error) {
     this.props.onError(error);
@@ -72,6 +70,284 @@ class SelectorErrorBoundary extends Component<
 }
 
 describe('plite-react provider hooks contract', () => {
+  describe('keyed selector dispatch', () => {
+    const setup = (blocks = 4) => {
+      const editor = createEditor({
+        initialValue: Array.from({ length: blocks }, (_value, index) => ({
+          type: 'block',
+          children: [{ text: `line ${index}` }],
+        })),
+      });
+      const keys = Array.from({ length: blocks }, (_value, index) => {
+        const key = editor.read((state) => state.key([index, 0]));
+        if (!key) throw new Error('Expected a text node key');
+        return key;
+      });
+      editor.update((tx) => {
+        tx.nodes.insert(
+          { type: 'block', children: [{ text: 'inserted' }] },
+          { at: [0] }
+        );
+      });
+      const commit = editorGetLastCommit(editor);
+      if (!commit) throw new Error('Expected an insertion commit');
+      const hook = renderHook(() => useEditorSelectorContext());
+      return { ...hook, keys, commit, editor };
+    };
+
+    test.each([
+      { groups: 256, width: 1 },
+      { groups: 64, width: 4 },
+      { groups: 1, width: 1024 },
+    ])(
+      'bounds registration and dispatch work for $groups groups of $width keys',
+      ({ groups, width }) => {
+        const { result, keys, commit, unmount } = setup(groups * width);
+        let registrationReads = 0;
+        let dispatchReads = 0;
+        const countReads = (values: readonly NodeKey[], visit: () => void) =>
+          new Proxy(values, {
+            get(target, property, receiver) {
+              if (typeof property === 'string' && /^\d+$/.test(property)) {
+                visit();
+              }
+              return Reflect.get(target, property, receiver);
+            },
+          });
+        const calls = new Array<number>(groups).fill(0);
+        const unsubscribe = Array.from({ length: groups }, (_value, group) =>
+          result.current.selectorContext.addEventListener(
+            () => {
+              calls[group] += 1;
+            },
+            {
+              nodeKeys: countReads(
+                keys.slice(group * width, (group + 1) * width),
+                () => {
+                  registrationReads += 1;
+                }
+              ),
+            }
+          )
+        );
+        const observedCommit: EditorCommit = {
+          ...commit,
+          changed: {
+            ...commit.changed,
+            nodeKeysAll: (fact) =>
+              countReads(commit.changed.nodeKeysAll(fact), () => {
+                dispatchReads += 1;
+              }),
+          },
+        };
+        const affectedKeys = ['node', 'path', 'selection'] as const;
+        const inputSize = affectedKeys.reduce(
+          (sum, fact) => sum + commit.changed.nodeKeysAll(fact).length,
+          0
+        );
+        try {
+          expect(registrationReads).toBeLessThanOrEqual(2 * keys.length);
+          result.current.onChange(observedCommit);
+          expect(calls).toEqual(new Array<number>(groups).fill(1));
+          expect(dispatchReads).toBeLessThanOrEqual(4 * inputSize);
+          unsubscribe.forEach((remove) => remove());
+          result.current.onChange(undefined);
+          expect(calls).toEqual(new Array<number>(groups).fill(1));
+          expect(registrationReads).toBeLessThanOrEqual(2 * keys.length);
+        } finally {
+          unsubscribe.forEach((remove) => remove());
+          unmount();
+        }
+      }
+    );
+
+    test.each(['node', 'path', 'render', 'selection'] as const)(
+      'routes overlapping %s keys once and preserves forced invalidation',
+      (source) => {
+        const { result, keys, commit, unmount } = setup();
+        const seen: Array<EditorCommit | undefined> = [];
+        const unrelated = vi.fn();
+        const remove = result.current.selectorContext.addEventListener(
+          (change) => seen.push(change),
+          { nodeKeys: [keys[0], keys[1], keys[0]], runtimeEventSource: source }
+        );
+        const removeUnrelated = result.current.selectorContext.addEventListener(
+          unrelated,
+          { nodeKeys: [keys[3]], runtimeEventSource: source }
+        );
+        const routed: EditorCommit = {
+          ...commit,
+          changed: {
+            ...commit.changed,
+            nodeKeysAll: (fact) =>
+              fact === (source === 'render' ? 'node' : source)
+                ? [keys[0], keys[1], keys[0]]
+                : [],
+          },
+        };
+        try {
+          result.current.onChange(routed, [keys[0], keys[0]]);
+          expect(seen).toEqual([
+            source === 'node' || source === 'render' ? undefined : routed,
+          ]);
+          expect(unrelated).not.toHaveBeenCalled();
+          seen.length = 0;
+          result.current.onChange(undefined);
+          expect(seen).toEqual([undefined]);
+          expect(unrelated).toHaveBeenCalledTimes(1);
+          remove();
+          seen.length = 0;
+          result.current.onChange(routed);
+          expect(seen).toEqual([]);
+        } finally {
+          remove();
+          removeUnrelated();
+          unmount();
+        }
+      }
+    );
+
+    test('filters synced text but delivers historic and forced multi-key invalidations', () => {
+      const { result, keys, commit, unmount } = setup();
+      const seen: Array<EditorCommit | undefined> = [];
+      const remove = result.current.selectorContext.addEventListener(
+        (change) => seen.push(change),
+        {
+          nodeKeys: keys,
+          runtimeEventSource: 'render',
+          shouldUpdate: (change) => !change || change.tags.includes('historic'),
+        }
+      );
+      const typing: EditorCommit = {
+        ...commit,
+        tags: [],
+        changed: {
+          ...commit.changed,
+          hasAny: (...facts) => facts.includes('text'),
+          nodeKeysAll: (fact) => (fact === 'node' ? [keys[0]] : []),
+        },
+      };
+      const historic = { ...typing, tags: ['historic'] };
+      try {
+        result.current.onChange(typing);
+        expect(seen).toEqual([]);
+        result.current.onChange(historic);
+        expect(seen).toEqual([historic]);
+        result.current.onChange(typing, [keys[0]]);
+        expect(seen).toEqual([historic, undefined]);
+      } finally {
+        remove();
+        unmount();
+      }
+    });
+
+    test('keeps root-order, empty-key and independent view subscriptions alive', () => {
+      const first = setup();
+      const second = renderHook(() => useEditorSelectorContext());
+      const preview = vi.fn();
+      const global = vi.fn();
+      const otherView = vi.fn();
+      const removePreview =
+        first.result.current.selectorContext.addEventListener(preview, {
+          nodeKeys: [first.keys[0]],
+          includeRootOrderChanges: true,
+        });
+      const removeGlobal =
+        first.result.current.selectorContext.addEventListener(global, {
+          nodeKeys: [],
+        });
+      const removeOther =
+        second.result.current.selectorContext.addEventListener(otherView, {
+          nodeKeys: first.keys,
+        });
+      try {
+        first.result.current.onChange(first.commit);
+        expect(preview).toHaveBeenCalledTimes(1);
+        expect(global).toHaveBeenCalledTimes(1);
+        expect(otherView).not.toHaveBeenCalled();
+        removePreview();
+        removeGlobal();
+        first.result.current.onChange(first.commit);
+        second.result.current.onChange(first.commit);
+        expect(preview).toHaveBeenCalledTimes(1);
+        expect(global).toHaveBeenCalledTimes(1);
+        expect(otherView).toHaveBeenCalledTimes(1);
+      } finally {
+        removePreview();
+        removeGlobal();
+        removeOther();
+        first.unmount();
+        second.unmount();
+      }
+    });
+
+    test.each([
+      { multiKey: false, deferred: false },
+      { multiKey: true, deferred: false },
+      { multiKey: false, deferred: true },
+      { multiKey: true, deferred: true },
+    ])(
+      'retired cleanup preserves replacement subscriptions (multiKey=$multiKey, deferred=$deferred)',
+      async ({ multiKey, deferred }) => {
+        const { result, keys, editor, unmount } = setup();
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { path: [1, 0], offset: 0 } });
+        });
+        const commit = editorGetLastCommit(editor);
+        if (!commit) throw new Error('Expected the text change');
+        const retired = vi.fn();
+        const replacement = vi.fn();
+        const removeRetired = result.current.selectorContext.addEventListener(
+          retired,
+          {
+            ...(multiKey ? { nodeKeys: keys } : { nodeKey: keys[0] }),
+            deferred,
+          }
+        );
+        result.current.onChange(commit);
+        removeRetired();
+        const removeReplacement =
+          result.current.selectorContext.addEventListener(replacement, {
+            ...(multiKey ? { nodeKey: keys[0] } : { nodeKeys: keys }),
+            deferred,
+          });
+        try {
+          removeRetired();
+          result.current.onChange(commit);
+          await act(async () => {});
+          expect(replacement).toHaveBeenCalledTimes(1);
+          expect(retired).toHaveBeenCalledTimes(deferred ? 0 : 1);
+        } finally {
+          removeRetired();
+          removeReplacement();
+          unmount();
+        }
+      }
+    );
+
+    test('coalesces multi-key delivery and cancels it when the subscription retires', async () => {
+      const { result, keys, commit, unmount } = setup();
+      const seen: Array<EditorCommit | undefined> = [];
+      const remove = result.current.selectorContext.addEventListener(
+        (change) => seen.push(change),
+        { nodeKeys: keys, deferred: true }
+      );
+      try {
+        result.current.onChange(commit);
+        result.current.onChange(commit);
+        await act(async () => {});
+        expect(seen).toEqual([commit]);
+        result.current.onChange(commit);
+        remove();
+        await act(async () => {});
+        expect(seen).toEqual([commit]);
+      } finally {
+        remove();
+        unmount();
+      }
+    });
+  });
+
   test('useEditorSelection exposes only the public range projection', () => {
     const editor = createEditor({
       initialSelection: {
@@ -166,7 +442,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('multiple Editable views preserve the constructor maxLength', () => {
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -206,16 +482,13 @@ describe('plite-react provider hooks contract', () => {
 
   test('Plite publishes editor commits from child mount layout effects', () => {
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onValueChange = jest.fn();
-    const shouldUpdate = jest.fn(() => true);
-    const selector = jest.fn((nextEditor: typeof editor) =>
+    const onCommit = vi.fn();
+    const onValueChange = vi.fn();
+    const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => true);
+    const selector = vi.fn((nextEditor: typeof editor) =>
       nextEditor.read((state) => {
-        const [firstBlock] = state.nodes.children() as Array<{
-          children: Array<{ text: string }>;
-        }>;
-
-        return firstBlock?.children[0]?.text ?? '';
+        const [firstBlock] = state.nodes.children();
+        return firstBlock ? NodeApi.string(firstBlock) : '';
       })
     );
 
@@ -315,7 +588,7 @@ describe('plite-react provider hooks contract', () => {
   test('abandoned selector renders do not publish their change filter', () => {
     const editor = createEditor({ initialValue });
     const suspended = new Promise<never>(() => {});
-    const selector = jest.fn((nextEditor: typeof editor) =>
+    const selector = vi.fn((nextEditor: typeof editor) =>
       nextEditor.read.text.string([])
     );
 
@@ -358,8 +631,8 @@ describe('plite-react provider hooks contract', () => {
 
   test('useEditorSelector honors the equality function when selector identity changes', async () => {
     const editor = createEditor({ initialValue });
-    const callback1 = jest.fn(() => []);
-    const callback2 = jest.fn(() => []);
+    const callback1 = vi.fn(() => []);
+    const callback2 = vi.fn(() => []);
 
     const { result, rerender } = renderHook(
       ({ callback }) => useEditorSelector(callback, { equalityFn: _.isEqual }),
@@ -394,13 +667,41 @@ describe('plite-react provider hooks contract', () => {
     expect(firstResult).toBe(result.current);
   });
 
+  test('useEditorSelector applies a changed equality function to the current value', () => {
+    const editor = createEditor({ initialValue });
+    const selector = () => editor.read.text.string([]);
+    const { result, rerender } = renderHook(
+      ({ preserve }) =>
+        useEditorSelector(selector, {
+          equalityFn: preserve ? (previous) => previous !== null : Object.is,
+        }),
+      {
+        initialProps: { preserve: true },
+        wrapper: ({ children }) => (
+          <Plite editor={editor}>
+            <Editable />
+            {children}
+          </Plite>
+        ),
+      }
+    );
+
+    act(() =>
+      editor.update.text.insert('!', { at: { path: [0, 0], offset: 4 } })
+    );
+    expect(result.current).toBe('test');
+
+    rerender({ preserve: false });
+    expect(result.current).toBe('test!');
+  });
+
   test('abandoned renders do not replace the committed generic selector', () => {
     let source = 'test';
-    let updateSelector = () => {
+    let updateSelector: () => void = () => {
       throw new Error('selector is not committed');
     };
-    const committedSelector = jest.fn(() => source);
-    const abandonedSelector = jest.fn(() => `abandoned:${source}`);
+    const committedSelector = vi.fn(() => source);
+    const abandonedSelector = vi.fn(() => `abandoned:${source}`);
     const preserveCommittedValue = (previous: string | null) =>
       previous !== null;
     const firstRenderValues: string[] = [];
@@ -450,8 +751,8 @@ describe('plite-react provider hooks contract', () => {
 
   test('abandoned provider renders keep committed change callbacks', () => {
     const committedEditor = createEditor({ initialValue });
-    const committedOnCommit = jest.fn();
-    const abandonedOnCommit = jest.fn();
+    const committedOnCommit = vi.fn();
+    const abandonedOnCommit = vi.fn();
     const suspended = new Promise<never>(() => {});
 
     const MaybeSuspend = ({ abandoned }: { abandoned: boolean }) => {
@@ -490,10 +791,10 @@ describe('plite-react provider hooks contract', () => {
 
   test('child layout commits after rerender use the newly committed provider callbacks', () => {
     const editor = createEditor({ initialValue });
-    const previousOnCommit = jest.fn();
-    const previousOnValueChange = jest.fn();
-    const nextOnCommit = jest.fn();
-    const nextOnValueChange = jest.fn();
+    const previousOnCommit = vi.fn();
+    const previousOnValueChange = vi.fn();
+    const nextOnCommit = vi.fn();
+    const nextOnValueChange = vi.fn();
 
     const CommitInLayout = ({ commit }: { commit: boolean }) => {
       const mountedEditor = useEditorContext();
@@ -535,8 +836,8 @@ describe('plite-react provider hooks contract', () => {
   test('useEditorSelector replays subscription errors during render with context', async () => {
     const editor = createEditor({ initialValue });
     const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
-    const onError = jest.fn();
-    const consoleError = jest
+    const onError = vi.fn();
+    const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
@@ -597,7 +898,7 @@ describe('plite-react provider hooks contract', () => {
   test('useEditorSelector reads the latest canonical commit from the editor', async () => {
     const editor = createEditor({ initialValue });
     const seenEditors: Array<typeof editor> = [];
-    const selector = jest.fn((nextEditor: typeof editor) => {
+    const selector = vi.fn((nextEditor: typeof editor) => {
       seenEditors.push(nextEditor);
 
       return nextEditor.read((state) =>
@@ -631,7 +932,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('deferred useEditorSelector coalesces to the latest canonical commit', async () => {
     const editor = createEditor({ initialValue });
-    const selector = jest.fn(
+    const selector = vi.fn(
       (nextEditor: typeof editor) =>
         nextEditor.read((state) => state.lastCommit()?.version) ?? 0
     );
@@ -669,7 +970,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('deferred useEditorSelector cancels queued updates on unmount', async () => {
     const editor = createEditor({ initialValue });
-    const selector = jest.fn(
+    const selector = vi.fn(
       (nextEditor: typeof editor) =>
         nextEditor.read((state) => state.lastCommit()?.version) ?? 0
     );
@@ -709,7 +1010,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('deferred editor selectors preserve profiler markers while coalescing renders', async () => {
     const editor = createEditor({ initialValue });
-    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
+    const selector = vi.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
@@ -768,9 +1069,11 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const targetNodeKey = editorGetSnapshot(editor).index.keyAt([1, 0]);
-    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
-    const shouldUpdate = jest.fn((change?: EditorCommit) =>
-      Boolean(change?.changed.hasNodeKey(targetNodeKey ?? '', 'selection'))
+    const selector = vi.fn(() => editorGetLastCommit(editor)?.version ?? 0);
+    const shouldUpdate = vi.fn((change?: EditorCommit) =>
+      Boolean(
+        targetNodeKey && change?.changed.hasNodeKey(targetNodeKey, 'selection')
+      )
     );
     const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
 
@@ -823,9 +1126,9 @@ describe('plite-react provider hooks contract', () => {
     const snapshot = editorGetSnapshot(editor);
     const blockNodeKey = snapshot.index.keyAt([0]);
     const textNodeKey = snapshot.index.keyAt([0, 0]);
-    const selector = jest.fn((state) => state.selection());
+    const selector = vi.fn((state) => state.selection());
     const seenChanges: EditorCommit[] = [];
-    const shouldUpdate = jest.fn((change?: EditorCommit) => {
+    const shouldUpdate = vi.fn((change?: EditorCommit) => {
       if (change) {
         seenChanges.push(change);
       }
@@ -898,12 +1201,12 @@ describe('plite-react provider hooks contract', () => {
       throw new Error('Expected node keys for selector contract');
     }
 
-    const nodeSelector = jest.fn(({ node }) =>
+    const nodeSelector = vi.fn(({ node }) =>
       node && 'children' in node && 'text' in node.children[0]
         ? node.children[0].text
         : null
     );
-    const textSelector = jest.fn(({ text }) => text?.text ?? null);
+    const textSelector = vi.fn(({ text }) => text?.text ?? null);
 
     const { result } = renderHook(
       () => ({
@@ -968,8 +1271,8 @@ describe('plite-react provider hooks contract', () => {
       throw new Error('Expected node keys for listener fanout contract');
     }
 
-    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
-    const shouldUpdate = jest.fn(() => true);
+    const selector = vi.fn(() => editorGetLastCommit(editor)?.version ?? 0);
+    const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => true);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
@@ -1051,19 +1354,15 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const nodeKey = editorGetNodeKey(editor, [0]);
+    const nodeKey = editor.key([0]);
 
     if (!nodeKey) {
       throw new Error('Expected node key for top-level split contract');
     }
 
-    const selector = jest.fn(({ node }) =>
-      node && 'children' in node
-        ? node.children
-            .map((child) => (TextApi.isText(child) ? child.text : ''))
-            .join('')
-        : null
-    );
+    const selector = vi.fn<
+      Parameters<typeof useNodeSelector<string | null>>[0]
+    >(({ node }) => (node ? NodeApi.string(node) : null));
 
     const { result } = renderHook(
       () =>
@@ -1086,7 +1385,7 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.selection.set({ path: [0, 1], offset: 0 });
       });
-      editorInsertBreak(editor);
+      editor.update.break.insert();
     });
 
     expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
@@ -1103,13 +1402,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const siblingNodeKey = editorGetNodeKey(editor, [1]);
+    const siblingNodeKey = editor.key([1]);
 
     if (!siblingNodeKey) {
       throw new Error('Expected node key for shifted split sibling contract');
     }
 
-    const selector = jest.fn(({ path }) => path?.join('.') ?? null);
+    const selector = vi.fn(({ path }) => path?.join('.') ?? null);
 
     const { result } = renderHook(
       () =>
@@ -1132,7 +1431,7 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.selection.set({ path: [0, 0], offset: 5 });
       });
-      editorInsertBreak(editor);
+      editor.update.break.insert();
     });
 
     expect(editorGetLastCommit(editor)?.changed.has('root-order')).toBe(true);
@@ -1146,13 +1445,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const nodeKey = editorGetNodeKey(editor, [1]);
+    const nodeKey = editor.key([1]);
 
     if (!nodeKey) {
       throw new Error('Expected node key for top-level move contract');
     }
 
-    const selector = jest.fn(({ path }) => path?.join('.') ?? null);
+    const selector = vi.fn(({ path }) => path?.join('.') ?? null);
 
     const { result } = renderHook(
       () =>
@@ -1196,13 +1495,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const nodeKey = editorGetNodeKey(editor, [0, 0]);
+    const nodeKey = editor.key([0, 0]);
 
     if (!nodeKey) {
       throw new Error('Expected node key for nested-to-top-level move');
     }
 
-    const selector = jest.fn(({ path }) => path?.join('.') ?? null);
+    const selector = vi.fn(({ path }) => path?.join('.') ?? null);
 
     const { result } = renderHook(
       () =>
@@ -1250,13 +1549,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const sourceParentNodeKey = editorGetNodeKey(editor, [0]);
+    const sourceParentNodeKey = editor.key([0]);
 
     if (!sourceParentNodeKey) {
       throw new Error('Expected source parent node key for nested move');
     }
 
-    const selector = jest.fn(({ node }) =>
+    const selector = vi.fn(({ node }) =>
       node && 'children' in node ? node.children.length : null
     );
 
@@ -1302,13 +1601,13 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const nodeKey = editorGetNodeKey(editor, [0]);
+    const nodeKey = editor.key([0]);
 
     if (!nodeKey) {
       throw new Error('Expected node key for top-level-to-nested move');
     }
 
-    const selector = jest.fn(({ path }) => path?.join('.') ?? null);
+    const selector = vi.fn(({ path }) => path?.join('.') ?? null);
 
     const { result } = renderHook(
       () =>
@@ -1353,13 +1652,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const destinationParentNodeKey = editorGetNodeKey(editor, [0]);
+    const destinationParentNodeKey = editor.key([0]);
 
     if (!destinationParentNodeKey) {
       throw new Error('Expected destination parent node key for nested move');
     }
 
-    const selector = jest.fn(({ node }) =>
+    const selector = vi.fn(({ node }) =>
       node && 'children' in node ? node.children.length : null
     );
 
@@ -1391,13 +1690,14 @@ describe('plite-react provider hooks contract', () => {
   });
 
   test('useElementPath updates on top-level root order changes', async () => {
+    const value = [
+      { type: 'block', children: [{ text: 'one' }] },
+      { type: 'block', children: [{ text: 'two' }] },
+    ];
     const editor = createEditor({
-      initialValue: [
-        { type: 'block', children: [{ text: 'one' }] },
-        { type: 'block', children: [{ text: 'two' }] },
-      ],
+      initialValue: value,
     });
-    const nodeKey = editorGetNodeKey(editor, [0]);
+    const nodeKey = editor.key([0]);
 
     if (!nodeKey) {
       throw new Error('Expected node key for element path contract');
@@ -1407,7 +1707,9 @@ describe('plite-react provider hooks contract', () => {
       wrapper: ({ children }) => (
         <Plite editor={editor}>
           <Editable />
-          <NodeKeyContext value={nodeKey}>{children}</NodeKeyContext>
+          <ElementContext value={{ element: value[0], nodeKey, path: [0] }}>
+            {children}
+          </ElementContext>
         </Plite>
       ),
     });
@@ -1418,7 +1720,7 @@ describe('plite-react provider hooks contract', () => {
       editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
-    expect(editorGetPathByNodeKey(editor, nodeKey)).toEqual([1]);
+    expect(editor.read.nodes.path(nodeKey)).toEqual([1]);
     expect(result.current).toEqual([1]);
   });
 
@@ -1478,7 +1780,7 @@ describe('plite-react provider hooks contract', () => {
     }));
     const editor = createEditor({ initialValue: value });
     const nodeKeys = value.map((_value, index) =>
-      editorGetNodeKey(editor, [index])
+      editor.key([index])
     ) as NodeKey[];
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
@@ -1497,10 +1799,13 @@ describe('plite-react provider hooks contract', () => {
       render(
         <Plite editor={editor}>
           <Editable />
-          {nodeKeys.map((nodeKey) => (
-            <NodeKeyContext key={nodeKey} value={nodeKey}>
+          {nodeKeys.map((nodeKey, index) => (
+            <ElementContext
+              key={nodeKey}
+              value={{ element: value[index], nodeKey, path: [index] }}
+            >
               <PathProbe nodeKey={nodeKey} />
-            </NodeKeyContext>
+            </ElementContext>
           ))}
         </Plite>
       );
@@ -1688,8 +1993,8 @@ describe('plite-react provider hooks contract', () => {
       children: [{ text: `line ${index}` }],
     }));
     const editor = createEditor({ initialValue: value });
-    const trackedNodeKey = editorGetNodeKey(editor, [10]);
-    const trackedTextNodeKey = editorGetNodeKey(editor, [10, 0]);
+    const trackedNodeKey = editor.key([10]);
+    const trackedTextNodeKey = editor.key([10, 0]);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
@@ -1754,8 +2059,8 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const movedNodeKey = editorGetNodeKey(editor, [0]);
-    const movedTextNodeKey = editorGetNodeKey(editor, [0, 0]);
+    const movedNodeKey = editor.key([0]);
+    const movedTextNodeKey = editor.key([0, 0]);
 
     if (!movedNodeKey || !movedTextNodeKey) {
       throw new Error('Expected node keys for moved DOM path sync contract');
@@ -1810,7 +2115,7 @@ describe('plite-react provider hooks contract', () => {
         />
       </Plite>
     );
-    const trackedNodeKey = editorGetNodeKey(editor, [10]);
+    const trackedNodeKey = editor.key([10]);
 
     if (!trackedNodeKey) {
       throw new Error('Expected node key for shifted custom-render contract');
@@ -1851,13 +2156,13 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'tracked' }] },
       ],
     });
-    const trackedNodeKey = editorGetNodeKey(editor, [1]);
+    const trackedNodeKey = editor.key([1]);
 
     if (!trackedNodeKey) {
       throw new Error('Expected node key for shifted insert sibling contract');
     }
 
-    const selector = jest.fn(({ path }) => path?.join('.') ?? null);
+    const selector = vi.fn(({ path }) => path?.join('.') ?? null);
 
     const { result } = renderHook(
       () =>
@@ -1954,7 +2259,7 @@ describe('plite-react provider hooks contract', () => {
       throw new Error('Expected node keys for mounted selector contract');
     }
 
-    const nodeSelector = jest.fn(({ node }) => {
+    const nodeSelector = vi.fn(({ node }) => {
       if (!node || editorIsEditor(node) || !('children' in node)) {
         return null;
       }
@@ -1963,7 +2268,7 @@ describe('plite-react provider hooks contract', () => {
 
       return TextApi.isText(firstChild) ? firstChild.text : null;
     });
-    const textSelector = jest.fn(({ text }) => text?.text ?? null);
+    const textSelector = vi.fn(({ text }) => text?.text ?? null);
 
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
 
@@ -2070,7 +2375,7 @@ describe('plite-react provider hooks contract', () => {
       throw new Error('Expected text node key for mounted selector contract');
     }
 
-    const textSelector = jest.fn(({ text }) => text?.text ?? null);
+    const textSelector = vi.fn(({ text }) => text?.text ?? null);
 
     const { result } = renderHook(
       () =>

@@ -1,6 +1,12 @@
 'use client';
 
-import { flip, offset } from '@floating-ui/react';
+import {
+  flip,
+  offset,
+  shift,
+  useDismiss,
+  useInteractions,
+} from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 import { LinkRules } from 'platejs';
@@ -15,7 +21,6 @@ import {
   useEditorReadOnly,
   useEditorSelection,
   useEditorSelector,
-  useHotkeys,
   usePluginStore,
   useSelectionGeometry,
 } from 'platejs/react';
@@ -25,9 +30,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { commentPlugin } from '@/registry/components/editor/comment';
-import { suggestionPlugin } from '@/registry/components/editor/suggestion';
-import { useOnClickOutside } from '@/registry/hooks/use-on-click-outside';
 import {
   type UseWidgetFloatingOptions,
   useWidgetFloating,
@@ -60,10 +62,6 @@ const popoverVariants = cva(
   'cn-popover-content z-50 w-auto p-1 outline-hidden transition-none'
 );
 
-const percentEscapeCapture = /(%[\dA-Fa-f]{2})/;
-
-const percentEscape = /^%[\dA-Fa-f]{2}$/;
-
 type FloatingLinkMode = '' | 'edit' | 'insert';
 
 const transientState = {
@@ -79,8 +77,19 @@ const transientState = {
 const initialState = {
   ...transientState,
   forceSubmit: false,
-  triggerFloatingLinkHotkeys: 'meta+k, ctrl+k' as readonly string[] | string,
 };
+
+const linkFloatingOptions = {
+  middleware: [
+    offset(8),
+    flip({
+      fallbackPlacements: ['top-end', 'bottom-start', 'bottom-end'],
+      padding: 12,
+    }),
+    shift({ padding: 8 }),
+  ],
+  placement: 'top-start',
+} satisfies UseWidgetFloatingOptions;
 
 export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend(({ store }) => {
@@ -101,21 +110,6 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
             throw error;
           }
         },
-        encodeUrl: (url: string) => {
-          try {
-            return url
-              .split(percentEscapeCapture)
-              .map((part) =>
-                percentEscape.test(part)
-                  ? part
-                  : encodeURI(part).replaceAll('%25', '%')
-              )
-              .join('');
-          } catch (error) {
-            if (error instanceof URIError) return url;
-            throw error;
-          }
-        },
         hide,
         reset: () => {
           store.set({
@@ -130,31 +124,22 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
       },
     };
   })
-  .extend(({ api, editor, store, update }) => ({
-    api: () => ({
+  .extend({
+    api: ({ api, editor, store, update }) => ({
       submit: () => {
         if (!editor.read.selection()) return undefined;
 
-        const {
-          forceSubmit,
-          newTab,
-          text,
-          transformInput,
-          url: inputUrl,
-        } = store.get();
-        const url = transformInput
-          ? (transformInput(inputUrl) ?? '')
-          : inputUrl;
-
-        if (!forceSubmit && !api.validateUrl(url)) return undefined;
-
-        api.hide();
-        update.upsert({
-          skipValidation: true,
+        const { forceSubmit, newTab, text, url } = store.get();
+        const inserted = update.upsert({
+          skipValidation: forceSubmit,
           target: newTab ? '_blank' : undefined,
           text,
           url,
         });
+
+        if (!inserted) return undefined;
+
+        api.hide();
         setTimeout(() => {
           editor.api.dom.focus();
         }, 0);
@@ -203,15 +188,35 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
         return true;
       },
     }),
-  }))
-  .extend(({ api }) => ({
-    api: () => ({
+  })
+  .extend({
+    api: ({ api }) => ({
       trigger: (options: { focused?: boolean } = {}) => {
         if (!options.focused) return undefined;
 
         return api.triggerEdit() ?? api.triggerInsert(options);
       },
     }),
+  })
+  .extend(({ api, store }) => ({
+    shortcuts: {
+      dismiss: {
+        keys: 'escape',
+        handler: () => {
+          if (!store.get().mode) return false;
+          api.hide();
+          return true;
+        },
+      },
+      trigger: {
+        keys: 'mod+k',
+        handler: ({ editor }): boolean =>
+          !editor.read.view.isReadOnly() &&
+          editor.plugin(linkPlugin).api.trigger({
+            focused: editor.read.view.isFocused(),
+          }) === true,
+      },
+    },
   }));
 
 function FloatingLinkUrlInput({
@@ -223,7 +228,7 @@ function FloatingLinkUrlInput({
     <Input
       defaultValue={api.decodeUrl(store.get().url)}
       onChange={(event) => {
-        store.set({ url: api.encodeUrl(event.target.value) });
+        store.set({ url: event.target.value });
       }}
       {...props}
     />
@@ -231,29 +236,8 @@ function FloatingLinkUrlInput({
 }
 
 export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
-  const activeCommentId = usePluginStore(commentPlugin, 'activeId');
-  const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
-
-  const floatingOptions: UseWidgetFloatingOptions = React.useMemo(
-    () => ({
-      middleware: [
-        offset(8),
-        flip({
-          fallbackPlacements: ['bottom-end', 'top-start', 'top-end'],
-          padding: 12,
-        }),
-      ],
-      placement:
-        activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',
-    }),
-    [activeCommentId, activeSuggestionId]
-  );
-
   const editor = useEditor();
-  const triggerHotkeys = usePluginStore(
-    linkPlugin,
-    'triggerFloatingLinkHotkeys'
-  );
+
   const readOnly = useEditorReadOnly();
   const isEditing = usePluginStore(linkPlugin, 'isEditing');
   const selectedLinkKey = useEditorSelector(
@@ -282,17 +266,19 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     !readOnly && open && mode === 'edit' && editor.read.selection.isCollapsed();
   const editFloating = useWidgetFloating(geometry, {
     onOpenChange: (nextOpen) => {
-      store.set({ openEditorId: nextOpen ? editor.id : null });
+      if (!nextOpen) api.hide();
     },
     open: editOpen,
-    ...floatingOptions,
+    ...linkFloatingOptions,
   });
   const insertFloating = useWidgetFloating(geometry, {
     onOpenChange: (nextOpen) => {
-      store.set({ openEditorId: nextOpen ? editor.id : null });
+      if (nextOpen) return;
+      api.hide();
+      editor.api.dom.focus();
     },
     open: !readOnly && open && mode === 'insert',
-    ...floatingOptions,
+    ...linkFloatingOptions,
   });
 
   React.useEffect(() => {
@@ -309,62 +295,63 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     if (store.get().mode === 'edit') api.hide();
   }, [api, editor, readOnly, selectedLinkKey, store]);
 
-  useHotkeys(
-    triggerHotkeys ?? 'meta+k, ctrl+k',
-    (event) => {
-      const triggered = api.trigger({
-        focused: editor.read.view.isFocused(),
-      });
-
-      if (triggered) event.preventDefault();
-    },
-    { enabled: !readOnly, enableOnContentEditable: true },
-    []
-  );
-  useHotkeys(
-    'escape',
-    (event) => {
-      const { isEditing: editing, mode: currentMode } = store.get();
-
-      if (!currentMode) return;
-
-      event.preventDefault();
-      if (currentMode === 'edit' && editing) {
-        api.show('edit', editor.id);
-        editor.api.dom.focus();
-        return;
-      }
-      if (currentMode === 'insert') editor.api.dom.focus();
-      api.hide();
-    },
-    {
-      enabled: !readOnly && open,
-      enableOnContentEditable: true,
-      enableOnFormTags: ['INPUT'],
-    },
-    []
-  );
-
-  const editClickOutsideRef = useOnClickOutside(() => {
-    if (store.get().isEditing) api.hide();
+  const editDismiss = useDismiss(editFloating.context, {
+    escapeKey: false,
+    outsidePress: () => store.get().isEditing,
   });
-  const insertClickOutsideRef = useOnClickOutside(
-    () => {
-      if (store.get().mode === 'insert') {
-        api.hide();
-        editor.api.dom.focus();
-      }
-    },
-    { disabled: !open }
-  );
+  const insertDismiss = useDismiss(insertFloating.context, {
+    escapeKey: false,
+  });
+  const editInteractions = useInteractions([editDismiss]);
+  const insertInteractions = useInteractions([insertDismiss]);
+  const floatingElement =
+    mode === 'insert'
+      ? insertFloating.elements.floating
+      : editFloating.elements.floating;
+
+  React.useEffect(() => {
+    const view = floatingElement?.ownerDocument.defaultView;
+
+    if (!view || !open || (mode !== 'insert' && !isEditing)) return undefined;
+
+    let timeout: number | undefined;
+    const onBlur = () => {
+      view.clearTimeout(timeout);
+      // Iframe focus does not dispatch an outside pointer event in this document.
+      timeout = view.setTimeout(() => {
+        if (
+          floatingElement.ownerDocument.activeElement?.localName === 'iframe'
+        ) {
+          api.hide();
+        }
+      }, 0);
+    };
+
+    view.addEventListener('blur', onBlur);
+    return () => {
+      view.removeEventListener('blur', onBlur);
+      view.clearTimeout(timeout);
+    };
+  }, [api, floatingElement, isEditing, mode, open]);
 
   const { text } = store.get();
   const editButtonProps = { onClick: api.triggerEdit };
-  const editProps = { style: { ...editFloating.style, zIndex: 50 } };
-  const editRef = useComposedRef<HTMLElement | null>(
-    editFloating.refs.setFloating,
-    editClickOutsideRef
-  );
+  const onFloatingKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (mode === 'edit' && store.get().isEditing) {
+      api.show('edit', editor.id);
+    } else {
+      api.hide();
+    }
+    editor.api.dom.focus();
+  };
+  const editProps = {
+    onKeyDown: onFloatingKeyDown,
+    style: { ...editFloating.style, zIndex: 50 },
+  };
+  const editRef = useComposedRef(editFloating.refs.setFloating);
   const unlinkButtonProps = {
     onClick: () => {
       update.unwrap();
@@ -375,13 +362,13 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       event.preventDefault();
     },
   };
-  const insertProps = { style: { ...insertFloating.style, zIndex: 50 } };
-  const insertRef = useComposedRef<HTMLDivElement>(
-    insertFloating.refs.setFloating,
-    insertClickOutsideRef
-  );
+  const insertProps = {
+    onKeyDown: onFloatingKeyDown,
+    style: { ...insertFloating.style, zIndex: 50 },
+  };
+  const insertRef = useComposedRef(insertFloating.refs.setFloating);
   const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter') return;
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -412,7 +399,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   if (readOnly || !open) return null;
 
   const input = (
-    <div className="flex w-[330px] flex-col">
+    <div className="flex w-[330px] max-w-[calc(100vw-16px)] flex-col">
       <div className="flex items-center">
         <div className="flex items-center pr-1 pl-2 text-muted-foreground">
           <Link className="size-4" />
@@ -466,7 +453,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       <div
         ref={insertRef}
         className={cn(popoverVariants(), 'p-0')}
-        {...insertProps}
+        {...insertInteractions.getFloatingProps(insertProps)}
       >
         {input}
       </div>
@@ -477,7 +464,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     <div
       ref={editRef}
       className={cn(popoverVariants(), isEditing && 'p-0')}
-      {...editProps}
+      {...editInteractions.getFloatingProps(editProps)}
     >
       {editContent}
     </div>
@@ -522,7 +509,7 @@ export const LinkKit = [
       LinkRules.autolink({ variant: 'space' }),
       LinkRules.autolink({ variant: 'break' }),
     ],
-    render: {
+    slots: {
       afterEditable: LinkFloatingToolbar,
     },
   }),

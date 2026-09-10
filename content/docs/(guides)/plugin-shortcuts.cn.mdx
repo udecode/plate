@@ -25,9 +25,9 @@ description: 配置 Plate 插件的键盘快捷键。
 
 | 字段 | 含义 |
 | --- | --- |
-| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `[[Key.Mod, 'b']]`。 |
+| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `'mod+b'`。 |
 | `handler` | 接收 `{ editor, event, eventDetails }` 的显式处理函数。 |
-| `target` | 同名更新方法和 API 方法同时存在时，用 `'update' | 'api'` 消除歧义。 |
+| `target` | 同名更新方法和 API 方法同时存在时，用 `'update'` 或 `'api'` 消除歧义。 |
 | `priority` | 快捷键的局部优先级；默认为 `0`。 |
 | `preventDefault` | 已处理快捷键的浏览器默认行为策略。省略时，Plate 调用 `preventDefault()` 和 `stopPropagation()`。 |
 | `null` | 删除这个命名快捷键。 |
@@ -37,7 +37,7 @@ description: 配置 Plate 插件的键盘快捷键。
 快捷键名称与插件 update method 名称相同时，可以直接链接：
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
-import { Key, definePlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = definePlatePlugin('signature', {
   update: ({ tx }) => ({
@@ -49,7 +49,7 @@ export const SignaturePlugin = definePlatePlugin('signature', {
   .extend({
     shortcuts: {
       insertSignature: {
-        keys: [[Key.Mod, Key.Shift, 's']],
+        keys: 'mod+shift+s',
       },
     },
   });
@@ -62,19 +62,19 @@ export const SignaturePlugin = definePlatePlugin('signature', {
 只有同名 API 方法存在时，Plate 自动使用 API 路径：
 
 ```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
-import { Key, definePlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = definePlatePlugin('inspect', {
   api: ({ editor }) => ({
     logText: () => {
-      editor.api.debug.info('Editor text', editor.api.string([]));
+      editor.api.debug.info('Editor text', editor.read.text.string([]));
     },
   }),
 })
   .extend({
     shortcuts: {
       logText: {
-        keys: [[Key.Mod, Key.Alt, 'l']],
+        keys: 'mod+alt+l',
       },
     },
   });
@@ -94,14 +94,14 @@ export const InspectPlugin = definePlatePlugin('inspect', {
 需要键盘事件、自定义分支或不适合作为插件方法的行为时，使用 `handler`。不要同时设置 `target`。
 
 ```tsx title="plugins/draft-plugin.tsx" showLineNumbers
-import { Key, definePlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = definePlatePlugin('draft', {
   shortcuts: {
     saveDraft: {
-      keys: [[Key.Mod, 's']],
+      keys: 'mod+s',
       handler: ({ editor }) => {
-        const text = editor.api.string([]);
+        const text = editor.read.text.string([]);
 
         if (text.trim().length === 0) return false;
 
@@ -133,12 +133,11 @@ export const DraftPlugin = definePlatePlugin('draft', {
 
 ```tsx title="plugins/basic-marks.tsx" showLineNumbers
 import { BoldPlugin } from 'platejs/react';
-import { Key } from 'platejs/react';
 
 export const AppBoldPlugin = BoldPlugin.configure({
   shortcuts: {
     toggle: {
-      keys: [[Key.Mod, Key.Shift, 'b']],
+      keys: 'mod+shift+b',
     },
   },
 });
@@ -161,7 +160,7 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 一个插件可以声明多个命名快捷键。每个名称应与要调用的方法一致。
 
 ```tsx title="plugins/review-plugin.tsx" showLineNumbers
-import { Key, definePlatePlugin } from 'platejs/react';
+import { definePlatePlugin } from 'platejs/react';
 
 export const ReviewPlugin = definePlatePlugin('review', {
   update: ({ tx }) => ({
@@ -171,8 +170,8 @@ export const ReviewPlugin = definePlatePlugin('review', {
 })
   .extend({
     shortcuts: {
-      accept: { keys: [[Key.Mod, Key.Alt, 'a']] },
-      reject: { keys: [[Key.Mod, Key.Alt, 'r']] },
+      accept: { keys: 'mod+alt+a' },
+      reject: { keys: 'mod+alt+r' },
     },
   });
 ```
@@ -215,7 +214,7 @@ export const editor = createEditor({
     reportWordCount: {
       keys: 'mod+shift+w',
       handler: ({ editor }) => {
-        const words = editor.api.string([]).trim().split(/\s+/).filter(Boolean);
+        const words = editor.read.text.string([]).trim().split(/\s+/).filter(Boolean);
 
         editor.api.debug.info('Word count', words.length);
 
@@ -242,16 +241,17 @@ export const editor = createEditor({
 ## API 参考
 
 ```ts title="Shortcut 类型"
-type Shortcut = HotkeysOptions & {
-  keys?: Keys | null;
-  priority?: number;
-  target?: 'api' | 'update';
-  handler?: (ctx: {
-    editor: Editor;
-    event: KeyboardEvent;
-    eventDetails: HotkeysEvent;
-  }) => boolean | void;
-};
+type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & (
+  | {
+      handler: (context: {
+        editor: Editor;
+        event: KeyboardEvent;
+        eventDetails: HotkeysEvent;
+      }) => boolean | void;
+      target?: never;
+    }
+  | { handler?: never; target?: 'api' | 'update' }
+);
 ```
 
 `target` 与 `handler` 互斥。

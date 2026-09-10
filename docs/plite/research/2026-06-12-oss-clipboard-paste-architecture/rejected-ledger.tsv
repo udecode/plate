@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+clipboard:copy-serialization-only	github/facebook/lexical	clipboard:command-boundary:data-transfer-priority	Copy serialization details did not reveal a Slate v2 gap beyond existing model-backed clipboard coverage.	Reopen if Slate copy payload loses editor-native fragment data.
+clipboard:synthetic-paste-composition-only	local/slate-v2	clipboard:paste-during-composition:native-ime-oracle	Synthetic paste during composition is too weak for this edge because the bug class is native composition plus browser clipboard.	Reopen only for helper API coverage after native proof exists.

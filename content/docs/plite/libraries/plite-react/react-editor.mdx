@@ -6,7 +6,7 @@ description: "Use React, DOM, focus, selection, clipboard, and DataTransfer host
 `createEditor` creates an editor with React, DOM, and clipboard host APIs
 installed. Hooks such as `useEditor` create the same editor shape.
 
-## Minimal Usage
+## Minimal usage
 
 ```typescript
 import { createEditor } from "plitejs/react";
@@ -16,7 +16,7 @@ const editor = createEditor();
 editor.api.dom.focus();
 ```
 
-## On This Page
+## On this page
 
 - [Checks](react-editor#checks)
 - [Focus And Selection](react-editor#focus-and-selection)
@@ -51,7 +51,7 @@ Check if the DOM editor is focused.
 
 Check if the DOM editor is in read-only mode.
 
-## Focus And Selection
+## Focus and selection
 
 #### `editor.api.dom.blur(): void`
 
@@ -65,7 +65,7 @@ Focus the editor.
 
 Clear the native DOM selection and the Plite selection.
 
-## DOM Scope
+## DOM scope
 
 #### `editor.api.dom.root(): HTMLElement | null`
 
@@ -80,7 +80,7 @@ Return the mounted editable element for a Plite root.
 Return the element used as the editor scroll container. It falls back to the
 editor root when no custom scroll element is registered.
 
-## DOM Translation
+## DOM translation
 
 #### `editor.api.dom.findKey(node: Node): Key`
 
@@ -150,11 +150,13 @@ Resolve one physical horizontal caret step through the mounted browser layout.
 The result carries both the next model point and its affinity. Returns `null`
 when the point is not mounted or the browser cannot resolve the step.
 
-#### `editor.api.dom.scrollIntoView(target: Point | Range | DOMRange, options?: ScrollIntoViewOptions): void`
+#### `editor.api.dom.scrollIntoView(target: Path | Point | Range | DOMRange, options?: ScrollIntoViewOptions): () => void`
 
-Scroll a Plite point, Plite range, or native DOM range into view. The DOM bridge
-uses the target range rect, so caret scrolling follows the actual selection
-position inside a text leaf.
+Schedule scrolling to a Plite path, point, range, or native DOM range in the
+mounted view. Range targets use their bounding rectangle, so caret scrolling
+follows the actual position inside a text leaf. The returned function cancels
+pending work for this request; return it from an effect to cancel scrolling
+when its target changes or the component unmounts.
 
 #### `editor.api.dom.assertPliteNode(domNode: DOMNode): Node`
 
@@ -192,7 +194,7 @@ Assert a Plite range from a DOM range or selection.
 Resolve a Plite range from a DOM range or selection. Returns `null` when the DOM
 range is not currently mappable.
 
-## DOM Environment
+## DOM environment
 
 #### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
 

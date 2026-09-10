@@ -62,7 +62,7 @@ Do not export package-owned composition arrays.
 
 ## 8. Docs And Release
 
-Load `docs-creator` for current-state docs. Load `changeset` for published
+Load Plate Docs for current-state docs. Load `changeset` for published
 package deltas and `registry-changelog` for registry-only deltas. Record an
 explicit N/A reason when neither applies.
 
@@ -86,5 +86,5 @@ authoritative fingerprint at the latest doctrine version.
 For focused work in an existing stale or unreviewed package, mark Plate Next
 attestation `no` with its exact status and reason. Record changed-file review
 and package fingerprint evidence without inventing a whole-package score or
-advancing the package. Run P1 `autoreview`, close accepted findings, then run
-both the feature checker and goal checker.
+advancing the package. Resolve Task's applicable review gate and known findings,
+then run both the feature checker and file-plan checker. No extra review budget.

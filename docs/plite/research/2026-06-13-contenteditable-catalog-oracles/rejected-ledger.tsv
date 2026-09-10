@@ -1,0 +1,3 @@
+lead_key	repo_key	source_ref	reason_rejected
+contenteditable:synthetic-ime-enter-commit-claim	github/easylogic/contenteditable	contenteditable-enter-breaks-chrome	Synthetic Playwright key/composition helpers cannot honestly prove OS IME Enter commit-before-linebreak behavior; keep this for a real native/raw-device lane.
+contenteditable:runtime-patch-from-catalog	github/easylogic/contenteditable	contenteditable-history-composition	The catalog gives behavior pressure, not Slate runtime code. Patch only after a Slate-native red test or accepted policy gate.

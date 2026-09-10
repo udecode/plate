@@ -1,0 +1,5 @@
+source_key	url	kind	date	signal
+prosemirror-tables-readme	https://github.com/ProseMirror/prosemirror-tables	repo-readme	current	Public module owns schema, CellSelection, cell copy/paste, and table well-formedness.
+pm-broken-table-pasting	https://discuss.prosemirror.net/t/broken-table-pasting/5117	discussion	2022-12	Isolating table cells prevented replace-fitting from lifting table-cell content out of table context.
+pm-strict-schema-table-paste	https://discuss.prosemirror.net/t/prosemirror-table-with-strict-schema-and-copy-paste/8473	discussion	2025-07	Strict per-column cell schemas can produce extra nodes in copied table slices, stressing table clipboard owner logic.
+pm-canvas-view-copy-paste	https://discuss.prosemirror.net/t/building-a-canvas-based-editor-on-top-of-prosemirror-s-state-and-plugin-system/8982	discussion	2026-03	Custom view/input bridge should still reuse schema-based HTML parsing and serialization at the model boundary.

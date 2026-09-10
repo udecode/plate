@@ -2,6 +2,96 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-10-diagram-rendering-demand",
+      "href": "/registry/changelog/2026-09-10-diagram-rendering-demand.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Render diagrams for preview and export using the latest source",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-drawing"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-10-discussion-focus-touch",
+      "href": "/registry/changelog/2026-09-10-discussion-focus-touch.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep discussions usable after suggestion actions and on touch screens",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "block-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-10-optional-comment-subscribers",
+      "href": "/registry/changelog/2026-09-10-optional-comment-subscribers.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Allow editors without comments to render optional comment subscribers",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-10-playground-comments",
+      "href": "/registry/changelog/2026-09-10-playground-comments.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Playground loads its complete editor kit, example comment threads, and comment actions",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["playground-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-10-table-selection-rendering",
+      "href": "/registry/changelog/2026-09-10-table-selection-rendering.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Reduce table selection rendering work while preserving row and cell highlights",
+      "change": {
+        "type": "source",
+        "date": "2026-09-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-09-ai-code-drawing-context",
       "href": "/registry/changelog/2026-09-09-ai-code-drawing-context.json",
       "status": "draft",
@@ -20,6 +110,493 @@
       "diagnostics": []
     },
     {
+      "id": "2026-09-09-find-controls",
+      "href": "/registry/changelog/2026-09-09-find-controls.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use FindPlugin for custom controls and return focus when closing Find.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-09-find-view-ownership",
+      "href": "/registry/changelog/2026-09-09-find-view-ownership.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Find opens and focuses the requested editor view",
+      "change": {
+        "type": "source",
+        "date": "2026-09-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "find-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-09-navigation-view-feedback",
+      "href": "/registry/changelog/2026-09-09-navigation-view-feedback.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep navigation highlights in the calling editor view",
+      "change": {
+        "type": "source",
+        "date": "2026-09-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc", "heading", "footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-ai-session",
+      "href": "/registry/changelog/2026-09-08-ai-session.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Bind AI streams to the editor session",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["use-chat", "ai-menu", "copilot", "copilot-api"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-block-action-owners",
+      "href": "/registry/changelog/2026-09-08-block-action-owners.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Insert and convert blocks through their feature commands.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["transforms", "block-menu"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-codemirror-adapter",
+      "href": "/registry/changelog/2026-09-08-codemirror-adapter.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use the optional CodeMirror adapter with native editing commands",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-codemirror"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-drag-preparation",
+      "href": "/registry/changelog/2026-09-08-drag-preparation.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Prepare drag payloads and isolated previews through DndPlugin",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd", "table"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-editor-focus-ownership",
+      "href": "/registry/changelog/2026-09-08-editor-focus-ownership.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep editor toolbar styling in copied editor components",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-editor-ui-lifetime",
+      "href": "/registry/changelog/2026-09-08-editor-ui-lifetime.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Limit floating toolbar positioning to visible controls and restore the multiple-editor image demo",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar", "multiple-editors-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-emoji-search",
+      "href": "/registry/changelog/2026-09-08-emoji-search.json",
+      "status": "draft",
+      "kind": "update",
+      "summary": "Use one emoji search with locally owned picker categories.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["emoji", "emoji-picker"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-excalidraw-sync",
+      "href": "/registry/changelog/2026-09-08-excalidraw-sync.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Synchronize drawing scenes with document changes",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["excalidraw"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-find-session",
+      "href": "/registry/changelog/2026-09-08-find-session.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use the editor-owned Find query with local search controls.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "editor"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-inline-combobox-input",
+      "href": "/registry/changelog/2026-09-08-inline-combobox-input.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Complete inline suggestions at their current document location.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "inline-combobox",
+        "mention",
+        "slash",
+        "emoji",
+        "footnote",
+        "transforms"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-keyboard-dismissal",
+      "href": "/registry/changelog/2026-09-08-keyboard-dismissal.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use editor shortcuts and local panel dismissal",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "link",
+        "floating-toolbar",
+        "discussion",
+        "comment",
+        "ai",
+        "ai-menu"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-media-resize-lifetime",
+      "href": "/registry/changelog/2026-09-08-media-resize-lifetime.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve media resize alignment and cancellation",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["resize-handle"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-multi-editor-toolbar",
+      "href": "/registry/changelog/2026-09-08-multi-editor-toolbar.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Shared toolbars target the selected editable view.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "toolbar",
+        "mark-toolbar-button",
+        "font-size-toolbar-button",
+        "history-toolbar-button"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-suggestion-reviews",
+      "href": "/registry/changelog/2026-09-08-suggestion-reviews.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read current suggestion groups from the feature",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion", "discussion", "suggestion-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-08-toolbar-control-values",
+      "href": "/registry/changelog/2026-09-08-toolbar-control-values.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Display the current heading size and editing mode accurately.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button", "mode-toolbar-button"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-docx-bookmarks",
+      "href": "/registry/changelog/2026-09-07-docx-bookmarks.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep DOCX bookmark names inside each document conversion",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["docx", "docx-export", "heading-static", "toc"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-drawing-renderer-config",
+      "href": "/registry/changelog/2026-09-07-drawing-renderer-config.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Configure diagram rendering and PNG downloads",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-drawing"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-equation-drafts",
+      "href": "/registry/changelog/2026-09-07-equation-drafts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep equation drafts local until confirmation",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-footnote-target-attributes",
+      "href": "/registry/changelog/2026-09-07-footnote-target-attributes.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use navigation target attributes in footnote renderers",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-link-submission",
+      "href": "/registry/changelog/2026-09-07-link-submission.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Prepare link URLs on submission and keep drafts inside the viewport",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-list-wrappers",
+      "href": "/registry/changelog/2026-09-07-list-wrappers.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Render task markers directly in list wrappers",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-list", "block-list-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-media-upload-lifetime",
+      "href": "/registry/changelog/2026-09-07-media-upload-lifetime.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep media uploads active across placeholder remounts and report upload failures",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["media", "media-placeholder"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-media-url-input",
+      "href": "/registry/changelog/2026-09-07-media-url-input.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Insert media URLs through the selected media feature",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["transforms", "media-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-07-playground-details",
       "href": "/registry/changelog/2026-09-07-playground-details.json",
       "status": "draft",
@@ -34,6 +611,461 @@
         "status": "unresolved"
       },
       "targets": ["playground-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-provider-lifetimes",
+      "href": "/registry/changelog/2026-09-07-provider-lifetimes.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Share toolbar overlay tracking and preserve anchor ref cleanup",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toolbar", "floating-popover"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-select-command-bridge",
+      "href": "/registry/changelog/2026-09-07-select-command-bridge.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep tag selection controls in a smaller copied command menu",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-07-toc-observer",
+      "href": "/registry/changelog/2026-09-07-toc-observer.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep heading tracking stable while scrolling",
+      "change": {
+        "type": "source",
+        "date": "2026-09-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-06-code-block-docs-preview",
+      "href": "/registry/changelog/2026-09-06-code-block-docs-preview.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the native code docs preview at 1,000 lines with a separate 10,000-line stress test.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-huge-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-06-editor-subscriptions",
+      "href": "/registry/changelog/2026-09-06-editor-subscriptions.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use FindPlugin for search state and install the huge-document hydration hook.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "huge-document-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs",
+      "href": "/registry/changelog/2026-09-06-registry-lifetime-repairs.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve editor state across streaming controls and clipboard failures",
+      "change": {
+        "type": "source",
+        "date": "2026-09-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "markdown-streaming-demo",
+        "code-block",
+        "comment",
+        "select-editor",
+        "controlled-demo",
+        "media",
+        "export-toolbar-button"
+      ],
+      "entries": 6,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-bound-editor-selection-styles",
+      "href": "/registry/changelog/2026-09-05-bound-editor-selection-styles.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Responsive scrolling beside large editors",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table", "settings-dialog", "code-block"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-code-control-paths",
+      "href": "/registry/changelog/2026-09-05-code-control-paths.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Code block copy and drawing controls resolve their current document position when used.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block", "code-drawing"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-comment-keyboard-submit",
+      "href": "/registry/changelog/2026-09-05-comment-keyboard-submit.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep comment drafts intact when submitting with the keyboard",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-editor-feature-lifetimes",
+      "href": "/registry/changelog/2026-09-05-editor-feature-lifetimes.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install AI and drag-and-drop integration with feature kits",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ai",
+        "dnd",
+        "editor-ai",
+        "editor-plugins",
+        "date",
+        "emoji-picker",
+        "font-size-toolbar-button"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-fix-command-custom-children",
+      "href": "/registry/changelog/2026-09-05-fix-command-custom-children.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve custom command components and their cleanup with asChild.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-05-fix-ref-cleanup",
+      "href": "/registry/changelog/2026-09-05-fix-ref-cleanup.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Run callback ref cleanup when popover anchors and command lists unmount.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-popover", "select-editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-04-code-block-editing-and-syntax",
+      "href": "/registry/changelog/2026-09-04-code-block-editing-and-syntax.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Code blocks preserve selection, composition and indentation with incremental CodeMirror syntax.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block",
+        "code-block-codemirror",
+        "code-block-codemirror-demo",
+        "code-block-views-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-04-decouple-link-floating-ui",
+      "href": "/registry/changelog/2026-09-04-decouple-link-floating-ui.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Open the Link toolbar above its selection",
+      "change": {
+        "type": "source",
+        "date": "2026-09-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-04-preserve-suggestion-replies-through-history",
+      "href": "/registry/changelog/2026-09-04-preserve-suggestion-replies-through-history.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve discussion state across edits and failed saves",
+      "change": {
+        "type": "source",
+        "date": "2026-09-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment", "discussion", "suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-04-yjs-cursor-presentation",
+      "href": "/registry/changelog/2026-09-04-yjs-cursor-presentation.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Customize Yjs selection highlights and carets in copied cursor UI",
+      "change": {
+        "type": "source",
+        "date": "2026-09-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["remote-cursor-overlay", "collaboration-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-03-code-block-text-flow",
+      "href": "/registry/changelog/2026-09-03-code-block-text-flow.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Use one text child for code blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-09-03",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block", "code-block-static", "code-block-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-03-fix-comment-anchor-history",
+      "href": "/registry/changelog/2026-09-03-fix-comment-anchor-history.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep comments attached through destructive edits and history",
+      "change": {
+        "type": "source",
+        "date": "2026-09-03",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment", "discussion", "discussion-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-03-huge-code-block-demo",
+      "href": "/registry/changelog/2026-09-03-huge-code-block-demo.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Render explicitly high-scale code blocks with bounded CodeMirror DOM.",
+      "change": {
+        "type": "source",
+        "date": "2026-09-03",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block-codemirror",
+        "code-block-demo",
+        "list",
+        "list-static"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-02-comments-ownership",
+      "href": "/registry/changelog/2026-09-02-comments-ownership.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Review comments and suggestions in application-owned Floating Discussion",
+      "change": {
+        "type": "source",
+        "date": "2026-09-02",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment",
+        "comment-toolbar-button",
+        "discussion",
+        "discussion-demo",
+        "editor",
+        "editor-static",
+        "suggestion",
+        "use-chat",
+        "editor-ai",
+        "plate-to-html",
+        "code-block-static",
+        "docx-export",
+        "export-toolbar-button",
+        "docx-demo"
+      ],
+      "entries": 7,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-01-plugin-decoration-highlights",
+      "href": "/registry/changelog/2026-09-01-plugin-decoration-highlights.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Render editor highlights through plugin decorations",
+      "change": {
+        "type": "source",
+        "date": "2026-09-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "find",
+        "code-block",
+        "remote-cursor-overlay",
+        "preview-markdown-demo",
+        "collaboration-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-01-plugin-render-contract",
+      "href": "/registry/changelog/2026-09-01-plugin-render-contract.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Configure copied plugins through component, render metadata, and slots",
+      "change": {
+        "type": "source",
+        "date": "2026-09-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "ai",
+        "collaboration-demo",
+        "dnd",
+        "docx-export",
+        "find",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "link",
+        "media",
+        "suggestion",
+        "tabbable"
+      ],
       "entries": 1,
       "diagnostics": []
     },
@@ -770,11 +1802,11 @@
       "diagnostics": []
     },
     {
-      "id": "2026-08-18-align-v55-ast-contracts",
-      "href": "/registry/changelog/2026-08-18-align-v55-ast-contracts.json",
+      "id": "2026-08-18-complete-v54-ast-contracts",
+      "href": "/registry/changelog/2026-08-18-complete-v54-ast-contracts.json",
       "status": "draft",
       "kind": "rename",
-      "summary": "Adopt the v55 editor document profile",
+      "summary": "Complete the v54 editor document profile",
       "change": {
         "type": "source",
         "date": "2026-08-18",

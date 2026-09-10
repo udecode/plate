@@ -1,8 +1,9 @@
 'use client';
 
+import { generateReactHelpers } from '@uploadthing/react';
+import { UploadErrorCode } from 'platejs/media';
 import {
   PlaceholderPlugin,
-  UploadErrorCode,
   AudioPlugin,
   FilePlugin,
   MediaEmbedPlugin,
@@ -22,6 +23,9 @@ import {
   MediaPreviewDialog,
 } from '@/registry/components/editor/media-preview-dialog';
 import { VideoElement } from '@/registry/components/editor/media-video';
+import type { OurFileRouter } from '@/registry/lib/uploadthing';
+
+const { uploadFiles } = generateReactHelpers<OurFileRouter>();
 
 export function MediaUploadToast() {
   const uploadError = usePluginStore(PlaceholderPlugin, 'error');
@@ -54,14 +58,14 @@ export function MediaUploadToast() {
         toast.error(
           `The size of files ${data.files
             .map((f) => f.name)
-            .join(', ')} is too large than ${data.maxFileSize}`
+            .join(', ')} exceeds ${data.maxFileSize}`
         );
 
         break;
       }
       case UploadErrorCode.TOO_LESS_FILES: {
         toast.error(
-          `The mini um number of files is ${data.minFileCount} for ${data.fileType}`
+          `The minimum number of files is ${data.minFileCount} for ${data.fileType}`
         );
 
         break;
@@ -85,7 +89,7 @@ export const MediaKit = [
   imagePlugin.configure({
     component: ImageElement,
     initialState: { disableUploadInsert: true },
-    render: { afterEditable: MediaPreviewDialog },
+    slots: { afterEditable: MediaPreviewDialog },
   }),
   MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
   VideoPlugin.configure({ component: VideoElement }),
@@ -96,6 +100,33 @@ export const MediaKit = [
     initialState: {
       disableEmptyPlaceholder: true,
       maxFileCount: 5,
+      upload: async (file, { onProgress, signal }) => {
+        const [uploaded] = await uploadFiles('editorUploader', {
+          files: [file],
+          signal,
+          onUploadProgress: ({ progress }) => onProgress(progress),
+        });
+        if (!uploaded) throw new Error('The upload returned no file.');
+        const result = { name: uploaded.name, url: uploaded.ufsUrl };
+        if (
+          file.type.startsWith('image/') &&
+          typeof createImageBitmap === 'function'
+        ) {
+          const bitmap = await createImageBitmap(file).catch(() => null);
+          if (bitmap) {
+            try {
+              return {
+                ...result,
+                naturalHeight: bitmap.height,
+                naturalWidth: bitmap.width,
+              };
+            } finally {
+              bitmap.close();
+            }
+          }
+        }
+        return result;
+      },
       uploadConfig: {
         audio: {
           maxFileCount: 1,
@@ -135,6 +166,6 @@ export const MediaKit = [
         },
       },
     },
-    render: { afterEditable: MediaUploadToast },
+    slots: { afterEditable: MediaUploadToast },
   }),
 ];

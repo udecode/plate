@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-fix-root-causes",
+  "files": [
+    {
+      "upstream": "skills/principle-fix-root-causes/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "cfae13b5a3e27bc88d069092cae97b3e95246879d5bf14f0e9a4db719c781952",
+      "destinationSha256": "1f056f7fa5d901fa2099226aed46b64ecfffaf6a4931ad3bad3b18eeb52a5383",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-fix-root-causes/SKILL.md\n+++ skills/principle-fix-root-causes/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-fix-root-causes\n description: \"Apply when debugging. Trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Fix Root Causes\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

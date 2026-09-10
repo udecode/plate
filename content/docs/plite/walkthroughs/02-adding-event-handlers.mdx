@@ -6,7 +6,7 @@ description: "Handle editor-local browser events while keeping writes inside the
 `Editable` accepts React event handlers. Use them for UI-local shortcuts and
 small input policies that belong to one editor surface.
 
-## Starting Point
+## Starting point
 
 This is the editor from the install walkthrough:
 
@@ -31,7 +31,7 @@ const App = () => {
 };
 ```
 
-## Read The Native Event
+## Read the native event
 
 Pass `onKeyDown` when you only need to observe the browser event.
 
@@ -51,7 +51,7 @@ const App = () => {
 };
 ```
 
-## Write Through The Editor
+## Write through the editor
 
 Prevent the browser default when Plite should own the edit, then write inside
 `editor.update(...)`.

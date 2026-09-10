@@ -351,8 +351,8 @@ const createPluginAccess = (
   const createApiFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
-        let owner: unknown =
-          getCompiledPlatePluginApi(editor, getPlugin()) ?? {};
+        const runtimeApi = getRuntimeApi();
+        let owner: unknown = runtimeApi === api ? {} : runtimeApi;
         let value = owner;
 
         for (const key of path) {
@@ -410,7 +410,11 @@ const createPluginAccess = (
       return api;
     }
 
-    return getCompiledPlatePluginApi(editor, plugin) ?? {};
+    if (hasCompiledPlatePluginApiCandidate(editor)) {
+      return getCompiledPlatePluginApi(editor, plugin) ?? {};
+    }
+
+    return Reflect.get(Reflect.get(editor, 'api'), plugin.name) ?? {};
   };
   const resolveOwnCapabilityPath = (
     source: unknown,
@@ -420,6 +424,7 @@ const createPluginAccess = (
     let value: unknown = source;
 
     for (const key of path) {
+      const receiver = owner;
       owner = value;
       if (
         (typeof value !== 'object' || value === null) &&
@@ -430,6 +435,15 @@ const createPluginAccess = (
       const innerDescriptor2 = Object.getOwnPropertyDescriptor(value, key);
 
       if (!innerDescriptor2 || !('value' in innerDescriptor2)) {
+        if (
+          typeof value === 'function' &&
+          (key === 'call' || key === 'apply')
+        ) {
+          const method = value;
+          owner = (...args: unknown[]) => Reflect.apply(method, receiver, args);
+          value = Function.prototype[key];
+          continue;
+        }
         return { owner: undefined, value: undefined };
       }
       ({ value } = innerDescriptor2);
@@ -691,7 +705,9 @@ const createPluginAccess = (
       return [
         ...new Set([
           ...Reflect.ownKeys(target),
-          ...Reflect.ownKeys(getPlugin()).filter((key) => key !== 'schema'),
+          ...Reflect.ownKeys(getPlugin()).filter(
+            (key) => key !== 'schema' && key !== 'slots'
+          ),
         ]),
       ];
     },

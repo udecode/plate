@@ -1,18 +1,21 @@
 import { runInNewContext } from 'node:vm';
 
 import { act, render, waitFor } from '@testing-library/react';
-import { createEditor } from 'plitejs';
 import React, { startTransition, Suspense, useLayoutEffect } from 'react';
 import { renderToString } from 'react-dom/server';
 
+import { createPliteAnnotationStore } from '../../src/annotations';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   replace as editorReplace,
 } from '../../src/internal';
 import {
+  createEditor,
+  type Editor,
   Editable,
   Plite,
+  PliteAnnotationProvider,
   type PliteWidget,
   type PliteWidgetStore,
   usePliteAnnotationStore,
@@ -23,7 +26,6 @@ import {
   usePliteWidgets,
   useSelectionGeometry,
 } from '../../src/react';
-import { createPliteAnnotationStore } from '../../src/react/annotation-store';
 import { createPliteWidgetStore } from '../../src/react/widget-store';
 import {
   createRenderCounts,
@@ -50,7 +52,7 @@ const WidgetHarness = ({
   widgets,
 }: {
   counts: RenderCounts;
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   widgets: ReadonlyArray<
     PliteWidget<{
       label: string;
@@ -81,7 +83,7 @@ const ProjectedWidgetHarness = ({
   labels,
 }: {
   counts: RenderCounts;
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   labels: readonly string[];
 }) => {
   const widgetStore = usePliteWidgetStore(
@@ -117,7 +119,7 @@ const ProjectedWidgetSnapshotHarness = ({
   editor,
   labels,
 }: {
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   labels: readonly string[];
 }) => {
   const widgetStore = usePliteWidgetStore(
@@ -157,15 +159,15 @@ const ProjectedAnnotationWidgetHarness = ({
   editor,
   labels,
 }: {
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   labels: readonly string[];
 }) => {
   const annotationStore = usePliteAnnotationStore(
     editor,
     labels.map((label) => ({
       anchor: {
+        release: () => null,
         resolve: () => ({
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 4 },
         }),
@@ -193,20 +195,22 @@ const ProjectedAnnotationWidgetHarness = ({
   const widgetSnapshot = usePliteWidgets(widgetStore);
 
   return (
-    <Plite annotationStore={annotationStore} editor={editor}>
-      <span id="annotation-widget-snapshot">
-        {widgetSnapshot.allIds.length === 0
-          ? 'none'
-          : widgetSnapshot.allIds
-              .map((id) => {
-                const widget = widgetSnapshot.byId.get(id)!;
+    <Plite editor={editor}>
+      <PliteAnnotationProvider store={annotationStore}>
+        <span id="annotation-widget-snapshot">
+          {widgetSnapshot.allIds.length === 0
+            ? 'none'
+            : widgetSnapshot.allIds
+                .map((id) => {
+                  const widget = widgetSnapshot.byId.get(id)!;
 
-                return `${widget.id}:${widget.available ? 'visible' : 'hidden'}:${
-                  widget.data?.label ?? 'none'
-                }`;
-              })
-              .join('|')}
-      </span>
+                  return `${widget.id}:${widget.available ? 'visible' : 'hidden'}:${
+                    widget.data?.label ?? 'none'
+                  }`;
+                })
+                .join('|')}
+        </span>
+      </PliteAnnotationProvider>
     </Plite>
   );
 };
@@ -217,7 +221,7 @@ const WidgetIdsProbe = React.memo(
     store,
   }: {
     onRender: () => void;
-    store: ReturnType<typeof usePliteWidgetStore>;
+    store: PliteWidgetStore<{ label: string }>;
   }) => {
     onRender();
     const ids = usePliteWidgetIds(store);
@@ -232,7 +236,7 @@ const WidgetIdsHarness = ({
   label,
   onRender,
 }: {
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   ids: readonly string[];
   label: string;
   onRender: () => void;
@@ -269,11 +273,7 @@ const SelectionGeometryProbe = ({
   );
 };
 
-const SelectionGeometryHarness = ({
-  editor,
-}: {
-  editor: ReturnType<typeof createEditor>;
-}) => {
+const SelectionGeometryHarness = ({ editor }: { editor: Editor }) => {
   const editableRef = React.useRef<HTMLDivElement>(null);
 
   return (
@@ -288,8 +288,8 @@ const CrossEditorSelectionGeometryHarness = ({
   editor,
   foreignEditor,
 }: {
-  editor: ReturnType<typeof createEditor>;
-  foreignEditor: ReturnType<typeof createEditor>;
+  editor: Editor;
+  foreignEditor: Editor;
 }) => {
   const foreignEditableRef = React.useRef<HTMLDivElement>(null);
 
@@ -329,7 +329,7 @@ const NodeWidgetGeometryHarness = ({
   editor,
   nodeKey,
 }: {
-  editor: ReturnType<typeof createEditor>;
+  editor: Editor;
   nodeKey: NonNullable<ReturnType<typeof editorGetNodeKey>>;
 }) => {
   const editableRef = React.useRef<HTMLDivElement>(null);
@@ -360,7 +360,7 @@ describe('plite-react widget layer contract', () => {
     });
     let targetReads = 0;
     const widgets = Array.from({ length: count }, (_, index) => {
-      const nodeKey = editorGetNodeKey(editor, [index]);
+      const nodeKey = editor.read((state) => state.key([index]));
 
       if (!nodeKey) throw new Error('Expected a node key');
 
@@ -1006,7 +1006,9 @@ describe('plite-react widget layer contract', () => {
     let shouldThrow = false;
     let abandonedDataReadCount = 0;
     let abandonedRenderCount = 0;
-    let committedStore: ReturnType<typeof usePliteWidgetStore> | null = null;
+    const committedStore: {
+      current: ReturnType<typeof usePliteWidgetStore> | null;
+    } = { current: null };
     const abandonedStores = new Set<ReturnType<typeof usePliteWidgetStore>>();
 
     editorReplace(editor, {
@@ -1039,7 +1041,7 @@ describe('plite-react widget layer contract', () => {
       );
 
       useLayoutEffect(() => {
-        committedStore = store;
+        committedStore.current = store;
       }, [store]);
 
       if (abandoned) {
@@ -1066,7 +1068,7 @@ describe('plite-react widget layer contract', () => {
     expect(abandonedRenderCount).toBeGreaterThan(0);
     expect(abandonedDataReadCount).toBe(0);
     expect(
-      [...abandonedStores].every((store) => store !== committedStore)
+      [...abandonedStores].every((store) => store !== committedStore.current)
     ).toBe(true);
 
     act(() => {
@@ -1081,15 +1083,15 @@ describe('plite-react widget layer contract', () => {
     expect(abandonedDataReadCount).toBe(0);
 
     act(() => {
-      committedStore?.refresh();
+      committedStore.current?.refresh();
     });
-    expect(committedStore?.getWidget('toolbar-widget')?.data?.label).toBe(
-      'committed'
-    );
+    expect(
+      committedStore.current?.getWidget('toolbar-widget')?.data?.label
+    ).toBe('committed');
 
     shouldThrow = true;
     act(() => {
-      committedStore?.refresh();
+      committedStore.current?.refresh();
     });
     expect(committedOnError).toHaveBeenCalledOnce();
     expect(abandonedOnError).not.toHaveBeenCalled();
@@ -1130,7 +1132,7 @@ describe('plite-react widget layer contract', () => {
       store,
     }: {
       enabled: boolean;
-      store: ReturnType<typeof usePliteWidgetStore>;
+      store: PliteWidgetStore<{ label: string }>;
     }) => {
       useLayoutEffect(() => {
         if (!enabled) return;

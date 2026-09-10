@@ -39,6 +39,7 @@
       "title": "Floating Popover",
       "description": "Provider-neutral anchored floating content for Plate UI.",
       "dependencies": [
+        "platejs",
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [],
@@ -65,6 +66,11 @@
           "path": "src/registry/bases/radix/toolbar.tsx",
           "type": "registry:component",
           "target": "@components/editor/toolbar.tsx"
+        },
+        {
+          "path": "src/registry/components/editor/toolbar-overlay.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/toolbar-overlay.tsx"
         }
       ],
       "meta": {},

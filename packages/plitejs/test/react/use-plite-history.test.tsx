@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import type { Descendant } from 'plitejs';
+import { type Descendant, type Element, NodeApi } from 'plitejs';
 import { history } from 'plitejs/history';
 import type { ReactNode } from 'react';
 
@@ -19,24 +19,26 @@ import {
 } from '../../src/react';
 import { applyEditableCommand } from '../../src/react/editable/mutation-controller';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
 
 const editorText = (editor: {
-  read: <T>(fn: (state: { nodes: { children: () => Descendant[] } }) => T) => T;
+  read: <T>(
+    fn: (state: { nodes: { children: () => readonly Descendant[] } }) => T
+  ) => T;
 }) =>
   editor.read((state) => {
-    const [firstBlock] = state.nodes.children() as Array<{
-      children: Array<{ text: string }>;
-    }>;
+    const [firstBlock] = state.nodes.children();
 
-    return firstBlock?.children[0]?.text ?? '';
+    return firstBlock ? NodeApi.string(firstBlock) : '';
   });
 
 const editorChildren = (editor: {
-  read: <T>(fn: (state: { nodes: { children: () => Descendant[] } }) => T) => T;
+  read: <T>(
+    fn: (state: { nodes: { children: () => readonly Descendant[] } }) => T
+  ) => T;
 }) => editor.read((state) => state.nodes.children());
 
 describe('usePliteHistory', () => {

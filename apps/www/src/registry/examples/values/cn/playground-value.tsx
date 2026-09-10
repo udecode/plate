@@ -88,21 +88,13 @@ export const playgroundValue: EditorDocumentValue = {
         },
         { text: '。使用 ' },
         {
-          children: [
-            { comment: true, comment_discussion1: true, text: '评论' },
-          ],
+          children: [{ text: '评论' }],
           type: 'link',
           url: '/docs/comment',
         },
-        {
-          comment: true,
-          comment_discussion1: true,
-          text: ' 讨论多个文本段落的变更',
-        },
+        { text: ' 讨论多个文本段落的变更' },
         { text: '。你甚至可以有 ' },
         {
-          comment: true,
-          comment_discussion2: true,
           suggestion: true,
           suggestion_playground3: {
             id: 'playground3',
@@ -267,12 +259,7 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [
-        { children: [{ text: 'function hello() {' }], type: 'codeLine' },
-        {
-          children: [{ text: "  console.info('支持代码块！');" }],
-          type: 'codeLine',
-        },
-        { children: [{ text: '}' }], type: 'codeLine' },
+        { text: "function hello() {\n  console.info('支持代码块！');\n}" },
       ],
       language: 'javascript',
       type: 'codeBlock',

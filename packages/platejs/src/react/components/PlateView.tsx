@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
 
-import { type PlateStaticProps, PlateStatic } from '../../static';
+import {
+  type PlateStaticProps,
+  PlateStatic,
+} from '../../static/components/PlateStatic';
 import { writeStaticSelectionClipboardData } from '../../static/internal/writeStaticSelectionClipboardData';
 
 export type PlateViewProps<E = PlateStaticProps['editor']> =

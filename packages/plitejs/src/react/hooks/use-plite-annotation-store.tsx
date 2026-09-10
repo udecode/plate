@@ -1,12 +1,12 @@
 import { useInsertionEffect, useMemo, useRef } from 'react';
 
-import type { Editor } from '../..';
+import type { Editor, Value } from '../..';
 import {
   createDormantPliteAnnotationStore,
   type PliteAnnotation,
   type PliteAnnotationStore,
-} from '../annotation-store';
-import type { PliteViewSourceErrorSink } from '../view-source';
+} from '../../annotations/store';
+import type { PliteViewSourceErrorSink } from '../../internal/view/view-source';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Options for a React-owned annotation store. */
@@ -17,12 +17,9 @@ export type UsePliteAnnotationStoreOptions = {
   revision?: unknown;
 };
 
-const createAnnotationStoreOwner = <
-  TData,
-  TProjection extends Record<string, unknown>,
->(
-  editor: Editor,
-  annotations: ReadonlyArray<PliteAnnotation<TData, TProjection>>,
+const createAnnotationStoreOwner = <TData,>(
+  editor: unknown,
+  annotations: ReadonlyArray<PliteAnnotation<TData>>,
   options: UsePliteAnnotationStoreOptions
 ) => {
   const annotationsCell = { current: annotations };
@@ -47,12 +44,13 @@ const createAnnotationStoreOwner = <
  */
 export function usePliteAnnotationStore<
   TData = unknown,
-  TProjection extends Record<string, unknown> = Record<string, unknown>,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
-  annotations: ReadonlyArray<PliteAnnotation<TData, TProjection>>,
+  editor: Editor<V, TExtensions>,
+  annotations: ReadonlyArray<PliteAnnotation<TData>>,
   options: UsePliteAnnotationStoreOptions = {}
-): PliteAnnotationStore<TData, TProjection> {
+): PliteAnnotationStore<TData> {
   const sourceId = options.id;
   // Data and callbacks seed a new owner, then publish only after commit.
   const owner = useMemo(

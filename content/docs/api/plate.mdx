@@ -15,7 +15,7 @@ npm install platejs @tanstack/react-virtual
 
 React is required only when importing `platejs/react` or `platejs/static`.
 
-## Import Paths
+## Import paths
 
 | Import | Use | Optional peer |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ React is required only when importing `platejs/react` or `platejs/static`.
 | `platejs/pagination/react` | React pagination rendering. | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
 | `platejs/diff` | Document diff helpers. | `diff-match-patch-ts` |
 
-## Base Runtime
+## Base runtime
 
 Use `platejs` for non-React editor work and shared types.
 
@@ -45,7 +45,7 @@ export const editor = createEditor({
 });
 ```
 
-## React Runtime
+## React runtime
 
 Use `platejs/react` for app editors.
 
@@ -70,7 +70,7 @@ export function BasicEditor() {
 }
 ```
 
-## Static Runtime
+## Static runtime
 
 Use `platejs/static` for rendering or serialization paths that do not mount an editable React editor.
 
@@ -87,13 +87,13 @@ export const staticEditor = createStaticEditor({
 });
 ```
 
-## API Pages
+## API pages
 
 | Page | Covers |
 | --- | --- |
 | [Plate Core](/docs/api/core) | Editor creation, React runtime, plugins, stores, and render primitives. |
 | [Plite](/docs/api/plite) | Plite-compatible editor API, transforms, nodes, locations, operations, and refs. |
 | [Plate Utilities](/docs/api/utils) | Plate-owned identities and utility plugins. |
-| [React Utils](/docs/api/react-utils) | React utility hooks and helpers re-exported through `platejs/react`. |
+| [React Utils](/docs/api/utils#react-hooks) | React utility hooks and helpers re-exported through `platejs/react`. |
 | [Plate Components](/docs/api/core/plate-components) | `Plate`, `PlateContent`, `PlateView`, and component primitives. |
 | [Plate Editor](/docs/api/core/plate-editor) | Runtime editor type, core APIs, transforms, DOM state, and metadata. |

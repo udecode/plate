@@ -1,0 +1,4 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+local-wpt-selection-mouseup	rg-local	"mouseup|mousedown|selectionchange|selectstart|contenteditable|href|anchor"	wpt/editing,wpt/selection html/js	2552	80	local/wpt	selection:wpt-anchor-fixtures:not-pointer-mouseup	none
+local-editor-selection-mouseup	rg-local	"mouseup|mousedown|selectionchange|selectstart|drag.*selection|contenteditable|href|anchor"	slate,prosemirror,lexical js/ts	3537	120	github/ianstormtaylor/slate,github/prosemirror/prosemirror,github/facebook/lexical	selection:pointer-native-dom-first-sync:docs-packet	none
+github-issues-firefox-contenteditable-link	gh-issues	"Firefox contenteditable selection mouseup link"	limit 20	0	0	none	none	none

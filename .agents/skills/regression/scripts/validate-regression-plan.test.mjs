@@ -36,6 +36,7 @@ const proofTimes = {
 const receiptRow = ({
   attempt = 1,
   caseId = "case-complete",
+  exactRoute,
   host = "host:none - deterministic Node workflow",
   inputDigest = digest,
 } = {}) => {
@@ -44,7 +45,9 @@ const receiptRow = ({
     attempt: String(attempt),
     caseId,
     claim: "completed",
-    command: `${baseUrl ? `PLAYWRIGHT_BASE_URL=${baseUrl} ` : ""}node --test validate-regression-plan.test.mjs`,
+    command: `${baseUrl ? `PLAYWRIGHT_BASE_URL=${baseUrl} ` : ""}${
+      exactRoute ? `COMMENTS_EXACT_ROUTE=${exactRoute} ` : ""
+    }node --test validate-regression-plan.test.mjs`,
     host,
     inputCount: "3",
     inputDigest,
@@ -344,6 +347,7 @@ const noGateFailureRow =
 
 const failedFixRows = ({
   count = 1,
+  exactRoute = false,
   failureKind = "reporter-contradiction",
   invalidate = true,
   repair = true,
@@ -370,7 +374,9 @@ const failedFixRows = ({
       attempt >= 2
         ? "yes: second-failed-fix"
         : "no: first failure and no structural pressure"
-    } | ${architecture} | reproduced: restart the exact reporter case${diagnostic} |`;
+    } | ${architecture} | reproduced: restart the exact reporter case${diagnostic}${
+      exactRoute ? "; exact-route-reproduction: red" : ""
+    } |`;
   }).join("\n");
 
 const fixture = ({
@@ -380,6 +386,8 @@ const fixture = ({
   browserCommand = false,
   captureRoutingPath = false,
   exactChrome = false,
+  exactRoute = false,
+  exactRouteValue = "http://localhost:3000/docs/comment",
   externalInterceptorPath = false,
   focusFirstClick = false,
   failedCount = 0,
@@ -418,9 +426,12 @@ const fixture = ({
           ? ";reporter-profile:Chrome Dev Profile with Agentation state"
           : ""
       }`
-    : "host:none - deterministic Node workflow";
+    : exactRoute
+      ? "pid:4242;started:2026-08-20T09:55:00.000Z;base-url:http://localhost:3000;browser:chromium"
+      : "host:none - deterministic Node workflow";
   let receipt = receiptRow({
     attempt: failedCount + 1,
+    exactRoute: exactRoute ? exactRouteValue : undefined,
     host,
     inputDigest,
   });
@@ -449,15 +460,25 @@ Selected executable cases:
 | Case ID | Source reference | Setup / action | Expected outcome | Expected-outcome authority | Red-test escalation | Exact environment | Test file / command | Status | Tested ref | Next owner |
 |---|---|---|---|---|---|---|---|---|---|---|
 | case-complete | ${
-    exactChrome
+    exactRoute
+      ? "exact public route /docs/comment report"
+      : exactChrome
       ? "Blink compositor report"
       : browserCommand
         ? "browser keyboard trigger report"
         : "local workflow report"
   } | ${
-    browserCommand ? "type @ in the mounted editor" : "validate one complete plan"
+    exactRoute
+      ? "navigate /docs/comment and exercise the Comments workflow"
+      : browserCommand
+        ? "type @ in the mounted editor"
+        : "validate one complete plan"
   } | ${
-    browserCommand ? "the mounted command opens its input" : "semantic closure is accepted"
+    exactRoute
+      ? "the public Comments route completes its interaction contract"
+      : browserCommand
+        ? "the mounted command opens its input"
+        : "semantic closure is accepted"
   } | ${
     missingExpectedOutcomeAuthority
       ? "pending"
@@ -471,6 +492,8 @@ Selected executable cases:
               }`
             : ""
         }; runtime-modes: compositor interaction active${fixtureScope}`
+      : exactRoute
+        ? `browser: current-source Chromium route; exact-route: ${exactRouteValue}; runtime-modes: mounted Comments mode active${fixtureScope}`
       : browserCommand
         ? `browser: current-source Chromium route; runtime-modes: mounted command mode active${fixtureScope}`
         : `N/A: deterministic Node workflow; runtime-modes: no optional product mode${fixtureScope}`
@@ -565,7 +588,7 @@ Failed fix history:
 ${
   failedRows ??
   (failedCount
-    ? failedFixRows({ count: failedCount, failureKind })
+    ? failedFixRows({ count: failedCount, exactRoute, failureKind })
     : noFailedFixRow)
 }
 
@@ -583,6 +606,17 @@ Architecture pressure:
       ? "plate-plan: accepted adoption proof"
       : "N/A: local correctness patch"
   } | pass: architecture decision recorded before implementation |
+
+Proof-host readiness:
+| Case ID | Source owner | Runner / route / host | Freshness evidence | Generated/export boundary | Result |
+|---|---|---|---|---|---|
+| case-complete | Regression validator fixture | ${
+    exactRoute
+      ? `node test host; exact-route: ${exactRouteValue}`
+      : "deterministic Node host"
+  } | current fixture bytes and receipt digest | source validator and generated mirror boundary | ${
+    preImplementation ? "planned: host validation before behavior proof" : "pass: current proof host"
+  } |
 
 Methodology deltas:
 | Case | Miss or owner checked | Decision | Durable owner/change | Focused proof | Trigger/result |
@@ -605,9 +639,226 @@ ${
 `;
 };
 
+test("package dependency changes reject source-only proof", () => {
+  const plan = fixture().replace("validate one complete plan", "package-dependency-change: reuse a React selector helper");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /package dependency changes require/);
+});
+
+test("package dependency changes require packed headless and consumer execution", () => {
+  const plan = fixture()
+    .replace("validate one complete plan", "package-dependency-change: reuse a React selector helper")
+    .split("\n")
+    .map((line) => {
+      if (!/^\| case-complete \| runtime-errors \|/.test(line)) return line;
+      const cells = line.split("|");
+      cells[4] = " yes ";
+      cells[5] = " react-free-headless: isolated required dependency closure; react-consumer: packed React import and SSR ";
+      cells[6] = " React becomes required for headless consumers or the React entrypoint cannot resolve its helper ";
+      cells[7] = " packed package ";
+      cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+      cells[9] = " pass: react-free-headless: pass; react-consumer: pass ";
+      return cells.join("|");
+    }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  for (const marker of ["react-free-headless", "react-consumer"]) {
+    assert.match(validateRegressionPlan(plan.replaceAll(`${marker}: pass`, `${marker}: pending`), { complete: true, rootDir: root }).join("\n"), new RegExp(`${marker}: pass`));
+  }
+  assert.match(validateRegressionPlan(plan.replace(" packed package ", " source package "), { complete: true, rootDir: root }).join("\n"), /packed package/);
+});
+
+test("independent editors reject mount-only proof", () => {
+  const plan = fixture().replace("validate one complete plan", "mount three independent editors");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /independent editors require/);
+});
+
+test("independent editors require document bindings and isolated edit and undo", () => {
+  const plan = fixture()
+    .replace("validate one complete plan", "mount three independent editors")
+    .split("\n")
+    .map((line) => {
+      if (!/^\| case-complete \| (model|dom-native) \|/.test(line)) return line;
+      const cells = line.split("|");
+      const model = cells[2].trim() === "model";
+      cells[4] = " yes ";
+      cells[5] = ` editor-bindings: each mounted root -> editor -> complete fixture${model ? "; isolated-edit-and-undo: edit and undo each editor while the others stay unchanged" : ""} `;
+      cells[6] = " all views display one document ";
+      cells[7] = " mounted DOM ";
+      cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+      cells[9] = ` pass: editor-bindings: pass${model ? "; isolated-edit-and-undo: pass" : ""} `;
+      return cells.join("|");
+    }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  for (const evidence of ["editor-bindings", "isolated-edit-and-undo"]) {
+    assert.match(validateRegressionPlan(plan.replaceAll(`${evidence}: pass`, `${evidence}: pending`), { complete: true, rootDir: root }).join("\n"), new RegExp(`${evidence}: pass`));
+  }
+});
+
+test("shared document views do not require independent editor isolation", () => {
+  const plan = fixture().replace("validate one complete plan", "mount three views of one shared document");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+});
+
+test("multi-view toolbar proof requires exact mount identity and current permissions", () => {
+  let plan = fixture().replace("validate one complete plan", "route toolbar focus between same-root mounts");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /multi-view controls require/);
+  plan = plan.split("\n").map((line) => {
+    if (!/^\| case-complete \| (model|focus) \|/.test(line)) return line;
+    const cells = line.split("|");
+    const model = cells[2].trim() === "model";
+    const markers = model ? ["view-bindings", "current-view-permissions", "stale-mount"] : ["view-bindings", "exact-view-focus"];
+    cells[4] = " yes ";
+    cells[5] = ` ${markers.map((marker) => `${marker}: each exact mounted command editor keeps its root, DOM element and current permissions`).join("; ")} `;
+    cells[6] = " a captured action targets a replacement or another same-root mount ";
+    cells[7] = " mounted DOM ";
+    cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+    cells[9] = ` pass: ${markers.map((marker) => `${marker}: pass`).join("; ")} `;
+    return cells.join("|");
+  }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  for (const marker of ["view-bindings", "current-view-permissions", "stale-mount", "exact-view-focus"]) {
+    assert.match(validateRegressionPlan(plan.replaceAll(`${marker}: pass`, `${marker}: pending`), { complete: true, rootDir: root }).join("\n"), new RegExp(`${marker}: pass`));
+  }
+});
+
+test("toolbar field commit followed by undo requires a post-blur model oracle", () => {
+  let plan = fixture().replace("validate one complete plan", "commit a toolbar field with Enter then undo before blur");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /toolbar field history requires/);
+  plan = plan.split("\n").map((line) => {
+    if (!/^\| case-complete \| model \|/.test(line)) return line;
+    const cells = line.split("|");
+    cells[4] = " yes ";
+    cells[5] = " field-commit-once: Enter commits the draft and undo remains applied after focus restoration blurs the field ";
+    cells[6] = " blur replays an already committed draft after undo ";
+    cells[7] = " mounted DOM ";
+    cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+    cells[9] = " pass: field-commit-once: pass ";
+    return cells.join("|");
+  }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  assert.match(validateRegressionPlan(plan.replaceAll("field-commit-once: pass", "field-commit-once: pending"), { complete: true, rootDir: root }).join("\n"), /field-commit-once: pass/);
+});
+
+test("toolbar field focus must survive pending editor focus retries", () => {
+  let plan = fixture().replace("validate one complete plan", "focus a toolbar field while an editor focus retry is pending");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /toolbar field focus requires/);
+  plan = plan.split("\n").map((line) => {
+    if (!/^\| case-complete \| focus \|/.test(line)) return line;
+    const cells = line.split("|");
+    cells[4] = " yes ";
+    cells[5] = " field-focus-handoff: the field retains focus through pending editor frame and settle callbacks and receives the follow-up key ";
+    cells[6] = " an old editor focus retry steals field input ";
+    cells[7] = " mounted DOM ";
+    cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+    cells[9] = " pass: field-focus-handoff: pass ";
+    return cells.join("|");
+  }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  assert.match(validateRegressionPlan(plan.replaceAll("field-focus-handoff: pass", "field-focus-handoff: pending"), { complete: true, rootDir: root }).join("\n"), /field-focus-handoff: pass/);
+});
+
+test("multi-root history requires root transition and target retirement focus proof", () => {
+  let plan = fixture().replace("validate one complete plan", "repeat multi-root history undo from a shared toolbar");
+  assert.match(validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"), /multi-root history requires/);
+  plan = plan.split("\n").map((line) => {
+    if (!/^\| case-complete \| focus \|/.test(line)) return line;
+    const cells = line.split("|");
+    const markers = ["history-root-transition", "history-target-retirement"];
+    cells[4] = " yes ";
+    cells[5] = " history-root-transition: repeated document undo restores the recorded root after ambient root changes; history-target-retirement: changing the explicitly bound editor cancels its queued focus restore ";
+    cells[6] = " root changes cancel valid restoration or a retired target steals focus ";
+    cells[7] = " mounted DOM ";
+    cells[8] = ` test: ${semanticTestPath}#${semanticTestTitle} `;
+    cells[9] = ` pass: ${markers.map((marker) => `${marker}: pass`).join("; ")} `;
+    return cells.join("|");
+  }).join("\n");
+  assert.deepEqual(validateRegressionPlan(plan, { complete: true, rootDir: root }), []);
+  for (const marker of ["history-root-transition", "history-target-retirement"]) {
+    assert.match(validateRegressionPlan(plan.replaceAll(`${marker}: pass`, `${marker}: pending`), { complete: true, rootDir: root }).join("\n"), new RegExp(`${marker}: pass`));
+  }
+});
+
 test(semanticTestTitle, () => {
   assert.deepEqual(
     validateRegressionPlan(fixture(), { complete: true, rootDir: root }),
+    []
+  );
+});
+
+const renderMeasurementFixture = ({
+  closure = true,
+  ownerInputs = receiptInputs.slice(0, 2),
+} = {}) =>
+  fixture()
+    .replace(
+      "validate one complete plan",
+      "measure the rerender count for one shared renderer"
+    )
+    .replace(
+      "the complete semantic plan passes",
+      `the render count stays bounded; measurement-owner-inputs: ${ownerInputs.join(",")}`
+    )
+    .replace(
+      "pass: validator contract",
+      `pass: validator contract${
+        closure ? "; measurement-owner-closure: pass" : ""
+      }`
+    );
+
+test("render measurements require an explicit measurement owner inventory", () => {
+  const plan = fixture().replace(
+    "validate one complete plan",
+    "measure the rerender count for one shared renderer"
+  );
+
+  assert.match(
+    validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"),
+    /render measurement requires measurement-owner-inputs/
+  );
+});
+
+test("inapplicable oracle metadata cannot satisfy render measurement ownership", () => {
+  const plan = fixture()
+    .replace(
+      "validate one complete plan",
+      "measure the rerender count for one shared renderer"
+    )
+    .replace(
+      "N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |",
+      `N/A: deterministic workflow case; measurement-owner-inputs: ${receiptInputs[0]} | N/A: deterministic workflow case | N/A: deterministic workflow case | N/A: deterministic workflow case |`
+    );
+
+  assert.match(
+    validateRegressionPlan(plan, { complete: true, rootDir: root }).join("\n"),
+    /render measurement requires measurement-owner-inputs/
+  );
+});
+
+test("render measurement completion requires owner closure evidence", () => {
+  assert.match(
+    validateRegressionPlan(renderMeasurementFixture({ closure: false }), {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /render measurement requires measurement-owner-closure: pass/
+  );
+});
+
+test("render measurement receipts include every measured runtime owner", () => {
+  assert.match(
+    validateRegressionPlan(
+      renderMeasurementFixture({
+        ownerInputs: [receiptInputs[0], "docs/plans/templates/regression.md"],
+      }),
+      { complete: true, rootDir: root }
+    ).join("\n"),
+    /Inputs must include every measurement-owner-inputs path/
+  );
+
+  assert.deepEqual(
+    validateRegressionPlan(renderMeasurementFixture(), {
+      complete: true,
+      rootDir: root,
+    }),
     []
   );
 });
@@ -1446,6 +1697,80 @@ test("only reporter contradictions require a latest reporter delta", () => {
   }
 });
 
+test("a reporter route contradiction cannot close from proxy-route proof", () => {
+  const exactRoute = "http://localhost:3000/docs/comment";
+  const valid = fixture({ exactRoute: true, failedCount: 1 });
+
+  assert.deepEqual(
+    validateRegressionPlan(valid, { complete: true, rootDir: root }),
+    []
+  );
+
+  const missingSelectedRoute = valid.replace(
+    `; exact-route: ${exactRoute}`,
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(missingSelectedRoute, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /reporter route requires exact-route/
+  );
+
+  const proxyHost = valid.replace(
+    `exact-route: ${exactRoute}`,
+    "exact-route: http://localhost:3000/blocks/comment-demo"
+  );
+  assert.match(
+    validateRegressionPlan(proxyHost, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /proof host .* must bind the selected exact route/
+  );
+
+  const missingExactReproduction = valid.replace(
+    "; exact-route-reproduction: red",
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(missingExactReproduction, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /requires exact-route-reproduction: red or pass/
+  );
+
+  const proxyCommand = valid.replace(
+    `COMMENTS_EXACT_ROUTE=${exactRoute} `,
+    ""
+  );
+  assert.match(
+    validateRegressionPlan(proxyCommand, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /exact-route command must reference/
+  );
+
+  const unownedRoute = fixture({
+    exactRoute: true,
+    exactRouteValue: [
+      "http://localhost:3000/docs",
+      "unowned-comment-route",
+    ].join("/"),
+    failedCount: 1,
+  });
+  assert.match(
+    validateRegressionPlan(unownedRoute, {
+      complete: true,
+      rootDir: root,
+    }).join("\n"),
+    /inputs must contain the selected exact route/
+  );
+});
+
 test("replay and final-verification failures require an unchanged-bytes diagnostic", () => {
   for (const failureKind of ["exact-replay", "final-verification"]) {
     const invalidRows = failedFixRows({ failureKind }).replace(
@@ -1463,6 +1788,31 @@ test("replay and final-verification failures require an unchanged-bytes diagnost
       failureKind
     );
   }
+});
+
+test("a failed focus-state fix compares the native, DOM and React owners", () => {
+  const failedFocus = fixture({
+    failedCount: 1,
+    failureKind: "final-verification",
+  }).replace(
+    /^\| case-complete \| focus \| after-action \|.*$/m,
+    `| case-complete | focus | after-action | yes | focus-state follows native editor focus | React context remains stale | DOM mounted compiled provider | test: ${semanticTestPath}#${semanticTestTitle} | pass: focus-state |`
+  );
+  const errors = validateRegressionPlan(failedFocus, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /requires focus-state-trace: native \+ dom-api \+ react-context/);
+
+  const resolved = failedFocus.replace(
+    "; diagnostic: pass unchanged-bytes failing phase classified",
+    "; diagnostic: pass unchanged-bytes failing phase classified; focus-state-trace: native + dom-api + react-context"
+  );
+  assert.doesNotMatch(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }).join("\n"),
+    /failed focus-state fix/
+  );
 });
 
 test("a failed popup focus fix requires a native focus-owner trace", () => {

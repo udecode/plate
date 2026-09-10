@@ -41,6 +41,12 @@ const undo = (editor: EditorType) => {
   });
 };
 
+const redo = (editor: EditorType) => {
+  editor.update((tx) => {
+    tx.history.redo();
+  });
+};
+
 const replace = (
   editor: EditorType,
   children: Descendant[],
@@ -152,6 +158,67 @@ describe('plite-history integrity contract', () => {
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), before);
+  });
+
+  it('keeps extender-added edits in one isolated undo and redo batch', () => {
+    const editor = createEditor({
+      extensions: [
+        history(),
+        defineExtension('test-history-command-extender', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, next, state }) => {
+              const spec = next(input);
+
+              if (!spec) return false;
+
+              return state.transaction.extend(spec, (tx) => {
+                tx.text.insert('!');
+              });
+            }),
+          ],
+        }),
+      ],
+      initialSelection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      initialValue: [paragraph('one')],
+    });
+    const assertState = (
+      text: string,
+      offset: number,
+      undoCount: number,
+      redoCount: number
+    ) => {
+      assert.equal(getText(editor), text);
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
+        kind: 'text',
+        anchor: { path: [0, 0], offset },
+        focus: { path: [0, 0], offset },
+      });
+      assert.equal(getHistory(editor).undos.length, undoCount);
+      assert.equal(getHistory(editor).redos.length, redoCount);
+    };
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.command(editorCommands.insertText, { text: 'a' });
+    });
+    assertState('onea!', 5, 1, 0);
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('b');
+    });
+    assertState('onea!b', 6, 2, 0);
+
+    undo(editor);
+    assertState('onea!', 5, 1, 1);
+    undo(editor);
+    assertState('one', 3, 0, 2);
+    redo(editor);
+    assertState('onea!', 5, 1, 1);
+    redo(editor);
+    assertState('onea!b', 6, 2, 0);
   });
 
   it('history new-batch policy starts a fresh batch for the transaction', () => {

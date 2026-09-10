@@ -14,15 +14,26 @@ type FloatingAnchor =
     }
   | null;
 
-export function FloatingPopover(
-  props: React.PropsWithChildren<{
-    defaultOpen?: boolean;
-    modal?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    open?: boolean;
-  }>
-) {
-  return <PopoverPrimitive.Root {...props} />;
+export function FloatingPopover({
+  onOpenChange,
+  onOpenChangeComplete,
+  ...props
+}: React.PropsWithChildren<{
+  defaultOpen?: boolean;
+  modal?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onOpenChangeComplete?: (open: boolean) => void;
+  open?: boolean;
+}>) {
+  return (
+    <PopoverPrimitive.Root
+      {...props}
+      onOpenChange={(open) => {
+        onOpenChange?.(open);
+        requestAnimationFrame(() => onOpenChangeComplete?.(open));
+      }}
+    />
+  );
 }
 
 export function FloatingPopoverAnchor({

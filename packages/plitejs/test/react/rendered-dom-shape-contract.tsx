@@ -4,11 +4,22 @@ import {
   defineExtensionSlot,
   type Descendant,
   schema,
+  TextApi,
 } from 'plitejs';
 import React from 'react';
 
-import { replace as editorReplace } from '../../src/internal';
-import { createEditor, Editable, Plite } from '../../src/react';
+import { resolveDOMTextFlowPoint } from '../../src/dom/internal';
+import {
+  getNodeKey as editorGetNodeKey,
+  replace as editorReplace,
+} from '../../src/internal';
+import {
+  createEditor,
+  Editable,
+  Plite,
+  type PliteDecorationSource,
+} from '../../src/react';
+import { getPliteNodeElementByPath } from '../../src/react/hooks/use-plite-node-ref';
 
 const inlineLinkSchema = defineEditorSchema(
   'schema:rendered-dom-shape-inline-link',
@@ -305,6 +316,111 @@ describe('rendered DOM shape contract', () => {
       'This is editable rich text, much '
     );
     expect(getZeroWidthLineBreaks(block)).toHaveLength(0);
+  });
+
+  test('adds one rendering-only newline only to the final text child', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ bold: true, text: 'alpha\n' }, { text: 'beta\n' }],
+        },
+      ],
+      selection: null,
+    });
+    const modelValue = editor.read.value();
+    const trailingDecoration: PliteDecorationSource<typeof editor> = {
+      id: 'trailing-newline',
+      read: ({ entry: [node, path] }) =>
+        TextApi.isText(node) && node.text === 'beta\n'
+          ? [
+              {
+                attributes: { 'data-trailing-newline': true },
+                key: 'trailing-newline',
+                range: {
+                  anchor: { path, offset: 0 },
+                  focus: { path, offset: node.text.length },
+                },
+              },
+            ]
+          : [],
+    };
+
+    render(
+      <Plite decorations={[trailingDecoration]} editor={editor}>
+        <Editable id="rendered-dom-shape-trailing-newline" />
+      </Plite>
+    );
+    const flow = getPliteNodeElementByPath(editor, [0, 0]);
+    const leadingKey = editorGetNodeKey(editor, [0, 0]);
+    const trailingKey = editorGetNodeKey(editor, [0, 1]);
+    const leadingPoint =
+      flow && leadingKey ? resolveDOMTextFlowPoint(flow, 0, leadingKey) : null;
+    const trailingPoint =
+      flow && trailingKey
+        ? resolveDOMTextFlowPoint(flow, 0, trailingKey)
+        : null;
+    const trailingString = trailingPoint?.node.parentElement?.closest(
+      '[data-plite-string][data-trailing-newline]'
+    );
+
+    expect(getPliteNodeElementByPath(editor, [0, 1])).toBe(flow);
+    expect(leadingPoint?.node.textContent).toBe('alpha\n');
+    expect(trailingString?.textContent).toBe('beta\n\n');
+    expect(trailingString).toHaveAttribute('data-plite-length', '5');
+    expect(editor.read.value()).toEqual(modelValue);
+  });
+
+  test('round-trips a point through retained decorated text', () => {
+    const text = 'This is some text here about. there';
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text }],
+        },
+      ],
+    });
+    const decorations: PliteDecorationSource<typeof editor> = {
+      id: 'point-round-trip',
+      read: ({ entry: [node, path] }) =>
+        TextApi.isText(node)
+          ? [
+              {
+                attributes: { 'data-highlight': 'here' },
+                key: 'here',
+                range: {
+                  anchor: { path, offset: 18 },
+                  focus: { path, offset: 22 },
+                },
+              },
+              {
+                attributes: { 'data-highlight': 'there' },
+                key: 'there',
+                range: {
+                  anchor: { path, offset: 30 },
+                  focus: { path, offset: 35 },
+                },
+              },
+            ]
+          : [],
+    };
+
+    render(
+      <Plite decorations={[decorations]} editor={editor}>
+        <Editable id="rendered-dom-shape-point-round-trip" />
+      </Plite>
+    );
+    const point = { offset: text.length, path: [0, 0] };
+    const domPoint = editor.api.dom.resolveDOMPoint(point);
+
+    expect(domPoint).not.toBeNull();
+    expect(
+      domPoint &&
+        editor.api.dom.resolvePlitePoint(domPoint, { exactMatch: true })
+    ).toEqual(point);
   });
 
   test('empty inline elements inside non-empty blocks do not render visual line breaks', () => {

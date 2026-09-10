@@ -6,17 +6,12 @@ import remarkMath from 'remark-math';
 
 export const MarkdownKit = [
   MarkdownPlugin.configure(({ editor }) => {
-    const comment = editor.plugin(PLUGINS.comment);
     const suggestion = editor.plugin(PLUGINS.suggestion);
     const plainMarks: string[] = [];
 
     if (suggestion.installed) {
       plainMarks.push(suggestion.schema.key);
     }
-    if (comment.installed) {
-      plainMarks.push(comment.schema.key);
-    }
-
     return {
       initialState: {
         plainMarks,

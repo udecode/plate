@@ -1,0 +1,3 @@
+id	promoted_to	owner	proof_command	status
+p001	richtext-native-ime-model-change-before-composition	.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "preserves native IME composition when model text changes before it"	kept
+p002	richtext-native-ime-model-delete-at-composition-point	.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps native IME composition coherent when model delete starts at composition point"	kept

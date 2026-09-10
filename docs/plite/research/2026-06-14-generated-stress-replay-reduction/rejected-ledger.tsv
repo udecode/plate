@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+dom-diff-import-stress	slate-v2-local	dom-diff-import:direct-dom-mutation-browser-oracle	Already promoted by `2026-06-13-editor-property-fuzzing-oracles`; not the current reduction question.	Reopen only if DOM mutation import artifacts lack replay/minimization metadata after a failing row.
+external-auto-shrinker	selected-repos	replay-reduction:auto-shrinker	No sampled editor repo exposed a stronger source-backed automatic shrinker than Slate's existing candidate generation.	Reopen if a concrete OSS shrinker with source and runnable replay command is found.

@@ -6,6 +6,8 @@
 @source "../**/*.{ts,tsx,mdx}";
 @source not "../../public/r";
 @source not "../__registry__";
+@source not "../../tests";
+@source not "../**/*.{spec,test}.{ts,tsx}";
 
 @plugin "tailwind-scrollbar-hide";
 
@@ -313,10 +315,6 @@
     font-size: var(--text-sm);
     outline: none;
     position: relative;
-
-    & [data-slot='copy-button'] {
-      top: calc(var(--spacing) * 1.5) !important;
-    }
   }
 
   .steps {
@@ -349,10 +347,10 @@
     outline: none;
     position: relative;
     @apply md:-mx-4;
+  }
 
-    &:has([data-rehype-pretty-code-title]) [data-slot='copy-button'] {
-      top: calc(var(--spacing) * 1.5) !important;
-    }
+  [data-rehype-pretty-code-title] ~ pre [data-slot='copy-button'] {
+    top: calc(var(--spacing) * 1.5) !important;
   }
 
   [data-rehype-pretty-code-title] {

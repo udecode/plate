@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -138,7 +138,8 @@ const measureSetup = (children) => {
   };
 };
 
-const measureScenario = (children, scenario) => {
+const measureScenario = (inputChildren, scenario) => {
+  const children = DocumentIndex.fromValue(inputChildren).value;
   const editorApplySamples = [];
   const editorTransactionSamples = [];
   const kernelApplySamples = [];
@@ -154,6 +155,8 @@ const measureScenario = (children, scenario) => {
     const document = DocumentIndex.fromValue(children);
     const value = { children, marks: null, selection: null };
     const publisher = setupKernelPublisher();
+    assert.equal(document.value, children);
+    assert.equal(DocumentIndex.fromValue(children), document);
     let editorApplyElapsedMs = 0;
     let start = performance.now();
     const editorChange = toDocumentChange(scenario.build(document));
@@ -355,7 +358,7 @@ const textBatches = [100, 1000, 10000].map((count) => {
 const sourceAfter = fingerprints();
 assert.deepEqual(sourceAfter, sourceBefore, 'Measured source changed during the benchmark');
 const artifact = {
-  artifactVersion: 3,
+  artifactVersion: 4,
   benchmark: 'plite-document-change',
   sourceIdentity: { measuredInputs: sourceAfter },
   textBatches,
@@ -363,6 +366,8 @@ const artifact = {
   iterations,
   runs,
   fairness: {
+    input:
+      'Editor and canonical apply/replay receive the same prepared immutable children; index identity reuse is asserted before timing. Cold mutable JSON preparation remains in the separate setup measurements.',
     editor:
       'one prebuilt Plite editor with one commit subscriber; timer includes canonical DocumentChange construction, native transaction apply, commit construction, and publication',
     kernel:
@@ -393,7 +398,8 @@ const artifact = {
   },
   results,
 };
-const artifactPath = fileURLToPath(
+const outputArgument = process.argv.find((argument) => argument.startsWith('--output='));
+const artifactPath = outputArgument ? resolve(outputArgument.slice('--output='.length)) : fileURLToPath(
   new URL(
     '../../../../../docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json',
     import.meta.url

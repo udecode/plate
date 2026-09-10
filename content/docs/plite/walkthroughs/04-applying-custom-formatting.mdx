@@ -6,7 +6,7 @@ description: "Toggle marks and render inline formatting with current Plite trans
 Block types change whole elements. Marks change text. Use marks for inline
 formatting such as bold, italic, code, and strikethrough.
 
-## Starting Point
+## Starting point
 
 Start with the block renderer from the previous walkthrough:
 
@@ -21,7 +21,7 @@ const renderElement = (props) => {
 };
 ```
 
-## Toggle A Mark
+## Toggle a mark
 
 Use `editor.update.marks.toggle(...)` for a single formatting command.
 
@@ -90,7 +90,7 @@ editor.update.marks.toggle("subscript");
 
 Enabling one group member removes the active peer automatically.
 
-## Render Marks
+## Render marks
 
 Add `renderLeaf` to decide how marked text appears.
 

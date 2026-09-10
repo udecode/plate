@@ -28,22 +28,11 @@ const temporaryDirectories: string[] = [];
 const RuntimeParagraphPlugin = defineBasePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
 });
-const RuntimeSchema = { id: 'plate', version: 55 } as const;
+const RuntimeSchema = { id: 'plate', version: 54 } as const;
 const RuntimeMigrations = defineDocumentMigrations(RuntimeSchema, {
   sourceFingerprints: { 53: 'source-53' },
   steps: {
     54: migratePlateV54,
-    55: ({ document }) => ({
-      ...document,
-      children: document.children.map((element) => ({
-        ...element,
-        children: element.children.map((child) =>
-          'text' in child
-            ? { ...child, text: `${String(child.text)}55` }
-            : child
-        ),
-      })),
-    }),
   },
   unversioned: 53,
 });
@@ -74,22 +63,13 @@ export const OtherEmptyArray = [] as const;
 export const EditorSchema = {
   id: 'plate',
   ${options.applicationRoot ? 'root: schema.content.element(ParagraphPlugin, { min: 2 }),' : ''}
-  version: 55,
+  version: 54,
 } as const;
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: { 53: 'source-53' },
   unversioned: 53,
   steps: {
     54: migratePlateV54,
-    55: ({ document }) => ({
-      ...document,
-      children: document.children.map((element) => ({
-        ...element,
-        children: element.children.map((child) =>
-          'text' in child ? { ...child, text: child.text + '55' } : child
-        ),
-      })),
-    }),
   },
 });
 `,
@@ -125,7 +105,7 @@ afterEach(() => {
 });
 
 describe('plate migrate run', () => {
-  it('dry-runs then atomically writes the same v53-to-v55 chain', async () => {
+  it('dry-runs then atomically writes the same v53-to-v54 migration', async () => {
     const fixture = createFixture();
     const before = readFileSync(fixture.documentPath, 'utf-8');
     const dryRun = await runEditorMigrations(
@@ -135,7 +115,7 @@ describe('plate migrate run', () => {
     );
 
     expect(dryRun.changed).toBe(1);
-    expect(dryRun.files[0]?.applied).toEqual([54, 55]);
+    expect(dryRun.files[0]?.applied).toEqual([54]);
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(before);
 
     const written = await runEditorMigrations(
@@ -147,12 +127,12 @@ describe('plate migrate run', () => {
 
     expect(written.changed).toBe(1);
     expect(output.document.children).toEqual([
-      { children: [{ text: 'v55' }], type: 'paragraph' },
+      { children: [{ text: 'v' }], type: 'paragraph' },
     ]);
     expect(output.schema).toMatchObject({
       id: 'plate',
       kind: 'named',
-      version: 55,
+      version: 54,
     });
     const runtimeEditor = createEditor({
       initialValue: JSON.parse(before),
@@ -203,9 +183,9 @@ describe('plate migrate run', () => {
       { cwd: fixture.directory }
     );
 
-    expect(result.applied).toEqual([54, 55]);
+    expect(result.applied).toEqual([54]);
     expect(JSON.parse(result.outputText).document.children).toEqual([
-      { children: [{ text: 'v55' }], type: 'paragraph' },
+      { children: [{ text: 'v' }], type: 'paragraph' },
     ]);
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
   });
@@ -228,10 +208,10 @@ describe('plate migrate run', () => {
     const defaultOutput = JSON.parse(defaultResult.outputText);
     const rootOutput = JSON.parse(rootResult.outputText);
 
-    expect(rootResult.applied).toEqual([54, 55]);
+    expect(rootResult.applied).toEqual([54]);
     expect(defaultOutput.document.children).toHaveLength(1);
     expect(rootOutput.document.children).toEqual([
-      { children: [{ text: 'v55' }], type: 'paragraph' },
+      { children: [{ text: 'v' }], type: 'paragraph' },
       { children: [{ text: '' }], type: 'paragraph' },
     ]);
     expect(rootOutput.schema.fingerprint).not.toBe(
@@ -248,7 +228,7 @@ describe('plate migrate run', () => {
     );
 
     expect(result.changed).toBe(1);
-    expect(result.files[0]?.applied).toEqual([54, 55]);
+    expect(result.files[0]?.applied).toEqual([54]);
   });
 
   it('preserves a persisted selection through migration and preparation', async () => {

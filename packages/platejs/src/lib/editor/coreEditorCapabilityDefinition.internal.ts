@@ -8,7 +8,6 @@ import type { DebugApi } from '../plugins/debug/DebugPlugin';
 import type { DomApi, DomPluginUpdate } from '../plugins/dom/DOMPlugin';
 import type { ElementStateApi } from '../plugins/element-state/ElementStatePlugin';
 import type { HtmlApi } from '../plugins/html/HtmlPlugin';
-import type { OverridePluginUpdate } from '../plugins/override/OverridePlugin';
 
 /**
  * Non-recursive capability leaf for the plugins installed by every Base
@@ -42,10 +41,7 @@ export type CoreEditorCapabilityDefinition =
       name: 'html';
     }>
   | Readonly<{ name: 'inputRules' }>
-  | Readonly<{
-      name: 'override';
-      update: OverridePluginUpdate;
-    }>
+  | Readonly<{ name: 'override' }>
   | Readonly<{ name: 'paragraph' }>;
 
 export type CoreEditorApi<V extends Value = Value> = Readonly<{
@@ -63,12 +59,10 @@ export type CoreEditorTransaction = Readonly<{
   affinity: AffinityPluginUpdate;
   dom: DomPluginUpdate;
   history: HistoryStateApi & HistoryTxApi;
-  override: OverridePluginUpdate;
 }>;
 
 export type CoreEditorUpdate = Readonly<{
   affinity: AffinityPluginUpdate;
   dom: DomPluginUpdate;
   history: HistoryTxApi;
-  override: OverridePluginUpdate;
 }>;

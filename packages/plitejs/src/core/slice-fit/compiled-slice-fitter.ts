@@ -3248,9 +3248,10 @@ export const compileSliceFitter = <V extends Value>(
 
     for (const [root, children] of roots) fitRoot(root, children);
 
-    // Projected root grammar depends on its owning element. Refit after every
-    // input root exists so nested projections use their final compiled policy.
-    for (const [root, children] of roots) fitRoot(root, children);
+    // Only projected root grammar depends on owners installed by the first pass.
+    for (const [root, children] of roots) {
+      if (root !== 'main' && !schema?.roots.has(root)) fitRoot(root, children);
+    }
 
     builder.finalize();
     const document = builder.value as EditorDocumentValue<V>;

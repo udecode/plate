@@ -1,9 +1,17 @@
 import { cva } from 'class-variance-authority';
-import type { Anchor, Range, Value } from 'plitejs';
+import {
+  type Anchor,
+  NodeApi,
+  RangeApi,
+  type Range,
+  type Value,
+} from 'plitejs';
 import {
   Editable,
   Plite,
+  PliteAnnotationProvider,
   type PliteAnnotationStore,
+  type PliteDecorationSource,
   type Editor,
   useEditorSelection,
   usePliteAnnotationStore,
@@ -43,11 +51,6 @@ type CommentThread = {
 type CommentData = {
   body: string;
   label: string;
-  status: CommentStatus;
-  tone: CommentTone;
-};
-
-type CommentProjection = {
   status: CommentStatus;
   tone: CommentTone;
 };
@@ -129,11 +132,90 @@ const createCommentAnnotations = (comments: readonly CommentThread[]) =>
       tone: comment.tone,
     },
     id: comment.id,
-    projection: {
-      status: comment.status,
-      tone: comment.tone,
-    },
   }));
+
+const createCommentDecorationSource = (
+  store: PliteAnnotationStore<CommentData>
+): PliteDecorationSource<CommentEditor> => ({
+  id: 'comments',
+  observe: ({ refresh }) =>
+    store.subscribeChanges(({ nodeKeys }) => {
+      if (nodeKeys.length > 0) refresh({ nodeKeys });
+    }),
+  read: ({ editor, entry: [node, path] }) => {
+    if (!NodeApi.isText(node)) return [];
+
+    const nodeKey = editor.key(path);
+
+    if (!nodeKey) return [];
+
+    const textRange: Range = {
+      anchor: { offset: 0, path },
+      focus: { offset: node.text.length, path },
+    };
+    const annotations = store
+      .getAnnotationsAt(nodeKey)
+      .flatMap((annotation) => {
+        const { id } = annotation;
+        const intersection = annotation.range
+          ? RangeApi.intersection(annotation.range, textRange)
+          : null;
+
+        if (!intersection) return [];
+
+        const [start, end] = RangeApi.edges(intersection);
+
+        return start.offset === end.offset
+          ? []
+          : [
+              {
+                data: annotation.data,
+                end: end.offset,
+                id,
+                start: start.offset,
+              },
+            ];
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
+    const boundaries = [
+      ...new Set(annotations.flatMap(({ end, start }) => [start, end])),
+    ].sort((left, right) => left - right);
+
+    return boundaries.slice(0, -1).flatMap((start, index) => {
+      const end = boundaries[index + 1];
+      const active = annotations.filter(
+        (annotation) => annotation.start < end && annotation.end > start
+      );
+      const first = active[0];
+
+      if (!first || start === end) return [];
+
+      const status = first.data?.status ?? 'open';
+      const tone = first.data?.tone ?? 'review';
+
+      return [
+        {
+          attributes: {
+            className: commentHighlightVariants({
+              overlap: active.length > 1,
+              state: commentVisualState(tone, status),
+            }),
+            'data-comment-count': active.length,
+            'data-comment-status': status,
+            'data-comment-tone': tone,
+          },
+          key: `comments:${path.join('.')}:${start}:${end}:${active
+            .map(({ id }) => id)
+            .join(',')}`,
+          range: {
+            anchor: { offset: start, path },
+            focus: { offset: end, path },
+          },
+        },
+      ];
+    });
+  },
+});
 
 const CommentedEditable = ({
   id,
@@ -142,51 +224,12 @@ const CommentedEditable = ({
   id: string;
   readOnly?: boolean;
 }) => (
-  <Editable
-    className="plite-comment-mode-editor"
-    id={id}
-    readOnly={readOnly}
-    renderSegment={(segment, children) => {
-      if (segment.slices.length === 0) {
-        return children;
-      }
-
-      const firstSlice =
-        (segment.slices[0]?.data as
-          | {
-              status?: CommentStatus;
-              tone?: CommentTone;
-            }
-          | undefined) ?? null;
-
-      return (
-        <span
-          className={cn(
-            commentHighlightVariants({
-              overlap: segment.slices.length > 1,
-              state: commentVisualState(
-                firstSlice?.tone ?? 'review',
-                firstSlice?.status ?? 'open'
-              ),
-            })
-          )}
-          data-comment-count={String(segment.slices.length)}
-          data-comment-status={firstSlice?.status ?? 'open'}
-          data-comment-tone={firstSlice?.tone ?? 'review'}
-        >
-          {children}
-        </span>
-      );
-    }}
-  />
+  <Editable className="plite-comment-mode-editor" id={id} readOnly={readOnly} />
 );
 
 const WriterPane = ({ editor }: { editor: CommentEditor }) => {
   const selection = useEditorSelection();
-  const annotationSnapshot = usePliteAnnotations<
-    CommentData,
-    CommentProjection
-  >();
+  const annotationSnapshot = usePliteAnnotations<CommentData>();
   const firstAnnotation =
     annotationSnapshot.allIds[0] == null
       ? null
@@ -278,7 +321,7 @@ const CommentModePane = ({
   setComments,
   writerEditor,
 }: {
-  annotationStore: PliteAnnotationStore<CommentData, CommentProjection>;
+  annotationStore: PliteAnnotationStore<CommentData>;
   comments: readonly CommentThread[];
   editor: CommentEditor;
   onCommentWrite: () => void;
@@ -287,10 +330,7 @@ const CommentModePane = ({
 }) => {
   const nextCommentId = useRef(1);
   const selection = useEditorSelection();
-  const annotationSnapshot = usePliteAnnotations<
-    CommentData,
-    CommentProjection
-  >();
+  const annotationSnapshot = usePliteAnnotations<CommentData>();
   const widgets = useMemo(
     () =>
       comments.map((comment) => ({
@@ -598,14 +638,22 @@ const CommentModeExample = () => {
     () => createCommentAnnotations(comments),
     [comments]
   );
-  const writerAnnotationStore = usePliteAnnotationStore<
-    CommentData,
-    CommentProjection
-  >(writerEditor, annotations);
-  const commentAnnotationStore = usePliteAnnotationStore<
-    CommentData,
-    CommentProjection
-  >(commentEditor, annotations);
+  const writerAnnotationStore = usePliteAnnotationStore<CommentData>(
+    writerEditor,
+    annotations
+  );
+  const commentAnnotationStore = usePliteAnnotationStore<CommentData>(
+    commentEditor,
+    annotations
+  );
+  const writerDecorations = useMemo(
+    () => createCommentDecorationSource(writerAnnotationStore),
+    [writerAnnotationStore]
+  );
+  const commentDecorations = useMemo(
+    () => createCommentDecorationSource(commentAnnotationStore),
+    [commentAnnotationStore]
+  );
 
   const syncCommentModeFromDocument = (value: Value) => {
     commentEditor.update.value.replace({
@@ -659,26 +707,30 @@ const CommentModeExample = () => {
         </div>
       </div>
       <div className="plite-comment-mode-layout">
-        <Plite annotationStore={commentAnnotationStore} editor={commentEditor}>
-          <CommentModePane
-            annotationStore={commentAnnotationStore}
-            comments={comments}
-            editor={commentEditor}
-            onCommentWrite={() => {
-              setCommentWrites((count) => count + 1);
-            }}
-            setComments={setComments}
-            writerEditor={writerEditor}
-          />
+        <Plite decorations={[commentDecorations]} editor={commentEditor}>
+          <PliteAnnotationProvider store={commentAnnotationStore}>
+            <CommentModePane
+              annotationStore={commentAnnotationStore}
+              comments={comments}
+              editor={commentEditor}
+              onCommentWrite={() => {
+                setCommentWrites((count) => count + 1);
+              }}
+              setComments={setComments}
+              writerEditor={writerEditor}
+            />
+          </PliteAnnotationProvider>
         </Plite>
         <Plite
-          annotationStore={writerAnnotationStore}
+          decorations={[writerDecorations]}
           editor={writerEditor}
           onValueChange={({ value }) => {
             handleWriterValueChange(value);
           }}
         >
-          <WriterPane editor={writerEditor} />
+          <PliteAnnotationProvider store={writerAnnotationStore}>
+            <WriterPane editor={writerEditor} />
+          </PliteAnnotationProvider>
         </Plite>
       </div>
     </div>

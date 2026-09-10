@@ -5,10 +5,9 @@ import type {
   EditorStateSchemaApi,
 } from '../../facade';
 import {
-  compileEditorExtension,
-  getCandidateEditorExtensionApi,
+  defineExtension,
   getCompiledEditorSchemaFromApi,
-  getCompiledSchemaPropertyId,
+  schema as schemaDefinition,
   txRead,
 } from '../../facade';
 import type {
@@ -17,9 +16,9 @@ import type {
   BasePluginInput,
   BasePlugins,
   Editor,
-  NodeComponents,
 } from '../../lib';
 import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
+import type { PlateBlockInsertOptions } from '../../lib/editor/pluginRuntimeTypes';
 import { createZustandStore } from '../../lib/libs/zustand';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import {
@@ -36,10 +35,12 @@ import type {
 import { failInvariant } from '../failInvariant';
 import {
   brandPluginDescriptor,
+  freezePluginDataSnapshot,
   getPluginDescriptorMetadata,
   getPluginSchemaFamily,
+  isImmutablePluginData,
   isNominalPluginDescriptor,
-  isOpaquePluginRenderKey,
+  isOpaquePluginSlotKey,
   mergePlugins,
   setPluginDescriptorMetadata,
 } from '../utils/mergePlugins';
@@ -183,13 +184,19 @@ const isOpaquePluginDescriptorResource = (
   const parent = path.at(-2);
 
   if (
-    parent === 'render' &&
-    isOpaquePluginRenderKey(
-      key ?? failInvariant('Expected value to be defined')
-    )
+    key === 'component' &&
+    (path.length === 1 || path.at(-3) === 'override')
   ) {
     return true;
   }
+
+  if (
+    parent === 'slots' &&
+    isOpaquePluginSlotKey(key ?? failInvariant('Expected value to be defined'))
+  ) {
+    return true;
+  }
+  if (parent === 'mark' && key === 'leafComponent') return true;
   if (
     typeof key === 'number' &&
     path.length === 2 &&
@@ -200,7 +207,7 @@ const isOpaquePluginDescriptorResource = (
     return true;
   }
 
-  return path.at(-3) === 'override' && parent === 'components';
+  return false;
 };
 
 type MutableDeep<T> = T extends (...args: never[]) => unknown
@@ -244,28 +251,28 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
     nodeChange: [],
     textChange: [],
   },
-  inject: { nodeProps: [] },
+  inject: { nodeProps: { element: [], text: [] } },
   node: {
     containerTypes: [],
-    decoratedMarks: [],
-    leafProps: [],
-    textMarks: [],
-    textProps: [],
+    leafAttributeMarks: [],
+    leafRenderers: [],
+    textAttributeMarks: [],
+    textRenderers: [],
   },
-  render: {
-    aboveEditable: [],
-    aboveNodes: [],
-    abovePlite: [],
+  slots: {
     afterContainer: [],
     afterEditable: [],
+    afterNodeChildren: [],
     beforeContainer: [],
     beforeEditable: [],
-    belowNodes: [],
-    belowRootNodes: [],
+    wrapContent: [],
+    wrapNode: [],
+    wrapNodeChildren: [],
+    wrapRoot: [],
   },
   rules: { match: [] },
   prepareDocument: [],
-  useHooks: [],
+  useViewElementAttributes: [],
 });
 
 const createMutableResolvedInputRulesMeta =
@@ -284,6 +291,7 @@ const snapshotPluginDescriptorValue = (
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
   if (isOpaquePluginDescriptorResource(context)) return value;
+  if (isImmutablePluginData(value)) return value;
   if (isNominalPluginDescriptor(value)) {
     const published = publishedPlugins?.get(value.name);
 
@@ -313,7 +321,7 @@ const snapshotPluginDescriptorValue = (
       )
     );
 
-    return Object.freeze(snapshot);
+    return freezePluginDataSnapshot(snapshot);
   }
 
   const prototype = Object.getPrototypeOf(value);
@@ -351,9 +359,9 @@ const snapshotPluginDescriptorValue = (
     });
   }
 
-  const frozen = Object.freeze(snapshot);
-
-  return isPluginDescriptor ? brandPluginDescriptor(frozen, value) : frozen;
+  return isPluginDescriptor
+    ? brandPluginDescriptor(Object.freeze(snapshot), value)
+    : freezePluginDataSnapshot(snapshot);
 };
 
 /** Capture the immutable descriptor graph used by every Plate projection. */
@@ -557,7 +565,6 @@ export const resolvePlugins = (
   const pluginCache = createMutablePlatePluginCache();
 
   setPlateRuntimeCandidate(editor, {
-    components: Object.create(null),
     genericElementToggles: Object.freeze([]),
     inputRules: createMutableResolvedInputRulesMeta(),
     pluginCache,
@@ -589,7 +596,7 @@ const publishCompiledSchemaHandles = (
   const bindings = model.bindings.map((binding) => {
     const properties = Object.freeze(
       binding.properties.map((property) => {
-        const id = getCompiledSchemaPropertyId(property);
+        const { id } = schemaDefinition.handle.property(property);
         const matches = compiledProperties.filter(
           (compiled) => compiled.owner === binding.name && compiled.id === id
         );
@@ -784,33 +791,26 @@ export const createPlateModelPublication = (
     plugins[plugin.name] = plugin;
   });
 
-  const decoratedMarks: string[] = [];
-  const leafProps: string[] = [];
-  const textMarks: string[] = [];
-  const textProps: string[] = [];
-  const components: NodeComponents = Object.create(null);
+  const leafAttributeMarks: string[] = [];
+  const leafRenderers: string[] = [];
+  const textAttributeMarks: string[] = [];
+  const textRenderers: string[] = [];
   publishedModel.bindings.forEach((binding) => {
     const plugin = plugins[binding.name];
 
     if (binding.kind === 'none' || !plugin) return;
-
-    if (plugin.render.node) {
-      const documentIdentity = binding.elementType ?? binding.propertyKey;
-
-      if (documentIdentity) components[documentIdentity] = plugin.render.node;
-    }
     if (binding.kind !== 'mark') return;
-    if (binding.isDecoration || plugin.render.leaf) {
-      decoratedMarks.push(binding.name);
+    if (binding.markPlacement === 'leaf' || plugin.render.mark?.leafComponent) {
+      leafRenderers.push(binding.name);
     }
-    if (!binding.isDecoration) {
-      textMarks.push(binding.name);
+    if (binding.markPlacement === 'text') {
+      textRenderers.push(binding.name);
     }
-    if (plugin.render.leafProps) {
-      leafProps.push(binding.name);
+    if (plugin.render.mark?.leafAttributes) {
+      leafAttributeMarks.push(binding.name);
     }
-    if (plugin.render.textProps) {
-      textProps.push(binding.name);
+    if (plugin.render.mark?.textAttributes) {
+      textAttributeMarks.push(binding.name);
     }
   });
 
@@ -837,48 +837,59 @@ export const createPlateModelPublication = (
   const pluginCache = createMutablePlatePluginCache();
 
   pluginCache.node.containerTypes.push(...containerTypes);
-  pluginCache.node.decoratedMarks.push(...decoratedMarks);
-  pluginCache.node.leafProps.push(...leafProps);
-  pluginCache.node.textMarks.push(...textMarks);
-  pluginCache.node.textProps.push(...textProps);
+  pluginCache.node.leafAttributeMarks.push(...leafAttributeMarks);
+  pluginCache.node.leafRenderers.push(...leafRenderers);
+  pluginCache.node.textAttributeMarks.push(...textAttributeMarks);
+  pluginCache.node.textRenderers.push(...textRenderers);
 
   publishedPluginList.forEach((plugin) => {
     if (plugin.inject.nodeProps) {
-      pluginCache.inject.nodeProps.push(plugin.name);
+      if (!plugin.inject.isLeaf) {
+        pluginCache.inject.nodeProps.element.push(plugin.name);
+      }
+      if (
+        !plugin.inject.isBlock &&
+        !plugin.inject.isElement &&
+        plugin.targetPlugins.length === 0
+      ) {
+        pluginCache.inject.nodeProps.text.push(plugin.name);
+      }
     }
-    if (plugin.render.aboveEditable) {
-      pluginCache.render.aboveEditable.push(plugin.name);
+    if (plugin.slots.wrapContent) {
+      pluginCache.slots.wrapContent.push(plugin.name);
     }
-    if (plugin.render.aboveNodes) {
-      pluginCache.render.aboveNodes.push(plugin.name);
+    if (plugin.slots.wrapNode) {
+      pluginCache.slots.wrapNode.push(plugin.name);
     }
-    if (plugin.render.abovePlite) {
-      pluginCache.render.abovePlite.push(plugin.name);
+    if (plugin.slots.wrapRoot) {
+      pluginCache.slots.wrapRoot.push(plugin.name);
     }
-    if (plugin.render.afterContainer) {
-      pluginCache.render.afterContainer.push(plugin.name);
+    if (plugin.slots.afterContainer) {
+      pluginCache.slots.afterContainer.push(plugin.name);
     }
-    if (plugin.render.afterEditable) {
-      pluginCache.render.afterEditable.push(plugin.name);
+    if (plugin.slots.afterEditable) {
+      pluginCache.slots.afterEditable.push(plugin.name);
     }
-    if (plugin.render.beforeContainer) {
-      pluginCache.render.beforeContainer.push(plugin.name);
+    if (plugin.slots.beforeContainer) {
+      pluginCache.slots.beforeContainer.push(plugin.name);
     }
-    if (plugin.render.beforeEditable) {
-      pluginCache.render.beforeEditable.push(plugin.name);
+    if (plugin.slots.beforeEditable) {
+      pluginCache.slots.beforeEditable.push(plugin.name);
     }
-    if (plugin.render.belowNodes) {
-      pluginCache.render.belowNodes.push(plugin.name);
+    if (plugin.slots.wrapNodeChildren) {
+      pluginCache.slots.wrapNodeChildren.push(plugin.name);
     }
-    if (plugin.render.belowRootNodes) {
-      pluginCache.render.belowRootNodes.push(plugin.name);
+    if (plugin.slots.afterNodeChildren) {
+      pluginCache.slots.afterNodeChildren.push(plugin.name);
     }
     if (plugin.rules?.match) pluginCache.rules.match.push(plugin.name);
     if (plugin.prepareDocument) {
       pluginCache.prepareDocument.push(plugin.name);
     }
     if (plugin.decorate) pluginCache.decorate.push(plugin.name);
-    if (plugin.useHooks) pluginCache.useHooks.push(plugin.name);
+    if (plugin.render.useViewElementAttributes) {
+      pluginCache.useViewElementAttributes.push(plugin.name);
+    }
     if (plugin.on?.nodeChange) {
       pluginCache.on.nodeChange.push(plugin.name);
     }
@@ -895,29 +906,32 @@ export const createPlateModelPublication = (
       textChange: freezeList(pluginCache.on.textChange),
     }),
     inject: Object.freeze({
-      nodeProps: freezeList(pluginCache.inject.nodeProps),
+      nodeProps: Object.freeze({
+        element: freezeList(pluginCache.inject.nodeProps.element),
+        text: freezeList(pluginCache.inject.nodeProps.text),
+      }),
     }),
     node: Object.freeze({
       containerTypes: freezeList(containerTypes),
-      decoratedMarks: freezeList(decoratedMarks),
-      leafProps: freezeList(leafProps),
-      textMarks: freezeList(textMarks),
-      textProps: freezeList(textProps),
+      leafAttributeMarks: freezeList(leafAttributeMarks),
+      leafRenderers: freezeList(leafRenderers),
+      textAttributeMarks: freezeList(textAttributeMarks),
+      textRenderers: freezeList(textRenderers),
     }),
-    render: Object.freeze({
-      aboveEditable: freezeList(pluginCache.render.aboveEditable),
-      aboveNodes: freezeList(pluginCache.render.aboveNodes),
-      abovePlite: freezeList(pluginCache.render.abovePlite),
-      afterContainer: freezeList(pluginCache.render.afterContainer),
-      afterEditable: freezeList(pluginCache.render.afterEditable),
-      beforeContainer: freezeList(pluginCache.render.beforeContainer),
-      beforeEditable: freezeList(pluginCache.render.beforeEditable),
-      belowNodes: freezeList(pluginCache.render.belowNodes),
-      belowRootNodes: freezeList(pluginCache.render.belowRootNodes),
+    slots: Object.freeze({
+      afterContainer: freezeList(pluginCache.slots.afterContainer),
+      afterEditable: freezeList(pluginCache.slots.afterEditable),
+      afterNodeChildren: freezeList(pluginCache.slots.afterNodeChildren),
+      beforeContainer: freezeList(pluginCache.slots.beforeContainer),
+      beforeEditable: freezeList(pluginCache.slots.beforeEditable),
+      wrapContent: freezeList(pluginCache.slots.wrapContent),
+      wrapNode: freezeList(pluginCache.slots.wrapNode),
+      wrapNodeChildren: freezeList(pluginCache.slots.wrapNodeChildren),
+      wrapRoot: freezeList(pluginCache.slots.wrapRoot),
     }),
     rules: Object.freeze({ match: freezeList(pluginCache.rules.match) }),
     prepareDocument: freezeList(pluginCache.prepareDocument),
-    useHooks: freezeList(pluginCache.useHooks),
+    useViewElementAttributes: freezeList(pluginCache.useViewElementAttributes),
   });
   const shortcutRuntime = snapshotApiValue(
     createPluginShortcuts(
@@ -930,7 +944,6 @@ export const createPlateModelPublication = (
 
   return Object.freeze({
     apiByPlugin,
-    components: Object.freeze(components),
     genericElementToggles,
     identity,
     inputRules: snapshotApiValue(createPluginInputRules(publishedPluginList)),
@@ -1159,7 +1172,8 @@ export const createPlateRuntimeExtensions = (
       binding?.properties.some(
         (property) =>
           property.placement === 'text' &&
-          getCompiledSchemaPropertyId(property) === binding.textPropertyId &&
+          schemaDefinition.handle.property(property).id ===
+            binding.textPropertyId &&
           property.value.kind === 'boolean'
       );
     const definition: EditorExtensionDefinitionInput<Editor> = {
@@ -1181,7 +1195,19 @@ export const createPlateRuntimeExtensions = (
                 for (const contribution of apiContributions) {
                   const value =
                     contribution.kind === 'plate'
-                      ? contribution.value
+                      ? context.editor === editor
+                        ? contribution.value
+                        : Reflect.apply(contribution.factory, undefined, [
+                            Object.create(
+                              createPluginContext(
+                                context.editor as Editor,
+                                plugin
+                              ),
+                              {
+                                api: { value: snapshotApiValue(resolvedApi) },
+                              }
+                            ),
+                          ])
                       : Reflect.apply(contribution.factory, undefined, [
                           context,
                         ]);
@@ -1271,7 +1297,7 @@ export const createPlateRuntimeExtensions = (
       typeof plugin.update === 'function'
         ? {
             update: (context) => {
-              const authoredUpdate =
+              const authoredSource =
                 capabilities.update.length > 0
                   ? resolvePluginCapability(
                       plugin.name,
@@ -1286,11 +1312,18 @@ export const createPlateRuntimeExtensions = (
                       ])
                     : {};
 
-              if (!isApiRecord(authoredUpdate)) {
+              if (!isApiRecord(authoredSource)) {
                 throw new Error(
                   `Plate plugin "${plugin.name}" update factories must return an object.`
                 );
               }
+              const authoredUpdate =
+                capabilities.update.length > 0
+                  ? authoredSource
+                  : (mergePluginCapabilities(
+                      { kind: 'update', owner: plugin.name },
+                      authoredSource
+                    ) as Record<string, unknown>);
               const hasAuthoredToggle =
                 typeof authoredUpdate.toggle === 'function';
               const hasGenericToggle =
@@ -1303,11 +1336,16 @@ export const createPlateRuntimeExtensions = (
                   ? {
                       insert: (
                         properties: Readonly<Record<string, unknown>> = {},
-                        insertOptions?: Readonly<Record<string, unknown>>
+                        insertOptions?: Readonly<Record<string, unknown>> &
+                          Pick<
+                            PlateBlockInsertOptions,
+                            'at' | 'after' | 'replaceEmpty'
+                          >
                       ) => {
                         if (
                           !context.tx.selection() &&
-                          insertOptions?.at === undefined
+                          insertOptions?.at === undefined &&
+                          insertOptions?.after === undefined
                         ) {
                           return;
                         }
@@ -1318,9 +1356,13 @@ export const createPlateRuntimeExtensions = (
 
                         if (
                           context.tx.schema.isBlock(element) &&
-                          insertOptions?.at === undefined
+                          (insertOptions?.at === undefined ||
+                            insertOptions?.after !== undefined)
                         ) {
-                          context.tx.blocks.insertAfter(element, insertOptions);
+                          context.tx.blocks.insertAfter(element, {
+                            ...insertOptions,
+                            at: insertOptions?.after,
+                          });
                           return;
                         }
 
@@ -1391,11 +1433,11 @@ export const createPlateRuntimeExtensions = (
                   : {}),
               };
 
-              return mergePluginCapabilities(
-                { kind: 'update', owner: plugin.name },
-                defaultUpdate,
-                authoredUpdate
-              );
+              for (const method of Object.values(defaultUpdate)) {
+                Object.freeze(method);
+              }
+
+              return Object.freeze({ ...defaultUpdate, ...authoredUpdate });
             },
           }
         : {}),
@@ -1478,10 +1520,13 @@ export const createPlateRuntimeExtensions = (
         ? { schema: model.contributions[plugin.name] }
         : {}),
     };
-    const extension = compileEditorExtension({
-      ...definition,
-      name: plugin.name,
-    });
+    // The resolved graph has no static tuple; its authoring contracts are checked before lowering.
+    const extension = (
+      defineExtension as (
+        name: string,
+        definition: EditorExtensionDefinitionInput<Editor>
+      ) => EditorExtensionReference
+    )(plugin.name, definition);
     const family = getPluginSchemaFamily(plugin);
 
     extensions.push(extension);
@@ -1524,12 +1569,7 @@ export const createPlateRuntimeExtensions = (
         Object.create(null);
 
       pluginList.forEach((plugin) => {
-        const extension =
-          extensionByName.get(plugin.name) ??
-          failInvariant('Expected value to be defined');
-        const candidate = getCandidateEditorExtensionApi(editor, extension)?.[
-          plugin.name
-        ];
+        const candidate = Reflect.get(editor.api, plugin.name);
         const api = isApiRecord(candidate)
           ? candidate
           : (fallbackApiByPlugin.get(plugin.name) ??
@@ -1885,51 +1925,6 @@ export const collectPlatePluginSourceCandidates = (
   return candidates;
 };
 
-const applyComponentOverrides = (
-  plugins: readonly AnyBasePlugin[]
-): BasePlugins => {
-  const componentOverrides: Record<
-    string,
-    { component: unknown; terminal: boolean }
-  > = Object.create(null);
-
-  for (const plugin of plugins) {
-    const { components } = plugin.override as { components?: NodeComponents };
-
-    if (!components) continue;
-    Object.entries(components).forEach(([key, component]) => {
-      if (plugin.name === 'root' || !componentOverrides[key]) {
-        componentOverrides[key] = {
-          component,
-          terminal: plugin.name === 'root',
-        };
-      }
-    });
-  }
-
-  return plugins.map((plugin) => {
-    const override = componentOverrides[plugin.name];
-
-    if (!override || (plugin.render.node && !override.terminal)) {
-      return plugin;
-    }
-
-    return inheritResolvedPluginCapabilities(
-      plugin,
-      brandPluginDescriptor(
-        {
-          ...plugin,
-          render: {
-            ...plugin.render,
-            node: override.component,
-          },
-        },
-        plugin
-      ) as AnyBasePlugin
-    );
-  });
-};
-
 const getPresentNames = (
   nodes: ReadonlyMap<string, PluginGraphNode>,
   rootOriginsByName: ReadonlyMap<string, readonly PluginRootOrigin[]>
@@ -1967,7 +1962,6 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'facetProviders',
   'name',
   'override',
-  'plugins',
   'read',
   'readMiddleware',
   'schema',
@@ -2050,7 +2044,7 @@ const applyWeakPluginOverrides = (
       .sort((a, b) => b.origin.sourceIndex - a.origin.sourceIndex);
 
     for (const contributor of contributors) {
-      const overrides = contributor.resolved.override?.plugins;
+      const overrides = contributor.resolved.override;
 
       if (!overrides) continue;
 
@@ -2509,13 +2503,11 @@ const resolveAndSortPluginsCandidate = (
     );
   }
 
-  const finalPlugins = applyComponentOverrides(ordered);
-
-  finalPlugins.forEach((plugin) => {
+  ordered.forEach((plugin) => {
     setCompiledPlatePluginCandidate(editor, plugin);
   });
 
-  return finalPlugins;
+  return ordered;
 };
 
 export const resolveAndSortPlugins = (

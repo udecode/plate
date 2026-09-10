@@ -1,0 +1,5 @@
+id	repo	local_path	scope	status
+prosemirror-view	ProseMirror view	/Users/zbeyens/git/prosemirror/view	DOM observer, beforeinput, DOM change, composition scheduling	read
+lexical-core	Lexical core	/Users/zbeyens/git/lexical/packages/lexical	Native event handling, update scheduling, text/composition repair	read
+lexical-plain-text	Lexical plain text	/Users/zbeyens/git/lexical/packages/lexical-plain-text	Beforeinput/platform default behavior	read
+lexical-rich-text	Lexical rich text	/Users/zbeyens/git/lexical/packages/lexical-rich-text	Beforeinput/platform default behavior	read

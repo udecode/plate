@@ -3,7 +3,10 @@
   "name": "comment-toolbar-button",
   "title": "Comment Toolbar Button",
   "description": "A toolbar button for adding inline comments.",
-  "dependencies": [],
+  "dependencies": [
+    "lucide-react",
+    "platejs"
+  ],
   "registryDependencies": [
     "https://platejs.org/r/comment.json",
     "https://platejs.org/r/toolbar.json"
@@ -11,7 +14,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/comment-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { useEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { commentPlugin } from '@/registry/components/editor/comment';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditor();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.plugin(commentPlugin).update.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "content": "'use client';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { CommentsPlugin } from 'platejs/comments/react';\nimport {\n  useEditor,\n  useEditorHasSelection,\n  useEditorReadOnly,\n} from 'platejs/react';\n\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditor();\n  const comments = editor.plugin(CommentsPlugin);\n  const readOnly = useEditorReadOnly();\n  const hasSelection = useEditorHasSelection();\n\n  if (!comments.installed) return null;\n\n  const beginComment = () => comments.api.begin();\n\n  return (\n    <ToolbarButton\n      aria-label=\"Comment\"\n      disabled={readOnly || !hasSelection}\n      onClick={beginComment}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/comment-toolbar-button.tsx"
     }
@@ -27,8 +30,7 @@
     ],
     "examples": [
       "discussion-demo",
-      "floating-toolbar-demo",
-      "discussion-pro"
+      "floating-toolbar-demo"
     ]
   },
   "type": "registry:component"

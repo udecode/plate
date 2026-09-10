@@ -50,7 +50,8 @@ const junitFile = join(outputDir, 'junit-fast.xml');
 mkdirSync(outputDir, { recursive: true });
 
 const command = [
-  'tooling/scripts/test-fast.mjs',
+  'tooling/scripts/test-suite.mjs',
+  'fast',
   ...bunArgs,
   '--reporter=junit',
   '--reporter-outfile',

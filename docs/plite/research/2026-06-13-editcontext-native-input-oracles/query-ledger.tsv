@@ -1,0 +1,5 @@
+query_key	query	scope	result
+q1	find EditContext sources	`find ../edit-context -maxdepth 3 -type f`	Found README/explainer/dev-design/WebIDL/demos.
+q2	local source grep	`rg -l "EditContext|editcontext|VirtualKeyboard|composition|selection" ../edit-context ../wpt ../vscode/src/vs/editor/browser/controller/editContext`	Found WPT edit-context tests and VS Code native/textArea editContext controllers.
+q3	WPT edit-context files	`find ../wpt -maxdepth 3 -type f | rg 'edit-context|EditContext|virtualkeyboard|virtual-keyboard|input-events'`	Selected edit-context input, basics, focus, and textformat tests.
+q4	existing research overlap	`rg "EditContext|composition|selection" docs/slate-v2/research`	Found existing IME overlap policy, contenteditable catalog, and WPT editing oracle artifacts; this packet avoids duplicating those rows.

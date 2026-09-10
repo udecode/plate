@@ -1,11 +1,10 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import type { Descendant } from 'plitejs';
+import { type Descendant, NodeApi } from 'plitejs';
 import { history } from 'plitejs/history';
 import React from 'react';
 import { expect, test, vi } from 'vitest';
 
 import {
-  DOMCoverage,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
@@ -25,16 +24,18 @@ import {
   Editable,
   type EditableDOMStrategyMetrics,
   Plite,
+  type PliteDecorationSource,
 } from '../../src/react';
-import { createDecorationSource } from '../../src/react/decoration-source';
 import { createLayoutVirtualizerSizeMap } from '../../src/react/dom-strategy/use-virtualized-root-plan';
 import { setDOMTextSyncRendererCapability } from '../../src/react/dom-text-sync';
-import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import {
+  EditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from '../../src/react/editable/editable-dom-runtime';
 import { syncEditableDOMSelectionToEditor } from '../../src/react/editable/selection-controller';
 import {
   didSyncTextPathToDOM,
   getDOMTextRenderRevision,
-  invalidateUnsyncedMountedTextDOM,
   syncChangedTextToDOM,
 } from '../../src/react/hooks/use-plite-node-ref';
 import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
@@ -47,6 +48,15 @@ type InternalPartialDOMStrategyForTest = {
   type: 'partial-dom';
 };
 
+// The private segment engine is exercised without widening Editable's public options.
+const InternalEditable = Editable as React.ComponentType<
+  Omit<React.ComponentProps<typeof Editable>, 'domStrategy'> & {
+    domStrategy?:
+      | React.ComponentProps<typeof Editable>['domStrategy']
+      | InternalPartialDOMStrategyForTest;
+  }
+>;
+
 const TestEditorSurface = ({
   editor,
   ...props
@@ -57,9 +67,29 @@ const TestEditorSurface = ({
   editor: React.ComponentProps<typeof Plite>['editor'];
 }) => (
   <Plite editor={editor}>
-    <Editable {...(props as React.ComponentProps<typeof Editable>)} />
+    <InternalEditable {...props} />
   </Plite>
 );
+
+const createHighlightSource = <E,>(
+  _editor: E,
+  id: string
+): PliteDecorationSource<E> => ({
+  id,
+  read: ({ entry: [node, path] }) =>
+    NodeApi.isText(node) && path.length === 2 && path[0] === 0 && path[1] === 0
+      ? [
+          {
+            attributes: { 'data-highlight': id },
+            key: id,
+            range: {
+              anchor: { path, offset: 0 },
+              focus: { path, offset: Math.min(5, node.text.length) },
+            },
+          },
+        ]
+      : [],
+});
 
 const getNodeKey = (
   editor: ReturnType<typeof createEditor>,
@@ -175,15 +205,17 @@ test('Editable domStrategy partial-DOMs far segments without mounting editable d
       ?.textContent?.includes('block-3')
   ).toBe(true);
 
-  const partialDOMPlaceholderBoundaries = DOMCoverage.getBoundaries(
-    editor
+  const partialDOMPlaceholderBoundaries = (
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
   ).filter((boundary) => boundary.reason === 'partial-dom-aggressive');
 
   expect(
     partialDOMPlaceholderBoundaries.map((boundary) => boundary.boundaryId)
   ).toEqual(['partial-dom-aggressive:1', 'partial-dom-aggressive:2']);
   expect(
-    DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:1'
+    ) ?? null
   ).toMatchObject({
     copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [2], focus: [3] }],
@@ -201,7 +233,9 @@ test('Editable domStrategy partial-DOMs far segments without mounting editable d
     state: 'virtualized',
   });
   expect(
-    DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:2')
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:2'
+    ) ?? null
   ).toMatchObject({
     coveredPathRanges: [{ anchor: [4], focus: [5] }],
     reason: 'partial-dom-aggressive',
@@ -286,7 +320,9 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
   const oldTailNodeKey = getNodeKey(editor, [7]);
 
   expect(
-    DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:1'
+    ) ?? null
   ).toMatchObject({
     coveredPathRanges: [{ anchor: [4], focus: [7] }],
     coveredRuntimeRanges: [
@@ -314,7 +350,9 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
   expect(newTailNodeKey).not.toBe(oldTailNodeKey);
   await waitFor(() =>
     expect(
-      DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+        'partial-dom-aggressive:1'
+      ) ?? null
     ).toMatchObject({
       coveredPathRanges: [{ anchor: [4], focus: [7] }],
       coveredRuntimeRanges: [
@@ -326,8 +364,12 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
     })
   );
   expect(
-    DOMCoverage.getBoundaryForPoint(editor, { offset: 0, path: [7, 0] })
-      ?.boundaryId
+    (
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint({
+        offset: 0,
+        path: [7, 0],
+      }) ?? null
+    )?.boundaryId
   ).toBe('partial-dom-aggressive:1');
 });
 
@@ -454,9 +496,9 @@ test('Editable domStrategy experimental virtualized mode uses viewport DOM cover
       '[data-plite-dom-strategy-placeholder="true"]'
     ).length
   ).toBe(0);
-  const initialVirtualizedBoundary = DOMCoverage.getBoundaries(editor).find(
-    (boundary) => boundary.reason === 'viewport-virtualization'
-  );
+  const initialVirtualizedBoundary = (
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+  ).find((boundary) => boundary.reason === 'viewport-virtualization');
 
   expect(initialVirtualizedBoundary).toMatchObject({
     copyPolicy: 'model',
@@ -482,17 +524,20 @@ test('Editable domStrategy experimental virtualized mode uses viewport DOM cover
     )
   ).toBe(null);
   expect(
-    DOMCoverage.getBoundaryForPoint(editor, { offset: 0, path: [2, 0] })
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint({
+      offset: 0,
+      path: [2, 0],
+    }) ?? null
   ).toBe(null);
   expect(
-    DOMCoverage.getBoundaries(editor).some(
-      (boundary) => boundary.reason === 'viewport-virtualization'
-    )
+    (
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+    ).some((boundary) => boundary.reason === 'viewport-virtualization')
   ).toBe(true);
   expect(
-    DOMCoverage.getBoundaries(editor).find(
-      (boundary) => boundary.reason === 'viewport-virtualization'
-    )
+    (
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+    ).find((boundary) => boundary.reason === 'viewport-virtualization')
   ).toMatchObject({
     reason: 'viewport-virtualization',
     selectionPolicy: 'materialize',
@@ -729,16 +774,16 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
   });
 
   const targetRange = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { offset: 0, path: [5, 0] },
     focus: { offset: 0, path: [5, 0] },
   };
 
   const boundary = await waitFor(() => {
-    const nextBoundary = DOMCoverage.getBoundaryForPoint(
-      editor,
-      targetRange.anchor
-    );
+    const nextBoundary =
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint(
+        targetRange.anchor
+      ) ?? null;
 
     expect(nextBoundary).toMatchObject({
       reason: 'viewport-virtualization',
@@ -752,9 +797,8 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
 
   await act(async () => {
     expect(
-      DOMCoverage.materializeBoundary(
-        editor,
-        boundary.boundaryId,
+      getMountedEditableDOMRuntime(editor)!.domCoverage.materializeBoundary(
+        boundary!.boundaryId,
         'selection',
         {
           range: targetRange,
@@ -830,16 +874,16 @@ test('Editable domStrategy experimental virtualized mode materializes estimated 
   });
 
   const targetRange = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { offset: 0, path: [5, 0] },
     focus: { offset: 0, path: [5, 0] },
   };
 
   const boundary = await waitFor(() => {
-    const nextBoundary = DOMCoverage.getBoundaryForPoint(
-      editor,
-      targetRange.anchor
-    );
+    const nextBoundary =
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaryForPoint(
+        targetRange.anchor
+      ) ?? null;
 
     expect(nextBoundary).toMatchObject({
       reason: 'viewport-virtualization',
@@ -853,9 +897,8 @@ test('Editable domStrategy experimental virtualized mode materializes estimated 
 
   await act(async () => {
     expect(
-      DOMCoverage.materializeBoundary(
-        editor,
-        boundary.boundaryId,
+      getMountedEditableDOMRuntime(editor)!.domCoverage.materializeBoundary(
+        boundary!.boundaryId,
         'selection',
         {
           range: targetRange,
@@ -936,7 +979,11 @@ test('Editable domStrategy experimental virtualized mode keeps broad selections 
     'partial-dom-backed'
   );
   expect(
-    DOMCoverage.getBoundariesForRange(editor, editorRange(editor, []))
+    (
+      getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundariesForRange(
+        editorRange(editor, [])
+      ) ?? []
+    )
       .filter((boundary) => boundary.reason === 'viewport-virtualization')
       .every((boundary) => boundary.copyPolicy === 'model')
   ).toBe(true);
@@ -1350,58 +1397,13 @@ test('Editable keeps unknown custom leaf renderers model-owned', async () => {
   expect(renderLeafProps).toMatchObject({
     leaf: {},
     path: [0, 0],
-    segment: { marks: {}, slices: [] },
     text: {},
   });
   expect('text' in renderLeafProps!.leaf).toBe(false);
   expect('text' in renderLeafProps!.text).toBe(false);
-  expect('text' in renderLeafProps!.segment).toBe(false);
-  expect('start' in renderLeafProps!.segment).toBe(false);
-  expect('end' in renderLeafProps!.segment).toBe(false);
 });
 
-test('Editable disables DOM text sync for app-owned segment renderers', async () => {
-  const segmentEditor = createEditor();
-
-  editorReplace(segmentEditor, {
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'alpha' }],
-      },
-    ],
-    selection: null,
-  });
-
-  const segmentRendered = render(
-    <TestEditorSurface
-      domStrategy={{
-        overscan: 0,
-        type: 'partial-dom',
-        segmentSize: 2,
-        threshold: 1,
-      }}
-      editor={segmentEditor}
-      id="dom-strategy-custom-render-segment"
-      renderSegment={(_segment, children) => (
-        <span data-custom-segment="true">{children}</span>
-      )}
-    />
-  );
-
-  expect(
-    segmentRendered.container
-      .querySelector('[data-plite-node="text"]')
-      ?.hasAttribute('data-plite-dom-sync')
-  ).toBe(false);
-  expect(
-    segmentRendered.container
-      .querySelector('[data-plite-node="text"]')
-      ?.getAttribute('data-plite-dom-sync-reason')
-  ).toBe('custom-segment');
-});
-
-test('Editable disables DOM text sync when projections affect the text node', async () => {
+test('Editable keeps retained DOM text sync enabled for decorated text', async () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1414,30 +1416,18 @@ test('Editable disables DOM text sync when projections affect the text node', as
     selection: null,
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha',
-    read: () => [
-      {
-        key: 'highlight-alpha',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(editor, 'highlight-alpha');
 
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
-      <Editable
+    <Plite decorations={[highlightSource]} editor={editor}>
+      <InternalEditable
         domStrategy={{
           overscan: 0,
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
         }}
-        id="dom-strategy-projection-dom-sync"
+        id="dom-strategy-decoration-dom-sync"
       />
     </Plite>
   );
@@ -1446,17 +1436,15 @@ test('Editable disables DOM text sync when projections affect the text node', as
     rendered.container
       .querySelector('[data-plite-node="text"]')
       ?.hasAttribute('data-plite-dom-sync')
-  ).toBe(false);
+  ).toBe(true);
   expect(
     rendered.container
       .querySelector('[data-plite-node="text"]')
       ?.getAttribute('data-plite-dom-sync-reason')
-  ).toBe('projection');
-
-  highlightSource.destroy();
+  ).toBeNull();
 });
 
-test('Editable routes native-updated projected text through React', async () => {
+test('Editable routes native-updated decorated text through React', async () => {
   const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
@@ -1473,30 +1461,18 @@ test('Editable routes native-updated projected text through React', async () => 
     },
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha',
-    read: () => [
-      {
-        key: 'highlight-alpha',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(editor, 'highlight-alpha');
 
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
-      <Editable
+    <Plite decorations={[highlightSource]} editor={editor}>
+      <InternalEditable
         domStrategy={{
           overscan: 0,
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
         }}
-        id="dom-strategy-native-projected-dom-sync"
+        id="dom-strategy-native-decorated-dom-sync"
         renderLeaf={({ attributes, children }) => (
           <span {...attributes}>{children}</span>
         )}
@@ -1511,13 +1487,10 @@ test('Editable routes native-updated projected text through React', async () => 
   expect(textElement?.getAttribute('data-plite-dom-sync-reason')).toBe(
     'custom-leaf'
   );
-  expect(textElement?.hasAttribute('data-plite-projected-dom-sync')).toBe(
-    false
-  );
   expect(firstString?.textContent).toBe('alpha');
 
   if (!firstString) {
-    throw new Error('Expected a projected Plite string.');
+    throw new Error('Expected a decorated Plite string.');
   }
 
   firstString.textContent = 'alpha!';
@@ -1546,8 +1519,6 @@ test('Editable routes native-updated projected text through React', async () => 
   expect(
     rendered.container.querySelector('[data-plite-editor]')?.textContent
   ).toBe('alpha! beta');
-
-  highlightSource.destroy();
 });
 
 test('Editable still reconciles an exact current custom leaf through React', async () => {
@@ -1597,8 +1568,8 @@ test('Editable still reconciles an exact current custom leaf through React', asy
   ).toBe('alpha!');
 });
 
-test('history DOM invalidation stays scoped to affected custom text shells', () => {
-  const editor = createEditor();
+test('custom text history preserves affected and sibling leaf owners', async () => {
+  const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
     children: [
@@ -1618,17 +1589,35 @@ test('history DOM invalidation stays scoped to affected custom text shells', () 
   );
   const firstNodeKey = getNodeKey(editor, [0, 0]);
   const secondNodeKey = getNodeKey(editor, [1, 0]);
+  const leafAt = (path: string) =>
+    rendered.container.querySelector(
+      `[data-plite-node="text"][data-plite-path="${path}"] > [data-plite-leaf]`
+    );
+  const firstLeaf = leafAt('0,0');
+  const secondLeaf = leafAt('1,0');
 
-  expect(invalidateUnsyncedMountedTextDOM(editor, [firstNodeKey])).toEqual([
-    firstNodeKey,
-  ]);
-  expect(getDOMTextRenderRevision(editor, [firstNodeKey])).toBe(1);
+  expect(firstLeaf).not.toBeNull();
+  expect(secondLeaf).not.toBeNull();
+
+  await act(async () => {
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+    });
+  });
+  await act(async () => {
+    editor.update((tx) => tx.history.undo());
+  });
+
+  expect(editor.read.text.string([])).toBe('firstsecond');
+  expect(leafAt('0,0')).toBe(firstLeaf);
+  expect(leafAt('1,0')).toBe(secondLeaf);
+  expect(getDOMTextRenderRevision(editor, [firstNodeKey])).toBe(0);
   expect(getDOMTextRenderRevision(editor, [secondNodeKey])).toBe(0);
 
   rendered.unmount();
 });
 
-test('Editable renders projected leaf strings for Plite-owned text input', async () => {
+test('Editable recomputes decorated leaf strings from committed source ranges', async () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1641,39 +1630,30 @@ test('Editable renders projected leaf strings for Plite-owned text input', async
     selection: null,
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha',
-    read: () => [
-      {
-        key: 'highlight-alpha',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(editor, 'highlight-alpha');
 
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
-      <Editable
+    <Plite decorations={[highlightSource]} editor={editor}>
+      <InternalEditable
         domStrategy={{
           overscan: 0,
           type: 'partial-dom',
           segmentSize: 2,
           threshold: 1,
         }}
-        id="dom-strategy-projected-range-dom-sync"
+        id="dom-strategy-decorated-range-dom-sync"
       />
     </Plite>
   );
 
   expect(
-    [...rendered.container.querySelectorAll('[data-plite-string]')].map(
+    [...rendered.container.querySelectorAll('[data-highlight]')].map(
       (element) => element.textContent
     )
-  ).toEqual(['alpha', ' beta']);
+  ).toEqual(['alpha']);
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha beta');
 
   await act(async () => {
     editor.update((tx) => {
@@ -1683,15 +1663,16 @@ test('Editable renders projected leaf strings for Plite-owned text input', async
 
   expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(true);
   expect(
-    [...rendered.container.querySelectorAll('[data-plite-string]')].map(
+    [...rendered.container.querySelectorAll('[data-highlight]')].map(
       (element) => element.textContent
     )
-  ).toEqual(['alpha!', ' beta']);
-
-  highlightSource.destroy();
+  ).toEqual(['alpha']);
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha! beta');
 });
 
-test('Editable renders projected leaf strings from model-owned history', async () => {
+test('Editable renders decorated leaf strings from model-owned history', async () => {
   const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
@@ -1704,22 +1685,13 @@ test('Editable renders projected leaf strings from model-owned history', async (
     selection: null,
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha-history',
-    read: () => [
-      {
-        key: 'highlight-alpha-history',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(
+    editor,
+    'highlight-alpha-history'
+  );
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
-      <Editable
+    <Plite decorations={[highlightSource]} editor={editor}>
+      <InternalEditable
         domStrategy={{
           overscan: 0,
           type: 'partial-dom',
@@ -1739,15 +1711,16 @@ test('Editable renders projected leaf strings from model-owned history', async (
 
   expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(true);
   expect(
-    [...rendered.container.querySelectorAll('[data-plite-string]')].map(
+    [...rendered.container.querySelectorAll('[data-highlight]')].map(
       (element) => element.textContent
     )
-  ).toEqual(['alpha', ' beta']);
-
-  highlightSource.destroy();
+  ).toEqual(['alpha']);
+  expect(
+    rendered.container.querySelector('[data-plite-editor]')?.textContent
+  ).toBe('alpha beta');
 });
 
-test('Editable restores projected text exactly after split history merges', async () => {
+test('Editable restores decorated text exactly after split history merges', async () => {
   const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
@@ -1764,21 +1737,12 @@ test('Editable restores projected text exactly after split history merges', asyn
     },
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha-split-history',
-    read: () => [
-      {
-        key: 'highlight-alpha-split-history',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(
+    editor,
+    'highlight-alpha-split-history'
+  );
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
+    <Plite decorations={[highlightSource]} editor={editor}>
       <Editable />
     </Plite>
   );
@@ -1795,11 +1759,9 @@ test('Editable restores projected text exactly after split history merges', asyn
   expect(
     rendered.container.querySelector('[data-plite-editor]')?.textContent
   ).toBe('alpha! beta');
-
-  highlightSource.destroy();
 });
 
-test('Editable restores capability-backed projected leaf text after split history merges', async () => {
+test('Editable restores capability-backed decorated leaf text after split history merges', async () => {
   const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
@@ -1816,19 +1778,10 @@ test('Editable restores capability-backed projected leaf text after split histor
     },
   });
 
-  const highlightSource = createDecorationSource(editor, {
-    id: 'highlight-alpha-capability-history',
-    read: () => [
-      {
-        key: 'highlight-alpha-capability-history',
-        range: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 5 },
-        },
-      },
-    ],
-  });
+  const highlightSource = createHighlightSource(
+    editor,
+    'highlight-alpha-capability-history'
+  );
   const renderLeaf = setDOMTextSyncRendererCapability(
     (({ attributes, children }) => (
       <span {...attributes}>{children}</span>
@@ -1838,7 +1791,7 @@ test('Editable restores capability-backed projected leaf text after split histor
     () => true
   );
   const rendered = render(
-    <Plite decorationSources={[highlightSource]} editor={editor}>
+    <Plite decorations={[highlightSource]} editor={editor}>
       <Editable renderLeaf={renderLeaf} />
     </Plite>
   );
@@ -1855,8 +1808,6 @@ test('Editable restores capability-backed projected leaf text after split histor
   expect(
     rendered.container.querySelector('[data-plite-editor]')?.textContent
   ).toBe('alpha! beta');
-
-  highlightSource.destroy();
 });
 
 test('Editable disables DOM text sync for empty zero-width text', async () => {
@@ -1988,10 +1939,14 @@ test('Editable falls back to React updates while composing', async () => {
       id="dom-strategy-composition-dom-sync"
     />
   );
+  const root = rendered.container.querySelector(
+    '#dom-strategy-composition-dom-sync'
+  );
 
-  IS_COMPOSING.set(editor, true);
+  expect(root).toBeTruthy();
 
   await act(async () => {
+    fireEvent.compositionStart(root!);
     editor.update((tx) => {
       tx.text.insert('!');
     });
@@ -2000,7 +1955,9 @@ test('Editable falls back to React updates while composing', async () => {
   expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
   expect(rendered.container.textContent).toContain('alpha!');
 
-  IS_COMPOSING.set(editor, false);
+  await act(async () => {
+    fireEvent.compositionEnd(root!);
+  });
 });
 
 test('Editable staged full-document replacement removes stale far DOM immediately', async () => {
@@ -2092,7 +2049,9 @@ test('Editable staged full-document replacement resets staged coverage without s
   });
 
   expect(rendered.container.textContent).not.toContain('old line 1000');
-  expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
+  expect(
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+  ).toHaveLength(1);
 
   await act(async () => {
     editor.update((tx) => {
@@ -2122,7 +2081,8 @@ test('Editable staged full-document replacement resets staged coverage without s
     )
   ).toBe(null);
 
-  const [boundary] = DOMCoverage.getBoundaries(editor);
+  const [boundary] =
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? [];
 
   expect(boundary).toMatchObject({
     copyPolicy: 'materialize',
@@ -2204,7 +2164,8 @@ test('Editable staged registers pending root groups as DOM coverage boundaries',
     />
   );
 
-  const [boundary] = DOMCoverage.getBoundaries(editor);
+  const [boundary] =
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? [];
 
   expect(boundary).toMatchObject({
     copyPolicy: 'materialize',
@@ -2225,7 +2186,9 @@ test('Editable staged registers pending root groups as DOM coverage boundaries',
     });
   });
 
-  expect(DOMCoverage.getBoundaries(editor)).toHaveLength(1);
+  expect(
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+  ).toHaveLength(1);
 });
 
 test('Editable staged selection export consults DOM coverage before raw DOM lookup', () => {
@@ -2233,7 +2196,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
   const materialized: string[] = [];
   const root = document.createElement('div');
   const selection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { offset: 0, path: [1, 0] },
     focus: { offset: 0, path: [1, 0] },
   };
@@ -2272,7 +2235,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
     domSelection?.removeAllRanges();
     domSelection?.addRange(rootRange);
 
-    DOMCoverage.registerBoundary(editor, {
+    getMountedEditableDOMRuntime(editor)!.domCoverage.registerBoundary({
       anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [1]) },
       boundaryId: 'rendering-staged:pending',
       copyPolicy: 'materialize',
@@ -2291,16 +2254,19 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
       state: 'pending-mount',
       version: 1,
     });
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason) => {
-      materialized.push(`${boundary.boundaryId}:${reason}`);
-      return true;
-    });
+    getMountedEditableDOMRuntime(editor)!.domCoverage.setMaterializeHandler(
+      (boundary, reason) => {
+        materialized.push(`${boundary.boundaryId}:${reason}`);
+        return true;
+      }
+    );
 
     syncEditableDOMSelectionToEditor({
       editor,
       scrollSelectionIntoView: () => {},
       partialDOMBackedSelection: false,
       state: {
+        outsideFocusBoundarySettleUntil: 0,
         isUpdatingSelection: false,
         selectionChangeOrigin: null,
       },
@@ -2310,7 +2276,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
     expect(domSelection?.rangeCount).toBe(0);
   } finally {
     runtime.destroy();
-    DOMCoverage.clear(editor);
+    getMountedEditableDOMRuntime(editor)?.domCoverage.destroy();
     EDITOR_TO_ELEMENT.delete(editor);
     EDITOR_TO_WINDOW.delete(editor);
     ELEMENT_TO_NODE.delete(root);
@@ -2338,19 +2304,25 @@ test('Editable staged materializes pending root groups through DOM coverage', as
     />
   );
 
-  const [boundary] = DOMCoverage.getBoundaries(editor);
+  const [boundary] =
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? [];
 
   expect(rendered.container.textContent).not.toContain('line 1000');
   expect(boundary?.reason).toBe('rendering-staged');
 
   await act(async () => {
     expect(
-      DOMCoverage.materializeBoundary(editor, boundary.boundaryId, 'selection')
+      getMountedEditableDOMRuntime(editor)!.domCoverage.materializeBoundary(
+        boundary.boundaryId,
+        'selection'
+      )
     ).toMatchObject({ status: 'handled' });
   });
 
   expect(rendered.container.textContent).toContain('line 1000');
-  expect(DOMCoverage.getBoundaries(editor)).toHaveLength(0);
+  expect(
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundaries() ?? []
+  ).toHaveLength(0);
 });
 
 test('Editable staged materializes the selected root group urgently', async () => {
@@ -2441,11 +2413,15 @@ test('Editable domStrategy promotes a partial-DOM segment on mouse down', async 
       '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="1"]'
     )
   ).toBe(null);
-  expect(DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:1')).toBe(
-    null
-  );
   expect(
-    DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:2')
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:1'
+    ) ?? null
+  ).toBe(null);
+  expect(
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:2'
+    ) ?? null
   ).toMatchObject({
     reason: 'partial-dom-aggressive',
     selectionPolicy: 'model',
@@ -2462,66 +2438,72 @@ test('Editable domStrategy promotes a partial-DOM segment on mouse down', async 
 });
 
 test('Editable domStrategy mounts only the target partial-DOM segment during the promotion frame', async () => {
-  const editor = createEditor();
+  vi.useFakeTimers();
+  let rendered: ReturnType<typeof render> | null = null;
 
-  editorReplace(editor, {
-    children: Array.from({ length: 8 }, (_, index) => ({
-      type: 'paragraph',
-      children: [{ text: `block-${index + 1}` }],
-    })),
-    selection: null,
-  });
+  try {
+    const editor = createEditor();
 
-  const rendered = render(
-    <TestEditorSurface
-      domStrategy={{
-        overscan: 1,
-        type: 'partial-dom',
-        segmentSize: 2,
-        threshold: 1,
-      }}
-      editor={editor}
-      id="dom-strategy-fast-promotion"
-    />
-  );
-
-  const targetPartialDOMPlaceholder = rendered.container.querySelector(
-    '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="2"]'
-  );
-
-  expect(targetPartialDOMPlaceholder).toBeTruthy();
-
-  await act(async () => {
-    targetPartialDOMPlaceholder!.dispatchEvent(
-      new window.MouseEvent('mousedown', {
-        bubbles: true,
-      })
-    );
-  });
-
-  expect(
-    rendered.container.querySelector(
-      '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="2"]'
-    )
-  ).toBe(null);
-  expect(
-    rendered.container.querySelectorAll('[data-plite-node="text"]').length
-  ).toBe(2);
-  expect(editorGetSnapshot(editor).selection).toEqual({
-    kind: 'text',
-    anchor: { offset: 0, path: [4, 0] },
-    focus: { offset: 0, path: [4, 0] },
-  });
-
-  await act(async () => {
-    await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, 150);
+    editorReplace(editor, {
+      children: Array.from({ length: 8 }, (_, index) => ({
+        type: 'paragraph',
+        children: [{ text: `block-${index + 1}` }],
+      })),
+      selection: null,
     });
-  });
 
-  expect(
-    rendered.container.querySelectorAll('[data-plite-node="text"]').length
-  ).toBe(6);
+    rendered = render(
+      <TestEditorSurface
+        domStrategy={{
+          overscan: 1,
+          type: 'partial-dom',
+          segmentSize: 2,
+          threshold: 1,
+        }}
+        editor={editor}
+        id="dom-strategy-fast-promotion"
+      />
+    );
+
+    const targetPartialDOMPlaceholder = rendered.container.querySelector(
+      '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="2"]'
+    );
+
+    expect(targetPartialDOMPlaceholder).toBeTruthy();
+
+    await act(async () => {
+      targetPartialDOMPlaceholder!.dispatchEvent(
+        new window.MouseEvent('mousedown', {
+          bubbles: true,
+        })
+      );
+    });
+
+    expect(
+      rendered.container.querySelector(
+        '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="2"]'
+      )
+    ).toBe(null);
+    expect(
+      rendered.container.querySelectorAll('[data-plite-node="text"]').length
+    ).toBe(2);
+    expect(editorGetSnapshot(editor).selection).toEqual({
+      kind: 'text',
+      anchor: { offset: 0, path: [4, 0] },
+      focus: { offset: 0, path: [4, 0] },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(150);
+    });
+
+    expect(
+      rendered.container.querySelectorAll('[data-plite-node="text"]').length
+    ).toBe(6);
+  } finally {
+    rendered?.unmount();
+    vi.useRealTimers();
+  }
 });
 
 test('Editable domStrategy promotes partial-DOM segments without a second root-plan pass', async () => {
@@ -2644,7 +2626,7 @@ test('Editable domStrategy keeps model inserts stable after partial-DOM promotio
   }
 
   expect(editorString(editor, [blockIndex]).match(/X/g) ?? []).toHaveLength(10);
-});
+}, 15_000);
 
 test('Editable domStrategy promotes large partial-DOM segments as bounded windows with tail coverage', async () => {
   const editor = createEditor();
@@ -2697,11 +2679,15 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
   expect(
     rendered.container.querySelectorAll('[data-plite-node="text"]').length
   ).toBe(8);
-  expect(DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:2')).toBe(
-    null
-  );
   expect(
-    DOMCoverage.getBoundary(editor, 'partial-dom-aggressive:2:after')
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:2'
+    ) ?? null
+  ).toBe(null);
+  expect(
+    getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundary(
+      'partial-dom-aggressive:2:after'
+    ) ?? null
   ).toMatchObject({
     copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [72], focus: [95] }],

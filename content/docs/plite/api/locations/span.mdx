@@ -1,24 +1,25 @@
 ---
 title: "Span API"
-description: "Element-bound span helper API."
+description: "Path-based span helper API."
 ---
 
-A `Span` is a low-level way to refer to a `Range` using `Element` as the end points instead of a `Point` which requires the use of leaf text nodes.
+A `Span` identifies its endpoints with two node paths. Unlike a `Range`, it
+does not store text offsets.
 
 ## Type
 
 ```typescript
-type Span = [Path, Path];
+type Span = readonly [Path, Path];
 ```
 
-## On This Page
+## On this page
 
 - [Static methods](span#static-methods)
   - [Check methods](span#check-methods)
 
-## Static Methods
+## Static methods
 
-### Check Methods
+### Check methods
 
 #### `SpanApi.isSpan(value: unknown) => value is Span`
 

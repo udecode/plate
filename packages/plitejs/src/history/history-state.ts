@@ -8,6 +8,10 @@ import {
   type Value,
 } from '..';
 import {
+  type AnchorHistoryRecovery,
+  mapAnchorHistoryRecovery,
+} from '../core/anchor-state';
+import {
   failInvariant,
   type AnyEditor,
   areEditorSchemaIdentitiesEqual,
@@ -33,12 +37,14 @@ type MappingJournal<V extends Value> = Readonly<{
 }>;
 
 type HistoryBranch<V extends Value> = Readonly<{
+  anchorCeiling: number;
   base: EditorDocumentValue<V>;
   batch: Batch<V>;
   depth: number;
   group: HistoryBatchGroup | null;
   mappings: MappingJournal<V> | null;
   next: HistoryBranch<V> | null;
+  recovery: AnchorHistoryRecovery | null;
 }>;
 
 type HistoryStore<V extends Value> = Readonly<{
@@ -186,15 +192,19 @@ const branch = <V extends Value>(
   base: EditorDocumentValue<V>,
   next: HistoryBranch<V> | null,
   mappings: MappingJournal<V> | null = null,
-  group: HistoryBatchGroup | null = null
+  group: HistoryBatchGroup | null = null,
+  recovery: AnchorHistoryRecovery | null = null,
+  anchorCeiling = 0
 ): HistoryBranch<V> =>
   Object.freeze({
+    anchorCeiling,
     base,
     batch: freezeBatch(batch),
     depth: (next?.depth ?? 0) + 1,
     group,
     mappings,
     next,
+    recovery,
   });
 
 const clipBranch = <V extends Value>(
@@ -214,7 +224,15 @@ const clipBranch = <V extends Value>(
 
   let clipped: HistoryBranch<V> | null = null;
   for (const item of kept.toReversed()) {
-    clipped = branch(item.batch, item.base, clipped, item.mappings, item.group);
+    clipped = branch(
+      item.batch,
+      item.base,
+      clipped,
+      item.mappings,
+      item.group,
+      item.recovery,
+      item.anchorCeiling
+    );
   }
 
   return clipped;
@@ -225,8 +243,19 @@ const pushBranch = <V extends Value>(
   batchValue: Batch<V>,
   base: EditorDocumentValue<V>,
   maxDepth: number,
-  group: HistoryBatchGroup | null = null
-) => branch(batchValue, base, clipBranch(value, maxDepth - 1), null, group);
+  group: HistoryBatchGroup | null = null,
+  recovery: AnchorHistoryRecovery | null = null,
+  anchorCeiling = 0
+) =>
+  branch(
+    batchValue,
+    base,
+    clipBranch(value, maxDepth - 1),
+    null,
+    group,
+    recovery,
+    anchorCeiling
+  );
 
 const addMapping = <V extends Value>(
   value: HistoryBranch<V> | null,
@@ -275,6 +304,7 @@ const resolveHead = <V extends Value>(
   let batchBase = value.base;
   let batchValue = value.batch;
   let { next } = value;
+  let { recovery } = value;
 
   for (const mapping of journalEntries(value.mappings)) {
     const nextBase = batchValue.change.apply(batchBase);
@@ -293,6 +323,21 @@ const resolveHead = <V extends Value>(
     };
     const mappedBatchBase = mapping.change.apply(batchBase);
     const mappedNextBase = transformed.b.apply(nextBase);
+
+    recovery = mapAnchorHistoryRecovery(
+      recovery,
+      'after',
+      mapping.change,
+      batchBase,
+      mappedBatchBase
+    );
+    recovery = mapAnchorHistoryRecovery(
+      recovery,
+      'before',
+      transformed.b,
+      nextBase,
+      mappedNextBase
+    );
 
     batchValue = freezeBatch<V>({
       ...batchValue,
@@ -331,7 +376,15 @@ const resolveHead = <V extends Value>(
 
   if (batchValue.change.empty && batchValue.effects.length === 0) return next;
 
-  return branch<V>(batchValue, batchBase, next);
+  return branch<V>(
+    batchValue,
+    batchBase,
+    next,
+    null,
+    null,
+    recovery,
+    value.anchorCeiling
+  );
 };
 
 const resolveTop = <V extends Value>(
@@ -351,9 +404,11 @@ const resolveAll = <V extends Value>(
 ) => {
   const newest: Array<
     Readonly<{
+      anchorCeiling: number;
       base: EditorDocumentValue<V>;
       batch: Batch<V>;
       group: HistoryBatchGroup | null;
+      recovery: AnchorHistoryRecovery | null;
     }>
   > = [];
   let current = value;
@@ -362,9 +417,11 @@ const resolveAll = <V extends Value>(
     current = resolveTop(editor, current);
     if (!current) break;
     newest.push({
+      anchorCeiling: current.anchorCeiling,
       base: current.base,
       batch: current.batch,
       group: current.group,
+      recovery: current.recovery,
     });
     current = current.next;
   }
@@ -373,7 +430,15 @@ const resolveAll = <V extends Value>(
   for (let index = newest.length - 1; index >= 0; index--) {
     const entry = newest[index];
 
-    resolved = branch(entry.batch, entry.base, resolved, null, entry.group);
+    resolved = branch(
+      entry.batch,
+      entry.base,
+      resolved,
+      null,
+      entry.group,
+      entry.recovery,
+      entry.anchorCeiling
+    );
   }
 
   return {
@@ -477,7 +542,13 @@ export const peekHistoryEntry = <V extends Value>(
   }
 
   return resolved
-    ? Object.freeze({ batch: resolved.batch, group: resolved.group })
+    ? Object.freeze({
+        anchorCeiling: resolved.anchorCeiling,
+        base: resolved.base,
+        batch: resolved.batch,
+        group: resolved.group,
+        recovery: resolved.recovery,
+      })
     : undefined;
 };
 
@@ -491,8 +562,10 @@ export const writeHistory = <V extends Value>(
   stack: HistoryStack,
   batchValue: Batch<V>,
   options: Readonly<{
+    anchorCeiling?: number;
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
+    recovery?: AnchorHistoryRecovery | null;
   }> = {}
 ) => {
   const store = getStore(editor);
@@ -503,7 +576,9 @@ export const writeHistory = <V extends Value>(
       batchValue,
       editor.read.value(),
       store.maxDepth,
-      options.group ?? null
+      options.group ?? null,
+      options.recovery ?? null,
+      options.anchorCeiling ?? 0
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -514,8 +589,10 @@ export const replaceHistoryHead = <V extends Value>(
   stack: HistoryStack,
   batchValue: Batch<V>,
   options: Readonly<{
+    anchorCeiling?: number;
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
+    recovery?: AnchorHistoryRecovery | null;
   }> = {}
 ) => {
   const store = getStore(editor);
@@ -529,7 +606,9 @@ export const replaceHistoryHead = <V extends Value>(
       editor.read.value(),
       resolved.next,
       null,
-      options.group ?? null
+      options.group ?? null,
+      options.recovery ?? null,
+      options.anchorCeiling ?? resolved.anchorCeiling
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -568,7 +647,9 @@ export const completeHistoryAction = <V extends Value>(
       batchValue,
       current,
       store.maxDepth,
-      resolved.group
+      resolved.group,
+      resolved.recovery,
+      resolved.anchorCeiling
     ),
     [source]: nextSource,
     ...(discardRedos ? { redos: null } : {}),

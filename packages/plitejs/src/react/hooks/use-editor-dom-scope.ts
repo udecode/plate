@@ -1,13 +1,13 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-import type { Editor, NamedRootKey, RootKey } from '../..';
+import type { NamedRootKey, RootKey } from '../..';
 import type { DOMApi } from '../../dom';
 import {
   setEditorDOMScrollElement,
   subscribeEditorDOMScope,
 } from '../../dom/internal';
 
-type DOMScopeEditor = Editor<any, any> & {
+type DOMScopeEditor = {
   api: {
     dom: Pick<DOMApi, 'editable' | 'root' | 'scroll'>;
   };

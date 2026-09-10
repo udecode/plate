@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
@@ -50,6 +51,7 @@ const plugins = [
   BaseParagraphPlugin,
 
   createExampleComboboxPlugin('exampleCombobox1', {
+    triggerQuery: null,
     trigger: readonlyTriggers,
     triggerPreviousCharPattern: /^$|^[\s"']$/,
     createComboboxInput: (trigger) => ({
@@ -60,6 +62,7 @@ const plugins = [
   }),
 
   createExampleComboboxPlugin('exampleCombobox2', {
+    triggerQuery: null,
     trigger: ':',
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
@@ -73,6 +76,8 @@ const plugins = [
 const RegexComboboxPlugin = defineBasePlugin('regexCombobox', {
   dependencies: [ExampleComboboxInputPlugin],
   initialState: {
+    createComboboxInput: null,
+    triggerQuery: null,
     trigger: /[@#]/,
     triggerPreviousCharPattern: /^$|^[\s"']$/,
   },

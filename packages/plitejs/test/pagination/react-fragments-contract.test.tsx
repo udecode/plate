@@ -2,16 +2,21 @@ import { afterAll, describe, expect, it } from 'bun:test';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { render } from '@testing-library/react';
-import { createEditor, type RenderElementProps, Plite } from 'plitejs/react';
+import {
+  createEditor,
+  type RenderElementProps,
+  Plite,
+  useElementPath,
+} from 'plitejs/react';
 
 import {
   createEstimatedPageLayoutEngine,
   createPlitePage,
-  createPlitePageLayout,
+  createPliteLayout,
 } from '../../src/pagination';
 import {
   PagedEditable,
-  usePliteLayoutFragments,
+  usePliteLayoutFragmentsAtPath,
 } from '../../src/pagination/react';
 
 const registeredDom = typeof document === 'undefined';
@@ -26,7 +31,7 @@ afterAll(() => {
   }
 });
 
-describe('usePliteLayoutFragments', () => {
+describe('usePliteLayoutFragmentsAtPath', () => {
   it('reads current element fragments without a render-prop path', () => {
     const rows = Array.from({ length: 4 }, (_, rowIndex) => ({
       type: 'table-row',
@@ -46,7 +51,7 @@ describe('usePliteLayoutFragments', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path, pageSettings }) {
         if (element.type !== 'table') {
@@ -107,7 +112,7 @@ describe('usePliteLayoutFragments', () => {
 });
 
 const TableProbe = ({ attributes, children }: RenderElementProps) => {
-  const fragments = usePliteLayoutFragments();
+  const fragments = usePliteLayoutFragmentsAtPath(useElementPath());
 
   return (
     <div

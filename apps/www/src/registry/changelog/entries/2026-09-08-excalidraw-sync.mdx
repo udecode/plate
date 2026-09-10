@@ -1,0 +1,12 @@
+---
+id: 2026-09-08-excalidraw-sync
+date: 2026-09-08
+status: draft
+kind: wiring
+summary: 'Synchronize drawing scenes with document changes'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+- **`excalidraw`**: Use `useExcalidrawSync` to apply document changes and undo to the canvas, save referenced images, and exclude transient canvas state from document writes. Keep lazy loading and presentation in the copied element.

@@ -1,9 +1,9 @@
 ---
 title: Resizable
-description: \platejs/react 的 API 参考文档。
+description: platejs/resizable/react 的 API 参考文档。
 ---
 
-`platejs/react` 导出两个 headless React 组件和长度工具。包负责指针、
+`platejs/resizable/react` 导出两个 headless React 组件及其类型。包负责指针、
 触摸、键盘、RTL、ARIA 和临时 resize 状态；registry 组件负责样式和编辑器
 持久化。
 
@@ -17,30 +17,34 @@ npm install platejs @tanstack/react-virtual
 
 ```tsx
 import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useEditor } from 'platejs/react';
-import { Image } from 'platejs/react';
+import { PlateElement, useEditor, usePath } from 'platejs/react';
 import { ImagePlugin } from 'platejs/media/react';
 import { Resizable, ResizeHandle } from 'platejs/resizable/react';
 
 export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
   const editor = useEditor();
+  const path = usePath();
 
   return (
     <PlateElement {...props}>
-      <Resizable
-        align="center"
-        width={props.element.width}
-        onResizeEnd={(width) =>
-          editor.plugin(ImagePlugin).update.set(
-            { width },
-            { at: props.element }
-          )
-        }
-      >
-        <ResizeHandle direction="left" />
-        <Image alt={props.element.alt} />
-        <ResizeHandle direction="right" />
-      </Resizable>
+      <div contentEditable={false}>
+        <Resizable
+          align="center"
+          minWidth={120}
+          width={props.element.width}
+          onResizeEnd={(width) =>
+            editor.plugin(ImagePlugin).update.set({ width }, { at: path })
+          }
+        >
+          <ResizeHandle direction="left" />
+          <img
+            alt={props.element.alt}
+            src={props.element.url}
+            style={{ width: '100%' }}
+          />
+          <ResizeHandle direction="right" />
+        </Resizable>
+      </div>
       {props.children}
     </PlateElement>
   );
@@ -61,7 +65,7 @@ provider 或原始 resize store。
     最大宽度。默认为 `100%`。
   </APIItem>
   <APIItem name="minWidth" type="ResizeLength" optional>
-    最小宽度。默认为 `92`。
+    最小宽度。默认为 `0`。
   </APIItem>
   <APIItem name="onResizeEnd" type="(width: ResizeLength) => void" optional>
     将最终宽度提交给功能所有者。
@@ -88,16 +92,14 @@ provider 或原始 resize store。
 </APIOptions>
 </API>
 
-Handle 渲染为 `slider`，只读模式下不渲染，拖动期间监听 `window`，并支持
-方向键。按住 Shift 可使用更大的键盘步长。
+Handle 渲染为 `slider`，只读模式下不渲染，拖动期间监听元素所属的窗口，并支持
+方向键。按住 Shift 可使用更大的键盘步长。指针取消、窗口失焦、组件卸载、只读状态
+变化或外部宽度变化都会丢弃预览。ARIA 数值和边界使用像素，值文本保留配置的单位。
 
-## 类型和长度工具
+## 类型
 
 | API | 定义 |
 | --- | --- |
-| `ResizeDirection` | `'bottom' | 'left' | 'right' | 'top'` |
-| `ResizeLength` | `number | \`${number}%\`` |
+| `ResizeDirection` | `'bottom'`、`'left'`、`'right'` 或 `'top'`。 |
+| `ResizeLength` | `number` 或 `string`；像素值如 `120`、`"120px"`，或 `"50%"` 等百分比字符串。 |
 | `ResizeEvent` | `{ delta; direction; finished; initialSize }` |
-| `resizeLengthClamp` | 在混合约束下 clamp 像素或百分比长度。 |
-| `resizeLengthToRelative` | 将像素转换为百分比。 |
-| `resizeLengthToStatic` | 将百分比转换为像素。 |

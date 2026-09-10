@@ -10,16 +10,13 @@ import {
   Editable,
   Plite,
   type RenderElementProps,
-  type RenderVoidProps,
   useEditorContext,
-  useNodeSelector,
   useEditorState,
   useEditor,
 } from 'plitejs/react';
 
 type SchemaProfile =
   | 'block'
-  | 'editable-island'
   | 'inline'
   | 'non-selectable'
   | 'read-only'
@@ -27,7 +24,6 @@ type SchemaProfile =
 
 const profileVersions: Record<SchemaProfile, number> = {
   block: 1,
-  'editable-island': 6,
   inline: 2,
   'non-selectable': 5,
   'read-only': 4,
@@ -60,15 +56,10 @@ const createSchema = (profile: SchemaProfile) =>
       probe:
         profile === 'void'
           ? { void: 'block' }
-          : profile === 'editable-island'
-            ? {
-                content: schema.content.text({ default: 'text', min: 1 }),
-                void: 'editable-island',
-              }
-            : {
-                content: schema.content.text({ default: 'text', min: 1 }),
-                inline: profile === 'inline',
-              },
+          : {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              inline: profile === 'inline',
+            },
     },
     id: 'schema-reconfiguration-browser-proof',
     root: schema.content.types(['content-card', 'line', 'probe'], {
@@ -136,28 +127,9 @@ const renderElement = ({
   );
 };
 
-const SchemaVoid = ({ element }: RenderVoidProps) => {
-  const editableIsland = useNodeSelector(({ editor }) =>
-    editor.read.schema.isEditableIsland(element)
-  );
-
-  if (editableIsland) {
-    return (
-      <div data-test-id="schema-reconfiguration-void">
-        <span contentEditable={false}>editable-island probe</span>
-        <input
-          aria-label="Editable island nested editor"
-          data-test-id="schema-reconfiguration-island"
-          defaultValue="nested target"
-        />
-      </div>
-    );
-  }
-
-  return <span data-test-id="schema-reconfiguration-void">void probe</span>;
-};
-
-const renderVoid = (props: RenderVoidProps) => <SchemaVoid {...props} />;
+const renderVoid = () => (
+  <span data-test-id="schema-reconfiguration-void">void probe</span>
+);
 
 const SchemaControls = () => {
   const editor = useEditorContext();
@@ -176,7 +148,6 @@ const SchemaControls = () => {
     return [
       `inline:${probeBehavior.inline}`,
       `void:${probeBehavior.void}`,
-      `editableIsland:${probeBehavior.editableIsland}`,
       `readOnly:${guardBehavior.readOnly}`,
       `selectable:${guardBehavior.selectable}`,
       `document:${commit?.changes.empty ? 'unchanged' : 'initial'}`,
@@ -195,7 +166,6 @@ const SchemaControls = () => {
             ['Use block schema', 'block'],
             ['Use inline schema', 'inline'],
             ['Use void schema', 'void'],
-            ['Use editable-island schema', 'editable-island'],
             ['Use read-only schema', 'read-only'],
             ['Use non-selectable schema', 'non-selectable'],
           ] as const

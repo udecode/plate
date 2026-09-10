@@ -1,0 +1,16 @@
+---
+id: 2026-09-04-preserve-suggestion-replies-through-history
+date: 2026-09-04
+status: draft
+kind: fix
+summary: 'Preserve discussion state across edits and failed saves'
+change: { 'type': 'source', 'date': '2026-09-04', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-04-comment-preserve-suggestion-replies-through-50680473","kind":"fix","migrationNotes":[]} -->
+
+- **`comment`**, **`discussion`**, **`suggestion`**: Preserve discussion state across edits and failed saves
+
+Keep suggestion replies through undo and redo, selected comment groups through edits, and composer drafts until saves succeed. Bind independent document views to their own anchors.

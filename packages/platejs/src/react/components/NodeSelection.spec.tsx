@@ -288,7 +288,7 @@ describe('NodeSelection', () => {
       value: 1000,
       writable: true,
     });
-    const scroll = editor.api.dom.scroll?.();
+    const scroll = editable;
 
     if (scroll) {
       Object.defineProperty(scroll, 'getBoundingClientRect', {
@@ -541,7 +541,7 @@ describe('NodeSelection', () => {
       value: 1000,
       writable: true,
     });
-    const scroll = editor.api.dom.scroll?.();
+    const scroll = editable;
 
     if (scroll) {
       Object.defineProperty(scroll, 'getBoundingClientRect', {

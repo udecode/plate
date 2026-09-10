@@ -21,21 +21,19 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
 ### Installation
 
-The fastest way to add code blocks is with `CodeBlockKit`. It composes `CodeBlockPlugin`, its required `CodeLinePlugin`, and the removable `CodeHighlightPlugin` with the shipped triple-backtick input rule and [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add code blocks is with `CodeBlockKit`. It composes `CodeBlockPlugin` and the removable `CodeHighlightPlugin` with the shipped triple-backtick input rule and [Plate UI](/docs/installation/plate-ui) component.
 
 <ComponentSource name="code-block" />
 
 - [`CodeBlockElement`](/docs/components/code-block): Renders code block containers.
-- [`CodeLineElement`](/docs/components/code-block): Renders individual code lines.
-- [`CodeSyntaxLeaf`](/docs/components/code-block): Renders syntax highlighted text.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -53,19 +51,105 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## High-scale code blocks
+
+`CodeBlockKit` keeps code in native editor DOM. Use
+`CodeBlockCodeMirrorElement` explicitly when one code block can contain enough
+text or syntax tokens to make that DOM expensive. Plate still owns the
+canonical text, selection, history, decorations, and collaboration state;
+CodeMirror owns the block's mounted DOM, input surface, and incremental syntax parser.
+
+### Native Plate DOM
+
+This preview contains 1,000 lines. [Open the 10,000-line stress test](/blocks/code-block-huge-demo).
+
+<ComponentPreview name="code-block-huge-demo" id="code-block-preview" />
+
+### CodeMirror
+
+<ComponentPreview name="code-block-codemirror-demo" />
+
+<ComponentSource name="code-block-codemirror" />
+
+For an editor whose code blocks all use CodeMirror, replace the component and omit the Lowlight plugin:
+
+```tsx
+import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
+import {
+  CodeBlockCodeMirrorElement,
+} from '@/components/editor/code-block-codemirror';
+import { createCodeBlockPlugin } from '@/components/editor/code-block';
+import { EditorKit } from '@/components/editor/plugins';
+
+const codeBlockCodeMirrorPlugin = createCodeBlockPlugin(
+  CodeBlockCodeMirrorElement
+);
+
+export const LargeCodeEditorKit = EditorKit
+  .filter((plugin) => plugin.name !== CodeHighlightPlugin.name)
+  .map((plugin) =>
+    plugin.name === CodeBlockPlugin.name ? codeBlockCodeMirrorPlugin : plugin
+  );
+```
+
+Choose an explicit language from the CodeMirror picker. Parsers load on demand;
+plain text and unrecognized language values stay unhighlighted. CodeMirror
+keeps neutral range decorations, including overlapping annotations.
+
+For native and CodeMirror views of the same editor, retain `CodeHighlightPlugin`
+for the native view. Its syntax decorations carry `data-code-block-syntax`;
+CodeMirror excludes those decorations and paints its own syntax. Native views
+retain the full code DOM.
+
+<ComponentPreview name="code-block-views-demo" />
+
+This choice is never automatic. Do not switch renderers at a character
+threshold, and do not combine a block adapter with whole-document
+virtualization.
+
+CodeMirror search (`Mod+F`) finds offscreen code. Browser page Find can inspect
+only the mounted viewport DOM. The copy button and print layout use the full
+canonical code; printing temporarily renders every line.
+
+### Adapter customization
+
+`createCodeMirrorAdapter` from `platejs/code-block/codemirror` owns the
+ExternalText projection. Create it once outside the component and pass it to
+`props.slots.externalText` with `config: { language }`.
+
+```tsx
+import { EditorView } from '@codemirror/view';
+import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
+
+const adapter = createCodeMirrorAdapter({
+  extensions: [EditorView.lineWrapping],
+});
+```
+
+The optional entrypoint requires `@codemirror/language`, `@codemirror/state`
+and `@codemirror/view`. `extensions` configures presentation, search and native
+editing commands. `loadLanguage(language)` returns a CodeMirror extension or
+a promise for one; obsolete loads are ignored after configuration changes or
+disposal. Omit it for plain text. Keep CodeMirror history extensions disabled:
+undo and redo use the editor's shared history.
+
+The copied component uses two-space line indentation for Tab and syntax-aware
+indentation for Enter. Its language picker, search panel and theme stay in the
+component.
+
+## Manual usage
 
 <Steps>
 
 ### Installation
 
 ```bash
-npm install platejs @tanstack/react-virtual lowlight
+npm install platejs lowlight
 ```
 
-### Add Plugins
+### Add plugins
 
-Add `CodeBlockPlugin` for code-block editing. It installs `CodeLinePlugin` as a required dependency; add `CodeHighlightPlugin` separately when you want Lowlight syntax highlighting.
+Add `CodeBlockPlugin` for code-block editing. Add `CodeHighlightPlugin` separately when you want Lowlight syntax highlighting.
 
 ```tsx
 import { CodeBlockPlugin } from 'platejs/react';
@@ -79,18 +163,18 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
-Configure each capability where it is owned. `CodeBlockPlugin` owns editing, `CodeLinePlugin` owns line rendering, and `CodeHighlightPlugin` owns highlighting.
+Configure each capability where it is owned. `CodeBlockPlugin` owns the multiline text and editing behavior. `CodeHighlightPlugin` owns highlighting.
 
 **Basic Setup with All Languages:**
 
 ```tsx
 import { CodeBlockRules } from 'platejs';
-import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
 import { all, createLowlight } from 'lowlight';
 import { createEditor } from 'platejs/react';
-import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
+import { CodeBlockElement } from '@/components/editor/code-block';
 
 // Create a lowlight instance with all languages
 const lowlight = createLowlight(all);
@@ -103,9 +187,7 @@ const editor = createEditor({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
-      component: CodeSyntaxLeaf,
       initialState: { lowlight },
     }),
   ],
@@ -140,9 +222,7 @@ const editor = createEditor({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
-      component: CodeSyntaxLeaf,
       initialState: {
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
@@ -159,7 +239,8 @@ const editor = createEditor({
 - `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting.
 - `CodeHighlightPlugin.initialState.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
-- `component`: Assigns components for code lines and syntax highlighting.
+
+Each `codeBlock` contains one text child. Newline characters define physical lines; editing and highlighting derive their line behavior from text offsets.
 
 For plain code blocks, omit `CodeHighlightPlugin`:
 
@@ -174,7 +255,7 @@ const editor = createEditor({
 
 For the runtime model, see [Plugin Input Rules](/docs/plugin-input-rules).
 
-### Turn Into Toolbar Button
+### Turn into toolbar button
 
 You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into code blocks:
 
@@ -188,7 +269,7 @@ const turnIntoItem = {
 };
 ```
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert code block elements:
 
@@ -208,11 +289,11 @@ const insertItem = {
 
 ### `CodeBlockPlugin`
 
-Owns the code-block schema, editing behavior, input rules, shortcuts, and commands. `CodeLinePlugin` is its required dependency.
+Owns the code-block schema, multiline editing behavior, input rules, shortcuts, and commands.
 
 ### `CodeHighlightPlugin`
 
-Owns the `codeSyntax` mark, Lowlight decoration pipeline, and highlighted token rendering. Include or omit this descriptor as one ordinary plugin-array entry.
+Produces transient syntax decorations with Lowlight. Syntax tokens are not stored as text marks. Include or omit this descriptor as one ordinary plugin-array entry.
 
 <API name="CodeHighlightPlugin">
 <APIOptions>
@@ -224,10 +305,6 @@ Owns the `codeSyntax` mark, Lowlight decoration pipeline, and highlighted token 
   </APIItem>
 </APIOptions>
 </API>
-
-### `CodeLinePlugin`
-
-Required structural dependency for code-block lines. Add it directly only to replace its default configuration or component.
 
 ## Commands
 
@@ -246,24 +323,22 @@ editor.update.codeBlock.selectAll();
   expanded selections, it inserts and selects a paragraph after the range-end
   block, then converts that paragraph. It is a no-op without a selection.
 - `toggle()` converts selected blocks to or from code blocks.
-- `tab()` and `untab()` indent or outdent selected code lines by two spaces.
+- `tab()` and `untab()` indent or outdent selected physical lines by two spaces.
 - `resetBlock()` unwraps the selected code block into paragraphs.
 - `selectAll()` selects the containing code block.
 
 ## Queries
 
-### `isCodeBlockEmpty`
+Read code-block state through the installed descriptor:
 
-<API name="isCodeBlockEmpty">
-<APIReturns type="boolean">
-  Whether the selection is in an empty code block.
-</APIReturns>
-</API>
+```tsx
+const codeBlock = editor.plugin(CodeBlockPlugin);
 
-### `isSelectionAtCodeBlockStart`
+codeBlock.read.entry();
+codeBlock.read.isEmpty();
+codeBlock.read.indentDepth();
+```
 
-<API name="isSelectionAtCodeBlockStart">
-<APIReturns type="boolean">
-  Whether the selection is at the start of the first code line in a code block.
-</APIReturns>
-</API>
+- `entry({ at? })` returns `{ codeBlock: [element, path] }` for the containing code block, or `undefined`. It uses the current selection when `at` is omitted.
+- `isEmpty()` returns whether the containing code block has no text. It returns `false` outside a code block.
+- `indentDepth()` returns the number of leading whitespace characters on the anchor's physical line, or `0` outside a code block.

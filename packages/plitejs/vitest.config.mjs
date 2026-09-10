@@ -1,8 +1,33 @@
 import path from 'node:path';
 
+import { transformAsync } from '@babel/core';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  plugins: [
+    {
+      name: 'plite-provider-react-compiler',
+      enforce: 'pre',
+      async transform(code, id) {
+        if (
+          id !==
+          path.resolve(import.meta.dirname, './src/react/components/plite.tsx')
+        ) {
+          return undefined;
+        }
+
+        // Provider contracts must observe the memoization used by shipped React code.
+        return transformAsync(code, {
+          babelrc: false,
+          configFile: false,
+          filename: id,
+          parserOpts: { plugins: [['typescript', { isTSX: true }], 'jsx'] },
+          plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+          sourceMaps: true,
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       'plitejs/diff': path.resolve(import.meta.dirname, './src/diff/index.ts'),

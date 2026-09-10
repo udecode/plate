@@ -19,6 +19,50 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('canonical anchor contract', () => {
+  it('maps distinct endpoints without rebuilding the same text change', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('x'.repeat(256))],
+    });
+    const anchors = Array.from({ length: 100 }, (_, offset) =>
+      editor.anchor(
+        {
+          anchor: { path: [0, 0], offset },
+          focus: { path: [0, 0], offset: offset + 1 },
+        },
+        { association: 'inward', deletion: 'drop' }
+      )
+    );
+    const original = DocumentChange.between;
+    let builds = 0;
+
+    Reflect.set(
+      DocumentChange,
+      'between',
+      (...args: Parameters<typeof DocumentChange.between>) => {
+        builds += 1;
+        return original(...args);
+      }
+    );
+
+    try {
+      editor.update.text.insert('>', { at: { path: [0, 0], offset: 0 } });
+
+      assert.ok(
+        builds <= 4,
+        `The same text change was rebuilt ${builds} times`
+      );
+      anchors.forEach((anchor, offset) => {
+        assert.deepEqual(anchor.resolve(), {
+          anchor: { path: [0, 0], offset: offset + 1 },
+          focus: { path: [0, 0], offset: offset + 2 },
+        });
+      });
+    } finally {
+      Reflect.set(DocumentChange, 'between', original);
+      anchors.forEach((anchor) => anchor.release());
+    }
+  });
+
   it('maps repeated endpoints once per change without sharing handle values', () => {
     const editor = createEditor({
       initialValue: [paragraph('abcdefghijk'), paragraph('unrelated')],

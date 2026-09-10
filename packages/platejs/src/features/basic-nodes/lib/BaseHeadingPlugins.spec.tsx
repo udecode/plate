@@ -1,14 +1,10 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt } from '#platejs-test-internal';
 
-import {
-  createEditor,
-  getPlateRuntime,
-  schema,
-  SelectionApi,
-  PLUGINS,
-} from '../../../core';
+import { createEditor, schema, SelectionApi, PLUGINS } from '../../../core';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { BaseHeadingPlugin, HeadingRules } from './BaseHeadingPlugins';
 
 jsxt;

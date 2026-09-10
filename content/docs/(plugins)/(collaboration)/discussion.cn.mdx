@@ -1,228 +1,133 @@
 ---
 title: 讨论
+description: 在 Floating Discussion 中审阅每个区块的评论和建议。
 docs:
-  - route: /docs/components/block-discussion
-    title: 块讨论
+  - route: /docs/comment
+    title: 评论
+  - route: /docs/suggestion
+    title: 建议
 ---
 
 <ComponentPreview name="discussion-demo" />
 
-<PackageInfo>
+讨论是可复制的 UI，用于在一个锚定浮动面板中打开每个区块的评论和文档建议。Comments 管理线程记录与映射范围；Suggestion 管理文档修改建议。
 
-## 功能特点
+## 所有权
 
-- **用户管理**: 存储和管理带有头像和名称的用户数据
-- **讨论线程**: 管理带有评论的讨论数据结构
-- **当前用户跟踪**: 跟踪当前活跃用户以进行协作
-- **数据存储**: 用于存储协作状态的纯 UI 插件
-- **选择器 API**: 通过插件选择器轻松访问用户数据
+| 所有者 | 职责 |
+| --- | --- |
+| `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、高亮和激活状态 |
+| 复制的 `comment` 项 | 渲染富文本表单与评论卡片，并通过 `CommentKit` 提供默认样式 |
+| `SuggestionPlugin` | 在文档中存储建议，并负责接受或拒绝建议 |
+| 复制的 `discussion` 项 | 一次性索引两种记录，然后渲染每个区块的触发器和 Floating Discussion |
 
-</PackageInfo>
+应用负责获取和保存评论记录，并提供用户、权限与当前文档。Comments 插件管理已加载的数据和范围映射。建议数据位于编辑器节点中，因为接受或拒绝建议会修改文档。
 
-## Kit 使用
+## 安装
 
-<Steps>
-
-### 安装
-
-添加讨论功能最快的方法是使用 `DiscussionKit`,它包含预配置的 `discussionPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
-
-<ComponentSource name="discussion" />
-
-- [`BlockDiscussion`](/docs/components/block-discussion): 在节点上方渲染讨论 UI
-
-### 添加 Kit
-
-```tsx
-import { createEditor } from 'platejs/react';
-import { DiscussionKit } from '@/components/editor/discussion';
-
-const editor = createEditor({
-  plugins: [
-    // ...其他插件,
-    ...DiscussionKit,
-  ],
-});
-```
-
-</Steps>
-
-## 手动使用
-
-<Steps>
-
-### 安装
+安装组合视图和评论工具栏操作。Discussion 项会安装它依赖的 Comment 与 Suggestion UI。
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
-### 创建插件
+## 用法
 
-```tsx
-import { definePlatePlugin } from 'platejs/react';
-import { BlockDiscussion } from '@/components/editor/block-discussion';
+安装 `DiscussionKit`，并把获取的评论记录传给 `CommentsPlugin`。该插件集包含评论样式、共享索引、区块触发器和 Floating Discussion。每个编辑器会在内部绑定自己的原生范围。
 
-export interface TDiscussion {
-  id: string;
-  comments: TComment[];
-  createdAt: Date;
-  isResolved: boolean;
-  userId: string;
-  documentContent?: string;
-}
+```tsx title="components/editor/discussion-editor.tsx" showLineNumbers
+"use client";
 
-const usersData = {
-  alice: {
-    id: 'alice',
-    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-    name: 'Alice',
-  },
-  bob: {
-    id: 'bob', 
-    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-    name: 'Bob',
-  },
-};
+import type { CommentThread, CommentUser } from "platejs/comments";
+import type { EditorValueInput } from "platejs";
+import { CommentsPlugin } from "platejs/comments/react";
+import { Plate, useCreateEditor } from "platejs/react";
 
-export type DiscussionPluginState = {
+import { DiscussionKit } from "@/components/editor/discussion";
+import { Editor, EditorContainer } from "@/components/editor/editor";
+import { EditorKit } from "@/components/editor/plugins";
+
+export function DiscussionEditor({
+  initialValue,
+  initialThreads,
+  users,
+  currentUserId,
+}: {
+  initialValue: EditorValueInput;
+  initialThreads: readonly CommentThread[];
+  users: Record<string, CommentUser>;
   currentUserId: string;
-  discussions: TDiscussion[];
-  users: Record<string, { avatarUrl: string; id: string; name: string }>;
-};
-
-const initialState: DiscussionPluginState = {
-  currentUserId: 'alice',
-  discussions: [],
-  users: usersData,
-};
-
-export const discussionPlugin = definePlatePlugin('discussion', {
-  initialState,  selectors: {
-    currentUser: (state) => state.users[state.currentUserId],
-    user: (state, id: string) => state.users[id],
-  },
-})
-  .configure({
-    render: { aboveNodes: BlockDiscussion },
+}) {
+  const editor = useCreateEditor({
+    plugins: [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: { initialThreads, users, currentUserId },
+      }),
+    ],
+    initialValue,
   });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
 ```
 
-- `initialState.currentUserId`: 当前活跃用户的 ID
-- `initialState.discussions`: 讨论数据结构数组
-- `initialState.users`: 将用户 ID 映射到用户数据的对象
-- `render.aboveNodes`: 在节点上方渲染 [`BlockDiscussion`](/docs/components/block-discussion) 用于讨论 UI
-- `selectors.currentUser`: 获取当前用户数据
-- `selectors.user`: 通过 ID 获取用户数据
+`EditorKit` 包含复制的 `SuggestionKit`。如果编辑器使用更小的插件集，请加入 `DiscussionSlots` 所读取的同一个 `suggestionPlugin` 导出。
 
-### 添加插件
+## 审阅模型
 
-```tsx
-import { createEditor } from 'platejs/react';
+Discussion 会一次性索引未解决记录，按区块排列，并在每个区块内按时间排序：
 
-const editor = createEditor({
-  plugins: [
-    // ...其他插件,
-    discussionPlugin,
-  ],
+- 根评论线程显示为评论卡片；
+- 文档建议显示为带有接受和拒绝操作的审阅卡片；
+- 目标指向建议的线程显示在对应建议卡片内；
+- 解决评论线程会移除它的锚点高亮；
+- 接受或拒绝建议会隐藏其卡片和回复；撤销会恢复它们，不改变线程的解决状态。
+
+区块触发器只订阅各自的键控摘要。编辑评论正文不会重建编辑器装饰、重新计算索引或唤醒无关区块。
+
+## Floating Discussion
+
+区块触发器会打开该区块的全部评论和建议。点击行内注解文本会打开该位置的确切项目。两个入口共用同一组插件记录、建议和操作。
+
+当评论范围重叠时，点击共享文本会按来源顺序打开该位置的所有线程。点击没有标记的编辑器内容会清除当前激活项。
+
+如果编辑删除了评论范围内的全部字符，文档中不会显示行内高亮。区块触发器仍可
+打开该线程，Floating Discussion 会锚定到这个触发器；撤销后会恢复精确的文本范围。
+
+## 建议评论
+
+Discussion 通过建议 ID 关联回复。建议本身提供回复的位置和文档生命周期。
+
+```ts
+editor.plugin(CommentsPlugin).api.createThread({
+  body,
+  excerpt: "insert suggestion",
+  target: { id: suggestionId, type: "suggestion" },
 });
 ```
 
-</Steps>
+回复使用建议的位置，无需创建评论锚点。建议消失时，应用记录保留正文和显式解决状态。如果撤销或文档更新恢复同一个建议 ID，其未解决的回复会再次显示。`SuggestionPlugin` 负责文档修改；Discussion 组合审阅卡片和应用回复。
 
-## 插件
+## 只读与静态渲染
 
-### `discussionPlugin`
+将相同的序列化记录及其匹配的文档值传给各个编辑器。只读 React 编辑器使用 `CommentsPlugin`；`EditorStatic` 使用 `BaseCommentsPlugin` 和复制的静态评论样式。包会为每个编辑器绑定独立的原生范围；评论卡片由复制的 UI 渲染。
 
-用于管理包括用户和讨论数据在内的协作状态的纯 UI 插件。
+保存时，将 `editor.plugin(CommentsPlugin).api.getThreads()` 与 `editor.read.value()` 一起持久化。记录加载、保存与操作请参阅[评论](/docs/comment)，建议转换请参阅[建议](/docs/suggestion)。
 
-<API name="discussionPlugin">
-<APIOptions>
-  <APIItem name="currentUserId" type="string">
-    协作会话中当前活跃用户的 ID。
-  </APIItem>
-  <APIItem name="discussions" type="TDiscussion[]">
-    包含评论和元数据的讨论对象数组。
-  </APIItem>
-  <APIItem name="users" type="Record<string, UserData>">
-    将用户 ID 映射到包括名称和头像在内的用户信息的对象。
-  </APIItem>
-</APIOptions>
-</API>
+## API 参考
 
-## 选择器
+### `DiscussionKit`
 
-### `currentUser`
+将它加入编辑器的插件列表。它包含 `CommentKit` 和完整的 `DiscussionSlots` 组合。
 
-获取当前用户数据。
+### `DiscussionSlots`
 
-<API name="currentUser">
-<APIReturns type="UserData">
-  当前用户的数据,包括 id、name 和 avatarUrl。
-</APIReturns>
-</API>
-
-### `user`
-
-通过 ID 获取用户数据。
-
-<API name="user">
-<APIParameters>
-  <APIItem name="id" type="string">
-    要查找的用户 ID。
-  </APIItem>
-</APIParameters>
-<APIReturns type="UserData | undefined">
-  如果找到则返回用户数据,否则返回 undefined。
-</APIReturns>
-</API>
-
-## 类型
-
-### `TDiscussion`
-
-包含评论和元数据的讨论数据结构。
-
-<API name="TDiscussion">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    讨论的唯一标识符。
-  </APIItem>
-  <APIItem name="comments" type="TComment[]">
-    讨论线程中的评论数组。
-  </APIItem>
-  <APIItem name="createdAt" type="Date">
-    讨论创建的时间。
-  </APIItem>
-  <APIItem name="isResolved" type="boolean">
-    讨论是否已解决。
-  </APIItem>
-  <APIItem name="userId" type="string">
-    创建讨论的用户 ID。
-  </APIItem>
-  <APIItem name="documentContent" type="string" optional>
-    与此讨论相关的文档内容。
-  </APIItem>
-</APIAttributes>
-</API>
-
-### `UserData`
-
-用于协作的用户信息结构。
-
-<API name="UserData">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    用户的唯一标识符。
-  </APIItem>
-  <APIItem name="name" type="string">
-    用户的显示名称。
-  </APIItem>
-  <APIItem name="avatarUrl" type="string">
-    用户头像图片的 URL。
-  </APIItem>
-  <APIItem name="hue" type="number" optional>
-    用于用户识别的可选颜色色调。
-  </APIItem>
-</APIAttributes>
-</API>
+自定义组合时，把完整值传给 `CommentsPlugin.configure({ slots: DiscussionSlots })`。它一起安装共享索引、区块触发器和 Floating Discussion；不要单独安装其中的插槽。

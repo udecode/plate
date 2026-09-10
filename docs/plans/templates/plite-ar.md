@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short Plite AR objective, under 240 characters. Put the full
 Autoresearch contract in the sections below.
@@ -10,15 +12,12 @@ Goal plan:
 Template:
 {{TEMPLATE_PATH}}
 
-Primary template:
-{{TEMPLATE_PATH}}
-
 Plite AR source:
 - requested mode: pending
 - surface / target / slug: pending
 - target cwd: Plate repo root
 - control cwd: Plate repo root
-- minimum runtime / hard stop: pending
+- requested budget/deadline and any explicit minimum: pending
 - completion threshold summary: pending
 
 First checkpoint:
@@ -33,9 +32,9 @@ First checkpoint:
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
-- initial confidence score: pending
+- initial evidence or measured baseline: pending
 - improvement loop: pending
-- final score / loop closure: pending
+- final evidence / loop closure: pending
 
 Completion threshold:
 - TODO: Define the exact done state.
@@ -87,7 +86,8 @@ Plite AR state:
 - next_phase: mode-dispatch
 - current_packet: pending
 - keep / revert / quarantine call: pending
-- goal_status: active
+- plan_status: active
+- native_goal: N/A unless explicitly requested
 
 Mode matrix:
 | Mode | Applies | Owner | Evidence / exit rule |
@@ -101,14 +101,14 @@ Mode matrix:
 | recipe | pending | slate-ar | Read-only recipe/setup-plan result recorded, or packet start explicitly accepted. |
 | perfect | pending | slate-ar | Status, research/gap, behavior, oracle, Benchmark handoff when applicable, and final no-regression rows closed. |
 | finalize preview | pending | slate-ar | Preview-only finalization/current-tree readiness recorded; no branches. |
-| ship readiness | pending | slate-ar + P1 autoreview | Review unit, gates, timing rows, P1 autoreview, and approval boundary recorded. |
+| ship readiness | pending | slate-ar + Task closure | Review unit, gates, timing, Task review applicability/result and actual publication authority recorded. |
 
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `slate-ar` source rule read | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Mode selected and unused mode rows marked N/A | pending | pending |
 | Target cwd and control cwd recorded | pending | pending |
 | AR CLI resolved or unavailable blocker recorded | pending | pending |
@@ -140,9 +140,9 @@ Work Checklist:
 - [ ] Performance work is routed to `benchmark` and has correctness proof before
       a keep call.
 - [ ] Finalization is preview-only unless review branches are explicitly
-      requested in the current turn.
-- [ ] Ship readiness records review unit, slow steps, gates, P1 autoreview, and
-      mutation approval boundary.
+      authorized in the active task; existing authority persists.
+- [ ] Ship readiness records review unit, slow steps, gates, Task review
+      applicability/result and actual publication authority; no repeated approval.
 - [ ] Every packet has a keep/revert/quarantine/checks-failed decision with
       evidence.
 - [ ] Final handoff lists changed files, commands, packet decisions, metrics,
@@ -158,13 +158,13 @@ Completion Gates:
 | Quality-gap proof | pending | Run quality-gap commands for accepted checklist or N/A | pending |
 | Recipe/setup proof | pending | Record read-only recipe/setup-plan result or N/A | pending |
 | Benchmark routing proof | pending | Route performance work to `benchmark` with scope and correctness contract or N/A | pending |
-| Finalization/readiness proof | pending | Run preview/readiness/P1 autoreview proof or N/A | pending |
+| Finalization/readiness proof | pending | Run applicable preview/readiness proof and link Task review result or explicit N/A | pending |
 | Packet decision ledger | pending | Record keep/revert/quarantine/checks-failed rows | pending |
 | Workspace authority proof | pending | Record cwd/tool for each command | pending |
 | Skill/rule sync | pending | Run `pnpm install` when `.agents/rules/**` changed, otherwise N/A | pending |
 | Agent-native review for agent/tooling changes | pending | Load `agent-native-reviewer` and close accepted findings, or N/A | pending |
-| P1 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P1`, and close accepted findings; use P2 or P3 only when explicitly requested, or N/A | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish current loop cleanly; otherwise N/A | pending |
+| Task-owned review when explicitly requested or closing a PR | pending | Reuse Task's review result; run P1 only for explicit review or actual PR closure, within three total helper invocations for this scope; never on `next`. Record N/A when unrequested or prohibited; do not add a final review | pending |
+| Timed checkpoint | pending | Respect the stated budget/deadline and any explicit minimum; reserve proof/cleanup and record unfinished obligations honestly; otherwise N/A | pending |
 | Final handoff contract | pending | Fill final handoff rows from current evidence | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

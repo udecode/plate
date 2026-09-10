@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import type React from 'react';
@@ -13,11 +14,8 @@ import { DebugPlugin, NodeApi, schema } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from '../../../features/table/lib/BaseTablePlugin';
 import { createTableNodeSelection } from '../../../features/table/lib/internal/selection';
-import {
-  createPluginContext,
-  definePlatePlugin,
-  type Editor,
-} from '../../core';
+import { definePlatePlugin, type Editor } from '../../core';
+import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;

@@ -3,7 +3,9 @@ title: "Range API"
 description: "Range helpers for selections and document spans."
 ---
 
-`Range` objects are a set of points that refer to a specific span of a Plite document. They can define a span inside a single node or they can span across multiple nodes. The editor's `selection` is stored as a range.
+`Range` objects contain anchor and focus points within one node or across
+multiple nodes. Text selections use a range; the editor also supports
+[node selections](/docs/plite/api/locations/selection).
 
 ## Shape
 
@@ -21,9 +23,9 @@ implicit; extra roots are stored on each point with `root`.
   - [Retrieval methods](range#retrieval-methods)
   - [Check methods](range#check-methods)
 
-## Static Methods
+## Static methods
 
-### Retrieval Methods
+### Retrieval methods
 
 #### `RangeApi.edges(range: Range, options?) => [Point, Point]`
 
@@ -47,7 +49,7 @@ Iterate through the two point entries in a `Range`. First it will yield a `Point
 
 Get the start point of a `range` according to the order in which it appears in the document.
 
-### Check Methods
+### Check methods
 
 Check some attribute of a `Range`. Always returns a boolean.
 

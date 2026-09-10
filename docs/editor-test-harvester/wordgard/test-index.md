@@ -1,15 +1,11 @@
 # Wordgard Test-Name Index
 
 Source checkout: `../wordgard` at
-`c715d4ded8fc780f52c13206e589ea31e4148dd4`.
+`b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54`.
 
-Current provenance: all 27 files and all 644 indexed `it(...)` call sites were
-originally parsed at `01eb2b5eae509509677345fd603acad001827dff`.
-The incremental refresh to
-`source_commit=c715d4ded8fc780f52c13206e589ea31e4148dd4` verified a zero-file
-test-tree diff and re-counted the current file, line, and call-site totals.
-
-This is the complete source-declared `it(...)` call-site index for the test tree. Dynamic factories keep their source expression and line; the behavior matrix expands those families. Harness-only files are recorded explicitly.
+This is the complete source-declared `it(...)` call-site index for the current
+test tree. Dynamic factories keep their source expression and line; the behavior
+matrix expands those families. Harness-only files are recorded explicitly.
 
 ## `generate.ts` — harness — 0 call sites
 
@@ -148,7 +144,7 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L343: `"can handle corrections kicking in for merged steps"`
 - L355: `"can apply corrections eagerly"`
 
-## `test-commands.ts` — portable-mixed — 158 call sites
+## `test-commands.ts` — portable-mixed — 161 call sites
 
 - L131: `"can lift a paragraph out of a quote"`
 - L135: `"can leave sibling nodes in parent"`
@@ -212,102 +208,105 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L386: `"joins parent nodes after"`
 - L390: `"drops nodes not supported by the new parent"`
 - L394: `"can join from the end of an inline node"`
-- L400: `"can delete a letter"`
-- L404: `"can delete a composite letter"`
-- L408: `"can delete an image"`
-- L412: `"can delete a horizontal rule"`
-- L416: `"can delete a horizontal rule from inside the next node"`
-- L420: `"can delete a horizontal rule inside a wrapping node"`
-- L424: `"won't clear wrappers with extra content"`
-- L428: `"will not clear the document"`
-- L434: `"can delete a word"`
-- L438: `"includes whitespace after a word"`
-- L442: `"can delete single-character words"`
-- L446: `"can delete groups of punctuation"`
-- L450: `"stops on punctuation in a word"`
-- L456: `"can delete a letter"`
-- L460: `"can delete a letter in the middle of a text node"`
-- L464: `"can delete a composite letter"`
-- L468: `"can delete an image"`
-- L472: `"can delete a horizontal rule"`
-- L476: `"can delete a horizontal rule from inside the next node"`
-- L480: `"can delete a horizontal rule inside a wrapping node"`
-- L484: `"won't clear wrappers with extra content"`
-- L488: `"will not clear the document"`
-- L494: `"can delete a word"`
-- L498: `"includes whitespace before a word"`
-- L502: `"can delete single-character words"`
-- L506: `"can delete groups of punctuation"`
-- L510: `"stops on punctuation in a word"`
-- L516: `"can change the type of a paragraph"`
-- L520: `"can change the type of two paragraphs"`
-- L524: `"can change the type of two paragraphs at different depth"`
-- L528: `"returns false at the top level"`
-- L533: `"returns false when the node is already of that type"`
-- L537: `"works on multiple selections"`
-- L543: `"clears disallowed content"`
-- L547: `"preserves marks when appropriate"`
-- L551: `"drops marks when appropriate"`
-- L557: `"can wrap a paragraph in a blockquote"`
-- L561: `"can wrap two paragraphs in a blockquote"`
-- L565: `"can wrap three paragraphs in a blockquote"`
-- L569: `"can content inside a blockquote"`
-- L573: `"will expand to cover a partially selected node"`
-- L577: `"will create required wrapper nodes"`
-- L582: `"will pick the innermost valid depth"`
-- L586: `"will join to adjacent auto-join node"`
-- L593: `"can unwrap a quote"`
-- L597: `"can unwrap multiple children from a quote"`
-- L601: `"can partially unwrap quote with content left at end"`
-- L605: `"can partially unwrap quote with content left at start"`
-- L609: `"can partially unwrap quote with content left at both sides"`
-- L613: `"can unwrap a list"`
-- L617: `"can partially unwrap a list"`
-- L621: `"can partially unwrap nested content at start"`
-- L626: `"can partially unwrap nested content at end"`
-- L631: `"can unwrap children from multiple parents"`
-- L636: `"returns null at the top level"`
-- L640: `"can unwrap textblock list items"`
-- L653: `"will auto-join unwrapped nodes"`
-- L663: `"can add a list to a single block"`
-- L667: `"can add a list to two blocks"`
-- L671: `"can remove a list"`
-- L675: `"can remove only some items from a list"`
-- L681: `"adds lists when it can"`
-- L685: `"joins newly created lists to those above and below"`
-- L691: `"joins changed lists to those above and below"`
-- L697: `"can change a list's type"`
-- L701: `"can change the type of two adjacent lists"`
-- L705: `"can change a list's type and wrap items before and after"`
-- L709: `"can handle multiple cursors in a single block"`
-- L713: `"can unwrap a wrapper block"`
-- L717: `"can unwrap a nested item"`
-- L721: `"can wrap a nested item"`
-- L725: `"can unwrap an item with multiple children"`
-- L755: `"can wrap lists"`
-- L759: `"can unwrap lists"`
-- L763: `"can add a list to two blocks"`
-- L767: `"can remove only some items from a list"`
-- L773: `"adds lists when it can"`
-- L777: `"joins newly created lists to those above and below"`
-- L783: `"joins changed lists to those above and below"`
-- L789: `"can change a list's type"`
-- L793: `"can change the type of two adjacent lists"`
-- L797: `"can change a list's type and wrap items before and after"`
-- L801: `"can handle multiple cursors in a single block"`
-- L810: `"can add emphasis to a selection"`
-- L814: `"can remove emphasis from a selection"`
-- L818: `"adds emphasis to a mixed-mark selection"`
-- L822: `"stacks added marks with others"`
-- L826: `"adds selection marks"`
-- L830: `"adds selection marks to existing set"`
-- L834: `"removes selection marks"`
-- L838: `"replaces marks of the same type"`
-- L842: `"doesn't add the same mark on multiple levels"`
-- L846: `"can add a mark inside an inline node"`
-- L850: `"can add a mark to an inline node that partially has it"`
-- L856: `"will not add to both a parent and a child"`
-- L860: `"will not remove a mark from inside an inline element that supports it"`
+- L398: `"can pull a block out of a multi-block list item"`
+- L405: `"can delete a letter"`
+- L409: `"can delete a composite letter"`
+- L413: `"can delete an image"`
+- L417: `"can delete a horizontal rule"`
+- L421: `"can delete a horizontal rule from inside the next node"`
+- L425: `"can delete a horizontal rule inside a wrapping node"`
+- L429: `"won't clear wrappers with extra content"`
+- L433: `"will not clear the document"`
+- L437: `"can delete an empty inline plot"`
+- L443: `"can delete a word"`
+- L447: `"includes whitespace after a word"`
+- L451: `"can delete single-character words"`
+- L455: `"can delete groups of punctuation"`
+- L459: `"stops on punctuation in a word"`
+- L465: `"can delete a letter"`
+- L469: `"can delete a letter in the middle of a text node"`
+- L473: `"can delete a composite letter"`
+- L477: `"can delete an image"`
+- L481: `"can delete a horizontal rule"`
+- L485: `"can delete a horizontal rule from inside the next node"`
+- L489: `"can delete a horizontal rule inside a wrapping node"`
+- L493: `"won't clear wrappers with extra content"`
+- L497: `"will not clear the document"`
+- L501: `"can delete an empty inline plot"`
+- L507: `"can delete a word"`
+- L511: `"includes whitespace before a word"`
+- L515: `"can delete single-character words"`
+- L519: `"can delete groups of punctuation"`
+- L523: `"stops on punctuation in a word"`
+- L529: `"can change the type of a paragraph"`
+- L533: `"can change the type of two paragraphs"`
+- L537: `"can change the type of two paragraphs at different depth"`
+- L541: `"returns false at the top level"`
+- L546: `"returns false when the node is already of that type"`
+- L550: `"works on multiple selections"`
+- L556: `"clears disallowed content"`
+- L560: `"preserves marks when appropriate"`
+- L564: `"drops marks when appropriate"`
+- L570: `"can wrap a paragraph in a blockquote"`
+- L574: `"can wrap two paragraphs in a blockquote"`
+- L578: `"can wrap three paragraphs in a blockquote"`
+- L582: `"can content inside a blockquote"`
+- L586: `"will expand to cover a partially selected node"`
+- L590: `"will create required wrapper nodes"`
+- L595: `"will pick the innermost valid depth"`
+- L599: `"will join to adjacent auto-join node"`
+- L606: `"can unwrap a quote"`
+- L610: `"can unwrap multiple children from a quote"`
+- L614: `"can partially unwrap quote with content left at end"`
+- L618: `"can partially unwrap quote with content left at start"`
+- L622: `"can partially unwrap quote with content left at both sides"`
+- L626: `"can unwrap a list"`
+- L630: `"can partially unwrap a list"`
+- L634: `"can partially unwrap nested content at start"`
+- L639: `"can partially unwrap nested content at end"`
+- L644: `"can unwrap children from multiple parents"`
+- L649: `"returns null at the top level"`
+- L653: `"can unwrap textblock list items"`
+- L666: `"will auto-join unwrapped nodes"`
+- L676: `"can add a list to a single block"`
+- L680: `"can add a list to two blocks"`
+- L684: `"can remove a list"`
+- L688: `"can remove only some items from a list"`
+- L694: `"adds lists when it can"`
+- L698: `"joins newly created lists to those above and below"`
+- L704: `"joins changed lists to those above and below"`
+- L710: `"can change a list's type"`
+- L714: `"can change the type of two adjacent lists"`
+- L718: `"can change a list's type and wrap items before and after"`
+- L722: `"can handle multiple cursors in a single block"`
+- L726: `"can unwrap a wrapper block"`
+- L730: `"can unwrap a nested item"`
+- L734: `"can wrap a nested item"`
+- L738: `"can unwrap an item with multiple children"`
+- L768: `"can wrap lists"`
+- L772: `"can unwrap lists"`
+- L776: `"can add a list to two blocks"`
+- L780: `"can remove only some items from a list"`
+- L786: `"adds lists when it can"`
+- L790: `"joins newly created lists to those above and below"`
+- L796: `"joins changed lists to those above and below"`
+- L802: `"can change a list's type"`
+- L806: `"can change the type of two adjacent lists"`
+- L810: `"can change a list's type and wrap items before and after"`
+- L814: `"can handle multiple cursors in a single block"`
+- L823: `"can add emphasis to a selection"`
+- L827: `"can remove emphasis from a selection"`
+- L831: `"adds emphasis to a mixed-mark selection"`
+- L835: `"stacks added marks with others"`
+- L839: `"adds selection marks"`
+- L843: `"adds selection marks to existing set"`
+- L847: `"removes selection marks"`
+- L851: `"replaces marks of the same type"`
+- L855: `"doesn't add the same mark on multiple levels"`
+- L859: `"can add a mark inside an inline node"`
+- L863: `"can add a mark to an inline node that partially has it"`
+- L869: `"will not add to both a parent and a child"`
+- L873: `"will not remove a mark from inside an inline element that supports it"`
 
 ## `test-correction.ts` — portable — 6 call sites
 
@@ -380,11 +379,11 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L386: `"properly maps selections in deeper events"`
 - L395: `"restores selection on redo"`
 - L406: `"can handle extenders adding changes"`
-- L422: `"includes inverted effects in the history"`
-- L498: `"can map effects"`
-- L533: `"can restore comments lost through deletion"`
-- L546: `"survives serialization"`
-- L563: `"resolves before serializing"`
+- L430: `"includes inverted effects in the history"`
+- L506: `"can map effects"`
+- L541: `"can restore comments lost through deletion"`
+- L554: `"survives serialization"`
+- L571: `"resolves before serializing"`
 
 ## `test-node.ts` — portable — 24 call sites
 
@@ -412,6 +411,16 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L121: `"can serialize nested nodes"`
 - L124: `"complains about incorrect param types"`
 - L130: `"complains about incorrect mark types"`
+
+## `test-pointset.ts` — portable-mixed — 7 call sites
+
+- L29: `"stores points and values"`
+- L33: `"corrects order on creation"`
+- L38: `"can merge"`
+- L43: `"can merge masked"`
+- L48: `"can be mapped"`
+- L56: `"can be mapped with negative side"`
+- L62: `"properly maps ranges at the end of the document"`
 
 ## `test-pos.ts` — portable — 5 call sites
 
@@ -446,6 +455,18 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L95: `"can remove a mark with params"`
 - L98: `"doesn't remove a mark when its params differ"`
 
+## `test-rangeset.ts` — portable-mixed — 9 call sites
+
+- L28: `"stores ranges and values"`
+- L32: `"checks order on creation"`
+- L38: `"checks overlap on creation"`
+- L44: `"can merge"`
+- L49: `"can merge masked"`
+- L54: `"checks overlap during merge"`
+- L60: `"can be mapped"`
+- L68: `"can be mapped inclusively"`
+- L76: `"properly maps ranges at the end of the document"`
+
 ## `test-schema.ts` — portable — 9 call sites
 
 - L8: `"allow querying of valid content"`
@@ -458,25 +479,27 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L61: `"checks for tags not in the schema"`
 - L70: `"checks for marks not in the schema"`
 
-## `test-selection.ts` — portable — 17 call sites
+## `test-selection.ts` — portable — 19 call sites
 
-- L61: `"finds inline positions"`
-- L64: `"allows positions between block leaves"`
-- L67: `"doesn't include positions next to textblocks"`
-- L70: `"returns the bottom-most position between blocks"`
-- L73: `"stops at isolating nodes"`
-- L76: `"allows positions between block atoms"`
-- L79: `"creates positions around whitespace-preserving nodes"`
-- L82: `"handles inline nodes"`
-- L85: `"skips whole glyphs"`
-- L88: `"creates positions outside inline content nodes"`
-- L91: `"creates positions inside inline content nodes with inside bounds"`
-- L94: `"exits text nodes"`
-- L98: `"enters tables"`
-- L104: `"moves LTR through " + JSON.stringify(text)`
-- L107: `"moves RTL through " + JSON.stringify(text)`
-- L163: `name`
-- L193: `name`
+- L71: `"finds inline positions"`
+- L74: `"allows positions between block leaves"`
+- L77: `"doesn't include positions next to textblocks"`
+- L80: `"returns the bottom-most position between blocks"`
+- L83: `"stops at isolating nodes"`
+- L86: `"allows positions between block atoms"`
+- L89: `"creates positions around whitespace-preserving nodes"`
+- L92: `"handles inline nodes"`
+- L95: `"skips whole glyphs"`
+- L98: `"creates positions inside inline plots"`
+- L101: `"exits text nodes"`
+- L105: `"enters tables"`
+- L111: `"moves LTR through " + JSON.stringify(text)`
+- L114: `"moves RTL through " + JSON.stringify(text)`
+- L169: `"will skip out of a surrogate pair"`
+- L175: `"will move to the bottom of a block separation"`
+- L181: `"will not exit a cursor-inside inline plot"`
+- L192: `name`
+- L222: `name`
 
 ## `test-state.ts` — portable — 13 call sites
 
@@ -530,13 +553,14 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L203: `"can split a row span"`
 - L207: `"can split a rectangle"`
 
-## `test-table-correction.ts` — plate-owned — 5 call sites
+## `test-table-correction.ts` — plate-owned — 6 call sites
 
 - L22: `"adds cells to rows that are too short"`
 - L26: `"prefers to add cells to the start of the first row"`
-- L30: `"notices rowspans sticking out"`
-- L34: `"fixes span collisions"`
-- L38: `"adds missing cells in the middle"`
+- L30: `"notices when the missing cells aren't at the end of the row"`
+- L34: `"notices rowspans sticking out"`
+- L38: `"fixes span collisions"`
+- L42: `"adds missing cells in the middle"`
 
 ## `test-table-paste.ts` — plate-owned — 13 call sites
 
@@ -574,82 +598,86 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L165: `"handles composition in a wrapper that has multiple children"`
 - L171: `"supports composition in a cursor wrapper"`
 
-## `webtest-content.ts` — portable-mixed — 72 call sites
+## `webtest-content.ts` — portable-mixed — 76 call sites
 
-- L51: `"can draw a simple document"`
-- L55: `"can draw basic structure"`
-- L60: `"can draw marks on text"`
-- L65: `"can draw marks with a preferred target"`
-- L81: `"can draw nodes with structure representation"`
-- L85: `"can draw nodes with complicated structure"`
-- L105: `"can draw marks on nodes"`
-- L110: `"can update for a text change"`
-- L115: `"can update for a tag change"`
-- L120: `"can make multiple changes"`
-- L125: `"can update text marks"`
-- L132: `"can update node marks"`
-- L139: `"can draw spanning marks"`
-- L144: `"can join spanning marks in updates"`
-- L149: `"preserves DOM nodes with changed wrappers marks"`
-- L156: `"properly syncs replacements inside wrappers"`
-- L162: `"preserves DOM nodes with changed attribute marks"`
-- L169: `"preserves mark wrapper nodes"`
-- L176: `"adds breaks for empty textblocks and those ending in breaks"`
-- L181: `"fixes textblock breaks on changes"`
-- L187: `"keeps parent nodes when updating their content"`
-- L194: `"reuses text nodes when changing their start"`
-- L202: `"reuses text nodes when changing their end"`
-- L210: `"reuses text nodes when changing their middle"`
-- L218: `"can handle adding a mark to part of a textblock"`
-- L223: `"can handle a change moving content up"`
-- L230: `"can handle a change moving content down"`
-- L237: `"handles insertion of text before a mark"`
-- L242: `"can handle random changes"`
-- L260: `"can draw widgets around nodes"`
-- L266: `"can reuse widgets when replacing next to them"`
-- L276: `"can reuse widgets when updating across them"`
-- L289: `"doesn't break spanning wrappers on widgets"`
-- L295: `"keeps structure entirely the same on a no-change update"`
-- L306: `"can draw widgets from a point set"`
-- L314: `"can update widgets from a point set"`
-- L324: `"can update widgets in place"`
-- L334: `"orders widgets by side"`
-- L341: `"can redraw widgets at the end of the document"`
-- L357: `"doesn't duplicate widgets on section boundaries"`
-- L368: `"can decorate tags"`
-- L375: `"updates wrappers when they change"`
-- L386: `"can handle changes from range and point decorations in a single transactions"`
-- L397: `"can add attributes to tags"`
-- L401: `"can remove attributes from tags"`
-- L408: `"preserves DOM nodes when adding attributes"`
-- L415: `"can take wrappers from spans"`
-- L421: `"can take attributes from spans"`
-- L427: `"can override a specific leaf node's shape"`
-- L433: `"can override a specific non-leaf node's shape"`
-- L439: `"can give a plot with atomic shape"`
-- L445: `"can dynamically redraw a plot as an atom"`
-- L453: `"can dynamically redraw an atom plot as a regular plot"`
-- L461: `"can add attributes to a specific node"`
-- L467: `"won't try to add attributes to a text node"`
-- L472: `"doesn't leave stale decorations on complex changes"`
-- L486: `"can add wrapping structure to a specific node"`
-- L492: `"can handle a change modifying the depth of a plot's wrapper"`
-- L500: `"can replace the shape of a node type"`
-- L505: `"can handle changes inside atomic plots"`
-- L513: `"can handle deletion inside an atomic plot"`
-- L520: `"can handle changes covering parts of atomic plots"`
-- L526: `"can handle changes covering parts of wrapped atomic plots"`
-- L535: `"can handle changes covering the start of atomic plots"`
-- L541: `"supports selectors for wrapper decorations"`
-- L548: `"can reuse DOM structure when adding a shape wrapper"`
-- L557: `"makes isAtom aware of tag shapes"`
-- L563: `"can override shapes by tag"`
-- L568: `"makes by-point shapes override by-tag ones"`
-- L577: `"properly updates when tag shapes change"`
-- L585: `"properly updates when positional shapes change"`
-- L595: `"supports dynamic shapes"`
+- L54: `"can draw a simple document"`
+- L58: `"can draw basic structure"`
+- L63: `"can draw marks on text"`
+- L68: `"can draw marks with a preferred target"`
+- L84: `"can draw nodes with structure representation"`
+- L88: `"can draw nodes with complicated structure"`
+- L108: `"can draw marks on nodes"`
+- L113: `"can update for a text change"`
+- L118: `"can update for a tag change"`
+- L123: `"can make multiple changes"`
+- L128: `"can update text marks"`
+- L135: `"can update node marks"`
+- L142: `"can draw spanning marks"`
+- L147: `"can join spanning marks in updates"`
+- L152: `"preserves DOM nodes with changed wrappers marks"`
+- L159: `"properly syncs replacements inside wrappers"`
+- L165: `"preserves DOM nodes with changed attribute marks"`
+- L172: `"preserves mark wrapper nodes"`
+- L179: `"adds breaks for empty textblocks and those ending in breaks"`
+- L184: `"fixes textblock breaks on changes"`
+- L190: `"keeps parent nodes when updating their content"`
+- L197: `"reuses text nodes when changing their start"`
+- L205: `"reuses text nodes when changing their end"`
+- L213: `"reuses text nodes when changing their middle"`
+- L221: `"can handle adding a mark to part of a textblock"`
+- L226: `"can handle a change moving content up"`
+- L233: `"can handle a change moving content down"`
+- L240: `"handles insertion of text before a mark"`
+- L245: `"can handle random changes"`
+- L262: `"can draw widgets around nodes"`
+- L268: `"can reuse widgets when replacing next to them"`
+- L278: `"can reuse widgets when updating across them"`
+- L291: `"updates tag widgets at the end of a changed plot"`
+- L309: `"doesn't break spanning wrappers on widgets"`
+- L315: `"keeps structure entirely the same on a no-change update"`
+- L326: `"can draw widgets from a point set"`
+- L334: `"can update widgets from a point set"`
+- L344: `"can update widgets in place"`
+- L354: `"orders widgets by side"`
+- L361: `"can redraw widgets at the end of the document"`
+- L378: `"doesn't duplicate widgets on section boundaries"`
+- L389: `"can decorate tags"`
+- L396: `"updates wrappers when they change"`
+- L407: `"can handle changes from range and point decorations in a single transactions"`
+- L418: `"can add attributes to tags"`
+- L422: `"can remove attributes from tags"`
+- L429: `"preserves DOM nodes when adding attributes"`
+- L436: `"doesn't drop point decorations directly after a change"`
+- L450: `"can take wrappers from spans"`
+- L456: `"can take attributes from spans"`
+- L462: `"notices changes to spans that start before a preserved section"`
+- L471: `"can override a specific leaf node's shape"`
+- L477: `"can override a specific non-leaf node's shape"`
+- L483: `"can give a plot with atomic shape"`
+- L489: `"can dynamically redraw a plot as an atom"`
+- L497: `"can dynamically redraw an atom plot as a regular plot"`
+- L505: `"can add attributes to a specific node"`
+- L511: `"won't try to add attributes to a text node"`
+- L516: `"doesn't leave stale decorations on complex changes"`
+- L530: `"can add wrapping structure to a specific node"`
+- L536: `"can handle a change modifying the depth of a plot's wrapper"`
+- L544: `"can replace the shape of a node type"`
+- L549: `"properly handles insertions at the start and end of wrapping structure"`
+- L558: `"can handle changes inside atomic plots"`
+- L566: `"can handle deletion inside an atomic plot"`
+- L573: `"can handle changes covering parts of atomic plots"`
+- L579: `"can handle changes covering parts of wrapped atomic plots"`
+- L588: `"can handle changes covering the start of atomic plots"`
+- L594: `"supports selectors for wrapper decorations"`
+- L601: `"can reuse DOM structure when adding a shape wrapper"`
+- L610: `"makes isAtom aware of tag shapes"`
+- L616: `"can override shapes by tag"`
+- L621: `"makes by-point shapes override by-tag ones"`
+- L630: `"properly updates when tag shapes change"`
+- L638: `"properly updates when positional shapes change"`
+- L648: `"supports dynamic shapes"`
 
-## `webtest-coords.ts` — portable — 14 call sites
+## `webtest-coords.ts` — portable — 15 call sites
 
 - L19: `"finds reasonable coordinates for simple text"`
 - L29: `"properly assigns a side to positions"`
@@ -659,12 +687,13 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L72: `"works in block atoms"`
 - L84: `"can handle different text height"`
 - L95: `"works in right-to-left context"`
-- L110: `"can move between paragraphs"`
-- L120: `"can move within a paragraph"`
-- L133: `"preserves a goal column"`
-- L141: `"can move across atom blocks"`
-- L147: `"can enter nested blocks"`
-- L162: `"can move through rows in a table"`
+- L102: `"works around line breaks"`
+- L125: `"can move between paragraphs"`
+- L135: `"can move within a paragraph"`
+- L148: `"preserves a goal column"`
+- L156: `"can move across atom blocks"`
+- L162: `"can enter nested blocks"`
+- L177: `"can move through rows in a table"`
 
 ## `webtest-dom-changes.ts` — portable — 7 call sites
 
@@ -688,15 +717,19 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 - L79: `"applies transaction appenders"`
 - L87: `"calls connect/disconnect on widgets"`
 
-## `webtest-resolve-dom.ts` — portable — 7 call sites
+## `webtest-resolve-dom.ts` — portable — 11 call sites
 
-- L20: `"resolves into text nodes when biased"`
-- L28: `"resolves simple positions"`
-- L48: `"resolves properly between widgets"`
-- L61: `"picks the correct side on mark boundaries"`
-- L73: `"picks the right side of widgets on wrapper boundaries"`
-- L91: `"does not resolve into inner node structure"`
-- L99: `"can handle node structure inside content wrappers"`
+- L23: `"resolves into text nodes when biased"`
+- L31: `"resolves simple positions"`
+- L51: `"resolves properly between widgets"`
+- L64: `"picks the correct side on mark boundaries"`
+- L76: `"picks the right side of widgets on wrapper boundaries"`
+- L94: `"does not resolve into inner point structure"`
+- L102: `"does go into inner content wrappers"`
+- L116: `"can handle node structure inside content wrappers"`
+- L138: `"locates basic positions"`
+- L160: `"works in nodes with multiple wrappers"`
+- L176: `"handles inline plot buffers correctly"`
 
 ## `webtest-serialize.ts` — portable-mixed — 38 call sites
 
@@ -741,7 +774,7 @@ This is the complete source-declared `it(...)` call-site index for the test tree
 
 ## Accounting
 
-- Files indexed: 27/27
-- Runnable files indexed: 24/24
-- Declared `it(...)` call sites: 644
+- Files indexed: 29/29
+- Runnable files indexed: 26/26
+- Declared `it(...)` call sites: 675
 - Unresolved files: 0

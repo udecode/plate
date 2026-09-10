@@ -3,5 +3,4 @@
  */
 
 export * from './BaseEmojiPlugin';
-export * from './EmojiGrid';
-export * from './EmojiLibrary';
+export * from './createEmojiSearch';

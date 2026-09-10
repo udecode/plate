@@ -1,0 +1,6 @@
+repo	path	status	relevance
+Slate v2	.tmp/slate-v2	primary	Runtime/tests/benchmarks under active private-alpha development.
+Slate legacy	../slate	kept-baseline	Shows same-path huge-document example remains chunking-first and weakly tested.
+ProseMirror	../prosemirror	kept	Best source for DOM geometry and native/editor selection ownership boundaries.
+Lexical	../lexical	kept	Useful source for dirty selection, model select-all, and selection mutation bookkeeping.
+Tiptap	../tiptap	duplicate	Mostly ProseMirror wrapper for this lane.

@@ -7,7 +7,7 @@ Plugin authors put independent fields in the plugin constructor. Apps and
 registries finish a descriptor with one terminal `.configure()` call, including
 `component` when it renders an ordinary node.
 
-## Method Map
+## Method map
 
 | Method | Use it for | Type behavior |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
 `editor`, `plugin`, `api`, `read`, `defineCodecs`, `store`, and the active `tx`
 inside update contributions.
 
-## Use Constructor Context
+## Use constructor context
 
 Put independent fields and their context callbacks in the constructor. Use
 `.extend()` for an imported/prebuilt declaration or types introduced by an
@@ -102,7 +102,7 @@ export const CounterPairPlugin = CounterPlugin.extend(() => ({
 
 Calling a portal one-shot update there would open a nested transaction.
 
-## Install Plite Capabilities
+## Install Plite capabilities
 
 Declare generic editor substrate directly on the plugin: schema, commands,
 corrections, read middleware, state/effect/facet/selection descriptors,
@@ -149,7 +149,7 @@ Plugin-specific and editor-wide host services share the root `api` channel;
 Plite projects that API under the plugin name. Do not publish the same
 implementation twice.
 
-## Declare Product Codecs
+## Declare product codecs
 
 Build the MIME-keyed map with the callback's `defineCodecs`. This is the one
 inline inference anchor for codec callbacks.
@@ -178,7 +178,7 @@ schema-aware rule or a non-empty ordered rule tuple when the plugin owns
 multiple HTML representations. Keep that tuple in the same map. Do not author
 a direct codec map or add `target` manually.
 
-## Bind A Component
+## Bind a component
 
 Bind an ordinary node component in the same terminal `.configure()` call as
 the descriptor's other consumer overrides.
@@ -199,7 +199,7 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({
 Component binding preserves the plugin type. Do not assign the node component
 through a renderer registry field.
 
-## Configure Existing Fields
+## Configure existing fields
 
 Use `.configure()` once, where an app or registry installs a plugin, to change
 fields already declared by the author.
@@ -218,7 +218,7 @@ Object configs use Plate's merge rules: objects merge deeply, arrays replace,
 and `initialState` shallow-merges. `.configure()` cannot publish a new capability and
 must be the final call.
 
-## Configure Related Plugins
+## Configure related plugins
 
 Configure a required dependency on its own descriptor and place that complete
 descriptor beside the owner in the app or registry plugin array.
@@ -249,7 +249,7 @@ derived from the same authored plugin compose in array order: earlier fields
 survive unless a later configuration defines the same field. Unrelated plugins
 and divergent authoring branches cannot share a name.
 
-## Convert Plite Plugins
+## Convert Plite plugins
 
 Use `toPlatePlugin()` in the owning React entrypoint to publish a reusable
 Plate descriptor or add Plate-only behavior. App consumers do not insert a

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-03-huge-code-block-demo",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-03-huge-code-block-demo.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-03",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Render explicitly high-scale code blocks with bounded CodeMirror DOM.",
+  "targets": [
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-demo",
+      "files": [
+        "apps/www/src/registry/examples/code-block-demo.tsx",
+        "apps/www/src/registry/examples/values/code-block-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-static",
+      "files": ["apps/www/src/registry/components/editor/list-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-03-code-block-showcase-10-000-line-0bce5cc3",
+      "kind": "behavior",
+      "summary": "Keep a 10,000-line highlighted code block responsive with bounded CodeMirror DOM and Plate-owned editing and history.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-codemirror", "code-block-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-03",
+          "entry": "2026-09-03-huge-code-block-demo",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-03-huge-code-block-demo-2",
+      "kind": "behavior",
+      "summary": "Keep large highlighted code blocks responsive when list support is installed.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list", "list-static"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-03",
+          "entry": "2026-09-03-huge-code-block-demo",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,11 +1,7 @@
-import type { EditorSnapshot, Path, NodeKey } from '../..';
+import type { Path } from '../..';
 import type { DOMStrategyOptions } from '../dom-strategy/create-segment-plan';
 import type { DOMStrategyVirtualizedConfig } from '../dom-strategy/use-virtualized-root-plan';
 import type { DOMStrategyRootConfig } from '../editable/root-selector-sources';
-import type {
-  PliteProjectionRuntimeScope,
-  PliteSourceDirtinessContext,
-} from '../projection-store';
 import type { EditableDOMStrategyCohort } from './editable';
 
 export const ROOT_GROUP_THRESHOLD = 1000;
@@ -13,48 +9,6 @@ export const INTERNAL_PARTIAL_DOM_SEGMENT_SIZE = 32;
 export const INTERNAL_PARTIAL_DOM_PROMOTION_WINDOW_SIZE = 8;
 
 export const getSnapshotPathKey = (path: Path) => path.join('.');
-
-export const resolveProjectionRuntimeScope = (
-  runtimeScope: PliteProjectionRuntimeScope | undefined,
-  context: PliteSourceDirtinessContext
-) => {
-  if (!runtimeScope) {
-    return null;
-  }
-
-  return typeof runtimeScope === 'function'
-    ? runtimeScope(context)
-    : runtimeScope;
-};
-
-export const mergeMountedRuntimeScope = (
-  snapshot: EditorSnapshot,
-  explicitRuntimeScope: readonly NodeKey[] | null,
-  mountedRuntimeScope: readonly NodeKey[] | null
-) => {
-  if (!mountedRuntimeScope) {
-    return explicitRuntimeScope;
-  }
-
-  if (!explicitRuntimeScope) {
-    return mountedRuntimeScope;
-  }
-
-  const mountedTopLevelNodeKeys = new Set(mountedRuntimeScope);
-
-  return explicitRuntimeScope.filter((nodeKey) => {
-    const path = snapshot.index.pathOf(nodeKey);
-    const topLevelPath = path ? [path[0]] : null;
-    const topLevelNodeKey =
-      topLevelPath && typeof topLevelPath[0] === 'number'
-        ? snapshot.index.keyAt(topLevelPath)
-        : null;
-
-    return topLevelNodeKey
-      ? mountedTopLevelNodeKeys.has(topLevelNodeKey)
-      : mountedTopLevelNodeKeys.has(nodeKey);
-  });
-};
 
 type InternalPartialDOMStrategyOptions = {
   overscan?: number;

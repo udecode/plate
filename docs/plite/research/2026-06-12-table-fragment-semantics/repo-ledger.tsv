@@ -1,0 +1,6 @@
+repo_key	name	local_path	status	last_activity	reason
+prosemirror-tables	ProseMirror/prosemirror-tables	/Users/zbeyens/git/prosemirror-tables	cloned	2026-06-12	Primary table map, cell selection, copy/paste, span normalization implementation.
+tiptap	ueberdosis/tiptap	/Users/zbeyens/git/tiptap	existing	2026-06-12	Confirms Tiptap table semantics are a ProseMirror tables wrapper, not a separate policy source.
+lexical	facebook/lexical	/Users/zbeyens/git/lexical	existing	2026-06-12	Secondary selected-table/clipboard contrast.
+slate-v2	Slate v2 lab	/Users/zbeyens/git/plate-2/.tmp/slate-v2	existing	2026-06-12	Target runtime/tests.
+

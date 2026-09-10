@@ -10,6 +10,9 @@ metadata:
 
 # Issue Harvester
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use this skill when the user wants exhaustive issue-history coverage, including
@@ -51,9 +54,9 @@ Clusters and matrices route work. They never close an issue row.
   issue corpus clustering, portable invariant matrix, and source test inventory.
 - `clawsweeper`: provenance discipline: exact thread, exact behavior, no claim
   without proof, no GitHub mutations unless explicitly asked.
-- `auto`: timeboxed/batch supervisor; delegates `issue-harvester`
+- `task autonomous`: timeboxed/batch supervisor; delegates `issue-harvester`
   to this skill, then continues safe checkpoints.
-- `resolve-slate-issue`: receive one public Slate issue row, run coordinator
+- `maintainer slate-issue`: receive one public Slate issue row, run coordinator
   intake, and delegate a normalized local repair packet when warranted.
 - `maintainer`: receive any other public issue row, run queue/claim/authority
   checks, and delegate a normalized local repair packet when warranted.
@@ -81,9 +84,9 @@ local fixtures, helpers, names, and assertions.
 
 ## Required First Checkpoint
 
-Before mutable work, use `autogoal` when the run is broad, timeboxed, or
-expected to mutate tests/docs/skills. The first checkpoint must write checkable
-rows for:
+For broad or timeboxed work, capture the following rows once in the active
+Task plan. Apply the project's standing Autogoal request for long-running work.
+The first checkpoint records:
 
 - target repo and repo key;
 - issue state, default `all`;
@@ -308,7 +311,7 @@ objective. For each unchecked row:
 
 Do not patch runtime just because an external issue exists. Patch runtime only
 after a local failing proof exists or the missing test proves a current behavior
-contract gap. Return that issue-bearing candidate to `resolve-slate-issue` for
+contract gap. Return that issue-bearing candidate to `maintainer slate-issue` for
 one public Slate issue or `maintainer` for any other public issue; only the
 coordinator delegates the normalized local repair packet to `patch`.
 

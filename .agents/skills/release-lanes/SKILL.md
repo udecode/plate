@@ -1,6 +1,6 @@
 ---
-description: 'Maintain Plate''s latest and beta release lanes end-to-end with an autogoal plan: promote next to main, sync main directly back into next, repair release metadata conflicts, re-enter beta, and verify npm/GitHub release state.'
-argument-hint: '[status | sync | promote | verify | full]'
+description: 'Maintain Plate''s latest and beta release lanes end-to-end through Task: promote next to main, sync main directly back into next, repair release metadata conflicts, re-enter beta, and verify npm/GitHub release state.'
+argument-hint: '[status | sync [dry-run] | promote [dry-run|execute] | verify | full <authorized release scope>]'
 name: release-lanes
 metadata:
   skiller:
@@ -8,6 +8,9 @@ metadata:
 ---
 
 # Release Lanes
+
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
 
 Use this when the user asks to maintain Plate `latest` and `beta`, promote beta
 to stable, sync `main` into `next`, recover release lane drift, verify npm
@@ -22,14 +25,18 @@ for deterministic release metadata conflicts. Sync directly with a merge commit,
 repair known release metadata automatically, push `next`, then let `release.yml`
 publish beta.
 
-One invocation is permission to run the lane until completion. Ask again only
-for hard stops.
+Execute the mode authorized by the active user request. `status` and `verify`
+are read-only. An explicit sync or promotion request authorizes its necessary
+Git/release operations; merge, public messages and unrelated cleanup still
+require the corresponding explicit authority. Do not reconfirm authority the
+user has already granted.
 
 ## Autogoal Contract
 
-This is a derived autogoal skill.
+Task owns the release plan and lifecycle. Native goals follow the user's direct or standing request. The optional template below is a file-based lane checklist, not
+a native goal.
 
-Default flow mode: one-shot execution.
+Default flow mode: one-shot execution of the authorized mode.
 
 Use:
 
@@ -39,8 +46,11 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --title "release lane maintenance"
 ```
 
-Create or continue a goal before mutating remote release branches. The goal is
-complete only when the requested lane state is true and the template gates pass.
+Record the authorized mode and required evidence before mutating remote
+release branches. A bounded direct sync uses its complete fast mode without a new plan. If it
+grows into sustained investigation or repair, apply the standing Autogoal request
+and persist the remaining sync, release and read-back obligations. Close only when the requested lane state is true and
+its applicable proof is recorded.
 
 ## Lanes
 
@@ -108,6 +118,22 @@ gh variable list
 
 ## Modes
 
+These are skill arguments, not subcommands of `release-branch-prs.mjs`.
+
+| Invocation | Action |
+| --- | --- |
+| `release-lanes status` | Read branch, workflow and npm state. |
+| `release-lanes sync` | Dry-run, then perform and push the direct main-to-next sync. |
+| `release-lanes sync dry-run` | Inspect the direct sync without committing or pushing. |
+| `release-lanes promote` or `promote dry-run` | Dispatch the promotion workflow with `dry_run=true`. |
+| `release-lanes promote execute` | Dispatch with `dry_run=false`; verify the generated next-to-main PR. Merge only with merge authority. |
+| `release-lanes verify` | Read release workflows, npm tags and GitHub releases. |
+| `release-lanes full <scope>` | Status, the explicitly requested promotion/merge or sync steps, then verification. No unrelated release operation is implied. |
+
+The former `sync-main-to-next` skill maps to `release-lanes sync`.
+The former `promote-beta` skill maps to `release-lanes promote`.
+Both use the executable owners below; no compatibility skill is needed.
+
 ### Status
 
 Read state only:
@@ -134,6 +160,9 @@ Record:
 
 ### Sync Main To Next
 
+Use the complete [direct sync recipe](./references/sync.md) for this fast mode.
+It skips planning and Autoreview unless a planning artifact was requested.
+
 Run after a stable release, after merging a promote PR, or whenever `main` has
 commits missing from `next`.
 
@@ -144,6 +173,8 @@ node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
 ```
 
 Then run the direct sync:
+
+For an explicit `dry-run` request, stop after the dry run and report it.
 
 ```bash
 node tooling/scripts/release-branch-prs.mjs sync-main-to-next --push
@@ -216,8 +247,8 @@ Then review the generated `next -> main` PR:
 - package versions are stable, not `-beta.*`
 - body tells maintainers to use **Create a merge commit**
 
-Merging the promote PR is allowed when the user asked for full automation or
-merge. Use a merge commit, not squash or rebase.
+Merge the promote PR only when the user explicitly authorized that merge as
+part of the release request. Use a merge commit, not squash or rebase.
 
 ### Verify Releases
 
@@ -253,7 +284,8 @@ gh pr list --base next --head sync/main-to-next --state open --json number,url
 gh pr close <number> --comment "Closing because release-lanes synced main directly into next."
 ```
 
-Do this only after direct sync and verification pass.
+Do this only after direct sync and verification pass and the active request
+authorizes closing the stale PRs and posting the cleanup message.
 
 ## Hard Stops
 
@@ -267,8 +299,8 @@ Stop only for:
 - branch protection rejects the required merge or push
 - local tracked or untracked changes are present before a real direct sync
 
-Do not stop to ask whether to run the next obvious lane step. The goal plan is
-the authorization boundary.
+Continue the next in-scope lane step under existing user authority. The plan
+records that authority and its proof; it does not grant new authority.
 
 ## Handoff
 

@@ -1,18 +1,14 @@
 export type { InternalPlateEditorWithInstalledPlugins } from '../editor/Editor';
 export { createPluginContext } from '../plugin/createPluginContext.internal';
+export * from '../utils/getRenderNodeProps.internal';
+export * from '../utils/pipeRenderElement.internal';
+export * from '../utils/pipeRenderLeaf.internal';
+export * from '../utils/pipeRenderText.internal';
+export * from '../utils/pluginRenderElement.internal';
+export * from '../utils/pluginRenderLeaf.internal';
+export * from '../utils/pluginRenderText.internal';
 export * from '../components/EditorRefEffect';
-export * from '../components/PlateControllerEffect';
 export * from '../libs/index';
-export * from '../plugins/event-editor/EventEditorStore';
-export {
-  getEventPlateId,
-  BLUR_EDITOR_EVENT,
-  FOCUS_EDITOR_EVENT,
-} from '../plugins/event-editor/EventEditorStore';
-export { useFocusEditorEvents } from '../plugins/event-editor/useEventEditor';
 export * from '../stores/element/useElementStore';
-export type * from '../stores/plate/PlateStore';
-export * from '../stores/plate/createPlateStore';
-export * from '../stores/plate-controller/plateControllerStore';
+export * from '../stores/plate/useEditor';
 export * from '../utils/index';
-export { BelowRootNodes } from '../utils/pluginRenderElement';

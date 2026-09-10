@@ -6,7 +6,7 @@ description: "Core editor runtime API for reads, transactions, roots, state, sch
 An editor owns the document runtime. It is the root node of the document, and
 its path is `[]`. The public editor object is intentionally small.
 
-## Public Editor Shape
+## Public editor shape
 
 ```typescript
 interface BaseEditor<
@@ -18,7 +18,7 @@ interface BaseEditor<
   >;
   readonly anchor: EditorAnchorApi;
   readonly id: string;
-  extend(
+  install(
     extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ): () => void;
@@ -30,7 +30,8 @@ interface BaseEditor<
     > extends never
       ? [never]
       : []
-  ): EditorExtensionPortal<TExtension>;
+  ): EditorExtensionPortal<TExtension, V>;
+  key: EditorKeyApi;
   read: EditorRead<V, TExtensions>;
   subscribe(listener: SnapshotListener): () => void;
   subscribeCommit(listener: (commit: EditorCommit) => void): () => void;
@@ -43,19 +44,19 @@ type Editor<
 > = BaseEditor<V, TExtensions>;
 ```
 
-## On This Page
+## On this page
 
 - [Creating an editor](editor#creating-an-editor)
 - [Reading state](editor#reading-state)
 - [Locating nodes](editor#locating-nodes)
 - [Updating state](editor#updating-state)
 - [Document roots](editor#document-roots)
-- [Document meta](editor#document-state)
+- [Document meta](editor#document-meta)
 - [Schema behavior](editor#schema-behavior)
 - [Runtime APIs](editor#runtime-apis)
 - [Subscribing to commits](editor#subscribing-to-commits)
 - [Installing and reconfiguring extensions](editor#installing-and-reconfiguring-extensions)
-- [Pure node and location helpers](editor#pure-node-and-location-helpers)
+- [Immutable node and location utilities](editor#immutable-node-and-location-utilities)
 
 ## Creating an editor
 
@@ -408,7 +409,6 @@ Common schema checks include:
 - `state.schema.getVocabulary()`
 - `state.schema.identity()`
 - `state.schema.isAtom(element)`
-- `state.schema.isEditableIsland(element)`
 - `state.schema.isElementTypeInGroup(type, group)`
 - `state.schema.isInline(element)`
 - `state.schema.isIsolating(element)`
@@ -429,6 +429,12 @@ Resolved properties expose their value descriptor, target, placement, and
 lifecycle. Value descriptors provide canonical defaults and structural JSON
 equality. Resolved element content exposes `allowedElementTypes`, `allowsText`,
 `allowsUnknownElements`, cardinality, and its canonical default.
+
+Those compiled content facts also guard React projections. For example,
+`slots.externalText` accepts only a non-void block whose resolved content and
+live value contain exactly one direct Text. The renderer cannot opt an invalid
+schema into that runtime.
+
 Use `schema.handle.element(...)` and `schema.handle.property(...)` when the
 schema is known. The raw property query is for property keys discovered at
 runtime.

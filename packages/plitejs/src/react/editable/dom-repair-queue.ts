@@ -5,7 +5,11 @@ import {
   isDOMElement,
   isDOMText,
 } from '../../dom';
-import type { DOMPhaseScheduler } from '../../dom/internal';
+import {
+  type DOMPhaseScheduler,
+  isGeckoDOMHost,
+  resolveDOMTextFlowPoint,
+} from '../../dom/internal';
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -817,11 +821,9 @@ export const createDOMRepairQueue = ({
             }
           }
 
-          const isProjectedTextHost =
+          const isDecoratedTextHost =
             textHost.getAttribute('data-plite-dom-sync-reason') ===
-            'projection';
-          const isProjectedDOMSyncTextHost =
-            textHost.getAttribute('data-plite-projected-dom-sync') === 'true';
+            'decoration';
           const isVirtualizedTextHost = isInsideVirtualizedDOM(textHost);
           const shouldRetainModelOwnedTextInsert =
             kind === 'repair-caret-after-text-insert' &&
@@ -829,8 +831,7 @@ export const createDOMRepairQueue = ({
           const isModelOwnedTextInsertRepair =
             kind === 'repair-caret-after-text-insert' &&
             (isVirtualizedTextHost ||
-              isProjectedTextHost ||
-              isProjectedDOMSyncTextHost ||
+              isDecoratedTextHost ||
               shouldRetainModelOwnedTextInsert);
           const pendingTextInsertRepairMatches =
             pendingTextInputRepairPathKey === path.join(',') &&
@@ -848,8 +849,7 @@ export const createDOMRepairQueue = ({
             kind !== 'repair-caret-after-text-insert' || !isVirtualizedTextHost;
           const shouldReleaseTextInsertSelectionToDOM =
             !isVirtualizedTextHost &&
-            !isProjectedTextHost &&
-            !isProjectedDOMSyncTextHost &&
+            !isDecoratedTextHost &&
             !shouldRetainModelOwnedTextInsert;
           let root: Document | ShadowRoot;
 
@@ -863,6 +863,108 @@ export const createDOMRepairQueue = ({
 
           if (!domSelection) {
             return false;
+          }
+
+          const repairDOMPoint = (
+            domNode: globalThis.Node,
+            domOffset: number
+          ) => {
+            const domRange = textHost.ownerDocument.createRange();
+
+            domRange.setStart(domNode, domOffset);
+            domRange.setEnd(domNode, domOffset);
+            const selectionMatches =
+              domSelection.rangeCount > 0 &&
+              domSelection.anchorNode === domNode &&
+              domSelection.anchorOffset === domOffset &&
+              domSelection.focusNode === domNode &&
+              domSelection.focusOffset === domOffset;
+
+            if (isModelOwnedTextInsertRepair) {
+              setEditableModelSelectionPreference({
+                inputController,
+                preferModelSelection: true,
+                reason: 'repair-induced',
+                selectionSource: 'model-owned',
+              });
+              armModelOwnedTextInputGuard({ inputController });
+            }
+            if (!selectionMatches) {
+              armRepairInducedSelectionOriginGuard();
+              profileDOMRepairDuration('set-dom-selection', () => {
+                domSelection.setBaseAndExtent(
+                  domNode,
+                  domOffset,
+                  domNode,
+                  domOffset
+                );
+              });
+              if (
+                domSelection.rangeCount === 0 ||
+                domSelection.anchorNode !== domNode ||
+                domSelection.anchorOffset !== domOffset ||
+                domSelection.focusNode !== domNode ||
+                domSelection.focusOffset !== domOffset
+              ) {
+                domSelection.removeAllRanges();
+                domSelection.addRange(domRange);
+              }
+            }
+            if (
+              kind === 'repair-caret-after-text-insert' &&
+              (pendingTextInsertRepairMatches ||
+                (isModelOwnedTextInsertRepair &&
+                  !hasPendingTextInsertRepair)) &&
+              domSelection.anchorNode === domNode &&
+              domSelection.anchorOffset === domOffset &&
+              domSelection.focusNode === domNode &&
+              domSelection.focusOffset === domOffset
+            ) {
+              inputController.state.pendingNativeTextInputRepairOffset = null;
+              inputController.state.pendingNativeTextInputRepairPathKey = null;
+              textInsertRepairCompleted = true;
+            }
+            if (
+              shouldScrollTextHost &&
+              (kind !== 'repair-caret-after-text-insert' ||
+                !selectionMatches ||
+                isGeckoDOMHost(textHost)) &&
+              !shouldSkipSelectionScroll(editor)
+            ) {
+              profileDOMRepairDuration('scroll-text-host', () => {
+                scrollSelectionIntoView(editor, domRange);
+              });
+            }
+            if (
+              kind === 'repair-caret-after-text-insert' &&
+              shouldReleaseTextInsertSelectionToDOM
+            ) {
+              const repairedText = readRuntimeText(editor, path)?.text ?? null;
+
+              if (repairedText != null) {
+                inputController.state.recentTextInputRepairEcho = {
+                  expiresAt:
+                    getDOMRepairProfilerTime() +
+                    TEXT_INPUT_REPAIR_ECHO_GUARD_MS,
+                  pathKey: path.join(','),
+                  selectionOffset: pliteOffset,
+                  text: repairedText,
+                };
+              }
+              setEditableModelSelectionPreference({
+                inputController,
+                preferModelSelection: false,
+                selectionSource: 'dom-current',
+              });
+              textInsertRepairCompleted = true;
+            }
+
+            return true;
+          };
+          const textFlowPoint = resolveDOMTextFlowPoint(textHost, pliteOffset);
+
+          if (textFlowPoint) {
+            return repairDOMPoint(textFlowPoint.node, textFlowPoint.offset);
           }
 
           const strings = Array.from(
@@ -894,84 +996,7 @@ export const createDOMRepairQueue = ({
                 : Math.max(0, Math.min(pliteOffset - offset, length));
 
               const domNode = textNode ?? string;
-              const domRange = domNode.ownerDocument.createRange();
-
-              domRange.setStart(domNode, domOffset);
-              domRange.setEnd(domNode, domOffset);
-
-              armRepairInducedSelectionOriginGuard();
-              if (isModelOwnedTextInsertRepair) {
-                setEditableModelSelectionPreference({
-                  inputController,
-                  preferModelSelection: true,
-                  reason: 'repair-induced',
-                  selectionSource: 'model-owned',
-                });
-                armModelOwnedTextInputGuard({ inputController });
-              }
-              profileDOMRepairDuration('set-dom-selection', () => {
-                domSelection.setBaseAndExtent(
-                  domNode,
-                  domOffset,
-                  domNode,
-                  domOffset
-                );
-              });
-              if (
-                domSelection.rangeCount === 0 ||
-                domSelection.anchorNode !== domNode ||
-                domSelection.anchorOffset !== domOffset ||
-                domSelection.focusNode !== domNode ||
-                domSelection.focusOffset !== domOffset
-              ) {
-                domSelection.removeAllRanges();
-                domSelection.addRange(domRange);
-              }
-              if (
-                kind === 'repair-caret-after-text-insert' &&
-                (pendingTextInsertRepairMatches ||
-                  (isModelOwnedTextInsertRepair &&
-                    !hasPendingTextInsertRepair)) &&
-                domSelection.anchorNode === domNode &&
-                domSelection.anchorOffset === domOffset &&
-                domSelection.focusNode === domNode &&
-                domSelection.focusOffset === domOffset
-              ) {
-                inputController.state.pendingNativeTextInputRepairOffset = null;
-                inputController.state.pendingNativeTextInputRepairPathKey =
-                  null;
-                textInsertRepairCompleted = true;
-              }
-              if (shouldScrollTextHost && !shouldSkipSelectionScroll(editor)) {
-                profileDOMRepairDuration('scroll-text-host', () => {
-                  scrollSelectionIntoView(editor, domRange);
-                });
-              }
-              if (
-                kind === 'repair-caret-after-text-insert' &&
-                shouldReleaseTextInsertSelectionToDOM
-              ) {
-                const repairedText =
-                  readRuntimeText(editor, path)?.text ?? null;
-
-                if (repairedText != null) {
-                  inputController.state.recentTextInputRepairEcho = {
-                    expiresAt:
-                      getDOMRepairProfilerTime() +
-                      TEXT_INPUT_REPAIR_ECHO_GUARD_MS,
-                    pathKey: path.join(','),
-                    selectionOffset: pliteOffset,
-                    text: repairedText,
-                  };
-                }
-                setEditableModelSelectionPreference({
-                  inputController,
-                  preferModelSelection: false,
-                  selectionSource: 'dom-current',
-                });
-                textInsertRepairCompleted = true;
-              }
-              return true;
+              return repairDOMPoint(domNode, domOffset);
             }
 
             offset = nextOffset;

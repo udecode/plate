@@ -13,7 +13,7 @@ import {
 } from 'platejs/react';
 
 import { property, schema, type Value } from '../src/core';
-import type { DOMEditor } from '../src/dom';
+import type { DOMEditor } from '../src/dom/plite-dom.internal';
 import type { InternalPlateEditorWithInstalledPlugins } from '../src/react/editor/Editor';
 import type { PliteReactEditor } from '../src/react/internal/plite-types';
 
@@ -85,7 +85,7 @@ const broadDOMEditor: DOMEditor<any, any> = defaultUseEditorReturn;
 const broadReactEditor: PliteReactEditor<any, any> = defaultUseEditorReturn;
 const broadUseEditorReturn: Editor = defaultUseEditorReturn;
 
-// @ts-expect-error Store access is owned by usePlateStore(), not the editor.
+// @ts-expect-error Provider state belongs to the React lifecycle.
 defaultUseEditorReturn.store;
 
 // @ts-expect-error Default Plate editors expose Core API groups only.

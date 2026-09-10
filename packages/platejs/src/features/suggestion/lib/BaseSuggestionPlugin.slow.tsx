@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt, projectTestSelectionRange } from '#platejs-test-internal';

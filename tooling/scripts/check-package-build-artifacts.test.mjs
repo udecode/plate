@@ -96,6 +96,40 @@ test('asserts every public runtime and declaration artifact', (t) => {
   });
 });
 
+test('requires exported stylesheet bytes even when their declaration exists', (t) => {
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-css-'));
+
+  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+  mkdirSync(path.join(packageRoot, 'math'));
+  writeFileSync(
+    path.join(packageRoot, 'package.json'),
+    JSON.stringify({
+      exports: {
+        './math/katex.css': {
+          types: './math/katex.css.d.ts',
+          default: './math/katex.css',
+        },
+      },
+    })
+  );
+  writeFileSync(path.join(packageRoot, 'math/katex.css.d.ts'), 'export {};\n');
+
+  assert.throws(
+    () => assertPackageBuildArtifacts(packageRoot),
+    /Missing public build artifacts: math\/katex\.css$/u
+  );
+
+  writeFileSync(
+    path.join(packageRoot, 'math/katex.css'),
+    '.katex { color: red; }'
+  );
+  assert.doesNotThrow(() => assertPackageBuildArtifacts(packageRoot));
+  assert.deepEqual(
+    getPackageBuildArtifacts({ exports: { './style.css': './style.css' } }),
+    ['style.css']
+  );
+});
+
 test('rejects forbidden runtime packages through emitted local chunks', (t) => {
   const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
 

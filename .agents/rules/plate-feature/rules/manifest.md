@@ -54,7 +54,7 @@ section to the same plan with these resolved rows:
 
 | Contract                      | Decision                                                                                                        | Evidence                                 |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| shared Plate host             | explicit `peerDependencies.platejs`, `devDependencies.platejs: workspace:^`, and no normal `platejs` dependency | manifest path plus `pnpm test:manifests` |
+| shared Plate host             | public `@platejs/*` consumers declare an explicit `peerDependencies.platejs` range and `devDependencies.platejs: workspace:^`; consumers never put `platejs` in normal dependencies; the `platejs` host does not peer-depend on itself | manifest path plus `pnpm test:manifests` |
 | Plite ownership               | only `packages/platejs` declares or imports `plitejs`; raw Plite proof/test exceptions are named                | manifest/import audit                    |
 | external dependency ownership | normal dependency, shared-runtime peer, or opt-in optional peer selected per actual consumer job                | manifest plus import/entrypoint audit    |
 | entrypoint runtime            | every public entrypoint declares `headless`, `ssr`, or `client`; headless roots stay React-free                 | DAG runtime matrix and generated proofs  |

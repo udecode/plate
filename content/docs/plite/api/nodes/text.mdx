@@ -1,6 +1,6 @@
 ---
 title: "Text API"
-description: "Text leaf API for marks, decorations, and text checks."
+description: "Text leaf API for marks and text checks."
 ---
 
 `Text` objects represent the nodes that contain the actual text content of a Plite document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
@@ -13,7 +13,7 @@ interface Text {
 }
 ```
 
-## On This Page
+## On this page
 
 - [Static methods](text#static-methods)
   - [Retrieval methods](text#retrieval-methods)
@@ -32,10 +32,6 @@ The way the check works is that it makes sure that (a) all the `props` exist in 
 If a `props.text` property is passed in, it will be ignored.
 
 If there are properties in `text` that are not in `props`, those will be ignored when it comes to testing for a match.
-
-#### `TextApi.decorations(node: Text, decorations: DecoratedRange[]) => { leaf: Text; position?: LeafPosition }[]`
-
-Get the leaves and positions for a text node, given `decorations`.
 
 ### Check methods
 

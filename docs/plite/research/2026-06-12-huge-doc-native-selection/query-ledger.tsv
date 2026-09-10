@@ -1,0 +1,7 @@
+query	scope	result	notes
+huge-document vertical selection current Slate v2	.tmp/slate-v2 tests and benchmark scripts	kept	Current proof already covers staged/virtualized projection, no double highlight, screenshots, and full-DOM parity.
+ProseMirror vertical selection geometry	../prosemirror/view/src	kept	Mature geometry APIs and native-first vertical selection boundary.
+Lexical selection dirty/select-all model	../lexical/packages/lexical/src and lexical-selection	kept	Useful contrast for model-level select-all and dirty selection bookkeeping.
+Legacy Slate huge document	../slate/site/examples and playwright test	rejected as target	Useful baseline only; test checks chunk count, not behavior quality.
+Tiptap huge/selection implementation	../tiptap	duplicate	Tiptap mostly delegates editor-view behavior to ProseMirror here.
+broad all-repo selection grep	all sibling editor repos	rejected/noisy	Hit lockfiles, changelogs, generated Flow, generic selection references.

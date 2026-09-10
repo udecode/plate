@@ -1,0 +1,2 @@
+repo_key	local_path	remote	license_or_status	why_used
+github/janpe/playwright-selectionchange-race-repro	../playwright-selectionchange-race-repro	https://github.com/janpe/playwright-selectionchange-race-repro	unknown-local-source	Minimal repro for a Chromium/Playwright contenteditable selectionchange race where identical text-node replacement leaves native selection anchored in detached DOM.

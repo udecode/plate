@@ -20,7 +20,6 @@ import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examp
 import { deserializeHtmlValue as deserializeHtmlValueCn } from '@/registry/examples/values/cn/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueCn } from '@/registry/examples/values/cn/deserialize-md-value';
 import { detailsValue as detailsValueCn } from '@/registry/examples/values/cn/details-value';
-import { discussionValue as discussionValueCn } from '@/registry/examples/values/cn/discussion-value';
 import { dndValue as dndValueCn } from '@/registry/examples/values/cn/dnd-value';
 import { editableVoidsValue as editableVoidsValueCn } from '@/registry/examples/values/cn/editable-voids-value';
 import { emojiValue as emojiValueCn } from '@/registry/examples/values/cn/emoji-value';
@@ -55,7 +54,6 @@ import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examp
 import { deserializeHtmlValue as deserializeHtmlValueEn } from '@/registry/examples/values/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueEn } from '@/registry/examples/values/deserialize-md-value';
 import { detailsValue as detailsValueEn } from '@/registry/examples/values/details-value';
-import { discussionValue as commentValueEn } from '@/registry/examples/values/discussion-value';
 import { dndValue as dndValueEn } from '@/registry/examples/values/dnd-value';
 import { editableVoidsValue as editableVoidsValueEn } from '@/registry/examples/values/editable-voids-value';
 import { emojiValue as emojiValueEn } from '@/registry/examples/values/emoji-value';
@@ -100,7 +98,6 @@ const i18n = {
     deserializeDocx: deserializeDocxValueCn,
     deserializeHtml: deserializeHtmlValueCn,
     deserializeMd: deserializeMdValueCn,
-    discussion: discussionValueCn,
     dnd: dndValueCn,
     editableVoids: editableVoidsValueCn,
     emoji: emojiValueCn,
@@ -136,7 +133,6 @@ const i18n = {
     blockMenu: blockMenuValueEn,
     nodeSelection: nodeSelectionValueEn,
     column: columnValueEn,
-    comment: commentValueEn,
     copilot: copilotValueEn,
     date: dateValueEn,
     deserializeCsv: deserializeCsvValueEn,

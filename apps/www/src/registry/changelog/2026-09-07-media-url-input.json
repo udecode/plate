@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-media-url-input",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-media-url-input.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Insert media URLs through the selected media feature",
+  "targets": [
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-transforms-insert-media-urls-through-dfaab3eb",
+      "kind": "fix",
+      "summary": "Insert media URLs through the selected media feature",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["transforms", "media-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-media-url-input",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

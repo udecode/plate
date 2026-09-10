@@ -1,7 +1,7 @@
 {
   "version": 1,
   "policy": {
-    "authority": "Benchmark targets are the future source of truth. Evidence Kit is a legacy import/report archive during migration.",
+    "authority": "Benchmark targets are the source of truth. Evidence Kit is a legacy import/report archive.",
     "benchmarkCode": "Benchmark implementation lives with the runtime/package code it measures.",
     "activeLoops": "Autoresearch sessions optimize one target id at a time and own only active loop state.",
     "docs": "Docs and research files are linked evidence, not benchmark control state.",
@@ -144,7 +144,7 @@
         "sources": [
           "docs/plans/2026-07-20-wordgard-plite-schema-architecture.md",
           "docs/plans/2026-07-21-wordgard-plite-schema-contribution-architecture.md",
-          "docs/plans/artifacts/wordgard-plite-schema-architecture/baseline.md"
+          "benchmarks/editor/docs/baselines/plite-schema-architecture.md"
         ]
       },
       "thresholds": {
@@ -292,7 +292,7 @@
       "family": "collaboration",
       "kind": "current",
       "cwd": ".",
-      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
+      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
       "metrics": {
         "primary": "plite_yjs_event_change_sync_distance_ratio",
         "direction": "lower",
@@ -301,7 +301,7 @@
         "upgrade": "Start, middle, and end edits must keep local and sync medians within 2x, decode one top-level node, retain one changed range, and keep runtime-ID p95 below 1ms."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/platejs/test/yjs/editor-adapter-contract.spec.ts ./packages/platejs/test/yjs/event-change-locality.spec.ts ./packages/platejs/test/yjs/remote-import-contract.slow.ts ./packages/platejs/test/yjs/canonical-change-contract.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.slow.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
         "policy": "The performance claim requires exact event-native traces, narrow changed ranges, full event-shape coverage, and explicit fallback tests."
       },
       "artifacts": [
@@ -315,6 +315,108 @@
       },
       "thresholds": {
         "promotion": "plite_yjs_event_change_local_distance_ratio<=2 and plite_yjs_event_change_sync_distance_ratio<=2 and plite_yjs_event_change_runtime_ids_p95_ms<=1 and plite_yjs_event_change_batch_detached_transactions=0 and plite_yjs_event_change_batch_sync_p95_ms<=5000 and plite_yjs_event_change_property_context_failures=0 and traceInvariantRequired=true"
+      }
+    },
+    {
+      "id": "react-text-flow-browser-matrix",
+      "question": "Does Plite keep huge DOM-present plain, marked, decorated, overlapping, long-line, custom-renderer, and code text fast while preserving exact text and selection?",
+      "owner": "plitejs/react",
+      "family": "react-text-flow",
+      "kind": "browser-matrix",
+      "cwd": ".",
+      "command": "PLITE_TEXT_FLOW_STRICT=1 bun packages/plitejs/benchmarks/react-text-flow-browser-matrix.mjs",
+      "metrics": {
+        "primary": "plite_react_text_flow_max_budget_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Production imports must pass normal, large, and stress cohorts with full DOM coverage, exact model text and selection, frozen absolute/relative budgets, and bounded timeout receipts. The default production and legacyFallback surfaces provide the controls with matching rendered output required for marked fixtures."
+      },
+      "correctness": {
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/dom-integrity-observer-contract.test.ts test/react/dom-text-flow-index-contract.test.ts test/react/dom-text-sync-contract.ts test/react/editable-text-flow.test.ts test/react/input-history-contract.test.ts test/react/native-text-input-delta-contract.test.ts test/react/plite-runtime-provider-contract.test.tsx test/react/projected-clipboard-contract.test.ts test/react/selection-reconciler-contract.test.tsx",
+        "policy": "Promotion requires exact decoration order and invalidation, DOM text synchronization, selection reconciliation, clipboard, and history contracts before the browser timing matrix runs. Browser-engine, native-input, composition, and two-client Yjs breadth remain mandatory Phase 2 closure gates."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-react-text-flow-browser-matrix.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-09-02-plite-text-flow-benchmark-first.md"]
+      },
+      "thresholds": {
+        "promotion": "plite_react_text_flow_max_budget_ratio<=1 and every production row completes with exact full-DOM text and selection",
+        "stop": "After one causally justified all-mounted bounded-string pivot, stop Phase 2 if any latency or native-behavior veto remains red"
+      }
+    },
+    {
+      "id": "plite-external-text-browser",
+      "question": "Can one canonical Plite Text use bounded adapter-owned DOM while preserving exact edits, selection, history, decorations, multi-view fan-out, and frozen mount latency through 4.9 MB and 1,000 blocks?",
+      "owner": "plitejs/react",
+      "family": "react-external-text",
+      "kind": "browser-matrix",
+      "cwd": ".",
+      "command": "bun benchmarks/editor/benchmarks/plite-external-text-browser.mjs --output=tmp/plite-external-text-browser.json",
+      "metrics": {
+        "primary": "plite_external_text_pass",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "The production externalText slot must pass all 30 frozen cohorts with exact canonical and adapter text, directed selection, zero ordinary resets and full-string diffs, changed-key fan-out, per-Editable subscriptions, bounded DOM, and unchanged source fingerprints. This is substrate proof, not CodeMirror performance."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/text-splice-projection.test.ts && pnpm --filter plitejs test:react test/react/external-text-contract.test.tsx && bun test --preload ./config/plite-source-test-setup.ts packages/test/test/proof/playwright-selection.test.ts && pnpm --filter plite test:plite-browser:chromium donor/examples/external-text.test.ts",
+        "policy": "Promotion requires exact-one-Text schema rejection, UTF-16 splice projection, local/remote/history/composition correctness, read-only and stale-write rejection, independent view lifetime, model-owned cross-boundary selection, and native follow-up input. Firefox, WebKit, mobile viewport, and five-run stability remain final closure gates outside the target's fast correctness command."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-external-text-browser.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-03-editable-island-substrate-closure.md",
+          "content/docs/plite/libraries/plite-react/external-text.mdx"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_external_text_pass=1 across every frozen cohort",
+        "stop": "Reject the external runtime if canonical drift, duplicate event ownership, ordinary-edit resets, cross-view coverage collision, or any frozen scale veto remains"
+      }
+    },
+    {
+      "id": "plate-code-block-text-flow-browser",
+      "question": "Does Plate's minimal two-plugin code-block kernel keep one fully highlighted 10,000-line code Text fast through native typing without dropping source text or syntax tokens?",
+      "owner": "platejs/code-block",
+      "family": "react-text-flow",
+      "kind": "browser-matrix",
+      "cwd": ".",
+      "command": "PLATE_CODE_BLOCK_FIXTURE=product PLATE_CODE_BLOCK_LANGUAGE=typescript PLATE_CODE_BLOCK_STRICT=1 bun packages/platejs/scripts/code-block-text-flow-browser.mjs",
+      "metrics": {
+        "primary": "plate_code_block_text_flow_max_budget_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "The minimal Plate code-block and Lowlight 3.3 kernel must keep one canonical Text, full DOM text, syntax tokens, input paint at or below 200ms, and highlight settle at or below 600ms. Product composition is a separate veto."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx packages/platejs/src/react/features/code-block/CodeBlockPlugin.spec.tsx && pnpm --filter plite test:plite-browser:chromium -- tests/plite-browser/donor/examples/code-highlighting.test.ts",
+        "policy": "Promotion requires code-block command and codec tests plus native Chromium editing, selection, history, clipboard, and decoration proof before timing the production plugin."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plate-code-block-text-flow-browser.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-09-02-plite-text-flow-benchmark-first.md"]
+      },
+      "thresholds": {
+        "promotion": "plate_code_block_text_flow_max_budget_ratio<=1 with one model Text, exact full-DOM text, and mounted syntax tokens",
+        "stop": "After one mapped-range and coalesced-rehighlight pivot, stop and open a separate syntax-source plan if input paint still exceeds 200ms"
       }
     },
     {
@@ -334,7 +436,7 @@
       },
       "correctness": {
         "command": "pnpm check:plite",
-        "policy": "Promotion requires the benchmark p95 ratio plus the fast Slate v2 check suite."
+        "policy": "Promotion requires the benchmark p95 ratio plus the full Plite package and Chromium check suite."
       },
       "artifacts": [
         {
@@ -377,7 +479,7 @@
       },
       "correctness": {
         "command": "pnpm check:plite",
-        "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the fast Slate v2 check suite."
+        "policy": "Promotion requires the aggregate suite metric at or below budget, zero react_huge_doc_full_budget_failure_count, zero react_huge_doc_full_failure_count, and the full Plite package and Chromium check suite."
       },
       "artifacts": [
         {
@@ -388,8 +490,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-06-01-react-huge-document-full-benchmark.md",
-          "docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md",
-          "docs/plans/2026-06-01-slate-ar-target-finalize-pagination.md"
+          "docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md"
         ]
       },
       "thresholds": {
@@ -462,9 +563,7 @@
         }
       ],
       "docs": {
-        "sources": [
-          "docs/plans/2026-06-01-slate-ar-target-finalize-pagination.md"
-        ]
+        "sources": ["benchmarks/slate-v2/donor/README.md"]
       },
       "thresholds": {
         "promotion": "plite_react_runtime_node_fanout_count=0"
@@ -536,7 +635,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-07-19-wordgard-plite-final-extraction.md",
-          "docs/plans/artifacts/wordgard-plite-final-extraction/resolved-token-cursor-review.md",
+          "benchmarks/editor/docs/baselines/resolved-token-cursor.md",
           "docs/plans/artifacts/wordgard-plite-final-extraction/resolved-token-cursor-benchmark.json"
         ]
       },
@@ -546,7 +645,7 @@
     },
     {
       "id": "react-stable-id-overlay-source",
-      "question": "Does the shared projection mapping kernel avoid unrelated scans and copies through 100k entities, and stay linear for 10k disjoint, shared-bucket, and wide-item outputs?",
+      "question": "Does the shared mapped-view kernel avoid unrelated scans and copies through 100k entities, and stay linear for 10k disjoint, shared-bucket, and wide-item outputs?",
       "owner": "plitejs/react",
       "family": "react-locality",
       "kind": "current",
@@ -560,7 +659,7 @@
         "upgrade": "Trusted one-ID changes copy one entity, visit one input, and scan zero unrelated unresolved IDs at 100/1k/10k/100k. Count copied child-map entries as well as rebuilt nodes, including divergent Unicode prefixes. Wide output work stays linear, historical snapshots remain immutable, and recreated external snapshots report their necessary full comparison separately."
       },
       "correctness": {
-        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/projections-and-selection-contract.test.tsx",
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
         "policy": "Require immutable ordered snapshots, unresolved-state transitions, fault atomicity, divergent Unicode IDs, long prefixes, isolated UTF-16 surrogates, exact Annotation/Widget dependency routing, one changed-ID batch per publication, and strict work/timing budgets."
       },
       "artifacts": [
@@ -577,38 +676,37 @@
       }
     },
     {
-      "id": "transient-projection-scalability",
-      "question": "Does one changed remote cursor, Widget, or Find result stay local through 1,000 cursors and 100k text / 10k matches?",
-      "owner": "platejs",
+      "id": "decoration-manager-scalability",
+      "question": "Does the production Plite Decoration manager keep source observation and node subscriptions bounded through 10k mounted nodes and 32 sources?",
+      "owner": "plitejs/react",
       "family": "react-locality",
       "kind": "current",
       "cwd": ".",
-      "command": "TRANSIENT_PROJECTION_BENCH_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts packages/platejs/scripts/transient-projection/benchmark-scalability.ts --output=docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+      "command": "bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-decoration-manager-benchmark.mjs --output=docs/plans/artifacts/rendering-api-editor-audit/decoration-manager-benchmark.json",
       "metrics": {
-        "primary": "transient_projection_hard_guard_failures",
+        "primary": "plite_decoration_manager_hard_guard_failures",
         "direction": "lower",
         "unit": "count",
         "printsMetric": true,
-        "upgrade": "Promotion requires zero unrelated runtime or keyed-subscriber wakes, exact Yjs decode/resolution counters, linear Find projection work, and parity with causal controls. Isolated projections meet the frame budget; live document edits use the frozen matched-plain-editor overhead budget."
+        "upgrade": "Promotion requires one observer per source, one subscription per mounted node, exact affected-key reads and wakes, zero retained work after destroy, zero transient renderer calls, and every frozen timing budget across normal, large, stress, and pathological cohorts."
       },
       "correctness": {
-        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/widget-layer-contract.test.tsx && bun test --preload ./config/plite-source-test-setup.ts packages/platejs/test/yjs/awareness-contract.spec.ts packages/platejs/test/yjs/react-contract.spec.tsx && bun test apps/www/src/registry/components/editor/find.spec.tsx",
-        "policy": "The timing claim requires exact Widget identity/wake contracts, Yjs awareness/cache/React behavior, Find result/navigation behavior, and output parity for every causal control."
+        "command": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
+        "policy": "The timing claim requires deterministic source order, exact node-key invalidation, multiple Editables, source replacement, cleanup, attribute validation, and native text rendering behavior."
       },
       "artifacts": [
         {
-          "path": "docs/plans/artifacts/transient-projection-scalability/node-benchmark.json",
+          "path": "docs/plans/artifacts/rendering-api-editor-audit/decoration-manager-benchmark.json",
           "required": true
         }
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-08-30-cursor-find-overlay-architecture.md",
-          "docs/plans/2026-08-31-transient-projection-scalability-benchmark.md"
+          "docs/plans/2026-09-01-plite-plate-decoration-hard-cut-execution.md"
         ]
       },
       "thresholds": {
-        "promotion": "transient_projection_hard_guard_failures=0 and transient_projection_yjs_forced_stress_runtime_wakes<=1 and isolated projection p95<=frameBudgetMs and live editor p95<=max(plain*1.2,plain+5ms) and correctness=true"
+        "promotion": "plite_decoration_manager_hard_guard_failures=0 and every frozen production cohort passes"
       }
     },
     {
@@ -665,7 +763,7 @@
         "upgrade": "Primary metric compares rows=800 virtualized burst latency against the staged 500-row table burst in the same benchmark run."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
         "policy": "Promotion requires virtualized burst perf plus native pagination selection/editing correctness."
       },
       "artifacts": [
@@ -676,7 +774,6 @@
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-05-31-pagination-virtualized-rows800-perf.md",
           "docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md"
         ]
       }
@@ -697,7 +794,7 @@
         "upgrade": "Primary metric is the worst p95 across real editor operations for the selected cohorts, with click, selection, typing, break, delete, undo/redo, scroll-click, DOM node, and page-surface guardrails in the same artifact. Run profiler-off for user-visible latency."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
         "policy": "Promotion requires latency gains without native click, selection, margin, wrapped-line, or double-click regressions."
       },
       "artifacts": [
@@ -708,7 +805,6 @@
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-05-31-pagination-virtualized-rows800-perf.md",
           "docs/plans/2026-06-01-pagination-virtualization-char-burst-perf.md"
         ]
       }
@@ -767,7 +863,7 @@
         "upgrade": "Primary metric is browser p95 type-to-paint for the virtualized surface; DOM, heap, and long-task metrics remain supporting guardrails."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
         "policy": "Promotion requires virtualized example controls, bounded coverage metrics, and stable dynamic-height scroll behavior."
       },
       "artifacts": [
@@ -777,9 +873,7 @@
         }
       ],
       "docs": {
-        "sources": [
-          "docs/plans/2026-06-01-slate-ar-target-finalize-pagination.md"
-        ]
+        "sources": ["benchmarks/slate-v2/donor/README.md"]
       },
       "thresholds": {
         "promotion": "react_huge_doc_type_to_paint_p95_ms<75",
@@ -922,35 +1016,6 @@
       "artifacts": [
         {
           "path": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
-          "required": true
-        }
-      ],
-      "docs": {
-        "sources": ["docs/plans/2026-07-17-wordgard-plite-rewrite-execution.md"]
-      }
-    },
-    {
-      "id": "core-yjs-collaboration-current",
-      "question": "How expensive are collaborative sync, awareness, and reconnect paths?",
-      "owner": "slate-v2",
-      "family": "core-current",
-      "kind": "current",
-      "cwd": ".",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
-      "metrics": {
-        "primary": "yjs_collaboration_worst_p95_ms",
-        "direction": "lower",
-        "unit": "ms",
-        "printsMetric": true,
-        "upgrade": "Promote calibrated thresholds after three comparable release runs."
-      },
-      "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Collaboration performance is valid only when the Plite package and browser correctness gate passes."
-      },
-      "artifacts": [
-        {
-          "path": "tmp/slate-yjs-collaboration-benchmark.json",
           "required": true
         }
       ],
@@ -1223,7 +1288,7 @@
     },
     {
       "id": "yjs-collaboration",
-      "question": "Does platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "question": "Does plitejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
       "owner": "slate-v2",
       "family": "collaboration",
       "kind": "current",
@@ -1237,8 +1302,8 @@
         "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, yjs_large_doc_remote_apply_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification, remote-import, or convergence regressions."
       },
       "correctness": {
-        "command": "pnpm --filter platejs test:partition:yjs && pnpm --filter platejs typecheck:partition:yjs",
-        "policy": "Promotion requires the platejs/yjs partition suite and source-first typecheck plus yjs_correctness_failures=0 from the benchmark artifact."
+        "command": "pnpm check:plite",
+        "policy": "Collaboration performance requires the full Plite package and Chromium browser correctness gate, including canonical Yjs and Plate adapter behavior, plus yjs_correctness_failures=0 in the benchmark artifact."
       },
       "artifacts": [
         {
@@ -1249,7 +1314,8 @@
       "docs": {
         "sources": [
           "docs/plans/2026-06-13-yjs-research-mode-8h.md",
-          "docs/plans/2026-06-12-yjs-optimization-strict-8h.md"
+          "docs/plans/2026-06-12-yjs-optimization-strict-8h.md",
+          "docs/plans/2026-07-17-wordgard-plite-rewrite-execution.md"
         ]
       },
       "thresholds": {
@@ -1300,44 +1366,6 @@
       }
     },
     {
-      "id": "issue-6038-transaction-execution",
-      "question": "Does the issue #6038 transaction execution replay stay healthy?",
-      "owner": "slate-v2",
-      "family": "issue-replay",
-      "kind": "current",
-      "cwd": ".",
-      "command": "bun benchmarks/slate-v2/donor/slate/6038-transaction-execution.mjs",
-      "metrics": {
-        "primary": "benchmark_seconds",
-        "direction": "lower",
-        "unit": "s",
-        "printsMetric": false,
-        "upgrade": "Prefer benchmark-native METRIC lines when this target is touched."
-      },
-      "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Use the target-specific correctness command when one exists; pnpm check:plite is the fallback before promotion."
-      },
-      "artifacts": [
-        {
-          "path": "tmp/bench-slate-6038.json",
-          "required": true
-        }
-      ],
-      "docs": {
-        "sources": [
-          "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md"
-        ]
-      },
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "issue-6038-transaction-execution",
-        "evidenceKitCategory": "slate-6038-transaction-execution",
-        "evidenceKitActive": true
-      }
-    },
-    {
       "id": "core-huge-document-compare",
       "question": "Does Slate v2 match legacy Slate for core huge-document operations?",
       "owner": "slate-v2",
@@ -1377,7 +1405,7 @@
     },
     {
       "id": "core-normalization-compare",
-      "question": "Does Slate v2 match legacy Slate for normalization?",
+      "question": "Does the current Plate wrapper match legacy Slate for normalization?",
       "owner": "slate-v2",
       "family": "core-compare",
       "kind": "compare",
@@ -1415,7 +1443,7 @@
     },
     {
       "id": "core-observation-compare",
-      "question": "Does Slate v2 match legacy Slate for core observation?",
+      "question": "Does Plite match legacy Slate for core observation?",
       "owner": "slate-v2",
       "family": "core-compare",
       "kind": "compare",
@@ -1453,7 +1481,7 @@
     },
     {
       "id": "core-rich-text-operations-compare",
-      "question": "Does Slate v2 match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
+      "question": "Does Plite match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
       "owner": "slate-v2",
       "family": "editing-navigation",
       "kind": "compare",
@@ -1468,7 +1496,7 @@
       },
       "correctness": {
         "command": "pnpm check:plite",
-        "policy": "Promotion requires the core benchmark metric plus the fast Slate v2 check suite."
+        "policy": "Promotion requires the core benchmark metric plus the full Plite package and Chromium check suite."
       },
       "artifacts": [
         {
@@ -1479,8 +1507,7 @@
       "docs": {
         "sources": [
           "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md",
-          "docs/plans/2026-06-01-slate-ar-target-finalize-pagination.md"
+          "benchmarks/editor/iterations/003-evidence-control-plane.md"
         ]
       },
       "thresholds": {
@@ -1497,7 +1524,7 @@
     },
     {
       "id": "history-compare",
-      "question": "Does Slate v2 match legacy Slate for undo/redo typing and fragment history?",
+      "question": "Does Plite match legacy Slate for undo/redo typing and fragment history?",
       "owner": "slate-v2",
       "family": "history",
       "kind": "compare",
@@ -1665,6 +1692,38 @@
       },
       "thresholds": {
         "promotion": "plite_history_retained_memory_json_ratio<=2.25 and plite_history_retained_memory_gc_available=1 and restoredEntryRequired=true"
+      }
+    },
+    {
+      "id": "cross-editor-human-operations",
+      "question": "How do current source-pinned rich-text editors compare for matched native paragraph editing, history, clipboard, mount, scroll and serialization across document sizes?",
+      "owner": "plite",
+      "family": "editing-navigation",
+      "kind": "compare",
+      "cwd": ".",
+      "command": "node benchmarks/slate-v2/donor/browser/react/huge-document-cross-editor.mjs",
+      "metrics": {
+        "primary": "plite_first_type_p95_ms",
+        "direction": "lower",
+        "unit": "ms",
+        "printsMetric": false,
+        "upgrade": "The JSON per-editor and per-operation distributions are authoritative. Do not aggregate different editors, feature presets, unsupported operations or DOM strategies into a winner."
+      },
+      "correctness": {
+        "command": "CROSS_EDITOR_HUGE_WARMUPS=0 CROSS_EDITOR_HUGE_ITERATIONS=1 node benchmarks/slate-v2/donor/browser/react/huge-document-cross-editor.mjs",
+        "policy": "Every attempt must preserve exact model and rendered paragraph text, selection setup, native trusted events, bold rendering and history results. Comparator dependencies and source exports are explicit prerequisites; real OS IME and devices remain separate."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/cross-editor-human-operations.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-09-07-editor-performance-research.md"]
+      },
+      "thresholds": {
+        "promotion": "No production adoption authority. Source-stable, correctness-green matched experiment plus independent owner work reduction is required before a technique may be accepted."
       }
     }
   ]

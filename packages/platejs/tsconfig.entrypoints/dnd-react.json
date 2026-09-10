@@ -26,6 +26,9 @@
     },
     {
       "path": "./react-core.json"
+    },
+    {
+      "path": "./standard-list.json"
     }
   ]
 }

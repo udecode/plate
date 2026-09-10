@@ -145,7 +145,7 @@ export const BaseBoldPlugin = defineBasePlugin(PLUGINS.bold, {
           decode(node.children, { ...decoration, [key]: true }),
       },
     }),
-  render: { as: 'strong' },
+  component: 'strong',
 });
 
 /** Enables support for code formatting. */
@@ -179,7 +179,7 @@ export const BaseCodePlugin = defineBasePlugin(PLUGINS.code, {
         }),
       },
     }),
-  render: { as: 'code' },
+  component: 'code',
   rules: { selection: { affinity: 'hard' } },
 });
 
@@ -213,7 +213,7 @@ export const BaseHighlightPlugin = defineBasePlugin(PLUGINS.highlight, {
         }),
       },
     }),
-  render: { as: 'mark' },
+  component: 'mark',
   rules: { selection: { affinity: 'directional' } },
 });
 
@@ -241,7 +241,7 @@ export const BaseItalicPlugin = defineBasePlugin(PLUGINS.italic, {
           decode(node.children, { ...decoration, [key]: true }),
       },
     }),
-  render: { as: 'em' },
+  component: 'em',
 });
 
 /** Enables support for keyboard-input formatting. */
@@ -271,7 +271,7 @@ export const BaseKbdPlugin = defineBasePlugin(PLUGINS.kbd, {
         }),
       },
     }),
-  render: { as: 'kbd' },
+  component: 'kbd',
   rules: { selection: { affinity: 'hard' } },
 });
 
@@ -364,7 +364,7 @@ export const BaseStrikethroughPlugin = defineBasePlugin(PLUGINS.strikethrough, {
         },
       ],
     }),
-  render: { as: 's' },
+  component: 's',
   rules: { selection: { affinity: 'directional' } },
 });
 
@@ -401,5 +401,5 @@ export const BaseUnderlinePlugin = defineBasePlugin(PLUGINS.underline, {
         }),
       },
     }),
-  render: { as: 'u' },
+  component: 'u',
 });

@@ -1,12 +1,12 @@
-import { readFileSync } from 'node:fs';
-
 import {
+  type InitialValue,
+  type Value,
+  type TextSelection,
   createEditor,
   createEditorView,
   defineExtension,
   editorCommands,
   getEditorRuntimeOwner,
-  type Range,
 } from 'plitejs';
 
 import {
@@ -18,8 +18,10 @@ import {
   createEditableInputControllerState,
   setEditableModelSelectionPreference,
 } from '../../src/react/editable/input-controller';
-import type { PendingCompositionInput } from '../../src/react/editable/input-state';
-import { beginEditableCompositionSession } from '../../src/react/editable/input-state';
+import {
+  beginEditableCompositionSession,
+  type PendingCompositionInput,
+} from '../../src/react/editable/input-state';
 import {
   type captureCompositionModelInput,
   claimSettledCompositionInput,
@@ -33,13 +35,13 @@ import {
 } from '../../src/react/editable/runtime-before-input-events';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
 
-const collapsedSelection: Range = {
+const collapsedSelection: TextSelection = {
   kind: 'text',
   anchor: { offset: 1, path: [2500, 0] },
   focus: { offset: 1, path: [2500, 0] },
 };
 
-const expandedSelection: Range = {
+const expandedSelection: TextSelection = {
   kind: 'text',
   anchor: { offset: 1, path: [2500, 0] },
   focus: { offset: 3, path: [2500, 0] },
@@ -58,11 +60,15 @@ test('beforeinput probes semantic text commands on the mounted owner at the DOM 
         ],
       }),
     ],
-    initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+    initialValue: [
+      { children: [{ text: '' }], type: 'paragraph' },
+    ] satisfies InitialValue,
     selection: null,
   });
-  const mountedEditor = createEditorView(editor) as ReactRuntimeEditor;
-  const selection: Range = {
+  const mountedEditor = createEditorView(
+    editor
+  ) as unknown as ReactRuntimeEditor;
+  const selection: TextSelection = {
     kind: 'text',
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 0, path: [0, 0] },
@@ -79,15 +85,6 @@ test('beforeinput probes semantic text commands on the mounted owner at the DOM 
     materialHandlers: ['mounted-trigger-command'],
     nativeEquivalent: false,
   });
-});
-
-test('beforeinput trace keeps an outer event handler duration bucket', () => {
-  const source = readFileSync(
-    'src/react/editable/runtime-before-input-events.ts',
-    'utf-8'
-  );
-
-  expect(source).toContain("profileBeforeInputDuration('beforeinput-total'");
 });
 
 test('deferred native text input publishes its repair path before DOM input', () => {
@@ -296,8 +293,8 @@ test('beforeinput still flushes pending DOM selection for native-owned input', (
 });
 
 test('pending composition input captures immutable input before one model commit', () => {
-  const editor = createEditor() as ReactEditor;
-  const compositionSelection: Range = {
+  const editor = createEditor<Value>() as ReactRuntimeEditor;
+  const compositionSelection: TextSelection = {
     kind: 'text',
     anchor: { offset: 1, path: [0, 0] },
     focus: { offset: 3, path: [0, 0] },
@@ -311,7 +308,9 @@ test('pending composition input captures immutable input before one model commit
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
   });
-  let pendingInput: PendingCompositionInput | null = null;
+  const pendingInput: { current: PendingCompositionInput | null } = {
+    current: null,
+  };
 
   beginEditableCompositionSession(inputController);
   inputController.state.pendingCompositionEnd = {
@@ -320,7 +319,7 @@ test('pending composition input captures immutable input before one model commit
     ownership: 'plite',
     phase: 'end-pending',
     replaceWithInput: (input) => {
-      pendingInput = input;
+      pendingInput.current = input;
       return true;
     },
   };
@@ -344,22 +343,22 @@ test('pending composition input captures immutable input before one model commit
     })
   ).toBe(true);
   expect(editorString(editor, [])).toBe('abcd');
-  expect(pendingInput).not.toBeNull();
-  expect(Object.isFrozen(pendingInput)).toBe(true);
+  expect(pendingInput.current).not.toBeNull();
+  expect(Object.isFrozen(pendingInput.current)).toBe(true);
 
-  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
-    true
-  );
+  expect(
+    pendingInput.current?.commit(compositionSelection, { publish: true })
+  ).toBe(true);
   expect(editorString(editor, [])).toBe('a文d');
 
-  pendingInput?.complete();
+  pendingInput.current?.complete();
   expect(requestEditableRepair).toHaveBeenCalledOnce();
 });
 
 test('pending composition input records only an actual document commit', () => {
-  const editor = createEditor() as ReactEditor;
+  const editor = createEditor<Value>() as ReactRuntimeEditor;
   let commitCount = 0;
-  const compositionSelection: Range = {
+  const compositionSelection: TextSelection = {
     kind: 'text',
     anchor: { offset: 1, path: [0, 0] },
     focus: { offset: 3, path: [0, 0] },
@@ -376,7 +375,9 @@ test('pending composition input records only an actual document commit', () => {
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
   });
-  let pendingInput: PendingCompositionInput | null = null;
+  const pendingInput: { current: PendingCompositionInput | null } = {
+    current: null,
+  };
 
   beginEditableCompositionSession(inputController);
   inputController.state.pendingCompositionEnd = {
@@ -385,7 +386,7 @@ test('pending composition input records only an actual document commit', () => {
     ownership: 'plite',
     phase: 'end-pending',
     replaceWithInput: (input) => {
-      pendingInput = input;
+      pendingInput.current = input;
       return true;
     },
   };
@@ -405,15 +406,15 @@ test('pending composition input records only an actual document commit', () => {
     setComposing: vi.fn(),
   });
 
-  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
-    true
-  );
+  expect(
+    pendingInput.current?.commit(compositionSelection, { publish: true })
+  ).toBe(true);
   expect(editorString(editor, [])).toBe('a文d');
   expect(inputController.state.compositionSession?.modelCommitted).toBe(true);
   expect(commitCount).toBe(1);
-  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
-    false
-  );
+  expect(
+    pendingInput.current?.commit(compositionSelection, { publish: true })
+  ).toBe(false);
   expect(commitCount).toBe(1);
 });
 

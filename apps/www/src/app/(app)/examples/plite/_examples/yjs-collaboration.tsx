@@ -1,5 +1,3 @@
-import { yjs, type YjsAwarenessChange } from 'platejs/yjs';
-import { useYjsRemoteCursor, useYjsRemoteCursorIds } from 'platejs/yjs/react';
 import {
   type Editor as CoreEditor,
   createEditor,
@@ -18,7 +16,6 @@ import {
   RangeApi,
   schema,
   TextApi,
-  type TextIn,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
@@ -29,6 +26,8 @@ import {
   type RenderLeafProps,
   useEditor,
 } from 'plitejs/react';
+import { yjs, type YjsAwarenessChange } from 'plitejs/yjs';
+import { useYjsRemoteCursor, useYjsRemoteCursorIds } from 'plitejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import * as Y from 'yjs';
@@ -141,7 +140,6 @@ type CollaborationValue = EditorValueFromExtensions<
   readonly [ReturnType<typeof createCollaborationSchema>]
 >;
 type CollaborationElement = ElementIn<CollaborationValue>;
-type CollaborationText = TextIn<CollaborationValue>;
 const HistoryExtension = history();
 type YjsEditor = ReactViewEditor<
   CollaborationValue,
@@ -1258,7 +1256,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CollaborationText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

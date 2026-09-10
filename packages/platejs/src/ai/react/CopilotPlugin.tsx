@@ -15,7 +15,11 @@ import {
   editorCommands,
 } from '../../core';
 import { type MarkdownEditor, MarkdownPlugin } from '../../markdown';
-import { type Editor, definePlatePlugin } from '../../react/core';
+import {
+  type Editor,
+  definePlatePlugin,
+  useEditorViewState,
+} from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const nonSpaceRegex = /^\s*(\S)/;
@@ -195,17 +199,22 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       reject: () => {
         const { abortController, suggestionText } = store.get();
 
-        if (!suggestionText?.length) return false;
+        if (!suggestionText?.length && !abortController) return false;
+
+        context.afterCommit(() => {
+          abortController?.abort();
+          if (store.get('abortController') === abortController) {
+            store.set({
+              abortController: null,
+              completion: null,
+              isLoading: false,
+            });
+          }
+        });
 
         tx.tags.add('history-skip');
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
         setSuggestion({ nodeKey: null, text: null });
-        context.afterCommit(() => {
-          abortController?.abort();
-          store.set({ abortController: null });
-          store.set({ completion: null });
-        });
-
         return undefined;
       },
       setBlockSuggestion: ({
@@ -231,15 +240,41 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
     let debouncedTrigger: ReturnType<
       typeof debounce<typeof triggerImmediately>
     > | null = null;
+    const views = new Set<HTMLElement>();
+    let mounted = false;
+    const isWritable = () =>
+      !context.editor.read.view.isReadOnly() &&
+      (!mounted ||
+        Array.from(views).some(
+          (element) =>
+            element.isConnected &&
+            element.getAttribute('data-readonly') !== 'true' &&
+            element.getAttribute('aria-readonly') !== 'true' &&
+            element.getAttribute('aria-disabled') !== 'true'
+        ));
     const stop = () => {
-      const { abortController } = context.store.get();
-
       debouncedTrigger?.cancel();
-
-      if (abortController) {
-        abortController.abort();
-        context.store.set({ abortController: null });
-      }
+      const { abortController } = context.store.get();
+      abortController?.abort();
+      context.store.set({ abortController: null, isLoading: false });
+    };
+    const attach = (element: HTMLElement) => {
+      mounted = true;
+      views.add(element);
+      const refresh = () => {
+        if (!isWritable()) stop();
+      };
+      const observer = new MutationObserver(refresh);
+      observer.observe(element, {
+        attributes: true,
+        attributeFilter: ['data-readonly', 'aria-readonly', 'aria-disabled'],
+      });
+      refresh();
+      return () => {
+        observer.disconnect();
+        views.delete(element);
+        refresh();
+      };
     };
     const callCompletion = async ({
       api,
@@ -252,11 +287,21 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       onFinish,
       onResponse,
     }: CallCompletionOptions) => {
+      const abortController = new AbortController();
+      let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+      const isCurrent = () =>
+        context.store.get('abortController') === abortController &&
+        !abortController.signal.aborted &&
+        isWritable();
+      const abortReader = () => {
+        void reader?.cancel().catch(() => {});
+      };
+      abortController.signal.addEventListener('abort', abortReader, {
+        once: true,
+      });
       try {
         context.store.set({ isLoading: true });
         context.store.set({ error: null });
-
-        const abortController = new AbortController();
 
         context.store.set({ abortController });
         context.store.set({ completion: '' });
@@ -291,7 +336,15 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           signal: abortController.signal,
         });
 
+        if (!isCurrent()) {
+          await response.body?.cancel();
+          return null;
+        }
         await onResponse?.(response);
+        if (!isCurrent()) {
+          await response.body?.cancel();
+          return null;
+        }
 
         if (!response.ok) {
           throw new Error(
@@ -307,6 +360,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           response.headers.get('content-type')?.includes('application/json')
         ) {
           const payload: unknown = await response.json();
+          if (!isCurrent()) return null;
 
           if (
             typeof payload === 'object' &&
@@ -318,11 +372,12 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
             context.store.set({ completion: text });
           }
         } else {
-          const reader = response.body.getReader();
+          reader = response.body.getReader();
           const decoder = new TextDecoder();
 
           while (true) {
             const { done, value } = await reader.read();
+            if (!isCurrent()) return null;
 
             if (done) break;
 
@@ -343,24 +398,25 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         }
 
         onFinish?.(prompt, text);
-        context.store.set({ abortController: null });
-
         return text;
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          context.store.set({ abortController: null });
-
+        if (
+          !isCurrent() ||
+          (error instanceof Error && error.name === 'AbortError')
+        ) {
           return null;
         }
-        if (error instanceof Error) onError?.(error);
-
-        context.store.set({
-          error: error instanceof Error ? error : new Error(String(error)),
-        });
+        const failure =
+          error instanceof Error ? error : new Error(String(error));
+        context.store.set({ error: failure });
+        onError?.(failure);
       } finally {
-        context.store.set({ isLoading: false });
+        abortController.signal.removeEventListener('abort', abortReader);
+        reader?.releaseLock();
+        if (context.store.get('abortController') === abortController) {
+          context.store.set({ abortController: null, isLoading: false });
+        }
       }
-
       return undefined;
     };
     async function triggerImmediately() {
@@ -372,6 +428,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
         : undefined;
 
       if (
+        !isWritable() ||
         isLoading ||
         chatStatus === 'submitted' ||
         chatStatus === 'streaming' ||
@@ -431,6 +488,34 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       : null;
 
     return {
+      slots: {
+        // oxlint-disable-next-line eslint/func-name-matching -- React hooks require a named component in this slot.
+        wrapRoot: function CopilotIntegration({ children, editableRef }) {
+          useEditorViewState(context.editor, (view) => view.isReadOnly());
+          const attachment = React.useRef<{
+            element: HTMLElement;
+            detach: () => void;
+          } | null>(null);
+          React.useLayoutEffect(() => {
+            const element = editableRef.current;
+            if (attachment.current?.element !== element) {
+              attachment.current?.detach();
+              attachment.current = element
+                ? { element, detach: attach(element) }
+                : null;
+            }
+            if (!isWritable()) stop();
+          });
+          React.useLayoutEffect(
+            () => () => {
+              attachment.current?.detach();
+              attachment.current = null;
+            },
+            []
+          );
+          return children;
+        },
+      },
       api: () => ({
         stop,
         triggerSuggestion: debouncedTrigger ?? triggerImmediately,
@@ -441,8 +526,8 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
     let previousSelection: Range | null = null;
 
     return {
-      render: {
-        belowNodes: () => {
+      slots: {
+        wrapNodeChildren: () => {
           const GhostText = context.store.get().renderGhostText;
 
           if (!GhostText) return undefined;
@@ -461,6 +546,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       shortcuts: {
         accept: {
           keys: 'tab',
+          priority: 20,
           target: 'update',
         },
         reject: {
@@ -470,6 +556,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       },
       on: {
         blur: () => {
+          context.api.stop();
           context.update.reject();
         },
         commit({ commit }) {
@@ -477,8 +564,10 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
             (!commit.changes.empty || commit.selectionChanged) &&
             context.store.get().shouldAbort &&
             !commit.tags.includes(COPILOT_SKIP_ABORT_TAG) &&
-            context.store.get().suggestionText?.length
+            (context.store.get().suggestionText?.length ||
+              context.store.get().abortController)
           ) {
+            context.api.stop();
             context.update.reject();
             context.store.set({
               completion: null,
@@ -516,6 +605,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
           previousSelection = selection;
         },
         mouseDown: () => {
+          context.api.stop();
           context.update.reject();
         },
       },

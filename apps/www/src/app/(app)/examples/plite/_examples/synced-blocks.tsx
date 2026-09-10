@@ -15,7 +15,6 @@ import { Button, Icon, Toolbar } from './components';
 import type {
   BlockQuoteElement,
   CustomElement,
-  CustomText,
   CustomValue,
   ParagraphElement as ParagraphElementType,
   SyncedBlockElement,
@@ -144,13 +143,13 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
   }
 };
 
-const renderLeaf = (props: RenderLeafProps<CustomText>) => <Leaf {...props} />;
+const renderLeaf = (props: RenderLeafProps) => <Leaf {...props} />;
 
 const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CustomText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

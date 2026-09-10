@@ -29,7 +29,7 @@ The Node-safe `@platejs/test` root owns headless fixtures and JSX test builders.
 Use the [Unit Testing Plate](/docs/unit-testing) guide for those APIs and the
 React test helpers.
 
-## First Test
+## First test
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -58,7 +58,7 @@ Do not use `locator.fill()` for contenteditable behavior. It can bypass the
 editor path you are trying to prove. Use keyboard input, clipboard helpers, or
 the Browser harness action that matches the claim.
 
-## Proof Contracts
+## Proof contracts
 
 Browser proof should usually assert more than model state:
 
@@ -76,7 +76,7 @@ Feature contracts group browser behavior families by the owning Plite feature
 area. Use them to keep example coverage honest without turning one manual route
 check into a fake global guarantee.
 
-## Low-Level Helpers
+## Low-level helpers
 
 Use low-level helpers when a test needs to locate the editable or inspect a
 rendered node by path. Editor actions stay on the curated harness so volatile
@@ -100,7 +100,7 @@ Prefer the harness methods when they already express the behavior. They keep
 model, DOM, native-selection, and screenshot proof in one place instead of
 spreading selectors through tests.
 
-## Replayable And Imperative Scenarios
+## Replayable and imperative scenarios
 
 Canonical scenarios contain serializable steps. They can be replayed, reduced,
 and attached as evidence to repository-owned release proof.
@@ -116,7 +116,7 @@ device, OS, and capability scope. Proxy browser lanes remain useful evidence,
 but they do not claim native mobile clipboard, human soft-keyboard, glide
 typing, or voice input.
 
-## Mobile Input Lab
+## Mobile input lab
 
 The Plite app exposes `/mobile-lab` for LAN-accessible browser capture:
 

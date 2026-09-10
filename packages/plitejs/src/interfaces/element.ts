@@ -30,8 +30,11 @@ type ElementOfVariant<N> = Element extends N
     ? Extract<ReturnType<TElementFactory>, Element>
     : N extends BaseEditor<infer V, any>
       ? ElementIn<V>
-      : N extends EditorSchemaExtensionProvider<infer TSchema>
-        ? SchemaElementShapeFor<TSchema, SchemaElementTypes<TSchema>>
+      : N extends EditorSchemaExtensionProvider<infer TSchemaFactory>
+        ? SchemaElementShapeFor<
+            ReturnType<TSchemaFactory>,
+            SchemaElementTypes<ReturnType<TSchemaFactory>>
+          >
         : N extends { getChildren: () => infer V }
           ? V extends ReadonlyArray<infer Child>
             ? Extract<Child, Element> | ElementOf<Child>

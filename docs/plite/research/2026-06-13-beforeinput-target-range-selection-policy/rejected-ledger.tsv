@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+beforeinput-target-range:prosemirror-direct-use	github/prosemirror/prosemirror		No direct local source hit for beforeinput/getTargetRanges in the current local checkout; not useful for this narrow validation.	Reopen if a specific ProseMirror issue/PR/test points to target-range handling.
+beforeinput-target-range:tiptap-direct-use	github/ueberdosis/tiptap		No direct local source hit for beforeinput/getTargetRanges in the current local checkout; Tiptap mostly inherits ProseMirror editing behavior.	Reopen if a Tiptap extension/source file owns beforeinput target-range behavior.

@@ -28,23 +28,15 @@ const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
-const isPlite = process.env.BENCHMARK_ENGINE === 'current';
-let Slate;
-let SlateInternal = {};
-
-if (isPlite) {
-  Slate = await import('platejs');
-  SlateInternal = await import('@platejs/test');
-} else {
-  Slate = await import('slate');
-}
-
-const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
-const NodeApi = Slate.NodeApi ?? Slate.Node ?? SlateInternal.NodeApi ?? SlateInternal.Node;
-const legacyTransforms = Slate.Transforms;
-
-assert.ok(NodeApi?.nodes, 'Slate Node API with nodes() is required');
+const engine = process.env.BENCHMARK_ENGINE;
+assert.ok(engine === 'current' || engine === 'legacy');
+const isPlite = engine === 'current';
+const implementation = isPlite ? 'plite' : 'slate';
+const Core = await import(isPlite ? 'plitejs' : 'slate');
+const { createEditor } = Core;
+const Editor = Core.Editor;
+const NodeApi = isPlite ? Core.NodeApi : Core.Node;
+const legacyTransforms = Core.Transforms;
 
 const iterations = Number(process.env.CORE_OBSERVATION_BENCH_ITERATIONS || 3);
 const blocks = Number(process.env.CORE_OBSERVATION_BENCH_BLOCKS || 500);
@@ -107,8 +99,8 @@ const createChildren = (count) =>
   }));
 
 const replaceEditor = (editor, input) => {
-  if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, input);
+  if (isPlite) {
+    editor.update((tx) => tx.value.replace(input));
     return;
   }
 
@@ -118,16 +110,10 @@ const replaceEditor = (editor, input) => {
 };
 
 const getChildren = (editor) =>
-  typeof Editor.getChildren === 'function'
-    ? Editor.getChildren(editor)
-    : typeof Editor.getSnapshot === 'function'
-      ? Editor.getSnapshot(editor).children
-      : typeof editor.getChildren === 'function'
-        ? editor.getChildren()
-        : editor.children;
+  isPlite ? editor.read.children() : editor.children;
 
 const insertText = (editor, text, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update((tx) => {
       tx.text.insert(text, options);
     });
@@ -190,7 +176,7 @@ const nodesAtRootAfterEachMs = measureLane(
         at: { path: [index % blocks, 0], offset: 0 },
       });
 
-      for (const _ of NodeApi.nodes(editor, { at: [] })) {
+      for (const _ of NodeApi.nodes(editor)) {
         seen += 1;
       }
     }
@@ -209,7 +195,10 @@ const positionsFirstBlockAfterEachMs = measureLane(
         at: { path: [0, 0], offset: index },
       });
 
-      for (const _ of Editor.positions(editor, { at: [0] })) {
+      const positions = isPlite
+        ? editor.read.points.positions({ at: [0] })
+        : Editor.positions(editor, { at: [0] });
+      for (const _ of positions) {
         seen += 1;
       }
     }
@@ -221,6 +210,8 @@ const positionsFirstBlockAfterEachMs = measureLane(
 console.log(JSON.stringify({
   iterations,
   config: {
+    implementation,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
     blocks,
     insertOps,
   },
@@ -259,8 +250,17 @@ const legacy = await benchmarkRepo({
   repo: legacyRepo,
 });
 
+if (current.config.implementation !== 'plite' || legacy.config.implementation !== 'slate') {
+  throw new Error('Core comparison did not execute its declared editor owners');
+}
+if (JSON.stringify(current.config.runtime) !== JSON.stringify(legacy.config.runtime)) {
+  throw new Error('Core comparison requires the same JavaScript runtime');
+}
+
 const summary = {
   lane: 'core-observation-compare-local',
+  implementations: { current: 'plite', legacy: 'slate' },
+  runtimes: { current: current.config.runtime, legacy: legacy.config.runtime },
   currentRepo,
   legacyRepo,
   iterations,

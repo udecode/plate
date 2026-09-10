@@ -5,20 +5,18 @@ import {
   type EditorRuntimeStateSelectorOptions,
   useEditorRuntimeState,
 } from '../../plite-react';
-import { useEditor } from './createPlateStore';
+import { useEditor } from './useEditor';
 
 export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
   T,
   Editor
-> & {
-  id?: string;
-};
+>;
 
 export const useEditorSelector = <T>(
   selector: (editor: Editor, prev?: T) => T,
-  { id, ...options }: UseEditorSelectorOptions<T> = {}
+  options: UseEditorSelectorOptions<T> = {}
 ): T => {
-  const editor = useEditor({ id });
+  const editor = useEditor();
   const previousValueRef = React.useRef<T | undefined>(undefined);
 
   return useEditorRuntimeState(

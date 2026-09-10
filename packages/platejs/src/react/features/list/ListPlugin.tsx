@@ -9,8 +9,8 @@ import { toPlatePlugin } from '../../core';
 
 /** Enables support for indented lists with React-specific features. */
 export const ListPlugin = toPlatePlugin(BaseListPlugin, {
-  render: {
-    belowNodes: (props) => {
+  slots: {
+    wrapNodeChildren: (props) => {
       const { listStyle, listType } = props.element;
 
       if (!listType) return undefined;
@@ -24,9 +24,6 @@ export const ListPlugin = toPlatePlugin(BaseListPlugin, {
               listStyleType:
                 listStyle ??
                 (listType === ListType.Numbered ? 'decimal' : 'disc'),
-              margin: 0,
-              padding: 0,
-              position: 'relative',
             }}
             start={
               listType === ListType.Numbered

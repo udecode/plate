@@ -1,0 +1,4 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+fixture-builder-only	prosemirror/prosemirror-test-builder	fixture-builder-only	Fixture builder ergonomics are useful but not a browser behavior oracle by themselves.	Reopen if Slate lacks a typed fixture builder for a concrete repeated test authoring bottleneck.
+recorder-ui-product-surface	facebook/lexical	replay-recorder:browser-step-selection-snapshot	Lexical's UI recorder is product tooling; Slate already has lower-level replayable scenario artifacts without needing a recorder UI.	Reopen if manual reproduction-to-test conversion becomes a repeated Slate workflow bottleneck.
+html-paste-product-normalizer	facebook/lexical	clipboard-html:structured-html-paste-selection	Structured HTML normalization is plugin/parser policy unless a Slate core route owns the parser behavior.	Reopen after child-root rich HTML paste API ownership is accepted.

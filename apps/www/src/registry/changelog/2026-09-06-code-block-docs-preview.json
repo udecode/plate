@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-06-code-block-docs-preview",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-06-code-block-docs-preview.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the native code docs preview at 1,000 lines with a separate 10,000-line stress test.",
+  "targets": [
+    {
+      "name": "code-block-huge-demo",
+      "files": [
+        "apps/www/src/registry/examples/code-block-huge-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-code-block-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-06-code-block-huge-keep-native-docs-preview-7a9b7e5c",
+      "kind": "fix",
+      "summary": "Keep the native code docs preview at 1,000 lines with a separate 10,000-line stress test.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-huge-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-code-block-docs-preview",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

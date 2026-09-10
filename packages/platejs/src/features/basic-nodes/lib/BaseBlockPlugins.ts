@@ -6,6 +6,8 @@ import {
   ElementApi,
   PathApi,
   PLUGINS,
+  type Location,
+  type NodeSelection,
 } from '../../../core';
 
 const thematicBreakDashRe = /^(--|—)$/;
@@ -117,7 +119,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
         }),
       },
     }),
-  render: { as: 'blockquote' },
+  component: 'blockquote',
   rules: {
     break: {
       empty: 'lift',
@@ -164,6 +166,14 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
     untab: { keys: 'shift+tab' },
   },
   update: ({ editor, plugin, tx, schema: { type } }) => ({
+    wrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
+      for (const [node, path] of tx.nodes.blocks({ at }).toReversed()) {
+        if (node.type === type || tx.nodes.above({ at: path, type: plugin })) {
+          continue;
+        }
+        tx.nodes.wrap({ children: [], type }, { at: path });
+      }
+    },
     toggle: () => {
       tx.blocks.toggle({ type }, { wrap: true });
     },
@@ -226,7 +236,7 @@ export const BaseHorizontalRulePlugin = defineBasePlugin(
           encode: () => ({ type: 'thematicBreak' as const }),
         },
       }),
-    render: { as: 'hr' },
+    component: 'hr',
   }
 );
 

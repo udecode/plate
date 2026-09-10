@@ -2,15 +2,12 @@
 
 import { all, createLowlight } from 'lowlight';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { BaseCodeBlockPlugin, CodeBlockRules, NodeApi } from 'platejs';
+import { BaseCodeBlockPlugin, CodeBlockRules } from 'platejs';
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
-  CodeLinePlugin,
   PlateElement,
-  PlateLeaf,
   type PlateElementProps,
-  type PlateLeafProps,
   useEditor,
   useEditorReadOnly,
   useElement,
@@ -142,17 +139,44 @@ export function CodeBlockElement({
 }: PlateElementProps<typeof CodeBlockPlugin> & {
   showLanguageLabel?: boolean;
 }) {
-  const { editor, element } = props;
+  return (
+    <CodeBlockContainer
+      elementProps={props}
+      showLanguageLabel={showLanguageLabel}
+    >
+      <pre className="overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
+        <code className="[&>[data-plite-node=text]]:contents">
+          {props.children}
+        </code>
+      </pre>
+    </CodeBlockContainer>
+  );
+}
+
+export function CodeBlockContainer({
+  children,
+  elementProps,
+  languageOptions,
+  showLanguageLabel = true,
+}: {
+  children: React.ReactNode;
+  elementProps: PlateElementProps<typeof CodeBlockPlugin>;
+  languageOptions?: Array<{ label: string; value: string }>;
+  showLanguageLabel?: boolean;
+}) {
+  const { editor, element, attributes, plugin, ref, slots } = elementProps;
 
   return (
     <PlateElement
       className="py-1 **:[.hljs-addition]:bg-[#f0fff4] **:[.hljs-addition]:text-[#22863a] dark:**:[.hljs-addition]:bg-[#3c5743] dark:**:[.hljs-addition]:text-[#ceead5] **:[.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable]:text-[#005cc5] dark:**:[.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable]:text-[#6596cf] **:[.hljs-built\\\\_in,.hljs-symbol]:text-[#e36209] dark:**:[.hljs-built\\\\_in,.hljs-symbol]:text-[#c3854e] **:[.hljs-bullet]:text-[#735c0f] **:[.hljs-comment,.hljs-code,.hljs-formula]:text-[#6a737d] dark:**:[.hljs-comment,.hljs-code,.hljs-formula]:text-[#6a737d] **:[.hljs-deletion]:bg-[#ffeef0] **:[.hljs-deletion]:text-[#b31d28] dark:**:[.hljs-deletion]:bg-[#473235] dark:**:[.hljs-deletion]:text-[#e7c7cb] **:[.hljs-emphasis]:italic **:[.hljs-keyword,.hljs-doctag,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language\\\\_]:text-[#d73a49] dark:**:[.hljs-keyword,.hljs-doctag,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language\\\\_]:text-[#ee6960] **:[.hljs-name,.hljs-quote,.hljs-selector-tag,.hljs-selector-pseudo]:text-[#22863a] dark:**:[.hljs-name,.hljs-quote,.hljs-selector-tag,.hljs-selector-pseudo]:text-[#36a84f] **:[.hljs-regexp,.hljs-string,.hljs-meta_.hljs-string]:text-[#032f62] dark:**:[.hljs-regexp,.hljs-string,.hljs-meta_.hljs-string]:text-[#3593ff] **:[.hljs-section]:font-bold **:[.hljs-section]:text-[#005cc5] dark:**:[.hljs-section]:text-[#61a5f2] **:[.hljs-strong]:font-bold **:[.hljs-title,.hljs-title.class\\\\_,.hljs-title.class\\\\_.inherited\\\\_\\\\_,.hljs-title.function\\\\_]:text-[#6f42c1] dark:**:[.hljs-title,.hljs-title.class\\\\_,.hljs-title.class\\\\_.inherited\\\\_\\\\_,.hljs-title.function\\\\_]:text-[#a77bfa]"
-      {...props}
+      attributes={attributes}
+      element={element}
+      plugin={plugin}
+      ref={ref}
+      slots={slots}
     >
       <div className="relative rounded-md bg-muted/50">
-        <pre className="overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
-          <code>{props.children}</code>
-        </pre>
+        {children}
 
         <div
           className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
@@ -172,24 +196,42 @@ export function CodeBlockElement({
             </Button>
           )}
 
-          <CodeBlockCombobox showLanguageLabel={showLanguageLabel} />
-
-          <CopyButton
-            size="icon"
-            variant="ghost"
-            className="size-6 gap-1 text-xs text-muted-foreground"
-            value={() => NodeApi.string(element)}
+          <CodeBlockCombobox
+            languageOptions={languageOptions}
+            showLanguageLabel={showLanguageLabel}
           />
+
+          <CodeBlockCopyButton />
         </div>
       </div>
     </PlateElement>
   );
 }
 
+function CodeBlockCopyButton() {
+  const editor = useEditor();
+  const element = useElement(CodeBlockPlugin);
+
+  return (
+    <CopyButton
+      size="icon"
+      variant="ghost"
+      className="size-6 gap-1 text-xs text-muted-foreground"
+      value={() => {
+        const path = editor.read.nodes.path(element);
+
+        return path ? editor.read.text.string(path) : '';
+      }}
+    />
+  );
+}
+
 function CodeBlockCombobox({
+  languageOptions = codeBlockLanguages,
   showLanguageLabel,
 }: {
   showLanguageLabel: boolean;
+  languageOptions?: Array<{ label: string; value: string }>;
 }) {
   const [open, setOpen] = React.useState(false);
   const readOnly = useEditorReadOnly();
@@ -200,12 +242,12 @@ function CodeBlockCombobox({
 
   const items = React.useMemo(
     () =>
-      codeBlockLanguages.filter(
+      languageOptions.filter(
         (language) =>
           !searchValue ||
           language.label.toLowerCase().includes(searchValue.toLowerCase())
       ),
-    [searchValue]
+    [searchValue, languageOptions]
   );
 
   if (readOnly) {
@@ -300,32 +342,43 @@ function CopyButton({
   React.ComponentProps<typeof Button>,
   'value'
 >) {
-  const [hasCopied, setHasCopied] = React.useState(false);
+  const [status, setStatus] = React.useState<
+    'idle' | 'copying' | 'copied' | 'failed'
+  >('idle');
 
   React.useEffect(() => {
-    if (!hasCopied) return undefined;
+    if (status !== 'copied') return undefined;
 
     const timeout = setTimeout(() => {
-      setHasCopied(false);
+      setStatus('idle');
     }, 2000);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [hasCopied]);
+  }, [status]);
 
   return (
     <Button
-      onClick={() => {
-        void navigator.clipboard.writeText(
-          typeof value === 'function' ? value() : value
-        );
-        setHasCopied(true);
+      disabled={status === 'copying'}
+      onClick={async () => {
+        setStatus('copying');
+        try {
+          await navigator.clipboard.writeText(
+            typeof value === 'function' ? value() : value
+          );
+          setStatus('copied');
+        } catch {
+          setStatus('failed');
+        }
       }}
+      title={status === 'failed' ? 'Copy failed. Try again.' : 'Copy'}
       {...props}
     >
-      <span className="sr-only">Copy</span>
-      {hasCopied ? (
+      <span className="sr-only">
+        {status === 'failed' ? 'Copy failed. Try again.' : 'Copy'}
+      </span>
+      {status === 'copied' ? (
         <CheckIcon className="!size-3" />
       ) : (
         <CopyIcon className="!size-3" />
@@ -334,29 +387,18 @@ function CopyButton({
   );
 }
 
-export function CodeLineElement(
-  props: PlateElementProps<typeof CodeLinePlugin>
-) {
-  return <PlateElement {...props} />;
-}
-
-export function CodeSyntaxLeaf(
-  props: PlateLeafProps<typeof CodeHighlightPlugin>
-) {
-  return <PlateLeaf className={props.leaf.className} {...props} />;
-}
-
 const lowlight = createLowlight(all);
 
-export const CodeBlockKit = [
+export const createCodeBlockPlugin = (component: typeof CodeBlockElement) =>
   CodeBlockPlugin.configure({
-    component: CodeBlockElement,
+    component,
     inputRules: [CodeBlockRules.markdown({ on: 'match' })],
     shortcuts: { toggle: { keys: 'mod+alt+8' } },
-  }),
-  CodeLinePlugin.configure({ component: CodeLineElement }),
+  });
+
+export const CodeBlockKit = [
+  createCodeBlockPlugin(CodeBlockElement),
   CodeHighlightPlugin.configure({
-    component: CodeSyntaxLeaf,
     initialState: { lowlight },
   }),
 ];

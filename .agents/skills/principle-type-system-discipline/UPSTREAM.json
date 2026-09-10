@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-type-system-discipline",
+  "files": [
+    {
+      "upstream": "skills/principle-type-system-discipline/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "662ed1ad53fb491e97b9c4eac7317fba8ec5ed722fec8d71beb94da0111619cf",
+      "destinationSha256": "9bad779d21c9066e22b1eaff6cf0ff7053a4c97763198e608a45f9f55f0baa1b",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Correct interval modeling: start plus an arbitrary number does not enforce ordered endpoints; use a validated nonnegative duration."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-type-system-discipline/SKILL.md\n+++ skills/principle-type-system-discipline/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-type-system-discipline\n description: \"Apply when designing types, reviewing a function signature, or writing code in any statically-typed language. Make illegal states unrepresentable, brand semantic primitives, parse external data at boundaries, refuse to lie to the compiler, exhaust variants, derive from authoritative schemas.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Type System Discipline\n \n@@ -13,7 +14,7 @@\n **The patterns:**\n \n - **Make illegal states unrepresentable.** Model variants as sum types: discriminated unions in TypeScript, enums with payloads in Rust/Swift/Kotlin, sealed classes in Scala, ADTs in Haskell/OCaml. Don't model state as a bag of optional fields where contradictory combinations compile. A subtle anti-pattern worth naming: `{ completed: boolean; completedAt?: Date }` admits `completed: true; completedAt: undefined`, which is meaningless. Derive the boolean from a single source like `completedAt !== null`, or model the variants explicitly as `{ kind: 'open' } | { kind: 'done'; at: Date }`. If a bug forces the question \"wait, can this combination actually happen?\", the type is too loose.\n-- **Types are constructions, not restrictions.** Build the type up from the values you want instead of carving them out of a looser type with checks. The invariant that seems to need a refinement type is usually a construction away. A non-empty list is a head plus a rest, not a list with a length check. A valid time range is a start plus a duration, not two timestamps you must keep ordered. No representation is privileged. A list of pairs is an even-length list if you interpret it that way, so choose the shape that cannot build the illegal value and expose the interface callers need on top.\n+- **Types are constructions, not restrictions.** Build the type up from the values you want instead of carving them out of a looser type with checks. The invariant that seems to need a refinement type is usually a construction away. A non-empty list is a head plus a rest, not a list with a length check. A valid time range can be a start plus a validated nonnegative duration, rather than two timestamps that must stay ordered. A plain numeric duration still admits negative values; validate and brand it at the boundary. No representation is privileged. A list of pairs is an even-length list if you interpret it that way, so choose the shape that cannot build the illegal value and expose the interface callers need on top.\n - **Brand semantic primitives.** `UserId` and `OrderId` are strings underneath but should not be interchangeable. Newtypes in Rust, opaque types in Swift, value classes in Kotlin, phantom types in Haskell, branded intersections in TypeScript. Validate once at creation, trust the type downstream.\n - **External data is untyped until parsed.** RPC payloads, JSON, IPC messages, CLI args, config files, environment variables, database rows. Have a parse function at every boundary that turns unstructured input into the typed model. See the **boundary-discipline** principle skill for where to put validation.\n - **Don't lie to the type system.** Casts, unsafe coercions, and assertion functions that bypass the compiler are runtime crashes waiting to happen. If the compiler can't prove a fact, prove it (validate, narrow, refine the model) or accept that the cast is a hazard. The cast you bury today is the postmortem you write next week.\n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

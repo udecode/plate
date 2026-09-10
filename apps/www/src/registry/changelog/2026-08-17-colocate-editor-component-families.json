@@ -143,7 +143,6 @@
         "apps/www/src/registry/examples/values/basic-marks-value.tsx",
         "apps/www/src/registry/examples/values/column-value.tsx",
         "apps/www/src/registry/examples/values/date-value.tsx",
-        "apps/www/src/registry/examples/values/discussion-value.tsx",
         "apps/www/src/registry/examples/values/equation-value.tsx",
         "apps/www/src/registry/examples/values/font-value.tsx",
         "apps/www/src/registry/examples/values/indent-value.tsx",
@@ -152,6 +151,7 @@
         "apps/www/src/registry/examples/values/list-value.tsx",
         "apps/www/src/registry/examples/values/media-value.tsx",
         "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
         "apps/www/src/registry/examples/values/table-value.tsx",
         "apps/www/src/registry/examples/values/toc-value.tsx"
       ],

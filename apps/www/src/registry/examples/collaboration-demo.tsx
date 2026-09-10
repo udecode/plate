@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createEditor, Plate } from 'platejs/react';
+import { createEditor, Plate, useEditorRuntimeState } from 'platejs/react';
 import type {
   YjsAwarenessChange,
   YjsAwarenessState,
@@ -10,11 +10,7 @@ import type {
   YjsProviderLike,
   YjsProviderStatus,
 } from 'platejs/yjs';
-import {
-  YjsPlugin,
-  useYjsProviderStatus,
-  useYjsProviderSynced,
-} from 'platejs/yjs/react';
+import { useYjsProviderStatus, useYjsProviderSynced } from 'platejs/yjs/react';
 import * as React from 'react';
 import * as Y from 'yjs';
 
@@ -31,10 +27,7 @@ import {
 } from '@/components/ui/card';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
-import {
-  RemoteCursorLeaf,
-  RemoteCursorOverlay,
-} from '@/registry/components/editor/remote-cursor-overlay';
+import { YjsPlugin } from '@/registry/components/editor/remote-cursor-overlay';
 
 const ROOT_NAME = 'plate-collaboration-demo';
 const SCHEMA = {
@@ -462,10 +455,6 @@ const createCollaborationPlugin = (
       provider,
       rootName: ROOT_NAME,
     },
-    render: {
-      afterEditable: RemoteCursorOverlay,
-      leaf: RemoteCursorLeaf,
-    },
   });
 
 const createPeerEditor = (
@@ -712,19 +701,7 @@ function PeerControls({
   editor: DemoEditor;
   peer: DemoPeer;
 }) {
-  const subscribeHistory = React.useCallback(
-    (onStoreChange: () => void) => editor.subscribeCommit(onStoreChange),
-    [editor]
-  );
-  const getHistorySnapshot = React.useCallback(
-    () => editor.read.history(),
-    [editor]
-  );
-  const history = React.useSyncExternalStore(
-    subscribeHistory,
-    getHistorySnapshot,
-    getHistorySnapshot
-  );
+  const history = useEditorRuntimeState(editor, (state) => state.history());
   const redoDepth = history.redos.length;
   const undoDepth = history.undos.length;
 

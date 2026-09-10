@@ -15,7 +15,10 @@ const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
 describe('plite-react root and command hooks', () => {
   test('usePliteRootEffect runs after child layout effects with the committed root editor', () => {
     const editor = createEditor({ initialValue });
-    const calls: Array<{ childLayoutSeen: string | null; root: string }> = [];
+    const calls: Array<{
+      childLayoutSeen: string | null;
+      root: string | undefined;
+    }> = [];
 
     const Probe = () => {
       useLayoutEffect(() => {
@@ -55,11 +58,8 @@ describe('plite-react root and command hooks', () => {
         (rootEditor) => {
           calls.push(
             rootEditor.read((state) => {
-              const [firstBlock] = state.nodes.children() as Array<{
-                children: Array<{ text: string }>;
-              }>;
-
-              return firstBlock?.children[0]?.text ?? '';
+              const [firstBlock] = state.nodes.children();
+              return firstBlock ? NodeApi.string(firstBlock) : '';
             })
           );
         },
@@ -230,8 +230,11 @@ describe('plite-react root and command hooks', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run command' }));
 
     expect(handlers[0]).toBe(handlers[1]);
-    expect(NodeApi.string({ children: editor.read.root('header') })).toBe(
-      'headfirstsecond'
-    );
+    expect(
+      editor.read
+        .root('header')
+        .map((node) => NodeApi.string(node))
+        .join('')
+    ).toBe('headfirstsecond');
   });
 });

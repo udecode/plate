@@ -41,7 +41,7 @@
     "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
     "test": "bun test src test",
     "test:performance": "bun test/performance.ts",
-    "typecheck": "tsc --project tsconfig.json --noEmit"
+    "typecheck": "node ../../tooling/scripts/typecheck-package-source.mjs tsconfig.json --noEmit"
   },
   "dependencies": {
     "@antfu/ni": "24.3.0",

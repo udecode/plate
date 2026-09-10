@@ -3,7 +3,7 @@ import {
   type EditorUpdateTransaction,
   SelectionApi,
 } from '../..';
-import { profileEditableMutationDuration } from './mutation-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -69,7 +69,7 @@ export const updateNativeTextInput = (
   update: (tx: EditorUpdateTransaction<any, any>) => void,
   options: { merge?: boolean } = {}
 ) => {
-  const tags = profileEditableMutationDuration(
+  const tags = profilePliteReactDuration(
     'native-text-input-history-tags',
     () =>
       options.merge
@@ -77,7 +77,7 @@ export const updateNativeTextInput = (
         : getNativeTextInputUpdateTags(editor)
   );
 
-  profileEditableMutationDuration('native-text-input-update', () => {
+  profilePliteReactDuration('native-text-input-update', () => {
     getEditorRuntime(editor).update(update, { tags });
   });
 };

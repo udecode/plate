@@ -6,7 +6,6 @@ import {
   BoldPlugin,
   FontSizePlugin,
   CodeBlockPlugin,
-  CodeLinePlugin,
   LinkPlugin,
   ListPlugin,
   definePlatePlugin,
@@ -91,17 +90,12 @@ const CodecProofPlugin = definePlatePlugin('codecProof', {
             return ContentSlice.fromJSON({
               content: [
                 {
-                  children: [
-                    {
-                      children: [{ text: `${label}:code` }],
-                      type: editor.plugin(CodeLinePlugin).schema.type,
-                    },
-                  ],
+                  children: [{ text: `${label}:code` }],
                   type: editor.plugin(CodeBlockPlugin).schema.type,
                 },
               ],
-              openEnd: 2,
-              openStart: 2,
+              openEnd: 1,
+              openStart: 1,
             });
           }
 
@@ -147,7 +141,7 @@ const AdvancedMarkPlugin = definePlatePlugin('schemaAdvanced', {
       },
     }),
 
-  render: { as: 'mark' },
+  component: 'mark',
 });
 
 const ApplicationSectionPlugin = definePlatePlugin('applicationSection', {
@@ -156,7 +150,7 @@ const ApplicationSectionPlugin = definePlatePlugin('applicationSection', {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
     },
   },
-  render: { as: 'section' },
+  component: 'section',
 });
 
 const ApplicationRootSchema = {
@@ -269,16 +263,7 @@ const PlateSchemaDescriptorControls = () => {
           type: 'table',
         },
         {
-          children: [
-            {
-              children: [{ text: 'const codec = true;' }],
-              type: editor.plugin(CodeLinePlugin).schema.type,
-            },
-            {
-              children: [{ text: '' }],
-              type: editor.plugin(CodeLinePlugin).schema.type,
-            },
-          ],
+          children: [{ text: 'const codec = true;\n' }],
           language: 'typescript',
           type: editor.plugin(CodeBlockPlugin).schema.type,
         },
@@ -307,18 +292,13 @@ const PlateSchemaDescriptorControls = () => {
     editor.update.value.replace({
       children: [
         {
-          children: [
-            {
-              children: [{ text: 'left  right' }],
-              type: editor.plugin(CodeLinePlugin).schema.type,
-            },
-          ],
+          children: [{ text: 'left  right' }],
           type: editor.plugin(CodeBlockPlugin).schema.type,
         },
       ],
       selection: {
-        anchor: { offset: 5, path: [0, 0, 0] },
-        focus: { offset: 5, path: [0, 0, 0] },
+        anchor: { offset: 5, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
         kind: 'text',
       },
     });
@@ -528,7 +508,7 @@ const PlateSchemaDescriptorsExample = () => {
   const editor = useProductEditor({
     plugins: [
       ParagraphPlugin.configure({
-        render: { as: 'article' },
+        component: 'article',
       }),
       BoldPlugin,
       FontSizePlugin,
@@ -536,7 +516,6 @@ const PlateSchemaDescriptorsExample = () => {
       LinkPlugin,
       ListPlugin,
       TablePlugin,
-      CodeLinePlugin,
       CodeBlockPlugin,
       ImagePlugin,
       MediaEmbedPlugin,

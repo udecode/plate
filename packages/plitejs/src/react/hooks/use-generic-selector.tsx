@@ -126,6 +126,7 @@ export function useGenericSelector<T>(
   try {
     if (
       selector !== committed.selector ||
+      equalityFn !== committed.equalityFn ||
       committed.subscriptionCallbackError
     ) {
       const selectorResult = selector();

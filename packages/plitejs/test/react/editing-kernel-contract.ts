@@ -126,7 +126,7 @@ test('kernel traces attach typed command definitions', () => {
       ...createBaseTrace(),
       command,
       eventFamily: 'beforeinput',
-      intent: 'insert-text',
+      intent: 'text-insert',
       nativeAllowed: false,
       ownership: 'model-owned',
       stateAfter: 'model-owned',
@@ -413,10 +413,10 @@ test('editable kernel trace keeps only the newest bounded entries', () => {
   const trace = getEditableKernelTrace(editor);
 
   expect(trace).toHaveLength(EDITABLE_KERNEL_TRACE_LIMIT);
-  expect(trace[0]?.selectionBefore?.anchor.path).toEqual([2]);
-  expect(trace.at(-1)?.selectionBefore?.anchor.path).toEqual([
-    EDITABLE_KERNEL_TRACE_LIMIT + 1,
-  ]);
+  expect(trace[0]?.selectionBefore).toMatchObject({ anchor: { path: [2] } });
+  expect(trace.at(-1)?.selectionBefore).toMatchObject({
+    anchor: { path: [EDITABLE_KERNEL_TRACE_LIMIT + 1] },
+  });
 });
 
 test('movement ownership trace records model-owned horizontal reason', () => {
@@ -1029,11 +1029,12 @@ test('composition lifecycle events stay browser-owned', () => {
 test('kernel transition rejects native-owned repair policies', () => {
   expect(
     getEditableKernelTransition({
+      frame: null,
       command: null,
       eventFamily: 'input',
       nativeAllowed: true,
       ownership: 'native-allowed',
-      repairPolicy: { kind: 'repair-caret', reason: 'after-native-input' },
+      repairPolicy: { kind: 'repair-caret', reason: 'repair-caret' },
       stateAfter: 'dom-selection',
       targetOwner: 'editor',
     })
@@ -1046,6 +1047,7 @@ test('kernel transition rejects native-owned repair policies', () => {
 test('kernel transition allows history commands from internal controls', () => {
   expect(
     getEditableKernelTransition({
+      frame: null,
       command: { direction: 'undo', kind: 'history' },
       eventFamily: 'keydown',
       nativeAllowed: false,
@@ -1063,6 +1065,7 @@ test('kernel transition allows history commands from internal controls', () => {
 test('kernel transition keeps non-history internal control commands rejected', () => {
   expect(
     getEditableKernelTransition({
+      frame: null,
       command: {
         inputType: 'insertText',
         kind: 'insert-text',
@@ -1192,6 +1195,7 @@ test('selectionchange ownership keeps repair and programmatic changes model-owne
 test('kernel transition rejects repair-induced selectionchange as native intent', () => {
   expect(
     getEditableKernelTransition({
+      frame: null,
       command: null,
       eventFamily: 'selectionchange',
       nativeAllowed: true,

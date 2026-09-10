@@ -1,4 +1,7 @@
-import { getPluginStore as getInternalPluginStore } from '../../../internal/plugin/pluginStore';
+import {
+  getPluginStore as getInternalPluginStore,
+  type InternalPluginStore,
+} from '../../../internal/plugin/pluginStore';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
@@ -13,7 +16,7 @@ import type {
 import type { Editor } from '../../editor';
 import { useZustandSelector } from '../../internal/useZustandSelector';
 import type { AnyResolvedPlatePlugin, AnyPlatePlugin } from '../../plugin';
-import { useEditor } from './createPlateStore';
+import { useEditor } from './useEditor';
 
 type PluginStoreDescriptor = (
   | AnyBasePlugin
@@ -69,8 +72,6 @@ export function usePluginStore<P extends PluginStoreDescriptor, U = unknown>(
   plugin: P,
   selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
-    // Editor id. Default is the closest one.
-    id?: string;
     // Equality function. Default is strict equality.
     equalityFn?: (a: U, b: U) => boolean;
   }
@@ -81,11 +82,7 @@ export function usePluginStore(
   keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   ...args: unknown[]
 ): unknown {
-  const options =
-    typeof keyOrSelector === 'function'
-      ? (args[0] as { id?: string } | undefined)
-      : undefined;
-  const editor = useEditor({ id: options?.id });
+  const editor = useEditor();
 
   return useResolvedPluginStore(editor, plugin, keyOrSelector, args);
 }
@@ -137,6 +134,22 @@ function useResolvedPluginStore(
     throw new Error(`Plate plugin "${plugin.name}" store is not installed.`);
   }
 
+  const { equalityFn, selector } = resolvePluginStoreSelector(
+    plugin,
+    store,
+    keyOrSelector,
+    args
+  );
+
+  return useZustandSelector(store.base.store, selector, equalityFn);
+}
+
+function resolvePluginStoreSelector(
+  plugin: PluginStoreDescriptor,
+  store: InternalPluginStore,
+  keyOrSelector: PropertyKey | ErasedPluginStateSelector,
+  args: readonly unknown[]
+) {
   let equalityFn: ((a: unknown, b: unknown) => boolean) | undefined;
   let selector: (state: unknown) => unknown;
 
@@ -169,5 +182,5 @@ function useResolvedPluginStore(
         };
   }
 
-  return useZustandSelector(store.base.store, selector, equalityFn);
+  return { equalityFn, selector };
 }

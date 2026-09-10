@@ -39,6 +39,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ['DOM Coverage Boundaries', 'dom-coverage-boundaries'],
   ['Editable Voids', 'editable-voids'],
   ['Embeds', 'embeds'],
+  ['External Text', 'external-text'],
   ['Forced Layout', 'forced-layout'],
   ['Hidden Content Blocks', 'hidden-content-blocks'],
   ['Hovering Toolbar', 'hovering-toolbar'],

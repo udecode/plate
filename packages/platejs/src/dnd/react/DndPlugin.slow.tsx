@@ -2,13 +2,16 @@ import { act, render } from '@testing-library/react';
 import React from 'react';
 
 import type { NodeKey } from '../../core';
-import {
-  Plate,
-  PlateContent,
-  createEditor,
-  pipeHandler,
-} from '../../react/core';
+import { Plate, PlateContent, createEditor } from '../../react/core';
+import { pipeHandler } from '../../react/utils/pipeHandler.internal';
 import { DndPlugin } from './DndPlugin';
+import { useDndPlugin } from './useDndPlugin';
+
+function DndEditable() {
+  const [element, setElement] = React.useState<HTMLDivElement | null>(null);
+  useDndPlugin(element);
+  return <PlateContent ref={setElement} data-testid="editor" />;
+}
 
 const blockNodeKey = 'runtime-block-1' as NodeKey;
 
@@ -108,7 +111,7 @@ describe('DndPlugin', () => {
 
     const view = render(
       <Plate editor={editor}>
-        <PlateContent data-testid="editor" />
+        <DndEditable />
       </Plate>
     );
     const editorNode = view.getByTestId('editor');
@@ -129,7 +132,7 @@ describe('DndPlugin', () => {
       context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
-    expect(context.store.get('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeNull();
 
     act(() => {
       context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
@@ -143,13 +146,13 @@ describe('DndPlugin', () => {
     act(() => {
       block.dispatchEvent(dragLeaveEvent(editorNode));
     });
-    expect(context.store.get('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeNull();
 
     act(() => {
       context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
       blockText.dispatchEvent(dragLeaveEvent(inside));
     });
-    expect(context.store.get('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeNull();
 
     const nextBlock = document.createElement('div');
     nextBlock.dataset.pliteNodeKey = 'runtime-block-2';
@@ -167,7 +170,7 @@ describe('DndPlugin', () => {
       document.dispatchEvent(new Event('drop'));
     });
     expect(context.store.get('_isOver')).toBe(false);
-    expect(context.store.get('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeNull();
 
     view.unmount();
     editorNode.remove();

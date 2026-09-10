@@ -1,0 +1,5 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+slate-v2-local	local:.tmp/slate-v2	local	MIT	local	2026	stress,replay,playwright,scenario	.tmp/slate-v2	candidate	TBD	Current generated stress/replay artifact implementation.
+facebook/lexical	https://github.com/facebook/lexical	github	MIT	high	2026	recorder,e2e,snapshot,selection	/Users/zbeyens/git/lexical	read	6	Test recorder emits replayable browser steps plus HTML/selection assertions; no source-backed automatic shrinker found in sampled path.
+codemirror/view	https://github.com/codemirror/view	github	MIT	high	2026	random,invariant,view,decorations	/Users/zbeyens/git/codemirror-view	read	6	Random view/decorations invariant tests pressure generated behavior, but sampled rows do not persist seeds/replays/reduction candidates.
+wpt/editing	local:/Users/zbeyens/git/wpt	local	mixed	high	2026	fixtures,editing,execcommand	/Users/zbeyens/git/wpt	read	4	Editing fixtures are good invariant corpora, not replay reduction machinery.

@@ -31,7 +31,7 @@ export type EditorExtensionSlotValue<
   }>
 > &
   EditorExtensionReference &
-  EditorSchemaExtensionProvider<SchemaExtensionsOf<TInput>> & {
+  EditorSchemaExtensionProvider<() => SchemaExtensionsOf<TInput>> & {
     name: `slot:${TKey}`;
   };
 

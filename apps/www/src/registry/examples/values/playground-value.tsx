@@ -88,21 +88,13 @@ export const playgroundValue: EditorDocumentValue = {
         },
         { text: '. Discuss changes using ' },
         {
-          children: [
-            { comment: true, comment_discussion1: true, text: 'comments' },
-          ],
+          children: [{ text: 'comments' }],
           type: 'link',
           url: '/docs/comment',
         },
-        {
-          comment: true,
-          comment_discussion1: true,
-          text: ' on many text segments',
-        },
+        { text: ' on many text segments' },
         { text: '. You can even have ' },
         {
-          comment: true,
-          comment_discussion2: true,
           suggestion: true,
           suggestion_playground3: {
             id: 'playground3',
@@ -271,12 +263,9 @@ export const playgroundValue: EditorDocumentValue = {
     },
     {
       children: [
-        { children: [{ text: 'function hello() {' }], type: 'codeLine' },
         {
-          children: [{ text: "  console.info('code blocks are supported!');" }],
-          type: 'codeLine',
+          text: "function hello() {\n  console.info('code blocks are supported!');\n}",
         },
-        { children: [{ text: '}' }], type: 'codeLine' },
       ],
       language: 'javascript',
       type: 'codeBlock',

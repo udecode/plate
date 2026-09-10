@@ -15,8 +15,8 @@ import {
 const browserRoot = path.join(repoRoot, 'packages/test');
 
 const requiredOutputs = [
-  'core/index.js',
-  'core/index.d.ts',
+  'index.js',
+  'index.d.ts',
   'browser/index.js',
   'browser/index.d.ts',
   'playwright/index.js',
@@ -39,17 +39,28 @@ const outputsAreFresh = ({ inputDigest }) => {
   });
 };
 
-export const buildBrowserIfStale = async ({
-  environment = process.env,
-  timeoutMs = Number(environment.PLITE_BROWSER_BUILD_TIMEOUT_MS ?? 600_000),
-} = {}) => {
+export const inspectBrowserBuild = (environment = process.env) => {
   const buildEnvironment = snapshotEnvironment(['CI'], environment);
   const inputDigest = hashEntries(browserBuildEntries, [
     'plite-browser-build-v4',
     JSON.stringify(buildEnvironment),
   ]);
 
-  if (outputsAreFresh({ inputDigest })) {
+  return {
+    buildEnvironment,
+    inputDigest,
+    fresh: outputsAreFresh({ inputDigest }),
+  };
+};
+
+export const buildBrowserIfStale = async ({
+  environment = process.env,
+  timeoutMs = Number(environment.PLITE_BROWSER_BUILD_TIMEOUT_MS ?? 600_000),
+} = {}) => {
+  const { buildEnvironment, inputDigest, fresh } =
+    inspectBrowserBuild(environment);
+
+  if (fresh) {
     console.log('@platejs/test dist is fresh');
     return 0;
   }

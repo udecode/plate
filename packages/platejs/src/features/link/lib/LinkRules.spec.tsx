@@ -1,3 +1,5 @@
+import { describe, expect, it, mock } from 'bun:test';
+
 import { createDataTransfer } from '#platejs-test-internal';
 
 import {
@@ -10,20 +12,10 @@ import {
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
 import { BaseLinkPlugin, LinkRules } from './BaseLinkPlugin';
 
-const BaseCodeLinePlugin = defineBasePlugin('codeLine', {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      blockContent: false,
-    },
-  },
-});
-
 const BaseCodeBlockPlugin = defineBasePlugin('codeBlock', {
-  dependencies: [BaseCodeLinePlugin],
   schema: {
     element: {
-      content: schema.content.element(BaseCodeLinePlugin, { min: 1 }),
+      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
     },
   },
 });
@@ -124,7 +116,7 @@ describe('LinkRules', () => {
       },
       value: [
         {
-          children: [{ children: [{ text: 'const x = 1' }], type: 'codeLine' }],
+          children: [{ text: 'const x = 1' }],
           type: 'codeBlock',
         },
         { children: [{ text: 'test' }], type: 'paragraph' },
@@ -168,14 +160,12 @@ describe('LinkRules', () => {
     const editor = createEditor({
       selection: {
         kind: 'text',
-        anchor: { offset: 0, path: [0, 0, 0] },
-        focus: { offset: 8, path: [0, 0, 0] },
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 8, path: [0, 0] },
       },
       value: [
         {
-          children: [
-            { children: [{ text: 'selected code' }], type: 'codeLine' },
-          ],
+          children: [{ text: 'selected code' }],
           type: 'codeBlock',
         },
       ],
@@ -418,3 +408,33 @@ describe('LinkRules', () => {
     expect(findLink(editor)).toBeDefined();
   });
 });
+
+it.each([true, false])(
+  'prepares markdown once and preserves rejected literal syntax: %s',
+  (valid) => {
+    const transformInput = mock((url: string) =>
+      valid ? `https://${url}` : 'javascript:noop()'
+    );
+    const text = '[Example](example.com/a%20path';
+    const editor = createEditor({
+      options: { transformInput },
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+    editor.update.text.insert(')');
+    expect(transformInput).toHaveBeenCalledTimes(1);
+    if (valid) {
+      expect(findLink(editor)).toMatchObject({
+        url: 'https://example.com/a%20path',
+        children: [{ text: 'Example' }],
+      });
+    } else {
+      expect(findLink(editor)).toBeUndefined();
+      expect(editor.read.text.string([])).toBe(`${text})`);
+    }
+  }
+);

@@ -24,7 +24,7 @@ editor.update((tx) => {
 editor.update({ history: "skip" }).text.insert("draft");
 ```
 
-## History Object
+## History object
 
 ```typescript
 import type {
@@ -51,7 +51,7 @@ interface Batch {
 }
 ```
 
-## Static Methods
+## Static methods
 
 #### `History.isHistory(value: unknown): value is History`
 
@@ -169,7 +169,7 @@ Redo the next history batch outside a larger transaction.
 
 Restore decoded history as one direct update.
 
-## Controlled Previews
+## Controlled previews
 
 Render proposed edits from local state, decorations, or sidecar UI until the
 user accepts them. Do not mutate document content for a preview and then try to

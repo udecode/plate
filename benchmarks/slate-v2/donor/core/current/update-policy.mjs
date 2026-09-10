@@ -1,8 +1,10 @@
+import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 
 import {
   createEditor,
   defineExtension,
+  editorCommands,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
@@ -45,16 +47,12 @@ const createLegacyTextUpdateFacade = (editor) => ({
     {},
     {
       get(_target, methodName) {
-        if (typeof methodName !== 'string') return;
+        if (methodName !== 'insert') return;
 
-        return (...args) => {
-          let result;
-
+        return (text, options) => {
           editor.update((tx) => {
-            result = tx.text[methodName](...args);
+            tx.command(editorCommands.insertText, { options, text });
           });
-
-          return result;
         };
       },
     }
@@ -101,9 +99,12 @@ for (let warmup = 0; warmup < 100; warmup += 1) {
   insertAtStart(legacyFacade);
   insertAtStart(historyEditor.update({ history: 'skip' }));
   insertAtStart(taggedFacade);
-  callbackEditor.update(taggedPolicy, (tx) =>
-    tx.text.insert('x', { at: { path: [0, 0], offset: 0 } })
-  );
+  callbackEditor.update(taggedPolicy, (tx) => {
+    tx.command(editorCommands.insertText, {
+      options: { at: { path: [0, 0], offset: 0 } },
+      text: 'x',
+    });
+  });
 }
 
 const {
@@ -123,11 +124,32 @@ const {
   {
     name: 'callback',
     run: () =>
-      callbackEditor.update(taggedPolicy, (tx) =>
-        tx.text.insert('x', { at: { path: [0, 0], offset: 0 } })
-      ),
+      callbackEditor.update(taggedPolicy, (tx) => {
+        tx.command(editorCommands.insertText, {
+          options: { at: { path: [0, 0], offset: 0 } },
+          text: 'x',
+        });
+      }),
   },
 ]);
+
+const expectedText = 'x'.repeat(100 + samples * updatesPerSample);
+
+for (const editor of [
+  defaultEditor,
+  legacyEditor,
+  historyEditor,
+  taggedEditor,
+  callbackEditor,
+]) {
+  assert.equal(editor.read.text.string([]), expectedText);
+  assert.equal(editor.read.selection(), null);
+  assert.equal(
+    editor.read.lastCommit()?.tags.includes('semantic-command'),
+    true,
+    'Every policy lane must execute semantic command dispatch'
+  );
+}
 
 const historyFacades = [
   historyEditor.update({ history: 'merge' }),
@@ -182,7 +204,13 @@ if (!historyFacadesAreStable || distinctHistoryFacadeCount !== 3) {
 
 const result = {
   benchmark: 'plite-update-policy',
-  artifactVersion: 2,
+  artifactVersion: 3,
+  commandContract: {
+    command: editorCommands.insertText.id,
+    dispatch: 'Exactly one semantic command per update in every lane',
+    legacy: 'Uncached proxy style with the same semantic command dispatch',
+    textAndSelectionParity: true,
+  },
   measurementOrder: 'round-robin-rotated',
   samples,
   updatesPerSample,

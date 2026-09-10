@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "why",
+  "files": [
+    {
+      "upstream": "skills/why/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "a9423bb7bab7c3280d17478ebe97bb283ea6ed12d9dcae590fc2f81f41660990",
+      "destinationSha256": "2b4f8a0868bdd855f007b15173a78bf755b63e604e6faa5ce2927af388de93f2",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/why/SKILL.md\n+++ skills/why/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: why\n description: \"Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Why\n \n@@ -118,7 +119,7 @@\n \n Subagent config (each):\n - `subagent_type`: `generalPurpose`\n-- `model`: your configured why-investigators model (default `grok-4.6-fast-xhigh`)\n+- `model`: your configured why-investigators model (default `inherit-parent`)\n - `readonly`: `false` (agent mode). **Do not use readonly/Ask mode.** It strips MCP access, which disables MCP-backed investigators entirely. The source control investigator would be safe in readonly, but keep modes uniform. Investigators still shouldn't write anything. That's a posture, not a sandbox.\n \n Each investigator gets:\n@@ -164,7 +165,7 @@\n Spawn one synthesizer subagent:\n \n - `subagent_type`: `generalPurpose`\n-- `model`: your configured why-synthesizer model (default `claude-fable-5-1-thinking-max`)\n+- `model`: your configured why-synthesizer model (default `inherit-parent`)\n - `readonly`: `false` (agent mode). The synthesizer's quality check spot-verifies citations, which can require MCP access. Readonly/Ask mode strips MCPs and defeats that.\n \n The synthesizer gets:\n"
+    },
+    {
+      "upstream": "skills/why/references/epistemics.md",
+      "destination": "references/epistemics.md",
+      "upstreamSha256": "ba99dcdc4fbce91a83b50fc0c9b2c5769febd95540b1722c6b87fe8f900bb60a",
+      "destinationSha256": "ba99dcdc4fbce91a83b50fc0c9b2c5769febd95540b1722c6b87fe8f900bb60a",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/investigator-prompt.md",
+      "destination": "references/investigator-prompt.md",
+      "upstreamSha256": "e35d8eaea13f0a027dd35572d525e9f66e8f8918ca9e555237dc228f26278d5f",
+      "destinationSha256": "e35d8eaea13f0a027dd35572d525e9f66e8f8918ca9e555237dc228f26278d5f",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/source-playbook.md",
+      "destination": "references/source-playbook.md",
+      "upstreamSha256": "3cfb0245d5b2019eeeaa7a0e023579d390f2cdcdff6942d2fe009b9efac0eb11",
+      "destinationSha256": "3cfb0245d5b2019eeeaa7a0e023579d390f2cdcdff6942d2fe009b9efac0eb11",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/code-archaeology.md",
+      "destination": "references/sources/code-archaeology.md",
+      "upstreamSha256": "8c14aa382f0de40829b2668d43e3f54814480bb93a486c9282ada4003f6b9dbd",
+      "destinationSha256": "8c14aa382f0de40829b2668d43e3f54814480bb93a486c9282ada4003f6b9dbd",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/databricks.md",
+      "destination": "references/sources/databricks.md",
+      "upstreamSha256": "269a22032f027ee30a33c1b5e30443d13dd6d127ff20d8d1e8a20715b06a69cc",
+      "destinationSha256": "269a22032f027ee30a33c1b5e30443d13dd6d127ff20d8d1e8a20715b06a69cc",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/datadog.md",
+      "destination": "references/sources/datadog.md",
+      "upstreamSha256": "db80803f1635a5015e3190f4753c4228083e6cebf222c84e24fc3c3919aa5574",
+      "destinationSha256": "db80803f1635a5015e3190f4753c4228083e6cebf222c84e24fc3c3919aa5574",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/incident-postmortem.md",
+      "destination": "references/sources/incident-postmortem.md",
+      "upstreamSha256": "486132457d3782eea64292ce7a2d3bbe3b24b372b20ca00de4329e820f74cd42",
+      "destinationSha256": "486132457d3782eea64292ce7a2d3bbe3b24b372b20ca00de4329e820f74cd42",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/linear.md",
+      "destination": "references/sources/linear.md",
+      "upstreamSha256": "7e1b72ba459089168efd701502f8c268d2481154aeeda1ddd84f840f7e974760",
+      "destinationSha256": "7e1b72ba459089168efd701502f8c268d2481154aeeda1ddd84f840f7e974760",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/notion.md",
+      "destination": "references/sources/notion.md",
+      "upstreamSha256": "2ce336dd3052967187a56ec33d308c7a69e7ef3b04ba7b17386a8b3914a0f000",
+      "destinationSha256": "2ce336dd3052967187a56ec33d308c7a69e7ef3b04ba7b17386a8b3914a0f000",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/sentry.md",
+      "destination": "references/sources/sentry.md",
+      "upstreamSha256": "0eef902cb0f835f7fa9bd85a8e19ba1505d05e59a0173dfe852d8d52d828266d",
+      "destinationSha256": "0eef902cb0f835f7fa9bd85a8e19ba1505d05e59a0173dfe852d8d52d828266d",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/sources/slack.md",
+      "destination": "references/sources/slack.md",
+      "upstreamSha256": "60e4c8dbb941f563c86aec7267cde66443b1dc651422569c8d112bc9da7551f6",
+      "destinationSha256": "60e4c8dbb941f563c86aec7267cde66443b1dc651422569c8d112bc9da7551f6",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/why/references/synthesizer-prompt.md",
+      "destination": "references/synthesizer-prompt.md",
+      "upstreamSha256": "fcdc69ede22f94da9e22f510bb0c4a75a63820f0b49b8d5fd54a196b4010bf2a",
+      "destinationSha256": "fcdc69ede22f94da9e22f510bb0c4a75a63820f0b49b8d5fd54a196b4010bf2a",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

@@ -869,13 +869,18 @@ export const waitForSelectionSync = async (
             ? { anchor: viewAnchor, focus: viewFocus }
             : null;
 
-        const nativeSelection = getNativeSelectionSnapshot();
+        const nativeSelection =
+          typeof handle?.getDOMSelection === 'function'
+            ? handle.getDOMSelection()
+            : getNativeSelectionSnapshot();
         const hasProjectedSelectionMarkers = !!element.querySelector(
           '[data-plite-view-selection="true"]'
         );
         const modelBackedSelection =
           element.getAttribute('data-plite-dom-strategy-selection') ===
-            'partial-dom-backed' || hasProjectedSelectionMarkers;
+            'partial-dom-backed' ||
+          hasProjectedSelectionMarkers ||
+          handle?.getInputState?.()?.modelOwnedDOMCoverageSelection === true;
         const projectedSelectionMatches = (
           candidateSelection: SelectionSnapshot
         ) =>

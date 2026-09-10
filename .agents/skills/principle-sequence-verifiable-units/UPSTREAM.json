@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-sequence-verifiable-units",
+  "files": [
+    {
+      "upstream": "skills/principle-sequence-verifiable-units/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "7478f8160ba5701ca40c742a81e90aff12d45f53ac9191e80ad79b9763e4489f",
+      "destinationSha256": "7fe173622e07da1fd745d6005a0e6e238aed9d9d6bc0cc93c3c15b6431bbda94",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-sequence-verifiable-units/SKILL.md\n+++ skills/principle-sequence-verifiable-units/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-sequence-verifiable-units\n description: \"Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Sequence work into verifiable units\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

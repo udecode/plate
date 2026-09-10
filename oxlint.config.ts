@@ -59,6 +59,7 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/dom/index.ts',
   'packages/platejs/src/dom/plite-dom.internal.ts',
   'packages/platejs/src/facade.ts',
+  'packages/platejs/src/features/comments/plite-comments.internal.ts',
   'packages/platejs/src/history/index.ts',
   'packages/platejs/src/history/plite-history.internal.ts',
   'packages/platejs/src/hyperscript/index.ts',
@@ -69,6 +70,8 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/react/plite-react.ts',
   'packages/platejs/src/static/internal/plite-react.ts',
   'packages/platejs/src/testing/index.ts',
+  'packages/platejs/src/yjs/core.ts',
+  'packages/platejs/src/yjs/react/index.tsx',
 ];
 
 const isPlateReactOwnedEntrypoint = (
@@ -170,6 +173,8 @@ export default defineConfig({
         'config/plite-test-jsx.js',
         // Shared raw examples feed the dedicated Plite proof app.
         'apps/www/src/app/(app)/examples/plite/**',
+        // This route measures raw Plite against Plate on the same fixture.
+        'apps/www/src/app/dev/editor-perf/page.tsx',
       ],
       rules: {
         'no-restricted-imports': [
@@ -284,6 +289,7 @@ export default defineConfig({
       excludeFiles: [
         'packages/plitejs/src/react/**',
         'packages/plitejs/src/pagination/react.tsx',
+        'packages/plitejs/src/yjs/react/**',
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
         'packages/plitejs/src/**/*.slow.*',

@@ -2,7 +2,7 @@
 
 Question:
 Which open-source architecture best supports automatic Plate document migration
-across skipped releases such as v53 to v55, while sharing one engine with an
+across skipped releases, while sharing one engine with an
 offline CLI?
 
 Scope:
@@ -21,7 +21,7 @@ Expected promotion owner:
 
 Current local evidence gap:
 Plate has a pre-fit callback and explicit CLI scaffolding, but no durable
-version-chain contract proving v53-to-v55 behavior.
+version-chain contract proving skipped-version behavior.
 
 Exclusions:
 - Database DDL systems whose only useful property is transactionality.

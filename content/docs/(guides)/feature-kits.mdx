@@ -6,7 +6,7 @@ description: Use registry kits to add groups of Plate plugins and UI wiring.
 Feature kits are app-owned registry files that group related Plate plugins, components, shortcuts, input rules, and helper UI.
 Use them to start from working Plate UI wiring, then edit the installed kit when your app needs different behavior.
 
-## Kit Types
+## Kit types
 
 | Kit type | Example | Use for |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ file and registry item use the feature name, while the exported value keeps the
 `Kit` suffix: `link.tsx` exports `LinkKit`. They are normal TypeScript files in
 your app, not package exports locked inside `node_modules`.
 
-## Use a Kit
+## Use a kit
 
 Install the kit through the Plate registry, then import it from your app.
 
@@ -51,7 +51,7 @@ export function MyEditor() {
 plugins to their Plate UI components; `BasicMarksKit` wires marks, input rules,
 shortcuts, and mark leaf components.
 
-## Choose the Right Kit
+## Choose the right kit
 
 | Need | Start with |
 | --- | --- |
@@ -67,7 +67,7 @@ Plugin pages show the recommended kit in their installation section. Use the kit
 source when you need the exact plugin list, imported UI components, shortcuts,
 or registry dependencies.
 
-## Base Kits
+## Base kits
 
 Base kits use base plugins and static components. They are the right starting
 point for [Static Rendering](/docs/static), [Node.js](/docs/installation/node),
@@ -86,7 +86,7 @@ Use client kits in editable React editors. Use base kits when React editor hooks
 editable components, floating UI, or browser-only behavior should stay out of
 the runtime.
 
-## Customize a Kit
+## Customize a kit
 
 Because kits are copied into your app, the cleanest customization is usually to
 edit the installed kit file.
@@ -110,7 +110,7 @@ Use manual plugin setup when you only need a small part of a kit, when the app
 does not use Plate UI components, or when a feature needs a different dependency
 boundary.
 
-## Registry Names
+## Registry names
 
 Kits are exported composition values. Registry items and files use feature
 names and install directly into `components/editor`.
@@ -129,7 +129,7 @@ needs exact generated `Editor` or `Value` contracts, generate them from its
 customized plugin module and run `plate generate --check <entry>` in CI. See
 [Exact Generated Editor Types](/docs/editor#exact-generated-editor-types).
 
-## Next Steps
+## Next steps
 
 | Task | Guide |
 | --- | --- |

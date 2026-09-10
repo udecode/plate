@@ -8,7 +8,7 @@ import {
   spyOn,
 } from 'bun:test';
 
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
 const pushMock = mock(() => {});
@@ -160,6 +160,45 @@ describe('CommandMenuDialog search ordering', () => {
       staticResult.compareDocumentPosition(dynamicApiGroup) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
+  });
+
+  it('renders highlighted Markdown as inline content and selects its result', async () => {
+    const { CommandMenuDialog } = await import('./command-menu-dialog');
+    docsSearchMockState = {
+      data: [
+        {
+          content:
+            'Handle <mark>Duplicate</mark> **Definitions** with `editor.read` and [references](/docs/footnote)',
+          id: 'footnote-duplicates',
+          type: 'heading',
+          url: '/docs/footnote#handle-duplicate-definitions',
+        },
+      ],
+      isLoading: false,
+      search: 'duplicate',
+    };
+    const onOpenChange = mock(() => {});
+    const view = render(
+      <CommandMenuDialog
+        navItems={[]}
+        open
+        sidebarNav={[]}
+        onOpenChange={onOpenChange}
+      />
+    );
+
+    const result = await view.findByRole('option', {
+      name: 'Handle Duplicate Definitions with editor.read and references',
+    });
+    expect(result.querySelector('mark')?.textContent).toBe('Duplicate');
+    expect(result.querySelector('strong')?.textContent).toBe('Definitions');
+    expect(result.querySelector('code')?.textContent).toBe('editor.read');
+    expect(result.querySelector('a')).toBeNull();
+    fireEvent.click(result);
+    expect(pushMock).toHaveBeenCalledWith(
+      '/docs/footnote#handle-duplicate-definitions'
+    );
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('keeps the first static match selected when docs search results appear', async () => {

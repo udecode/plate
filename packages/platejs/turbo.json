@@ -29,11 +29,13 @@
         "lint:partition:ai-react",
         "lint:partition:callout",
         "lint:partition:callout-react",
+        "lint:partition:code-block-codemirror",
         "lint:partition:code-drawing",
         "lint:partition:code-drawing-react",
         "lint:partition:combobox",
-        "lint:partition:comment",
-        "lint:partition:comment-react",
+        "lint:partition:comments",
+        "lint:partition:comments-react",
+        "lint:partition:compiler",
         "lint:partition:core",
         "lint:partition:csv",
         "lint:partition:date",
@@ -42,13 +44,16 @@
         "lint:partition:details-react",
         "lint:partition:dnd-react",
         "lint:partition:docx",
+        "lint:partition:docx-export",
+        "lint:partition:docx-html",
+        "lint:partition:docx-import",
         "lint:partition:emoji",
         "lint:partition:emoji-react",
         "lint:partition:excalidraw",
         "lint:partition:excalidraw-react",
+        "lint:partition:find",
         "lint:partition:footnote",
         "lint:partition:footnote-react",
-        "lint:partition:juice",
         "lint:partition:layout",
         "lint:partition:layout-react",
         "lint:partition:markdown",
@@ -163,6 +168,21 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:code-block-codemirror": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/code-block/codemirror/**",
+        "test/code-block/codemirror/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:code-drawing": {
       "cache": true,
       "dependsOn": [],
@@ -210,12 +230,12 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "lint:partition:comment": {
+    "lint:partition:comments": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
-        "src/features/comment/**",
-        "test/features/comment/**",
+        "src/features/comments/**",
+        "test/features/comments/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -225,12 +245,27 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "lint:partition:comment-react": {
+    "lint:partition:comments-react": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
-        "src/react/features/comment/**",
-        "test/react/features/comment/**",
+        "src/react/features/comments/**",
+        "test/react/features/comments/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:compiler": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/compiler/**",
+        "test/compiler/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -245,8 +280,10 @@
       "dependsOn": [],
       "inputs": [
         "src/**",
+        "!src/compiler/**",
         "!src/ai/**",
         "!src/ai/react/**",
+        "!src/code-block/codemirror/**",
         "!src/code-drawing/**",
         "!src/code-drawing/react/**",
         "!src/csv/**",
@@ -254,13 +291,15 @@
         "!src/dom/**",
         "!src/dnd/react/**",
         "!src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "!src/emoji/**",
         "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/juice/**",
         "!src/markdown/**",
         "!src/math/**",
         "!src/math/react/**",
@@ -287,9 +326,10 @@
         "!src/react/features/list/**",
         "!src/features/callout/**",
         "!src/features/combobox/**",
-        "!src/features/comment/**",
+        "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
         "!src/features/media/**",
@@ -300,7 +340,7 @@
         "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -318,8 +358,10 @@
         "!src/yjs/**",
         "!src/yjs/react/**",
         "test/**",
+        "!test/compiler/**",
         "!test/ai/**",
         "!test/ai/react/**",
+        "!test/code-block/codemirror/**",
         "!test/code-drawing/**",
         "!test/code-drawing/react/**",
         "!test/csv/**",
@@ -327,13 +369,15 @@
         "!test/dom/**",
         "!test/dnd/react/**",
         "!test/docx/**",
+        "!test/docx/export/**",
+        "!test/docx/import/**",
+        "!test/docx/html/**",
         "!test/emoji/**",
         "!test/emoji/react/**",
         "!test/excalidraw/**",
         "!test/excalidraw/react/**",
         "!test/history/**",
         "!test/hyperscript/**",
-        "!test/juice/**",
         "!test/markdown/**",
         "!test/math/**",
         "!test/math/react/**",
@@ -360,9 +404,10 @@
         "!test/react/features/list/**",
         "!test/features/callout/**",
         "!test/features/combobox/**",
-        "!test/features/comment/**",
+        "!test/features/comments/**",
         "!test/features/date/**",
         "!test/features/details/**",
+        "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
         "!test/features/media/**",
@@ -373,7 +418,7 @@
         "!test/features/tag/**",
         "!test/features/toc/**",
         "!test/react/features/callout/**",
-        "!test/react/features/comment/**",
+        "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
         "!test/react/features/footnote/**",
@@ -494,7 +539,58 @@
       "dependsOn": [],
       "inputs": [
         "src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "test/docx/**",
+        "!test/docx/export/**",
+        "!test/docx/import/**",
+        "!test/docx/html/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx-export": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/export/**",
+        "test/docx/export/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx-html": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/html/**",
+        "test/docx/html/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx-import": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/import/**",
+        "test/docx/import/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -568,6 +664,21 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:find": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/find/**",
+        "test/features/find/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:footnote": {
       "cache": true,
       "dependsOn": [],
@@ -589,21 +700,6 @@
       "inputs": [
         "src/react/features/footnote/**",
         "test/react/features/footnote/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:juice": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/juice/**",
-        "test/juice/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -818,7 +914,7 @@
         "!src/react/features/link/**",
         "!src/react/features/list/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -840,7 +936,7 @@
         "!test/react/features/link/**",
         "!test/react/features/list/**",
         "!test/react/features/callout/**",
-        "!test/react/features/comment/**",
+        "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
         "!test/react/features/footnote/**",
@@ -1324,9 +1420,12 @@
         "test:partition:ai",
         "test:partition:ai-react",
         "test:partition:callout",
+        "test:partition:code-block-codemirror",
         "test:partition:code-drawing",
         "test:partition:combobox",
-        "test:partition:comment",
+        "test:partition:comments",
+        "test:partition:comments-react",
+        "test:partition:compiler",
         "test:partition:core",
         "test:partition:csv",
         "test:partition:date",
@@ -1334,11 +1433,15 @@
         "test:partition:details-react",
         "test:partition:dnd-react",
         "test:partition:docx",
+        "test:partition:docx-export",
+        "test:partition:docx-html",
+        "test:partition:docx-import",
         "test:partition:emoji",
         "test:partition:excalidraw",
+        "test:partition:excalidraw-react",
+        "test:partition:find",
         "test:partition:footnote",
         "test:partition:footnote-react",
-        "test:partition:juice",
         "test:partition:layout",
         "test:partition:markdown",
         "test:partition:math",
@@ -1361,6 +1464,7 @@
         "test:partition:standard-list-react",
         "test:partition:static",
         "test:partition:suggestion",
+        "test:partition:suggestion-react",
         "test:partition:tabbable-react",
         "test:partition:table",
         "test:partition:table-react",
@@ -1412,6 +1516,8 @@
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-list",
         "typecheck:partition:suggestion",
         "typecheck:partition:suggestion-react",
         "typecheck:partition:table"
@@ -1449,6 +1555,27 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:code-block-codemirror": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:code-block-codemirror",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/code-block/codemirror/**",
+        "test/code-block/codemirror/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:code-drawing": {
       "cache": true,
       "dependsOn": [
@@ -1474,7 +1601,13 @@
     },
     "test:partition:combobox": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:combobox",
+        "typecheck:partition:core",
+        "typecheck:partition:emoji",
+        "typecheck:partition:footnote",
+        "typecheck:partition:mention"
+      ],
       "inputs": [
         "src/features/combobox/**",
         "test/features/combobox/**",
@@ -1490,12 +1623,62 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "test:partition:comment": {
+    "test:partition:comments": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:comment", "typecheck:partition:core"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "typecheck:partition:comments",
+        "typecheck:partition:core"
+      ],
       "inputs": [
-        "src/features/comment/**",
-        "test/features/comment/**",
+        "src/features/comments/**",
+        "test/features/comments/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:comments-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:comments",
+        "typecheck:partition:comments-react",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/features/comments/**",
+        "test/react/features/comments/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:compiler": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:compiler",
+        "typecheck:partition:core",
+        "typecheck:partition:proxies",
+        "typecheck:partition:root"
+      ],
+      "inputs": [
+        "src/compiler/**",
+        "test/compiler/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -1512,17 +1695,27 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:core",
+        "typecheck:partition:callout",
         "typecheck:partition:core",
+        "typecheck:partition:details",
+        "typecheck:partition:layout",
+        "typecheck:partition:math",
+        "typecheck:partition:media",
         "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
         "typecheck:partition:root",
-        "typecheck:partition:testing"
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:table",
+        "typecheck:partition:testing",
+        "typecheck:partition:toc"
       ],
       "inputs": [
         "src/**",
+        "!src/compiler/**",
         "!src/ai/**",
         "!src/ai/react/**",
+        "!src/code-block/codemirror/**",
         "!src/code-drawing/**",
         "!src/code-drawing/react/**",
         "!src/csv/**",
@@ -1530,13 +1723,15 @@
         "!src/dom/**",
         "!src/dnd/react/**",
         "!src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "!src/emoji/**",
         "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/juice/**",
         "!src/markdown/**",
         "!src/math/**",
         "!src/math/react/**",
@@ -1563,9 +1758,10 @@
         "!src/react/features/list/**",
         "!src/features/callout/**",
         "!src/features/combobox/**",
-        "!src/features/comment/**",
+        "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
         "!src/features/media/**",
@@ -1576,7 +1772,7 @@
         "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -1594,8 +1790,10 @@
         "!src/yjs/**",
         "!src/yjs/react/**",
         "test/**",
+        "!test/compiler/**",
         "!test/ai/**",
         "!test/ai/react/**",
+        "!test/code-block/codemirror/**",
         "!test/code-drawing/**",
         "!test/code-drawing/react/**",
         "!test/csv/**",
@@ -1603,13 +1801,15 @@
         "!test/dom/**",
         "!test/dnd/react/**",
         "!test/docx/**",
+        "!test/docx/export/**",
+        "!test/docx/import/**",
+        "!test/docx/html/**",
         "!test/emoji/**",
         "!test/emoji/react/**",
         "!test/excalidraw/**",
         "!test/excalidraw/react/**",
         "!test/history/**",
         "!test/hyperscript/**",
-        "!test/juice/**",
         "!test/markdown/**",
         "!test/math/**",
         "!test/math/react/**",
@@ -1636,9 +1836,10 @@
         "!test/react/features/list/**",
         "!test/features/callout/**",
         "!test/features/combobox/**",
-        "!test/features/comment/**",
+        "!test/features/comments/**",
         "!test/features/date/**",
         "!test/features/details/**",
+        "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
         "!test/features/media/**",
@@ -1649,7 +1850,7 @@
         "!test/features/tag/**",
         "!test/features/toc/**",
         "!test/react/features/callout/**",
-        "!test/react/features/comment/**",
+        "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
         "!test/react/features/footnote/**",
@@ -1760,7 +1961,8 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:dnd-react",
-        "typecheck:partition:react-core"
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-list"
       ],
       "inputs": [
         "src/dnd/react/**",
@@ -1782,11 +1984,83 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:docx",
-        "typecheck:partition:static"
+        "typecheck:partition:docx-html"
       ],
       "inputs": [
         "src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "test/docx/**",
+        "!test/docx/export/**",
+        "!test/docx/import/**",
+        "!test/docx/html/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:docx-export": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-export",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:static"
+      ],
+      "inputs": [
+        "src/docx/export/**",
+        "test/docx/export/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:docx-html": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html"
+      ],
+      "inputs": [
+        "src/docx/html/**",
+        "test/docx/html/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:docx-import": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-import"
+      ],
+      "inputs": [
+        "src/docx/import/**",
+        "test/docx/import/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -1847,6 +2121,50 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:excalidraw-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:excalidraw",
+        "typecheck:partition:excalidraw-react",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/excalidraw/react/**",
+        "test/excalidraw/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:find": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:find",
+        "typecheck:partition:standard-link"
+      ],
+      "inputs": [
+        "src/features/find/**",
+        "test/features/find/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:footnote": {
       "cache": true,
       "dependsOn": [
@@ -1880,24 +2198,6 @@
       "inputs": [
         "src/react/features/footnote/**",
         "test/react/features/footnote/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "test:partition:juice": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:juice"],
-      "inputs": [
-        "src/juice/**",
-        "test/juice/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -2072,6 +2372,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:media",
         "typecheck:partition:migrations",
         "typecheck:partition:root",
@@ -2100,9 +2401,9 @@
       "dependsOn": [
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:static",
         "typecheck:partition:testing"
       ],
@@ -2116,7 +2417,7 @@
         "!src/react/features/link/**",
         "!src/react/features/list/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -2138,7 +2439,7 @@
         "!test/react/features/link/**",
         "!test/react/features/list/**",
         "!test/react/features/callout/**",
-        "!test/react/features/comment/**",
+        "!test/react/features/comments/**",
         "!test/react/features/date/**",
         "!test/react/features/details/**",
         "!test/react/features/footnote/**",
@@ -2278,8 +2579,7 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:proxies",
-        "typecheck:partition:standard-code-block",
-        "typecheck:partition:static"
+        "typecheck:partition:standard-code-block"
       ],
       "inputs": [
         "src/features/code-block/**",
@@ -2415,6 +2715,7 @@
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:static",
         "typecheck:partition:testing"
       ],
@@ -2443,6 +2744,29 @@
       "inputs": [
         "src/features/suggestion/**",
         "test/features/suggestion/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:suggestion-react": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:suggestion-react"
+      ],
+      "inputs": [
+        "src/react/features/suggestion/**",
+        "test/react/features/suggestion/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -2548,7 +2872,6 @@
     "test:partition:tag-react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:tag",
         "typecheck:partition:tag-react"
@@ -2589,8 +2912,8 @@
     "test:partition:yjs": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:yjs",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:root",
         "typecheck:partition:yjs",
@@ -2616,8 +2939,10 @@
     "test:partition:yjs-react": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:yjs",
         "typecheck:partition:core",
         "typecheck:partition:react-core",
+        "typecheck:partition:root",
         "typecheck:partition:yjs",
         "typecheck:partition:yjs-react"
       ],
@@ -2643,11 +2968,13 @@
         "typecheck:partition:ai-react",
         "typecheck:partition:callout",
         "typecheck:partition:callout-react",
+        "typecheck:partition:code-block-codemirror",
         "typecheck:partition:code-drawing",
         "typecheck:partition:code-drawing-react",
         "typecheck:partition:combobox",
-        "typecheck:partition:comment",
-        "typecheck:partition:comment-react",
+        "typecheck:partition:comments",
+        "typecheck:partition:comments-react",
+        "typecheck:partition:compiler",
         "typecheck:partition:core",
         "typecheck:partition:csv",
         "typecheck:partition:date",
@@ -2656,13 +2983,16 @@
         "typecheck:partition:details-react",
         "typecheck:partition:dnd-react",
         "typecheck:partition:docx",
+        "typecheck:partition:docx-export",
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-import",
         "typecheck:partition:emoji",
         "typecheck:partition:emoji-react",
         "typecheck:partition:excalidraw",
         "typecheck:partition:excalidraw-react",
+        "typecheck:partition:find",
         "typecheck:partition:footnote",
         "typecheck:partition:footnote-react",
-        "typecheck:partition:juice",
         "typecheck:partition:layout",
         "typecheck:partition:layout-react",
         "typecheck:partition:markdown",
@@ -2719,7 +3049,14 @@
     "typecheck:contracts": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:code-block-codemirror",
+        "typecheck:partition:combobox",
+        "typecheck:partition:comments",
+        "typecheck:partition:comments-react",
         "typecheck:partition:core",
+        "typecheck:partition:footnote-react",
+        "typecheck:partition:mention",
+        "typecheck:partition:migrations",
         "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
@@ -2866,6 +3203,32 @@
         ".turbo/entrypoint-types/callout-react.tsbuildinfo"
       ]
     },
+    "typecheck:partition:code-block-codemirror": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:react-core"],
+      "inputs": [
+        "src/code-block/codemirror/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/code-block-codemirror.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/code-block-codemirror/**",
+        ".turbo/entrypoint-types/code-block-codemirror.tsbuildinfo"
+      ]
+    },
     "typecheck:partition:code-drawing": {
       "cache": true,
       "dependsOn": ["typecheck:partition:core"],
@@ -2948,11 +3311,14 @@
         ".turbo/entrypoint-types/combobox.tsbuildinfo"
       ]
     },
-    "typecheck:partition:comment": {
+    "typecheck:partition:comments": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "typecheck:partition:core"
+      ],
       "inputs": [
-        "src/features/comment/**",
+        "src/features/comments/**",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -2966,22 +3332,23 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
         "$TURBO_ROOT$/tsconfig.json",
         "tsconfig.json",
-        "tsconfig.entrypoints/comment.json"
+        "tsconfig.entrypoints/comments.json"
       ],
       "outputLogs": "errors-only",
       "outputs": [
-        ".turbo/entrypoint-types/comment/**",
-        ".turbo/entrypoint-types/comment.tsbuildinfo"
+        ".turbo/entrypoint-types/comments/**",
+        ".turbo/entrypoint-types/comments.tsbuildinfo"
       ]
     },
-    "typecheck:partition:comment-react": {
+    "typecheck:partition:comments-react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:comment",
+        "typecheck:partition:comments",
+        "typecheck:partition:core",
         "typecheck:partition:react-core"
       ],
       "inputs": [
-        "src/react/features/comment/**",
+        "src/react/features/comments/**",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -2995,12 +3362,38 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
         "$TURBO_ROOT$/tsconfig.json",
         "tsconfig.json",
-        "tsconfig.entrypoints/comment-react.json"
+        "tsconfig.entrypoints/comments-react.json"
       ],
       "outputLogs": "errors-only",
       "outputs": [
-        ".turbo/entrypoint-types/comment-react/**",
-        ".turbo/entrypoint-types/comment-react.tsbuildinfo"
+        ".turbo/entrypoint-types/comments-react/**",
+        ".turbo/entrypoint-types/comments-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:compiler": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/compiler/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/compiler.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/compiler/**",
+        ".turbo/entrypoint-types/compiler.tsbuildinfo"
       ]
     },
     "typecheck:partition:core": {
@@ -3011,8 +3404,10 @@
       ],
       "inputs": [
         "src/**",
+        "!src/compiler/**",
         "!src/ai/**",
         "!src/ai/react/**",
+        "!src/code-block/codemirror/**",
         "!src/code-drawing/**",
         "!src/code-drawing/react/**",
         "!src/csv/**",
@@ -3020,13 +3415,15 @@
         "!src/dom/**",
         "!src/dnd/react/**",
         "!src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "!src/emoji/**",
         "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
         "!src/hyperscript/**",
-        "!src/juice/**",
         "!src/markdown/**",
         "!src/math/**",
         "!src/math/react/**",
@@ -3053,9 +3450,10 @@
         "!src/react/features/list/**",
         "!src/features/callout/**",
         "!src/features/combobox/**",
-        "!src/features/comment/**",
+        "!src/features/comments/**",
         "!src/features/date/**",
         "!src/features/details/**",
+        "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
         "!src/features/media/**",
@@ -3066,7 +3464,7 @@
         "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -3245,7 +3643,8 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:react-core"
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-list"
       ],
       "inputs": [
         "src/dnd/react/**",
@@ -3272,9 +3671,15 @@
     },
     "typecheck:partition:docx": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:static"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html"
+      ],
       "inputs": [
         "src/docx/**",
+        "!src/docx/export/**",
+        "!src/docx/import/**",
+        "!src/docx/html/**",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -3294,6 +3699,87 @@
       "outputs": [
         ".turbo/entrypoint-types/docx/**",
         ".turbo/entrypoint-types/docx.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx-export": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:static"],
+      "inputs": [
+        "src/docx/export/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx-export.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx-export/**",
+        ".turbo/entrypoint-types/docx-export.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx-html": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/docx/html/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx-html.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx-html/**",
+        ".turbo/entrypoint-types/docx-html.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx-import": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html"
+      ],
+      "inputs": [
+        "src/docx/import/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx-import.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx-import/**",
+        ".turbo/entrypoint-types/docx-import.tsbuildinfo"
       ]
     },
     "typecheck:partition:emoji": {
@@ -3408,6 +3894,32 @@
         ".turbo/entrypoint-types/excalidraw-react.tsbuildinfo"
       ]
     },
+    "typecheck:partition:find": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/find/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/find.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/find/**",
+        ".turbo/entrypoint-types/find.tsbuildinfo"
+      ]
+    },
     "typecheck:partition:footnote": {
       "cache": true,
       "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
@@ -3461,32 +3973,6 @@
       "outputs": [
         ".turbo/entrypoint-types/footnote-react/**",
         ".turbo/entrypoint-types/footnote-react.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:juice": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/juice/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/juice.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/juice/**",
-        ".turbo/entrypoint-types/juice.tsbuildinfo"
       ]
     },
     "typecheck:partition:layout": {
@@ -3855,7 +4341,7 @@
         "!src/react/features/link/**",
         "!src/react/features/list/**",
         "!src/react/features/callout/**",
-        "!src/react/features/comment/**",
+        "!src/react/features/comments/**",
         "!src/react/features/date/**",
         "!src/react/features/details/**",
         "!src/react/features/footnote/**",
@@ -4144,7 +4630,6 @@
     "typecheck:partition:standard-code-block-react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-code-block"
       ],
@@ -4569,7 +5054,6 @@
     "typecheck:partition:tag-react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:tag"
       ],
@@ -4679,7 +5163,10 @@
     },
     "typecheck:partition:yjs": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:yjs",
+        "typecheck:partition:core"
+      ],
       "inputs": [
         "src/yjs/**",
         "!src/yjs/react/**",
@@ -4707,6 +5194,7 @@
     "typecheck:partition:yjs-react": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:yjs",
         "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:yjs"

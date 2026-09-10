@@ -1,5 +1,5 @@
 import { DOMPlugin } from '../../lib/plugins/dom/DOMPlugin';
-import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
+import { getSelectedDomFragment } from '../utils/getSelectedDomFragment.internal';
 
 export const ViewPlugin = DOMPlugin.extend({
   api: ({ editor }) => ({

@@ -5,7 +5,7 @@ description: "Common questions about paste behavior, browser support, package sc
 
 These answers describe the Plite package set.
 
-## Why Is Pasted Content Plain Text?
+## Why is pasted content plain text?
 
 Plite does not know your product schema. It cannot safely turn arbitrary HTML into your nodes without an app-owned policy.
 
@@ -16,7 +16,7 @@ paste.
 
 Use [Plite DOM](../libraries/plite-dom), [Event Handling](../libraries/plite-react/event-handling), and the [Paste HTML example](/examples/plite/paste-html) as the starting points.
 
-## What Browsers And Devices Does Plite Support?
+## What browsers and devices does Plite support?
 
 Desktop browser behavior is claimed only where tests and browser proof cover it.
 
@@ -24,7 +24,7 @@ The main local lanes target current Chromium, Firefox, Safari/WebKit, and mobile
 
 If a behavior depends on native selection, IME, clipboard, drag/drop, hidden DOM, or huge documents, verify it through browser proof before treating it as supported.
 
-## Is This The Official %%UPSTREAM_PLITE_CAP%% Release?
+## Is this the official Slate release?
 
 No. This is the Plite package set. It keeps a plain JSON document model, but
 its canonical change engine, runtime, package names, proof harness, and public
@@ -32,12 +32,12 @@ API are maintained in the Plate repository.
 
 Read [Why This Fork](../why-this-fork) for the maintenance philosophy and boundaries.
 
-## Should Apps Use `@platejs/test`?
+## Should apps use `@platejs/test`?
 
 Use `@platejs/test` for tests and proof harnesses. Do not build product editor features on it.
 
 Apps should build editors with `plitejs`, `plitejs/dom`, `plitejs/react`, and the extensions they need.
 
-## Where Should I Start?
+## Where should I start?
 
 Start with [Installing Plite](../walkthroughs/01-installing-plite). Then read [Why This Fork](../why-this-fork) if you need the project boundary, or [Migration](../migration) if you are moving from upstream Slate 0.x.

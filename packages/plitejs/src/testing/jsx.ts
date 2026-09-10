@@ -64,7 +64,6 @@ declare global {
       hcallout: HyperscriptIntrinsicAttributes;
       hcodeblock: HyperscriptIntrinsicAttributes;
       hcodedrawing: HyperscriptIntrinsicAttributes;
-      hcodeline: HyperscriptIntrinsicAttributes;
       hcolumn: HyperscriptIntrinsicAttributes;
       hcolumngroup: HyperscriptIntrinsicAttributes;
       hdate: HyperscriptIntrinsicAttributes;
@@ -119,7 +118,6 @@ export const elements = {
   hcallout: { type: 'callout' },
   hcodeblock: { type: 'codeBlock' },
   hcodedrawing: { type: 'codeDrawing' },
-  hcodeline: { type: 'codeLine' },
   hcolumn: { type: 'column' },
   hcolumngroup: { type: 'columnGroup' },
   hdate: { type: 'date' },

@@ -43,6 +43,7 @@ mock.module('platejs/react', () => ({
   ItalicPlugin: { name: 'italic' },
   StrikethroughPlugin: { name: 'strikethrough' },
   UnderlinePlugin: { name: 'underline' },
+  useComposedRef: () => mock(),
   useEditor: () => editor,
   useEditorFocused: () => editorFocused,
   useEditorId: () => 'editor-1',
@@ -58,7 +59,6 @@ mock.module('platejs/react', () => ({
     return value;
   },
   usePluginStore: () => false,
-  useComposedRef: () => mock(),
   useSelectionGeometry: () => ({
     boundingRect: new DOMRect(),
     focusRect: null,
@@ -69,6 +69,11 @@ mock.module('platejs/react', () => ({
 mock.module('@floating-ui/react', () => ({
   flip: () => ({}),
   offset: () => ({}),
+  useDismiss: () => {
+    clickOutside = () => floatingOptions.onOpenChange(false);
+    return {};
+  },
+  useInteractions: () => ({ getFloatingProps: (props = {}) => props }),
 }));
 
 mock.module('@/registry/hooks/use-widget-floating', () => ({
@@ -81,14 +86,6 @@ mock.module('@/registry/hooks/use-widget-floating', () => ({
       style: {},
       update: floatingUpdate,
     };
-  },
-}));
-
-mock.module('@/registry/hooks/use-on-click-outside', () => ({
-  useOnClickOutside: (callback: () => void) => {
-    clickOutside = callback;
-
-    return mock();
   },
 }));
 
@@ -167,7 +164,7 @@ describe('FloatingToolbar', () => {
       `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
 
-    expect(FloatingToolbarPlugin.render.afterEditable).toBe(FloatingToolbar);
+    expect(FloatingToolbarPlugin.slots.afterEditable).toBe(FloatingToolbar);
 
     const view = render(<FloatingToolbar editableRef={editableRef} />);
 
@@ -186,6 +183,41 @@ describe('FloatingToolbar', () => {
 
     expect(view.queryByText('toolbar')).toBeNull();
     expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+  });
+
+  it('mounts positioning only while visible and resumes after collapse', async () => {
+    selectionExpanded = false;
+    const { FloatingToolbar } = await import(
+      `./floating-toolbar?test=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+
+    expect(view.queryByText('toolbar')).toBeNull();
+    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+
+    selectionExpanded = true;
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+    expect(view.getByText('toolbar')).toBeTruthy();
+    expect(useWidgetFloatingMock).toHaveBeenCalled();
+
+    selectionExpanded = false;
+    useWidgetFloatingMock.mockClear();
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+    expect(view.queryByText('toolbar')).toBeNull();
+    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+
+    selectionExpanded = true;
+    view.rerender(
+      <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
+    );
+    expect(view.getByText('toolbar')).toBeTruthy();
+    expect(useWidgetFloatingMock).toHaveBeenCalled();
   });
 
   it('allows the same range to reopen after a collapsed selection lifecycle', async () => {

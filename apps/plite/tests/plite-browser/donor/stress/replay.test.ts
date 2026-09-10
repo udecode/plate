@@ -33,10 +33,16 @@ test(
     const artifact = readStressArtifact(replayPath);
     const steps = artifactStepsToScenarioSteps(artifact, { reductionLabel });
     await installPliteReactRenderProfiler(page);
-    const editor = await openExample(page, artifact.route, {
-      ready: { editor: 'visible' },
-      surface: artifact.surface,
-    });
+    const editor = await openExample(
+      page,
+      artifact.route.startsWith('plite/')
+        ? artifact.route
+        : `plite/${artifact.route}`,
+      {
+        ready: { editor: 'visible' },
+        surface: artifact.surface,
+      }
+    );
     const result = await editor.scenario.run(`${artifact.id}-replay`, steps, {
       metadata: {
         capabilities: [

@@ -1,6 +1,6 @@
 ---
 title: Navigation Feedback
-description: Flash a landed target after TOC, footnote, search, or custom navigation jumps.
+description: Highlight the destination of a TOC, footnote, search, or custom navigation jump.
 ---
 
 <ComponentPreview name="toc-demo" />
@@ -9,354 +9,184 @@ description: Flash a landed target after TOC, footnote, search, or custom naviga
 
 ## Features
 
-- Briefly highlight the landed node after a navigation jump.
-- Replace any previous flash deterministically — no stacked timers, no doubled animations.
-- Expose transforms for flash-only and full select-focus-scroll-flash flows.
-- Inject `data-nav-*` attributes so any render can style the active target.
+- Flash a live element in the calling mounted view, including read-only views.
+- Keep the highlight on the same element when its document position changes.
+- Replace repeated flashes and clear feedback when the target disappears or the view unmounts.
+- Pass whole-element classes, styles, and safe attributes at the call site.
 
 </PackageInfo>
 
-Navigation Feedback is a small core plugin for "you landed here" UX. It doesn't own navigation itself — it flashes the landed node so the reader can see where the editor just moved. Reach for it in TOC jumps, footnote navigation, search results, and custom outline surfaces.
+Navigation Feedback owns temporary presentation. The feature that performs a
+jump owns selection, focus, and scrolling. For complete footnote navigation,
+use the [Footnote API](/docs/footnote#navigate-between-reference-and-definition).
 
 ## Usage
 
-<Steps>
+### React plugin
 
-### React Plugin
-
-`NavigationFeedbackPlugin` is part of the React editor defaults and is included by `createEditor` automatically. You don't need to add it to the `plugins` array for the defaults to work.
-
-### Configure Duration
-
-The default flash lasts 1.6 seconds. If you want it tighter or longer, use the top-level `navigationFeedback` editor option:
+`NavigationFeedbackPlugin` is included in the React editor defaults. Configure
+the default duration through `navigationFeedback`:
 
 ```tsx
 import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
-  navigationFeedback: {
-    duration: 1200,
-  },
+  navigationFeedback: { duration: 1200 },
 });
 ```
 
-- `navigationFeedback.duration`: Default flash duration in milliseconds. **Default:** `1600`.
+The default duration is `1600` milliseconds. Set `navigationFeedback: false`
+to disable the plugin.
 
-Disable the plugin entirely if you don't want any landed-target flash:
+### Flash a target
 
-```tsx
-const editor = createEditor({
-  navigationFeedback: false,
-});
+Call the API from the mounted editor returned by `useEditor()` or
+`useEditorPlugin()`. Resolve an element's `NodeKey` in that view and pass the
+presentation for this action:
+
+```tsx title="flash-first-block.tsx" showLineNumbers
+import { useEditor } from 'platejs/react';
+
+export function FlashFirstBlock() {
+  const editor = useEditor();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const key = editor.key([0]);
+        if (!key) return;
+
+        editor.api.navigation.flashTarget({
+          key,
+          attributes: { className: 'rounded-md bg-yellow-100' },
+          duration: 1200,
+        });
+      }}
+    >
+      Highlight first block
+    </button>
+  );
+}
 ```
 
-### Flash a Target
+Flashing does not change the document, selection, focus, scroll position, or
+history. Each mounted view has its own target and timer, even when several
+views display the same document. A base editor without a mounted view returns
+`false`; it does not choose another view.
 
-When another action already handled scroll, focus, and selection, and you only
-want the visual confirmation, call `tx.navigation.flashTarget(...)` inside
-`editor.update(...)`:
+The API returns `false` for a deleted key, a text node, a key from another
+editor or content root, or an unmounted view. An invalid target leaves the
+current flash intact. A duration must be finite and non-negative.
 
-```tsx
-editor.update((tx) => {
-  tx.navigation.flashTarget({
-    target: {
-      path: [12],
-      type: 'node',
-    },
-  });
-});
-```
+### Style the target
 
-The call returns `false` when the path doesn't resolve to a node, so you can branch on stale targets without throwing.
+`attributes` accepts render-safe whole-element presentation, including
+`className`, `style`, and `data-*` or `aria-*` attributes. It excludes event
+handlers, refs, and HTML injection. The plugin copies the attributes and style
+object for each flash.
 
-Override the duration or variant per call when this jump deserves its own look:
-
-```tsx
-editor.update((tx) => {
-  tx.navigation.flashTarget({
-    duration: 1500,
-    target: {
-      path: [12],
-      type: 'node',
-    },
-    variant: 'mention',
-  });
-});
-```
-
-The `variant` string is written straight to `data-nav-highlight`, so you can key distinct CSS animations off it — `'navigated'`, `'mention'`, `'found'`, whatever you need.
-
-### Navigate and Flash
-
-Most navigation actions should do four things at once: move the selection, focus
-the editor, scroll the target into view, and flash the landed node.
-`tx.navigation.navigate(...)` does all four inside `editor.update(...)`, and
-each step is independent — skip any of them with the flags below.
-
-Here's how the footnote plugin jumps from a reference to its definition:
-
-```tsx
-editor.update((tx) => {
-  tx.navigation.navigate({
-    focus: true,
-    scroll: true,
-    scrollTarget: point,
-    select: {
-      anchor: { offset: 0, path: firstTextPath },
-      focus: { offset: 0, path: firstTextPath },
-    },
-    target: {
-      path: definition[1],
-      type: 'node',
-    },
-  });
-});
-```
-
-Skip the flash when the jump should be silent:
-
-```tsx
-editor.update((tx) => {
-  tx.navigation.navigate({
-    flash: false,
-    select: point,
-    target: { path: [12], type: 'node' },
-  });
-});
-```
-
-Or tune the flash per call:
-
-```tsx
-editor.update((tx) => {
-  tx.navigation.navigate({
-    flash: { duration: 1200, variant: 'mention' },
-    select: point,
-    target: { path: [12], type: 'node' },
-  });
-});
-```
-
-If you don't pass `scrollTarget`, Plate picks a scroll point in this order: `select.focus`, `select.anchor`, `select` (when it's a `Point`), then `editor.api.start(target.path)`.
-
-### Style the Landed Target
-
-Whenever a target is active, the plugin injects transient attributes onto that node's DOM and a CSS variable with the current duration:
+The active element also receives these plugin-owned lifecycle markers:
 
 | Attribute | Value |
 | --- | --- |
-| `data-nav-target` | `"true"` on the active node. |
-| `data-nav-highlight` | Current `variant` (e.g. `"navigated"`). |
-| `data-nav-cycle` | `"0"` or `"1"` — alternates per flash so CSS animations restart cleanly. |
-| `data-nav-pulse` | Monotonic pulse counter. Useful for debugging repeat triggers. |
-| `--plate-nav-feedback-duration` | Inline CSS variable set to `${duration}ms`. |
+| `data-nav-target` | `"true"` while the target is active. |
+| `data-nav-cycle` | `"0"` or `"1"`, alternating with each flash. |
+| `data-nav-pulse` | Increasing pulse counter for the mounted view. |
+| `--plate-nav-feedback-duration` | CSS duration such as `"1200ms"`. |
 
-Style them anywhere your editor styles live:
+These markers take precedence over values passed in `attributes`. For an
+animation, use `data-nav-cycle` to alternate between two animation names so a
+repeated flash restarts. Put the corresponding styles in the copied feature
+that requests the feedback.
 
-```css
-.plite-editor [data-nav-highlight] {
-  border-radius: 0.375rem;
-}
-
-.plite-editor [data-nav-highlight][data-nav-cycle='0'] {
-  animation: plate-nav-highlight-a var(--plate-nav-feedback-duration, 900ms)
-    ease-out;
-}
-
-.plite-editor [data-nav-highlight][data-nav-cycle='1'] {
-  animation: plate-nav-highlight-b var(--plate-nav-feedback-duration, 900ms)
-    ease-out;
-}
-```
-
-<Callout type="info">
-  **Why two animations?** Flashing the same node twice in a row on the same keyframe name wouldn't restart the animation. The plugin alternates `data-nav-cycle` between `0` and `1` so adjacent flashes run different animation names and the browser replays cleanly.
-</Callout>
-
-### Highlight Custom Renders
-
-Attribute injection fires through the plugin's `nodeProps` inject, so any standard `PlateElement` render that spreads its `attributes` onto the root DOM node picks up `data-nav-*` for free.
-
-For atoms, inline voids, or components that need the highlight state inside JSX (e.g. on a nested button), read it with `useNavigationHighlight`:
+A standard `PlateElement` receives the attributes on its root. To highlight a
+nested control, style it from the neutral marker on its element:
 
 ```tsx
-import { useNavigationHighlight, usePath } from 'platejs/react';
+import type { FootnotePlugin } from 'platejs/footnote/react';
+import { PlateElement, type PlateElementProps } from 'platejs/react';
 
-export function FootnoteReferenceElement(props) {
-  const path = usePath();
-  const highlight = useNavigationHighlight(path);
-
+export function FootnoteReferenceElement(
+  props: PlateElementProps<typeof FootnotePlugin>
+) {
   return (
-    <PlateElement
-      {...props}
-      attributes={{
-        ...props.attributes,
-        'data-nav-cycle': highlight ? String(highlight.cycle) : undefined,
-        'data-nav-highlight': highlight?.variant,
-        'data-nav-pulse': highlight ? String(highlight.pulse) : undefined,
-        'data-nav-target': highlight ? 'true' : undefined,
-        style: {
-          ...props.attributes.style,
-          '--plate-nav-feedback-duration': highlight
-            ? `${highlight.duration}ms`
-            : undefined,
-        },
-      }}
-    >
+    <PlateElement {...props} as="sup" className="group/footnote">
+      <button
+        className="group-data-[nav-target=true]/footnote:bg-yellow-100"
+        contentEditable={false}
+        type="button"
+      >
+        [{props.element.ref}]
+      </button>
       {props.children}
     </PlateElement>
   );
 }
 ```
 
-The hook returns `null` when this node isn't the active target and the full
-target (`{ cycle, duration, path, pulse, type, variant }`) when it is. Pass a
-`Path` when you have one. Inside an element render, you can also pass the
-current `Element` or `Text`; the hook resolves it from the render context path.
+### Clear feedback
 
-Done. You now have a deterministic flash on every jump and the wiring to style or extend it.
+```tsx
+editor.api.navigation.clear();
+```
 
-</Steps>
+Clearing cancels the timer and returns whether this view had an active target.
 
 ## Plugins
 
 ### `NavigationFeedbackPlugin`
 
-Core plugin for transient "landed target" feedback after successful navigation.
-
 <API name="NavigationFeedbackPlugin">
 <APIOptions>
   <APIItem name="duration" type="number">
-    Default flash duration in milliseconds.
+    Default feedback duration in milliseconds.
     - **Default:** `1600`
   </APIItem>
 </APIOptions>
 </API>
 
-## API
+## API Reference
 
-### `api.navigation.activeTarget`
+### `editor.api.navigation.flashTarget`
 
-Get the current flashed target, or `null` when none is active. The returned target carries a resolved `path`, so later edits that shift the target keep the highlight on the right node.
-
-<API name="activeTarget">
-<APIReturns>
-  <APIItem name="return" type="NavigationFeedbackActiveTarget | null">
-    Active target `{ cycle, duration, path, pulse, type, variant }`, or `null`.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `api.navigation.clear`
-
-Clear the current feedback target immediately. Safe to call when nothing is active.
-
-<API name="clear" />
-
-### `api.navigation.isTarget`
-
-Check whether a given path is the current flashed target.
-
-<API name="isTarget">
-<APIParameters>
-  <APIItem name="path" type="Path">
-    Path to compare against the active target.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="boolean">
-    `true` when there is an active target and its path equals `path`.
-  </APIItem>
-</APIReturns>
-</API>
-
-## Transforms
-
-### `tx.navigation.flashTarget`
-
-Flash a target node without changing selection, focus, or scroll. Replaces any active flash on the same editor.
+Flash one live element in the calling mounted view. Replaces that view's
+current target and restarts its timer.
 
 <API name="flashTarget">
 <APIParameters>
-  <APIItem name="target" type="{ path: Path; type: 'node' }">
-    Node target to flash.
-  </APIItem>
-  <APIItem name="duration" type="number" optional>
-    Override the default duration for this call.
-  </APIItem>
-  <APIItem name="variant" type="string" optional>
-    Highlight variant stored in `data-nav-highlight`.
-    - **Default:** `navigated`
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem name="return" type="boolean">
-    `false` when the path doesn't resolve to a node, `true` otherwise.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `tx.navigation.navigate`
-
-Select, focus, scroll, and flash a target in one call. Each step is independent — skip any of them with the flags below.
-
-<API name="navigate">
-<APIParameters>
-  <APIItem name="target" type="{ path: Path; type: 'node' }">
-    Node target to navigate to.
-  </APIItem>
-  <APIItem name="select" type="Point | Range" optional>
-    Point (collapsed) or range to apply before scrolling and flashing.
-  </APIItem>
-  <APIItem name="focus" type="boolean" optional>
-    Focus the editor after selection.
-    - **Default:** `true`
-  </APIItem>
-  <APIItem name="scroll" type="boolean" optional>
-    Scroll the resolved point into view.
-    - **Default:** `true`
-  </APIItem>
-  <APIItem name="scrollTarget" type="Point" optional>
-    Explicit point to scroll into view. Falls back to `select.focus`, `select.anchor`, `select`, then `editor.api.start(target.path)`.
-  </APIItem>
-  <APIItem name="flash" type="false | { duration?: number; variant?: string }" optional>
-    Per-call flash config. Pass `false` to navigate without flashing.
+  <APIItem name="options" type="NavigationFlashTargetOptions">
+    <APIList>
+      <APISubListItem parent="options" name="key" type="NodeKey">
+        Element identity from the current editor and content root.
+      </APISubListItem>
+      <APISubListItem parent="options" name="attributes" type="PlateViewElementAttributes" optional>
+        Safe whole-element presentation for this flash.
+      </APISubListItem>
+      <APISubListItem parent="options" name="duration" type="number" optional>
+        Finite, non-negative duration in milliseconds. Defaults to the configured duration.
+      </APISubListItem>
+    </APIList>
   </APIItem>
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `false` when the path doesn't resolve to a node, `true` otherwise.
+    Whether the mounted view accepted the target.
   </APIItem>
 </APIReturns>
 </API>
 
-### `tx.navigation.clear`
+### `editor.api.navigation.clear`
 
-Clear the current flashed target immediately. Same effect as `api.navigation.clear`.
-
-<API name="clear" />
-
-## Hooks
-
-### `useNavigationHighlight`
-
-Subscribe a custom render to the active navigation target. Returns the target metadata when the given path/node matches, `null` otherwise.
-
-<API name="useNavigationHighlight">
-<APIParameters>
-  <APIItem name="target" type="Path | Element | Text | null | undefined">
-    Path to compare, or the current rendered node resolved through element
-    context.
-  </APIItem>
-</APIParameters>
+<API name="clear">
 <APIReturns>
-  <APIItem name="return" type="NavigationFeedbackActiveTarget | null">
-    Active target metadata when this node is the current flashed target, `null` otherwise.
+  <APIItem name="return" type="boolean">
+    Whether this mounted view had an active target to clear.
   </APIItem>
 </APIReturns>
 </API>
 
-## Related Docs
+## Related docs
 
 - [Table of Contents](/docs/toc)
 - [Footnote](/docs/footnote)

@@ -51,14 +51,10 @@ const normalizeShortcutKeys = (
   if (typeof keys === 'string') {
     return keys.split(delimiter).map(normalize).filter(Boolean);
   }
-  if (keys.every((key) => Array.isArray(key))) {
-    return keys
-      .map((combination) => normalize(combination.join('+')))
-      .filter(Boolean);
-  }
-
   return keys
-    .flatMap((value) => value.split(delimiter))
+    .flatMap((value) =>
+      typeof value === 'string' ? value.split(delimiter) : [value.join('+')]
+    )
     .map(normalize)
     .filter(Boolean);
 };
@@ -85,7 +81,6 @@ const createHotkeysEvent = (
     ),
     meta: has('cmd', 'command', 'meta', 'win', 'windows'),
     mod: has('mod'),
-    scopes: shortcut.scopes,
     shift: has('shift'),
     useKey: shortcut.useKey,
   });

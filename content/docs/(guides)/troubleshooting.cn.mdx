@@ -1,79 +1,110 @@
 ---
 title: 故障排除
-description: 使用 Plate 时常见问题的解决方案。
+description: 排查 Plate 配置和运行时问题。
 ---
 
-## 依赖冲突
+先检查已安装的包和运行时，再检查导入入口、插件配置及组件绑定。
 
-使用 Plate 的项目中，依赖版本不匹配或冲突是常见问题来源。本节介绍如何识别和解决这类问题。
+## 从症状开始
 
-### 使用 Plate CLI 更新 Plate
+| 症状 | 首先检查 |
+| --- | --- |
+| Invalid hook call、空 dispatcher 或 React hook 崩溃。 | 重复的 `react` / `react-dom`，或混用包管理器的安装结果。 |
+| 节点显示为普通文本，或组件没有生效。 | 缺少插件、React 与 base 入口混用，或组件绑定错误。 |
+| Server Component 在导入时崩溃。 | 服务端组件导入了 `platejs/react` 或功能的 React 入口。 |
+| `requires disabled plugin`。 | 已启用插件所需的依赖被应用禁用了。 |
+| `Pass a plugin descriptor, not its name.` | 依赖项使用了字符串，而不是插件描述符。 |
+| Markdown、HTML 或静态渲染缺少节点。 | base kit 缺少对应节点插件或 codec。 |
 
-编辑器功能统一由 `platejs` 提供。使用 Plate CLI 即可更新完整编辑器，无需对齐多个功能包。
+## 更新并检查依赖
 
-**使用方法：**
+编辑器功能由 `platejs` 包提供。使用 Plate CLI 更新：
 
-要将 `platejs` 更新到特定版本，请在项目根目录运行：
 ```bash
-npx @platejs/cli@latest deps platejs 54.0.0 --install --yes
+npx @platejs/cli@latest deps platejs --latest --install --yes
 ```
 
-要更新到指定主版本的最新版本：
+pnpm 项目也可以使用：
+
 ```bash
-npx @platejs/cli@latest deps platejs 54 --install --yes
+pnpm dlx @platejs/cli@latest deps platejs --latest --install --yes
 ```
 
-### 示例：多个 Plate 实例
-
-**问题：** 出现意外行为或"hooks can only be called inside a component"错误。
-
-**根本原因：** 项目中安装了多个 `platejs` 版本或多个 React 运行时。
-
-**诊断方法：** 检查多个 Plate 包版本：
+随后检查实际解析的版本：
 
 ```bash
-# npm
-npm ls platejs
-
-# pnpm
-pnpm why platejs
-```
-
-**解决方案：**
-使用上述 Plate CLI 命令更新 `platejs`，然后检查锁文件是否仍解析出多个版本。
-
-### 示例：多个 Plate 实例
-
-**问题：** 编辑器功能可能无法正常工作。
-
-**根本原因：** 包管理器有时会安装不匹配的 Plate 依赖版本。例如，`pnpm` 可能安装多个 `platejs` 版本。
-
-**诊断方法：** 检查多个 Plate 版本：
-
-```bash
-# npm
 npm ls platejs react react-dom
+```
 
-# pnpm
+```bash
 pnpm why platejs
 pnpm why react react-dom
 ```
 
-**解决方案：** 按顺序尝试以下解决方案：
+如果存在多个 Plate 主版本，先统一版本。如果存在多份 React，修复引入额外
+副本的依赖。`platejs/react` 等名称是包入口，不是可单独设置版本的包。
 
-1. 从 `package.json` 中移除 `slate*` 依赖（如果有）。Plate 会管理这些依赖。
+## 检查运行时入口
 
-2. 使用上述 Plate CLI 命令更新 `platejs`。
+| 运行环境 | 导入入口 |
+| --- | --- |
+| 可编辑 React 编辑器 | `platejs/react`，或功能的 React 入口。 |
+| Server Component 静态输出 | `platejs/static`、`platejs`，或功能的 base 入口。 |
+| 不含 React UI 的 Node.js 脚本或路由 | `platejs`，或功能的 base 入口。 |
 
-2. 强制使用一致的 Plite 依赖版本：
+服务端代码使用 `BaseHeadingPlugin` 等 base 插件。
+参阅 [Node.js](/docs/installation/node)、
+[RSC](/docs/installation/rsc) 和[静态渲染](/docs/static)。
 
-```jsonc
-// package.json
-{
-  "resolutions": {
-    "platejs": "54.0.0-beta.0",
-    "platejs/dom": "54.0.0-beta.0",
-    "platejs/react": "54.0.0-beta.0"
-  }
-}
+## 检查组件绑定
+
+```tsx title="components/editor/plugins.tsx"
+import { HeadingPlugin } from 'platejs/react';
+
+import { HeadingElement } from '@/components/editor/heading';
+
+export const plugins = [
+  HeadingPlugin.configure({ component: HeadingElement }),
+];
 ```
+
+使用复制的 Plate UI 时，先检查对应[功能套件](/docs/feature-kits)。
+手动绑定方式见[插件组件](/docs/plugin-components)。
+
+## 检查插件配置
+
+在开发环境中配置 `DebugPlugin` 的日志等级：
+
+```tsx
+import { DebugPlugin } from 'platejs';
+
+export const plugins = [
+  DebugPlugin.configure({
+    initialState: { logLevel: 'warn' },
+  }),
+];
+```
+
+依赖通过描述符安装。检查 `dependencies` 中是否存在循环，以及应用是否禁用了
+必需依赖。更多诊断信息见[调试指南](/docs/debugging)和[插件指南](/docs/plugin)。
+
+## 重新安装
+
+依赖关系正确但运行时仍像加载了多份 React 或 Plite 时，从现有锁文件重新安装：
+
+```bash
+rm -rf node_modules
+npm install
+```
+
+```bash
+rm -rf node_modules
+pnpm install
+```
+
+只有在明确需要重新解析依赖版本时才删除锁文件。
+
+## 提供复现
+
+提交问题时附上最小编辑器、包管理器与锁文件类型、实际依赖版本、插件列表、
+触发问题的文档值，以及完整错误信息。保留复现所需的插件和组件即可。

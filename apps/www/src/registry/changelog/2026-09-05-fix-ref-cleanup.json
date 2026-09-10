@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-05-fix-ref-cleanup",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-05-fix-ref-cleanup.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Run callback ref cleanup when popover anchors and command lists unmount.",
+  "targets": [
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-05-floating-popover-run-callback-ref-cleanup-2822146b",
+      "kind": "fix",
+      "summary": "Run callback ref cleanup when popover anchors and command lists unmount.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-popover", "select-editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-fix-ref-cleanup",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,15 @@
+---
+id: 2026-09-07-docx-bookmarks
+date: 2026-09-07
+status: draft
+kind: wiring
+summary: 'Keep DOCX bookmark names inside each document conversion'
+change: { 'type': 'source', 'date': '2026-09-07', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-07-docx-keep-bookmark-names-inside-24df8030","kind":"wiring","migrationNotes":[]} -->
+
+- **`docx`**: Install the paste and import plugins; call `exportToDocx` with a document snapshot from the export action.
+- **`docx-export`, `heading-static`, `toc`**: Emit ordinary HTML anchors and let the converter assign unique bookmark names within each DOCX document.

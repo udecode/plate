@@ -52,8 +52,6 @@ const withPluginEditor = <T extends TestEditor>(editor: T) => {
     ...editor.update,
     footnote: {
       createDefinition: () => {},
-      focusDefinition: () => {},
-      focusReference: () => {},
       normalizeDuplicateDefinition: () => {},
       ...editor.update?.footnote,
     },
@@ -69,6 +67,14 @@ const withPluginEditor = <T extends TestEditor>(editor: T) => {
     updateCommands
   );
   const pluginEditor = Object.assign(editor, {
+    api: {
+      ...editor.api,
+      footnote: {
+        focusDefinition: () => {},
+        focusReference: () => {},
+        ...editor.api?.footnote,
+      },
+    },
     plugin: () => ({
       api: editor.api ?? {},
       read: readState,
@@ -105,7 +111,7 @@ mock.module('platejs/react', () => ({
   toPlatePlugin: (plugin: unknown) => plugin,
   useEditor: () => lastPluginEditor ?? withPluginEditor({}),
   useEditorPlugin: () => ({
-    api: lastPluginEditor?.api ?? {},
+    api: lastPluginEditor?.api?.footnote ?? {},
     editor: lastPluginEditor ?? withPluginEditor({}),
     read: lastPluginEditor?.read?.footnote ?? {},
     update: lastPluginEditor?.update?.footnote ?? {},
@@ -131,14 +137,6 @@ mock.module('platejs/react', () => ({
     return selector(selectorEditor);
   },
   useEditorFocused: () => isFocused,
-  useNavigationHighlight: (path?: number[]) => {
-    const activeTarget = editorSelectorEditor?.navigationHighlight;
-
-    if (!path || !activeTarget) return null;
-    if (JSON.stringify(activeTarget.path) !== JSON.stringify(path)) return null;
-
-    return activeTarget;
-  },
   useElementSelected: () => isSelected,
   usePath: () => nodePath ?? [0],
 }));
@@ -200,8 +198,13 @@ mock.module('@/registry/components/editor/inline-combobox', () => ({
   InlineComboboxEmpty: ({ children }: any) => <div>{children}</div>,
   InlineComboboxGroup: ({ children }: any) => <div>{children}</div>,
   InlineComboboxInput: () => <input />,
-  InlineComboboxItem: ({ children, onClick }: any) => (
-    <button type="button" onClick={onClick}>
+  InlineComboboxItem: ({ children, onSelect }: any) => (
+    <button
+      type="button"
+      onClick={() =>
+        onSelect?.({ plugin: () => lastPluginEditor.update.footnote })
+      }
+    >
       {children}
     </button>
   ),
@@ -250,7 +253,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -301,7 +304,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition,
             },
@@ -336,7 +339,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition: mock(),
             },
@@ -370,7 +373,7 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          update: {
+          api: {
             footnote: {
               focusReference,
             },
@@ -388,91 +391,6 @@ describe('footnote node rendering', () => {
     );
 
     expect(focusReference).toHaveBeenCalledWith({ ref: '2' });
-  });
-
-  it('applies navigation highlight attrs to the current footnote target', async () => {
-    nodePath = [1];
-    editorSelectorEditor = {
-      navigationHighlight: {
-        cycle: 1,
-        duration: 800,
-        path: [1],
-        pulse: 3,
-        variant: 'navigated',
-      },
-    };
-
-    const { FootnoteDefinitionElement } = await import(
-      `./footnote?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    const view = render(
-      <FootnoteDefinitionElement
-        attributes={{}}
-        editor={withPluginEditor({
-          read: { footnote: { references: () => [] } },
-          update: { footnote: {} },
-        } as any)}
-        element={{ children: [{ text: '' }], ref: '2' } as any}
-        path={nodePath}
-      >
-        <p>Body</p>
-      </FootnoteDefinitionElement>
-    );
-
-    const element = view.container.querySelector('[data-nav-highlight]');
-
-    expect(element?.getAttribute('data-nav-highlight')).toBe('navigated');
-    expect(element?.getAttribute('data-nav-pulse')).toBe('3');
-    expect(element?.className).toContain('bg-(--color-highlight)');
-  });
-
-  it('applies navigation highlight attrs to the current footnote reference target', async () => {
-    nodePath = [0, 1];
-    editorSelectorEditor = {
-      navigationHighlight: {
-        cycle: 0,
-        duration: 800,
-        path: [0, 1],
-        pulse: 4,
-        variant: 'navigated',
-      },
-    };
-
-    const { FootnoteReferenceElement } = await import(
-      `./footnote?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    const view = render(
-      <FootnoteReferenceElement
-        attributes={{}}
-        editor={withPluginEditor({
-          read: {
-            footnote: {
-              definitionText: () => 'Preview',
-              hasDuplicateDefinitions: () => false,
-              isResolved: () => true,
-            },
-          },
-          update: {
-            footnote: {
-              focusDefinition: () => true,
-            },
-          },
-        } as any)}
-        element={{ children: [{ text: '' }], ref: '1' } as any}
-        path={nodePath}
-      >
-        <span />
-      </FootnoteReferenceElement>
-    );
-
-    const element = view.container.querySelector('[data-nav-highlight]');
-    const button = view.getByRole('button', { name: '[1]' });
-
-    expect(element?.getAttribute('data-nav-highlight')).toBe('navigated');
-    expect(element?.getAttribute('data-nav-pulse')).toBe('4');
-    expect(button.className).toContain('bg-(--color-highlight)');
   });
 
   it('opens a multi-reference picker instead of jumping blindly to the first reference', async () => {
@@ -529,7 +447,7 @@ describe('footnote node rendering', () => {
                 path[0] === 0 ? 'First paragraph ref' : 'Second paragraph ref',
             },
           },
-          update: {
+          api: {
             footnote: {
               focusReference,
             },
@@ -570,7 +488,11 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          update: { footnote: { focusReference: () => true } },
+          api: {
+            footnote: {
+              focusReference: () => true,
+            },
+          },
         } as any)}
         element={{ children: [{ text: '' }], ref: '2' } as any}
       >
@@ -594,7 +516,11 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          update: { footnote: { focusReference: () => true } },
+          api: {
+            footnote: {
+              focusReference: () => true,
+            },
+          },
         } as any)}
         element={{ children: [{ text: '' }], ref: '2' } as any}
       >
@@ -625,7 +551,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -667,7 +593,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -702,10 +628,14 @@ describe('footnote node rendering', () => {
               isResolved: () => false,
             },
           },
+          api: {
+            footnote: {
+              focusDefinition: () => true,
+            },
+          },
           update: {
             footnote: {
               createDefinition,
-              focusDefinition: () => true,
             },
           },
         } as any)}
@@ -744,10 +674,14 @@ describe('footnote node rendering', () => {
               isResolved: () => false,
             },
           },
+          api: {
+            footnote: {
+              focusDefinition,
+            },
+          },
           update: {
             footnote: {
               createDefinition,
-              focusDefinition,
             },
           },
         } as any)}
@@ -781,7 +715,7 @@ describe('footnote node rendering', () => {
               isResolved: () => true,
             },
           },
-          update: {
+          api: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -827,9 +761,13 @@ describe('footnote node rendering', () => {
               references: () => [],
             },
           },
-          update: {
+          api: {
             footnote: {
               focusReference: mock(),
+            },
+          },
+          update: {
+            footnote: {
               normalizeDuplicateDefinition,
             },
           },
@@ -870,7 +808,7 @@ describe('footnote node rendering', () => {
           isResolved: () => true,
         },
       },
-      update: {
+      api: {
         footnote: {
           focusDefinition: () => true,
         },
@@ -938,7 +876,11 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          update: { footnote: { focusReference: mock() } },
+          api: {
+            footnote: {
+              focusReference: mock(),
+            },
+          },
         } as any)}
         element={{ children: [{ text: '' }], ref: '3' } as any}
         path={nodePath}

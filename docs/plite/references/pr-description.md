@@ -60,15 +60,13 @@ Current summary:
   typecheck, lint, and markdown-shortcuts browser proof passed; raw Android
   device proof is still required before any exact `#4532` claim. New exact
   fixed or improved claims from that sync: `0`.
-- Editable-island / multi-root child-root planning sync changes the target
-  example architecture only: native/app controls stay inside
-  `editable-island`, rich editable island content should use same-runtime child
-  roots, scalar document-owned fields should use state fields, and
-  `renderVoid` stays content-only. New exact fixed or improved claims from that
-  sync: `0`.
-- Void roots / content-root API execution keeps ordinary voids atomic, keeps
-  `editable-island` for mixed native/app controls with optional child roots,
-  and adds the public API/lifecycle baseline for pure editor-flow child content:
+- Native/app controls belong inside true void UI. Rich editable bodies use
+  same-runtime child roots, scalar document-owned fields use state fields,
+  and `renderVoid` stays content-only. Exact fixed issue claims from this
+  architecture decision: `0`.
+- Void roots / content-root API execution keeps voids atomic, permits mixed
+  native/app controls with optional child roots, and owns independently
+  addressed editor-flow child content:
   `EditorElementSpec.contentRoot`, `tx.roots.create/replace/delete`, and
   `usePliteContentRoot`. Keyboard projection, root payload remap, browser
   proof, and release-gate verification remain unclaimed. New exact fixed or
@@ -325,8 +323,7 @@ Accepted current shape:
   `state.nodes.toArray(options)` only when a read or update callback needs an
   explicit materialized array. Chain native array methods for projection.
 - Element void config is string-only: `void: 'block'`,
-  `void: 'inline'`, `void: 'markable-inline'`, or
-  `void: 'editable-island'`. Absence means non-void; `void: true` is fixture
+  `void: 'inline'`, or `void: 'markable-inline'`. Absence means non-void; `void: true` is fixture
   data only when a matcher maps it to an explicit schema spec.
 - Mutable editor fields, direct `apply` extension points, direct `onChange`
   extension points, and `Transforms.*` teaching are outside the final public
@@ -580,13 +577,13 @@ Accepted current shape:
 - React reads from editor snapshots and commit-local dirty data.
 - Selector hooks expose editor-typed state and commit facts, including
   `EditorSelectorOptions<TEditor>` for `useEditorSelector`.
-- `decorate` stays the simple transient range API.
-- `decorationSources` and `createDecorationSource` are the scalable path for
-  external or high-churn overlays.
+- `<Plite decorations>` is the only transient range input.
+- A source owns `id`, `read`, and optional external observation; its observer
+  receives exact node-key refresh authority.
 - Annotation stores and widget stores are durable overlay substrates, not
   product comment workflows.
-- Projection stores, projection selectors, and projection metrics are advanced
-  runtime surfaces, not the first public docs path.
+- Provider compilation and node-bucket subscriptions stay private runtime
+  machinery.
 - Default editing remains DOM-present unless an explicit rendering strategy says
   otherwise.
 - Public examples teach stable Plite React capabilities before React
@@ -903,45 +900,30 @@ Affected:
 
 Accepted current shape:
 
-- `createDecorationSource(editor, options)` remains the low-level projection
-  source API.
-- `usePliteDecorationSource(editor, options)` owns React lifecycle cleanup for
-  common example and app code.
-- The hook keeps the source stable for an editor while reading the latest
-  `read` and `runtimeScope` callbacks.
-- The hook accepts `deps?: readonly unknown[]` so external query/state changes
-  refresh the source without recreating it or teaching memoized option objects
-  in examples.
-- `dirtiness` and `runtimeScope` remain visible in the call site because they
-  are the performance contract.
-- Structurally identical dirtiness class lists keep the same hook source
-  identity, so multi-class sources can inline `dirtiness: ['text', 'node']`
-  without caller-side tuple constants.
+- `<Plite decorations={[source]}>` is the sole raw authoring path.
+- `PliteDecorationSource` owns `id`, `read`, and optional `observe`.
+- `observe` attaches external ownership once and receives
+  `refresh({ nodeKeys })`; there is no imperative public refresh handle.
+- Provider compilation reads sources in array order and publishes one merged
+  attribute bucket per mounted node to every Editable.
 - `NodeApi.findTextRanges(root, query, options)` is the accepted raw Plite
   helper for turning text matches into `Range[]`. It is not a search feature:
   first-tranche options stay thin with `caseSensitive` plus `RegExp` or matcher
   callbacks, no `wholeWord`, no locale policy, and no public
   `across: 'text-siblings'` option.
-- `createRangeDecorationSource(editor, options)` is the accepted helper over
-  `createDecorationSource` for callers that already have ranges or range
-  entries and do not need to hand-build projection objects, keys, or refresh
-  defaults.
-- `usePliteRangeDecorationSource(editor, options)` is the React helper for
-  range-based decorations. It shares the low-level hook's lifecycle cleanup and
-  `deps` refresh contract without recreating the source object.
-- `createDecorationSource` and `usePliteDecorationSource` remain the power APIs
-  for external stores, custom invalidation, manual `runtimeScope`, and metrics.
-- The huge-overlay benchmark uses `useEditorSelector` plus
-  `decorationSources`; no `usePliteSelector` alias or direct
-  `<Plite projectionStore={...}>` prop is required.
+- Range-based callers return keyed ranges directly from `read`; each result
+  carries only class, style, ARIA, or data attributes.
+- External stores subscribe inside `observe` and refresh only affected node
+  keys.
+- The huge-overlay benchmark uses `useEditorSelector` plus the same
+  `decorations` input as application code.
 
 Why it belongs in the PR:
 
-- Decoration examples should teach the projection model, not repeated
-  `useMemo` plus cleanup `useEffect` ceremony.
+- Decoration examples teach one descriptor contract.
 - Search, hashtag, markdown-preview, code-token, lint, and diagnostics examples
   should use generic range/source helpers when the repeated work is
-  range-to-projection plumbing.
+  range-to-attribute plumbing.
 - Source lifecycle belongs behind a hook when the source is created inside a
   React component.
 - Raw Plite should not grow `editor.api.search`, `SearchApi`, or product search
@@ -979,10 +961,11 @@ Proof references:
 
 Affected:
 
-- `packages/plitejs/src/react/components/slate.tsx`
-- `packages/plitejs/src/react/hooks/use-slate-annotations.tsx`
-- `packages/plitejs/src/react/hooks/use-slate-annotation-store.tsx`
-- `packages/plitejs/src/react/hooks/use-slate-widget-store.tsx`
+- `packages/plitejs/src/react/components/plite.tsx`
+- `packages/plitejs/src/react/decoration-source.ts`
+- `packages/plitejs/src/react/hooks/use-plite-annotations.tsx`
+- `packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx`
+- `packages/plitejs/src/react/hooks/use-plite-widget-store.tsx`
 - `packages/plitejs/test/react/annotation-store-contract.tsx`
 - `packages/plitejs/test/react/widget-layer-contract.tsx`
 - `packages/plitejs/test/react/surface-contract.tsx`
@@ -995,26 +978,25 @@ Affected:
 
 Accepted current shape:
 
-- `<Plite annotationStore={store}>` is singular because one annotation store
-  already owns many annotations.
-- `usePliteAnnotations()` and `usePliteAnnotation(id)` read the provider store
-  by default.
-- Both hooks still accept an explicit store for cross-editor or out-of-tree
-  annotation UI.
-- Annotation projection remains provider-owned so inline segments, widgets, and
-  sidebars read the same committed annotation state.
-- Raw Plite owns the anchor/projection substrate only. Review comments,
+- `<PliteAnnotationProvider store={store}>` supplies the default store only to
+  annotation reader hooks.
+- `usePliteAnnotations()` and `usePliteAnnotation(id)` read that store by
+  default and accept an explicit store for cross-editor or out-of-tree UI.
+- Independent annotation stores compose through their own providers or explicit
+  hook arguments; the editor provider does not choose one global app store.
+- Inline paint is a separate attribute-only `PliteDecorationSource` passed to
+  `<Plite decorations>`. Annotation data never becomes renderer payload.
+- Raw Plite owns anchors and range-to-view mapping only. Review comments,
   suggestions, permissions, and collaboration services stay product-layer work.
-- `usePliteAnnotationStore` and `usePliteWidgetStore` accept projector options
-  with explicit deps so examples can map product data without caller-side
-  `useMemo` arrays.
+- `usePliteAnnotationStore` refreshes on annotation array identity or an
+  explicit revision. Widget stores consume an explicit annotation store when
+  they target annotation ids.
 
 Why it belongs in the PR:
 
-- Examples should not pass the same store through `<Plite>` and component props
-  just to list annotations.
-- Singular naming matches the actual data model and avoids teaching users that
-  multiple stores are the common case.
+- The editor provider should not own unrelated application stores.
+- A dedicated provider gives reader hooks a convenient default without making
+  one annotation store global or coupling it to decoration rendering.
 
 Proof references:
 

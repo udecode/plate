@@ -96,6 +96,40 @@ afterEach(() => {
 });
 
 describe('plite string coordinate placement', () => {
+  test('places a block-edge click without measuring sibling blocks', () => {
+    const editableRoot = document.createElement('div');
+    const paragraph = document.createElement('p');
+    const code = document.createElement('pre');
+    const paragraphText = createTextHost({ text: 'paragraph' });
+    const codeText = createTextHost({ text: 'large code block' });
+    editableRoot.dataset.pliteEditor = 'true';
+    paragraph.dataset.pliteNode = 'element';
+    code.dataset.pliteNode = 'element';
+    setClientRects(paragraphText.string, [
+      rect({ left: 10, right: 90, top: 10 }),
+    ]);
+    let siblingMeasurements = 0;
+    Object.defineProperty(codeText.string, 'getClientRects', {
+      value: () => {
+        siblingMeasurements += 1;
+        return [rect({ left: 10, right: 900, top: 50 })];
+      },
+    });
+    paragraph.append(paragraphText.textHost);
+    code.append(codeText.textHost);
+    editableRoot.append(paragraph, code);
+    document.body.append(editableRoot);
+
+    expect(
+      getEditableRootPliteStringCoordinatePlacement({
+        editableRoot,
+        event: { clientX: 300, clientY: 20 },
+        target: paragraph,
+      })
+    ).toMatchObject({ edge: 'end', string: paragraphText.string });
+    expect(siblingMeasurements).toBe(0);
+  });
+
   test('ignores strings owned by nested editable roots', () => {
     const editableRoot = document.createElement('div');
     const nestedEditableRoot = document.createElement('div');
@@ -247,7 +281,7 @@ describe('plite string coordinate placement', () => {
     beforeBlock.dataset.plitePath = '0';
     afterBlock.dataset.pliteNode = 'element';
     afterBlock.dataset.plitePath = '1';
-    setBoundingRect(editableRoot, rect({ bottom: 220, right: 320 }));
+    setBoundingRect(editableRoot, rect({ bottom: 220, left: 0, right: 320 }));
     setBoundingRect(
       beforeBlock,
       rect({ bottom: 100, left: 10, right: 300, top: 20 })

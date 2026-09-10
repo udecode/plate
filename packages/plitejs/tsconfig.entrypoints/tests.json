@@ -8,6 +8,7 @@
   "files": [
     "../src/diff/lib/computeDiff.spec.ts",
     "../src/diff/lib/excludeDiffFragment.spec.ts",
+    "../src/yjs/react/useYjs.types.spec.ts",
     "../../../tooling/config/global.d.ts"
   ],
   "include": [],
@@ -17,6 +18,12 @@
     },
     {
       "path": "./diff.json"
+    },
+    {
+      "path": "./react.json"
+    },
+    {
+      "path": "./yjs.json"
     }
   ]
 }

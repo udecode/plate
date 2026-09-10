@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-drag-preparation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-drag-preparation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Prepare drag payloads and isolated previews through DndPlugin",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-drag-preparation-1",
+      "kind": "behavior",
+      "summary": "Prepare selected blocks and inert preview clones through DndPlugin; keep preview spacing and scroll compensation in the component.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-drag-preparation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-drag-preparation-2",
+      "kind": "remove",
+      "summary": "Validate every dragged row and its source editor before applying the row drop handler.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-drag-preparation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

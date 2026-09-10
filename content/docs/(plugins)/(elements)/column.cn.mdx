@@ -13,7 +13,6 @@ docs:
 
 - 在文档中添加分栏布局
 - 通过 `column-group-node` 工具栏选择多种分栏样式
-- [ ] 可调整栏宽
 
 </PackageInfo>
 
@@ -154,7 +153,9 @@ column.update.selectAll();
 组命令也可通过 `editor.update.columnGroup` 使用；项命令通过
 `editor.update.column` 使用。
 
-- `insert` 插入一组等宽分栏项。
+- `insert` 在当前区块之后插入一组等宽分栏项。`select: true` 选中首个段落；
+  `replaceEmpty: true` 在同一个撤销步骤中替换空的来源区块。`after` 指定来源区块，
+  `at` 指定节点插入位置。
 - `setColumns` 修改现有分栏组的数量和宽度。
 - `toggle` 将当前区块转换为分栏组，或更新其布局。
 - `moveMiddle` 将中间栏内容移动到第一栏。

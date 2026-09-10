@@ -10,7 +10,7 @@ page settings, or other persistent meta fields.
 This walkthrough uses Local Storage, but the same shape is what you send to
 your database.
 
-## Save The Full Document
+## Save the full document
 
 Create the editor from the saved value, then persist the full document value
 after committed document or state-field changes.
@@ -87,7 +87,7 @@ type EditorDocumentValue = {
 That shape includes the primary document, every extra root, and persistent meta
 from state fields. Fields without a `persist` codec stay local to the runtime.
 
-## Single-Root Shortcut
+## Single-root shortcut
 
 The `value` in `<Plite onValueChange>` is the mounted root's block array. Save
 it directly for a tiny single-root editor with no persistent meta fields.
@@ -106,7 +106,7 @@ it directly for a tiny single-root editor with no persistent meta fields.
 Use the full document value once the editor owns extra roots, content roots, or
 state fields.
 
-## Load Extra Roots
+## Load extra roots
 
 Pass `initialValue.children` plus `initialValue.roots` when the saved document
 owns extra roots.
@@ -135,7 +135,7 @@ Render each root with `Editable root`.
 
 See [Roots](../concepts/13-roots) for content roots and root rendering.
 
-## Replace Saved Content
+## Replace saved content
 
 Create a new editor with `initialValue: nextDocument` when the user switches to
 a different saved document. That is the clean path for arbitrary persisted
@@ -156,7 +156,7 @@ decoded through each field's value codec. Pass `selection: "start"` or
 `selection: "end"` to place the cursor at a document edge. Use `tx.roots` or
 `tx.setField` only for a targeted partial change.
 
-## Store Comments Separately
+## Store comments separately
 
 Comment bodies, permissions, resolved state, and audit events belong to your
 app or collaboration service. The Plite document can store lightweight ids when

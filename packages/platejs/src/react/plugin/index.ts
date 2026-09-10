@@ -6,5 +6,4 @@ export * from './DOMHandlers';
 export * from './KeyboardHandler';
 export * from './PlatePlugin';
 export * from './definePlatePlugin';
-export * from './omitPluginContext';
 export * from './toPlatePlugin';

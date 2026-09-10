@@ -23,17 +23,17 @@ an empty paragraph after it.
 
 <ComponentSource src="examples/values/editable-voids-value.tsx" />
 
-## Runtime Shape
+## Runtime shape
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `EditableVoidPlugin` | Registry example | Uses `definePlatePlugin` with `schema.element.void: 'editable-island'`. |
+| `EditableVoidPlugin` | Registry example | Uses `definePlatePlugin` with `schema.element.void: 'block'`. |
 | `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |
 | Outer editor | Registry example | Loads the authored editor plugins plus `EditableVoidPlugin` and the `editableVoidsValue`. |
 | Inner editor | Registry example | Creates a separate `useCreateEditor({ plugins })` inside the void element. |
 | Value shape | Plite | Keeps an empty text child inside the void node so Plite can select it. |
 
-## Void Element Rules
+## Void element rules
 
 Set `contentEditable={false}` on the custom void wrapper. Without it, browser
 editing behavior can leak into the nested controls; the demo notes Firefox input

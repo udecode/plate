@@ -16,7 +16,7 @@ toc: true
 
 - **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和规范编辑器更改接入编辑器。
 - **自定义提供者：** 将提供者包包装成 `YjsProviderLike`，然后通过 `YjsPlugin.configure` 配置。
-- **Awareness 与光标：** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和临时状态。远程光标 UI 使用 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay)。
+- **Awareness 与光标：** 通过 Yjs Awareness 共享光标位置和元数据。安装复制的光标 UI，即可显示选区高亮、光标和标签。
 - **多根文档：** 通过同一个编辑器扩展和 Yjs 事务边界同步主 `children`、命名 `roots` 和带根信息的 Awareness。
 - **自定义光标：** 通过 `tx.yjs.sendSelection` 发送光标名称、颜色和其他元数据。
 - **显式命令：** 插件会安装 Plite Yjs 扩展，并添加 `state.yjs` 读取和 `tx.yjs` 命令，用于连接、Awareness 和选择。撤销和重做由 Plite History 负责。
@@ -80,14 +80,16 @@ const editor = createEditor({
 ### 配置提供者和光标
 
 把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。
-在 `YjsPlugin` 上配置复制的光标渲染器；插件的装饰和渲染插槽拥有完整的远程光标路径。
+安装 `remote-cursor-overlay`，为协作编辑器添加选区高亮、光标和标签。
+
+```bash
+npx shadcn@latest add @plate/remote-cursor-overlay
+```
+
+从复制的文件导入 `YjsPlugin`，即可使用这些光标样式。
 
 ```tsx
-import { YjsPlugin } from "platejs/yjs/react";
-import {
-  RemoteCursorLeaf,
-  RemoteCursorOverlay,
-} from "@/components/editor/remote-cursor-overlay";
+import { YjsPlugin } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -96,15 +98,14 @@ export const yjsPlugin = YjsPlugin.configure({
     provider,
     rootName: roomId,
   },
-  render: {
-    afterEditable: RemoteCursorOverlay,
-    leaf: RemoteCursorLeaf,
-  },
 });
 ```
 
-不要在 `<Editor>` 旁手动渲染 `RemoteCursorOverlay`。插件会把精确的
-Editable ref 传给 `afterEditable` 插槽，并通过 `leaf` 插槽绘制远程选区。
+复制的插件通过 `decorate.attributes` 和按 ID 查询的 `read.remoteCursor(clientId)`
+为选区装饰添加样式，并通过 `slots.afterEditable` 安装
+`RemoteCursorOverlay`。插槽传入当前挂载的 Editable ref。修改复制文件中的颜色函数、
+透明度和 className，即可一起定制选区、光标和标签。只需要协作行为时，从
+`platejs/yjs/react` 导入不带这些默认样式的 `YjsPlugin`。
 
 - `provider`: 应用拥有的传输包装器，类型为 `YjsProviderLike`。
 - `doc`: 共享的 `Y.Doc`。
@@ -115,13 +116,14 @@ Editable ref 传给 `afterEditable` 插槽，并通过 `leaf` 插槽绘制远程
 命名根无需挂载 `PlateContent` 也会同步；远程选区保留其根 key，且一个选区不能跨越
 两个根。
 
-### 添加编辑器容器
+### 渲染编辑器
 
-`RemoteCursorOverlay` 需要编辑器内容外层有定位容器。使用 [`EditorContainer`](/docs/components/editor) 组件，或使用 `platejs/react` 中的 `PlateContainer`。
+使用复制的 [Editor](/docs/editor) 组件渲染已配置的编辑器。光标覆盖层使用当前挂载的
+Editable 提供的视口坐标。
 
 ```tsx
 import { Plate } from "platejs/react";
-import { EditorContainer } from "@/components/editor/editor";
+import { Editor, EditorContainer } from "@/components/editor/editor";
 
 return (
   <Plate editor={editor}>
@@ -154,9 +156,11 @@ editor.update((tx) => {
 
 ```tsx
 import React from "react";
+import { useEditor } from "platejs/react";
 import { useYjsProviderStatus, useYjsProviderSynced } from "platejs/yjs/react";
 
 function EditorStatus() {
+  const editor = useEditor();
   const status = useYjsProviderStatus(editor);
   const synced = useYjsProviderSynced(editor);
 
@@ -232,7 +236,7 @@ editor.update.history.redo();
 - 在应用日志中暴露提供者连接错误。
 - 编辑器挂载时，不要绕过编辑器直接修改共享 `Y.Doc`。
 - 临时断开连接用 `tx.yjs.disconnect()`，卸载清理交给扩展生命周期。
-- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并在 `YjsPlugin` 上配置两个复制的渲染插槽。
+- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并从复制的 `remote-cursor-overlay` 文件导入 `YjsPlugin`。
 
 ## 相关资源
 
@@ -241,5 +245,5 @@ editor.update.history.redo();
 - [Hocuspocus](https://tiptap.dev/hocuspocus)
 - [y-webrtc](https://github.com/yjs/y-webrtc)
 - [y-indexeddb](https://github.com/yjs/y-indexeddb)
-- [RemoteCursorOverlay](/docs/components/remote-cursor-overlay)
-- [EditorContainer](/docs/components/editor)
+- [协作示例](/docs/examples/collaboration-example)
+- [Editor](/docs/editor)

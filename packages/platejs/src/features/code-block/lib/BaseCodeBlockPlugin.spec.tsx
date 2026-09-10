@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import assert from 'node:assert/strict';
@@ -20,9 +21,6 @@ import {
   DebugPlugin,
   defineBasePlugin,
   type Descendant,
-  type Element,
-  ElementApi,
-  getPlateRuntime,
   type InitialValue,
   type NodeEntry,
   PLUGINS,
@@ -30,11 +28,11 @@ import {
   type TextInsertFragmentOptions,
   type Value,
 } from '../../../core';
-import { pipeDecorate } from '../../../static';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
-  BaseCodeLinePlugin,
   type CodeBlockElement,
 } from './BaseCodeBlockPlugin';
 import { CodeBlockRules } from './CodeBlockRules';
@@ -50,22 +48,43 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   });
 
 describe('BaseCodeBlockPlugin', () => {
-  it('injects the html query guard and binds the code block tx group', () => {
-    const editorWithCodeLine = createFixtureEditor({
+  it('indents the first empty line at offset zero', () => {
+    const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: {
         kind: 'text',
-        anchor: { offset: 0, path: [0, 0, 0] },
-        focus: { offset: 0, path: [0, 0, 0] },
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+      initialValue: [{ type: 'codeBlock', children: [{ text: '\nalpha' }] }],
+    });
+
+    expect(editor.update.codeBlock.tab()).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { type: 'codeBlock', children: [{ text: '  \nalpha' }] },
+    ]);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    });
+  });
+
+  it('injects the html query guard and binds the code block tx group', () => {
+    const editorWithCodeBlock = createFixtureEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
       },
       initialValue: [
         {
-          children: [{ children: [{ text: '' }], type: 'codeLine' }],
+          children: [{ text: '' }],
           type: 'codeBlock',
         },
       ],
     });
-    const editorWithoutCodeLine = createFixtureEditor({
+    const editorWithoutCodeBlock = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: {
         kind: 'text',
@@ -78,82 +97,64 @@ describe('BaseCodeBlockPlugin', () => {
 
     expect(BaseCodeBlockPlugin.name).toBe('codeBlock');
     expect(BaseCodeBlockPlugin.name).toBe(PLUGINS.codeBlock);
-    expect(BaseCodeLinePlugin.name).toBe('codeLine');
-    expect(BaseCodeLinePlugin.name).toBe(PLUGINS.codeLine);
     expect(BaseCodeHighlightPlugin.name).toBe('codeSyntax');
     expect(BaseCodeHighlightPlugin.name).toBe(PLUGINS.codeSyntax);
-    expect(BaseCodeBlockPlugin.dependencies).toEqual([BaseCodeLinePlugin]);
+    expect(BaseCodeBlockPlugin.dependencies).toEqual([]);
     expect(BaseCodeHighlightPlugin.dependencies).toEqual([BaseCodeBlockPlugin]);
-    expect(editorWithCodeLine.read.schema.create(BaseCodeBlockPlugin)).toEqual({
-      children: [{ children: [{ text: '' }], type: 'codeLine' }],
-      type: 'codeBlock',
-    });
+    expect(editorWithCodeBlock.read.schema.create(BaseCodeBlockPlugin)).toEqual(
+      {
+        children: [{ text: '' }],
+        type: 'codeBlock',
+      }
+    );
     expect(
-      editorWithCodeLine.read.schema.getElementSlicePolicy({
-        children: [{ children: [{ text: '' }], type: 'codeLine' }],
+      editorWithCodeBlock.read.schema.getElementSlicePolicy({
+        children: [{ text: '' }],
         type: 'codeBlock',
       })
     ).toEqual({ preserveContext: true, replaceWhenCovered: false });
-    const highlightEditor = createFixtureEditor({
-      plugins: [BaseCodeHighlightPlugin],
-    });
-
     expect(
-      highlightEditor.read.schema.property({
-        key: highlightEditor.plugin(BaseCodeHighlightPlugin).schema.key,
-        placement: 'text',
-      })
-    ).toMatchObject({ value: { kind: 'boolean' } });
-    expect(
-      editorWithCodeLine.read.schema.element(BaseCodeBlockPlugin)?.groups
-    ).toContain('block');
-    expect(
-      editorWithCodeLine.read.schema.element(BaseCodeLinePlugin)?.groups
+      editorWithCodeBlock.read.schema.element(BaseCodeBlockPlugin)?.groups
     ).toContain('block');
     expect(() =>
-      editorWithCodeLine.read.schema.assertDocument({
+      editorWithCodeBlock.read.schema.assertDocument({
         children: [
           {
-            children: [{ text: '' }],
-            type: 'codeLine',
+            children: [{ text: 'a' }, { text: 'b' }],
+            type: 'codeBlock',
           },
         ],
       })
-    ).toThrow(/root.*cannot contain|cannot contain.*root/i);
+    ).toThrow(/at most 1|maximum.*1|cannot contain/i);
 
     expect(
-      editorWithCodeLine.api.dom.clipboard.insertData(createDataTransfer(html))
+      editorWithCodeBlock.api.dom.clipboard.insertData(createDataTransfer(html))
     ).toBe(false);
     expect(
-      editorWithoutCodeLine.api.dom.clipboard.insertData(
+      editorWithoutCodeBlock.api.dom.clipboard.insertData(
         createDataTransfer(html)
       )
     ).toBe(true);
 
-    expect(editorWithCodeLine.update.codeBlock.toggle).toEqual(
+    expect(editorWithCodeBlock.update.codeBlock.toggle).toEqual(
       expect.any(Function)
     );
 
-    editorWithoutCodeLine.plugin(BaseCodeBlockPlugin).update.insert();
+    editorWithoutCodeBlock.plugin(BaseCodeBlockPlugin).update.insert();
 
-    expect(editorWithoutCodeLine.read.children().at(-1)).toEqual({
-      children: [{ children: [{ text: '' }], type: 'codeLine' }],
+    expect(editorWithoutCodeBlock.read.children().at(-1)).toEqual({
+      children: [{ text: '' }],
       type: 'codeBlock',
     });
   });
 
-  it('decodes and encodes code lines through the compiled HTML codec', () => {
+  it('decodes and encodes one newline-bearing text through HTML', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
       selection: SelectionApi.nodes([[0]]),
       initialValue: [
         {
-          children: [
-            { children: [{ text: 'const a = 1;' }], type: 'codeLine' },
-            { children: [{ text: '' }], type: 'codeLine' },
-            { children: [{ text: 'const b = 2;' }], type: 'codeLine' },
-            { children: [{ text: '' }], type: 'codeLine' },
-          ],
+          children: [{ text: 'const a = 1;\n\nconst b = 2;\n' }],
           language: 'typescript',
           type: 'codeBlock',
         },
@@ -168,11 +169,7 @@ describe('BaseCodeBlockPlugin', () => {
       })
     ).toEqual([
       {
-        children: [
-          { children: [{ text: 'const a = 1;' }], type: 'codeLine' },
-          { children: [{ text: '' }], type: 'codeLine' },
-          { children: [{ text: 'const b = 2;' }], type: 'codeLine' },
-        ],
+        children: [{ text: 'const a = 1;\n\nconst b = 2;' }],
         type: 'codeBlock',
       },
     ]);
@@ -189,26 +186,23 @@ describe('BaseCodeBlockPlugin', () => {
       throw new TypeError('Expected an encoded code block.');
     }
 
-    expect(
-      Array.from(pre.querySelectorAll('code > span[data-code-line]')).map(
-        (line) => line.textContent
-      )
-    ).toEqual(['const a = 1;', '', 'const b = 2;', '']);
-    expect(
-      Array.from(pre.querySelectorAll('code > span[data-code-line]')).map(
-        (line) => ({
-          display: (line as HTMLElement).style.display,
-          minHeight: (line as HTMLElement).style.minHeight,
-        })
-      )
-    ).toEqual([
-      { display: 'block', minHeight: '1em' },
-      { display: 'block', minHeight: '1em' },
-      { display: 'block', minHeight: '1em' },
-      { display: 'block', minHeight: '1em' },
-    ]);
+    expect(pre.querySelector('code')?.textContent).toBe(
+      'const a = 1;\n\nconst b = 2;\n'
+    );
+    expect(pre.dataset.codeTrailingNewlines).toBe('1');
     expect(editor.api.html.deserialize({ element: pre })).toEqual([
       ...editor.read.children(),
+    ]);
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<pre>const a = 1;<br>const b = 2;</pre>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'const a = 1;\nconst b = 2;' }],
+        type: 'codeBlock',
+      },
     ]);
   });
 
@@ -216,30 +210,12 @@ describe('BaseCodeBlockPlugin', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],
     });
-    const entry: NodeEntry<Element> = [
-      {
-        children: [{ children: [{ text: 'x' }], type: 'codeLine' }],
-        type: 'codeBlock',
-      },
-      [0],
-    ];
 
-    pipeDecorate(editor)?.(entry);
+    expect(getPlateDecorationSources(editor)).toEqual([]);
 
     expect(() => editor.plugin(BaseCodeHighlightPlugin).name).toThrow(
       /not installed/i
     );
-  });
-
-  it('rejects a disabled required code-line dependency', () => {
-    expect(() =>
-      createFixtureEditor({
-        plugins: [
-          BaseCodeBlockPlugin,
-          BaseCodeLinePlugin.configure({ enabled: false }),
-        ],
-      })
-    ).toThrow(/codeBlock.*disabled.*codeLine|codeLine.*disabled.*codeBlock/i);
   });
 });
 
@@ -249,7 +225,7 @@ describe('BaseCodeBlockPlugin', () => {
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       initialValue: [
         {
-          children: [{ children: [{ text: code }], type: 'codeLine' }],
+          children: [{ text: code }],
           language,
           type: 'codeBlock',
         },
@@ -257,9 +233,7 @@ describe('BaseCodeBlockPlugin', () => {
     });
 
   const getCodeBlock = (editor: ReturnType<typeof createFormatterEditor>) => {
-    const entry = editor
-      .plugin(BaseCodeBlockPlugin)
-      .read.entry({ at: [0, 0, 0] });
+    const entry = editor.plugin(BaseCodeBlockPlugin).read.entry({ at: [0, 0] });
     assert.ok(entry?.codeBlock);
 
     return entry.codeBlock[0];
@@ -296,10 +270,7 @@ describe('BaseCodeBlockPlugin', () => {
       editor.update.codeBlock.format({ element });
 
       expect(getCodeBlock(editor).children).toEqual([
-        { children: [{ text: '{' }], type: 'codeLine' },
-        { children: [{ text: '  "name": "plate",' }], type: 'codeLine' },
-        { children: [{ text: '  "type": "editor"' }], type: 'codeLine' },
-        { children: [{ text: '}' }], type: 'codeLine' },
+        { text: '{\n  "name": "plate",\n  "type": "editor"\n}' },
       ]);
     });
 
@@ -308,12 +279,7 @@ describe('BaseCodeBlockPlugin', () => {
         plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
         initialValue: [
           {
-            children: [
-              {
-                children: [{ text: '{"name":"plate","type":"editor"}' }],
-                type: 'codeLine',
-              },
-            ],
+            children: [{ text: '{"name":"plate","type":"editor"}' }],
             language: 'json',
             type: 'codeBlock',
           },
@@ -323,10 +289,7 @@ describe('BaseCodeBlockPlugin', () => {
       editor.update.codeBlock.format({ element });
 
       expect(getCodeBlock(editor).children).toEqual([
-        { children: [{ text: '{' }], type: 'codeLine' },
-        { children: [{ text: '  "name": "plate",' }], type: 'codeLine' },
-        { children: [{ text: '  "type": "editor"' }], type: 'codeLine' },
-        { children: [{ text: '}' }], type: 'codeLine' },
+        { text: '{\n  "name": "plate",\n  "type": "editor"\n}' },
       ]);
     });
   });
@@ -352,9 +315,7 @@ describe('isCodeBlockEmpty', () => {
             <cursor />
           </hp>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
+            <htext />
           </hcodeblock>
         </editor>
       ),
@@ -365,13 +326,8 @@ describe('isCodeBlockEmpty', () => {
       input: (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
-            <hcodeline>
-              <htext />
-            </hcodeline>
+            <cursor />
+            {'\n'}
           </hcodeblock>
         </editor>
       ),
@@ -382,10 +338,8 @@ describe('isCodeBlockEmpty', () => {
       input: (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              test
-              <cursor />
-            </hcodeline>
+            test
+            <cursor />
           </hcodeblock>
         </editor>
       ),
@@ -396,10 +350,8 @@ describe('isCodeBlockEmpty', () => {
       input: (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
+            <htext />
+            <cursor />
           </hcodeblock>
         </editor>
       ),
@@ -426,11 +378,9 @@ describe('isCodeBlockEmpty', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                {'    '}before
-                <cursor />
-                after
-              </hcodeline>
+              {'    '}before
+              <cursor />
+              after
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -438,12 +388,10 @@ describe('isCodeBlockEmpty', () => {
         const output = (
           <editor>
             <hcodeblock>
-              <hcodeline>{'    '}before</hcodeline>
-              <hcodeline>
-                {'    '}
-                <cursor />
-                after
-              </hcodeline>
+              {'    '}before{'\n'}
+              {'    '}
+              <cursor />
+              after
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -459,13 +407,11 @@ describe('isCodeBlockEmpty', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                ab
-                <anchor />
-                cd
-                <focus />
-                ef
-              </hcodeline>
+              ab
+              <anchor />
+              cd
+              <focus />
+              ef
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -473,11 +419,9 @@ describe('isCodeBlockEmpty', () => {
         const output = (
           <editor>
             <hcodeblock>
-              <hcodeline>ab</hcodeline>
-              <hcodeline>
-                <cursor />
-                ef
-              </hcodeline>
+              ab{'\n'}
+              <cursor />
+              ef
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -496,11 +440,9 @@ describe('isCodeBlockEmpty', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                {'  '}
-                <cursor />
-                {'  '}before
-              </hcodeline>
+              {'  '}
+              <cursor />
+              {'  '}before
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -508,12 +450,11 @@ describe('isCodeBlockEmpty', () => {
         const output = (
           <editor>
             <hcodeblock>
-              <hcodeline>{'  '}</hcodeline>
-              <hcodeline>
-                {'  '}
-                <cursor />
-                {'  '}before
-              </hcodeline>
+              {'  '}
+              {'\n'}
+              {'  '}
+              <cursor />
+              {'  '}before
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -535,11 +476,9 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-              aa
-            </hcodeline>
-            <hcodeline>bb</hcodeline>
+            <cursor />
+            aa
+            {'\n'}bb
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -567,10 +506,8 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-              aa
-            </hcodeline>
+            <cursor />
+            aa
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -589,10 +526,8 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>aa</hcodeline>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            aa{'\n'}
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -600,10 +535,8 @@ describe('isCodeBlockEmpty', () => {
       const output = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              aa
-              <cursor />
-            </hcodeline>
+            aa
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -622,9 +555,7 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -653,14 +584,12 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              be
-              <anchor />
-              fo
-              <focus />
-              re
-            </hcodeline>
-            <hcodeline>after</hcodeline>
+            be
+            <anchor />
+            fo
+            <focus />
+            re
+            {'\n'}after
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -670,8 +599,8 @@ describe('isCodeBlockEmpty', () => {
       editor.update.codeBlock.selectAll();
 
       expect(editor.read.selection()).toEqual({
-        anchor: { offset: 0, path: [0, 0, 0] },
-        focus: { offset: 5, path: [0, 1, 0] },
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 12, path: [0, 0] },
       });
     });
 
@@ -679,14 +608,11 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <anchor />
-              before
-            </hcodeline>
-            <hcodeline>
-              after
-              <focus />
-            </hcodeline>
+            <anchor />
+            before
+            {'\n'}
+            after
+            <focus />
           </hcodeblock>
           <hp>outside</hp>
         </editor>
@@ -709,14 +635,11 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <anchor />
-              aa
-            </hcodeline>
-            <hcodeline>
-              bb
-              <focus />
-            </hcodeline>
+            <anchor />
+            aa
+            {'\n'}
+            bb
+            <focus />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -724,14 +647,11 @@ describe('isCodeBlockEmpty', () => {
       const output = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              {'  '}
-              aa
-            </hcodeline>
-            <hcodeline>
-              {'  '}
-              bb
-            </hcodeline>
+            {'  '}
+            aa
+            {'\n'}
+            {'  '}
+            bb
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -746,24 +666,18 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <anchor />
-              {'  '}aa
-            </hcodeline>
-            <hcodeline>
-              {'  '}bb
-              <focus />
-            </hcodeline>
+            <anchor />
+            {'  '}aa
+            {'\n'}
+            {'  '}bb
+            <focus />
           </hcodeblock>
         </editor>
       ) as TestEditor;
 
       const output = (
         <editor>
-          <hcodeblock>
-            <hcodeline>aa</hcodeline>
-            <hcodeline>bb</hcodeline>
-          </hcodeblock>
+          <hcodeblock>aa{'\n'}bb</hcodeblock>
         </editor>
       ) as TestEditor;
 
@@ -777,11 +691,9 @@ describe('isCodeBlockEmpty', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              aa
-              <cursor />
-              bb
-            </hcodeline>
+            aa
+            <cursor />
+            bb
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -789,11 +701,9 @@ describe('isCodeBlockEmpty', () => {
       const output = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              aa{'  '}
-              <cursor />
-              bb
-            </hcodeline>
+            aa{'  '}
+            <cursor />
+            bb
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -820,9 +730,7 @@ describe('isCodeBlockEmpty', () => {
       const output = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -846,9 +754,7 @@ describe('isCodeBlockEmpty', () => {
         <editor>
           <hp>test</hp>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -872,9 +778,7 @@ describe('isCodeBlockEmpty', () => {
         <editor>
           <hp>test</hp>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -906,9 +810,7 @@ describe('isCodeBlockEmpty', () => {
           <hp>line 3</hp>
           <hp>line 4</hp>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
           <hp>line 5</hp>
         </editor>
@@ -951,9 +853,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
     expect(editor.read.children()).toEqual(
       (
         <editor>
-          <hcodeblock>
-            <hcodeline>code</hcodeline>
-          </hcodeblock>
+          <hcodeblock>code</hcodeblock>
         </editor>
       ).children
     );
@@ -978,12 +878,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [
-          {
-            children: [{ text: '' }],
-            type: 'codeLine',
-          },
-        ],
+        children: [{ text: '' }],
         type: 'codeBlock',
       },
     ]);
@@ -1018,12 +913,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [
-          {
-            children: [{ text: '' }],
-            type: 'codeLine',
-          },
-        ],
+        children: [{ text: '' }],
         type: 'codeBlock',
       },
     ]);
@@ -1066,10 +956,8 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
+            <htext />
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1086,10 +974,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const expected = (
         <editor>
-          <hcodeblock>
-            <hcodeline>const a = "b";</hcodeline>
-            <hcodeline>const c = "d";</hcodeline>
-          </hcodeblock>
+          <hcodeblock>const a = "b";{'\n'}const c = "d";</hcodeblock>
         </editor>
       ) as TestEditor;
 
@@ -1122,11 +1007,9 @@ describe('BaseCodeBlockPlugin input rules', () => {
             <htext />
           </hp>
           <hcodeblock language="typescript">
-            <hcodeline>const a = "b";</hcodeline>
-            <hcodeline>
-              const c = "d";
-              <cursor />
-            </hcodeline>
+            const a = "b";{'\n'}
+            const c = "d";
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1150,9 +1033,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1167,11 +1048,9 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const expected = (
         <editor>
           <hcodeblock>
-            <hcodeline>const a = "b";</hcodeline>
-            <hcodeline>
-              const c = "d";
-              <cursor />
-            </hcodeline>
+            const a = "b";{'\n'}
+            const c = "d";
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1187,9 +1066,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <cursor />
-            </hcodeline>
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1203,11 +1080,10 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const expected = (
         <editor>
           <hcodeblock>
-            <hcodeline>{'// this is a comment'}</hcodeline>
-            <hcodeline>
-              console.log("hello world");
-              <cursor />
-            </hcodeline>
+            {'// this is a comment'}
+            {'\n'}
+            console.log("hello world");
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1223,10 +1099,8 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              code
-              <anchor />
-            </hcodeline>
+            code
+            <anchor />
           </hcodeblock>
           <hp>
             <focus />
@@ -1293,9 +1167,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
+              <htext />
             </hcodeblock>
             <hp>
               <cursor />
@@ -1306,9 +1178,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         const fragment = (
           <fragment>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
+              <htext />
             </hcodeblock>
           </fragment>
         ) as Descendant[];
@@ -1316,14 +1186,10 @@ describe('BaseCodeBlockPlugin input rules', () => {
         const expected = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
+              <htext />
             </hcodeblock>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
+              <htext />
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -1337,34 +1203,23 @@ describe('BaseCodeBlockPlugin input rules', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
-              <hcodeline>
-                hello
-                <cursor />
-              </hcodeline>
+              {'\n'}
+              hello
+              <cursor />
             </hcodeblock>
           </editor>
         ) as TestEditor;
 
         const fragment = (
           <fragment>
-            <hcodeblock>
-              <hcodeline>world</hcodeline>
-              <hcodeline>!</hcodeline>
-            </hcodeblock>
+            <hcodeblock>world{'\n'}!</hcodeblock>
           </fragment>
         ) as Descendant[];
 
         const expected = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
-              <hcodeline>helloworld</hcodeline>
-              <hcodeline>!</hcodeline>
+              {'\n'}helloworld{'\n'}!
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -1376,10 +1231,8 @@ describe('BaseCodeBlockPlugin input rules', () => {
         const input = (
           <editor>
             <hcodeblock>
-              <hcodeline>
-                hello
-                <cursor />
-              </hcodeline>
+              hello
+              <cursor />
             </hcodeblock>
           </editor>
         ) as TestEditor;
@@ -1400,16 +1253,13 @@ describe('BaseCodeBlockPlugin input rules', () => {
         expect(editor.read.children()).toEqual(
           (
             <editor>
-              <hcodeblock>
-                <hcodeline>helloworld</hcodeline>
-                <hcodeline>!</hcodeline>
-              </hcodeblock>
+              <hcodeblock>helloworld{'\n'}!</hcodeblock>
             </editor>
           ).children
         );
         expect(editor.read.selection()).toEqual({
-          anchor: { offset: 1, path: [0, 1, 0] },
-          focus: { offset: 1, path: [0, 1, 0] },
+          anchor: { offset: 12, path: [0, 0] },
+          focus: { offset: 12, path: [0, 0] },
         });
         expect(editor.read.history.undos()).toHaveLength(1);
 
@@ -1422,9 +1272,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
     it('uses an explicit code-block target when the selection is outside', () => {
       const input = (
         <editor>
-          <hcodeblock>
-            <hcodeline>hello</hcodeline>
-          </hcodeblock>
+          <hcodeblock>hello</hcodeblock>
           <hp>
             outside
             <cursor />
@@ -1441,16 +1289,13 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const expected = (
         <editor>
-          <hcodeblock>
-            <hcodeline>helloworld</hcodeline>
-            <hcodeline>!</hcodeline>
-          </hcodeblock>
+          <hcodeblock>helloworld{'\n'}!</hcodeblock>
           <hp>outside</hp>
         </editor>
       ) as TestEditor;
 
       editorTest(input, fragment, expected, {
-        at: { offset: 5, path: [0, 0, 0] },
+        at: { offset: 5, path: [0, 0] },
       });
     });
 
@@ -1458,10 +1303,8 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              hello
-              <cursor />
-            </hcodeline>
+            hello
+            <cursor />
           </hcodeblock>
           <hp>outside</hp>
         </editor>
@@ -1475,9 +1318,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const expected = (
         <editor>
-          <hcodeblock>
-            <hcodeline>hello</hcodeline>
-          </hcodeblock>
+          <hcodeblock>hello</hcodeblock>
           <hp>outworldside</hp>
         </editor>
       ) as TestEditor;
@@ -1493,13 +1334,9 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const input = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>
-              hello
-              <cursor />
-            </hcodeline>
+            {'\n'}
+            hello
+            <cursor />
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1514,11 +1351,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       const expected = (
         <editor>
           <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>helloworld</hcodeline>
-            <hcodeline>!</hcodeline>
+            {'\n'}helloworld{'\n'}!
           </hcodeblock>
         </editor>
       ) as TestEditor;
@@ -1551,16 +1384,6 @@ const highlightResult = (
   ...children: HighlightResult['children']
 ): HighlightResult => ({ children, type: 'root' });
 
-const getCodeLine = (codeBlock: CodeBlockElement, index = 0) => {
-  const codeLine = codeBlock.children[index];
-
-  if (!ElementApi.isElement(codeLine)) {
-    throw new Error(`Expected code line at index ${index}`);
-  }
-
-  return codeLine;
-};
-
 const createHighlightEditor = () =>
   createFixtureEditor({
     plugins: [
@@ -1577,19 +1400,20 @@ let editor: ReturnType<typeof createHighlightEditor>;
 
 const getDecorations = (
   innerEditor: ReturnType<typeof createHighlightEditor>,
-  [codeBlock, path]: NodeEntry<CodeBlockElement>
+  [codeBlock]: NodeEntry<CodeBlockElement>
 ) => {
-  const decorate = pipeDecorate(innerEditor);
+  innerEditor.update.value.replace({
+    children: [codeBlock],
+    selection: null,
+  });
+  const sources = getPlateDecorationSources(innerEditor);
+  const decorate = (entry: NodeEntry) =>
+    sources.flatMap((source) => source.read({ editor: innerEditor, entry }));
+  const text = innerEditor.read.nodes.get([0, 0]);
 
-  decorate?.([codeBlock, path]);
+  if (!text) throw new Error('Expected code block text');
 
-  return new Map(
-    codeBlock.children.flatMap((line, index) =>
-      ElementApi.isElement(line)
-        ? [[line, decorate?.([line, path.concat(index)]) ?? []] as const]
-        : []
-    )
-  );
+  return decorate(text);
 };
 
 beforeEach(() => {
@@ -1607,10 +1431,252 @@ beforeEach(() => {
 });
 
 describe('codeBlockToDecorations', () => {
+  it.each([
+    { operation: 'insert', nextIndex: 2 },
+    { operation: 'remove', nextIndex: 0 },
+    { operation: 'move', nextIndex: 0 },
+  ])(
+    'keeps cached syntax on its block after $operation',
+    ({ operation, nextIndex }) => {
+      mockHighlight.mockReturnValue(
+        highlightResult(highlightText('const', ['token', 'keyword']))
+      );
+      editor.update.value.replace({
+        children: [
+          { type: 'paragraph', children: [{ text: 'plain before' }] },
+          {
+            type: 'codeBlock',
+            language: 'javascript',
+            children: [{ text: 'const value = 1;' }],
+          },
+          { type: 'paragraph', children: [{ text: 'plain after' }] },
+        ],
+        selection: null,
+      });
+      const [source] = getPlateDecorationSources(editor);
+      const before = source.read({
+        editor,
+        entry: editor.read.nodes.get([1, 0])!,
+      });
+
+      if (operation === 'insert') {
+        editor.update.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'inserted' }] },
+          { at: [0] }
+        );
+      } else if (operation === 'remove') {
+        editor.update.nodes.remove({ at: [0] });
+      } else {
+        editor.update.nodes.move({ at: [1], to: [0] });
+      }
+
+      const after = source.read({
+        editor,
+        entry: editor.read.nodes.get([nextIndex, 0])!,
+      });
+
+      expect(after).toHaveLength(1);
+      expect(after[0]).toMatchObject({
+        attributes: { className: 'token keyword' },
+        range: {
+          anchor: { offset: 0, path: [nextIndex, 0] },
+          focus: { offset: 5, path: [nextIndex, 0] },
+        },
+      });
+      expect(before[0]).toMatchObject({
+        range: { anchor: { path: [1, 0] }, focus: { path: [1, 0] } },
+      });
+      expect(mockHighlight).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('reads current language for every changed block while retaining sibling syntax', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    const fixtureEditor = createFixtureEditor({
+      plugins: [
+        BaseCodeHighlightPlugin.configure({
+          initialState: {
+            defaultLanguage: 'javascript',
+            lowlight: mockLowlight,
+          },
+        }),
+      ],
+      initialValue: ['first', 'second', 'third'].map((name) => ({
+        children: [{ text: `const ${name} = 1;` }],
+        language: 'javascript',
+        type: 'codeBlock',
+      })),
+    });
+    const [source] = getPlateDecorationSources(fixtureEditor);
+    const read = (index: number) =>
+      source.read({
+        editor: fixtureEditor,
+        entry: fixtureEditor.read.nodes.get([index, 0])!,
+      });
+    read(0);
+    read(1);
+    const sibling = read(2);
+
+    fixtureEditor.update((tx) => {
+      tx.nodes.set(
+        { language: 'plaintext' },
+        {
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 17, path: [1, 0] },
+          },
+          type: 'codeBlock',
+        }
+      );
+    });
+    expect(read(0)).toEqual([]);
+    expect(read(1)).toEqual([]);
+    expect(read(2)).toBe(sibling);
+    expect(mockHighlight).toHaveBeenCalledTimes(3);
+    fixtureEditor.update.nodes.set({ language: 'typescript' }, { at: [0] });
+    expect(read(0)).toHaveLength(1);
+    expect(mockHighlight).toHaveBeenLastCalledWith(
+      'typescript',
+      'const first = 1;'
+    );
+    expect(read(2)).toBe(sibling);
+    expect(mockHighlight).toHaveBeenCalledTimes(4);
+  });
+
+  it('releases parser output after the last observer leaves', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['token', 'keyword']))
+    );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const value = 1;' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const read = () =>
+      source.read({ editor, entry: editor.read.nodes.get([0, 0])! });
+    const unmountFirst = source.observe?.({ refresh: () => {} });
+    const unmountSecond = source.observe?.({ refresh: () => {} });
+    const before = read();
+
+    unmountFirst?.();
+    expect(read()).toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(1);
+    unmountSecond?.();
+    const unmountAgain = source.observe?.({ refresh: () => {} });
+    expect(read()).not.toBe(before);
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    unmountAgain?.();
+  });
+
+  it('retains current token identities and immutable ranges through a text edit', () => {
+    mockHighlight
+      .mockReturnValueOnce(
+        highlightResult(
+          highlightText('const', ['keyword']),
+          highlightText(' x = '),
+          highlightText('1', ['number']),
+          highlightText('; '),
+          highlightText('true', ['literal'])
+        )
+      )
+      .mockReturnValueOnce(
+        highlightResult(
+          highlightText('const', ['keyword']),
+          highlightText(' x = '),
+          highlightText('12', ['number']),
+          highlightText('; '),
+          highlightText('true', ['literal'])
+        )
+      );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const x = 1; true' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const before = source.read({
+      editor,
+      entry: editor.read.nodes.get([0, 0])!,
+    });
+    editor.update.text.insert('2', { at: { path: [0, 0], offset: 11 } });
+    const after = source.read({
+      editor,
+      entry: editor.read.nodes.get([0, 0])!,
+    });
+
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    expect(after[0]).toBe(before[0]);
+    expect(after[1].range.focus.offset).toBe(12);
+    expect(after[2].key).toBe(before[2].key);
+    expect(after[2].range.anchor.offset).toBe(14);
+    expect(before[2].range.anchor.offset).toBe(13);
+    expect(
+      after.every(
+        (decoration) =>
+          Object.isFrozen(decoration) &&
+          Object.isFrozen(decoration.range) &&
+          Object.isFrozen(decoration.range.anchor) &&
+          Object.isFrozen(decoration.range.anchor.path) &&
+          Object.isFrozen(decoration.attributes)
+      )
+    ).toBe(true);
+    expect(source.read({ editor, entry: editor.read.nodes.get([0, 0])! })).toBe(
+      after
+    );
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+  });
+
+  it('evicts a removed block and reads a replacement highlighter without an observer', () => {
+    mockHighlight.mockReturnValue(
+      highlightResult(highlightText('const', ['keyword']))
+    );
+    editor.update.value.replace({
+      children: [
+        {
+          children: [{ text: 'const x = 1;' }],
+          language: 'javascript',
+          type: 'codeBlock',
+        },
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      selection: null,
+    });
+    const [source] = getPlateDecorationSources(editor);
+    const read = () =>
+      source.read({ editor, entry: editor.read.nodes.get([0, 0])! });
+    read();
+    editor.update.nodes.remove({ at: [0] });
+    editor.update.history.undo();
+    read();
+    expect(mockHighlight).toHaveBeenCalledTimes(2);
+    const highlight = mock(() =>
+      highlightResult(highlightText('const', ['replacement']))
+    );
+
+    editor
+      .plugin(BaseCodeHighlightPlugin)
+      .store.set({ lowlight: { ...mockLowlight, highlight } });
+    expect(read()[0].attributes.className).toBe('replacement');
+    expect(highlight).toHaveBeenCalledTimes(1);
+  });
+
   it('returns empty decorations for plaintext language', () => {
     // Create a code block with plaintext
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      children: [{ text: 'const x = 1;' }],
       language: 'plaintext',
       type: 'codeBlock',
     };
@@ -1618,12 +1684,7 @@ describe('codeBlockToDecorations', () => {
     const blockPath = [0];
     const result = getDecorations(editor, [codeBlock, blockPath]);
 
-    // Should have one entry for the code line
-    expect(result.size).toBe(1);
-
-    // The decorations for the line should be empty
-    const lineDecorations = result.get(getCodeLine(codeBlock));
-    expect(lineDecorations).toEqual([]);
+    expect(result).toEqual([]);
 
     // Lowlight highlight should not be called
     expect(mockHighlight).not.toHaveBeenCalled();
@@ -1643,7 +1704,7 @@ describe('codeBlockToDecorations', () => {
 
     // Create a code block with JavaScript
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      children: [{ text: 'const x = 1;' }],
       language: 'javascript',
       type: 'codeBlock',
     };
@@ -1651,39 +1712,24 @@ describe('codeBlockToDecorations', () => {
     const blockPath = [0];
     const result = getDecorations(editor, [codeBlock, blockPath]);
 
-    // Should have one entry for the code line
-    expect(result.size).toBe(1);
-
-    // Get decorations for the line
-    const lineDecorations = result.get(getCodeLine(codeBlock));
-    expect(lineDecorations).toHaveLength(4);
+    expect(result).toHaveLength(2);
 
     // Check first decoration (const)
-    expect(lineDecorations?.[0]).toMatchObject({
-      anchor: { offset: 0, path: [0, 0, 0] },
-      className: 'token keyword',
-      focus: { offset: 5, path: [0, 0, 0] },
+    expect(result[0]).toMatchObject({
+      attributes: { className: 'token keyword' },
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
     });
 
-    // Check second decoration (space)
-    expect(lineDecorations?.[1]).toMatchObject({
-      anchor: { offset: 5, path: [0, 0, 0] },
-      className: '',
-      focus: { offset: 10, path: [0, 0, 0] },
-    });
-
-    // Check third decoration (number)
-    expect(lineDecorations?.[2]).toMatchObject({
-      anchor: { offset: 10, path: [0, 0, 0] },
-      className: 'token number',
-      focus: { offset: 11, path: [0, 0, 0] },
-    });
-
-    // Check fourth decoration (semicolon)
-    expect(lineDecorations?.[3]).toMatchObject({
-      anchor: { offset: 11, path: [0, 0, 0] },
-      className: '',
-      focus: { offset: 12, path: [0, 0, 0] },
+    // Check second decoration (number)
+    expect(result[1]).toMatchObject({
+      attributes: { className: 'token number' },
+      range: {
+        anchor: { offset: 10, path: [0, 0] },
+        focus: { offset: 11, path: [0, 0] },
+      },
     });
 
     // Lowlight highlight should be called with correct params
@@ -1699,20 +1745,15 @@ describe('codeBlockToDecorations', () => {
     );
 
     const codeBlock: CodeBlockElement = {
-      children: [
-        {
-          children: [{ text: '# Python class with type hints' }],
-          type: 'codeLine',
-        },
-      ],
+      children: [{ text: '# Python class with type hints' }],
       language: 'python',
       type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(getCodeLine(codeBlock))?.[0]).toMatchObject({
-      className: 'hljs-comment',
+    expect(result[0]).toMatchObject({
+      attributes: { className: 'hljs-comment', 'data-code-block-syntax': '' },
     });
     expect(mockRegister).toHaveBeenCalledWith('python', expect.any(Function));
     expect(mockRegisterAlias).toHaveBeenCalledWith('python', [
@@ -1734,7 +1775,7 @@ describe('codeBlockToDecorations', () => {
 
     // Create a code block with auto language
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      children: [{ text: 'const x = 1;' }],
       language: 'auto',
       type: 'codeBlock',
     };
@@ -1755,7 +1796,7 @@ describe('codeBlockToDecorations', () => {
 
     // Create a code block with no language
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      children: [{ text: 'const x = 1;' }],
       type: 'codeBlock',
     };
 
@@ -1780,11 +1821,7 @@ describe('codeBlockToDecorations', () => {
 
     // Create a multiline code block
     const codeBlock: CodeBlockElement = {
-      children: [
-        { children: [{ text: 'function test() {' }], type: 'codeLine' },
-        { children: [{ text: '  return true;' }], type: 'codeLine' },
-        { children: [{ text: '}' }], type: 'codeLine' },
-      ],
+      children: [{ text: 'function test() {\n  return true;\n}' }],
       language: 'javascript',
       type: 'codeBlock',
     };
@@ -1792,35 +1829,14 @@ describe('codeBlockToDecorations', () => {
     const blockPath = [0];
     const result = getDecorations(editor, [codeBlock, blockPath]);
 
-    // Should have three entries for the code lines
-    expect(result.size).toBe(3);
-
-    // First line should have 2 decorations
-    const line1Decorations = result.get(getCodeLine(codeBlock));
-    expect(line1Decorations).toHaveLength(2);
-
-    // Second line should have 3 decorations (spaces, return keyword, and rest of line)
-    const line2Decorations = result.get(getCodeLine(codeBlock, 1));
-    expect(line2Decorations).toHaveLength(3);
-    expect(line2Decorations?.[0]).toMatchObject({
-      anchor: { offset: 0, path: [0, 1, 0] },
-      className: '',
-      focus: { offset: 2, path: [0, 1, 0] },
+    expect(result).toHaveLength(2);
+    expect(result[1]).toMatchObject({
+      attributes: { className: 'token keyword' },
+      range: {
+        anchor: { offset: 20, path: [0, 0] },
+        focus: { offset: 26, path: [0, 0] },
+      },
     });
-    expect(line2Decorations?.[1]).toMatchObject({
-      anchor: { offset: 2, path: [0, 1, 0] },
-      className: 'token keyword',
-      focus: { offset: 8, path: [0, 1, 0] },
-    });
-    expect(line2Decorations?.[2]).toMatchObject({
-      anchor: { offset: 8, path: [0, 1, 0] },
-      className: '',
-      focus: { offset: 14, path: [0, 1, 0] },
-    });
-
-    // Third line should have 1 decoration
-    const line3Decorations = result.get(getCodeLine(codeBlock, 2));
-    expect(line3Decorations).toHaveLength(1);
   });
 
   it('warns and falls back to plaintext when a registered language fails to highlight', () => {
@@ -1830,14 +1846,14 @@ describe('codeBlockToDecorations', () => {
     });
 
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'const x = 1;' }], type: 'codeLine' }],
+      children: [{ text: 'const x = 1;' }],
       language: 'javascript',
       type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(getCodeLine(codeBlock))).toEqual([]);
+    expect(result).toEqual([]);
     expect(editor.plugin(DebugPlugin).api.error).not.toHaveBeenCalled();
     expect(editor.plugin(DebugPlugin).api.warn).toHaveBeenCalledWith(
       'Could not highlight with Highlight.js for language "javascript". Falling back to plaintext',
@@ -1854,14 +1870,14 @@ describe('codeBlockToDecorations', () => {
     });
 
     const codeBlock: CodeBlockElement = {
-      children: [{ children: [{ text: 'SELECT 1' }], type: 'codeLine' }],
+      children: [{ text: 'SELECT 1' }],
       language: 'sql',
       type: 'codeBlock',
     };
 
     const result = getDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(getCodeLine(codeBlock))).toEqual([]);
+    expect(result).toEqual([]);
     expect(editor.plugin(DebugPlugin).api.error).not.toHaveBeenCalled();
     expect(editor.plugin(DebugPlugin).api.warn).toHaveBeenCalledWith(
       'Language "sql" is not registered. Falling back to plaintext'

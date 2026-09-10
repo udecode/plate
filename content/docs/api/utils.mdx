@@ -15,14 +15,14 @@ npm install platejs @tanstack/react-virtual
 Import headless utilities from `platejs` and React utilities from
 `platejs/react`.
 
-## Import Paths
+## Import paths
 
 | Import | Exports | Use |
 | --- | --- | --- |
 | `platejs` | URL helpers, shared object types, `PLUGINS`, utility plugins | Framework-wide headless contracts and first-party identities. |
 | `platejs/react` | Ref/effect hooks, `useSelectionFragmentProp`, `BlockPlaceholderPlugin` | React-only framework and registry behavior. |
 
-## Shared Utilities
+## Shared utilities
 
 | Export | Contract |
 | --- | --- |
@@ -46,7 +46,7 @@ export function getSafeLink(value: string) {
 }
 ```
 
-## Plugin Identities
+## Plugin identities
 
 `PLUGINS` is the first-party capability-name catalog used by copied registry
 code. An element plugin separately exposes its persisted `type`; a property
@@ -80,7 +80,7 @@ export const trailingBlock = TrailingBlockPlugin.configure({
 });
 ```
 
-## Schema-Derived Types
+## Schema-derived types
 
 Feature packages own their persisted types. Their readable aliases are derived
 from the same plugin schema used at runtime, so `platejs` does not carry
@@ -109,7 +109,7 @@ import type { Editor } from '@/components/editor/plugins.generated';
 type MyValue = ValueOf<Editor>;
 ```
 
-## Utility Plugins And Kits
+## Utility plugins and kits
 
 | Export                 | Name                   | Behavior                                                                         |
 | ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
@@ -124,7 +124,7 @@ Use the plugin guide pages for options and examples:
 [Exit Break](/docs/exit-break), [Forced Layout](/docs/forced-layout),
 [Single Block](/docs/single-block), and [Trailing Block](/docs/trailing-block).
 
-## React Hooks
+## React hooks
 
 | Hook | Returns | Use |
 | --- | --- | --- |
@@ -132,7 +132,7 @@ Use the plugin guide pages for options and examples:
 | `useIsomorphicLayoutEffect` | React effect hook | Uses `useLayoutEffect` in the browser and `useEffect` during SSR. |
 | `useSelectionFragmentProp(options?)` | `unknown` | Reads a property from the selected fragment. |
 
-## React Plugins
+## React plugins
 
 | Plugin                   | Name                    | Behavior                                                                                                                |
 | ------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |

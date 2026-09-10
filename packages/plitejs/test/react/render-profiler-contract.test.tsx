@@ -7,6 +7,7 @@ import { TextString } from '../../src/react/components/text-string';
 import { ZeroWidthString } from '../../src/react/components/zero-width-string';
 import {
   createPliteReactRenderCounter,
+  profilePliteReactDuration,
   recordPliteReactRender,
   type PliteReactRenderProfiler,
 } from '../../src/react/render-profiler';
@@ -18,6 +19,32 @@ declare global {
 describe('plite-react render profiler contract', () => {
   afterEach(() => {
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = undefined;
+  });
+
+  test('duration profiling preserves return values and failures with and without a recorder', () => {
+    for (const installed of [false, true]) {
+      const counter = createPliteReactRenderCounter();
+      globalThis.__PLITE_REACT_RENDER_PROFILER__ = installed
+        ? counter.profiler
+        : undefined;
+      const value = { ok: true };
+      const error = new Error('callback failure');
+      expect(profilePliteReactDuration('return', () => value)).toBe(value);
+      expect(() =>
+        profilePliteReactDuration('throw', () => {
+          throw error;
+        })
+      ).toThrow(error);
+      const { events } = counter.snapshot();
+      expect(events.map(({ id }) => id)).toEqual(
+        installed ? ['return', 'throw'] : []
+      );
+      for (const event of events) {
+        expect(event.kind).toBe('runtime-time');
+        expect(event.duration).toBeGreaterThanOrEqual(0);
+        expect(Number.isFinite(event.duration)).toBe(true);
+      }
+    }
   });
 
   test('does nothing unless a profiler is installed', () => {

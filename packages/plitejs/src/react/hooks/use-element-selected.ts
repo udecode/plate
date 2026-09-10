@@ -7,7 +7,7 @@ import {
   PathApi,
   SelectionApi,
 } from '../..';
-import { NodeKeyContext } from '../context';
+import { ElementContext } from '../context';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
@@ -15,7 +15,6 @@ import {
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
-import { useOptionalElement } from './use-element';
 
 /** Selection match mode for `useElementSelected`. */
 export type UseElementSelectedMode = 'collapsed' | 'intersects' | 'node';
@@ -31,8 +30,9 @@ export const useElementSelected = ({
   at,
   mode = 'intersects',
 }: UseElementSelectedOptions = {}): boolean => {
-  const element = useOptionalElement();
-  const contextNodeKey = useContext(NodeKeyContext);
+  const context = useContext(ElementContext);
+  const element = context?.element ?? null;
+  const contextNodeKey = context?.nodeKey ?? null;
   const explicitNodeKey = typeof at === 'string' ? at : null;
   const explicitPath = Array.isArray(at) ? at : null;
   const watchedNodeKey =

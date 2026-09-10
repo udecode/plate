@@ -59,7 +59,7 @@ export function EditorContainer({
 
 const editorVariants = cva(
   cn(
-    'group/editor',
+    'group/editor ignore-click-outside/toolbar',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
     '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100! **:data-plite-drop-cursor:z-20 **:data-plite-drop-cursor:rounded-full **:data-plite-drop-cursor:bg-brand **:data-plite-inactive-selection:bg-brand/25 **:data-plite-inactive-selection-caret:z-20 **:data-plite-inactive-selection-caret:w-0.5 **:data-plite-inactive-selection-caret:bg-primary',
@@ -100,7 +100,7 @@ export function Editor({
   ref,
   ...props
 }: (PlateContentProps & VariantProps<typeof editorVariants>) & {
-  ref?: React.RefObject<HTMLDivElement | null>;
+  ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <>

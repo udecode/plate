@@ -15,8 +15,6 @@ type tests, and this skill outrank package precedent.
 
 ## Semantic Base And Thin Wrapper
 
-- [BaseCommentPlugin.ts](../../../../packages/platejs/src/features/comment/lib/BaseCommentPlugin.ts)
-- [CommentPlugin.tsx](../../../../packages/platejs/src/react/features/comment/CommentPlugin.tsx)
 - [BaseCodeBlockPlugin.ts](../../../../packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts)
 - [CodeBlockPlugin.tsx](../../../../packages/platejs/src/react/features/code-block/CodeBlockPlugin.tsx)
 
@@ -42,13 +40,17 @@ Copy:
 
 ## Direct React Plugin
 
-- [EventEditorPlugin.ts](../../../../packages/platejs/src/react/plugins/event-editor/EventEditorPlugin.ts)
 - [CopilotPlugin.tsx](../../../../packages/platejs/src/ai/react/CopilotPlugin.tsx)
 - [YjsPlugin.tsx](../../../../packages/platejs/src/yjs/react/YjsPlugin.tsx)
 
 Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file
 topology without checking current owner law.
+
+Comments uses [BaseCommentsPlugin.ts](../../../../packages/platejs/src/features/comments/BaseCommentsPlugin.ts)
+for records, actions and native ranges. Its React adapter adds click and shortcut
+behavior. Applications configure complete records and persist mapped range
+snapshots; copied UI does not bind native handles or provide another data owner.
 
 Audit every first-party descriptor for the exact positional shape
 `define*Plugin(PLUGINS.foo, definition)`. Treat `PLUGINS.foo` as capability
@@ -130,14 +132,22 @@ Copy:
 - copied registry UI stays generic and never imports a host editor type;
 - scoped portal methods use direct verbs instead of repeating the plugin noun.
 
-## React-Only Prop Augmentation
+## Rendered Prop Augmentation
 
 - [BlockPlaceholderPlugin.tsx](../../../../packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx)
 - [NavigationFeedbackPlugin.ts](../../../../packages/platejs/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts)
 
-Copy `inject.nodeProps.transformProps` when the exact job is hook-driven prop
-augmentation of an already-rendered node. It does not replace components,
-render behavior, wrappers, or `useHooks`.
+Use `inject.nodeProps` only for pure output derived synchronously from the node,
+plugin configuration, and callback context. Its queries and transforms never
+call React hooks.
+
+Keep component-local reactive output in the owning component. First-party
+cross-cutting whole-element view paint uses
+`render.useViewElementAttributes`. It receives the exact mounted `view`, may
+use React hooks, and returns sparse `{ key, attributes }[]`. Plate keeps the
+keyed store, source order, publisher, and cleanup private. Per-node
+`render.attributes` and `inject.nodeProps.transformProps` stay pure and
+hook-free.
 
 ## Rejected Precedent
 
@@ -159,7 +169,7 @@ Reject:
 - deleted option accessors or arbitrary plugin fields on the editor root;
 - duplicate plugin API and editor-extension API implementations;
 - redundant portal nesting such as `table.update.insert.table`;
-- direct public `render.node` assignment instead of root `component`;
+- a second node-component channel instead of root `component`;
 - direct codec maps, manual codec `target` fields, or a global codec helper
   instead of the callback's context-bound `defineCodecs`;
 - `editor.update.*` inside an active transaction;

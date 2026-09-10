@@ -10,15 +10,14 @@ const setRef = <T,>(ref: PossibleRef<T>, value: T | null) => {
 export const composeRefs =
   <T,>(...refs: Array<PossibleRef<T>>) =>
   (node: T | null) => {
-    const cleanups = refs
-      .map((ref) => setRef(ref, node))
-      .filter(
-        (cleanup): cleanup is () => void => typeof cleanup === 'function'
-      );
+    const cleanups = refs.map((ref) => setRef(ref, node));
 
-    return cleanups.length > 0
+    return cleanups.some((cleanup) => typeof cleanup === 'function')
       ? () => {
-          for (const cleanup of cleanups) cleanup();
+          cleanups.forEach((cleanup, index) => {
+            if (typeof cleanup === 'function') cleanup();
+            else setRef(refs[index], null);
+          });
         }
       : undefined;
   };

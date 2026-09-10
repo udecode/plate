@@ -5,6 +5,16 @@ description: \platejs 的 API 参考文档。
 
 ## API
 
+### `PlateBlockInsertOptions`
+
+用于插入完整块的功能命令的位置选项。声明公开命令接口时，可从 `platejs`
+导入此类型。
+
+- `at`：明确的插入位置。
+- `after`：当前文档中的源块目标；使用此选项时省略 `at`。
+- `replaceEmpty`：在源块之后插入时，替换空的、可编辑的文本块。结构块和原子块保持不变。
+- `select`：选择插入的内容。
+
 ### `createEditor`
 
 生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。
@@ -77,9 +87,6 @@ description: \platejs 的 API 参考文档。
   </APIItem>
   <APIItem name="transforms" type="object" optional>
     编辑器的转换函数。
-  </APIItem>
-  <APIItem name="useHooks" type="function" optional>
-    与编辑器一起使用的钩子。
   </APIItem>
 </APIOptions>
 
@@ -193,27 +200,11 @@ const result = migrateDocument(persisted, {
   <APIReturns type="HTMLElement | null">已挂载的编辑器根元素。</APIReturns>
 </API>
 
-### `useEditorEditableElement`
-
-<API name="useEditorEditableElement">
-  <APIReturns type="HTMLElement | null">
-    当前 Plite root 对应的已挂载可编辑元素。
-  </APIReturns>
-</API>
-
 ### `useEditorScrollElement`
 
 <API name="useEditorScrollElement">
   <APIReturns type="HTMLElement | null">
     Plite 用作编辑器滚动容器的元素。
-  </APIReturns>
-</API>
-
-### `useEditorScrollElementRef`
-
-<API name="useEditorScrollElementRef">
-  <APIReturns type="(element: HTMLElement | null) => void">
-    注册自定义编辑器滚动容器的 callback ref。
   </APIReturns>
 </API>
 
@@ -240,145 +231,45 @@ const result = migrateDocument(persisted, {
 
 ### `useEditor`
 
-获取活动 Plate editor 而不重新渲染。没有匹配的活动 editor 时抛出错误。
-
-<API name="useEditor">
-<APIParameters>
-  <APIItem name="options" type="{ id?: string }" optional>
-    用于显式 controller scope 的 editor ID。省略时查找最近、活动或第一个 primary controller editor。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Editor">
-  编辑器引用。
-</APIReturns>
-</API>
+`useEditor(): Editor` 返回最近 provider 所选的编辑器，没有目标时抛出错误。它在 provider 切换目标时重新渲染，不订阅文档提交。`PlateContent` 内的返回值绑定该挂载视图的根、DOM 和权限。
 
 ### `useOptionalEditor`
 
-没有活动 editor 是合法 UI state 时使用 `useOptionalEditor({ id? })`。它返回与 `useEditor()` 相同的 editor value，没有匹配 editor 时返回 `null`。
+`useOptionalEditor(): Editor | null` 在没有 provider 或所选编辑器时返回 `null`。
 
 ### `useEditorSelector`
 
-订阅编辑器的特定属性。
-
-<API name="useEditorSelector">
-<APIParameters>
-  <APIItem name="selector" type="(editor: Editor<V>, prev?: T) => T">
-    选择器函数。
-  </APIItem>
-  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
-    选择器函数的选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions>
-  <APIItem name="id" type="string" optional>
-    plate 编辑器的 ID。仅在嵌套编辑器时有用。默认使用最近的编辑器 id。
-  </APIItem>
-  <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
-    确定选择器函数结果是否已更改的相等性函数。默认为 `(a, b) => a === b`。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="T">
-  选择器函数的返回值。
-</APIReturns>
-</API>
+`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收 `(editor, previous?)`；选项包括 `equalityFn` 和 `shouldUpdate`。
 
 ### `useEditorState`
 
-获取带重新渲染的 Plate 编辑器引用。
-
-<API name="useEditorState">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    plate 编辑器的 ID。默认使用最近的编辑器 id。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Editor">
-  编辑器引用。
-</APIReturns>
-</API>
+`useEditorState(selector, options?)` 订阅从不可变编辑器状态派生的值，返回 selector 的推断结果。需要具体编辑器类型时，使用 `useEditorRuntimeState(editor, selector, options?)`。
 
 ### `useEditorComposing`
 
-获取编辑器的 `composing` 状态。
-
-<API name="useEditorComposing">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">编辑器是否正在组合。</APIReturns>
-</API>
+`useEditorComposing(): boolean` 读取所选视图的输入法组合状态。
 
 ### `useEditorReadOnly`
 
-获取编辑器的 `readOnly` 状态。
-
-<API name="useEditorReadOnly">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">编辑器是否为只读。</APIReturns>
-</API>
+`useEditorReadOnly(): boolean` 读取所选视图当前的只读状态。捕获的视图卸载后为只读；空控制器也为只读。
 
 ### `useEditorMounted`
 
-获取编辑器的 `isMounted` 状态。
+`useEditorMounted(): boolean` 表示所选视图是否拥有已挂载的可编辑 DOM。
 
-<API name="useEditorMounted">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">编辑器是否已挂载。</APIReturns>
-</API>
+### `useEditorHasSelection`
+
+`useEditorHasSelection(): boolean` 表示所选根是否存在文本选区，包括折叠光标。只在选区存在状态变化时重新渲染，不表示 DOM 焦点。
 
 ### `useEditorSelection`
 
-获取编辑器的选区。已记忆化，如果范围相同则不会重新渲染。
+`useEditorSelection(): Range | null` 返回所选根的文本选区。范围相同时不重新渲染。
 
-<API name="useEditorSelection">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="Range | null">编辑器中的当前选区。</APIReturns>
-</API>
+### `EditorProvider`
 
-### `useEditorVersion`
+`<EditorProvider editor={editor}>` 将后代控件绑定到已有编辑器；`editor={null}` 表示无目标。它不创建可编辑视图。
 
-获取编辑器值的版本。每次编辑器更改时该版本都会递增。
-
-<API name="useEditorVersion">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">编辑器值的当前版本。</APIReturns>
-</API>{" "}
-
-### `useSelectionVersion`
-
-获取编辑器选区的版本。每次选区更改(范围不同)时该版本都会递增。
-
-<API name="useSelectionVersion">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      plate 编辑器的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">编辑器选区的当前版本。</APIReturns>
-</API>
+参见[编辑器上下文](/cn/docs/api/core/plate-store)与 [Plate 控制器](/cn/docs/api/core/plate-controller)。
 
 ### `useSelectionFragmentProp`
 
@@ -415,21 +306,11 @@ const result = migrateDocument(persisted, {
 获取最近元素的实时路径。匹配的元素 Provider 不存在时会抛出错误。
 
 <API name="usePath">
-<APIParameters>
-  <APIItem name="plugin" type="PlateElementDescriptor" optional>
-    用于选择元素 Provider 的插件描述符。
-  </APIItem>
-</APIParameters>
 
 <APIReturns>
   当前元素的路径。
 </APIReturns>
 </API>
-
-### `useOptionalPath`
-
-当元素 Provider 可以不存在时使用 `useOptionalPath(Plugin)`。它返回
-`null`，不会从任意节点对象构造路径。
 
 ### `usePluginStore`
 
@@ -462,37 +343,6 @@ const state = usePluginStore(plugin, (state) => state);
 
 </API>
 
-### `useEditorPluginStore`
-
-`usePluginStore` 的显式 editor 版本。
-
-<API name="useEditorPluginStore">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    编辑器实例。
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    要订阅其 store 的插件。
-  </APIItem>
-  <APIItem name="keyOrSelector" type="keyof InferPluginStoreState<C> | keyof InferSelectors<C> | ((state) => T)">
-    state key、命名 selector key 或 selector callback。
-  </APIItem>
-  <APIItem name="...args" type="any[]" optional>
-    命名 selector 的参数。selector callback 使用
-    `{ equalityFn? }` 作为最后一个 options 对象。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="T">选中的字段或派生值。</APIReturns>
-
-```tsx
-const value = useEditorPluginStore(editor, plugin, "value");
-const doubleValue = useEditorPluginStore(editor, plugin, "doubleValue", 2);
-const state = useEditorPluginStore(editor, plugin, (state) => state);
-```
-
-</API>
-
 ### `useElement`
 
 获取当前 element。传 plugin descriptor 可推断配置后的 schema element type；仅在需要擦除后的 `Element` 类型时不传 descriptor。缺少匹配 provider 时抛出错误。
@@ -513,10 +363,6 @@ const state = useEditorPluginStore(editor, plugin, (state) => state);
 const quote = useElement(BlockquotePlugin);
 const generic = useElement();
 ```
-
-### `useOptionalElement`
-
-指定 provider 可以缺失时使用 `useOptionalElement(Plugin)`；需要擦除后的最近 provider 时使用 `useOptionalElement()`。它返回 `null`，不返回 placeholder element。
 
 ## 核心插件
 
@@ -601,9 +447,10 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
 });
 ```
 
-### `DOMPlugin`
+### DOM 操作
 
-为 Plate 提供 DOM helpers，并在 editable surface 上与 Plite React 组合使用。
+使用 `editor.api.dom` 进行 DOM 查询和焦点操作，使用 `editor.update.dom`
+插入剪贴板内容并在事务中自动滚动。编辑器创建时会配置 DOM 集成。
 
 ### `HistoryPlugin`
 
@@ -620,10 +467,6 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
 ### `ParagraphPlugin`
 
 提供段落格式化功能。
-
-### `EventEditorPlugin`
-
-管理编辑器事件，如焦点和失焦。
 
 ## 组件
 

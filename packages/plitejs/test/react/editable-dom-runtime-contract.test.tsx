@@ -242,6 +242,49 @@ test('publishes a clean node map after the React DOM commit', () => {
   expect(IS_NODE_MAP_DIRTY.get(editor)).toBe(false);
 });
 
+test('coalesces node-bind exports and keeps the frame export trailing', async () => {
+  const runtime = new EditableDOMRuntime({ editor: createEditor() });
+  const root = document.createElement('div');
+  const exportSelection = vi.fn();
+
+  runtime.setRoot(root);
+  runtime.connect();
+  runtime.updateSelectionExportAfterDOMCommitHandler(exportSelection);
+  const schedule = vi.spyOn(runtime.domPhaseScheduler, 'schedule');
+
+  for (let index = 0; index < 1000; index++) {
+    runtime.requestSelectionExportAfterDOMCommit();
+  }
+
+  expect(schedule).toHaveBeenCalledTimes(1);
+  expect(runtime.domPhaseScheduler.pending()).toBe(1);
+
+  await new Promise<void>((resolve) => {
+    queueMicrotask(resolve);
+  });
+
+  expect(exportSelection).toHaveBeenCalledTimes(1);
+  expect(schedule).toHaveBeenCalledTimes(2);
+  expect(runtime.domPhaseScheduler.pending()).toBe(1);
+
+  runtime.requestSelectionExportAfterDOMCommit();
+  await new Promise<void>((resolve) => {
+    queueMicrotask(resolve);
+  });
+
+  expect(schedule).toHaveBeenCalledTimes(4);
+  expect(exportSelection).toHaveBeenCalledTimes(2);
+  expect(runtime.domPhaseScheduler.pending()).toBe(1);
+
+  runtime.domPhaseScheduler.flush();
+
+  expect(exportSelection).toHaveBeenCalledTimes(3);
+  expect(runtime.domPhaseScheduler.pending()).toBe(0);
+
+  runtime.destroy();
+  expect(runtime.domPhaseScheduler.pending()).toBe(0);
+});
+
 test.each([
   ['destroy', 'end-pending'],
   ['destroy', 'input-claimed'],
@@ -285,6 +328,7 @@ test.each([
 
     try {
       applyEditableCompositionEnd({
+        requestModelSelectionExportAfterRender: vi.fn(),
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -399,6 +443,7 @@ test.each(['destroy', 'setRoot'] as const)(
 
     try {
       applyEditableCompositionEnd({
+        requestModelSelectionExportAfterRender: vi.fn(),
         androidInputManagerRef: { current: null },
         editor,
         event,
@@ -549,6 +594,7 @@ test.each(['destroy', 'setRoot'] as const)(
 
     try {
       applyEditableCompositionEnd({
+        requestModelSelectionExportAfterRender: vi.fn(),
         androidInputManagerRef: { current: null },
         editor,
         event: {
@@ -633,6 +679,7 @@ test('read-only composition exit preserves sibling-root composition marks', () =
 
   try {
     applyEditableCompositionEnd({
+      requestModelSelectionExportAfterRender: vi.fn(),
       androidInputManagerRef: { current: null },
       editor,
       event: {
@@ -737,11 +784,11 @@ test('DOM sync mutation ownership expires with its mounted root runtime', () => 
   const runtime = new EditableDOMRuntime({ editor: createEditor() });
   const root = document.createElement('div');
   const target = document.createElement('span');
-  const mutation = {
-    attributeName: 'data-plite-path',
-    target,
-    type: 'attributes',
-  } as MutationRecord;
+  const observer = new MutationObserver(() => {});
+  observer.observe(target, { attributes: true });
+  target.setAttribute('data-plite-path', '0');
+  const mutation = observer.takeRecords()[0];
+  observer.disconnect();
 
   root.append(target);
   runtime.setRoot(root);

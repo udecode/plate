@@ -1,0 +1,4 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+local/slate-v2	.local	slategit	local	local-current	2026-06-12	slate-browser,selection,ime,paste,huge-document	.tmp/slate-v2	deep-read	9	Current target; stronger reusable primitives than external samples but missing named huge-doc vertical-selection contract row.
+github/prosemirror/prosemirror-view	https://github.com/ProseMirror/prosemirror-view	github	unknown-local-source	high-signal	2026-06-12	selection,composition,clipboard,domchange	../prosemirror/view	deep-read	8	Mature source tests for DOM selection, coords, composition edge cases, clipboard parsing, DOM-change repair.
+github/ueberdosis/tiptap	https://github.com/ueberdosis/tiptap	github	unknown-local-source	supporting	2026-06-12	clipboard,paste,cypress	../tiptap	sampled	3	Cypress paste helper is duplicate/weak compared with slate-browser.

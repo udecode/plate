@@ -1,0 +1,6 @@
+lead_key	repo_key	source_ref	reason_rejected
+huge-doc-architecture:copy-codemirror-viewport	github/codemirror/view	codemirror-visible-ranges	CodeMirror is a text editor with line-block architecture; Slate needs rich-block DOM coverage and model-owned selection semantics.
+huge-doc-architecture:pure-native-virtualized-selection	local/slate-v2	slate-v2-virtualized-boundary	Missing DOM cannot support full native selection over unmounted content.
+huge-doc-architecture:monaco-wrapper-authority	github/microsoft/monaco-editor	monaco-wrapper-scan	The shallow monaco-editor repo does not expose enough internal editor viewport architecture for this packet.
+huge-doc-architecture:runtime-patch-now	github/codemirror/view	codemirror-scroll-anchor	Current evidence promotes metric/contract naming, not a proven Slate runtime bug.
+

@@ -7,7 +7,7 @@ Plite schema is the immutable contract for element structure, property values,
 roots, and insertion fitting. A declared schema rejects invalid external data
 and unknown vocabulary by default; a raw editor without one stays permissive.
 
-## Choose The Right Surface
+## Choose the right surface
 
 | Need                                     | API                                        | Owner                                   |
 | ---------------------------------------- | ------------------------------------------ | --------------------------------------- |
@@ -26,7 +26,7 @@ and unknown vocabulary by default; a raw editor without one stays permissive.
 The declaration builders describe policy. The compiled state API answers
 runtime questions. Transactions fit and publish content.
 
-## Define A Schema
+## Define a schema
 
 `defineEditorSchema(...)` packages one complete schema as an editor extension.
 The definition names every element and the primary-root grammar. Omit `id` and
@@ -90,7 +90,7 @@ freezes and validates the complete declaration before the compiler resolves it
 into immutable indexes, construction plans, property placement, and slice
 policy. Extension order does not decide defaults or conflict winners.
 
-## Content Grammar
+## Content grammar
 
 Element and root content use explicit rules.
 
@@ -125,7 +125,7 @@ text containers join `textBlock`. Application groups are transitive: declare
 them as `{ extends: [...] }` and query them with
 `state.schema.isElementTypeInGroup(type, group)`.
 
-### Detached Element-Owned Roots
+### Detached element-owned roots
 
 Keep structurally owned editable content in an element's normal `children`.
 Declare `contentRoots` only when the content needs a separate root identity,
@@ -161,7 +161,7 @@ owners intentionally project the same root. See
 [Roots](13-roots#content-roots) for rendering, persistence, clipboard, and
 lifecycle behavior.
 
-## Properties And Targets
+## Properties and targets
 
 Property descriptors define JSON value laws. Use `property.boolean()`,
 `property.string()`, `property.number()`, `property.enum(values)`,
@@ -266,7 +266,7 @@ predicate. The descriptor identity and `validationVersion` contribute to schema
 identity; function identity does not. The validator receives untrusted
 `unknown` input and narrows it to the declared property type.
 
-## Unknown Vocabulary
+## Unknown vocabulary
 
 Complete schemas default to `unknown: "reject"`. Use `"preserve"` only when the
 application intentionally carries forward undeclared element types or
@@ -288,7 +288,7 @@ its parent content rule admits unknown elements; a closed `type`, `types`, or
 their compiled validation and lifecycle laws, while undeclared properties are
 kept as JSON values. The unknown policy contributes to schema identity.
 
-## External Validation
+## External validation
 
 `createEditor(...)` snapshots `initialValue`, fits every root through the
 candidate schema, canonicalizes node properties and representation, maps the
@@ -324,7 +324,7 @@ atomically.
 open depths. Schema vocabulary and grammar are checked when the slice is fitted
 against an editor state. See [Clipboard And Paste](17-clipboard-and-paste).
 
-## Fragment And Slice Fitting
+## Fragment and slice fitting
 
 Use the smallest surface that preserves the information you have.
 
@@ -354,7 +354,7 @@ feature such as a table needs grammar-valid children for a detached parent.
 `fitContent` returns frozen children or `null`; it does not mutate the parent or
 editor.
 
-## Schema Deltas
+## Schema deltas
 
 `state.schema.delta()` reports the semantic difference published with the
 current configuration revision. Its sorted, immutable sets name changed
@@ -363,7 +363,7 @@ adapters use those sets with runtime indexes to refresh only affected mounted
 nodes and projected roots. A schema delta is configuration metadata, not a
 document operation, and does not mutate the value.
 
-## Atomic Reconfiguration
+## Atomic reconfiguration
 
 Put a replaceable schema in a named extension slot. Reconfiguration compiles
 and validates the candidate before publication. If the current document does
@@ -426,7 +426,7 @@ isolates this publication and migration lifecycle. The
 separately demonstrates how Plate plugin declarations compile into the same
 schema model.
 
-## Schema Identity And Persistence
+## Schema identity and persistence
 
 `editor.read.schema.identity()` always returns a schema identity. A complete
 schema without `id` and `version` returns
@@ -441,7 +441,7 @@ Persist it in an application envelope when documents may cross schema versions.
 `plitejs/history` does this in `History.toJSON(editor)` and rejects a
 mismatch in `History.fromJSON(editor, json)` before decoding any batch.
 
-## Related Docs
+## Related docs
 
 - [Nodes](02-nodes)
 - [Extensions](08-extensions)

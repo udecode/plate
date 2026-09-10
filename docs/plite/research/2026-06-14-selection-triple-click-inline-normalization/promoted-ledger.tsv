@@ -1,0 +1,3 @@
+promotion_key	kind	status	owner	proof
+inline-triple-click-visual-firefox	visual-oracle	kept	slate-auto	Focused Firefox visual row passed 1/1; desktop row passed Chromium/Firefox/WebKit 3/3; Firefox screenshot inspected clean.
+inline-selection-text-normalization	oracle-policy	kept	slate-auto	Native selected text around inline boundaries is normalized for whitespace while model endpoints remain strict.

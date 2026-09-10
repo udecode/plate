@@ -1,0 +1,9 @@
+read_id	source_key	url_or_command	result
+r001	w3c-webdriver-ime	web open	WebDriver cannot currently simulate IME input well enough for composition-script testing.
+r002	wpt-input-events-untestable	web open	Input Events tests need real user interaction; JS-only events and WebDriver contenteditable selection are weak.
+r003	cdp-input-domain	web open	CDP has Chromium-only input and IME hooks; useful for scoped Chromium proof, not raw device proof.
+r004	appium-unicode	web open	Appium Unicode input is special-path text insertion and does not prove native keyboard business logic.
+r005	appium-android-ime-actions	web open	Appium `mobile: performEditorAction` proves focused editor action dispatch, not composition lifecycle.
+r006	android-input-method	web open	Android custom IME can drive `InputConnection` composing text, committed text, surrounding-text deletion, and selection-update callbacks.
+r007	easylogic-contenteditable	web open	Contenteditable catalog records specific OS/browser/IME scenarios and unknowns for a future matrix.
+r008	prosemirror-android	web open	ProseMirror Android discussion shows keyboard/browser/version variation and supports device-matrix claim width.

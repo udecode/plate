@@ -1,4 +1,4 @@
-import { getPlateRuntime } from 'platejs';
+import { compileEditor } from 'platejs/compiler';
 import { createEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
@@ -6,17 +6,16 @@ import { DocxKit } from '@/registry/components/editor/docx';
 import { deserializeDocxValue } from '@/registry/examples/values/deserialize-docx-value';
 
 describe('DOCX example composition', () => {
-  it('installs each full-DOCX capability once', () => {
+  it('installs the DOCX paste capability once', () => {
     const editor = createEditor({
       plugins: [...BasicBlocksKit, ...DocxKit],
       initialValue: deserializeDocxValue,
     });
-    const names = getPlateRuntime(editor).pluginList.map(
-      (plugin) => plugin.name
-    );
+    const names = compileEditor({
+      plugins: [...BasicBlocksKit, ...DocxKit],
+    }).bindings.map((binding) => binding.name);
 
-    for (const name of ['docxPaste', 'docxImport', 'docxExport', 'juice']) {
-      expect(names.filter((candidate) => candidate === name)).toHaveLength(1);
-    }
+    expect(editor.plugin('docx').installed).toBe(true);
+    expect(names.filter((name) => name === 'docx')).toHaveLength(1);
   });
 });

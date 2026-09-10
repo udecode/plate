@@ -17,7 +17,7 @@ and editor-local plugin stores.
 
 Import the matching `Editor` type from the same entrypoint as the constructor.
 
-## Editor Shape
+## Editor shape
 
 The editor is still a Plite editor. Plate adds typed plugin access, DOM services, and a small set of Plate runtime flags on top of that shape.
 
@@ -27,16 +27,12 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
       Unique editor instance id. `createEditor` uses the provided `id` or
       creates one with `nanoid()`.
     </APIItem>
-    <APIItem name="children" type="Value">
-      Current document value.
+    <APIItem name="read" type="Editor['read']">
+      Read current document children with `editor.read.children()`, selection
+      with `editor.read.selection()`, and the latest published commit with
+      `editor.read.lastCommit()`.
     </APIItem>
-    <APIItem name="selection" type="Range | null">
-      Current Plite selection.
-    </APIItem>
-    <APIItem name="operations" type="Operation[]">
-      Operations applied since Plite last flushed the editor.
-    </APIItem>
-    <APIItem name="api" type="Editor['api'] & CorePluginApi">
+    <APIItem name="api" type="Editor['api']">
       Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
       inferred under their plugin names.
     </APIItem>
@@ -46,13 +42,10 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
     </APIItem>
     <APIItem
       name="plugin"
-      type="<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginContext<DefinitionOf<P>>"
+      type="Editor['plugin']"
     >
       Return the descriptor-scoped portal for a plugin's API, update commands,
-      type, and store.
-    </APIItem>
-    <APIItem name="dom" type="Editor['dom']">
-      Runtime DOM state owned by the editor instance.
+      schema identity, and store. The descriptor supplies the inferred type.
     </APIItem>
     <APIItem name="runtime" type="Editor['runtime']">
       Public Plate runtime-instance and lifecycle state. Compiled plugin
@@ -61,7 +54,7 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
   </APIAttributes>
 </API>
 
-## Runtime State
+## Runtime state
 
 React and DOM runtime state is read through Plite runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
 
@@ -76,57 +69,63 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 | `userId`        | `string \| null \| undefined` | Collaborative identity passed through editor options.   |
 | `isNormalizing` | `boolean \| undefined`        | `true` while Plate applies initial-value normalization. |
 
-## Plugin Access
+## Plugin access
 
-Use `editor.api.<name>` for installed plugin services on a concrete editor.
-Use `editor.read.<name>` for snapshot-bound plugin queries. Pass the descriptor to
-`editor.plugin(plugin)` when generic
-code needs the exact plugin API, update commands, name, or store. The
-root and scoped API paths reference the same immutable object.
+Pass the installed descriptor to `editor.plugin(Plugin)`. TypeScript infers
+that plugin's API, reads, update commands, schema identity, and editor-local
+state. Keep the descriptor's inferred type at call sites.
 
-```ts title="Plugin API access"
-editor.api.table.getColumnCount();
+```ts title="Plugin API and state"
+import { createEditor, defineBasePlugin } from 'platejs';
 
-// Generic package code with an exact descriptor:
-editor.plugin(TablePlugin).api.getColumnCount();
-```
-
-```ts title="Plugin state access"
-import { definePlatePlugin } from 'platejs/react';
-
-const PanelPlugin = definePlatePlugin('panel', {
+const PanelPlugin = defineBasePlugin('panel', {
   initialState: { open: false },
+  api: ({ store }) => ({
+    isOpen: () => store.get('open'),
+  }),
 });
+
+const editor = createEditor({ plugins: [PanelPlugin] });
 const panel = editor.plugin(PanelPlugin);
 
 const open = panel.store.get('open');
-panel.store.set({ open: !open });
+const sameApi = editor.api.panel === panel.api;
 ```
 
-In the table below, `P` is the exact plugin descriptor type and
-`DefinitionOf<P>` is its normalized public definition.
+`editor.api.panel` and `panel.api` reference the same immutable API object.
+Use `editor.read.<name>` for plugin reads on a concrete editor, or
+`editor.plugin(Plugin).read` when the descriptor supplies the exact contract.
 
-| Helper                                   | Type                                                                                           | Use it for                                                                                                  |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `api[name]`                              | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call an installed plugin's queries and services from a concrete inferred editor.                            |
-| `plugin(plugin)`                         | `<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginPortal<DefinitionOf<P>>`  | Open a typed consumer portal to the exact plugin descriptor.                                                |
-| `plugin(plugin).installed`               | `boolean`                                                                                      | Check installation before reading another portal field when the plugin is optional.                         |
-| `plugin(plugin).api`                     | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call the same plugin API from generic or exact-descriptor code.                                             |
-| `plugin(plugin).read`                    | `InferOwnRead<DefinitionOf<P>>`                                                                | Run one plugin-owned read against current editor state.                                                     |
-| `plugin(plugin).update`                  | `InferOwnUpdate<DefinitionOf<P>>`                                                              | Run one plugin-owned update command.                                                                        |
-| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value`                                                                      | Read one state field or named selector result.                                                              |
-| `plugin(plugin).store.get()`             | `() => InferPluginStoreState<DefinitionOf<P>>`                                                 | Read the complete current plugin state.                                                                     |
-| `plugin(plugin).store.set(partial)`      | `(partial) => void`                                                                            | Merge state fields.                                                                                         |
-| `plugin(plugin).store.set(recipe)`       | `(draft) => void`                                                                              | Update state through a draft recipe.                                                                        |
-| `plugin(plugin).name`, `.inject`, `.render`, `.initialState` | Resolved descriptor fields | Read compiled descriptor fields directly after overrides and configuration. |
-| `plugin(plugin)`                         | `(plugin: PluginReference \| string) => AnyBasePluginPortal`                                    | Open an erased portal for a descriptor or dynamic name; concrete descriptors use the exact overload above. |
+| Access | Use it for |
+| --- | --- |
+| `editor.plugin(Plugin).installed` | Check installation before reading another field when the plugin is optional. |
+| `editor.plugin(Plugin).api` | Call plugin services inferred from the descriptor. |
+| `editor.plugin(Plugin).read` | Run plugin-owned reads against current editor state. |
+| `editor.plugin(Plugin).update` | Run a plugin-owned transaction command. |
+| `editor.plugin(Plugin).store.get(key, ...args)` | Read a state field or named selector result. |
+| `editor.plugin(Plugin).store.get()` | Read the complete current plugin state. |
+| `editor.plugin(Plugin).schema.type` | Read an element descriptor's installed node type. |
+| `editor.plugin(Plugin).schema.key` | Read a primary-mark descriptor's installed property key. |
 
-In React, subscribe with `usePluginStore(plugin, key)` or
-`usePluginStore(plugin, selector)` instead of reading a portal during render.
-`useEditorPlugin` accepts the same descriptor-or-runtime-name inputs. Runtime
-names are for dynamic values and family-agnostic slots that accept whichever
-installed descriptor owns the name. They return erased portals; check
-`.installed` before any other field when absence is valid.
+Behavior-only descriptors do not expose a consumer `schema`. A descriptor
+lookup checks the descriptor family as well as the name.
+
+In React, import `useEditorPlugin` and `usePluginStore` from `platejs/react`.
+`useEditorPlugin(Plugin)` provides the inferred portal.
+`usePluginStore(Plugin, key)` or `usePluginStore(Plugin, selector)` subscribes
+the component to plugin state.
+
+### Runtime names
+
+Use `editor.plugin(name)` or `useEditorPlugin(name)` when the name is only
+known at runtime. These lookups support installation checks, schema identity
+reads, and runtime read dispatch. Let TypeScript infer the result.
+
+Check `.installed` first when absence is valid. Read `.schema.type` only when
+the caller expects an element plugin, or `.schema.key` when it expects a primary
+mark. A mismatched schema kind throws. A name does not prove a descriptor family
+or provide its typed API, update, and store contract; pass the descriptor when
+the caller needs those capabilities.
 
 ## Initialization
 
@@ -168,7 +167,9 @@ decoder needs the compiled plugin model.
 
 ## Core APIs
 
-These APIs exist on every Plate editor because core plugins are always resolved before user plugins.
+Core plugins are resolved before user plugins. Navigation Feedback is a React
+editor default and can be disabled with `navigationFeedback: false`. Its API
+uses the mounted editor returned by `useEditor()` or `useEditorPlugin()`.
 
 <API name="Core plugin APIs">
   <APIMethods>
@@ -205,31 +206,18 @@ These APIs exist on every Plate editor because core plugins are always resolved 
       this for `text/html` paste data.
     </APIItem>
     <APIItem
-      name="editor.api.react.refreshDecorations"
-      type="(options?: PliteProjectionStoreRefreshOptions) => void"
+      name="editor.api.navigation.flashTarget"
+      type="(options: NavigationFlashTargetOptions) => boolean"
     >
-      Refresh React decorations after an external state change.
+      Flash a live element in the calling mounted React view without a document or selection change.
     </APIItem>
-    <APIItem
-      name="editor.api.navigation.activeTarget"
-      type="() => NavigationFeedbackTarget | null"
-    >
-      Read the current navigation feedback target and clear it if the stored
-      target no longer resolves.
-    </APIItem>
-    <APIItem name="editor.api.navigation.clear" type="() => void">
-      Clear the current navigation feedback target.
-    </APIItem>
-    <APIItem
-      name="editor.api.navigation.isTarget"
-      type="(path: Path) => boolean"
-    >
-      Check whether a path matches the active navigation feedback target.
+    <APIItem name="editor.api.navigation.clear" type="() => boolean">
+      Clear this mounted view's feedback and return whether a target was active.
     </APIItem>
   </APIMethods>
 </API>
 
-## Core Transactions
+## Core transactions
 
 Mutations run through `editor.update`. Core Plite commands live on the
 transaction object, and plugins contribute their keyed commands through
@@ -269,24 +257,6 @@ the constructor's `update` field.
       Update the current selection through the Plite selection transaction
       group.
     </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.clear())"
-      type="() => void"
-    >
-      Clear navigation feedback state.
-    </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.flashTarget(options))"
-      type="(options: NavigationFlashTargetOptions) => boolean"
-    >
-      Store a target temporarily so components can render navigation feedback.
-    </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.navigate(options))"
-      type="(options: NavigationNavigateOptions) => boolean"
-    >
-      Navigate to a target and flash it through the navigation feedback plugin.
-    </APIItem>
   </APITransforms>
 </API>
 
@@ -302,26 +272,28 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 | `HtmlPlugin`           | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`.                                                                                                          |
 | `BaseParagraphPlugin`  | Registers the default paragraph element under name `paragraph` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                           |
 
-## Type Helpers
+## Type helpers
 
-Use `Editor<typeof Kit>` when another module needs the exact editor type.
-The installed plugin schema supplies the value type.
+Use `ReturnType<typeof createBasicEditor>` when another module needs the exact
+type returned by your editor factory. The installed plugin schema supplies the
+value type.
 
 ```ts title="Typed editor helper"
-import type { Editor } from "platejs/react";
 import type { ValueOf } from "platejs";
-import { BoldPlugin } from "platejs/react";
+import { BoldPlugin, createEditor } from "platejs/react";
 
 const BasicKit = [BoldPlugin] as const;
 
-type BasicEditor = Editor<typeof BasicKit>;
+export const createBasicEditor = () => createEditor({ plugins: BasicKit });
+
+type BasicEditor = ReturnType<typeof createBasicEditor>;
 type BasicValue = ValueOf<BasicEditor>;
 ```
 
 | Type                        | Purpose                                                         |
 | --------------------------- | --------------------------------------------------------------- |
 | `Editor`               | Broad editor type for framework boundaries.                     |
-| `Editor<typeof Kit>`   | Exact editor type derived from an installed plugin tuple.        |
+| `ReturnType<typeof createBasicEditor>` | Exact editor type inferred from the factory's plugin tuple. |
 | `ValueOf<EditorType>`       | Document value derived from that editor's compiled schema.       |
 
 ## Related APIs

@@ -7,12 +7,6 @@ import * as React from 'react';
 const useEditorPluginMock = mock();
 const usePluginStoreMock = mock();
 
-mock.module('./discussion', () => ({
-  discussionPlugin: { name: 'discussion' },
-  getDiscussionBlockClickTarget: mock(() => null),
-  getDiscussionClickTarget: mock(() => null),
-}));
-
 mock.module('platejs/react', () => ({
   ...PlateReact,
   PlateLeaf: ({ children }: any) => <span>{children}</span>,
@@ -27,9 +21,11 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('lucide-react', () => ({
+  CheckIcon: (props: any) => <i {...props} />,
   CornerDownLeftIcon: (props: any) => (
     <i {...props} data-testid="line-break-icon" />
   ),
+  XIcon: (props: any) => <i {...props} />,
 }));
 
 mock.module('@/lib/utils', () => ({

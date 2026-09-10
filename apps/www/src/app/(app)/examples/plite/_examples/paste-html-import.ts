@@ -300,7 +300,7 @@ const normalizeMixedBlockChildren = (children: DeserializedChild[]) => {
   return result;
 };
 
-const getGitHubCodeLineElements = (el: HTMLElement) =>
+const getGitHubSourceRows = (el: HTMLElement) =>
   Array.from(el.querySelectorAll<HTMLElement>('.blob-code-inner.js-file-line'));
 
 const normalizeCodeText = (text: string) =>
@@ -366,27 +366,25 @@ const collectInlineCodeText = (node: ChildNode): string => {
   return Array.from(el.childNodes).map(collectInlineCodeText).join('');
 };
 
-const getDirectCodeLineChildren = (el: HTMLElement) =>
+const getDirectSourceRows = (el: HTMLElement) =>
   Array.from(el.children).filter((child) =>
     CODE_LINE_BOUNDARY_TAGS.has(child.nodeName)
   );
 
 const collectCodeSourceText = (el: HTMLElement) => {
-  const githubCodeLines = getGitHubCodeLineElements(el);
+  const githubRows = getGitHubSourceRows(el);
 
-  if (githubCodeLines.length > 0) {
+  if (githubRows.length > 0) {
     return normalizeCodeText(
-      githubCodeLines.map((line) => collectInlineCodeText(line)).join('\n')
+      githubRows.map((row) => collectInlineCodeText(row)).join('\n')
     );
   }
 
-  const directCodeLineChildren = getDirectCodeLineChildren(el);
+  const directRows = getDirectSourceRows(el);
 
-  if (directCodeLineChildren.length > 1) {
+  if (directRows.length > 1) {
     return normalizeCodeText(
-      directCodeLineChildren
-        .map((line) => collectInlineCodeText(line))
-        .join('\n')
+      directRows.map((row) => collectInlineCodeText(row)).join('\n')
     );
   }
 
@@ -400,7 +398,7 @@ const hasCodeWhiteSpace = (el: HTMLElement) => {
 };
 
 const isCodeSourceElement = (el: HTMLElement) => {
-  if (getGitHubCodeLineElements(el).length > 0) {
+  if (getGitHubSourceRows(el).length > 0) {
     return true;
   }
 
@@ -412,7 +410,7 @@ const isCodeSourceElement = (el: HTMLElement) => {
     return collectCodeSourceText(el).includes('\n');
   }
 
-  return hasCodeWhiteSpace(el) && getDirectCodeLineChildren(el).length > 1;
+  return hasCodeWhiteSpace(el) && getDirectSourceRows(el).length > 1;
 };
 
 const createCodeBlockElement = (text: string) =>

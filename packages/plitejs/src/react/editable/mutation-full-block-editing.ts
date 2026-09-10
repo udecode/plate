@@ -1,5 +1,5 @@
 import { type Node, NodeApi, PathApi, type Range } from '../..';
-import { profileEditableMutationDuration } from './mutation-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import {
   failInvariant,
   getEditorCurrentMarks,
@@ -122,7 +122,7 @@ export const canUseCachedCollapsedTextInsert = ({
 
   return canUseExplicitCollapsedTextInsert({
     editor,
-    marks: profileEditableMutationDuration('model-text-input-read-marks', () =>
+    marks: profilePliteReactDuration('model-text-input-read-marks', () =>
       editor.read((state) => state.marks())
     ),
     selection,

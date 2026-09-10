@@ -1,0 +1,2 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+initial-versioned-document-migrations	web-github	versioned persisted state document migration createMigrate editor JSON CLI	primary repositories and official docs	12	7	dexie/dexie.js,sanity-io/migrate,rt2zz/redux-persist,pmndrs/zustand,facebook/lexical,prosemirror/prosemirror-model,ueberdosis/tiptap	migration:target-version-chain:runtime,migration:dry-run-runner:cli,migration:version-envelope:storage,migration:per-node-version:negative	Stop; remaining hits repeat these families

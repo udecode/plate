@@ -8,12 +8,20 @@ import { defineBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
-import { pipeRenderLeaf } from './pipeRenderLeaf';
-import { pipeRenderText } from './pipeRenderText';
+import { pipeRenderLeaf } from './pipeRenderLeaf.internal';
+import { pipeRenderText } from './pipeRenderText.internal';
 
 const attributes = { 'data-plite-leaf': true, 'data-testid': 'Leaf' } as any;
+const retainedTextFlowCapability = Symbol.for(
+  'plitejs/react/retained-text-flow-renderer-capability'
+);
 
 const text = { test: true, text: 'test' };
+
+const getRetainedTextFlowCapability = (renderer: object) =>
+  Reflect.get(renderer, retainedTextFlowCapability) as
+    | ((context: { marks: Readonly<Record<string, unknown>> }) => boolean)
+    | undefined;
 
 const getHookOrderErrors = (errorSpy: any) =>
   errorSpy.mock.calls.filter(([message]: [unknown]) => {
@@ -53,6 +61,7 @@ it('render the default leaf', () => {
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
+  expect(getRetainedTextFlowCapability(Leaf)?.({ marks: {} })).toBe(true);
 });
 
 it('returns the custom leaf renderer unchanged when no plugin work exists', () => {
@@ -67,6 +76,7 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
       renderLeaf
     )
   ).toBe(renderLeaf);
+  expect(getRetainedTextFlowCapability(renderLeaf)).toBeUndefined();
 });
 
 it('keeps element-targeted injection transforms out of leaf capability', () => {
@@ -87,11 +97,10 @@ it('keeps element-targeted injection transforms out of leaf capability', () => {
   const resolveDOMTextSyncCapability = Reflect.get(
     renderLeaf,
     Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  ) as (context: { marks: object }) => boolean;
 
-  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
-    true
-  );
+  expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(true);
+  expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(true);
 });
 
 it('fails DOM text sync closed for untargeted text injection transforms', () => {
@@ -111,9 +120,10 @@ it('fails DOM text sync closed for untargeted text injection transforms', () => 
   const resolveDOMTextSyncCapability = Reflect.get(
     renderLeaf,
     Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  ) as (context: { marks: object }) => boolean;
 
-  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
+  expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(false);
+  expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(
     false
   );
 });
@@ -135,9 +145,10 @@ it('fails DOM text sync closed for untargeted text style transforms', () => {
   const resolveDOMTextSyncCapability = Reflect.get(
     renderLeaf,
     Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  ) as (context: { marks: object }) => boolean;
 
-  expect(resolveDOMTextSyncCapability({ marks: {}, projections: [] })).toBe(
+  expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(false);
+  expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(
     false
   );
 });
@@ -145,7 +156,6 @@ it('fails DOM text sync closed for untargeted text style transforms', () => {
 it('fails DOM text sync closed for active custom plugin components', () => {
   const componentPlugin = definePlatePlugin('componentMark', {
     component: ({ children }: ChildrenProps) => <>{children}</>,
-    render: { isDecoration: true },
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
   const renderLeaf = pipeRenderLeaf(
@@ -157,24 +167,29 @@ it('fails DOM text sync closed for active custom plugin components', () => {
   const resolveDOMTextSyncCapability = Reflect.get(
     renderLeaf,
     Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  ) as (context: { marks: object }) => boolean;
 
   expect(
     resolveDOMTextSyncCapability({
       marks: { componentMark: true },
-      projections: [],
     })
   ).toBe(false);
+  const retained = getRetainedTextFlowCapability(renderLeaf);
+
+  expect(retained?.({ marks: {} })).toBe(true);
+  expect(retained?.({ marks: { componentMark: true } })).toBe(false);
 });
 
-it('render with render.leaf and isDecoration=false', () => {
+it('renders a secondary leaf component for a text-placed mark', () => {
   const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
-      isDecoration: false,
-      leaf: ({ children }: ChildrenProps) => (
-        <span data-testid="leaf-wrapper">{children}</span>
-      ),
+      mark: {
+        leafComponent: ({ children }: ChildrenProps) => (
+          <span data-testid="leaf-wrapper">{children}</span>
+        ),
+        placement: 'text',
+      },
     },
   });
 
@@ -198,15 +213,12 @@ it('render with render.leaf and isDecoration=false', () => {
   (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
-it('render with render.leaf and isDecoration=true', () => {
+it('renders the primary component at leaf placement', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: ({ children }: ChildrenProps) => (
+      <span data-testid="leaf-wrapper">{children}</span>
+    ),
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      isDecoration: true,
-      leaf: ({ children }: ChildrenProps) => (
-        <span data-testid="leaf-wrapper">{children}</span>
-      ),
-    },
   });
 
   const editor = createEditor({
@@ -229,12 +241,10 @@ it('render with render.leaf and isDecoration=true', () => {
   (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
-it('keeps the outer leaf attributes for render.as leaf plugins', () => {
+it('keeps the outer leaf attributes for intrinsic leaf components', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'strong',
-    },
   });
 
   const editor = createEditor({
@@ -261,18 +271,14 @@ it('keeps the outer leaf attributes for render.as leaf plugins', () => {
   expect(container.querySelector('strong')).not.toBeNull();
 });
 
-it('nests multiple simple render.as leaf plugins without losing outer attributes', () => {
+it('nests multiple intrinsic leaf components without losing outer attributes', () => {
   const boldPlugin = defineBasePlugin('bold', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'strong',
-    },
   });
   const italicPlugin = defineBasePlugin('italic', {
+    component: 'em',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'em',
-    },
   });
 
   const editor = createEditor({
@@ -306,24 +312,20 @@ it('skips inactive leaf renderers', () => {
   let inactiveCalls = 0;
 
   const boldPlugin = defineBasePlugin('bold', {
-    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      leaf: ({ children }: ChildrenProps) => {
-        activeCalls += 1;
+    component: ({ children }: ChildrenProps) => {
+      activeCalls += 1;
 
-        return <strong data-testid="active-leaf">{children}</strong>;
-      },
+      return <strong data-testid="active-leaf">{children}</strong>;
     },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
   const italicPlugin = defineBasePlugin('italic', {
-    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      leaf: ({ children }: ChildrenProps) => {
-        inactiveCalls += 1;
+    component: ({ children }: ChildrenProps) => {
+      inactiveCalls += 1;
 
-        return <em data-testid="inactive-leaf">{children}</em>;
-      },
+      return <em data-testid="inactive-leaf">{children}</em>;
     },
+    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
 
   const editor = createEditor({
@@ -354,12 +356,10 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
 
   try {
     const testPlugin = defineBasePlugin('test', {
+      component: ({ children }: ChildrenProps) => (
+        <span data-testid="complex-leaf">{children}</span>
+      ),
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      render: {
-        leaf: ({ children }: ChildrenProps) => (
-          <span data-testid="complex-leaf">{children}</span>
-        ),
-      },
     });
 
     const editor = createEditor({
@@ -401,7 +401,7 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
   }
 });
 
-it('keeps hooks stable when the projection segment count changes', () => {
+it('keeps hooks stable when the rendered leaf count changes', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
@@ -414,7 +414,7 @@ it('keeps hooks stable when the projection segment count changes', () => {
     });
     const renderLeaf = pipeRenderLeaf(editor)!;
 
-    const ProjectedLeaves = ({ count }: { count: number }) => (
+    const Leaves = ({ count }: { count: number }) => (
       <>
         {Array.from({ length: count }, (_, index) =>
           renderLeaf({
@@ -431,9 +431,9 @@ it('keeps hooks stable when the projection segment count changes', () => {
       </>
     );
 
-    const { rerender } = render(<ProjectedLeaves count={2} />);
+    const { rerender } = render(<Leaves count={2} />);
 
-    expect(() => rerender(<ProjectedLeaves count={1} />)).not.toThrow();
+    expect(() => rerender(<Leaves count={1} />)).not.toThrow();
     expect(getHookOrderErrors(errorSpy)).toEqual([]);
   } finally {
     errorSpy.mockRestore();
@@ -442,18 +442,14 @@ it('keeps hooks stable when the projection segment count changes', () => {
 
 it('uses plugin names to activate leaf renderers', () => {
   const simplePlugin = defineBasePlugin('simple', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'strong',
-    },
   });
   const complexPlugin = defineBasePlugin('complex', {
+    component: ({ children }: ChildrenProps) => (
+      <span data-testid="complex-leaf">{children}</span>
+    ),
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      leaf: ({ children }: ChildrenProps) => (
-        <span data-testid="complex-leaf">{children}</span>
-      ),
-    },
   });
 
   const editor = createEditor({
@@ -483,56 +479,15 @@ it('uses plugin names to activate leaf renderers', () => {
   expect(getByTestId('complex-leaf')).toBeInTheDocument();
 });
 
-it('renders legacy decoration data from projection slices', () => {
-  const searchPlugin = defineBasePlugin('searchHighlight', {
-    schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      leaf: ({ children }: ChildrenProps) => (
-        <span data-testid="search-highlight">{children}</span>
-      ),
-    },
-  });
-  const editor = createEditor({
-    navigationFeedback: false,
-    plugins: [searchPlugin],
-  });
-  const Leaf = pipeRenderLeaf(editor)! as any;
-  const undecoratedText = { text: 'editable' } as any;
-
-  const { getByTestId } = render(
-    <Leaf
-      attributes={attributes}
-      leaf={undecoratedText}
-      segment={{
-        end: 8,
-        marks: {},
-        slices: [
-          {
-            data: { searchHighlight: true },
-            end: 8,
-            key: 'search:0',
-            start: 0,
-          },
-        ],
-        start: 0,
-        text: 'editable',
-      }}
-      text={undecoratedText}
-    >
-      editable
-    </Leaf>
-  );
-
-  expect(getByTestId('search-highlight')).toBeInTheDocument();
-});
-
-it('keeps plugin leafProps behavior', () => {
+it('keeps plugin leafAttributes behavior', () => {
   const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
-      leafProps: {
-        className: 'plugin-leaf',
-        'data-leaf-probe': 'yes',
+      mark: {
+        leafAttributes: {
+          className: 'plugin-leaf',
+          'data-leaf-probe': 'yes',
+        },
       },
     },
   });
@@ -542,7 +497,8 @@ it('keeps plugin leafProps behavior', () => {
   });
 
   const Leaf = pipeRenderLeaf(editor)!;
-  const publishedLeafProps = editor.plugin(testPlugin).render.leafProps;
+  const publishedLeafProps =
+    editor.plugin(testPlugin).render.mark?.leafAttributes;
 
   expect(Object.isFrozen(publishedLeafProps)).toBe(true);
 
@@ -568,10 +524,10 @@ it('keeps plugin leafProps behavior', () => {
   });
 });
 
-it('render with render.node', () => {
+it('renders a mark at text placement', () => {
   const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: { isDecoration: false },
+    render: { mark: { placement: 'text' } },
   });
 
   const editor = createEditor({
@@ -591,6 +547,10 @@ it('render with render.node', () => {
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
+  const retained = getRetainedTextFlowCapability(Text);
+
+  expect(retained?.({ marks: {} })).toBe(true);
+  expect(retained?.({ marks: { test: true } })).toBe(false);
 });
 
 it('returns the custom text renderer unchanged when no plugin work exists', () => {
@@ -605,15 +565,16 @@ it('returns the custom text renderer unchanged when no plugin work exists', () =
       renderText
     )
   ).toBe(renderText);
+  expect(getRetainedTextFlowCapability(renderText)).toBeUndefined();
 });
 
-it('keeps text hooks stable when the projection segment count changes', () => {
+it('keeps text hooks stable when the rendered text count changes', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
     const testPlugin = defineBasePlugin('test', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      render: { isDecoration: false },
+      render: { mark: { placement: 'text' } },
     });
     const editor = createEditor({
       navigationFeedback: false,
@@ -622,7 +583,7 @@ it('keeps text hooks stable when the projection segment count changes', () => {
     const renderText = pipeRenderText(editor)!;
     const activeText = { test: true, text: 'test' } as any;
 
-    const ProjectedTexts = ({ count }: { count: number }) => (
+    const Texts = ({ count }: { count: number }) => (
       <>
         {Array.from({ length: count }, (_, index) =>
           renderText({
@@ -637,19 +598,20 @@ it('keeps text hooks stable when the projection segment count changes', () => {
       </>
     );
 
-    const { rerender } = render(<ProjectedTexts count={2} />);
+    const { rerender } = render(<Texts count={2} />);
 
-    expect(() => rerender(<ProjectedTexts count={1} />)).not.toThrow();
+    expect(() => rerender(<Texts count={1} />)).not.toThrow();
     expect(getHookOrderErrors(errorSpy)).toEqual([]);
   } finally {
     errorSpy.mockRestore();
   }
 });
 
-it('keeps the outer text attributes for render.as text plugins', () => {
+it('keeps the outer text attributes for intrinsic text components', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: { isDecoration: false, as: 'strong' },
+    render: { mark: { placement: 'text' } },
   });
 
   const editor = createEditor({
@@ -681,9 +643,7 @@ it('skips inactive text renderers', () => {
 
       return <strong data-testid="active-text">{children}</strong>;
     },
-    render: {
-      isDecoration: false,
-    },
+    render: { mark: { placement: 'text' } },
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
   const italicPlugin = definePlatePlugin('italic', {
@@ -692,9 +652,7 @@ it('skips inactive text renderers', () => {
 
       return <em data-testid="inactive-text">{children}</em>;
     },
-    render: {
-      isDecoration: false,
-    },
+    render: { mark: { placement: 'text' } },
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
 
@@ -724,9 +682,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
       component: ({ children }: ChildrenProps) => (
         <span data-testid="complex-text">{children}</span>
       ),
-      render: {
-        isDecoration: false,
-      },
+      render: { mark: { placement: 'text' } },
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     });
 
@@ -761,14 +717,17 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
 
 it('renders present falsy mark values and keeps DOM text sync closed', () => {
   const booleanPlugin = defineBasePlugin('booleanMark', {
-    render: { as: 'u', isDecoration: false },
+    component: 'u',
+    render: { mark: { placement: 'text' } },
     schema: { mark: property.boolean({ default: false }) },
   });
   const numericPlugin = defineBasePlugin('numericMark', {
+    component: 'strong',
     render: {
-      as: 'strong',
-      isDecoration: false,
-      textProps: { 'data-numeric-mark': 'present' },
+      mark: {
+        placement: 'text',
+        textAttributes: { 'data-numeric-mark': 'present' },
+      },
     },
     schema: { mark: property.number() },
   });
@@ -777,7 +736,7 @@ it('renders present falsy mark values and keeps DOM text sync closed', () => {
   const resolveDOMTextSyncCapability = Reflect.get(
     Text,
     Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object; projections: unknown[] }) => boolean;
+  ) as (context: { marks: object }) => boolean;
   const { container } = render(
     <Text
       attributes={attributes}
@@ -795,19 +754,20 @@ it('renders present falsy mark values and keeps DOM text sync closed', () => {
   expect(
     resolveDOMTextSyncCapability({
       marks: { numericMark: 0 },
-      projections: [],
     })
   ).toBe(false);
 });
 
-it('keeps plugin textProps behavior', () => {
+it('keeps plugin textAttributes behavior', () => {
   const testPlugin = defineBasePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
-      isDecoration: false,
-      textProps: {
-        className: 'plugin-text',
-        'data-text-probe': 'yes',
+      mark: {
+        placement: 'text',
+        textAttributes: {
+          className: 'plugin-text',
+          'data-text-probe': 'yes',
+        },
       },
     },
   });
@@ -817,7 +777,8 @@ it('keeps plugin textProps behavior', () => {
   });
 
   const Text = pipeRenderText(editor)!;
-  const publishedTextProps = editor.plugin(testPlugin).render.textProps;
+  const publishedTextProps =
+    editor.plugin(testPlugin).render.mark?.textAttributes;
 
   expect(Object.isFrozen(publishedTextProps)).toBe(true);
 

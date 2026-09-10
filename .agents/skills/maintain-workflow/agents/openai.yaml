@@ -1,0 +1,6 @@
+interface:
+  display_name: "Maintain Workflow"
+  short_description: "Maintain workflows and sync relevant upstream changes"
+  default_prompt: "Use $maintain-workflow to reconcile this workflow change with its shared source and suggest affected project syncs."
+policy:
+  allow_implicit_invocation: true

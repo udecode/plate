@@ -10,6 +10,9 @@ metadata:
 
 # GPT Pro
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use this when the user wants a paste-ready prompt for ChatGPT Pro, GPT Pro, or

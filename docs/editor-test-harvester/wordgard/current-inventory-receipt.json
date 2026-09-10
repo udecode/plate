@@ -1,0 +1,23 @@
+{
+  "name": "wordgard",
+  "capturedAt": "2026-09-09T18:01:11.202Z",
+  "head": "b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54",
+  "clean": true,
+  "source": "/Users/zbeyens/git/wordgard",
+  "mode": "fresh full inventory with classifications retained only after exact source-pin and full file-set agreement",
+  "fileCount": 29,
+  "classifiedCount": 29,
+  "unknownCount": 0,
+  "parseErrors": [],
+  "testCallSites": 675,
+  "suiteCallSites": 80,
+  "categories": {
+    "harness": 3,
+    "portable-mixed": 8,
+    "portable": 15,
+    "plate-owned": 3
+  },
+  "sourceFingerprint": "b2561d891b7565e85e882da3733c61cdb35b39e47589f58b30022df436fc837b",
+  "behaviorExtraction": "docs/editor-test-harvester/wordgard/report.md",
+  "executionStatus": "inventory only; no new upstream runtime test execution claimed"
+}

@@ -2,8 +2,7 @@
 
 import { jsx } from '@platejs/test';
 import { BaseListPlugin, BaseParagraphPlugin, createEditor } from 'platejs';
-import { DocxPastePlugin } from 'platejs/docx';
-import { JuicePlugin } from 'platejs/juice';
+import { DocxPlugin } from 'platejs/docx';
 import { ImagePlugin } from 'platejs/media/react';
 import {
   BlockquotePlugin,
@@ -82,8 +81,7 @@ export const testDocxDeserializer = ({
         TextIndentPlugin.configure(targetPluginConfig),
         IndentPlugin.configure(targetPluginConfig),
         BaseListPlugin.configure(targetPluginConfig),
-        JuicePlugin,
-        DocxPastePlugin,
+        DocxPlugin,
       ],
       selection: input.selection,
       initialValue: input.children,

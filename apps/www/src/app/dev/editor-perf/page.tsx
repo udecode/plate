@@ -5,13 +5,10 @@ import {
   atom as createJotaiAtom,
   useAtomValue,
 } from 'jotai';
+import { createAtomStore } from 'jotai-x';
 import { useHydrateAtoms } from 'jotai/utils';
 import { createStore as createJotaiStore } from 'jotai/vanilla';
 import {
-  getPlateRuntime,
-  defineExtension,
-  property,
-  schema,
   type Element as PliteElement,
   ElementIdPlugin,
   migrateElementIds,
@@ -32,16 +29,6 @@ import {
   ScriptPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-  BelowRootNodes,
-  ElementProvider,
-  createAtomStore,
-  createZustandStore,
-  getRenderNodeProps,
-  pipeRenderElement,
-  pipeRenderLeaf,
-  pipeRenderText,
-  pluginRenderElement,
-  pluginRenderLeaf,
   PlateContent,
   Plate,
   PlateElement,
@@ -59,11 +46,29 @@ import {
   usePluginStore,
   type Editor,
 } from 'platejs/react';
+import {
+  Editable as PliteEditable,
+  type Editor as PliteEditor,
+  Plite,
+} from 'plitejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+// This dev benchmark instruments private costs without publishing their owners.
+import { getPlateRuntime } from '../../../../../../packages/platejs/src/internal/plugin/compilePlateModel';
+import {
+  AfterNodeChildren,
+  getRenderNodeProps,
+  pipeRenderElement,
+  pipeRenderLeaf,
+  pipeRenderText,
+  pluginRenderElement,
+  pluginRenderLeaf,
+} from '../../../../../../packages/platejs/src/react/internal';
+import { createZustandStore } from '../../../../../../packages/platejs/src/react/libs/zustand';
+import { ElementProvider } from '../../../../../../packages/platejs/src/react/stores/element/useElementStore';
 import { failInvariant } from '../../../lib/failInvariant';
 import {
   CORE_PLUGIN_CENSUS_ENTRIES,
@@ -76,6 +81,7 @@ import {
   createBenchIdFactory,
   getDefaultElementIdFragmentBlockCount,
   getEditorPerfWorkloadValue,
+  getEditorPerfWorkloadPlugins,
   getElementIdFragmentBenchmarkData,
   getSeededEditorPerfWorkloadValue,
   type EditorPerfWorkloadId,
@@ -375,7 +381,7 @@ type CoreMountCaseId =
   | 'editable-element-plate-element-plugin-only-no-provider'
   | 'editable-element-plate-element-plugin-context-no-provider'
   | 'editable-element-pipe-plugin-precomputed-path'
-  | 'editable-element-pipe-plugin-precomputed-no-below-root'
+  | 'editable-element-pipe-plugin-precomputed-no-after-children'
   | 'editable-element-pipe-bare-plain-fast-path'
   | 'editable-element-plugin-precomputed-no-element-hook'
   | 'editable-element-provider-only'
@@ -400,12 +406,12 @@ type CoreMountCaseId =
   | 'editable-element-plugin-precomputed-fast-node-props-jotai-provider'
   | 'editable-element-plugin-precomputed-fast-node-props-zustand-provider'
   | 'editable-element-plugin-precomputed-fast-node-props-plain-context'
-  | 'editable-element-render-as-no-provider'
-  | 'editable-element-render-as-provider'
+  | 'editable-element-intrinsic-no-provider'
+  | 'editable-element-intrinsic-provider'
   | 'editable-element-plugin-precomputed-prop-effect'
   | 'editable-element-render-node-props-no-provider'
   | 'editable-element-pipe'
-  | 'editable-element-pipe-render-as-basic'
+  | 'editable-element-pipe-intrinsic-basic'
   | 'editable-element-fallback-pipe'
   | 'editable-element-plugin-precomputed-path'
   | 'editable-leaf-text-bold-direct-renderers'
@@ -1011,10 +1017,9 @@ function BenchRenderNodeSelectorElementFromProvider({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
 }) {
-  const selected = useElementSelector(([element, path]) => ({
-    pathDepth: path.length,
-    type: element?.type,
-  }));
+  const path = usePath();
+  const type = useElementSelector((element) => element.type);
+  const selected = { pathDepth: path.length, type };
 
   return (
     <p
@@ -1157,9 +1162,9 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'The same fast element-pipe path, but without BelowRootNodes. This isolates the cost of mounting an empty root-wrapper component on every block.',
-    id: 'editable-element-pipe-plugin-precomputed-no-below-root',
-    label: 'PlateContent + fast pipe (no belowRootNodes)',
+      'The same fast element-pipe path, but without AfterNodeChildren. This isolates the cost of mounting an empty root-wrapper component on every block.',
+    id: 'editable-element-pipe-plugin-precomputed-no-after-children',
+    label: 'PlateContent + fast pipe (no after-node slot)',
   },
   {
     description:
@@ -1307,18 +1312,18 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'The render.as-only element lower bound: real basic blockquote plugin, but rendered through the providerless plain fast path shape instead of ElementProvider and PlateElement.',
+      'The intrinsic-component element lower bound: real basic blockquote plugin rendered through the providerless plain fast path shape.',
     documentMode: 'blockquote-only',
-    id: 'editable-element-render-as-no-provider',
-    label: 'PlateContent + render.as, no provider',
+    id: 'editable-element-intrinsic-no-provider',
+    label: 'PlateContent + intrinsic component, no provider',
     plugins: 'basic',
   },
   {
     description:
-      'The old render.as-only shape: real basic blockquote plugin rendered through ElementProvider plus PlateElement. This is the branch the fast path is replacing.',
+      'The intrinsic-component provider shape: real basic blockquote plugin rendered through ElementProvider plus PlateElement.',
     documentMode: 'blockquote-only',
-    id: 'editable-element-render-as-provider',
-    label: 'PlateContent + render.as, provider',
+    id: 'editable-element-intrinsic-provider',
+    label: 'PlateContent + intrinsic component, provider',
     plugins: 'basic',
   },
   {
@@ -1341,10 +1346,10 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Static PlateContent baseline plus the full default pipeRenderElement path on a blockquote-only document with basic plugins loaded. This is the real production lane for render.as-only element plugins.',
+      'Static PlateContent baseline plus the full default pipeRenderElement path on a blockquote-only document with intrinsic components.',
     documentMode: 'blockquote-only',
-    id: 'editable-element-pipe-render-as-basic',
-    label: 'PlateContent + element pipe (render.as)',
+    id: 'editable-element-pipe-intrinsic-basic',
+    label: 'PlateContent + element pipe (intrinsic component)',
     plugins: 'basic',
   },
   {
@@ -1466,7 +1471,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on a bold-only document with basic plugins loaded. This is the real production lane for render.as-only marks.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on a bold-only document with intrinsic mark components.',
     documentMode: 'bold-only',
     id: 'editable-leaf-text-bold-pipe',
     label: 'PlateContent + bold leaf/text pipes',
@@ -1490,7 +1495,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on an underline-only document with basic plugins loaded. This is the real production lane for render.as-only underline marks.',
+      'Static PlateContent baseline plus pipeRenderLeaf and pipeRenderText on an underline-only document with an intrinsic mark component.',
     documentMode: 'underline-only',
     id: 'editable-leaf-text-underline-pipe',
     label: 'PlateContent + underline leaf/text pipes',
@@ -1813,44 +1818,6 @@ function calculateLatencyStats(samples: number[]): LatencyResult {
   };
 }
 
-const BenchmarkDenseInlinePropsSchema = defineExtension(
-  'benchmark-dense-inline-props',
-  {
-    schema: {
-      properties: [
-        schema.textProperty('commentId', property.string()),
-        schema.textProperty('search', property.string()),
-        schema.textProperty('tokenCount', property.number()),
-      ],
-    },
-  }
-);
-
-const BenchmarkDenseInlinePropsPlugin = definePlatePlugin(
-  'benchmarkDenseInlineProps',
-  {
-    schema: {
-      properties: {
-        commentId: schema.textProperty(property.string()),
-        search: schema.textProperty(property.string()),
-        tokenCount: schema.textProperty(property.number()),
-      },
-    },
-  }
-);
-
-function getWorkloadExtensions(workloadId: ScenarioWorkloadId) {
-  return workloadId === 'huge-dense-inline-props'
-    ? [BenchmarkDenseInlinePropsSchema]
-    : [];
-}
-
-function getWorkloadPlugins(workloadId: ScenarioWorkloadId) {
-  return workloadId === 'huge-dense-inline-props'
-    ? [BenchmarkDenseInlinePropsPlugin]
-    : [];
-}
-
 function createScenarioConstructionEditor(scenario: Scenario) {
   if (scenario.kind === 'slate') {
     return createEditor();
@@ -1875,14 +1842,17 @@ function createScenarioMountedEditor({
 }) {
   if (scenario.kind === 'slate') {
     return createEditor({
-      extensions: getWorkloadExtensions(config.scenarioWorkload),
+      plugins: getEditorPerfWorkloadPlugins(config.scenarioWorkload),
       initialValue: value,
     });
   }
 
   return createEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(
+        config.scenarioWorkload,
+        scenario.plugins
+      ),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
     ],
@@ -1903,7 +1873,10 @@ function createPlateDissectionEditor({
 }) {
   return createEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(
+        config.scenarioWorkload,
+        caseItem.plugins
+      ),
       ...getElementIdPlugins({ counter, enabled: caseItem.elementId }),
       ...getScenarioPlugins(caseItem.plugins),
     ],
@@ -1920,7 +1893,7 @@ function createFanoutEditor({
 }) {
   return createEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(config.scenarioWorkload, 'none'),
       BenchmarkStorePlugin,
     ],
     initialValue: value,
@@ -1940,7 +1913,7 @@ function createCoreMountEditor({
 }) {
   return createEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(config.scenarioWorkload, plugins),
       ...getElementIdPlugins({ enabled: elementId }),
       ...getScenarioPlugins(plugins),
     ],
@@ -1959,7 +1932,7 @@ function createPluginCensusMountedEditor({
 }) {
   return createEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(config.scenarioWorkload, plugins),
       ...getScenarioPlugins(plugins),
     ],
     initialValue: value,
@@ -2062,7 +2035,6 @@ function ScenarioEditor({
       config={config}
       containerRef={containerRef}
       editorRef={editorRef}
-      renderElement={renderElement}
       scenario={scenario}
       value={value}
     />
@@ -2085,7 +2057,7 @@ function SlateScenarioEditor({
   const editor = React.useMemo(
     () =>
       createEditor({
-        extensions: getWorkloadExtensions(config.scenarioWorkload),
+        plugins: getEditorPerfWorkloadPlugins(config.scenarioWorkload),
         initialValue: value,
       }),
     [config.scenarioWorkload, value]
@@ -2118,14 +2090,14 @@ function SlateScenarioEditor({
 
   return (
     <div ref={containerRef} className="h-full overflow-auto p-4">
-      <Plate editor={editor}>
-        <PlateContent
+      <Plite editor={editor}>
+        <PliteEditable
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
           renderElement={renderElement as any}
           spellCheck={false}
         />
-      </Plate>
+      </Plite>
     </div>
   );
 }
@@ -2134,20 +2106,21 @@ function PlateScenarioEditor({
   config,
   containerRef,
   editorRef,
-  renderElement,
   scenario,
   value,
 }: {
   config: BenchmarkConfig;
   containerRef: React.RefObject<HTMLDivElement | null>;
   editorRef?: React.Ref<BenchmarkEditorHandle>;
-  renderElement: (props: RenderElementProps) => React.ReactNode;
   scenario: Scenario;
   value: Value;
 }) {
   const editor = useCreateEditor({
     plugins: [
-      ...getWorkloadPlugins(config.scenarioWorkload),
+      ...getEditorPerfWorkloadPlugins(
+        config.scenarioWorkload,
+        scenario.plugins
+      ),
       ...getElementIdPlugins({ enabled: scenario.elementId }),
       ...getScenarioPlugins(scenario.plugins),
     ],
@@ -2185,7 +2158,6 @@ function PlateScenarioEditor({
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
-          renderElement={renderElement as any}
           spellCheck={false}
         />
       </Plate>
@@ -2215,14 +2187,14 @@ function PrebuiltScenarioEditor({
   if (scenario.kind === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Plate editor={editor}>
-          <PlateContent
+        <Plite editor={editor as PliteEditor}>
+          <PliteEditable
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Plate>
+        </Plite>
       </div>
     );
   }
@@ -2233,7 +2205,6 @@ function PrebuiltScenarioEditor({
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
-          renderElement={renderElement as any}
           spellCheck={false}
         />
       </Plate>
@@ -2263,14 +2234,14 @@ function PluginCensusEditorSurface({
   if (scenarioId === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Plate editor={editor}>
-          <PlateContent
+        <Plite editor={editor as PliteEditor}>
+          <PliteEditable
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Plate>
+        </Plite>
       </div>
     );
   }
@@ -2281,7 +2252,6 @@ function PluginCensusEditorSurface({
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
-          renderElement={renderElement as any}
           spellCheck={false}
         />
       </Plate>
@@ -2393,15 +2363,6 @@ function FanoutSurface({
   ref?: React.Ref<FanoutEditorHandle>;
 }) {
   const updateCountRef = React.useRef(0);
-  const renderElement = React.useCallback(
-    (props: RenderElementProps) => (
-      <BenchmarkElement
-        {...props}
-        elementContentVisibility={config.contentVisibility === 'element'}
-      />
-    ),
-    [config.contentVisibility]
-  );
   React.useImperativeHandle(
     ref,
     () => ({
@@ -2455,7 +2416,6 @@ function FanoutSurface({
         <PlateContent
           className="min-h-[70vh] outline-none"
           domStrategy={getBenchmarkDOMStrategy(config)}
-          renderElement={renderElement as any}
           spellCheck={false}
         />
         <FanoutSubscribers caseId={caseId} subscriberCount={subscriberCount} />
@@ -2467,7 +2427,6 @@ function FanoutSurface({
 function BenchmarkEditableMount({
   config,
   elementBenchmarkMode,
-  id,
   leafTextBenchmarkMode,
   leafTextPipeMode = 'both',
   pipeElement = false,
@@ -2500,16 +2459,15 @@ function BenchmarkEditableMount({
     | 'plate-element-plugin-context-no-provider'
     | 'pipe-bare-plain-fast-path'
     | 'pipe-plugin-precomputed-path'
-    | 'pipe-plugin-precomputed-no-below-root'
+    | 'pipe-plugin-precomputed-no-after-children'
     | 'provider-only'
-    | 'render-as-no-provider'
-    | 'render-as-provider'
+    | 'intrinsic-no-provider'
+    | 'intrinsic-provider'
     | 'provider-prop-effect'
     | 'provider-plate-element'
     | 'zustand-provider-only'
     | 'zustand-provider-plugin-fast-node-props'
     | 'render-node-props-no-provider';
-  id?: string;
   leafTextBenchmarkMode?:
     | 'bold-ctx-plateleaf'
     | 'bold-direct-renderers'
@@ -2526,7 +2484,7 @@ function BenchmarkEditableMount({
   pipeLeafText?: boolean;
   precomputedElementPluginPath?: boolean;
 }) {
-  const editor = useEditor({ id });
+  const editor = useEditor();
   const pathMap = React.useMemo(
     () => buildElementPathMap((editor.read.children() ?? []) as Value),
     [editor]
@@ -2742,7 +2700,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes
+              <AfterNodeChildren
                 {...({
                   attributes: baseAttributes,
                   editor,
@@ -2758,7 +2716,9 @@ function BenchmarkEditableMount({
         return renderElement(props);
       }
 
-      if (elementBenchmarkMode === 'pipe-plugin-precomputed-no-below-root') {
+      if (
+        elementBenchmarkMode === 'pipe-plugin-precomputed-no-after-children'
+      ) {
         if (
           elementPlugin &&
           elementType &&
@@ -2796,7 +2756,10 @@ function BenchmarkEditableMount({
               [typeClass, baseAttributes.className].filter(Boolean).join(' ') ||
               undefined,
           };
-          const Tag = elementPlugin.render?.as ?? 'div';
+          const Tag =
+            typeof elementPlugin.component === 'string'
+              ? elementPlugin.component
+              : 'div';
 
           return (
             <Tag
@@ -2831,14 +2794,14 @@ function BenchmarkEditableMount({
         );
       }
 
-      if (elementBenchmarkMode === 'render-as-provider') {
+      if (elementBenchmarkMode === 'intrinsic-provider') {
         const pluginContext = elementPlugin
           ? editor.plugin(elementPlugin.name)
           : { api: editor.api, editor };
         const ctxProps = {
           ...props,
           ...pluginContext,
-          as: elementPlugin?.render?.as,
+          as: elementPlugin?.component,
           attributes: baseAttributes,
           editor,
           path,
@@ -2855,14 +2818,14 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </ElementProvider>
         );
       }
 
-      if (elementBenchmarkMode === 'render-as-no-provider') {
-        const Tag = elementPlugin?.render?.as ?? 'div';
+      if (elementBenchmarkMode === 'intrinsic-no-provider') {
+        const Tag = elementPlugin?.component ?? 'div';
 
         return (
           <Tag
@@ -2878,7 +2841,7 @@ function BenchmarkEditableMount({
           >
             {props.children}
 
-            <BelowRootNodes
+            <AfterNodeChildren
               {...({
                 attributes: baseAttributes,
                 editor,
@@ -2990,7 +2953,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </ElementProvider>
         );
@@ -3026,7 +2989,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeHookElement>
           </ElementProvider>
         );
@@ -3064,7 +3027,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeHookElement>
           </BenchElementContext.Provider>
         );
@@ -3099,7 +3062,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeHookElement>
           </BenchJotaiStoreProvider>
         );
@@ -3136,7 +3099,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeHookElement>
           </BenchJotaiHydrateOnlyProvider>
         );
@@ -3173,7 +3136,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeHookElement>
           </BenchJotaiHydrateSyncProvider>
         );
@@ -3209,7 +3172,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeSelectorElement>
           </ElementProvider>
         );
@@ -3249,7 +3212,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeSelectorElement>
           </BenchElementContext.Provider>
         );
@@ -3286,7 +3249,7 @@ function BenchmarkEditableMount({
             >
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </BenchRenderNodeSelectorElement>
           </BenchJotaiStoreProvider>
         );
@@ -3314,7 +3277,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </ElementProvider>
         );
@@ -3344,7 +3307,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchElementContext.Provider>
         );
@@ -3371,7 +3334,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchJotaiStoreProvider>
         );
@@ -3400,7 +3363,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchJotaiHydrateOnlyProvider>
         );
@@ -3429,7 +3392,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchJotaiHydrateSyncProvider>
         );
@@ -3456,7 +3419,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchZustandStoreProvider>
         );
@@ -3485,7 +3448,7 @@ function BenchmarkEditableMount({
             <PlateElement {...ctxProps}>
               {props.children}
 
-              <BelowRootNodes {...ctxProps} />
+              <AfterNodeChildren {...ctxProps} />
             </PlateElement>
           </BenchElementProviderPropEffect>
         );
@@ -3528,7 +3491,7 @@ function BenchmarkEditableMount({
         <PlateElement {...ctxProps}>
           {props.children}
 
-          <BelowRootNodes {...ctxProps} />
+          <AfterNodeChildren {...ctxProps} />
         </PlateElement>
       );
     };
@@ -3664,8 +3627,8 @@ function BenchmarkEditableMount({
   );
 
   return (
-    <Plate editor={editor}>
-      <PlateContent
+    <Plite editor={editor}>
+      <PliteEditable
         className="min-h-[70vh] outline-none"
         readOnly={false}
         renderElement={finalRenderElement as any}
@@ -3673,7 +3636,7 @@ function BenchmarkEditableMount({
         renderText={finalRenderText}
         spellCheck={false}
       />
-    </Plate>
+    </Plite>
   );
 }
 
@@ -3686,8 +3649,6 @@ function CoreMountSurface({
   config: BenchmarkConfig;
   editor: Editor;
 }) {
-  const { id } = editor;
-
   return (
     <div className="h-full overflow-auto p-4">
       <Plate editor={editor}>
@@ -3698,273 +3659,232 @@ function CoreMountSurface({
             <div />
           </Plate>
         ) : caseId === 'editable-static' ? (
-          <BenchmarkEditableMount config={config} id={id} />
+          <BenchmarkEditableMount config={config} />
         ) : caseId === 'editable-element-plate-element-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plate-element-no-provider"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plate-element-plugin-only-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plate-element-plugin-only-no-provider"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plate-element-plugin-context-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plate-element-plugin-context-no-provider"
-            id={id}
           />
         ) : caseId === 'editable-element-pipe-plugin-precomputed-path' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="pipe-plugin-precomputed-path"
-            id={id}
           />
         ) : caseId ===
-          'editable-element-pipe-plugin-precomputed-no-below-root' ? (
+          'editable-element-pipe-plugin-precomputed-no-after-children' ? (
           <BenchmarkEditableMount
             config={config}
-            elementBenchmarkMode="pipe-plugin-precomputed-no-below-root"
-            id={id}
+            elementBenchmarkMode="pipe-plugin-precomputed-no-after-children"
           />
         ) : caseId === 'editable-element-pipe-bare-plain-fast-path' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="pipe-bare-plain-fast-path"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-only' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="provider-only"
-            id={id}
           />
-        ) : caseId === 'editable-element-render-as-provider' ? (
+        ) : caseId === 'editable-element-intrinsic-provider' ? (
           <BenchmarkEditableMount
             config={config}
-            elementBenchmarkMode="render-as-provider"
-            id={id}
+            elementBenchmarkMode="intrinsic-provider"
           />
-        ) : caseId === 'editable-element-render-as-no-provider' ? (
+        ) : caseId === 'editable-element-intrinsic-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
-            elementBenchmarkMode="render-as-no-provider"
-            id={id}
+            elementBenchmarkMode="intrinsic-no-provider"
           />
         ) : caseId === 'editable-element-provider-only-plain-context' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plain-context-provider-only"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-only-jotai-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-provider-only"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-only-jotai-hydrate-only' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-hydrate-only-provider-only"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-only-jotai-hydrate-sync' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-hydrate-sync-provider-only"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-only-zustand-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="zustand-provider-only"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-prop-effect' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="provider-prop-effect"
-            id={id}
           />
         ) : caseId === 'editable-element-plugin-precomputed-no-element-hook' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-precomputed-no-element-hook"
-            id={id}
           />
         ) : caseId === 'editable-element-provider-plate-element' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="provider-plate-element"
-            id={id}
           />
         ) : caseId === 'editable-element-plugin-render-node-hooks' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-hooks"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-hooks-plain-context' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-hooks-plain-context"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-hooks-jotai-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-hooks-jotai-provider"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-hooks-jotai-hydrate-only' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-hooks-jotai-hydrate-only"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-hooks-jotai-hydrate-sync' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-hooks-jotai-hydrate-sync"
-            id={id}
           />
         ) : caseId === 'editable-element-plugin-render-node-selector' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-selector"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-selector-plain-context' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-selector-plain-context"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-render-node-selector-jotai-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-render-node-selector-jotai-provider"
-            id={id}
           />
         ) : caseId === 'editable-element-plugin-precomputed-fast-node-props' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-precomputed-fast-node-props"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-precomputed-fast-node-props-plain-context' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plain-context-plugin-fast-node-props"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-precomputed-fast-node-props-jotai-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-provider-plugin-fast-node-props"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-only' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-hydrate-only-plugin-fast-node-props"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-precomputed-fast-node-props-jotai-hydrate-sync' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="jotai-hydrate-sync-plugin-fast-node-props"
-            id={id}
           />
         ) : caseId ===
           'editable-element-plugin-precomputed-fast-node-props-zustand-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="zustand-provider-plugin-fast-node-props"
-            id={id}
           />
         ) : caseId === 'editable-element-plugin-precomputed-prop-effect' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="plugin-precomputed-prop-effect"
-            id={id}
           />
         ) : caseId === 'editable-element-render-node-props-no-provider' ? (
           <BenchmarkEditableMount
             config={config}
             elementBenchmarkMode="render-node-props-no-provider"
-            id={id}
           />
         ) : caseId === 'editable-element-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeElement />
-        ) : caseId === 'editable-element-pipe-render-as-basic' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeElement />
+          <BenchmarkEditableMount config={config} pipeElement />
+        ) : caseId === 'editable-element-pipe-intrinsic-basic' ? (
+          <BenchmarkEditableMount config={config} pipeElement />
         ) : caseId === 'editable-element-fallback-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeElement />
+          <BenchmarkEditableMount config={config} pipeElement />
         ) : caseId === 'editable-element-plugin-precomputed-path' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             precomputedElementPluginPath
           />
         ) : caseId === 'editable-leaf-text-bold-direct-renderers' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="bold-direct-renderers"
           />
         ) : caseId === 'editable-leaf-text-bold-plugin-leaf-direct' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="bold-plugin-leaf"
           />
         ) : caseId === 'editable-leaf-text-bold-plateleaf-direct' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="bold-plateleaf"
           />
         ) : caseId === 'editable-leaf-text-bold-leaf-node-props' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="bold-ctx-plateleaf"
           />
         ) : caseId === 'editable-leaf-text-bold-leaf-pipe' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextPipeMode="leaf-only"
             pipeLeafText
           />
         ) : caseId === 'editable-leaf-text-bold-leaf-pipe-bold-only' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextPipeMode="leaf-only"
             pipeLeafText
           />
         ) : caseId === 'editable-leaf-text-bold-leaf-pipe-plain-outer' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="plain-renderers"
             leafTextPipeMode="leaf-only"
             pipeLeafText
@@ -3972,81 +3892,60 @@ function CoreMountSurface({
         ) : caseId === 'editable-leaf-text-bold-text-pipe' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextPipeMode="text-only"
             pipeLeafText
           />
         ) : caseId === 'editable-leaf-text-code-direct-renderers' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="code-direct-renderers"
           />
         ) : caseId === 'editable-leaf-text-code-plateleaf-direct' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="code-plateleaf"
           />
         ) : caseId === 'editable-leaf-text-code-plugin-leaf-direct' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="code-plugin-leaf"
           />
         ) : caseId === 'editable-leaf-text-code-pipe' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextPipeMode="leaf-only"
             pipeLeafText
           />
         ) : caseId === 'editable-leaf-text-code-text-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeLeafText />
+          <BenchmarkEditableMount config={config} pipeLeafText />
         ) : caseId === 'editable-leaf-text-bold-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeLeafText />
+          <BenchmarkEditableMount config={config} pipeLeafText />
         ) : caseId === 'editable-leaf-text-underline-direct-renderers' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="underline-direct-renderers"
           />
         ) : caseId === 'editable-leaf-text-underline-plugin-leaf-direct' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="underline-plugin-leaf"
           />
         ) : caseId === 'editable-leaf-text-underline-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeLeafText />
+          <BenchmarkEditableMount config={config} pipeLeafText />
         ) : caseId === 'editable-leaf-text-pipe' ? (
-          <BenchmarkEditableMount config={config} id={id} pipeLeafText />
+          <BenchmarkEditableMount config={config} pipeLeafText />
         ) : caseId === 'editable-leaf-text-plain-renderers' ? (
           <BenchmarkEditableMount
             config={config}
-            id={id}
             leafTextBenchmarkMode="plain-renderers"
             pipeLeafText
           />
         ) : caseId === 'editable-render-pipes' ? (
-          <BenchmarkEditableMount
-            config={config}
-            id={id}
-            pipeElement
-            pipeLeafText
-          />
+          <BenchmarkEditableMount config={config} pipeElement pipeLeafText />
         ) : (
           <PlateContent
             className="min-h-[70vh] outline-none"
             domStrategy={getBenchmarkDOMStrategy(config)}
-            renderElement={(props) => (
-              <BenchmarkElement
-                {...props}
-                elementContentVisibility={
-                  config.contentVisibility === 'element'
-                }
-              />
-            )}
             spellCheck={false}
           />
         )}
@@ -6010,28 +5909,30 @@ export default function EditorPerfPage() {
 
         <div className="space-y-4">
           <div className="rounded-xl border bg-background">
-            <React.Profiler
-              key={`${displayMode}:${activeScenarioId}:${mountVersion}`}
-              id={activeScenarioId}
-              onRender={onRender}
-            >
-              {displayMode === 'prebuilt' && prebuiltEditor ? (
-                <PrebuiltScenarioEditor
-                  key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
-                  config={config}
-                  editor={prebuiltEditor}
-                  scenario={activeScenario}
-                />
-              ) : (
-                <ScenarioEditor
-                  key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
-                  config={config}
-                  editorRef={editorRef}
-                  scenario={activeScenario}
-                  value={activeValue}
-                />
-              )}
-            </React.Profiler>
+            {didLoadSearchParams && (
+              <React.Profiler
+                key={`${displayMode}:${activeScenarioId}:${mountVersion}`}
+                id={activeScenarioId}
+                onRender={onRender}
+              >
+                {displayMode === 'prebuilt' && prebuiltEditor ? (
+                  <PrebuiltScenarioEditor
+                    key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
+                    config={config}
+                    editor={prebuiltEditor}
+                    scenario={activeScenario}
+                  />
+                ) : (
+                  <ScenarioEditor
+                    key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
+                    config={config}
+                    editorRef={editorRef}
+                    scenario={activeScenario}
+                    value={activeValue}
+                  />
+                )}
+              </React.Profiler>
+            )}
           </div>
 
           <div className="rounded-xl border bg-background p-4">

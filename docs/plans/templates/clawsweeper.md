@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short ClawSweeper objective, under 240 characters. Put the full
 ledger/provenance/claim contract in the sections below.
@@ -22,9 +24,9 @@ First checkpoint:
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
-- initial confidence score: pending
+- initial evidence or measured baseline: pending
 - improvement loop: pending
-- final score / loop closure: pending
+- final evidence / loop closure: pending
 
 Completion threshold:
 - TODO: Define the exact ledger/provenance/claim done state.
@@ -45,7 +47,7 @@ Constraints:
   classification, exact claim hygiene, fork dossier accounting, gitcrawl
   archive refresh, and subordinate external issue provenance.
 - `maintainer` owns public issue/PR/security queue orchestration.
-- `resolve-slate-issue`, `plite-patch`, `auto`, `issue-harvester`, or
+- `maintainer slate-issue`, `patch`, `task autonomous`, `issue-harvester`, or
   `security-triage` own execution when the decision leaves ledger hygiene.
 - No GitHub comments, labels, closes, reopens, reviews, commits, pushes, PRs,
   releases, or public mutations unless explicitly authorized.
@@ -100,7 +102,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | Maintainer boundary checked | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Source ledgers read before edits | pending | pending |
 | Live-state requirement decided | pending | pending |
 | Archive/gitcrawl freshness decided | pending | pending |
@@ -143,7 +145,7 @@ Completion Gates:
 | Dossier/matrix sync | pending | Update or mark N/A for fork dossier, issue coverage matrix, sync ledger, and PR text | pending |
 | Owner handoff | pending | Route execution/security/queue work to owner or record N/A | pending |
 | Public mutation boundary | pending | Confirm none, or record explicit user authority and result | pending |
-| P1 autoreview | pending | Run with `--max-priority P1` for non-trivial ledger/provenance edits; P2/P3 are opt-in only, else N/A with reason | pending |
+| Task review decision | pending | Reuse Task's single authorized review result or N/A; P1 default, three-invocation scope cap, never on next; no review for direct release sync | pending |
 | Final handoff contract | pending | Report decisions, changed list, proof, routed owners, needs-user-attention, and open risks | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

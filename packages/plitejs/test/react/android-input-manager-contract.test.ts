@@ -154,7 +154,7 @@ describe('Android input manager phase scheduling', () => {
         },
       }
     );
-    const firstManager = mounted.result.current;
+    const firstManager = mounted.result.current!;
 
     expect(EDITOR_TO_SCHEDULE_FLUSH.get(firstEditor)).toBe(
       firstManager.scheduleFlush
@@ -166,7 +166,7 @@ describe('Android input manager phase scheduling', () => {
       scheduleTask: secondSchedule,
     });
 
-    const secondManager = mounted.result.current;
+    const secondManager = mounted.result.current!;
 
     expect(secondManager).not.toBe(firstManager);
     expect(EDITOR_TO_SCHEDULE_FLUSH.get(firstEditor)).toBeUndefined();

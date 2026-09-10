@@ -1,12 +1,21 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+  existsSync,
+  readFileSync,
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import { plitePackages, repoRoot } from './check-plite.mjs';
-import { createTypeAwareLintSteps } from './lint-type-aware.mjs';
 
 const require = createRequire(import.meta.url);
 const {
@@ -36,17 +45,29 @@ test('workspace source entries cover every public runtime entry exactly once', (
   }
 });
 
-test('www does not expose Plite runtime aliases to application code', () => {
+test('www resolves public Plite dependencies against workspace source', () => {
   const appRoot = path.join(repoRoot, 'apps/www');
   const appConfig = JSON.parse(
     readFileSync(path.join(appRoot, 'tsconfig.json'), 'utf-8')
   );
   const { paths } = appConfig.compilerOptions;
+  const entries = getWorkspaceSourceEntries(repoRoot).filter(
+    ({ specifier }) =>
+      specifier === 'plitejs' || specifier.startsWith('plitejs/')
+  );
 
   assert.deepEqual(
-    Object.keys(paths).filter((specifier) => specifier.startsWith('plitejs')),
-    []
+    Object.keys(paths)
+      .filter((specifier) => specifier.startsWith('plitejs'))
+      .sort(),
+    entries.map(({ specifier }) => specifier).sort()
   );
+
+  for (const { sourceEntry, specifier } of entries) {
+    assert.deepEqual(paths[specifier], [
+      path.relative(appRoot, sourceEntry).replaceAll('\\', '/'),
+    ]);
+  }
 });
 
 test('Plite CI runs the repository Bun version', () => {
@@ -94,6 +115,26 @@ test('ordinary package tests use the root source-first Bun config', () => {
   );
 });
 
+test('Plate public import smoke resolves test entrypoints from root and package cwd', () => {
+  for (const [cwd, filename] of [
+    [repoRoot, './packages/platejs/test/public-package-import-smoke.slow.ts'],
+    [
+      path.join(repoRoot, 'packages/platejs'),
+      './test/public-package-import-smoke.slow.ts',
+    ],
+  ]) {
+    const result = spawnSync('bun', ['test', filename], {
+      cwd,
+      encoding: 'utf-8',
+      timeout: 60_000,
+    });
+
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    assert.match(result.stderr + result.stdout, /Ran \d+ tests across 1 file/u);
+  }
+});
+
 test('package typecheck gets source paths without exposing them to Bun', () => {
   const packageRunner = readFileSync(
     path.join(repoRoot, 'tooling/scripts/run-with-pkg-dir.cjs'),
@@ -120,40 +161,84 @@ test('package typecheck gets source paths without exposing them to Bun', () => {
   assert.doesNotMatch(rootManifest.scripts['plite:typecheck'], /--parallel/);
 });
 
-test('type-aware lint prepares exact package declarations before Oxlint', () => {
-  const rootManifest = JSON.parse(
+test('type-aware lint resolves workspace source without built declarations', (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), 'plate-lint-source-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const library = path.join(root, 'packages/library');
+  mkdirSync(path.join(library, 'src'), { recursive: true });
+  symlinkSync(
+    path.join(repoRoot, 'node_modules'),
+    path.join(root, 'node_modules'),
+    'junction'
+  );
+  writeFileSync(
+    path.join(library, 'package.json'),
+    JSON.stringify({
+      name: '@fixture/library',
+      type: 'module',
+      exports: {
+        '.': { types: './dist/index.d.ts', import: './dist/index.js' },
+      },
+    })
+  );
+  const source = path.join(library, 'src/index.ts');
+  writeFileSync(source, 'export const count = (): number => 1;');
+  const paths = Object.fromEntries(
+    getWorkspaceSourceEntries(root).map(({ specifier, sourceEntry }) => [
+      specifier,
+      [sourceEntry],
+    ])
+  );
+  writeFileSync(
+    path.join(root, 'tsconfig.json'),
+    JSON.stringify({
+      compilerOptions: {
+        target: 'ESNext',
+        module: 'ESNext',
+        moduleResolution: 'bundler',
+        strict: true,
+        paths,
+      },
+      include: ['**/*.ts'],
+    })
+  );
+  writeFileSync(
+    path.join(root, 'check.ts'),
+    "import { count } from '@fixture/library';\nasync function check() { await count(); }\nvoid check();\n"
+  );
+  writeFileSync(
+    path.join(root, 'oxlint.json'),
+    JSON.stringify({
+      plugins: ['typescript'],
+      rules: { 'typescript/await-thenable': 'error' },
+    })
+  );
+  const manifest = JSON.parse(
     readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
   );
-  const steps = createTypeAwareLintSteps({ root: repoRoot });
-
-  assert.equal(
-    rootManifest.scripts['lint:type-aware'],
-    'node tooling/scripts/lint-type-aware.mjs'
-  );
-  assert.deepEqual(steps[0].args, ['g:build']);
-  assert.deepEqual(steps[1].args, [
-    '--type-aware',
-    '--report-unused-disable-directives-severity=error',
-    '.',
-  ]);
-  assert.equal(
-    steps[1].args.some((arg) => arg.startsWith('--tsconfig')),
-    false
-  );
-
-  const windowsSteps = createTypeAwareLintSteps({
-    platform: 'win32',
-    root: repoRoot,
-  });
-
-  assert.equal(windowsSteps[0].command, 'pnpm.cmd');
-  assert.equal(windowsSteps[0].shell, true);
-  assert.match(windowsSteps[1].command, /oxlint\.cmd$/);
-  assert.equal(windowsSteps[1].shell, true);
-  assert.equal(
-    steps.every((step) => !step.shell),
-    true
-  );
+  const [command, ...args] = manifest.scripts['lint:type-aware'].split(' ');
+  const run = () =>
+    spawnSync(
+      path.join(
+        repoRoot,
+        'node_modules/.bin',
+        process.platform === 'win32' ? `${command}.cmd` : command
+      ),
+      [
+        ...args.slice(0, -1),
+        '--no-ignore',
+        '--config',
+        'oxlint.json',
+        'check.ts',
+      ],
+      { cwd: root, encoding: 'utf-8', shell: process.platform === 'win32' }
+    );
+  const invalid = run();
+  assert.equal(invalid.status, 1, invalid.stderr + invalid.stdout);
+  assert.match(invalid.stdout + invalid.stderr, /await-thenable/);
+  writeFileSync(source, 'export const count = async (): Promise<number> => 1;');
+  const valid = run();
+  assert.equal(valid.status, 0, valid.stderr + valid.stdout);
 });
 
 test('every Plite package typechecks against workspace source', () => {

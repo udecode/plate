@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short Regression objective under 240 characters.
 
@@ -11,13 +13,6 @@ Goal plan:
 
 Template:
 {{TEMPLATE_PATH}}
-
-Primary template:
-{{TEMPLATE_PATH}}
-
-Applied packs:
-
-- none
 
 Regression source:
 
@@ -57,6 +52,10 @@ Completion threshold:
   pointer feedback, focus, popup, geometry/paint, runtime errors, and follow-up
   input, with an N/A reason for observations that do not apply.
 - Current source and every proof host are ready before behavior claims.
+- Every reporter-named route uses one literal `exact-route:` in the selected
+  environment and Proof-host readiness row. Final proof names the route and a
+  receipt input contains it as the executable navigation target; proxy routes
+  cannot certify it.
 - Every kept case has exact reproduction, one-case Patch evidence, focused
   green proof, required retry-free stability, final ref/dirty-boundary proof,
   and no accepted P1 finding.
@@ -70,6 +69,10 @@ Completion threshold:
   Plite/Plate layer plan before implementation resumes.
 - Final proof has a generated receipt and affected-corpus replay after the last
   shared-owner edit.
+- Render-count, rerender, and profiler-event cases declare every measured event
+  emitter/router/filter/aggregator/render owner as `measurement-owner-inputs:`;
+  completion records `measurement-owner-closure: pass`, and one final receipt
+  includes every named path.
 - All canonical Work Checklist and Completion Gates rows resolve and
   both semantic validation and `check-complete.mjs` pass.
 
@@ -80,7 +83,7 @@ Verification surface:
 - source/host freshness proof and exact final ref
 - generated proof receipts and affected-corpus replay
 - `node .agents/skills/regression/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete`
-- P1 autoreview for non-trivial implementation packets
+- Task-owned review when explicitly requested or closing a PR
 - `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
 
 Constraints:
@@ -149,7 +152,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured | pending | pending |
 | Regression methodology loaded | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Current source owner and tested ref recorded | pending | pending |
 | Executable test cases discovered | pending | pending |
 | Cumulative reporter evidence resolved | pending | Original report, acceptance criteria, recordings, and every later reporter delta are inventoried without dropping still-applicable claims. |
@@ -170,6 +173,11 @@ Work Checklist:
       budget, and blocked condition are concrete.
 - [ ] Current source, exact ref/dirty boundary, test runner, route/proof host,
       export/build path, and freshness method are recorded.
+- [ ] Every reporter-named route binds one literal `exact-route:` across the
+      selected environment and Proof-host readiness row. Final proof names that
+      route, a receipt input contains it as executable navigation, and a
+      route-based reporter contradiction records
+      `exact-route-reproduction: red` or `pass` before product work resumes.
 - [ ] Generated/source drift and host readiness are repaired or block the claim.
 - [ ] Every selected case has a stable ID, source reference, owner, setup,
       action, expected outcome, expected-outcome authority, executable test
@@ -234,6 +242,11 @@ Work Checklist:
       `physical-hit-target: pass`, `click-delivery: pass`, and
       `selection-origin: pass`. Locator clicks and direct Range mutation remain
       proxy evidence.
+- [ ] A physical pointer path appears in setup only when the case's source,
+      action, or outcome claims that path. Setup-only selection uses the
+      smallest deterministic browser setup such as `locator.selectText()` or
+      native-keyboard selection, asserts the seeded state, and does not widen
+      the result. Reporter-identified pointer paths still use physical proof.
 - [ ] When reporter video visibly identifies a browser family, profile,
       extension, or browser-owned overlay, required evidence and Exact
       environment record
@@ -392,6 +405,7 @@ Completion Gates:
 | Named completion threshold | pending | Close every selected executable case and methodology row | pending |
 | Current-source readiness | pending | Prove source owner and final tested ref/dirty boundary | pending |
 | Route/proof-host readiness | pending | Prove the runner/host observes current source | pending |
+| Exact reporter route | pending | Bind reporter route through selected environment, proof host, final command, and executable receipt input; reject proxy routes | pending |
 | Executable regression coverage | pending | Record exact test file, red result, green result, and owning invariant | pending |
 | E2E escalation closure | pending | Prove each case uses `unit-red:` without a new E2E or records `e2e-required:` with the exact unit/package limitation | pending |
 | Cumulative reporter evidence closure | pending | Map every still-applicable base acceptance and later reporter delta to a phase-specific executable oracle | pending |
@@ -399,6 +413,7 @@ Completion Gates:
 | Failed-fix interrupt closure | pending | Prove every claimed-fix failure invalidated prior proof and completed automatic Regression repair | pending |
 | Architecture pressure closure | pending | Prove every second failure or architecture trigger has Best API and layer-plan evidence | pending |
 | Proof receipt closure | pending | Validate generated final receipts against unchanged issue-owned inputs | pending |
+| Measurement-owner closure | pending | For render-count/rerender/profiler claims, bind every measured event emitter/router/filter/aggregator/render owner through `measurement-owner-inputs:` and one completed receipt | pending |
 | Affected-corpus replay closure | pending | Replay all cases affected by the last shared-owner edit | pending |
 | Shared-style consumer closure | pending | Inventory every shared selector/class consumer and prove explicit paint neutralizers do not inherit or duplicate the shared surface | pending |
 | Started-gate failure closure | pending | Rerun every requested or started gate that failed; completion requires the exact gate to pass on final bytes | pending |
@@ -416,7 +431,7 @@ Completion Gates:
 | Source/generated sync | pending | Run `pnpm install` and parity audit when agent sources changed, otherwise N/A | pending |
 | Agent-native review | pending | Run for changed agent workflows or record N/A | pending |
 | Final handoff contract | pending | Record tests, decisions, proof, sync, reviews, risks, and next owner | pending |
-| Autoreview | pending | Run P1 autoreview for non-trivial implementation changes or record N/A | pending |
+| Autoreview | pending | Run Task-owned review when explicitly requested or closing a PR or record N/A | pending |
 | Regression semantic plan | yes | Run `node .agents/skills/regression/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete` | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
@@ -453,6 +468,11 @@ Reporter oracle matrix:
 For an effect-owned disposable source, the `subscription-lifecycle` row records
 `strict-effect: mount + cleanup + remount` and closes with `mount: pass`,
 `cleanup: pass`, `remount: pass`, and `post-remount-publication: pass`.
+
+For render-count, rerender, or profiler-event proof, the applicable oracle's
+positive assertion records `measurement-owner-inputs: <comma-separated paths>`.
+Its result records `measurement-owner-closure: pass`; one completed receipt
+must contain every named path.
 
 | Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
 |---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|

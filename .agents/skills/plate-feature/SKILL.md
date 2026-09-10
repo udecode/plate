@@ -9,6 +9,9 @@ metadata:
 
 # Plate Feature
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Own one cross-layer feature manifest from intake through handoff. This skill
@@ -46,12 +49,12 @@ Every worker owns its own law:
 | cross-layer or breaking adoption plan                             | `plate-plan`           |
 | entrypoint semantics, plugin mechanics, colocation, package proof | `plate-plugin-creator` |
 | React adapters, copied UI, kits, metadata, browser proof          | `plate-ui`             |
-| current-state public teaching                                     | `docs-creator`         |
+| current-state public teaching                                     | Plate Docs         |
 | package release notes                                             | `changeset`            |
 | registry release notes                                            | `registry-changelog`   |
 | final adoption/version audit                                      | `plate-next`           |
 | pre-acceptance and final runtime scale proof                      | `benchmark`            |
-| closure review                                                    | `autoreview`           |
+| applicable closure review                                         | Task's shared review budget |
 
 ## Goal
 
@@ -212,8 +215,8 @@ Advance one phase at a time:
 9. write current-state docs and release artifacts;
 10. run package, type, registry, browser, stale-surface, and applicable final
     production-path scale proof;
-11. resolve Plate Next attestation in the same manifest, then run P1 review and
-    handoff. Attest only after a full current package review.
+11. resolve Plate Next attestation in the same manifest and Task's applicable
+    review gate, then hand off. Attest only after a full current package review.
 
 A row may be skipped only as `no` with a concrete N/A reason. Headless and
 registry-only flows are first-class modes, not incomplete full flows.
@@ -227,7 +230,7 @@ node tooling/scripts/check-plate-feature.mjs <plan>
 ```
 
 Then run the proof selected by the manifest, Plate Next version/status checks
-for reviewed packages, and P1 `autoreview`. Never mass-attest packages after a
+for reviewed packages, and Task's applicable review. Never mass-attest packages after a
 doctrine bump. A package advances only after its own full current review and
 recorded evidence.
 

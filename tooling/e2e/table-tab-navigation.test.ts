@@ -1,28 +1,6 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import { expect, type Locator, test } from '@playwright/test';
 
-const recordRuntimeErrors = (page: Page) => {
-  const errors: string[] = [];
-  const onConsole = (message: { text: () => string; type: () => string }) => {
-    if (message.type() === 'error') errors.push(message.text());
-  };
-  const onPageError = (error: Error) => {
-    errors.push(error.stack ?? error.message);
-  };
-
-  page.on('console', onConsole);
-  page.on('pageerror', onPageError);
-
-  return {
-    assertNone: () => expect(errors).toEqual([]),
-    reset: () => {
-      errors.length = 0;
-    },
-    stop: () => {
-      page.off('console', onConsole);
-      page.off('pageerror', onPageError);
-    },
-  };
-};
+import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const readSelection = async (target: Locator) =>
   target.evaluate((element) => {
@@ -44,7 +22,7 @@ const readSelection = async (target: Locator) =>
 test('Tab and Shift+Tab place one caret in the destination table cell (#5065)', async ({
   page,
 }) => {
-  const runtimeErrors = recordRuntimeErrors(page);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
   const editor = page.locator(
     '[data-plite-editor="true"][contenteditable="true"]'
   );

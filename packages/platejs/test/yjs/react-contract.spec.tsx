@@ -5,18 +5,17 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import type { Descendant, Range } from '../../src/core';
-import { BaseParagraphPlugin } from '../../src/core';
-import type {
-  Editor as ReactViewEditor,
-  PlateLeafProps,
-} from '../../src/react/core';
 import {
-  createEditor,
-  Plate,
-  PlateContent,
-  PlateLeaf,
-} from '../../src/react/core';
+  FakeAwareness,
+  FakeProvider,
+  type Peer,
+  paragraph,
+  runYjsUpdate,
+} from '../../../plitejs/test/yjs/support/collaboration';
+import type { Range, Value } from '../../src/index';
+import { BaseParagraphPlugin } from '../../src/index';
+import type { Editor as ReactViewEditor } from '../../src/react/core';
+import { createEditor, Plate, PlateContent } from '../../src/react/core';
 import {
   useYjsProviderStatus,
   useYjsProviderSynced,
@@ -25,13 +24,6 @@ import {
   useYjsRemoteCursorIds,
 } from '../../src/yjs/react';
 import { YjsPlugin } from '../../src/yjs/react/index';
-import {
-  FakeAwareness,
-  FakeProvider,
-  type Peer,
-  paragraph,
-  runYjsUpdate,
-} from './support/collaboration';
 import { createYjsReactPeer } from './support/react-collaboration';
 
 const shouldUnregisterHappyDOM = !GlobalRegistrator.isRegistered;
@@ -49,7 +41,7 @@ after(() => {
   }
 });
 
-const initialValue = (): Descendant[] => [
+const initialValue = (): Value => [
   paragraph('alpha'),
   paragraph('beta'),
   paragraph('gamma'),
@@ -101,20 +93,6 @@ const sendRemoteSelection = (
       selection: awareness.getLocalState()?.selection,
     });
   });
-};
-
-const YjsLeaf = (props: PlateLeafProps<typeof YjsPlugin>) => {
-  const cursor = props.leaf.yjsRemoteCursor;
-
-  return (
-    <PlateLeaf
-      {...props}
-      attributes={{
-        ...props.attributes,
-        ...(cursor ? { 'data-yjs-client': cursor.clientId } : {}),
-      }}
-    />
-  );
 };
 
 void describe('platejs/yjs react contract', () => {
@@ -209,7 +187,6 @@ void describe('platejs/yjs react contract', () => {
         BaseParagraphPlugin,
         YjsPlugin.configure({
           initialState: { clientId: 'local', provider },
-          render: { leaf: YjsLeaf },
         }),
       ],
       schema: { id: 'plate:yjs-keyed-decoration', version: 1 },
@@ -230,7 +207,9 @@ void describe('platejs/yjs react contract', () => {
     });
 
     assert.equal(
-      view.container.querySelector('[data-yjs-client="202"]')?.textContent,
+      view.container.querySelector(
+        '[data-remote-selection][data-client-id="202"]'
+      )?.textContent,
       'lp'
     );
 
@@ -244,7 +223,9 @@ void describe('platejs/yjs react contract', () => {
     });
 
     assert.equal(
-      view.container.querySelector('[data-yjs-client="202"]')?.textContent,
+      view.container.querySelector(
+        '[data-remote-selection][data-client-id="202"]'
+      )?.textContent,
       'be'
     );
 
@@ -263,7 +244,6 @@ void describe('platejs/yjs react contract', () => {
         BaseParagraphPlugin,
         YjsPlugin.configure({
           initialState: { clientId: 'local', provider },
-          render: { leaf: YjsLeaf },
         }),
       ],
       schema: { id: 'plate:yjs-keyed-decoration-reconnect', version: 1 },
@@ -284,7 +264,9 @@ void describe('platejs/yjs react contract', () => {
     });
 
     assert.equal(
-      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      view.container.querySelectorAll(
+        '[data-remote-selection][data-client-id="202"]'
+      ).length,
       1
     );
 
@@ -292,7 +274,9 @@ void describe('platejs/yjs react contract', () => {
       editor.update.yjs.disconnect();
     });
     assert.equal(
-      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      view.container.querySelectorAll(
+        '[data-remote-selection][data-client-id="202"]'
+      ).length,
       0
     );
 
@@ -300,7 +284,9 @@ void describe('platejs/yjs react contract', () => {
       editor.update.yjs.connect();
     });
     assert.equal(
-      view.container.querySelectorAll('[data-yjs-client="202"]').length,
+      view.container.querySelectorAll(
+        '[data-remote-selection][data-client-id="202"]'
+      ).length,
       1
     );
 

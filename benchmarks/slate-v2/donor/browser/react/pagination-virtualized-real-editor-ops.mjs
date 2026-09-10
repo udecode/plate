@@ -5,6 +5,8 @@ import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import handler from 'serve-handler';
 
+import { readBrowserTextTarget } from '../../shared/browser-text-target.mjs';
+
 import {
   round,
   summarize,
@@ -710,54 +712,12 @@ const waitForTopLevelElementCount = (page, count) =>
   );
 
 const getTextTarget = async (page, path, placement = 'start') => {
-  const target = await page.evaluate(
-    ({ path: blockPath, placement: targetPlacement }) => {
-      const viewport = document.querySelector(
-        '[data-testid="pagination-viewport"]'
-      );
-      const viewportRect =
-        viewport instanceof HTMLElement
-          ? viewport.getBoundingClientRect()
-          : {
-              bottom: innerHeight,
-              top: 0,
-            };
-      const block = document.querySelector(
-        `[data-plite-node="element"][data-plite-path="${blockPath}"]`
-      );
-      const leaves = Array.from(
-        block?.querySelectorAll('[data-plite-leaf]') ?? []
-      ).filter((node) => node instanceof HTMLElement);
-      const leaf = leaves.find((candidate) => {
-        const rect = candidate.getBoundingClientRect();
-
-        return (
-          rect.width > 0 &&
-          rect.height > 0 &&
-          rect.bottom > viewportRect.top + 8 &&
-          rect.top < viewportRect.bottom - 8
-        );
-      });
-
-      if (!(block instanceof HTMLElement) || !(leaf instanceof HTMLElement)) {
-        return null;
-      }
-
-      const rect = leaf.getBoundingClientRect();
-      const x =
-        targetPlacement === 'end'
-          ? Math.max(rect.left + 4, rect.right - 4)
-          : Math.min(rect.right - 4, rect.left + 60);
-
-      return {
-        blockText: block.textContent ?? '',
-        path: blockPath,
-        x,
-        y: (rect.top + rect.bottom) / 2,
-      };
-    },
-    { path, placement }
-  );
+  const target = await page.evaluate(readBrowserTextTarget, {
+    selector: `[data-plite-node="element"][data-plite-path="${path}"]`,
+    viewportSelector: '[data-testid="pagination-viewport"]',
+    inset: 8,
+    placement,
+  });
 
   if (!target) {
     throw new Error(`Unable to find visible pagination text target at ${path}`);
@@ -767,57 +727,10 @@ const getTextTarget = async (page, path, placement = 'start') => {
 };
 
 const getVisibleTextTarget = async (page) => {
-  const target = await page.evaluate(() => {
-    const viewport = document.querySelector(
-      '[data-testid="pagination-viewport"]'
-    );
-    const viewportRect =
-      viewport instanceof HTMLElement
-        ? viewport.getBoundingClientRect()
-        : {
-            bottom: innerHeight,
-            top: 0,
-          };
-    const blocks = Array.from(
-      document.querySelectorAll('[data-plite-node="element"][data-plite-path]')
-    );
-
-    for (const block of blocks) {
-      if (!(block instanceof HTMLElement)) {
-        continue;
-      }
-
-      const leaf = Array.from(block.querySelectorAll('[data-plite-leaf]')).find(
-        (candidate) => {
-          if (!(candidate instanceof HTMLElement)) {
-            return false;
-          }
-
-          const rect = candidate.getBoundingClientRect();
-
-          return (
-            rect.width > 0 &&
-            rect.height > 0 &&
-            rect.bottom > viewportRect.top + 40 &&
-            rect.top < viewportRect.bottom - 40
-          );
-        }
-      );
-
-      if (!(leaf instanceof HTMLElement)) {
-        continue;
-      }
-
-      const rect = leaf.getBoundingClientRect();
-
-      return {
-        path: block.getAttribute('data-plite-path'),
-        x: Math.min(rect.right - 4, rect.left + 60),
-        y: (rect.top + rect.bottom) / 2,
-      };
-    }
-
-    return null;
+  const target = await page.evaluate(readBrowserTextTarget, {
+    selector: '[data-plite-node="element"][data-plite-path]',
+    viewportSelector: '[data-testid="pagination-viewport"]',
+    inset: 40,
   });
 
   if (!target) {
@@ -945,14 +858,14 @@ const server = process.env.PLITE_PAGINATION_REAL_OPS_BASE_URL
     : await startStaticServer();
 const baseURL = process.env.PLITE_PAGINATION_REAL_OPS_BASE_URL ?? server?.url;
 
-if (!baseURL) {
-  throw new Error('Unable to resolve pagination real-ops base URL');
-}
-
-const browser = await chromium.launch({ headless });
+let browser;
 const samples = [];
 
 try {
+  if (!baseURL) {
+    throw new Error('Unable to resolve pagination real-ops base URL');
+  }
+  browser = await chromium.launch({ headless });
   for (const cohort of cohorts) {
     for (let iteration = 0; iteration < iterations; iteration += 1) {
       const context = await browser.newContext({
@@ -985,8 +898,11 @@ try {
     }
   }
 } finally {
-  await browser.close();
-  await server?.close();
+  try {
+    await browser?.close();
+  } finally {
+    await server?.close();
+  }
 }
 
 const successfulSamples = samples.filter((sample) => !sample.error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { flip, offset } from '@floating-ui/react';
+import { flip, offset, useDismiss, useInteractions } from '@floating-ui/react';
 import {
   BoldIcon,
   Code2Icon,
@@ -18,18 +18,16 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
   definePlatePlugin,
+  useComposedRef,
   useEditorFocused,
-  useEditorId,
   useEditorReadOnly,
   useEditorSelector,
   usePluginStore,
-  useComposedRef,
   useSelectionGeometry,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
-import { useOnClickOutside } from '@/registry/hooks/use-on-click-outside';
 import { useWidgetFloating } from '@/registry/hooks/use-widget-floating';
 
 import { AIToolbarButton } from './ai-toolbar-button';
@@ -106,10 +104,8 @@ export function FloatingToolbar({
   children,
   ...props
 }: React.PropsWithChildren<EditableSiblingProps>) {
-  const editorId = useEditorId();
   const hasNodeSelection = useEditorSelector(
-    (editor) => editor.read.selection.nodes().length > 0,
-    { id: editorId }
+    (editor) => editor.read.selection.nodes().length > 0
   );
 
   if (hasNodeSelection) return null;
@@ -125,21 +121,17 @@ function TextFloatingToolbar({
   children,
   editableRef,
 }: React.PropsWithChildren<EditableSiblingProps>) {
-  const editorId = useEditorId();
   const editorFocused = useEditorFocused();
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
-  const selectionExpanded = useEditorSelector(
-    (innerEditor) => innerEditor.read.selection.isExpanded(),
-    { id: editorId }
+  const selectionExpanded = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isExpanded()
   );
-  const selectionText = useEditorSelector(
-    (innerEditor2) => innerEditor2.read.text.string(),
-    { id: editorId }
+  const selectionText = useEditorSelector((innerEditor2) =>
+    innerEditor2.read.text.string()
   );
-  const selectionRange = useEditorSelector(
-    (innerEditor3) => innerEditor3.read.selection(),
-    { id: editorId }
+  const selectionRange = useEditorSelector((innerEditor3) =>
+    innerEditor3.read.selection()
   );
   const waitForCollapsedSelection = useEditorSelector(
     (innerEditor4, previous = false) => {
@@ -147,8 +139,7 @@ function TextFloatingToolbar({
       if (!innerEditor4.read.view.isFocused()) return true;
 
       return previous;
-    },
-    { id: editorId }
+    }
   );
   const readOnly = useEditorReadOnly();
   const [dismissedSelection, setDismissedSelection] =
@@ -167,26 +158,6 @@ function TextFloatingToolbar({
     (!waitForCollapsedSelection || ownedOverlayOpen) &&
     mouseDownOpen !== false &&
     dismissedSelection !== selectionRange;
-  const geometry = useSelectionGeometry({ editableRef });
-  const floating = useWidgetFloating(geometry, {
-    open,
-    middleware: [
-      offset(12),
-      flip({
-        fallbackPlacements: [
-          'top-start',
-          'top-end',
-          'bottom-start',
-          'bottom-end',
-        ],
-        padding: 12,
-      }),
-    ],
-    placement: 'top',
-    onOpenChange: (nextOpen) => {
-      setDismissedSelection(nextOpen ? null : selectionRange);
-    },
-  });
   const openStateRef = React.useRef(open);
 
   React.useEffect(() => {
@@ -194,6 +165,10 @@ function TextFloatingToolbar({
   }, [open]);
 
   React.useEffect(() => {
+    const document = editableRef.current?.ownerDocument;
+
+    if (!document) return undefined;
+
     const onMouseUp = () => {
       setMouseDownOpen(null);
     };
@@ -208,34 +183,80 @@ function TextFloatingToolbar({
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('mousedown', onMouseDown);
     };
-  }, []);
-
-  const clickOutsideRef = useOnClickOutside(
-    () => {
-      setDismissedSelection(selectionRange);
-    },
-    { ignoreClass: 'ignore-click-outside/toolbar' }
-  );
-  const ref = useComposedRef<HTMLDivElement>(floating.refs.setFloating);
+  }, [editableRef]);
 
   if (!open) return null;
 
   return (
-    <div ref={clickOutsideRef}>
-      <Toolbar
-        ref={ref}
-        onOverlayOpenChange={setOwnedOverlayOpen}
-        style={floating.style}
-        className="absolute z-50 scrollbar-hide max-w-[80vw] overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap opacity-100 shadow-md print:hidden"
-      >
-        {children}
-      </Toolbar>
-    </div>
+    <PositionedFloatingToolbar
+      editableRef={editableRef}
+      onOpenChange={(nextOpen) => {
+        setDismissedSelection(nextOpen ? null : selectionRange);
+      }}
+      onOverlayOpenChange={setOwnedOverlayOpen}
+    >
+      {children}
+    </PositionedFloatingToolbar>
+  );
+}
+
+function PositionedFloatingToolbar({
+  children,
+  editableRef,
+  onOpenChange,
+  onOverlayOpenChange,
+}: React.PropsWithChildren<EditableSiblingProps> & {
+  onOpenChange: (open: boolean) => void;
+  onOverlayOpenChange: (open: boolean) => void;
+}) {
+  const geometry = useSelectionGeometry({ editableRef });
+  const floating = useWidgetFloating(geometry, {
+    open: true,
+    middleware: [
+      offset(12),
+      flip({
+        fallbackPlacements: [
+          'top-start',
+          'top-end',
+          'bottom-start',
+          'bottom-end',
+        ],
+        padding: 12,
+      }),
+    ],
+    placement: 'top',
+    onOpenChange,
+  });
+  const dismiss = useDismiss(floating.context, {
+    escapeKey: false,
+    outsidePress: (event) => {
+      const Element =
+        floating.elements.floating?.ownerDocument.defaultView?.Element;
+      return (
+        !Element ||
+        !(event.target instanceof Element) ||
+        !event.target.closest('[class~="ignore-click-outside/toolbar"]')
+      );
+    },
+  });
+  const { getFloatingProps } = useInteractions([dismiss]);
+  const ref = useComposedRef(floating.refs.setFloating);
+
+  return (
+    <Toolbar
+      {...getFloatingProps()}
+      ref={ref}
+      onOverlayOpenChange={onOverlayOpenChange}
+      style={floating.style}
+      className="absolute z-50 scrollbar-hide max-w-[80vw] overflow-x-auto rounded-md border bg-popover p-1 whitespace-nowrap opacity-100 shadow-md print:hidden"
+    >
+      {children}
+    </Toolbar>
   );
 }
 
 export const FloatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
-  render: {
+  slots: {
     afterEditable: FloatingToolbar,
   },
 });

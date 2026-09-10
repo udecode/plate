@@ -61,33 +61,18 @@ const html = await renderStaticHtml(editor);
 
 ### 基础用法
 
-提供服务端编辑器实例并在编辑器创建时配置Plate组件。
+提供服务端编辑器实例，并把服务端安全组件绑定到所属插件。
 
 ```tsx title="lib/generate-html.ts"
 import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static'; // 静态导入
 // 导入服务端安全的 registry kit（不从 /react 包路径导入）
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
-// 导入用于渲染的静态组件
-import { ParagraphElementStatic } from '@/components/editor/paragraph-static';
-import { HeadingElementStatic } from '@/components/editor/heading-static';
-// 对于带样式的静态输出，可以使用像EditorStatic这样的包装器
-import { EditorStatic } from '@/components/editor/editor-static';
 
-// 将插件 name 映射到其静态渲染组件
-const components = {
-  p: ParagraphElementStatic, // 'p'是段落的默认 name
-  h1: HeadingElementStatic,
-  // ... 为所有元素和标记添加映射
-};
-
-// 创建带组件的服务端编辑器实例
 const editor = createEditor({
   plugins: [
-    ...BaseBasicBlocksKit, // 段落、标题、引用和分隔线基础插件
-    // ... 添加与内容相关的所有其他基础插件
+    ...BaseBasicBlocksKit,
   ],
-  components,
   initialValue: [
     { type: 'heading', level: 1, children: [{ text: '我的标题' }] },
     { type: 'paragraph', children: [{ text: '我的内容。' }] },
@@ -95,11 +80,7 @@ const editor = createEditor({
 });
 
 async function getMyHtml() {
-  const html = await renderStaticHtml(editor, {
-    // 可选：使用像EditorStatic这样的自定义包装器进行样式设置
-    // editorComponent: EditorStatic,
-    // props: { variant: 'none', className: 'p-4 m-4 border' },
-  });
+  const html = await renderStaticHtml(editor);
 
   return html;
 }
@@ -228,7 +209,7 @@ Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 d
 | `<h1>` - `<h6>`                                            | [`HeadingPlugin`–`HeadingPlugin`](/docs/heading)    | 转换为对应的标题元素（`h1` - `h6`）。                |
 | `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | 转换为带 `indent` 和 `listStyle` 属性的块。 |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | 转换为blockquote元素。                                          |
-| `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为`codeBlock`元素。内容分割为`codeLine`。          |
+| `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为带一个多行文本子节点的`codeBlock`元素。          |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转换为水平线元素。                                     |
 | `<a>`                                                      | [`LinkPlugin`](/docs/link)            | 转换为带 `url` 属性的 `link` 元素。                    |
 | `<img>`                                                    | [`ImagePlugin`](/docs/media)           | 转换为带 `url` 属性的 `image` 元素。                   |
@@ -340,7 +321,7 @@ const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
 <API name="renderStaticHtml">
 <APIParameters>
   <APIItem name="editor" type="Editor">
-    通过 `createEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
+    通过 `createEditor` 创建的服务端 Plate 编辑器实例，使用已绑定组件的插件。
   </APIItem>
   <APIItem name="options" type="RenderStaticHtmlOptions" optional>
     静态 React 渲染选项。

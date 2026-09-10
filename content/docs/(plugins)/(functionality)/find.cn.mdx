@@ -19,7 +19,7 @@ docs:
 - 搜索相邻文本叶和行内元素中的文本。
 - 使用 `Enter`、`Shift+Enter` 或按钮切换结果。
 - 文档提交后重新扫描，并保持一个活动结果可见。
-- 通过 `useFindController` 支持自定义产品控件。
+- 每个挂载的编辑器视图独立打开搜索栏，并通过 `useFind` 支持自定义控件。
 
 </PackageInfo>
 
@@ -44,31 +44,73 @@ const editor = createEditor({
 });
 ```
 
-`FindKit` 提供快捷键、临时装饰、活动结果样式和可访问的搜索栏。查询状态
-位于编辑器文档之外，因此搜索不会创建编辑器操作。
+`BaseFindPlugin` 管理查询、匹配结果、导航和临时装饰数据。`FindKit` 提供快捷键、
+延迟输入和可访问的搜索栏，并通过 `decorate.attributes` 配置普通与当前匹配项的高亮样式。查询状态位于文档和
+历史记录之外。每个 Editable 独立管理搜索栏的开关、输入草稿、焦点和滚动请求。
+同一编辑器的视图共享已提交的查询和结果，但打开一个搜索栏不会打开另一个。
+没有待处理草稿的搜索栏会跟随共享查询；只有获得焦点的搜索栏会滚动其视图。
+卸载视图不会清除共享搜索。
 
 <ComponentSource name="find" />
 
+## 搜索 API
+
+`platejs/find` 的 `BaseFindPlugin` 管理查询、当前匹配项、导航和临时装饰数据。
+`editor.plugin(BaseFindPlugin).api.search(query)` 执行不区分大小写的文本搜索，
+空字符串清除结果。`api.move(1 | -1)` 循环切换结果；`update.select()` 选择当前
+匹配范围并返回是否存在结果。焦点、输入延迟、快捷键和搜索栏由复制的 UI 管理。
+文档提交会自动更新结果，即使没有挂载视图。查询不会写入文档或历史记录。
+
+`FindPluginState` 包含 `query`、不可变的 `matches`、`activeIndex` 和 `error`。
+`count` 和 `activeMatch` 是 store 选择器。每个 `FindMatch` 包含 ID 和范围。
+`FindKit` 通过 `decorate.attributes` 为 `data-find-match` 和 `data-find-active` 属性提供样式。
+
 ## 自定义控件
 
-在对应的 `<Plate>` 树中使用 `useFindController`：
+在对应 Editable 的 `beforeEditable` 或 `afterEditable` 插槽组件中使用
+`useFind`。`FindKit` 通过 `wrapRoot` 提供上下文，使控件只操作一个挂载视图，
+无需订阅搜索结果：
 
 ```tsx
-import { useFindController } from '@/components/editor/find';
+import { useFind } from '@/components/editor/find';
 
 export function FindButton() {
-  const find = useFindController();
+  const { open } = useFind();
 
   return (
-    <button onClick={() => find.open()} type="button">
+    <button onClick={() => open()} type="button">
       查找
     </button>
   );
 }
 ```
 
-控制器提供 `open`、`close`、`setQuery`、`next`、`previous` 和
-`commitActiveMatch`，以及查询、结果数、活动索引、等待和错误状态。
+在复制的 `FindKit` 配置中，将 `beforeEditable: FindButton` 添加到
+`wrapRoot: FindRoot` 旁边。位于这些插槽之外的 `<Editor>` 同级组件无法获取
+该视图的 Find 上下文。
+
+`open(query?)` 打开并聚焦当前视图的搜索栏。指定查询时以该文本作为输入，
+否则使用已提交的查询。`close()` 关闭当前视图的搜索栏，清除共享查询，
+并将焦点交还当前视图的编辑器。输入草稿保留在本地，直到搜索栏执行延迟查询。
+
+搜索控件直接使用 `editor.plugin(BaseFindPlugin)`。显示结果的控件可以通过
+`usePluginStore(BaseFindPlugin, 'count')`、`'activeIndex'` 或 `'error'` 订阅状态。
+仅用于打开搜索栏的控件无需订阅结果。
+
+在 Editable 插槽组件中，使用选择和 DOM 命令选择当前结果并聚焦对应视图：
+
+```tsx
+import { BaseFindPlugin } from 'platejs/find';
+import { useEditor } from 'platejs/react';
+
+const editor = useEditor();
+
+const selectMatch = () => {
+  if (editor.plugin(BaseFindPlugin).update.select()) {
+    editor.api.dom.focus();
+  }
+};
+```
 
 ## 键盘行为
 

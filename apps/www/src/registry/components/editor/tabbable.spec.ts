@@ -1,4 +1,3 @@
-import { getPlateRuntime } from 'platejs';
 import { IndentPlugin, createEditor } from 'platejs/react';
 import { TabbablePlugin } from 'platejs/tabbable/react';
 
@@ -54,8 +53,6 @@ describe('TabbableKit', () => {
 
       expect(indent.shortcuts.tab).toBeNull();
       expect(indent.shortcuts.untab).toBeNull();
-      expect(getPlateRuntime(editor).shortcuts['indent.tab']).toBeUndefined();
-      expect(getPlateRuntime(editor).shortcuts['indent.untab']).toBeUndefined();
       expect(typeof editor.update.indent.change).toBe('function');
     }
   });

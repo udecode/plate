@@ -12,18 +12,20 @@ import { PLUGINS } from '../plate-keys';
 
 export type TrailingBlockPluginState = {
   /** Wrap the default insertion without exposing the active transaction. */
-  insert?: (defaultInsert: () => void) => void;
+  insert: ((defaultInsert: () => void) => void) | null;
   /** Level where the trailing node should be, the first level being 0. */
   level: number;
   /** Match the last node before inserting the trailing block. */
-  match?: NodeMatch<Descendant>;
+  match: NodeMatch<Descendant> | null;
   /** Type of the trailing block */
   type: string;
 };
 
 export const TrailingBlockPlugin = defineBasePlugin(PLUGINS.trailingBlock, {
   initialState: ({ editor }): TrailingBlockPluginState => ({
+    insert: null,
     level: 0,
+    match: null,
     type: editor.plugin(BaseParagraphPlugin).schema.type,
   }),
   corrections: [

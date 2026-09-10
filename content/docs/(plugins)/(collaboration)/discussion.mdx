@@ -1,235 +1,134 @@
 ---
 title: Discussion
+description: Review each block's comments and suggestions in Floating Discussion.
 docs:
-  - route: https://pro.platejs.org/docs/examples/discussion
-    title: Plus
-  - route: /docs/components/block-discussion
-    title: Block Discussion
+  - route: /docs/comment
+    title: Comments
+  - route: /docs/suggestion
+    title: Suggestion
 ---
 
 <ComponentPreview name="discussion-demo" />
 
-<PackageInfo>
+Discussion is copied UI that opens each block's comments and document suggestions in one anchored popover. Comments owns thread records and mapped ranges; Suggestion owns proposed document edits.
 
-## Features
+## Ownership
 
-- **User Management**: Store and manage user data with avatars and names
-- **Discussion Threads**: Manage discussion data structures with comments
-- **Current User Tracking**: Track the current active user for collaboration
-- **Data Storage**: Pure UI plugin for storing collaboration state
-- **Selector API**: Easy access to user data through plugin selectors
+| Owner | Responsibility |
+| --- | --- |
+| `platejs/comments` and `platejs/comments/react` | Own comment records, actions, mapped ranges, decoration, and activation |
+| Copied `comment` item | Render rich comment forms and cards, and supply presentation defaults through `CommentKit` |
+| `SuggestionPlugin` | Store proposed edits in the document and accept or reject them |
+| Copied `discussion` item | Index both record types once, then render per-block triggers and Floating Discussion |
 
-</PackageInfo>
+The application fetches and saves comment records, provides users and permissions, and supplies the current document. The Comments plugin owns the loaded data and range mapping. Suggestion data stays in editor nodes because accepting or rejecting a suggestion mutates the document.
 
-## Kit Usage
+## Installation
 
-<Steps>
-
-### Installation
-
-The fastest way to add discussion functionality is with the `DiscussionKit`, which includes the pre-configured `discussionPlugin` along with its [Plate UI](/docs/installation/plate-ui) components.
-
-<ComponentSource name="discussion" />
-
-- [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI above nodes
-
-### Add Kit
-
-```tsx
-import { createEditor } from 'platejs/react';
-import { DiscussionKit } from '@/components/editor/discussion';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...DiscussionKit,
-  ],
-});
-```
-
-</Steps>
-
-## Manual Usage
-
-<Steps>
-
-### Installation
+Install the combined view and the comment toolbar action. The Discussion item installs its Comment and Suggestion UI dependencies.
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
-### Create Plugin
+## Usage
 
-```tsx
-import { definePlatePlugin } from 'platejs/react';
-import { BlockDiscussion } from '@/components/editor/block-discussion';
+Install `DiscussionKit` and pass fetched comment records to `CommentsPlugin`. The kit includes comment styling, the shared index, per-block triggers, and Floating Discussion. Each editor binds its own native ranges internally.
 
-export interface TDiscussion {
-  id: string;
-  comments: TComment[];
-  createdAt: Date;
-  isResolved: boolean;
-  userId: string;
-  documentContent?: string;
-}
+```tsx title="components/editor/discussion-editor.tsx" showLineNumbers
+"use client";
 
-const usersData = {
-  alice: {
-    id: 'alice',
-    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-    name: 'Alice',
-  },
-  bob: {
-    id: 'bob', 
-    avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-    name: 'Bob',
-  },
-};
+import type { CommentThread, CommentUser } from "platejs/comments";
+import type { EditorValueInput } from "platejs";
+import { CommentsPlugin } from "platejs/comments/react";
+import { Plate, useCreateEditor } from "platejs/react";
 
-export type DiscussionPluginState = {
+import { DiscussionKit } from "@/components/editor/discussion";
+import { Editor, EditorContainer } from "@/components/editor/editor";
+import { EditorKit } from "@/components/editor/plugins";
+
+export function DiscussionEditor({
+  initialValue,
+  initialThreads,
+  users,
+  currentUserId,
+}: {
+  initialValue: EditorValueInput;
+  initialThreads: readonly CommentThread[];
+  users: Record<string, CommentUser>;
   currentUserId: string;
-  discussions: TDiscussion[];
-  users: Record<string, { avatarUrl: string; id: string; name: string }>;
-};
-
-const initialState: DiscussionPluginState = {
-  currentUserId: 'alice',
-  discussions: [],
-  users: usersData,
-};
-
-export const discussionPlugin = definePlatePlugin('discussion', {
-  initialState,
-  selectors: {
-    currentUser: (state) => state.users[state.currentUserId],
-    user: (state, id: string) => state.users[id],
-  },
-})
-  .configure({
-    render: { aboveNodes: BlockDiscussion },
+}) {
+  const editor = useCreateEditor({
+    plugins: [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: { initialThreads, users, currentUserId },
+      }),
+    ],
+    initialValue,
   });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
 ```
 
-- `initialState.currentUserId`: ID of the current active user
-- `initialState.discussions`: Array of discussion data structures
-- `initialState.users`: Object mapping user IDs to user data
-- `render.aboveNodes`: Renders [`BlockDiscussion`](/docs/components/block-discussion) above nodes for discussion UI
-- `selectors.currentUser`: Gets the current user data
-- `selectors.user`: Gets user data by ID
+`EditorKit` includes the copied `SuggestionKit`. If your editor uses a smaller kit, include the same exported `suggestionPlugin` that `DiscussionSlots` reads.
 
-### Add Plugin
+## Review model
 
-```tsx
-import { createEditor } from 'platejs/react';
+Discussion indexes unresolved records once, orders them by block, and sorts each block chronologically:
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    discussionPlugin,
-  ],
+- root comment threads appear as comment cards;
+- document suggestions appear as review cards with Accept and Reject actions;
+- threads whose target is a suggestion appear inside that suggestion card;
+- resolving a thread removes its anchor decoration;
+- accepting or rejecting a suggestion hides its card and replies; undo restores them without changing thread resolution.
+
+Discussion reads ranges and changed IDs from the same Annotation projection that paints comments. Block triggers subscribe only to their keyed summaries; same-block range movement leaves those summaries unchanged. Editing a comment body does not rebuild editor decorations, recompute the index, or wake unrelated blocks.
+
+## Floating discussion
+
+A block trigger opens every comment and suggestion attached to that block. Clicking inline annotation text opens the exact items at that point. Both entry points use the same plugin records, suggestions, and actions.
+
+When comment ranges overlap, clicking the shared text opens every thread at that point in source order. The selected ID group survives edits and source reordering until another activation or thread removal changes it. Clicking unmarked editor content clears the active review.
+
+If an edit deletes every character in a comment range, no inline text remains
+to highlight. The block trigger keeps the thread reachable, and Floating
+Discussion anchors to that trigger until undo restores the exact text range.
+
+## Suggestion comments
+
+Discussion attaches replies to the suggestion ID. The suggestion supplies their location and document lifecycle.
+
+```ts
+editor.plugin(CommentsPlugin).api.createThread({
+  body,
+  excerpt: "insert suggestion",
+  target: { id: suggestionId, type: "suggestion" },
 });
 ```
 
-</Steps>
+Replies use the suggestion's location without allocating a comment anchor. Comment records retain their bodies and explicit resolution when the suggestion disappears. If undo or a document update restores that suggestion ID, its unresolved replies appear again. `SuggestionPlugin` owns document mutation; Discussion composes the review card and comment replies.
 
-## Plate Plus
+## Read-only and static rendering
 
-<ComponentPreviewPro name="discussion-pro" />
+Pass the same serialized records to each editor with its matching document value. Use `CommentsPlugin` for a read-only React editor and `BaseCommentsPlugin` with copied static comment styling for `EditorStatic`. The package binds independent native ranges for each editor; thread cards remain copied UI.
 
-## Plugins
+Save `editor.plugin(CommentsPlugin).api.getThreads()` alongside `editor.read.value()`. See [Comments](/docs/comment) for record loading, saving, and actions, and [Suggestion](/docs/suggestion) for suggestion transforms.
 
-### `discussionPlugin`
+## API Reference
 
-Pure UI plugin for managing collaboration state including users and discussion data.
+### `DiscussionKit`
 
-<API name="discussionPlugin">
-<APIOptions>
-  <APIItem name="currentUserId" type="string">
-    ID of the current active user in the collaboration session.
-  </APIItem>
-  <APIItem name="discussions" type="TDiscussion[]">
-    Array of discussion objects containing comments and metadata.
-  </APIItem>
-  <APIItem name="users" type="Record<string, UserData>">
-    Object mapping user IDs to user information including name and avatar.
-  </APIItem>
-</APIOptions>
-</API>
+Install the kit in the editor plugin list. It includes `CommentKit` and the complete `DiscussionSlots` composition.
 
-## Selectors
+### `DiscussionSlots`
 
-### `currentUser`
-
-Gets the current user data.
-
-<API name="currentUser">
-<APIReturns type="UserData">
-  The current user's data including id, name, and avatarUrl.
-</APIReturns>
-</API>
-
-### `user`
-
-Gets user data by ID.
-
-<API name="user">
-<APIParameters>
-  <APIItem name="id" type="string">
-    The user ID to look up.
-  </APIItem>
-</APIParameters>
-<APIReturns type="UserData | undefined">
-  The user data if found, undefined otherwise.
-</APIReturns>
-</API>
-
-## Types
-
-### `TDiscussion`
-
-Discussion data structure containing comments and metadata.
-
-<API name="TDiscussion">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    Unique identifier for the discussion.
-  </APIItem>
-  <APIItem name="comments" type="TComment[]">
-    Array of comments in the discussion thread.
-  </APIItem>
-  <APIItem name="createdAt" type="Date">
-    When the discussion was created.
-  </APIItem>
-  <APIItem name="isResolved" type="boolean">
-    Whether the discussion has been resolved.
-  </APIItem>
-  <APIItem name="userId" type="string">
-    ID of the user who created the discussion.
-  </APIItem>
-  <APIItem name="documentContent" type="string" optional>
-    Content from the document related to this discussion.
-  </APIItem>
-</APIAttributes>
-</API>
-
-### `UserData`
-
-User information structure for collaboration.
-
-<API name="UserData">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    Unique identifier for the user.
-  </APIItem>
-  <APIItem name="name" type="string">
-    Display name of the user.
-  </APIItem>
-  <APIItem name="avatarUrl" type="string">
-    URL for the user's avatar image.
-  </APIItem>
-  <APIItem name="hue" type="number" optional>
-    Optional color hue for user identification.
-  </APIItem>
-</APIAttributes>
-</API> 
+For custom composition, pass the complete value to `CommentsPlugin.configure({ slots: DiscussionSlots })`. It owns the shared index, per-block trigger, and Floating Discussion together; do not install its slots separately.

@@ -10,6 +10,8 @@ import {
   isDOMSyncMutation,
   markDOMSyncMutationTarget,
 } from '../../src/dom/internal';
+import { IS_FOCUSED } from '../../src/dom/utils/weak-maps';
+import { setEditorFocused } from '../../src/internal';
 
 const createHarness = () => {
   const dom = new JSDOM('<!doctype html><body></body>');
@@ -233,12 +235,20 @@ test('DOM input runtime keeps frame and epoch state isolated per mounted root', 
     first.domInputRuntime
   );
   secondRoot.focus();
+  IS_FOCUSED.set(editor, true);
+  setEditorFocused(editor, true);
   expect(DOMRootRuntime.resolveInputRuntime(editor)).toBe(
     second.domInputRuntime
   );
 
+  firstRoot.dispatchEvent(
+    new dom.window.Event('pointerdown', { bubbles: true })
+  );
+  expect(dom.window.document.activeElement).toBe(secondRoot);
   first.destroy();
+  expect(IS_FOCUSED.get(editor)).toBe(true);
   second.destroy();
+  expect(IS_FOCUSED.get(editor)).toBeUndefined();
   dom.window.close();
 });
 
@@ -632,6 +642,23 @@ test('generated root lifecycle sequences never retain stale work or ownership', 
     }
   }
 
+  harness.runtime.destroy();
+  harness.dom.window.close();
+});
+
+test('root reconnect restores focus from the live element after effect cleanup', () => {
+  const harness = createHarness();
+  const root = harness.createRoot();
+  root.tabIndex = 0;
+  harness.runtime.setRoot(root);
+  harness.runtime.connect();
+  root.focus();
+  IS_FOCUSED.set(harness.editor, true);
+  setEditorFocused(harness.editor, true);
+  harness.runtime.destroy();
+  expect(IS_FOCUSED.get(harness.editor)).toBeUndefined();
+  harness.runtime.connect();
+  expect(IS_FOCUSED.get(harness.editor)).toBe(true);
   harness.runtime.destroy();
   harness.dom.window.close();
 });

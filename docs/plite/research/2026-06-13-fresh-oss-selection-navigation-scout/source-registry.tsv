@@ -1,0 +1,7 @@
+source_key	type	local_path	url	status	why_used
+playwright-40986	web+local-repro	/Users/zbeyens/git/playwright-selectionchange-race-repro	https://github.com/microsoft/playwright/issues/40986	deduped-kept-existing	Current Playwright selectionchange race linked to a local repro; useful invariant is already kept as Slate detached-endpoint import proof.
+playwright-39492	web-issue	none	https://github.com/microsoft/playwright/issues/39492	supporting-methodology	Current Playwright contenteditable fill issue; supports no-fill editor proof doctrine but no Slate source promotion.
+playwright-36715	web+local-repro	/Users/zbeyens/git/playwright-issue-firefox-fill	https://github.com/microsoft/playwright/issues/36715	kept-existing-methodology	Firefox fill repro with beforeinput and Selection mutation; reinforces existing slate-browser no-fill rule.
+lexical-2659	web-discussion	none	https://github.com/facebook/lexical/discussions/2659	supporting-methodology	Lexical maintainers/users discuss Playwright real-browser testing because JSDOM contenteditable coverage is weak.
+slate-selectionchange-race-existing	local-doc	docs/slate-v2/research/2026-06-13-playwright-selectionchange-race-oracles	none	dedup-owner	Existing Slate research shard and promoted contract for detached DOM selection endpoints.
+slate-editor-testing-existing	local-doc	docs/slate-v2/research/2026-06-13-editor-testing-oss-scout	none	dedup-owner	Existing Slate research shard and README rule banning fill as editor proof.

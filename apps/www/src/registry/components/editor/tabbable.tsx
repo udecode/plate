@@ -9,12 +9,10 @@ export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 export const TabbableKit = [
   TabbablePlugin.extend({
     override: {
-      plugins: {
-        [PLUGINS.indent]: {
-          shortcuts: {
-            tab: null,
-            untab: null,
-          },
+      [PLUGINS.indent]: {
+        shortcuts: {
+          tab: null,
+          untab: null,
         },
       },
     },

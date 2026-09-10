@@ -1,0 +1,5 @@
+lead_key	source_key	reason	status
+runtime-overlap-patch-now	slate-ime-plan	Runtime execution is explicitly blocked until the overlap policy is accepted or revised.	rejected
+synthetic-composition-span-proof	slate-richtext-ime	Synthetic composition events cannot prove real native composition-span mutation or mobile candidate-window behavior.	rejected
+keyboard-only-ime-oracle	w3c-ui-events	Keyboard event order cannot be the sole IME authority.	rejected
+raw-mobile-ime-claim-from-desktop	slate-ime-plan	Desktop Playwright and Chromium CDP IME rows do not prove Android/iOS keyboard behavior.	rejected

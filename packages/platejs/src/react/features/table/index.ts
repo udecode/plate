@@ -3,4 +3,5 @@
  */
 
 export * from './TablePlugin';
+export * from './useTableResize';
 export * from './useTableSelectionDOM';

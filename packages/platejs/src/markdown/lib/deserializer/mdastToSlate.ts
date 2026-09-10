@@ -3,17 +3,11 @@ import type { Root } from 'mdast';
 import type { Descendant } from '../../../core';
 import { PLUGINS } from '../../../core';
 import { failInvariant } from '../../internal/failInvariant';
-import type { MdRoot } from '../mdast';
 import type { DeserializeMdContext } from '../types';
 import { convertNodesDeserialize } from './convertNodesDeserialize';
 
 export const mdastToSlate = (
-  node: Root,
-  options: DeserializeMdContext
-): Descendant[] => buildSlateRoot(node, options);
-
-const buildSlateRoot = (
-  root: MdRoot,
+  root: Root,
   options: DeserializeMdContext
 ): Descendant[] => {
   const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';

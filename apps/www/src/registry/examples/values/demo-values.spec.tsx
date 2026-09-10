@@ -1,8 +1,28 @@
-import { NodeApi, TextApi } from 'platejs';
+import {
+  BaseCodeBlockPlugin,
+  createEditor,
+  ElementApi,
+  NodeApi,
+  TextApi,
+  type Value,
+} from 'platejs';
 
 import { createValue, DEMO_VALUES } from './demo-values';
 
 describe('createValue', () => {
+  it('loads the code block demo through the closed code block schema', () => {
+    const codeBlocks = (DEMO_VALUES['code-block'] as Value).filter(
+      (node) => ElementApi.isElement(node) && node.type === 'codeBlock'
+    );
+
+    expect(() =>
+      createEditor({
+        initialValue: codeBlocks,
+        plugins: [BaseCodeBlockPlugin],
+      })
+    ).not.toThrow();
+  });
+
   it('returns isolated snapshots for reusable demo values', () => {
     const snapshotA = createValue('table');
     const snapshotB = createValue('table');

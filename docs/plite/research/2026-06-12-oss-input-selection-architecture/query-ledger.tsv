@@ -1,0 +1,5 @@
+id	query	scope	result
+q001	rg composition/IME/change/cancel in local CodeMirror source and tests	codemirror-view	Found composition state machine, pending Safari/Android windows, conflict cancellation tests, rapid composition tests, and multi-cursor constraints.
+q002	rg composition/IME coverage in Slate v2 Playwright, stress, slate-browser, and slate-react tests	.tmp/slate-v2	Found broad existing IME coverage but no exact active native composition plus non-overlapping model update row.
+q003	find/rg Monaco textarea/composition/cursor internals	monaco-editor	No useful source files in local checkout; rejected for this shard rather than broad-cloning mid-packet.
+

@@ -13,7 +13,7 @@ interface Element {
 }
 ```
 
-## On This Page
+## On this page
 
 - [Behavior Types](element#element-behavior-types)
   - [Block vs. Inline](element#block-vs-inline)
@@ -23,22 +23,22 @@ interface Element {
   - [Retrieval methods](element#retrieval-methods)
   - [Check methods](element#check-methods)
 
-## Element Behavior Types
+## Element behavior types
 
 Element nodes behave differently depending on the [Plite editor's schema](./editor#schema-behavior). An element can be:
 
 - "block" or "inline" as defined by `state.schema.isInline(element)`
 - either "void" or "not void" as defined by `state.schema.isVoid(element)`
 
-### Block vs. Inline
+### Block vs. inline
 
 A "block" element can only be siblings with other "block" elements. An "inline" node can be siblings with `Text` nodes or other "inline" elements.
 
-### Void vs Not Void
+### Void vs not void
 
 In a not "void" element, Plite handles the rendering of its `children` (e.g. in a paragraph where the `Text` and `Inline` children are rendered by Plite). In a "void" element, Plite owns the DOM shell and selection anchor while app code renders only the visible content.
 
-#### Voids That Support Marks
+#### Voids that support marks
 
 Some void elements are effectively stand-ins for text, such as with the
 [mentions](/examples/plite/mentions) example, where the
@@ -47,7 +47,7 @@ elements like this with bold, or set their font and size, so
 `state.schema.isMarkableVoid(element)` tells Plite whether or not to apply Marks
 to the text children of void elements.
 
-#### Rendering Void Elements
+#### Rendering void elements
 
 Void elements still contain a text child in the Plite document model so
 selection and marks have a stable model location. The React runtime renders the

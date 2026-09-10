@@ -1,0 +1,14 @@
+---
+id: 2026-09-08-inline-combobox-input
+date: 2026-09-08
+status: draft
+kind: fix
+summary: 'Complete inline suggestions at their current document location.'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-08-inline-combobox-complete-suggestions-at-their-9adb30fa","kind":"fix","migrationNotes":[]} -->
+
+- **`inline-combobox`**, **`mention`**, **`slash`**, **`emoji`**, **`footnote`**, **`transforms`**: Insert selected suggestions through the `onSelect` transaction callback. Cancel at the input's current location, preserve outside selections, and reject stale or foreign input callbacks.

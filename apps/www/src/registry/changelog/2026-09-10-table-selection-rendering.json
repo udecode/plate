@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-table-selection-rendering",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-table-selection-rendering.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Reduce table selection rendering work while preserving row and cell highlights",
+  "targets": [
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-table-reduce-selection-work-while-0a469936",
+      "kind": "behavior",
+      "summary": "Reduce table selection rendering work while preserving row and cell highlights",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-table-selection-rendering",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

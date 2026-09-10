@@ -1,0 +1,3 @@
+promotion_key	kind	status	owner	proof
+composition-marks-cursor-wrapper	covered-existing	kept	slate-auto	`richtext.test.ts` IME grep passed 6 / skipped 18 explicit browser-scope rows
+same-html-plain-prediction-paste	runtime-oracle	already-kept	slate-auto	P45/P51/P54 package/browser proof plus P55 paste-html route gate

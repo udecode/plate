@@ -1,6 +1,6 @@
 'use client';
 
-import { DndPlugin, useDraggable } from 'platejs/dnd/react';
+import { DndPlugin, useDndPlugin, useDraggable } from 'platejs/dnd/react';
 import {
   ParagraphPlugin,
   Plate,
@@ -11,6 +11,7 @@ import {
   useCreateEditor,
 } from 'platejs/react';
 import { NodeApi } from 'plitejs';
+import * as React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -49,7 +50,7 @@ const fixtureDraggable = {
 } satisfies RenderNodeWrapperDescriptor<typeof DndPlugin>;
 
 const FixtureDndPlugin = DndPlugin.configure({
-  render: { aboveNodes: fixtureDraggable },
+  slots: { wrapNode: fixtureDraggable },
 });
 
 const EditorModel = ({ id }: { id: string }) => {
@@ -82,12 +83,25 @@ const DndEditor = ({
 
   return (
     <Plate editor={editor}>
+      <DndEditorView id={id} label={label} />
+    </Plate>
+  );
+};
+
+const DndEditorView = ({ id, label }: { id: string; label: string }) => {
+  const [editableElement, setEditableElement] =
+    React.useState<HTMLDivElement | null>(null);
+  useDndPlugin(editableElement);
+
+  return (
+    <>
       <EditorModel id={id} />
       <PlateContent
+        ref={setEditableElement}
         aria-label={label}
         className="grid min-h-24 gap-2 rounded border p-3 outline-none"
       />
-    </Plate>
+    </>
   );
 };
 

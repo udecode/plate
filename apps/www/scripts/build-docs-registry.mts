@@ -2,7 +2,6 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import matter from 'gray-matter';
-import { rimraf } from 'rimraf';
 import {
   type Registry,
   type RegistryItem,
@@ -21,9 +20,6 @@ const isDev = process.env.NODE_ENV === 'development';
 const RELATIVE_SOURCE_DIR = '../../content/docs';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const META_FILE = 'meta.json';
-const TARGET_FILE = 'registry-docs.json';
-const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
-const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
 const REGISTRY_BASE_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
@@ -255,18 +251,4 @@ export function createPublicDocsRegistry(
       ),
     })),
   });
-}
-
-export async function buildDocsRegistry() {
-  rimraf.sync(path.join(process.cwd(), TARGET));
-
-  const registry = await createDocsRegistry();
-  const publicRegistry = createPublicDocsRegistry(registry);
-  const docsJson = JSON.stringify(publicRegistry, null, 2);
-
-  const docsTargetDir = path.dirname(path.join(process.cwd(), TARGET));
-  await fs.mkdir(docsTargetDir, { recursive: true });
-  await fs.writeFile(path.join(process.cwd(), TARGET), docsJson);
-
-  return registry.items;
 }

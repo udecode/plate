@@ -1,3 +1,5 @@
+import { describe, expect, it, spyOn } from 'bun:test';
+
 import {
   PLUGINS,
   type Selection,
@@ -10,6 +12,7 @@ import { BaseColumnPlugin } from 'platejs/layout';
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
+  BaseImagePlugin,
   BasePlaceholderPlugin,
   BaseVideoPlugin,
 } from 'platejs/media';
@@ -61,6 +64,7 @@ const createTestEditor = ({
       linkPlugin,
       BaseAudioPlugin,
       BaseFilePlugin,
+      BaseImagePlugin,
       BasePlaceholderPlugin,
       BaseVideoPlugin,
       BaseColumnPlugin,
@@ -73,6 +77,35 @@ const createTestEditor = ({
   });
 
 describe('editor block transforms', () => {
+  it('replaces the original empty media source after an intervening document edit', async () => {
+    const editor = createTestEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+    const prompt = spyOn(window, 'prompt').mockReturnValue(
+      'https://example.com/image.png'
+    );
+    try {
+      insertBlock(editor, PLUGINS.image);
+      editor.update.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { at: [0] }
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(editor.read.children()).toMatchObject([
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        { type: 'image', url: 'https://example.com/image.png' },
+      ]);
+      expect(editor.read.children()).toHaveLength(2);
+    } finally {
+      prompt.mockRestore();
+    }
+  });
   it('opens the floating link owner without a stale trigger API', () => {
     const editor = createTestEditor();
 
@@ -103,10 +136,11 @@ describe('editor block transforms', () => {
     });
   });
 
-  it('keeps selection inside the wrapped paragraph when turning a path into a blockquote', () => {
+  it('keeps the selected block content selected after wrapping it in a blockquote', () => {
     const editor = createTestEditor();
 
-    applyBlockAction(editor, PLUGINS.blockquote, { at: [1] });
+    editor.update.selection.setNodes([editor.key([1])!]);
+    applyBlockAction(editor, PLUGINS.blockquote);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'paragraph' },
@@ -116,8 +150,8 @@ describe('editor block transforms', () => {
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 2, path: [1, 0, 0] },
-      focus: { offset: 2, path: [1, 0, 0] },
+      anchor: { offset: 0, path: [1, 0, 0] },
+      focus: { offset: 3, path: [1, 0, 0] },
     });
   });
 
@@ -160,6 +194,84 @@ describe('editor block transforms', () => {
         type: 'paragraph',
       },
     ]);
+  });
+
+  it('preserves the source paragraph when inserting a heading at its middle', () => {
+    const editor = createTestEditor();
+    insertBlock(editor, 'heading-2');
+    expect(editor.read.children()).toMatchObject([
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+      { type: 'heading', level: 2, children: [{ text: '' }] },
+    ]);
+  });
+
+  it('converts only the exact selected list blocks and clears obsolete list properties', () => {
+    const editor = createTestEditor({
+      initialValue: [0, 1, 2].map((i) => ({
+        type: 'paragraph',
+        children: [{ text: String(i) }],
+        indent: 2,
+        listType: 'task',
+        checked: true,
+      })),
+      selection: SelectionApi.nodes([[0], [2]]),
+    });
+    const before = editor.read.children();
+    applyBlockAction(editor, 'heading-2');
+    expect(editor.read.children()).toMatchObject([
+      { type: 'heading', level: 2, children: [{ text: '0' }] },
+      before[1],
+      { type: 'heading', level: 2, children: [{ text: '2' }] },
+    ]);
+    expect(editor.read.children()[0].listType).toBeUndefined();
+    expect(editor.read.children()[2].checked).toBeUndefined();
+    editor.update.history.undo();
+    expect(editor.read.children()).toEqual(before);
+  });
+
+  it('keeps a selected list action active without converting its unselected siblings', () => {
+    const editor = createTestEditor({
+      initialValue: [0, 1, 2].map((i) => ({
+        type: 'paragraph',
+        children: [{ text: String(i) }],
+        indent: 1,
+        listType: 'bulleted',
+      })),
+      selection: {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      },
+    });
+    const before = editor.read.children();
+    applyBlockAction(editor, 'disc');
+    expect(editor.read.children()).toEqual(before);
+    applyBlockAction(editor, 'decimal');
+    expect(editor.read.children().map((node) => node.listType)).toEqual([
+      'bulleted',
+      'numbered',
+      'bulleted',
+    ]);
+  });
+
+  it('wraps disjoint selected blocks once while preserving the unselected middle block', () => {
+    const editor = createTestEditor({
+      initialValue: ['one', 'middle', 'three'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      selection: SelectionApi.nodes([[0], [2]]),
+    });
+    const before = editor.read.children();
+    applyBlockAction(editor, PLUGINS.blockquote);
+    expect(editor.read.children()).toMatchObject([
+      { type: 'blockquote', children: [before[0]] },
+      before[1],
+      { type: 'blockquote', children: [before[2]] },
+    ]);
+    editor.update.history.undo();
+    expect(editor.read.children()).toEqual(before);
   });
 
   it('turns the block under an expanded selection into a heading', () => {
@@ -353,7 +465,7 @@ describe('editor block transforms', () => {
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'one' }], type: 'paragraph' },
       {
-        children: [{ children: [{ text: '' }], type: 'codeLine' }],
+        children: [{ text: '' }],
         type: 'codeBlock',
       },
     ]);

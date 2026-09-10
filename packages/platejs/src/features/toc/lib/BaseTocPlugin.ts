@@ -15,9 +15,7 @@ export type Heading = {
 };
 
 export type TocPluginState = {
-  isScroll: boolean;
-  topOffset: number;
-  queryHeading?: (state: EditorStateView) => Heading[];
+  queryHeading: ((state: EditorStateView) => Heading[]) | null;
 };
 
 export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
@@ -38,10 +36,7 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
         }),
       },
     }),
-  initialState: (): TocPluginState => ({
-    isScroll: true,
-    topOffset: 80,
-  }),
+  initialState: (): TocPluginState => ({ queryHeading: null }),
   schema: {
     element: {
       void: 'block',

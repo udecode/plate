@@ -71,6 +71,7 @@ export function Resizable({
   return (
     <ResizablePrimitive
       {...props}
+      align={align}
       className={cn(resizableVariants({ align }), className)}
     />
   );

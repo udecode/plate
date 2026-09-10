@@ -3,5 +3,4 @@
  */
 
 export * from './plugins';
-export * from './media/index';
 export * from './placeholder/index';

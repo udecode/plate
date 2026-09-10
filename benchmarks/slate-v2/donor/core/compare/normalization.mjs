@@ -38,26 +38,35 @@ import assert from 'node:assert/strict';
 
 const isPlite = process.env.BENCHMARK_ENGINE === 'current';
 let Slate;
-let SlateInternal = {};
 
 if (isPlite) {
   Slate = await import('platejs');
-  SlateInternal = await import('@platejs/test');
 } else {
   Slate = await import('slate');
 }
 
 const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
+const Editor = Slate.Editor;
 const legacyTransforms = Slate.Transforms;
-const currentInlineSchema = isPlite
-  ? Slate.defineEditorSchema({
+const currentSchema = isPlite
+  ? Slate.defineEditorSchema('normalization-compare', {
       elements: {
-        inline: { content: Slate.schema.content.open(), inline: true },
+        paragraph: { content: Slate.schema.content.text() },
+        title: { content: Slate.schema.content.text() },
+      },
+      properties: [Slate.schema.textProperty('bold', Slate.property.boolean())],
+      root: Slate.schema.content.types(['paragraph', 'title']),
+      unknown: 'preserve',
+    })
+  : null;
+const currentInlineSchema = isPlite
+  ? Slate.defineEditorSchema('normalization-compare-inline', {
+      elements: {
+        inline: { content: Slate.schema.content.text(), inline: true },
         paragraph: { content: Slate.schema.content.open() },
       },
       id: 'normalization-compare-inline',
-      root: { content: Slate.schema.content.type('paragraph') },
+      root: Slate.schema.content.type('paragraph'),
       unknown: 'preserve',
       version: 1,
     })
@@ -150,25 +159,26 @@ const createParagraph = () => ({
   children: [{ text: '' }],
 });
 
-const replaceEditor = (editor, input) => {
-  if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, input);
+const createBenchmarkEditor = (extensions = isPlite ? [currentSchema] : []) => {
+  const initialValue = [createParagraph()];
+  if (isPlite) return createEditor({ extensions, initialValue });
+  const editor = createEditor();
+  editor.children = initialValue;
+  return editor;
+};
+
+const replaceEditor = (editor, children) => {
+  if (isPlite) {
+    editor.update((tx) => tx.value.replace({ children, selection: null }));
     return;
   }
-
-  editor.children = input.children;
-  editor.selection = input.selection ?? null;
-  editor.marks = input.marks ?? null;
+  editor.children = children;
+  editor.selection = null;
+  editor.marks = null;
 };
 
 const getChildren = (editor) =>
-  typeof Editor.getChildren === 'function'
-    ? Editor.getChildren(editor)
-    : typeof Editor.getSnapshot === 'function'
-      ? Editor.getSnapshot(editor).children
-      : typeof editor.getChildren === 'function'
-        ? editor.getChildren()
-        : editor.children;
+  isPlite ? editor.read.children() : editor.children;
 
 const normalizeEditor = (editor, options) => {
   if (isPlite) {
@@ -212,9 +222,8 @@ const nodeString = (node) => {
 };
 
 const installNoopNormalizer = (editor) => {
-  if (typeof editor.extend === 'function') {
-    editor.extend({
-      name: 'benchmark-noop-normalizer',
+  if (isPlite) {
+    editor.install(Slate.defineExtension('benchmark-noop-normalizer', {
       corrections: [
         {
           event: 'content',
@@ -223,7 +232,7 @@ const installNoopNormalizer = (editor) => {
           },
         },
       ],
-    });
+    }));
     return;
   }
 
@@ -234,9 +243,8 @@ const installNoopNormalizer = (editor) => {
 };
 
 const installForcedLayoutNormalizer = (editor) => {
-  if (typeof editor.extend === 'function') {
-    editor.extend({
-      name: 'benchmark-forced-layout-normalizer',
+  if (isPlite) {
+    editor.install(Slate.defineExtension('benchmark-forced-layout-normalizer', {
       corrections: [
         {
           event: 'children',
@@ -272,7 +280,7 @@ const installForcedLayoutNormalizer = (editor) => {
           },
         },
       ],
-    });
+    }));
     return;
   }
 
@@ -322,29 +330,35 @@ const measureLane = (setup, run, options = {}) => {
   const sampleDivisor = options.sampleDivisor ?? 1;
 
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
-    const editor = setup();
-    const start = now();
-    run(editor);
-    const duration = now() - start;
+    try {
+      const editor = setup();
+      const start = now();
+      run(editor);
+      const duration = now() - start;
 
-    if (iteration > 0) {
-      samples.push(duration / sampleDivisor);
+      if (iteration > 0) {
+        samples.push(duration / sampleDivisor);
+      }
+    } catch (error) {
+      return {
+        status: 'invalid',
+        error: { name: error.name, message: error.message },
+        samples: [],
+        mean: null,
+        median: null,
+        min: null,
+        max: null,
+      };
     }
   }
 
-  return summarize(samples);
+  return { status: 'pass', ...summarize(samples) };
 };
 
 const explicitAdjacentTextNormalizeMs = measureLane(
-  () => {
-    const editor = createEditor();
-    replaceEditor(editor, {
-      children: createAdjacentTextChildren(explicitBlocks),
-      selection: null,
-    });
-    return editor;
-  },
+  () => createBenchmarkEditor(),
   (editor) => {
+    replaceEditor(editor, createAdjacentTextChildren(explicitBlocks));
     normalizeEditor(editor, { force: true });
     assert.deepEqual(getChildren(editor)[0]?.children, [{ text: 'alphabeta', bold: true }]);
   }
@@ -352,19 +366,14 @@ const explicitAdjacentTextNormalizeMs = measureLane(
 
 const explicitInlineFlattenNormalizeMs = measureLane(
   () => {
-    const editor = isPlite
-      ? createEditor({ extensions: [currentInlineSchema] })
-      : createEditor();
+    const editor = createBenchmarkEditor(isPlite ? [currentInlineSchema] : []);
     if (!isPlite) {
       editor.isInline = (element) => element.type === 'inline';
     }
-    replaceEditor(editor, {
-      children: createInlineFlattenChildren(explicitBlocks),
-      selection: null,
-    });
     return editor;
   },
   (editor) => {
+    replaceEditor(editor, createInlineFlattenChildren(explicitBlocks));
     normalizeEditor(editor, { force: true });
     assert.deepEqual(getChildren(editor)[0]?.children[1]?.children, [{ text: 'onetwothreefour' }]);
   }
@@ -372,11 +381,8 @@ const explicitInlineFlattenNormalizeMs = measureLane(
 
 const insertTextReadAfterEachMs = measureLane(
   () => {
-    const editor = createEditor();
-    replaceEditor(editor, {
-      children: createInsertChildren(insertBlocks),
-      selection: null,
-    });
+    const editor = createBenchmarkEditor();
+    replaceEditor(editor, createInsertChildren(insertBlocks));
     return editor;
   },
   (editor) => {
@@ -394,15 +400,12 @@ const insertTextReadAfterEachMs = measureLane(
 
 const noopNormalizerExplicitAdjacentTextNormalizeMs = measureLane(
   () => {
-    const editor = createEditor();
+    const editor = createBenchmarkEditor();
     installNoopNormalizer(editor);
-    replaceEditor(editor, {
-      children: createAdjacentTextChildren(explicitBlocks),
-      selection: null,
-    });
     return editor;
   },
   (editor) => {
+    replaceEditor(editor, createAdjacentTextChildren(explicitBlocks));
     normalizeEditor(editor, { force: true });
     assert.deepEqual(getChildren(editor)[0]?.children, [{ text: 'alphabeta', bold: true }]);
   }
@@ -411,17 +414,14 @@ const noopNormalizerExplicitAdjacentTextNormalizeMs = measureLane(
 const forcedLayoutRepairMs = measureLane(
   () => {
     return Array.from({ length: forcedLayoutCases }, () => {
-      const editor = createEditor();
+      const editor = createBenchmarkEditor();
       installForcedLayoutNormalizer(editor);
-      replaceEditor(editor, {
-        children: createForcedLayoutChildren(),
-        selection: null,
-      });
       return editor;
     });
   },
   (editors) => {
     for (const editor of editors) {
+      replaceEditor(editor, createForcedLayoutChildren());
       normalizeEditor(editor, { force: true });
       assert.deepEqual(getChildren(editor).slice(0, 2), [
         {
@@ -460,7 +460,7 @@ const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
+  await buildRepo(currentRepo, currentPackageManager, './packages/test');
   await buildRepo(legacyRepo, legacyPackageManager, './packages/slate');
 }
 
@@ -487,6 +487,7 @@ const legacy = await benchmarkRepo({
 
 const summary = {
   lane: 'normalization-compare-local',
+  metricContract: 'Replacement plus canonical repair is timed for explicit and forced-layout lanes on both engines. The insert lane times edits and reads after valid setup. Invalid fixture or correctness rows have null metrics, remain in the denominator and fail the comparison.',
   currentRepo,
   legacyRepo,
   iterations,
@@ -498,28 +499,16 @@ const summary = {
   },
   current: current.lanes,
   legacy: legacy.lanes,
-  deltaMeanMs: {
-    explicitAdjacentTextNormalizeMs: round(
-      current.lanes.explicitAdjacentTextNormalizeMs.mean -
-        legacy.lanes.explicitAdjacentTextNormalizeMs.mean
-    ),
-    explicitInlineFlattenNormalizeMs: round(
-      current.lanes.explicitInlineFlattenNormalizeMs.mean -
-        legacy.lanes.explicitInlineFlattenNormalizeMs.mean
-    ),
-    insertTextReadAfterEachMs: round(
-      current.lanes.insertTextReadAfterEachMs.mean -
-        legacy.lanes.insertTextReadAfterEachMs.mean
-    ),
-    noopNormalizerExplicitAdjacentTextNormalizeMs: round(
-      current.lanes.noopNormalizerExplicitAdjacentTextNormalizeMs.mean -
-        legacy.lanes.noopNormalizerExplicitAdjacentTextNormalizeMs.mean
-    ),
-    forcedLayoutRepairMs: round(
-      current.lanes.forcedLayoutRepairMs.mean -
-        legacy.lanes.forcedLayoutRepairMs.mean
-    ),
-  },
+  deltaMeanMs: Object.fromEntries(Object.keys(current.lanes).map((lane) => [lane,
+    current.lanes[lane].status === 'pass' && legacy.lanes[lane].status === 'pass'
+      ? round(current.lanes[lane].mean - legacy.lanes[lane].mean)
+      : null,
+  ])),
+  invalidRows: ['current', 'legacy'].flatMap((engine) =>
+    Object.entries(engine === 'current' ? current.lanes : legacy.lanes)
+      .filter(([, result]) => result.status !== 'pass')
+      .map(([lane, result]) => ({ engine, lane, error: result.error }))
+  ),
 };
 
 await writeBenchmarkArtifact(
@@ -528,3 +517,4 @@ await writeBenchmarkArtifact(
 );
 
 console.log(JSON.stringify(summary, null, 2));
+if (summary.invalidRows.length > 0) process.exitCode = 1;

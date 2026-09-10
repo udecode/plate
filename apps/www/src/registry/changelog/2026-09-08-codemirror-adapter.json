@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-codemirror-adapter",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-codemirror-adapter.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use the optional CodeMirror adapter with native editing commands",
+  "targets": [
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-codemirror-adapter-1",
+      "kind": "behavior",
+      "summary": "Use `createCodeMirrorAdapter` for versioned text projection and cleanup. Keep presentation and language loading local, with CodeMirror commands for line indentation and syntax-aware Enter.",
+      "details": [],
+      "migrationNotes": [
+        "Use `createCodeMirrorAdapter` for versioned text projection and cleanup."
+      ],
+      "targets": ["code-block-codemirror"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-codemirror-adapter",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

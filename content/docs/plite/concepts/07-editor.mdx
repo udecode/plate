@@ -5,14 +5,14 @@ description: "Use the Editor runtime for document meta, selection, canonical cha
 
 The `Editor` object is the runtime for one Plite document. It owns the document value, selection, canonical changes, schema behavior, extensions, and subscriptions.
 
-Most application code touches the editor in three ways:
+Application code uses these editor surfaces:
 
 - read committed state with `editor.read(...)` or `editor.read.<group>.<method>()`
 - write through `editor.update(...)` or `editor.update.<group>.<method>()`
 - install reusable behavior through `createEditor({ extensions })`
 - publish host-selected runtime behavior through `editor.install(...)`
 
-## Reading State
+## Reading state
 
 Use direct read methods for one-shot reads:
 
@@ -37,7 +37,7 @@ const info = editor.read((state) => {
 
 The callback is read-only. Starting a write from inside a read is rejected because it would mix two different editor snapshots.
 
-## Writing State
+## Writing state
 
 Use direct update methods for one-shot writes:
 
@@ -78,7 +78,7 @@ Update callbacks are synchronous. Use the active `tx` for every nested command;
 starting another public `editor.update(...)` inside the callback is rejected and
 rolls back the outer update.
 
-## Snapshots And Commits
+## Snapshots and commits
 
 Plite exposes committed state through subscriptions. Most application reads
 should use narrow state groups like `state.value`, `state.selection`, and
@@ -105,7 +105,7 @@ selections, not to a parallel snapshot field.
 const snapshot = editor.read((state) => state.runtime.snapshot());
 ```
 
-## Update Policies
+## Update policies
 
 `EditorUpdatePolicy` has two public fields: `history` and `tags`. History modes
 are `"merge"`, `"new-batch"`, and `"skip"`; TypeScript exposes them only when
@@ -133,7 +133,7 @@ follow the runtime but stay out of saved document JSON. Runtime ids are useful f
 projection and debug links; semantic product ids belong in your own model when
 they need to persist.
 
-## Preserving Ranges
+## Preserving ranges
 
 Use anchors when you need a local range to survive document edits.
 
@@ -162,7 +162,7 @@ canonical changes, effects, and commits.
 Use [Document Meta](14-document-state) for values that need to persist with
 the document.
 
-## Extending The Editor
+## Extending the editor
 
 Extensions package reusable behavior without mutating random fields onto the
 editor object. They can register owner-local `read` and `update` namespaces,
@@ -213,14 +213,14 @@ Extension authors can mark a method with `txOnly(...)` when it only makes sense
 inside an active transaction. Those methods stay on the transaction namespace
 and are omitted from the direct update surface.
 
-## Schema Behavior
+## Schema behavior
 
 Schema checks live on the read and transaction views. Use element specs and
 extension-owned schema policy to decide how Plite treats your node types.
 
 For example, image elements can be treated as block voids, and mention elements can be treated as inline markable voids. The React renderer uses those schema facts to render the correct DOM shell.
 
-## Query Groups
+## Query groups
 
 Direct read methods cover common one-shot queries. The read callback exposes
 the grouped helpers when code needs a custom query or an extension-owned

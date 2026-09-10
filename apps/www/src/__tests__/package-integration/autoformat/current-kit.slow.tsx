@@ -92,19 +92,15 @@ describe('AutoformatKit current contract', () => {
     const input = (
       <fragment>
         <hcodeblock>
-          <hcodeline>
-            -
-            <cursor />
-          </hcodeline>
+          -
+          <cursor />
         </hcodeblock>
       </fragment>
     ) as any;
 
     const output = (
       <fragment>
-        <hcodeblock>
-          <hcodeline>--</hcodeline>
-        </hcodeblock>
+        <hcodeblock>--</hcodeblock>
       </fragment>
     ) as any;
 

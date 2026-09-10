@@ -5,7 +5,6 @@ import { BaseCalloutKit } from './callout-static';
 import { BaseCodeBlockKit } from './code-block-static';
 import { BaseCodeDrawingKit } from './code-drawing-static';
 import { BaseColumnKit } from './column-static';
-import { BaseCommentKit } from './comment-static';
 import { BaseDateKit } from './date-static';
 import { BaseDetailsKit } from './details-static';
 import { BaseFontKit } from './font-static';
@@ -41,7 +40,6 @@ export const BaseEditorKit = [
   ...BaseListKit,
   ...BaseAlignKit,
   ...BaseLineHeightKit,
-  ...BaseCommentKit,
   ...BaseSuggestionKit,
   ...MarkdownKit,
 ] as const;

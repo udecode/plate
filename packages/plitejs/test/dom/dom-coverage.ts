@@ -4,6 +4,7 @@ import { createEditor, type Descendant, type Range } from 'plitejs';
 import { dom } from '../../src/dom/index';
 import {
   DOMCoverage,
+  DOMRootRuntime,
   type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_KEY_TO_ELEMENT,
@@ -24,6 +25,26 @@ import {
 } from '../../src/internal';
 
 type DOMTestEditor = ReturnType<typeof createNestedEditor>;
+
+const testViews = new WeakMap<DOMTestEditor, DOMRootRuntime>();
+const mountedViews = new Set<DOMRootRuntime>();
+const testView = (editor: DOMTestEditor) => {
+  let view = testViews.get(editor);
+  if (!view) {
+    view = new DOMRootRuntime({
+      adapter: {},
+      editor,
+      getAndroidMutationHandler: () => null,
+      isAndroidMutationOwned: () => false,
+      isCanonicalTextMutation: () => false,
+      isComposing: () => false,
+      onRepair: () => {},
+      resolvePath: () => null,
+    });
+    testViews.set(editor, view);
+  }
+  return view;
+};
 
 const CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE =
   /Cannot resolve a DOM node from Plite node/;
@@ -79,6 +100,12 @@ const withDom = (run: (document: Document) => void) => {
   try {
     run(innerDom.window.document);
   } finally {
+    for (const view of mountedViews) {
+      if (view.rootRef.current?.ownerDocument === innerDom.window.document) {
+        view.destroy();
+        mountedViews.delete(view);
+      }
+    }
     innerDom.window.close();
   }
 };
@@ -149,6 +176,10 @@ const mountEditorRoot = (
     document.body.appendChild(root);
   }
 
+  const view = testView(editor);
+  view.setRoot(root);
+  view.connect();
+  mountedViews.add(view);
   EDITOR_TO_ELEMENT.set(editor, root);
   EDITOR_TO_WINDOW.set(editor, document.defaultView!);
   ELEMENT_TO_NODE.set(root, editor);
@@ -211,7 +242,7 @@ class FakeDataTransfer {
 }
 
 const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
-  DOMCoverage.registerBoundary(editor, {
+  testView(editor).domCoverage.registerBoundary({
     boundaryId: 'section-body',
     anchor: { type: 'summary-slot', nodeKey: getNodeKey(editor, [0, 0]) },
     copyPolicy: 'model',
@@ -233,7 +264,7 @@ const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
   });
 
 const registerNestedParagraphBoundary = (editor: DOMTestEditor) =>
-  DOMCoverage.registerBoundary(editor, {
+  testView(editor).domCoverage.registerBoundary({
     boundaryId: 'nested-paragraph',
     anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [0, 1]) },
     copyPolicy: 'summary',
@@ -265,6 +296,58 @@ const measureRepeated = (run: () => void) => {
 };
 
 describe('DOM coverage boundaries', () => {
+  test.each([0, 1])(
+    'isolates equal boundary ids and cleanup order across views (%s)',
+    (first) => {
+      const editor = createNestedEditor();
+      registerSectionBodyBoundary(editor);
+      const boundary =
+        testView(editor).domCoverage.getBoundary('section-body')!;
+      const sessions = [DOMCoverage.create(editor), DOMCoverage.create(editor)];
+      const disposers = sessions.map((session, index) =>
+        session.registerBoundary({
+          ...boundary,
+          copyPolicy: index === 0 ? 'model' : 'exclude',
+          selectionPolicy: index === 0 ? 'skip' : 'materialize',
+        })
+      );
+
+      expect(sessions[0].getBoundary('section-body')?.copyPolicy).toBe('model');
+      expect(sessions[1].getBoundary('section-body')?.selectionPolicy).toBe(
+        'materialize'
+      );
+      disposers[first]();
+      sessions[first].destroy();
+      expect(sessions[first].getBoundaries()).toEqual([]);
+      expect(sessions[1 - first].getBoundaries()).toHaveLength(1);
+      disposers[1 - first]();
+      expect(sessions[1 - first].getBoundaries()).toEqual([]);
+    }
+  );
+
+  test('ignores stale cleanup and preserves indexed boundaries on text-only commits', () => {
+    const editor = createNestedEditor();
+    registerSectionBodyBoundary(editor);
+    const session = DOMCoverage.create(editor);
+    const boundary = testView(editor).domCoverage.getBoundary('section-body')!;
+    const disposeOld = session.registerBoundary(boundary);
+    const replacement = { ...boundary, copyPolicy: 'exclude' as const };
+    const disposeCurrent = session.registerBoundary(replacement);
+    disposeOld();
+    expect(session.getBoundary('section-body')?.copyPolicy).toBe('exclude');
+    const [indexed] = session.getBoundaries();
+    const { index } = editorGetSnapshot(editor);
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 1, 0], offset: 6 } });
+    });
+
+    expect(editorGetSnapshot(editor).index).toBe(index);
+    expect(session.getBoundaries()[0]).toBe(indexed);
+    disposeCurrent();
+    expect(session.getBoundaries()).toEqual([]);
+  });
+
   test('resolves a nested hidden child point to a boundary instead of a DOM point', () => {
     withDom((document) => {
       const editor = createNestedEditor();
@@ -279,7 +362,7 @@ describe('DOM coverage boundaries', () => {
         CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
       );
       expect(
-        DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
+        testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
       ).toMatchObject({
         boundary: {
           boundaryId: 'section-body',
@@ -294,7 +377,7 @@ describe('DOM coverage boundaries', () => {
   test('tracks first and last root self boundaries without covering siblings', () => {
     const editor = createNestedEditor();
 
-    DOMCoverage.registerBoundary(editor, {
+    testView(editor).domCoverage.registerBoundary({
       boundaryId: 'hidden-header',
       anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [0]) },
       copyPolicy: 'exclude',
@@ -308,7 +391,7 @@ describe('DOM coverage boundaries', () => {
       state: 'intentionally-hidden',
       version: 1,
     });
-    DOMCoverage.registerBoundary(editor, {
+    testView(editor).domCoverage.registerBoundary({
       boundaryId: 'hidden-footer',
       anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [2]) },
       copyPolicy: 'exclude',
@@ -324,15 +407,22 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [0, 0, 0], offset: 0 })
-        ?.boundaryId
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [0, 0, 0],
+        offset: 0,
+      })?.boundaryId
     ).toBe('hidden-header');
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [2, 0], offset: 0 })
-        ?.boundaryId
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [2, 0],
+        offset: 0,
+      })?.boundaryId
     ).toBe('hidden-footer');
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [1, 0], offset: 0 })
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [1, 0],
+        offset: 0,
+      })
     ).toBeNull();
   });
 
@@ -346,7 +436,9 @@ describe('DOM coverage boundaries', () => {
 
     registerSectionBodyBoundary(editor);
 
-    expect(DOMCoverage.resolveDOMRangeOrBoundary(editor, range)).toMatchObject({
+    expect(
+      testView(editor).domCoverage.resolveDOMRangeOrBoundary(range)
+    ).toMatchObject({
       boundaries: [{ boundaryId: 'section-body' }],
       range,
       type: 'boundary-range',
@@ -783,7 +875,10 @@ describe('DOM coverage boundaries', () => {
     registerSectionBodyBoundary(editor);
 
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [0, 1, 0], offset: 0 })
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [0, 1, 0],
+        offset: 0,
+      })
     ).toMatchObject({
       boundaryId: 'section-body',
       copyPolicy: 'model',
@@ -791,11 +886,13 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(
-      DOMCoverage.getBoundariesForRange(editor, {
-        kind: 'text',
-        anchor: { path: [0, 1, 0], offset: 0 },
-        focus: { path: [0, 1, 0], offset: 6 },
-      }).map((boundary) => boundary.boundaryId)
+      testView(editor)
+        .domCoverage.getBoundariesForRange({
+          kind: 'text',
+          anchor: { path: [0, 1, 0], offset: 0 },
+          focus: { path: [0, 1, 0], offset: 6 },
+        })
+        .map((boundary) => boundary.boundaryId)
     ).toEqual(['section-body', 'nested-paragraph']);
   });
 
@@ -814,7 +911,10 @@ describe('DOM coverage boundaries', () => {
       root.appendChild(placeholder);
 
       expect(
-        DOMCoverage.resolvePlitePointFromBoundary(editor, [placeholder, 0])
+        testView(editor).domCoverage.resolvePlitePointFromBoundary([
+          placeholder,
+          0,
+        ])
       ).toMatchObject({
         boundary: { boundaryId: 'section-body' },
         edge: 'anchor',
@@ -829,7 +929,7 @@ describe('DOM coverage boundaries', () => {
         offset: 0,
       });
       expect(
-        DOMCoverage.resolvePlitePointFromBoundary(editor, [root, 1])
+        testView(editor).domCoverage.resolvePlitePointFromBoundary([root, 1])
       ).toMatchObject({
         boundary: { boundaryId: 'section-body' },
         edge: 'anchor',
@@ -851,13 +951,16 @@ describe('DOM coverage boundaries', () => {
     const materialized: string[] = [];
 
     registerSectionBodyBoundary(editor);
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason) => {
+    testView(editor).domCoverage.setMaterializeHandler((boundary, reason) => {
       materialized.push(`${boundary.boundaryId}:${reason}`);
       return true;
     });
 
     expect(
-      DOMCoverage.materializeBoundary(editor, 'section-body', 'selection')
+      testView(editor).domCoverage.materializeBoundary(
+        'section-body',
+        'selection'
+      )
     ).toEqual({
       boundaryId: 'section-body',
       reason: 'selection',
@@ -873,25 +976,26 @@ describe('DOM coverage boundaries', () => {
     registerSectionBodyBoundary(editor);
     registerNestedParagraphBoundary(editor);
 
-    const cleanupNested = DOMCoverage.registerMaterializeHandler(
-      editor,
-      (boundary, reason) => {
-        materialized.push(`nested-saw:${boundary.boundaryId}:${reason}`);
+    const cleanupNested = testView(
+      editor
+    ).domCoverage.registerMaterializeHandler((boundary, reason) => {
+      materialized.push(`nested-saw:${boundary.boundaryId}:${reason}`);
 
-        return boundary.boundaryId === 'nested-paragraph';
-      }
-    );
-    const cleanupSection = DOMCoverage.registerMaterializeHandler(
-      editor,
-      (boundary, reason) => {
-        materialized.push(`section-saw:${boundary.boundaryId}:${reason}`);
+      return boundary.boundaryId === 'nested-paragraph';
+    });
+    const cleanupSection = testView(
+      editor
+    ).domCoverage.registerMaterializeHandler((boundary, reason) => {
+      materialized.push(`section-saw:${boundary.boundaryId}:${reason}`);
 
-        return boundary.boundaryId === 'section-body';
-      }
-    );
+      return boundary.boundaryId === 'section-body';
+    });
 
     expect(
-      DOMCoverage.materializeBoundary(editor, 'section-body', 'selection')
+      testView(editor).domCoverage.materializeBoundary(
+        'section-body',
+        'selection'
+      )
     ).toMatchObject({ status: 'handled' });
     expect(materialized).toEqual([
       'nested-saw:section-body:selection',
@@ -902,7 +1006,10 @@ describe('DOM coverage boundaries', () => {
     materialized.length = 0;
 
     expect(
-      DOMCoverage.materializeBoundary(editor, 'section-body', 'selection')
+      testView(editor).domCoverage.materializeBoundary(
+        'section-body',
+        'selection'
+      )
     ).toMatchObject({ status: 'unhandled' });
     expect(materialized).toEqual(['nested-saw:section-body:selection']);
 
@@ -914,7 +1021,7 @@ describe('DOM coverage boundaries', () => {
     const materialized: string[] = [];
 
     registerSectionBodyBoundary(editor);
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason) => {
+    testView(editor).domCoverage.setMaterializeHandler((boundary, reason) => {
       materialized.push(`${boundary.boundaryId}:${reason}`);
       return true;
     });
@@ -922,7 +1029,10 @@ describe('DOM coverage boundaries', () => {
 
     try {
       expect(
-        DOMCoverage.materializeBoundary(editor, 'section-body', 'selection')
+        testView(editor).domCoverage.materializeBoundary(
+          'section-body',
+          'selection'
+        )
       ).toEqual({
         boundaryId: 'section-body',
         reason: 'selection',
@@ -1018,7 +1128,7 @@ describe('DOM coverage boundaries', () => {
     const hiddenPoint = { path: [0, 1, 0], offset: 0 };
 
     registerNestedParagraphBoundary(editor);
-    DOMCoverage.setMaterializeHandler(editor, (boundary, reason) => {
+    testView(editor).domCoverage.setMaterializeHandler((boundary, reason) => {
       materialized.push(`${boundary.boundaryId}:${reason}`);
       return true;
     });
@@ -1027,7 +1137,7 @@ describe('DOM coverage boundaries', () => {
       CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
     );
     expect(
-      DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
+      testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
     ).toMatchObject({
       boundary: {
         boundaryId: 'nested-paragraph',
@@ -1036,8 +1146,7 @@ describe('DOM coverage boundaries', () => {
       type: 'boundary',
     });
     expect(
-      DOMCoverage.materializeBoundary(
-        editor,
+      testView(editor).domCoverage.materializeBoundary(
         'nested-paragraph',
         'programmatic'
       )
@@ -1058,9 +1167,12 @@ describe('DOM coverage boundaries', () => {
       tx.nodes.split({ at: [0, 1] });
     });
 
-    expect(DOMCoverage.getBoundary(editor, 'section-body')).toBeNull();
+    expect(testView(editor).domCoverage.getBoundary('section-body')).toBeNull();
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [1, 0, 0], offset: 0 })
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [1, 0, 0],
+        offset: 0,
+      })
     ).toBeNull();
   });
 
@@ -1089,7 +1201,7 @@ describe('DOM coverage boundaries', () => {
       ] satisfies Descendant[],
     });
 
-    DOMCoverage.registerBoundary(editor, {
+    testView(editor).domCoverage.registerBoundary({
       boundaryId: 'merged-section-body',
       anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [1, 1]) },
       copyPolicy: 'model',
@@ -1114,9 +1226,14 @@ describe('DOM coverage boundaries', () => {
       tx.nodes.merge({ at: [1] });
     });
 
-    expect(DOMCoverage.getBoundary(editor, 'merged-section-body')).toBeNull();
     expect(
-      DOMCoverage.getBoundaryForPoint(editor, { path: [0, 2, 0], offset: 0 })
+      testView(editor).domCoverage.getBoundary('merged-section-body')
+    ).toBeNull();
+    expect(
+      testView(editor).domCoverage.getBoundaryForPoint({
+        path: [0, 2, 0],
+        offset: 0,
+      })
     ).toBeNull();
   });
 
@@ -1135,7 +1252,7 @@ describe('DOM coverage boundaries', () => {
       for (let index = 0; index < 100; index++) {
         const path = [index * 40];
 
-        DOMCoverage.registerBoundary(editor, {
+        testView(editor).domCoverage.registerBoundary({
           boundaryId: `hidden-${index}`,
           anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, path) },
           copyPolicy: 'model',
@@ -1153,7 +1270,7 @@ describe('DOM coverage boundaries', () => {
 
       const coverageSamples = Array.from({ length: 25 }, () =>
         measureRepeated(() => {
-          DOMCoverage.getBoundaryForPoint(editor, outsidePoint);
+          testView(editor).domCoverage.getBoundaryForPoint(outsidePoint);
         })
       );
 
@@ -1166,7 +1283,7 @@ describe('DOM coverage boundaries', () => {
   test('includes specifically indexed boundaries when querying a large root range', () => {
     const editor = createLargeEditor(500);
 
-    DOMCoverage.registerBoundary(editor, {
+    testView(editor).domCoverage.registerBoundary({
       boundaryId: 'hidden-200',
       anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [200]) },
       copyPolicy: 'model',
@@ -1182,11 +1299,13 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(
-      DOMCoverage.getBoundariesForRange(editor, {
-        kind: 'text',
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [300, 0], offset: 0 },
-      }).map((boundary) => boundary.boundaryId)
+      testView(editor)
+        .domCoverage.getBoundariesForRange({
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [300, 0], offset: 0 },
+        })
+        .map((boundary) => boundary.boundaryId)
     ).toEqual(['hidden-200']);
   });
 
@@ -1201,7 +1320,7 @@ describe('DOM coverage boundaries', () => {
       };
 
       mountEditorRoot(editor, document);
-      DOMCoverage.registerBoundary(editor, {
+      testView(editor).domCoverage.registerBoundary({
         boundaryId: 'virtualized-200',
         anchor: { type: 'placeholder', nodeKey: getNodeKey(editor, [200]) },
         copyPolicy: 'model',
@@ -1225,7 +1344,7 @@ describe('DOM coverage boundaries', () => {
         CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
       );
       expect(
-        DOMCoverage.resolveDOMPointOrBoundary(editor, hiddenPoint)
+        testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
       ).toMatchObject({
         boundary: {
           boundaryId: 'virtualized-200',
@@ -1235,7 +1354,7 @@ describe('DOM coverage boundaries', () => {
         type: 'boundary',
       });
       expect(
-        DOMCoverage.resolveDOMRangeOrBoundary(editor, hiddenRange)
+        testView(editor).domCoverage.resolveDOMRangeOrBoundary(hiddenRange)
       ).toMatchObject({
         boundaries: [
           {

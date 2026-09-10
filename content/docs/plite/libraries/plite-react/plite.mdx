@@ -1,12 +1,12 @@
 ---
 title: "Plite Component"
-description: "Provide one editor to Editable, toolbars, sidebars, projection sources, and change callbacks."
+description: "Provide one editor to Editable, toolbars, sidebars, decorations, and change callbacks."
 ---
 
 `Plite` provides a React context for one editor. Render it above `Editable`,
 toolbars, sidebars, and any component that needs editor state.
 
-## Minimal Usage
+## Minimal usage
 
 ```tsx
 <Plite editor={editor} onCommit={handleCommit}>
@@ -19,9 +19,8 @@ toolbars, sidebars, and any component that needs editor state.
 
 ```typescript
 type PliteBaseProps = {
-  annotationStore?: PliteAnnotationStore | null;
   children: React.ReactNode;
-  decorationSources?: readonly PliteDecorationSource[] | null;
+  decorations?: readonly PliteDecorationSource[] | null;
   onCommit?: (context: PliteCommitContext) => void;
   onSelectionChange?: (context: PliteSelectionChangeContext) => void;
   onValueChange?: (context: PliteValueChangeContext) => void;
@@ -179,7 +178,7 @@ useEffect(() => {
 See [Document Meta](../../concepts/14-document-state) for the full
 persistence shape.
 
-### Selection Changes
+### Selection changes
 
 Use `onSelectionChange` when React UI only cares about model selection changes.
 
@@ -192,46 +191,78 @@ Use `onSelectionChange` when React UI only cares about model selection changes.
 </Plite>
 ```
 
-### `decorationSources`
+### `decorations`
 
-Decoration sources publish transient render-time ranges such as search matches,
-diagnostics, and code highlights.
+Decoration sources publish transient text attributes for search matches,
+diagnostics, code highlights, comments, and remote cursors.
 
 ```tsx
-const searchSource = usePliteDecorationSource(editor, {
-  id: "search",
-  read: ({ snapshot }) => findSearchMatches(snapshot, query),
-});
+const searchDecorations = useMemo(
+  () =>
+    ({
+      id: "search",
+      read: ({ entry: [node, path] }) => {
+        if (!TextApi.isText(node)) return [];
 
-<Plite decorationSources={[searchSource]} editor={editor}>
-  <Editable renderSegment={renderSearchMatch} />
+        return findMatches(node.text, query).map(({ end, start }, index) => ({
+          attributes: { className: "search-match" },
+          key: `search:${path.join(".")}:${index}`,
+          range: {
+            anchor: { path, offset: start },
+            focus: { path, offset: end },
+          },
+        }));
+      },
+    }) satisfies PliteDecorationSource<typeof editor>,
+  [editor, query]
+);
+
+<Plite decorations={[searchDecorations]} editor={editor}>
+  <Editable />
 </Plite>;
 ```
 
-Use provider-owned `decorationSources` so every `Editable` and overlay UI reads
-from the same projection source. Use `Editable.decorate` for a simple
-editor-local decoration callback.
+`read` runs once per indexed node when the source is installed and only for
+affected input node keys after document edits. Every decoration needs a stable
+key, a range, and render-safe attributes. Plite merges overlapping sources and
+wakes only text nodes whose merged attributes changed.
 
-### `annotationStore`
+Use `observe` when an external store can name the affected node keys.
 
-The annotation store publishes anchor-backed annotations to text rendering and annotation UI hooks.
+```tsx
+const diagnostics = {
+  id: "diagnostics",
+  observe: ({ refresh }) =>
+    diagnosticsStore.subscribe(({ nodeKeys }) => refresh({ nodeKeys })),
+  read: ({ entry }) => diagnosticsStore.read(entry),
+} satisfies PliteDecorationSource<typeof editor>;
+```
+
+Pass `{ nodeKeys: "all" }` only when the source cannot identify affected
+inputs. The provider subscribes once per source; rendered text subscribes by
+node key.
+
+### Annotation providers
+
+Annotations have a separate context because sidebars, widgets, and other stores
+may need different annotation owners. Nest `PliteAnnotationProvider` where its
+reader hooks should resolve a default store. Add a decoration source only when
+an annotation also needs inline paint.
 
 ```tsx
 const annotations = comments.map((comment) => ({
   anchor: comment.anchor,
   data: comment,
   id: comment.id,
-  projection: {
-    status: comment.status,
-    tone: comment.tone,
-  },
 }));
 
 const annotationStore = usePliteAnnotationStore(editor, annotations);
 
-<Plite annotationStore={annotationStore} editor={editor}>
-  <Editable renderSegment={renderCommentSegment} />
-  <CommentsSidebar />
+<Plite decorations={[commentDecorations]} editor={editor}>
+  <PliteAnnotationProvider store={annotationStore}>
+    <Editable />
+    <CommentsSidebar />
+  </PliteAnnotationProvider>
 </Plite>;
 ```
 

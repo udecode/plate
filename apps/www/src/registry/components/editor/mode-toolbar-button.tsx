@@ -37,11 +37,7 @@ export function ModeToolbarButton() {
 
   const isSuggesting = usePluginStore(SuggestionPlugin, 'isSuggesting');
 
-  let value: keyof typeof MODE_ITEMS = 'editing';
-
-  if (readOnly) value = 'viewing';
-
-  if (isSuggesting) value = 'suggestion';
+  const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>

@@ -1,0 +1,4 @@
+repo_key	local_path	remote	license_or_status	why_used
+github/prosemirror/prosemirror-view	../prosemirror-view	https://github.com/ProseMirror/prosemirror-view	MIT	Strongest explicit IME overlap cancellation tests and composition DOM protection source.
+github/facebook/lexical	../lexical	https://github.com/facebook/lexical	MIT	Composition key ownership and transform-suppression model.
+github/microsoft/vscode	../vscode	https://github.com/microsoft/vscode	MIT	Explicit composition lifecycle, IME key routing, stale compositionend handling, and textarea write suppression.

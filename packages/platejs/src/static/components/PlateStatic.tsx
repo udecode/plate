@@ -2,11 +2,6 @@ import { clsx } from 'clsx';
 import React from 'react';
 
 import {
-  isElementDecorationsEqual,
-  isTextDecorationsEqual,
-} from '../../dom/plite-dom.internal';
-import {
-  type DecoratedRange,
   type Descendant,
   type Element,
   type NodeEntry,
@@ -23,19 +18,104 @@ import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
-import type { EditableProps, Editor, RenderElementSlots } from '../../lib';
-import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
-import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic';
-import { pipeRenderTextStatic } from '../pluginRenderTextStatic';
+import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
+import type { Editor, RenderElementSlots } from '../../lib';
+import type {
+  PliteDecoration,
+  PliteDecorationAttributes,
+  PliteDecorationSource,
+} from '../internal/plite-react';
+import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
+import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
+import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
 import type { PliteRenderElementProps } from '../types';
-import { pipeDecorate } from '../utils/pipeDecorate';
 
 const EMPTY_PATH: Path = [];
 const EMPTY_ROOT_STACK: readonly string[] = [];
 
+type StaticDecorationSlice = Readonly<{
+  attributes: PliteDecorationAttributes;
+  end: number;
+  key: string;
+  start: number;
+}>;
+
+const areStaticDecorationsEqual = (
+  left: readonly PliteDecoration[],
+  right: readonly PliteDecoration[]
+) =>
+  left === right ||
+  (left.length === right.length &&
+    left.every((decoration, index) => {
+      const other = right[index];
+
+      return (
+        decoration.key === other?.key &&
+        RangeApi.equals(decoration.range, other.range) &&
+        JSON.stringify(decoration.attributes) ===
+          JSON.stringify(other.attributes)
+      );
+    }));
+
+const getStaticDecorationSlices = (
+  text: Text,
+  decorations: readonly PliteDecoration[]
+): readonly StaticDecorationSlice[] =>
+  decorations.flatMap(({ attributes, key, range }) => {
+    const start = RangeApi.start(range);
+    const end = RangeApi.end(range);
+
+    if (start.path.join('.') !== end.path.join('.')) return [];
+
+    return [
+      {
+        attributes,
+        end: Math.min(text.text.length, end.offset),
+        key,
+        start: Math.max(0, start.offset),
+      },
+    ];
+  });
+
+const splitStaticText = (
+  text: Text,
+  decorations: readonly PliteDecoration[]
+) => {
+  const slices = getStaticDecorationSlices(text, decorations);
+
+  if (text.text.length === 0) {
+    return [{ decorations: [], end: 0, start: 0, text: '' }];
+  }
+
+  const boundaries = new Set<number>([0, text.text.length]);
+
+  slices.forEach(({ end, start }) => {
+    boundaries.add(start);
+    boundaries.add(end);
+  });
+  const sorted = [...boundaries].sort((left, right) => left - right);
+
+  return sorted.slice(0, -1).flatMap((start, index) => {
+    const end = sorted[index + 1];
+
+    if (start === end) return [];
+
+    return [
+      {
+        decorations: slices.filter(
+          (decoration) => decoration.start < end && decoration.end > start
+        ),
+        end,
+        start,
+        text: text.text.slice(start, end),
+      },
+    ];
+  });
+};
+
 function BaseElementStatic({
   contentRootValues: _contentRootValues,
-  decorate,
+  sources,
   decorations,
   editor,
   element,
@@ -44,8 +124,8 @@ function BaseElementStatic({
   rootStack,
 }: {
   contentRootValues: ReadonlyArray<readonly Descendant[]>;
-  decorate: EditableProps['decorate'];
-  decorations: DecoratedRange[];
+  sources: readonly PliteDecorationSource[];
+  decorations: readonly PliteDecoration[];
   editor: Editor;
   element: Element;
   path: Path;
@@ -63,7 +143,7 @@ function BaseElementStatic({
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (
     <Children
-      decorate={decorate}
+      sources={sources}
       decorations={decorations}
       editor={editor}
       from={range.from}
@@ -101,7 +181,7 @@ function BaseElementStatic({
 
       return (
         <Children
-          decorate={decorate}
+          sources={sources}
           decorations={[]}
           editor={editor}
           nodes={nodes}
@@ -134,7 +214,7 @@ function BaseElementStatic({
   return <>{renderElement?.({ attributes, children, element, path, slots })}</>;
 }
 
-export const ElementStatic = React.memo(
+const ElementStatic = React.memo(
   BaseElementStatic,
   (prev, next) =>
     prev.element === next.element &&
@@ -142,7 +222,7 @@ export const ElementStatic = React.memo(
     prev.contentRootValues.every(
       (children, index) => children === next.contentRootValues[index]
     ) &&
-    isElementDecorationsEqual(prev.decorations, next.decorations)
+    areStaticDecorationsEqual(prev.decorations, next.decorations)
 );
 
 function BaseLeafStatic({
@@ -151,7 +231,7 @@ function BaseLeafStatic({
   path,
   text,
 }: {
-  decorations: DecoratedRange[];
+  decorations: readonly PliteDecoration[];
   editor: Editor;
   path: Path;
   text: Text;
@@ -159,16 +239,31 @@ function BaseLeafStatic({
   const renderLeaf = pipeRenderLeafStatic(editor);
   const renderText = pipeRenderTextStatic(editor);
 
-  const decoratedLeaves = TextApi.decorations(text, decorations);
-
-  const leafElements = decoratedLeaves.map(({ leaf, position }) => {
-    const leafElement = renderLeaf({
-      attributes: { 'data-plite-leaf': true },
-      children: (
-        <span data-plite-string={true}>
-          {leaf.text === '' ? '\uFEFF' : leaf.text}
+  const segments = splitStaticText(text, decorations);
+  const leafElements = segments.map((segment, index) => {
+    const leaf = { ...text, text: segment.text };
+    const position =
+      segments.length > 1
+        ? {
+            end: segment.end,
+            isFirst: index === 0 ? (true as const) : undefined,
+            isLast: index === segments.length - 1 ? (true as const) : undefined,
+            start: segment.start,
+          }
+        : undefined;
+    const content = segment.decorations.reduceRight(
+      (children, decoration) => (
+        <span key={decoration.key} {...decoration.attributes}>
+          {children}
         </span>
       ),
+      <span data-plite-string={true}>
+        {segment.text === '' ? '\uFEFF' : segment.text}
+      </span>
+    );
+    const leafElement = renderLeaf({
+      attributes: { 'data-plite-leaf': true },
+      children: content,
       leaf,
       leafPosition: position,
       path,
@@ -177,7 +272,7 @@ function BaseLeafStatic({
 
     return (
       <React.Fragment
-        key={`${position?.start ?? 0}:${position?.end ?? leaf.text.length}`}
+        key={`${position?.start ?? 0}:${position?.end ?? leaf.text.length}:${segment.decorations.map(({ key }) => key).join(':')}`}
       >
         {leafElement}
       </React.Fragment>
@@ -192,18 +287,15 @@ function BaseLeafStatic({
   });
 }
 
-export const LeafStatic = React.memo(
+const LeafStatic = React.memo(
   BaseLeafStatic,
   (prev, next) =>
-    // prev.text === next.text &&
     TextApi.equals(next.text, prev.text) &&
-    isTextDecorationsEqual(next.decorations, prev.decorations)
+    areStaticDecorationsEqual(next.decorations, prev.decorations)
 );
 
-const defaultDecorate: (entry: NodeEntry) => DecoratedRange[] = () => [];
-
 function Children({
-  decorate = defaultDecorate,
+  sources,
   decorations,
   editor,
   from,
@@ -213,8 +305,8 @@ function Children({
   rootStack = EMPTY_ROOT_STACK,
   to,
 }: {
-  decorate: EditableProps['decorate'];
-  decorations: DecoratedRange[];
+  sources: readonly PliteDecorationSource[];
+  decorations: readonly PliteDecoration[];
   editor: Editor;
   from?: number;
   nodes: readonly Descendant[];
@@ -235,7 +327,7 @@ function Children({
 
         const p = [...parentPath, i];
 
-        let ds: DecoratedRange[] = [];
+        let ds: PliteDecoration[] = [];
 
         const [first, firstPath] = NodeApi.first(root, p);
         const [last, lastPath] = NodeApi.last(root, p);
@@ -248,13 +340,15 @@ function Children({
             : null;
 
         if (range) {
-          ds = decorate([child, p]);
+          const entry: NodeEntry = [child, p];
+
+          ds = sources.flatMap((source) => source.read({ editor, entry }));
 
           for (const dec of decorations) {
-            const d = RangeApi.intersection(dec, range);
+            const intersection = RangeApi.intersection(dec.range, range);
 
-            if (d) {
-              ds.push(d);
+            if (intersection) {
+              ds.push({ ...dec, range: intersection });
             }
           }
         }
@@ -265,7 +359,7 @@ function Children({
             contentRootValues={Object.values(
               editor.read.schema.getElementContentRoots(child)
             ).map((innerRoot) => editor.read.root(innerRoot))}
-            decorate={decorate}
+            sources={sources}
             decorations={ds}
             editor={editor}
             element={child}
@@ -297,7 +391,7 @@ export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
   const { className, editor: editorInput, ...rest } = props;
   const editor = editorInput as Editor;
 
-  const decorate = pipeDecorate(editor);
+  const sources = getPlateDecorationSources(editor);
 
   const content = (
     <div
@@ -307,7 +401,7 @@ export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
       {...rest}
     >
       <Children
-        decorate={decorate}
+        sources={sources}
         decorations={[]}
         editor={editor}
         nodes={editor.read.children()}
@@ -317,19 +411,18 @@ export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
     </div>
   );
 
-  let aboveEditable: React.ReactNode = content;
+  let wrappedContent: React.ReactNode = content;
 
-  // Use pre-computed arrays for aboveEditable components
-  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.wrapContent.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    const AboveEditable = plugin.render.aboveEditable;
+    const WrapContent = plugin.slots.wrapContent;
 
-    if (AboveEditable) {
-      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+    if (WrapContent) {
+      wrappedContent = <WrapContent>{wrappedContent}</WrapContent>;
     }
   });
 
-  return aboveEditable;
+  return wrappedContent;
 }

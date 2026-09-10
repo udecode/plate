@@ -1,11 +1,10 @@
 import type { Text } from '..';
-import type { PliteProjectionSlice } from './projection-store';
+import type { PliteDecorationSlice } from './decoration-source';
 
 export type DOMTextSyncOptOutReason =
   | 'empty-text'
-  | 'projection'
+  | 'decoration'
   | 'custom-leaf'
-  | 'custom-segment'
   | 'custom-text';
 
 export type DOMTextSyncCapability =
@@ -21,11 +20,13 @@ export type DOMTextSyncCapability =
 /** Context used to claim native DOM text-sync capability for a renderer. */
 export type DOMTextSyncRendererCapabilityContext = Readonly<{
   marks: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice[];
 }>;
 
 const DOM_TEXT_SYNC_RENDERER_CAPABILITY = Symbol.for(
   'plitejs/react/dom-text-sync-renderer-capability'
+);
+const RETAINED_TEXT_FLOW_RENDERER_CAPABILITY = Symbol.for(
+  'plitejs/react/retained-text-flow-renderer-capability'
 );
 
 /**
@@ -59,69 +60,47 @@ const hasDOMTextSyncRendererCapability = (
   )?.(context) ??
     false);
 
+export const canSkipRendererForRetainedTextFlow = (
+  renderer: unknown,
+  context: DOMTextSyncRendererCapabilityContext
+) =>
+  renderer == null ||
+  (typeof renderer === 'function' &&
+    ((
+      Reflect.get(renderer, RETAINED_TEXT_FLOW_RENDERER_CAPABILITY) as
+        | ((value: DOMTextSyncRendererCapabilityContext) => boolean)
+        | undefined
+    )?.(context) ??
+      false));
+
 export const getDOMTextSyncCapability = ({
   hasText,
   marks = {},
-  projections,
+  decorations,
   renderLeaf,
-  renderSegment,
   renderText,
 }: {
+  decorations: readonly PliteDecorationSlice[];
   hasText: boolean;
   marks?: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice[];
   renderLeaf?: unknown;
-  renderSegment?: unknown;
   renderText?: unknown;
 }): DOMTextSyncCapability => {
   if (!hasText) {
     return { enabled: false, reason: 'empty-text' };
   }
 
-  if (renderSegment) {
-    return { enabled: false, reason: 'custom-segment' };
-  }
-
-  if (
-    renderLeaf &&
-    !hasDOMTextSyncRendererCapability(renderLeaf, { marks, projections })
-  ) {
+  if (renderLeaf && !hasDOMTextSyncRendererCapability(renderLeaf, { marks })) {
     return { enabled: false, reason: 'custom-leaf' };
   }
 
-  if (
-    renderText &&
-    !hasDOMTextSyncRendererCapability(renderText, { marks, projections })
-  ) {
+  if (renderText && !hasDOMTextSyncRendererCapability(renderText, { marks })) {
     return { enabled: false, reason: 'custom-text' };
   }
 
-  if (projections.length > 0) {
-    return { enabled: false, reason: 'projection' };
+  if (decorations.length > 0) {
+    return { enabled: false, reason: 'decoration' };
   }
 
   return { enabled: true, reason: null };
 };
-
-export const canUseProjectedDOMTextSync = ({
-  hasText,
-  marks = {},
-  projections,
-  renderLeaf,
-  renderSegment,
-  renderText,
-}: {
-  hasText: boolean;
-  marks?: Omit<Text, 'text'>;
-  projections: readonly PliteProjectionSlice[];
-  renderLeaf?: unknown;
-  renderSegment?: unknown;
-  renderText?: unknown;
-}) =>
-  hasText &&
-  projections.length > 0 &&
-  !renderSegment &&
-  (!renderLeaf ||
-    hasDOMTextSyncRendererCapability(renderLeaf, { marks, projections })) &&
-  (!renderText ||
-    hasDOMTextSyncRendererCapability(renderText, { marks, projections }));

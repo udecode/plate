@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-05-editor-feature-lifetimes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-05-editor-feature-lifetimes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Install AI and drag-and-drop integration with feature kits",
+  "targets": [
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-05-ai-mount-sessions-drag-cleanup-72ebb341",
+      "kind": "wiring",
+      "summary": "Use `AIKit` and `DndKit` to enable AI commands and drag and drop with ordinary `Plate` and `Editor` composition. Share one AI stream across editor views and retain custom transports and drag managers.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai", "dnd", "editor-ai", "editor-plugins"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-editor-feature-lifetimes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-05-editor-feature-lifetimes-2",
+      "kind": "behavior",
+      "summary": "Provide tooltips in standalone installs.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-ai", "dnd"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-editor-feature-lifetimes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-05-editor-feature-lifetimes-3",
+      "kind": "behavior",
+      "summary": "Focus the calendar when opening the date picker.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date"],
+      "source": {
+        "line": 17,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-editor-feature-lifetimes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-05-editor-feature-lifetimes-4",
+      "kind": "behavior",
+      "summary": "Preserve server rendering and input semantics in Base UI editors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji-picker", "font-size-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-editor-feature-lifetimes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

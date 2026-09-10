@@ -69,7 +69,7 @@ describe('plite-react runtime live state facade', () => {
   test('publishes runtime selection writes and joins an active transaction', () => {
     const editor = createEditor();
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     };

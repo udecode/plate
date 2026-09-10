@@ -7,6 +7,7 @@ import {
   FontColorPlugin,
   type Editor,
   useEditor,
+  useEditorHasSelection,
   useEditorSelector,
   useComposedRef,
 } from 'platejs/react';
@@ -146,9 +147,7 @@ export function FontColorToolbarButton({
 }) {
   const editor = useEditor();
 
-  const selectionDefined = useEditorSelector(
-    (innerEditor) => !!innerEditor.read.selection()
-  );
+  const selectionDefined = useEditorHasSelection();
 
   const color = useEditorSelector((innerEditor2) =>
     getColor(innerEditor2, plugin)

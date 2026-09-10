@@ -1,9 +1,10 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import { getPlateRuntime } from 'platejs';
 import { createEditor } from 'platejs/react';
 
 import { createEditor as createPliteEditor, type Value } from '../../facade';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditorWithEditor } from '../../react/editor/withPlate';
 import { jsxt, type TestEditor } from '../../testing';
 import { SingleBlockPlugin } from './SingleBlockPlugin';

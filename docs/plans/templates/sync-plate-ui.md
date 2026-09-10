@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the exact active `sync-plate-ui` objective after creating this file.
 
@@ -13,10 +15,7 @@ fork policy.
 Goal plan:
 {{PLAN_PATH}}
 
-Primary template:
-docs/plans/templates/sync-plate-ui.md
-
-Applied packs:
+Optional packs:
 - none by default
 - add `agent-native` if `.agents/**`, `.claude/**`, `.codex/**`, skills,
   commands, prompts, or user-action tooling are edited
@@ -126,7 +125,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| `autogoal` loaded and active goal checked/created | pending | pending |
+| Task plan and scope read; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | `sync-plate-ui` rule read | pending | pending |
 | Output budget strategy recorded | pending | pending |
 | Target repo path resolved | pending | pending |
@@ -181,7 +180,7 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | pending | Run target package-manager install/checks when touched; otherwise N/A | pending |
 | User review boundary | pending | In planning mode, stop and ask the user to accept rows; in apply mode, record accepted payload | pending |
 | Output budget discipline | pending | Verify broad output was artifacted/capped, or record accidental output and recovery | pending |
-| P1 autoreview | pending | For non-trivial apply runs, load `.agents/skills/autoreview/SKILL.md`, pass `--max-priority P1`, and close accepted/actionable findings; use P2 or P3 only when explicitly requested; for planning-only or no-local-patch runs, record N/A with reason | pending |
+| Task review decision | pending | Reuse Task's single authorized review result or N/A; P1 default, three-invocation scope cap, never on next; no review for direct release sync | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

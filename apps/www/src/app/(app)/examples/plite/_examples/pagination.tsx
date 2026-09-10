@@ -38,9 +38,10 @@ import {
   usePliteLayoutSnapshot,
 } from 'plitejs/pagination/react';
 import {
-  type EditableDecorate,
   type EditableDOMStrategyEffectiveType,
   type EditableProps,
+  type PliteDecoration,
+  type PliteDecorationSource,
   type RenderElementProps,
   type RenderLeafProps,
   Plite,
@@ -64,6 +65,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -888,8 +890,36 @@ type PaginationLineDecoration = PlitePageLayoutDecorationRects & {
   nativeFlow?: boolean;
 };
 
-type PaginationLineDecorationData = {
-  paginationLine?: PaginationLineDecoration;
+type PaginationDecorationReader = PliteDecorationSource<unknown>['read'];
+
+const EMPTY_PAGINATION_DECORATION_READER: PaginationDecorationReader = () => [];
+
+const createPaginationDecorationRuntime = () => {
+  let reader = EMPTY_PAGINATION_DECORATION_READER;
+  const refreshers = new Set<
+    Parameters<
+      NonNullable<PliteDecorationSource<unknown>['observe']>
+    >[0]['refresh']
+  >();
+  const source: PliteDecorationSource<unknown> = {
+    id: 'pagination-layout',
+    observe: ({ refresh }) => {
+      refreshers.add(refresh);
+
+      return () => {
+        refreshers.delete(refresh);
+      };
+    },
+    read: (context) => reader(context),
+  };
+
+  return {
+    setReader(nextReader: PaginationDecorationReader) {
+      reader = nextReader;
+      refreshers.forEach((refresh) => refresh({ nodeKeys: 'all' }));
+    },
+    source,
+  };
 };
 
 const flowProjectedTypes = new Set(['image', 'table', 'thematic-break']);
@@ -1100,6 +1130,7 @@ const getProjectedStyle = ({
   margin: 0,
   outline: debugFrames ? '1px dotted rgba(239, 68, 68, 0.55)' : undefined,
   overflow: 'visible',
+  pointerEvents: flowElement ? 'auto' : 'none',
   position: 'absolute',
   top: usesVirtualizedLayout ? box.top - virtualOffsetTop : box.top,
   width: Math.max(1, box.width),
@@ -1365,68 +1396,17 @@ const PaginationElement = (
 const renderPaginationLeaf = ({
   attributes,
   children,
-  segment,
-}: RenderLeafProps) => {
-  const line = (
-    segment.slices.find(
-      (slice) =>
-        (slice.data as PaginationLineDecorationData | undefined)?.paginationLine
-    )?.data as PaginationLineDecorationData | undefined
-  )?.paginationLine;
-
-  if (!line) {
-    return (
-      <span {...attributes} style={getPaginationLeafStyle(segment.marks)}>
-        {children}
-      </span>
-    );
-  }
-
-  if (line.nativeFlow) {
-    return (
-      <span
-        {...attributes}
-        style={{
-          ...getPaginationLeafStyle(segment.marks),
-          whiteSpace: 'pre',
-        }}
-      >
-        {children}
-        {line.breakAfter ? <br data-pagination-native-flow-break /> : null}
-      </span>
-    );
-  }
-
-  return (
-    <span
-      {...attributes}
-      style={{
-        color: '#111827',
-        display: 'inline-block',
-        fontFamily: segment.marks.code ? PAGE_CODE_FONT : undefined,
-        fontStyle: segment.marks.italic ? 'italic' : undefined,
-        fontWeight: segment.marks.bold ? 700 : undefined,
-        height: line.hitRect.height,
-        left: line.textRect.left,
-        lineHeight: `${line.textRect.height}px`,
-        minWidth: line.textRect.width === 0 ? 1 : undefined,
-        position: 'absolute',
-        textDecorationLine: getPaginationTextDecorationLine(segment.marks),
-        top: line.textRect.top,
-        whiteSpace: 'pre',
-        width: line.hitRect.width,
-      }}
-    >
-      {children}
-    </span>
-  );
-};
+  leaf,
+}: RenderLeafProps) => (
+  <span {...attributes} style={getPaginationLeafStyle(leaf)}>
+    {children}
+  </span>
+);
 
 type PagedEditableProps = ComponentProps<typeof PagedEditable>;
 
 const PaginationPageView = ({
   debugFrames,
-  decorate,
   domStrategy,
   layout,
   onDOMStrategyMetrics,
@@ -1439,7 +1419,6 @@ const PaginationPageView = ({
   viewportRef,
 }: {
   debugFrames: boolean;
-  decorate: PagedEditableProps['decorate'];
   domStrategy: PagedEditableProps['domStrategy'];
   layout: PagedEditableProps['layout'];
   onDOMStrategyMetrics: PagedEditableProps['onDOMStrategyMetrics'];
@@ -1475,8 +1454,6 @@ const PaginationPageView = ({
         >
           <PagedEditable
             className="plite-pagination-editor"
-            decorate={decorate}
-            decorateDirtiness="external"
             domStrategy={domStrategy}
             layout={layout}
             onDOMStrategyMetrics={onDOMStrategyMetrics}
@@ -1563,9 +1540,11 @@ const useElementSize = <T extends HTMLElement>(): [
 
 const PaginationSurface = ({
   controls,
+  decorationRuntime,
   setControls,
 }: {
   controls: PaginationControls;
+  decorationRuntime: ReturnType<typeof createPaginationDecorationRuntime>;
   setControls: SetPaginationControls;
 }) => {
   const editor = useEditorContext();
@@ -1894,10 +1873,7 @@ const PaginationSurface = ({
       layout,
       pageGeometry,
       snapshot,
-      values: new Map<
-        string,
-        ReturnType<EditableDecorate<PaginationLineDecorationData>>
-      >(),
+      values: new Map<string, PliteDecoration[]>(),
     }),
     [layout, pageGeometry, snapshot]
   );
@@ -1943,8 +1919,8 @@ const PaginationSurface = ({
     snapshot.pages.length,
     visiblePageRows * (pageLayoutMode === 'spread' ? 2 : 1)
   );
-  const decorate = useCallback<EditableDecorate<PaginationLineDecorationData>>(
-    ([node, path]) => {
+  const readDecorations = useCallback<PaginationDecorationReader>(
+    ({ entry: [node, path] }) => {
       if (!NodeApi.isText(node)) {
         return [];
       }
@@ -1978,7 +1954,7 @@ const PaginationSurface = ({
         }
       );
       const decorations =
-        getPlitePageLayoutDecorations<PaginationLineDecorationData>(
+        getPlitePageLayoutDecorations<PaginationLineDecoration>(
           pathProjection,
           {
             data: ({ block, line, rects, run }) => {
@@ -1989,14 +1965,12 @@ const PaginationSurface = ({
                 snapshot.blocks[line.blockIndex]?.text.length ?? line.end;
 
               return {
-                paginationLine: {
-                  ...rects,
-                  breakAfter:
-                    nativeFlow &&
-                    run.range.end >= line.end &&
-                    line.end < blockTextLength,
-                  nativeFlow,
-                },
+                ...rects,
+                breakAfter:
+                  nativeFlow &&
+                  run.range.end >= line.end &&
+                  line.end < blockTextLength,
+                nativeFlow,
               };
             },
             filter: ({ line }) =>
@@ -2005,7 +1979,41 @@ const PaginationSurface = ({
               ),
             rects: 'block',
           }
-        ).get(pathKey) ?? [];
+        )
+          .get(pathKey)
+          ?.flatMap(({ data: line, key, range }) => {
+            if (!line) return [];
+
+            const decoration: PliteDecoration = {
+              attributes: line.nativeFlow
+                ? {
+                    'data-pagination-line': true,
+                    'data-pagination-native-flow-break':
+                      line.breakAfter || undefined,
+                    style: { whiteSpace: 'pre' },
+                  }
+                : {
+                    'data-pagination-line': true,
+                    style: {
+                      color: '#111827',
+                      display: 'inline-block',
+                      height: line.hitRect.height,
+                      left: line.textRect.left,
+                      lineHeight: `${line.textRect.height}px`,
+                      minWidth: line.textRect.width === 0 ? 1 : undefined,
+                      pointerEvents: 'auto',
+                      position: 'absolute',
+                      top: line.textRect.top,
+                      whiteSpace: 'pre',
+                      width: line.hitRect.width,
+                    },
+                  },
+              key,
+              range,
+            };
+
+            return [decoration];
+          }) ?? [];
 
       paginationDecorationCache.values.set(cacheKey, decorations);
 
@@ -2019,6 +2027,13 @@ const PaginationSurface = ({
       snapshot,
     ]
   );
+  useLayoutEffect(() => {
+    decorationRuntime.setReader(readDecorations);
+
+    return () => {
+      decorationRuntime.setReader(EMPTY_PAGINATION_DECORATION_READER);
+    };
+  }, [decorationRuntime, readDecorations]);
   const renderElement = useCallback(
     (props: RenderElementProps) => (
       <PaginationElement
@@ -2059,7 +2074,6 @@ const PaginationSurface = ({
       </div>
       <PaginationPageView
         debugFrames={debugFrames}
-        decorate={decorate}
         domStrategy={domStrategy}
         layout={layout}
         onDOMStrategyMetrics={handleDOMStrategyMetrics}
@@ -2101,10 +2115,18 @@ const PaginationEditor = ({
       },
     },
   });
+  const decorationRuntime = useMemo(
+    () => createPaginationDecorationRuntime(),
+    []
+  );
 
   return (
-    <Plite editor={editor}>
-      <PaginationSurface controls={controls} setControls={setControls} />
+    <Plite decorations={[decorationRuntime.source]} editor={editor}>
+      <PaginationSurface
+        controls={controls}
+        decorationRuntime={decorationRuntime}
+        setControls={setControls}
+      />
     </Plite>
   );
 };

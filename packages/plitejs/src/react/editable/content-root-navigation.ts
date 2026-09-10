@@ -56,7 +56,7 @@ import {
 import {
   type ContentRootNavigationEditor,
   type ContentRootOwner,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
   getOwnerForCurrentViewEditor,
   getOwnerForRoot,
@@ -83,7 +83,7 @@ import {
 
 export {
   type ContentRootOwner,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-owners';
 
@@ -110,7 +110,7 @@ const rootedRange = (point: Point, root: RootKey): Range => {
   };
 };
 
-const toProjectedPoint = ({
+const toViewBoundaryPoint = ({
   owner,
   point,
   root,
@@ -210,7 +210,7 @@ const getRootViewEditor = ({
     ? (editor as ReactRuntimeEditor)
     : null);
 
-const getProjectedPointViewEditor = ({
+const getViewBoundaryPointEditor = ({
   editor,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -262,7 +262,7 @@ const getVerticalNavigationTarget = ({
     : owners.find((owner) => owner.childRoot === currentRoot);
 
   if (ownerForCurrentRoot) {
-    const sourceEditor = getProjectedPointViewEditor({
+    const sourceEditor = getViewBoundaryPointEditor({
       editor,
       getContentRootOwnerViewEditor,
       getMountedViewEditor,
@@ -518,7 +518,7 @@ const advanceHorizontalBoundarySelectionTarget = ({
     return target;
   }
 
-  const sourceEditor = getProjectedPointViewEditor({
+  const sourceEditor = getViewBoundaryPointEditor({
     editor,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -633,7 +633,7 @@ const advanceVerticalBoundarySelectionTarget = ({
     return target;
   }
 
-  const sourceEditor = getProjectedPointViewEditor({
+  const sourceEditor = getViewBoundaryPointEditor({
     editor,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -686,7 +686,7 @@ const getInitialProjectedSelectionAnchor = ({
           owners,
         });
 
-  return toProjectedPoint({
+  return toViewBoundaryPoint({
     owner,
     point,
     root,
@@ -920,7 +920,7 @@ const getProjectedGraphTerminalLineTarget = ({
 }): ContentRootNavigationTarget | null => {
   const { focus } = viewSelection;
   const root = getPliteViewBoundaryPointRoot(focus);
-  const sourceEditor = getProjectedPointViewEditor({
+  const sourceEditor = getViewBoundaryPointEditor({
     editor,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -1027,7 +1027,7 @@ const getContentRootMovementTarget = ({
     return null;
   }
 
-  const sourceEditor = getProjectedPointViewEditor({
+  const sourceEditor = getViewBoundaryPointEditor({
     editor,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -1189,7 +1189,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
   const currentRoot =
     selection.focus.root ??
     toInternalRoot(editor.read((state) => state.view.root()));
-  const graph = createContentRootProjectionGraph(editor, owners);
+  const graph = createContentRootViewBoundaryGraph(editor, owners);
   const anchor = getInitialProjectedSelectionAnchor({
     currentOwner: null,
     currentRoot,
@@ -1200,7 +1200,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
   const focusRoot = selection.focus.root ?? currentRoot;
   const projectedSelection = createPliteViewSelection(graph, {
     anchor,
-    focus: toProjectedPoint({
+    focus: toViewBoundaryPoint({
       owner: getOwnerForRoot({
         currentRoot: focusRoot,
         getActiveContentRootOwner,
@@ -1278,7 +1278,7 @@ const applyContentRootViewSelectionAction = ({
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
 
-  const graph = createContentRootProjectionGraph(editor, owners);
+  const graph = createContentRootViewBoundaryGraph(editor, owners);
   let target =
     action.kind === 'document-boundary'
       ? getDocumentBoundaryNavigationTarget({
@@ -1345,7 +1345,7 @@ const applyContentRootViewSelectionAction = ({
       const focusRoot = selection.focus.root ?? currentRoot;
       const projectedSelection = createPliteViewSelection(graph, {
         anchor,
-        focus: toProjectedPoint({
+        focus: toViewBoundaryPoint({
           owner: getOwnerForRoot({
             currentRoot: focusRoot,
             getActiveContentRootOwner,
@@ -1391,7 +1391,7 @@ const applyContentRootViewSelectionAction = ({
     });
   let projectedSelection = createPliteViewSelection(graph, {
     anchor,
-    focus: toProjectedPoint({
+    focus: toViewBoundaryPoint({
       owner: target.owner,
       point: target.point,
       root: target.root,
@@ -1412,7 +1412,7 @@ const applyContentRootViewSelectionAction = ({
     });
     projectedSelection = createPliteViewSelection(graph, {
       anchor,
-      focus: toProjectedPoint({
+      focus: toViewBoundaryPoint({
         owner: target.owner,
         point: target.point,
         root: target.root,

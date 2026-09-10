@@ -13,11 +13,14 @@ Choose proof from actual touched surfaces.
 | docs                          | source/API/link audit                                         | affected docs build or route proof                          |
 | registry metadata             | registry metadata tests/audit                                 | install/render path proof                                   |
 | package release               | changeset validation                                          | release lane owns publication                               |
-| registry release              | registry changelog validation                                 | registry build remains CI-owned                             |
+| registry release              | registry changelog validation                                 | on `next`, generate when source changes or proof needs current output; other branches use CI                             |
 | agent workflow                | `pnpm install`, source/mirror checks                          | agent-native review                                         |
 
-Always run lint on changed files or the repo's scoped equivalent. Do not run
-`build:registry` locally. Browser proof is required for package, registry, or
+Always run lint on changed files or the repo's scoped equivalent. On `next`,
+run `pnpm --filter www build:registry` when registry source changes or current
+generated output is required for verification, and include that generated output.
+Other branches keep generation in CI unless the user authorizes it. Never edit
+generated registry files by hand. Browser proof is required for package, registry, or
 docs changes with a runnable surface; record the exact blocker when no runnable
 path exists.
 

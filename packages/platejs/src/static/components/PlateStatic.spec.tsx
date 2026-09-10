@@ -4,8 +4,9 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { property, schema, target, type Value } from '../../core';
+import { property, schema, target, TextApi, type Value } from '../../core';
 import {
+  BaseParagraphPlugin,
   type Editor,
   createEditor as createHeadlessEditor,
   defineBasePlugin,
@@ -13,11 +14,6 @@ import {
 import { getEditorLiveSelection } from '../../testing';
 import { PlateStatic } from './PlateStatic';
 import { PliteElement, PliteLeaf } from './plite-nodes';
-
-const components = {
-  bold: LeafStaticMock,
-  paragraph: ElementStaticMock,
-};
 
 const RevisionPlugin = defineBasePlugin('revision', {
   schema: {
@@ -27,6 +23,44 @@ const RevisionPlugin = defineBasePlugin('revision', {
       }),
     },
   },
+});
+
+it('renders feature-owned decoration attributes without observing the source', () => {
+  const observe = mock(() => () => {});
+  const plugin = defineBasePlugin('staticPaint', {
+    decorate: {
+      observe,
+      read: ({ entry: [node, path] }) =>
+        TextApi.isText(node)
+          ? [
+              {
+                attributes: { 'data-feature': 'static', className: 'semantic' },
+                key: 'static-paint',
+                range: {
+                  anchor: { offset: 0, path },
+                  focus: { offset: node.text.length, path },
+                },
+              },
+            ]
+          : [],
+    },
+  }).configure({
+    decorate: {
+      attributes: { className: 'feature-paint', style: { color: 'red' } },
+    },
+  });
+  const editor = createHeadlessEditor({
+    initialValue: [{ children: [{ text: 'annotated' }], type: 'paragraph' }],
+    plugins: [plugin],
+  });
+  const html = ReactDOMServer.renderToStaticMarkup(
+    <PlateStatic editor={editor} />
+  );
+
+  expect(html).toContain('class="semantic feature-paint"');
+  expect(html).toContain('data-feature="static"');
+  expect(html).toContain('color:red');
+  expect(observe).not.toHaveBeenCalled();
 });
 
 const createEditor = ({
@@ -44,13 +78,14 @@ const createEditor = ({
   value?: Value;
 } = {}) =>
   createHeadlessEditor({
-    components,
     plugins: [
       defineBasePlugin('bold', {
+        component: LeafStaticMock,
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
       }),
+      BaseParagraphPlugin.configure({ component: ElementStaticMock }),
       RevisionPlugin,
     ],
     selection: {
@@ -80,13 +115,14 @@ const createEditorWithMultipleElements = ({
   value?: Value;
 } = {}) =>
   createHeadlessEditor({
-    components,
     plugins: [
       defineBasePlugin('bold', {
+        component: LeafStaticMock,
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
       }),
+      BaseParagraphPlugin.configure({ component: ElementStaticMock }),
       RevisionPlugin,
     ],
     initialValue: value,
@@ -306,24 +342,13 @@ describe('PlateStatic Memoization', () => {
 
   it('renders and refreshes element-owned content roots through ordinary components', () => {
     const editor = createHeadlessEditor({
-      components: {
-        figure: ({ slots }) => (
-          <figure>
-            <figcaption>{slots.contentRoot('caption')}</figcaption>
-          </figure>
-        ),
-        paragraph: (props) => (
-          <PliteElement
-            {...props}
-            attributes={{
-              ...props.attributes,
-              'data-caption-block': true,
-            }}
-          />
-        ),
-      },
       plugins: [
         defineBasePlugin('figure', {
+          component: ({ slots }) => (
+            <figure>
+              <figcaption>{slots.contentRoot('caption')}</figcaption>
+            </figure>
+          ),
           schema: {
             element: {
               contentRoots: {
@@ -339,6 +364,17 @@ describe('PlateStatic Memoization', () => {
               void: 'block',
             },
           },
+        }),
+        BaseParagraphPlugin.configure({
+          component: (props) => (
+            <PliteElement
+              {...props}
+              attributes={{
+                ...props.attributes,
+                'data-caption-block': true,
+              }}
+            />
+          ),
         }),
       ],
       initialValue: {
@@ -391,7 +427,7 @@ describe('PlateStatic render slots', () => {
       initialValue: [{ children: [{ text: 'static' }], type: 'paragraph' }],
       plugins: [
         defineBasePlugin('dynamicSibling', {
-          render: {
+          slots: {
             afterEditable: DynamicSibling,
             beforeEditable: DynamicSibling,
           },

@@ -24,15 +24,17 @@ describe('core static renderStaticHtml attributes', () => {
           ),
           BaseItalicPlugin.configure({
             render: {
-              isDecoration: false,
-              nodeProps: {
+              attributes: {
                 'data-plite-test': true,
               },
-              textProps: {
-                'data-plite-test': 'text',
-              },
-              leafProps: {
-                'data-plite-test': 'leaf',
+              mark: {
+                leafAttributes: {
+                  'data-plite-test': 'leaf',
+                },
+                placement: 'text',
+                textAttributes: {
+                  'data-plite-test': 'text',
+                },
               },
             },
           }),

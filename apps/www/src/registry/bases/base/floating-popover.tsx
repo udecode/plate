@@ -1,6 +1,7 @@
 'use client';
 
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
+import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -36,15 +37,6 @@ function useFloatingPopoverContext() {
   return context;
 }
 
-function composeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
-  return (value: T | null) => {
-    for (const ref of refs) {
-      if (typeof ref === 'function') ref(value);
-      else if (ref) ref.current = value;
-    }
-  };
-}
-
 export function FloatingPopover({
   children,
   defaultOpen = false,
@@ -55,6 +47,7 @@ export function FloatingPopover({
   defaultOpen?: boolean;
   modal?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onOpenChangeComplete?: (open: boolean) => void;
   open?: boolean;
 }>) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
@@ -99,15 +92,12 @@ export function FloatingPopoverAnchor({
     return () => setAnchor(null);
   }, [element, reactElement, setAnchor]);
 
-  if (!reactElement) return null;
-
   const elementWithRef = reactElement as React.ReactElement<{
     ref?: React.Ref<Element>;
-  }>;
+  }> | null;
+  const ref = useComposedRef(elementWithRef?.props.ref, setAnchor);
 
-  return React.cloneElement(elementWithRef, {
-    ref: composeRefs(elementWithRef.props.ref, setAnchor),
-  });
+  return elementWithRef ? React.cloneElement(elementWithRef, { ref }) : null;
 }
 
 export function FloatingPopoverTrigger({

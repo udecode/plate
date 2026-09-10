@@ -34,13 +34,13 @@ describe('CodeBlockKit current contract', () => {
 
     expect(editor.read.children()).toMatchObject([
       {
-        children: [{ children: [{ text: 'code' }], type: 'codeLine' }],
+        children: [{ text: 'code' }],
         type: 'codeBlock',
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 4, path: [0, 0, 0] },
-      focus: { offset: 4, path: [0, 0, 0] },
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
     });
   });
 });

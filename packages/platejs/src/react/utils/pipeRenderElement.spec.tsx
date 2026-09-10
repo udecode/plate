@@ -18,12 +18,13 @@ import {
   PlateElement,
   type PlateElementProps,
 } from '../components/plate-nodes';
-import { PlateRoot } from '../components/PlateRoot';
+import { PlateRoot } from '../components/PlateRoot.internal';
 import type { Editor } from '../editor/Editor';
 import { createEditor } from '../editor/withPlate';
+import { HeadingPlugin } from '../features/basic-nodes/BasicNodesPlugins';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
-import { useElement, useElementSelector, usePath } from '../stores';
-import { pipeRenderElement } from './pipeRenderElement';
+import { usePath } from '../stores';
+import { pipeRenderElement } from './pipeRenderElement.internal';
 
 const createValue = (id?: string) =>
   [
@@ -95,6 +96,26 @@ const renderPipeBare = (editor: Editor) => {
 };
 
 describe('pipeRenderElement', () => {
+  it('renders dynamic heading levels as intrinsic elements', () => {
+    const editor = createEditor({
+      navigationFeedback: false,
+      plugins: [HeadingPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'Heading' }],
+          level: 2,
+          type: 'heading',
+        },
+      ],
+    });
+
+    const { container } = renderPipe(editor);
+    const heading = container.querySelector('h2');
+
+    expect(heading).toHaveTextContent('Body');
+    expect(heading).not.toHaveAttribute('as');
+  });
+
   it('lets an explicit renderElement own installed plugin types', () => {
     const editor = createEditor({
       navigationFeedback: false,
@@ -234,6 +255,36 @@ describe('pipeRenderElement', () => {
     expect(element?.tagName).toBe('DIV');
   });
 
+  it('applies pure element injection through the default renderer', () => {
+    const DefaultInjectionPlugin = defineBasePlugin('defaultInjection', {
+      isBlock: true,
+      inject: {
+        nodeProps: {
+          transformProps: ({ props }) => ({
+            ...props,
+            'data-default-injection': 'true',
+          }),
+        },
+      },
+    });
+    const editor = createEditor({
+      navigationFeedback: false,
+      plugins: [DefaultInjectionPlugin],
+      initialValue: createValue(),
+    });
+    const publication = getPlateModelPublication(editor)!;
+    const { p: _paragraphPlugin, ...plugins } = publication.plugins;
+
+    attachPlateModelPublication(editor, { ...publication, plugins });
+
+    const { container } = renderPipe(editor);
+
+    attachPlateModelPublication(editor, publication);
+    expect(
+      container.querySelector('[data-plite-node="element"]')
+    ).toHaveAttribute('data-default-injection', 'true');
+  });
+
   it('resolves the node path on the plain fast path', () => {
     const editor = createEditor({
       navigationFeedback: false,
@@ -273,15 +324,9 @@ describe('pipeRenderElement', () => {
     expect(element).not.toHaveAttribute('data-block-id');
   });
 
-  it('keeps plugin render.as behavior', () => {
+  it('keeps intrinsic plugin component behavior', () => {
     const editor = createEditor({
-      plugins: [
-        ParagraphPlugin.extend(() => ({
-          render: {
-            as: 'article',
-          },
-        })),
-      ],
+      plugins: [ParagraphPlugin.configure({ component: 'article' })],
       initialValue: createValue(),
     });
 
@@ -324,14 +369,12 @@ describe('pipeRenderElement', () => {
     expect(element?.getAttribute('data-context-path')).toBe('0');
   });
 
-  it('preserves Plite children for void render.as tags on the fast path', () => {
+  it('preserves Plite children for void intrinsic components on the fast path', () => {
     const editor = createEditor({
       plugins: [
         defineBasePlugin('horizontalRule', {
+          component: 'hr',
           schema: { element: { void: 'block' } },
-          render: {
-            as: 'hr',
-          },
         }),
       ],
       initialValue: [
@@ -374,12 +417,12 @@ describe('pipeRenderElement', () => {
     expect(rendered).toHaveTextContent('Body');
   });
 
-  it('keeps global aboveNodes wrappers', () => {
+  it('keeps global wrapNode slots', () => {
     const editor = createEditor({
       plugins: [
         defineBasePlugin('above', {
-          render: {
-            aboveNodes:
+          slots: {
+            wrapNode:
               () =>
               ({ children }: any) => (
                 <section data-testid="above">{children}</section>
@@ -395,12 +438,12 @@ describe('pipeRenderElement', () => {
     expect(getByTestId('above')).toBeInTheDocument();
   });
 
-  it('keeps plugin node.props behavior', () => {
+  it('keeps plugin render attributes behavior', () => {
     const editor = createEditor({
       plugins: [
         ParagraphPlugin.extend(() => ({
           render: {
-            nodeProps: {
+            attributes: {
               'data-probe': 'yes',
             },
           },
@@ -415,7 +458,7 @@ describe('pipeRenderElement', () => {
     expect(element).toHaveAttribute('data-probe', 'yes');
   });
 
-  it('runs inactive belowNodes wrappers under element context', () => {
+  it('runs inactive wrapNodeChildren slots under element context', () => {
     const useInactiveBelowNodes = ({ element }: any) => {
       usePath();
 
@@ -427,8 +470,8 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       plugins: [
         defineBasePlugin('inactiveBelow', {
-          render: {
-            belowNodes: useInactiveBelowNodes,
+          slots: {
+            wrapNodeChildren: useInactiveBelowNodes,
           },
         }),
       ],
@@ -471,17 +514,12 @@ describe('pipeRenderElement', () => {
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
 
-  it('keeps element context for inject.nodeProps transform hooks', () => {
-    const useHookInjectProps = ({ props }: any) => {
-      const element = useElement();
-      const path = usePath();
-
-      return {
-        ...props,
-        'data-context-path': path?.join(','),
-        'data-context-type': element.type,
-      };
-    };
+  it('passes node and plugin context to pure inject.nodeProps transforms', () => {
+    const transformProps = mock(({ editor, element, props }: any) => ({
+      ...props,
+      'data-context-editor': editor.id,
+      'data-context-type': element.type,
+    }));
     const editor = createEditor({
       plugins: [
         ListStylePropertyPlugin,
@@ -491,7 +529,7 @@ describe('pipeRenderElement', () => {
             nodeProps: {
               nodeKey: 'markerStyle',
               query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
-              transformProps: useHookInjectProps,
+              transformProps,
             },
           },
         }),
@@ -508,46 +546,9 @@ describe('pipeRenderElement', () => {
     const { container } = renderPipe(editor);
     const element = container.querySelector('[data-plite-node="element"]');
 
-    expect(element).toHaveAttribute('data-context-path', '0');
+    expect(element).toHaveAttribute('data-context-editor', editor.id);
     expect(element).toHaveAttribute('data-context-type', 'paragraph');
-  });
-
-  it('keeps element store context for inject.nodeProps transform hooks', () => {
-    const useSelectorInjectProps = ({ props }: any) => {
-      const type = useElementSelector(([element]) => element.type);
-
-      return {
-        ...props,
-        'data-selected-type': type,
-      };
-    };
-    const editor = createEditor({
-      plugins: [
-        ListStylePropertyPlugin,
-        defineBasePlugin('selectorInject', {
-          targetPlugins: [BaseParagraphPlugin],
-          inject: {
-            nodeProps: {
-              nodeKey: 'markerStyle',
-              query: ({ nodeProps }) => !!nodeProps.element?.markerStyle,
-              transformProps: useSelectorInjectProps,
-            },
-          },
-        }),
-      ],
-      initialValue: [
-        {
-          children: [{ text: 'Body' }],
-          markerStyle: 'disc',
-          type: 'paragraph',
-        },
-      ] as any,
-    });
-
-    const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
-
-    expect(element).toHaveAttribute('data-selected-type', 'paragraph');
+    expect(transformProps).toHaveBeenCalledTimes(1);
   });
 
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
@@ -597,7 +598,7 @@ describe('pipeRenderElement', () => {
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
 
-  it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
+  it('keeps pathless inject.nodeProps when active wrapNodeChildren slots are present', () => {
     const useActiveBelowNodes = ({ element }: any) => {
       const path = usePath();
 
@@ -631,8 +632,8 @@ describe('pipeRenderElement', () => {
           },
         }),
         defineBasePlugin('activeBelow', {
-          render: {
-            belowNodes: useActiveBelowNodes,
+          slots: {
+            wrapNodeChildren: useActiveBelowNodes,
           },
         }),
       ],
@@ -677,10 +678,16 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps editOnly behavior on the plain fast path in read-only mode', () => {
+    const transformProps = mock(({ props }) => props);
     const editor = createEditor({
       plugins: [
         ParagraphPlugin.extend(() => ({
           editOnly: true,
+          inject: {
+            nodeProps: {
+              transformProps,
+            },
+          },
         })),
       ],
       readOnly: true,
@@ -690,5 +697,6 @@ describe('pipeRenderElement', () => {
     const { container } = renderPipe(editor);
 
     expect(container.querySelector('[data-plite-node="element"]')).toBeNull();
+    expect(transformProps).not.toHaveBeenCalled();
   });
 });

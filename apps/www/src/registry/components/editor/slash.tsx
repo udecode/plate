@@ -21,7 +21,7 @@ import {
   Table,
   TableOfContentsIcon,
 } from 'lucide-react';
-import { PLUGINS } from 'platejs';
+import { PLUGINS, type PlatePluginTransaction } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import {
   type Editor,
@@ -51,7 +51,12 @@ type Group = {
   items: Array<{
     icon: React.ReactNode;
     value: string;
-    onSelect: (editor: Editor, value: string) => void;
+    onSelect?: (
+      editor: Editor,
+      tx: PlatePluginTransaction,
+      value: string
+    ) => void;
+    onClick?: (editor: Editor) => void;
     className?: string;
     focusEditor?: boolean;
     keywords?: string[];
@@ -67,7 +72,7 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <SparklesIcon />,
         value: 'AI',
-        onSelect: (editor) => {
+        onClick: (editor) => {
           editor.plugin(AIChatPlugin).api.show();
         },
       },
@@ -150,8 +155,8 @@ const groups: Group[] = [
       },
     ].map((item) => ({
       ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value, { upsert: true });
+      onSelect: (editor, tx, value) => {
+        insertBlock(editor, value, { upsert: true, tx });
       },
     })),
   },
@@ -196,8 +201,8 @@ const groups: Group[] = [
       },
     ].map((item) => ({
       ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value, { upsert: true });
+      onSelect: (editor, tx, value) => {
+        insertBlock(editor, value, { upsert: true, tx });
       },
     })),
   },
@@ -226,8 +231,8 @@ const groups: Group[] = [
       },
     ].map((item) => ({
       ...item,
-      onSelect: (editor, value) => {
-        insertInlineElement(editor, value);
+      onSelect: (editor, tx, value) => {
+        insertInlineElement(editor, value, tx);
       },
     })),
   },
@@ -251,12 +256,23 @@ export function SlashInputElement(
               <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
 
               {items.map(
-                ({ focusEditor, icon, keywords, label, value, onSelect }) => (
+                ({
+                  focusEditor,
+                  icon,
+                  keywords,
+                  label,
+                  value,
+                  onClick,
+                  onSelect,
+                }) => (
                   <InlineComboboxItem
                     key={value}
                     value={value}
                     onClick={() => {
-                      onSelect(editor, value);
+                      onClick?.(editor);
+                    }}
+                    onSelect={(tx) => {
+                      onSelect?.(editor, tx, value);
                     }}
                     label={label}
                     focusEditor={focusEditor}

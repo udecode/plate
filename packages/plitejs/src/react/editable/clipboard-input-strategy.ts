@@ -15,10 +15,11 @@ import {
   isPlainTextOnlyPaste,
 } from '../../dom';
 import {
-  DOMCoverage,
+  type DOMCoverageSession,
   getPliteStringCoordinatePlacement,
   getPliteStringDocumentOffset,
   getPliteStringEdgeOffset,
+  getPliteTextHostStrings,
   isWebKitDOMHost,
   supportsDOMBeforeInput,
   usesAppleDOMHotkeys,
@@ -35,6 +36,7 @@ import {
   clearCrossEditorDragSession,
   readCrossEditorDragSession,
 } from './cross-editor-drag-session';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableCommand } from './editing-kernel';
 import {
   type EditableRepairRequest,
@@ -279,11 +281,7 @@ const resolveTextDropRangeFromEvent = (
     return null;
   }
 
-  const strings = Array.from(
-    textHost.querySelectorAll<HTMLElement>(
-      '[data-plite-string], [data-plite-zero-width]'
-    )
-  );
+  const strings = getPliteTextHostStrings(textHost);
   const placement = getPliteStringCoordinatePlacement({
     event: {
       clientX: event.nativeEvent.clientX,
@@ -349,16 +347,19 @@ const preventReadOnlyClipboardDefault = ({
   return false;
 };
 
-const materializePasteTargetBoundaries = (editor: ReactRuntimeEditor) => {
+const materializePasteTargetBoundaries = (
+  editor: ReactRuntimeEditor,
+  coverage: DOMCoverageSession | undefined
+) => {
   const selection = getSelectionDOMRange(editor, getEditorSelection(editor));
 
   if (!selection) {
     return;
   }
 
-  for (const boundary of DOMCoverage.getBoundariesForRange(editor, selection)) {
+  for (const boundary of coverage?.getBoundariesForRange(selection) ?? []) {
     if (boundary.selectionPolicy === 'materialize') {
-      DOMCoverage.materializeBoundary(editor, boundary.boundaryId, 'paste', {
+      coverage?.materializeBoundary(boundary.boundaryId, 'paste', {
         range: selection,
       });
     }
@@ -898,24 +899,18 @@ export const applyEditableDrop = ({
         });
       }
     }
-    // When dragging from another source into the editor, it's possible
-    // that the current editor does not have focus.
-    if (!ReactEditor.isFocused(editor)) {
-      return clipboardResult({
-        command,
-        repair: {
-          focus: true,
-          kind: 'repair-caret',
-          selectionSourceTransition: {
-            preferModelSelection: true,
-            reason: 'model-command',
-            selectionSource: 'model-owned',
-          },
+    return clipboardResult({
+      command,
+      repair: {
+        focus: true,
+        kind: 'repair-caret',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
         },
-      });
-    }
-
-    return clipboardResult({ command });
+      },
+    });
   }
 
   return clipboardResult({ command: null });
@@ -971,7 +966,10 @@ export const applyEditablePaste = ({
 
   if (partialDOMBackedSelection && event.clipboardData && canHandlePaste) {
     event.preventDefault();
-    materializePasteTargetBoundaries(editor);
+    materializePasteTargetBoundaries(
+      editor,
+      getMountedEditableDOMRuntime(editor, event.currentTarget)?.domCoverage
+    );
     const command: EditableCommand = {
       data: event.clipboardData,
       kind: 'insert-data',
@@ -999,7 +997,10 @@ export const applyEditablePaste = ({
     // application/x-plite-fragment items, so use the
     // ClipboardEvent here. (2023/03/15)
     event.preventDefault();
-    materializePasteTargetBoundaries(editor);
+    materializePasteTargetBoundaries(
+      editor,
+      getMountedEditableDOMRuntime(editor, event.currentTarget)?.domCoverage
+    );
     const command: EditableCommand = {
       data: event.clipboardData,
       kind: 'insert-data',

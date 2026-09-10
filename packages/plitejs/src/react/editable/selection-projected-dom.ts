@@ -14,7 +14,7 @@ import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { createPliteViewSelection } from '../view-selection';
 import {
   type ContentRootOwner,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-navigation';
 import {
@@ -255,7 +255,7 @@ export const resolveProjectedDOMSelection = ({
   }
 
   return createPliteViewSelection(
-    createContentRootProjectionGraph(editor, owners),
+    createContentRootViewBoundaryGraph(editor, owners),
     {
       anchor: {
         ...(anchorOwner ? { owner: anchorOwner } : {}),

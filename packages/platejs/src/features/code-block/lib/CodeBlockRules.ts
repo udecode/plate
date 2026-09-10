@@ -1,6 +1,6 @@
 import type { PluginReference } from '../../../core';
 import { BaseParagraphPlugin, createRuleFactory } from '../../../core';
-import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
+import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 const createCodeBlockRule = createRuleFactory(BaseCodeBlockPlugin);
 
@@ -20,18 +20,13 @@ export const CodeBlockRules = {
     apply: ({ editor, tx }, match) => {
       tx.nodes.replace(
         {
-          children: [
-            {
-              children: [{ text: '' }],
-              type: editor.plugin(BaseCodeLinePlugin).schema.type,
-            },
-          ],
+          children: [{ text: '' }],
           type: editor.plugin(BaseCodeBlockPlugin).schema.type,
         },
         { at: match.path }
       );
 
-      const start = tx.points.start([...match.path, 0]);
+      const start = tx.points.start(match.path);
 
       if (start) {
         tx.selection.set(start);

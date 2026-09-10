@@ -2,7 +2,8 @@ import throttle from 'lodash/throttle.js';
 import raf from 'raf';
 import React from 'react';
 
-import { useDndPluginStore } from './internal/DndStore';
+import { usePluginStore } from '../../react/core';
+import { DndStorePlugin } from './internal/DndStorePlugin';
 
 const getCoords = (event: React.DragEvent | React.TouchEvent) => {
   if ('changedTouches' in event) {
@@ -194,7 +195,7 @@ function DelayedDndScroller(props: Partial<DndScrollerOptions>) {
 }
 
 export function DndScroller(props: Partial<DndScrollerOptions>) {
-  const isDragging = useDndPluginStore('isDragging');
+  const isDragging = usePluginStore(DndStorePlugin, 'isDragging');
 
   if (!isDragging) {
     return <Scroller enabled={false} {...props} />;
@@ -204,8 +205,8 @@ export function DndScroller(props: Partial<DndScrollerOptions>) {
 }
 
 export function DndScrollerAfterEditable() {
-  const enableScroller = useDndPluginStore('enableScroller');
-  const scrollerProps = useDndPluginStore('scrollerProps');
+  const enableScroller = usePluginStore(DndStorePlugin, 'enableScroller');
+  const scrollerProps = usePluginStore(DndStorePlugin, 'scrollerProps');
 
   if (!enableScroller) return null;
 

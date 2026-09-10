@@ -8,6 +8,7 @@ import {
   PLUGINS,
 } from '../../core';
 import {
+  BaseComboboxPlugin,
   triggerCombobox,
   type TriggerComboboxPluginState,
 } from '../../features/combobox';
@@ -31,6 +32,7 @@ export type EmojiPluginState = {
 } & TriggerComboboxPluginState;
 
 export const BaseEmojiInputPlugin = defineBasePlugin(PLUGINS.emojiInput, {
+  dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
       properties: {
@@ -54,6 +56,7 @@ export const BaseEmojiPlugin = defineBasePlugin(PLUGINS.emoji, {
       type: editor.plugin(BaseEmojiInputPlugin).schema.type,
     }),
     trigger: ':',
+    triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
     createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
   }),

@@ -8,7 +8,7 @@ worse.
 ## Folder Layout
 
 ```text
-scripts/benchmarks/
+benchmarks/slate-v2/donor/
   browser/
     react/         # browser-facing React locality lanes
   core/
@@ -67,7 +67,6 @@ benchmark contract.
 
 Current live example:
 
-- `6038-transaction-execution.mjs`
 - `5945-large-plaintext-paste.mjs`
 
 ## Naming Rules
@@ -113,10 +112,10 @@ Write JSON results into `tmp/` with stable names.
 
 Current artifact owners:
 
-- `packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json`
-- `packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`
+- `tmp/slate-react-rerender-breadth-benchmark.json`
+- `tmp/slate-react-huge-document-overlays-benchmark.json`
 
-- `tmp/bench-slate-6038.json`
+- `tmp/plite-transaction-execution-benchmark.json`
 - `tmp/slate-clipboard-large-payload-benchmark.json`
 - `tmp/slate-react-huge-document-legacy-compare-benchmark.json`
 - `tmp/slate-react-huge-document-cross-editor-benchmark.json`

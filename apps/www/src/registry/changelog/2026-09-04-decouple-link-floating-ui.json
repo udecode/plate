@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-04-decouple-link-floating-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-04-decouple-link-floating-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Open the Link toolbar above its selection",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-04-link-position-toolbar-above-its-15dc9d16",
+      "kind": "behavior",
+      "summary": "Open the Link toolbar above its selection without installing Comments or Suggestions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-04",
+          "entry": "2026-09-04-decouple-link-floating-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

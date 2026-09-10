@@ -13,13 +13,14 @@ import type {
   DOMCoverageReason,
   DOMCoverageSelectionPolicy,
 } from '../../dom/internal';
-import { DOMCoverage, IS_COMPOSING } from '../../dom/internal';
+import { IS_COMPOSING } from '../../dom/internal';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getSnapshot as editorGetSnapshot,
   hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
+import { useEditableDOMRuntime } from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorSelector } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -138,6 +139,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     startIndex: number;
   }) => {
     const editor = useEditorContext();
+    const coverage = useEditableDOMRuntime()?.domCoverage;
     const previewNodeKeys = React.useMemo(
       () => nodeKeys.slice(0, MAX_PREVIEW_LINES),
       [nodeKeys]
@@ -183,8 +185,8 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     );
 
     useIsomorphicLayoutEffect(
-      () => DOMCoverage.registerBoundary(editor, boundary),
-      [boundary, editor]
+      () => coverage?.registerBoundary(boundary),
+      [boundary, coverage]
     );
 
     const selectPreview = React.useCallback(

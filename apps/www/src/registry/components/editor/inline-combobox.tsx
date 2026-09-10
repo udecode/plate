@@ -16,17 +16,11 @@ import { cva } from 'class-variance-authority';
 import {
   Hotkeys,
   isHotkey,
-  type Anchor,
+  type PlatePluginTransaction,
   type Element,
-  type Point,
 } from 'platejs';
-import { filterWords } from 'platejs/combobox';
-import {
-  useComposedRef,
-  useEditor,
-  useElementSelected,
-  usePath,
-} from 'platejs/react';
+import { BaseComboboxPlugin, filterWords } from 'platejs/combobox';
+import { useComposedRef, useEditor, useElementSelected } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -43,7 +37,10 @@ type InlineComboboxContextValue = {
     Pick<React.InputHTMLAttributes<HTMLInputElement>, 'onBlur' | 'onKeyDown'>
   >;
   inputRef: React.RefObject<HTMLInputElement | null>;
-  removeInput: (focusEditor?: boolean) => void;
+  commit: (
+    callback: (tx: PlatePluginTransaction) => void,
+    focusEditor?: boolean
+  ) => boolean;
   showTrigger: boolean;
   trigger: string;
   setHasEmpty: (hasEmpty: boolean) => void;
@@ -97,7 +94,8 @@ const InlineCombobox = ({
   setValue?: (value: string) => void;
 }) => {
   const editor = useEditor();
-  const path = usePath();
+  const combobox = editor.plugin(BaseComboboxPlugin);
+  const inputKey = React.useMemo(() => editor.key(element), [editor, element]);
   const selected = useElementSelected();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -105,69 +103,17 @@ const InlineCombobox = ({
   const hasValueProp = valueProp !== undefined;
   const value = hasValueProp ? valueProp : valueState;
 
-  // Check if current user is the creator of this element (for Yjs collaboration)
-  const isCreator = React.useMemo(() => {
-    const elementUserId = element.userId;
-    const currentUserId = editor.runtime.userId;
+  const canEdit = combobox.read.canEdit(inputKey);
 
-    // Inputs without a collaboration owner stay editable.
-    if (!elementUserId) return true;
+  const commit = React.useCallback(
+    (callback: (tx: PlatePluginTransaction) => void, focusEditor = false) => {
+      const completed = combobox.api.commit(inputKey, callback);
 
-    return elementUserId === currentUserId;
-  }, [editor.runtime.userId, element]);
+      if (completed && focusEditor) editor.api.dom.focus();
 
-  const setValue = React.useCallback(
-    (newValue: string) => {
-      setValueProp?.(newValue);
-
-      if (!hasValueProp) {
-        setValueState(newValue);
-      }
+      return completed;
     },
-    [setValueProp, hasValueProp]
-  );
-
-  /**
-   * Track the point just before the input element so we know where to
-   * insertText if the combobox closes due to a selection change.
-   */
-  const insertPointAnchor = React.useRef<Anchor<Point> | null>(null);
-
-  React.useEffect(() => {
-    insertPointAnchor.current?.release();
-    insertPointAnchor.current = null;
-
-    if (!path) return undefined;
-
-    const point = editor.read.points.before(path);
-
-    if (!point) return undefined;
-
-    const nextPointAnchor = editor.anchor(point, {
-      association: 'forward',
-      deletion: 'drop',
-    });
-    insertPointAnchor.current = nextPointAnchor;
-
-    return () => {
-      if (insertPointAnchor.current === nextPointAnchor) {
-        insertPointAnchor.current = null;
-      }
-      nextPointAnchor.release();
-    };
-  }, [editor, path]);
-
-  const removedRef = React.useRef(false);
-  const removeInput = React.useCallback(
-    (focusEditor = false) => {
-      if (removedRef.current) return;
-
-      removedRef.current = true;
-      editor.update.nodes.remove({ at: element });
-
-      if (focusEditor) editor.api.dom.focus();
-    },
-    [editor, element]
+    [combobox, editor, inputKey]
   );
   const cancelInput = React.useCallback(
     (
@@ -180,26 +126,18 @@ const InlineCombobox = ({
         | 'escape',
       focusEditor = false
     ) => {
-      if (removedRef.current) return;
-
-      removeInput(focusEditor);
-
-      if (cause === 'backspace') return;
-
-      editor.update((tx) => {
-        tx.text.insert(trigger + value, {
-          at: insertPointAnchor.current?.resolve() ?? undefined,
-        });
-
-        if (cause === 'arrowLeft' || cause === 'arrowRight') {
-          tx.selection.move({
-            distance: 1,
-            reverse: cause === 'arrowLeft',
-          });
-        }
+      const completed = combobox.api.cancel(inputKey, {
+        text:
+          cause === 'backspace'
+            ? ''
+            : trigger + (inputRef.current?.value ?? value),
+        select:
+          cause === 'arrowLeft' ? 'start' : focusEditor ? 'end' : undefined,
       });
+
+      if (completed && focusEditor) editor.api.dom.focus();
     },
-    [editor, removeInput, trigger, value]
+    [combobox, editor, inputKey, trigger, value]
   );
 
   const previousSelected = React.useRef(selected);
@@ -216,6 +154,9 @@ const InlineCombobox = ({
         cancelInput('blur');
       },
       onKeyDown: (event) => {
+        // oxlint-disable-next-line typescript/no-deprecated -- Safari can clear isComposing before the final IME key event.
+        if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+
         const {
           selectionEnd,
           selectionStart,
@@ -243,41 +184,44 @@ const InlineCombobox = ({
           return;
         }
 
-        const undo =
-          Hotkeys.isUndo(event) && editor.read.history.undos().length > 0;
-        const redo =
-          Hotkeys.isRedo(event) && editor.read.history.redos().length > 0;
+        const handled = Hotkeys.isUndo(event)
+          ? combobox.api.undo(inputKey)
+          : Hotkeys.isRedo(event)
+            ? combobox.api.redo(inputKey)
+            : false;
 
-        if (undo || redo) {
+        if (handled) {
           event.preventDefault();
-          editor.update.history[undo ? 'undo' : 'redo']();
+          event.stopPropagation();
           editor.api.dom.focus();
         }
       },
     }),
-    [cancelInput, editor]
+    [cancelInput, combobox, editor, inputKey]
   );
 
   const [hasEmpty, setHasEmpty] = React.useState(false);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
     () => ({
-      autoFocus: isCreator,
+      autoFocus: canEdit,
+      commit,
       filter,
       inputProps,
       inputRef,
-      removeInput,
       setHasEmpty,
       showTrigger,
       trigger,
     }),
-    [filter, inputProps, inputRef, isCreator, removeInput, showTrigger, trigger]
+    [canEdit, commit, filter, inputProps, showTrigger, trigger]
   );
 
   const store = useComboboxStore({
-    // open: ,
     setValue: (newValue) => {
-      React.startTransition(() => setValue(newValue));
+      React.startTransition(() => {
+        setValueProp?.(newValue);
+        if (!hasValueProp) setValueState(newValue);
+      });
     },
   });
 
@@ -297,6 +241,7 @@ const InlineCombobox = ({
     <span contentEditable={false}>
       <ComboboxProvider
         open={
+          canEdit &&
           (items.length > 0 || hasEmpty) &&
           (!hideWhenNoValue || value.length > 0)
         }
@@ -357,6 +302,7 @@ function InlineComboboxInput({
         <Combobox
           ref={ref}
           autoFocus={autoFocus}
+          disabled={!autoFocus}
           className={cn(
             'absolute top-0 left-0 size-full bg-transparent outline-none',
             className
@@ -422,17 +368,19 @@ const InlineComboboxItem = ({
   keywords,
   label,
   onClick,
+  onSelect,
   ...props
-}: Omit<React.HTMLAttributes<HTMLDivElement>, 'value'> & {
+}: Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect' | 'value'> & {
   focusEditor?: boolean;
   group?: string;
   keywords?: string[];
   label?: string;
   value: string;
+  onSelect?: (tx: PlatePluginTransaction) => void;
 }) => {
   const { value } = props;
 
-  const { filter, removeInput } = useInlineComboboxContext();
+  const { commit, filter } = useInlineComboboxContext();
 
   const store = useComboboxContext();
 
@@ -453,8 +401,7 @@ const InlineComboboxItem = ({
     <ComboboxItem
       className={cn(comboboxItemVariants(), className)}
       onClick={(event) => {
-        removeInput(focusEditor);
-        onClick?.(event);
+        if (commit((tx) => onSelect?.(tx), focusEditor)) onClick?.(event);
       }}
       {...props}
     />

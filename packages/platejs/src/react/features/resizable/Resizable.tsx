@@ -1,14 +1,23 @@
 import * as React from 'react';
 
 import { useEditorReadOnly } from '../../core';
+import { bindPointerSession } from '../../utils/bindPointerSession.internal';
 import {
-  type ResizeDirection,
-  type ResizeEvent,
-  type ResizeLength,
   resizeLengthClamp,
   resizeLengthToRelative,
   resizeLengthToStatic,
-} from './resizeLength';
+} from './resizeLength.internal';
+
+export type ResizeDirection = 'bottom' | 'left' | 'right' | 'top';
+
+export type ResizeEvent = {
+  delta: number;
+  direction: ResizeDirection;
+  finished: boolean;
+  initialSize: number;
+};
+
+export type ResizeLength = number | string;
 
 export type ResizableProps = Omit<
   React.ComponentPropsWithRef<'div'>,
@@ -38,6 +47,8 @@ type ResizeContextValue = {
   minWidth: ResizeLength;
   nudgeWidth: (delta: number) => void;
   onResize: (event: ResizeEvent) => void;
+  parentWidth: number;
+  resetWidth: () => void;
   width: ResizeLength;
 };
 
@@ -60,6 +71,20 @@ export function Resizable({
   }));
   const width = widthState.source === nodeWidth ? widthState.value : nodeWidth;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const [parentWidth, setParentWidth] = React.useState(0);
+  const measureWrapper = React.useCallback((element: HTMLDivElement | null) => {
+    wrapperRef.current = element;
+    if (element) setParentWidth(element.offsetWidth);
+  }, []);
+  React.useLayoutEffect(() => {
+    const element = wrapperRef.current;
+    if (!element) return undefined;
+    const Observer = element.ownerDocument.defaultView?.ResizeObserver;
+    if (!Observer) return undefined;
+    const observer = new Observer(() => setParentWidth(element.offsetWidth));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const setWidth = React.useCallback(
     (value: ResizeLength) => {
       setWidthState({ source: nodeWidth, value });
@@ -74,21 +99,26 @@ export function Resizable({
     },
     [onResizeEnd, setWidth]
   );
+  const resetWidth = React.useCallback(
+    () => setWidth(nodeWidth),
+    [nodeWidth, setWidth]
+  );
   const nudgeWidth = React.useCallback(
     (delta: number) => {
-      const parentWidth = wrapperRef.current?.offsetWidth;
+      const wrapperWidth = wrapperRef.current?.offsetWidth;
 
-      if (!parentWidth) return;
+      if (!wrapperWidth) return;
+      setParentWidth(wrapperWidth);
 
       const nextWidth = resizeLengthClamp(
-        resizeLengthToStatic(width, parentWidth) + delta,
-        parentWidth,
+        resizeLengthToStatic(width, wrapperWidth) + delta,
+        wrapperWidth,
         { max: maxWidth, min: minWidth }
       );
 
       commitWidth(
         typeof width === 'string' && width.trim().endsWith('%')
-          ? resizeLengthToRelative(nextWidth, parentWidth)
+          ? resizeLengthToRelative(nextWidth, wrapperWidth)
           : typeof width === 'string'
             ? `${nextWidth}px`
             : nextWidth
@@ -101,6 +131,7 @@ export function Resizable({
       const wrapperWidth = wrapperRef.current?.offsetWidth;
 
       if (!wrapperWidth) return;
+      setParentWidth(wrapperWidth);
 
       const deltaFactor =
         (align === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
@@ -119,13 +150,21 @@ export function Resizable({
     [align, commitWidth, maxWidth, minWidth, setWidth]
   );
   const context = React.useMemo(
-    () => ({ maxWidth, minWidth, nudgeWidth, onResize, width }),
-    [maxWidth, minWidth, nudgeWidth, onResize, width]
+    () => ({
+      maxWidth,
+      minWidth,
+      nudgeWidth,
+      onResize,
+      parentWidth,
+      resetWidth,
+      width,
+    }),
+    [maxWidth, minWidth, nudgeWidth, onResize, parentWidth, resetWidth, width]
   );
 
   return (
     <ResizeContext value={context}>
-      <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <div ref={measureWrapper} style={{ position: 'relative' }}>
         <div
           ref={ref}
           style={{
@@ -150,13 +189,11 @@ export function ResizeHandle({
   onHover,
   onHoverEnd,
   onKeyDown,
-  onMouseDown,
-  onMouseOut,
-  onMouseOver,
+  onPointerDown,
+  onPointerLeave,
+  onPointerEnter,
   onResize: onResizeProp,
-  onTouchEnd,
-  onTouchMove,
-  onTouchStart,
+  style,
   ...props
 }: ResizeHandleProps) {
   const context = React.use(ResizeContext);
@@ -168,75 +205,65 @@ export function ResizeHandle({
   const readOnly = useEditorReadOnly();
   const onResize = onResizeProp ?? context.onResize;
   const [isResizing, setIsResizing] = React.useState(false);
-  const [initialPosition, setInitialPosition] = React.useState(0);
-  const [initialSizeState, setInitialSize] = React.useState(0);
-  const initialSize = initialSizeProp ?? initialSizeState;
+  const cancelRef = React.useRef<(() => void) | null>(null);
   const isHorizontal = direction === 'left' || direction === 'right';
-  const publishHoverEnd = React.useEffectEvent(() => onHoverEnd?.());
-  const publishResize = React.useEffectEvent((event: ResizeEvent) => {
-    onResize(event);
-  });
+  React.useLayoutEffect(
+    () => () => cancelRef.current?.(),
+    [direction, initialSizeProp, onResize, readOnly, context.resetWidth]
+  );
 
-  React.useEffect(() => {
-    if (!isResizing) return undefined;
+  if (readOnly) return null;
 
-    const sendResizeEvent = (
-      event: MouseEvent | TouchEvent,
-      finished: boolean
-    ) => {
-      const point =
-        'touches' in event
-          ? event.touches[0] || event.changedTouches[0]
-          : event;
-
-      if (!point) return;
-
-      publishResize({
-        delta: (isHorizontal ? point.clientX : point.clientY) - initialPosition,
+  const startResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    const handle = event.currentTarget;
+    const parent = handle.parentElement;
+    const ownerWindow = handle.ownerDocument.defaultView;
+    if (
+      event.button !== 0 ||
+      !event.isPrimary ||
+      !parent?.isConnected ||
+      !ownerWindow
+    ) {
+      return;
+    }
+    cancelRef.current?.();
+    const initialPosition = isHorizontal ? event.clientX : event.clientY;
+    const initialSize =
+      initialSizeProp ??
+      (isHorizontal ? parent.offsetWidth : parent.offsetHeight);
+    const publish = (pointer: PointerEvent, finished: boolean) =>
+      onResize({
+        delta:
+          (isHorizontal ? pointer.clientX : pointer.clientY) - initialPosition,
         direction,
         finished,
         initialSize,
       });
-    };
-    const handleMove = (event: MouseEvent | TouchEvent) => {
-      sendResizeEvent(event, false);
-    };
-    const handleEnd = (event: MouseEvent | TouchEvent) => {
-      setIsResizing(false);
-      publishHoverEnd();
-      sendResizeEvent(event, true);
-    };
-
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchmove', handleMove, { passive: true });
-    window.addEventListener('touchend', handleEnd);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleEnd);
-      window.removeEventListener('touchmove', handleMove);
-      window.removeEventListener('touchend', handleEnd);
-    };
-  }, [direction, initialPosition, initialSize, isHorizontal, isResizing]);
-
-  if (readOnly) return null;
-
-  const startResize = (
-    event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
-    clientX: number,
-    clientY: number
-  ) => {
-    setInitialPosition(isHorizontal ? clientX : clientY);
-
-    const parent = event.currentTarget.parentElement;
-
-    if (!parent) return;
-
-    setInitialSize(isHorizontal ? parent.offsetWidth : parent.offsetHeight);
+    cancelRef.current = bindPointerSession({
+      ownerWindow,
+      pointerId: event.pointerId,
+      isCurrent: () => handle.isConnected && handle.parentElement === parent,
+      onMove: (pointer) => publish(pointer, false),
+      onEnd: (pointer) => {
+        cancelRef.current = null;
+        setIsResizing(false);
+        try {
+          if (pointer) publish(pointer, true);
+          else context.resetWidth();
+        } finally {
+          onHoverEnd?.();
+        }
+      },
+    });
+    event.preventDefault();
+    event.stopPropagation();
     setIsResizing(true);
   };
-  const width = Number.parseFloat(String(context.width));
+  const width = resizeLengthClamp(
+    resizeLengthToStatic(context.width, context.parentWidth),
+    context.parentWidth,
+    { min: context.minWidth, max: context.maxWidth }
+  );
   const unit =
     typeof context.width === 'string' && context.width.trim().endsWith('%')
       ? '%'
@@ -246,15 +273,31 @@ export function ResizeHandle({
     <div
       aria-label="Resize"
       aria-orientation={isHorizontal ? 'horizontal' : 'vertical'}
-      aria-valuemax={Number.parseFloat(String(context.maxWidth))}
-      aria-valuemin={Number.parseFloat(String(context.minWidth))}
+      aria-valuemax={resizeLengthToStatic(
+        context.maxWidth,
+        context.parentWidth
+      )}
+      aria-valuemin={resizeLengthToStatic(
+        context.minWidth,
+        context.parentWidth
+      )}
       aria-valuenow={width}
-      aria-valuetext={`${width}${unit}`}
+      aria-valuetext={
+        unit === '%' && context.parentWidth
+          ? resizeLengthToRelative(width, context.parentWidth)
+          : `${width}px`
+      }
       data-resizing={isResizing || undefined}
       role="slider"
+      style={{ touchAction: 'none', ...style }}
       tabIndex={0}
       onKeyDown={(event) => {
-        const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
+        onKeyDown?.(event);
+        if (event.defaultPrevented || event.nativeEvent.isComposing) return;
+        const rtl =
+          event.currentTarget.ownerDocument.defaultView?.getComputedStyle(
+            event.currentTarget
+          ).direction === 'rtl';
         const step = event.shiftKey ? 50 : 10;
         const delta =
           event.key === 'ArrowUp'
@@ -275,39 +318,23 @@ export function ResizeHandle({
           event.preventDefault();
           context.nudgeWidth(delta * step);
         }
-
-        onKeyDown?.(event);
       }}
-      onMouseDown={(event) => {
-        startResize(event, event.clientX, event.clientY);
-        onMouseDown?.(event);
+      onPointerDown={(event) => {
+        onPointerDown?.(event);
+        if (!event.defaultPrevented) startResize(event);
       }}
-      onMouseOut={(event) => {
+      onPointerLeave={(event) => {
         if (!isResizing) onHoverEnd?.();
-        onMouseOut?.(event);
+        onPointerLeave?.(event);
       }}
-      onMouseOver={(event) => {
+      onPointerEnter={(event) => {
         onHover?.();
-        onMouseOver?.(event);
+        onPointerEnter?.(event);
       }}
       onBlur={() => {
         if (!isResizing) onHoverEnd?.();
       }}
       onFocus={() => onHover?.()}
-      onTouchEnd={(event) => {
-        if (!isResizing) onHoverEnd?.();
-        onTouchEnd?.(event);
-      }}
-      onTouchMove={(event) => {
-        onHover?.();
-        onTouchMove?.(event);
-      }}
-      onTouchStart={(event) => {
-        const point = event.touches[0];
-
-        if (point) startResize(event, point.clientX, point.clientY);
-        onTouchStart?.(event);
-      }}
       {...props}
     />
   );

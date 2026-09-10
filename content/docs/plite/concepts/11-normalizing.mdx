@@ -7,7 +7,7 @@ Plite constructs canonical document shapes before publication. Extensions add
 focused corrections for app-specific invariants; there is no public
 operation-by-operation normalizer loop.
 
-## Canonical Constraints
+## Canonical constraints
 
 Plite enforces a small structural contract. It keeps browser selection,
 canonical changes, history, and collaboration deterministic.
@@ -25,7 +25,7 @@ Construction and contextual slice fitting produce this shape directly.
 Imported `DocumentChange` values are validated against the compiled schema
 instead of being accepted and repaired later.
 
-## Write Canonical Shapes
+## Write canonical shapes
 
 Commands should create the shape they intend to read later in the same
 transaction. Corrections run during transaction closeout, so command logic must
@@ -58,7 +58,7 @@ editor.update((tx) => {
 });
 ```
 
-## Group Related Writes
+## Group related writes
 
 Put related structural writes in one `editor.update(...)`. The callback reads
 one isolated draft, and Plite publishes one canonical `DocumentChange`.
@@ -93,7 +93,7 @@ function changeBlockType(editor: Editor, type: string) {
 The callback reads the live draft. Plite runs deterministic corrections over
 the changed ranges, then publishes one immutable commit.
 
-## Extension Corrections
+## Extension corrections
 
 Reusable app-specific repairs belong in editor extensions. Each correction
 declares the node event that can make its invariant stale: `children`,
@@ -125,7 +125,7 @@ When a correction changes another relevant entry, the bounded worklist queues
 that entry. This is targeted maintenance, not a whole-document pass after every
 operation.
 
-## Repairing A Whole Document
+## Repairing a whole document
 
 Use `editor.update.value.repair()` when raw initial data or a newly installed
 correction may need an all-root maintenance pass.

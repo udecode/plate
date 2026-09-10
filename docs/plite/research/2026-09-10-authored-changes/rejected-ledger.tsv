@@ -1,0 +1,7 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+marks-as-proposal-authority	local/plate-2	mark-authority	Command or step rewriting leaves mark reconstruction and review-schema coupling.	Native canonical capture and complete dependency/schema proof establish a better mark-backed target.
+range-only-proposals	local/plate-2	range-sidecar	Accepted ranges cannot address newly proposed content or retain deleted structure.	A native editable projection with durable coordinate mapping exists.
+per-author-undo-as-review	github.com/loro-dev/loro	user-undo	Undo stacks do not encode durable review status, causal dependencies or retained authorship.	A retained authored decision model exists above undo.
+mandatory-crdt-replacement	github.com/yjs/yjs	replace-core	Making a CRDT mandatory is not justified by current native/schema/cost evidence; no substrate is selected.	A source-backed comparison shows lower permanent complexity while preserving hard laws and native/cost budgets; migration effort is not a veto.
+snapshot-diff-as-mutation-authority	github.com/prosemirror/prosemirror-changeset	snapshot-diff	Diff can lose repeated-text edit intent; default ChangeSet encoding ignores marks and attributes.	Use limited to display/import or exact provenance is preserved independently.
+one-branch-per-author	github.com/yjs/yhub	author-branch	Authorship is not an independently reviewable proposal or dependency boundary.	A user explicitly requests an isolated alternative draft/version branch.

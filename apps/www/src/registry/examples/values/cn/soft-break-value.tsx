@@ -17,8 +17,6 @@ export const softBreakValue = (
     <hblockquote>
       <hp>在这里试试 ⏎</hp>
     </hblockquote>
-    <hcodeblock>
-      <hcodeline>这里也可以试试 ⏎</hcodeline>
-    </hcodeblock>
+    <hcodeblock>这里也可以试试 ⏎</hcodeblock>
   </fragment>
 );

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-excalidraw-sync",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-excalidraw-sync.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Synchronize drawing scenes with document changes",
+  "targets": [
+    {
+      "name": "excalidraw",
+      "files": ["apps/www/src/registry/components/editor/excalidraw.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-excalidraw-sync-1",
+      "kind": "behavior",
+      "summary": "Use `useExcalidrawSync` to apply document changes and undo to the canvas, save referenced images, and exclude transient canvas state from document writes. Keep lazy loading and presentation in the copied element.",
+      "details": [],
+      "migrationNotes": [
+        "Use `useExcalidrawSync` to apply document changes and undo to the canvas, save referenced images, and exclude transient canvas state from document writes."
+      ],
+      "targets": ["excalidraw"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-excalidraw-sync",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

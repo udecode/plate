@@ -24,25 +24,29 @@ Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitio
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
 ### Installation
 
-The fastest way to add footnote-aware markdown is with the `MarkdownKit`, which includes `MarkdownPlugin`, the footnote plugins wired for the default markdown profile, and works with [Plate UI](/docs/installation/plate-ui).
+Use `FootnoteKit` for the reference, definition, and input components. Add `MarkdownKit` for Markdown parsing and serialization.
+
+<ComponentSource name="footnote" />
 
 <ComponentSource name="markdown" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
+import { FootnoteKit } from '@/components/editor/footnote';
 import { MarkdownKit } from '@/components/editor/markdown';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
+    ...FootnoteKit,
     ...MarkdownKit,
   ],
 });
@@ -50,7 +54,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -60,7 +64,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual marked remark-gfm remark-mdx remark-parse remark-stringify unified
 ```
 
-### Add Plugins
+### Add plugins
 
 Add the inline reference and block definition. `FootnotePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
 
@@ -86,7 +90,7 @@ const editor = createEditor({
 
 `FootnoteInputPlugin` is a required dependency of `FootnotePlugin`. Add a complete input descriptor to the same array only when you need to replace its default component or configuration.
 
-### Insert a Footnote
+### Insert a footnote
 
 Call `tx.footnote.insert` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
 
@@ -104,9 +108,9 @@ editor.update((tx) => tx.footnote.insert({ focusDefinition: false }));
 
 Pass `ref` to reuse an existing ref; the transform skips creating a duplicate definition when one already exists.
 
-### Repair an Unresolved Reference
+### Repair an unresolved reference
 
-When a reference points at an ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
+When a reference points at a ref with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
 
 ```tsx
 editor.update((tx) => tx.footnote.createDefinition({ ref: '3' }));
@@ -120,42 +124,48 @@ editor.update((tx) =>
 );
 ```
 
-### Navigate Between Reference and Definition
+### Navigate between reference and definition
 
-`tx.footnote.focusDefinition` and `tx.footnote.focusReference` jump the selection, scroll the target into view, and flash it through [Navigation Feedback](/docs/navigation-feedback). No extra wiring needed:
+`editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference`
+move the selection, focus the calling view, scroll the target into view, and
+flash it through [Navigation Feedback](/docs/navigation-feedback). Call them
+from the mounted editor returned by `useEditor()` or `useEditorPlugin()`:
 
 ```tsx
-editor.update((tx) => tx.footnote.focusDefinition({ ref: '3' }));
-editor.update((tx) => tx.footnote.focusReference({ ref: '3' }));
+editor.api.footnote.focusDefinition({ ref: '3' });
+editor.api.footnote.focusReference({ ref: '3' });
 ```
 
-When a single definition is pointed at by multiple references, pass `index` to pick which one to land on:
+When several references share a definition, pass `index` to choose a reference
+in document order:
+
+```tsx
+editor.api.footnote.focusReference({ ref: '3', index: 1 });
+```
+
+Both commands return `false` for an unresolved target, a read-only view, or an
+unmounted editor. For selection-only changes inside a transaction, use
+`tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each returns the
+resolved `{ targetPath, point }` target or `null`.
+
+With `navigationFeedback: false`, footnote navigation still selects, focuses,
+and scrolls to the target without a highlight.
+
+### Handle duplicate definitions
+
+When definitions share a ref, the first definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
 
 ```tsx
 editor.update((tx) =>
-  tx.footnote.focusReference({ ref: '3', index: 1 })
-);
-```
-
-Both transaction commands return `false` when the ref doesn't resolve, so you can branch on stale links without throwing.
-
-### Handle Duplicate Definitions
-
-Two definitions with the same ref is a resolvable edit state, not an error. The **first** definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
-
-```tsx
-let nextRefentifier: string | undefined;
-
-editor.update((tx) => {
-  nextRefentifier = tx.footnote.normalizeDuplicateDefinition({
+  tx.footnote.normalizeDuplicateDefinition({
     path: duplicatePath,
-  });
-});
+  })
+);
 ```
 
 The transform returns the newly assigned ref string on success, or `false` when the path isn't a duplicate definition or the requested ref is already taken. Pass `ref` to target a specific free ref instead of the next available one.
 
-### Customize Rendering
+### Customize rendering
 
 Swap in your own React components with `component`:
 
@@ -219,7 +229,7 @@ snapshot directly.
 
 ### `editor.read.footnote.definition`
 
-Get the canonical (first-in-document-order) definition entry for an ref.
+Get the first definition entry in document order for a ref.
 
 <API name="definition">
 <APIParameters>
@@ -236,7 +246,7 @@ Get the canonical (first-in-document-order) definition entry for an ref.
 
 ### `editor.read.footnote.definitions`
 
-Get every definition entry that shares an ref, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
+Get every definition entry that shares a ref, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
 
 <API name="definitions">
 <APIParameters>
@@ -270,7 +280,7 @@ Get the plain-text content of the canonical definition. Ideal for hover previews
 
 ### `editor.read.footnote.references`
 
-Get every reference entry that points at an ref, in document order.
+Get every reference entry that points at a ref, in document order.
 
 <API name="references">
 <APIParameters>
@@ -311,7 +321,7 @@ Compute the next free numeric ref. Used by `tx.footnote.insert` when the caller 
 
 ### `editor.read.footnote.isResolved`
 
-Check whether an ref has at least one definition.
+Check whether a ref has at least one definition.
 
 <API name="isResolved">
 <APIParameters>
@@ -328,7 +338,7 @@ Check whether an ref has at least one definition.
 
 ### `editor.read.footnote.duplicateDefinitions`
 
-Get every non-canonical definition entry for an ref — that is, every definition after the first in document order.
+Get every definition after the first one for a ref, in document order.
 
 <API name="duplicateDefinitions">
 <APIParameters>
@@ -357,7 +367,7 @@ List every ref that has more than one definition.
 
 ### `editor.read.footnote.hasDuplicateDefinitions`
 
-Check whether an ref has more than one definition.
+Check whether a ref has more than one definition.
 
 <API name="hasDuplicateDefinitions">
 <APIParameters>
@@ -436,7 +446,7 @@ Create the missing definition for an existing ref without inserting another refe
 </APIReturns>
 </API>
 
-### `editor.update.footnote.focusDefinition`
+### `editor.api.footnote.focusDefinition`
 
 Jump the selection into the canonical definition body, scroll it into view, and flash it through Navigation Feedback.
 
@@ -448,12 +458,12 @@ Jump the selection into the canonical definition body, scroll it into view, and 
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `false` when no definition resolves, `true` otherwise.
+    `false` when the definition is missing or the calling view is read-only or unmounted; `true` after navigation.
   </APIItem>
 </APIReturns>
 </API>
 
-### `editor.update.footnote.focusReference`
+### `editor.api.footnote.focusReference`
 
 Jump the selection to the matching reference, scroll it into view, and flash it through Navigation Feedback.
 
@@ -469,7 +479,7 @@ Jump the selection to the matching reference, scroll it into view, and flash it 
 </APIParameters>
 <APIReturns>
   <APIItem name="return" type="boolean">
-    `false` when the reference doesn't resolve, `true` otherwise.
+    `false` when the reference is missing or the calling view is read-only or unmounted; `true` after navigation.
   </APIItem>
 </APIReturns>
 </API>
@@ -494,7 +504,7 @@ Renumber a later duplicate definition so the canonical definition stays intact. 
 </APIReturns>
 </API>
 
-## Related Docs
+## Related docs
 
 - [Markdown](/docs/markdown)
 - [Navigation Feedback](/docs/navigation-feedback)

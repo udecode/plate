@@ -67,6 +67,8 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
+  getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
+  registerBookmark: (htmlId: string) => void;
   htmlString: string;
   relationshipFilename: string;
   tableRowCantSplit: boolean;
@@ -153,6 +155,24 @@ const convertHTML = HTMLToVDOM({
   VNode,
   VText,
 });
+
+function getHeadingBookmark(vNode: VNodeType) {
+  if (!/^h[1-6]$/.test(vNode.tagName ?? '')) return undefined;
+
+  const firstChild: VNodeType | undefined = vNode.children?.[0];
+
+  if (
+    !firstChild ||
+    !isVNode(firstChild) ||
+    (firstChild.tagName !== 'a' && firstChild.tagName !== 'span') ||
+    firstChild.properties?.href ||
+    firstChild.properties?.attributes?.href
+  ) {
+    return undefined;
+  }
+
+  return firstChild.properties?.id || firstChild.properties?.attributes?.id;
+}
 
 type ContentGroup = {
   children?: Array<VNodeType | VTextType>;
@@ -319,33 +339,10 @@ async function findXMLEquivalent(
     case 'h4':
     case 'h5':
     case 'h6': {
-      // Check if the heading has a bookmark anchor (an <a> or <span> with id but no href)
-      let bookmarkId: string | null = null;
-      let headingVNode: VNodeType = vNode;
-      if (vNodeHasChildren(vNode) && (vNode.children || []).length > 0) {
-        const firstChild = (vNode.children || [])[0] as VNodeType;
-        // Check both properties.id and properties.attributes.id for the bookmark anchor
-        const anchorId =
-          firstChild.properties?.id || firstChild.properties?.attributes?.id;
-        const hasHref =
-          firstChild.properties?.href ||
-          firstChild.properties?.attributes?.href;
-
-        if (
-          isVNode(firstChild) &&
-          (firstChild.tagName === 'a' || firstChild.tagName === 'span') &&
-          anchorId &&
-          !hasHref
-        ) {
-          bookmarkId = anchorId;
-          // Create a modified vNode without the bookmark anchor
-          headingVNode = new VNode(
-            vNode.tagName,
-            vNode.properties,
-            (vNode.children || []).slice(1)
-          );
-        }
-      }
+      const bookmarkId = getHeadingBookmark(vNode);
+      const headingVNode = bookmarkId
+        ? new VNode(vNode.tagName, vNode.properties, vNode.children?.slice(1))
+        : vNode;
 
       const headingFragment = await buildParagraph(
         headingVNode,
@@ -723,6 +720,19 @@ async function renderDocumentFile(
   resetListTracking();
 
   const vTree = convertHTML(docxDocumentInstance.htmlString);
+  const registerBookmarks = (tree: VTree) => {
+    if (Array.isArray(tree)) {
+      for (const child of tree) registerBookmarks(child);
+    } else if (isVNode(tree)) {
+      const node = tree as VNodeType;
+      const id = getHeadingBookmark(node);
+
+      if (id) docxDocumentInstance.registerBookmark(id);
+      for (const child of node.children ?? []) registerBookmarks(child);
+    }
+  };
+
+  registerBookmarks(vTree);
 
   const xmlFragment = fragment({ namespaceAlias: { w: namespaces.w } });
 

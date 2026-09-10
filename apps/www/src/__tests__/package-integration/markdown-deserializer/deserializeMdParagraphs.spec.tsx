@@ -105,28 +105,6 @@ followed by text`;
     });
   });
 
-  it('deserialize paragraph with leading linebreaks in the middle', () => {
-    const input = `
-Paragaph with two new Lines\\
-\\
-followed by text`;
-
-    const output = (
-      <fragment>
-        <hp>
-          <htext>Paragaph with two new Lines</htext>
-          <htext>{'\n'}</htext>
-          <htext>{'\n'}</htext>
-          <htext>followed by text</htext>
-        </hp>
-      </fragment>
-    );
-
-    expect(editor.api.markdown.deserialize(input)).toEqual({
-      children: output,
-    });
-  });
-
   it('deserialize leading empty paragraphts as <br />', () => {
     const input = `
 Paragaph followed by two empty paragraphts

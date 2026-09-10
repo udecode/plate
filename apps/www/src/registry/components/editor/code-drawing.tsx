@@ -5,11 +5,7 @@ import {
   type CodeDrawingLanguage,
   type CodeDrawingView,
   CODE_DRAWING_LANGUAGES,
-  DEFAULT_MIN_HEIGHT,
-  DOWNLOAD_FILENAME,
-  RENDER_DEBOUNCE_DELAY,
   CODE_DRAWING_VIEWS,
-  downloadImage,
   renderCodeDrawing,
 } from 'platejs/code-drawing';
 import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
@@ -22,7 +18,6 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
-  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -34,12 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
+import { useIsMobile } from '@/registry/hooks/use-mobile';
+
+const DEFAULT_MIN_HEIGHT = 300;
 
 const languageLabels: Record<CodeDrawingLanguage, string> = {
   flowchart: 'Flowchart',
@@ -62,9 +59,10 @@ const isCodeDrawingLanguage = (
 const isCodeDrawingView = (value: string | null): value is CodeDrawingView =>
   CODE_DRAWING_VIEWS.some((view) => view === value);
 
-export function CodeDrawingElement(
-  props: PlateElementProps<typeof CodeDrawingPlugin>
-) {
+export function CodeDrawingElement({
+  plantUmlServer = 'https://www.plantuml.com/plantuml',
+  ...props
+}: PlateElementProps<typeof CodeDrawingPlugin> & { plantUmlServer?: string }) {
   const { children } = props;
   const isMobile = useIsMobile();
   const editor = useEditor();
@@ -72,93 +70,110 @@ export function CodeDrawingElement(
   const selected = useElementSelected();
   const isFocusedLast = useFocusedLast();
   const element = useElement(CodeDrawingPlugin);
-  const path = usePath();
-  const [loading, setLoading] = React.useState(false);
-  const [image, setImage] = React.useState('');
-  const [renderError, setRenderError] = React.useState<string | null>(null);
+  const { code, language, view } = element;
+  const selectionCollapsed = useEditorSelector((innerEditor) =>
+    innerEditor.read.selection.isCollapsed()
+  );
+  const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
+  const demanded = view !== 'code' || open;
+  const wasDemanded = React.useRef(false);
+  const [result, setResult] = React.useState<{
+    code: string;
+    language: CodeDrawingLanguage;
+    plantUmlServer: string;
+    image: string;
+    error: string | null;
+  } | null>(null);
+  const currentResult =
+    result?.code === code &&
+    result.language === language &&
+    result.plantUmlServer === plantUmlServer
+      ? result
+      : null;
+  const image = currentResult?.image ?? '';
+  const renderError = currentResult?.error ?? null;
+  const loading = demanded && !!code.trim() && !currentResult;
 
   React.useEffect(() => {
+    const activated = demanded && !wasDemanded.current;
+    wasDemanded.current = demanded;
+    if (!demanded || !code.trim() || currentResult) return undefined;
+
     let cancelled = false;
     const render = async () => {
-      if (!element.code.trim()) {
-        setImage('');
-        setRenderError(null);
-        setLoading(false);
-        return;
-      }
-
-      setRenderError(null);
-      setLoading(true);
-
       try {
-        const imageData = await renderCodeDrawing(
-          element.language,
-          element.code
-        );
-
-        if (!cancelled) setImage(imageData);
+        const imageData = await renderCodeDrawing(language, code, {
+          plantUmlServer,
+        });
+        if (!cancelled) {
+          setResult({
+            code,
+            language,
+            plantUmlServer,
+            image: imageData,
+            error: null,
+          });
+        }
       } catch (error) {
         if (!cancelled) {
           const message =
             error instanceof Error ? error.message : 'Rendering failed';
-
           console.error(message);
-          setImage('');
-          setRenderError(message);
+          setResult({
+            code,
+            language,
+            plantUmlServer,
+            image: '',
+            error: message,
+          });
         }
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     };
-    const timeout = window.setTimeout(() => {
-      void render();
-    }, RENDER_DEBOUNCE_DELAY);
+    const timeout = window.setTimeout(
+      () => {
+        void render();
+      },
+      activated ? 0 : 500
+    );
 
     return () => {
       cancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [element.code, element.language]);
-
-  const handleDownload = React.useCallback(() => {
-    if (!image) return;
-    downloadImage(image, DOWNLOAD_FILENAME);
-  }, [image]);
+  }, [code, currentResult, demanded, language, plantUmlServer]);
 
   const handleCodeChange = React.useCallback(
-    (code: string) => {
+    (nextCode: string) => {
+      const path = editor.read.nodes.path(element);
+
       if (path) {
-        editor.update.nodes.set({ code }, { at: path });
+        editor.update.nodes.set({ code: nextCode }, { at: path });
       }
     },
-    [editor, path]
+    [editor, element]
   );
 
   const handleLanguageChange = React.useCallback(
-    (language: CodeDrawingLanguage) => {
+    (nextLanguage: CodeDrawingLanguage) => {
+      const path = editor.read.nodes.path(element);
+
       if (path) {
-        editor.update.nodes.set({ language }, { at: path });
+        editor.update.nodes.set({ language: nextLanguage }, { at: path });
       }
     },
-    [editor, path]
+    [editor, element]
   );
 
   const handleViewChange = React.useCallback(
-    (view: CodeDrawingView) => {
+    (nextView: CodeDrawingView) => {
+      const path = editor.read.nodes.path(element);
+
       if (path) {
-        editor.update.nodes.set({ view }, { at: path });
+        editor.update.nodes.set({ view: nextView }, { at: path });
       }
     },
-    [editor, path]
+    [editor, element]
   );
-
-  const { code, language, view } = element;
-
-  const selectionCollapsed = useEditorSelector((innerEditor) =>
-    innerEditor.read.selection.isCollapsed()
-  );
-
-  const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
 
   const content = (
     <PlateElement {...props}>
@@ -203,7 +218,27 @@ export function CodeDrawingElement(
               size="icon"
               variant="ghost"
               className="size-8"
-              onClick={handleDownload}
+              onClick={(event) => {
+                const { ownerDocument } = event.currentTarget;
+                const imageElement = ownerDocument.createElement('img');
+                imageElement.addEventListener(
+                  'load',
+                  () => {
+                    const canvas = ownerDocument.createElement('canvas');
+                    canvas.width = imageElement.naturalWidth;
+                    canvas.height = imageElement.naturalHeight;
+                    const context = canvas.getContext('2d');
+                    if (!context) return;
+                    context.drawImage(imageElement, 0, 0);
+                    const link = ownerDocument.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = 'code-drawing.png';
+                    link.click();
+                  },
+                  { once: true }
+                );
+                imageElement.src = image;
+              }}
               title="Export"
             >
               <DownloadIcon className="size-4" />
@@ -214,6 +249,8 @@ export function CodeDrawingElement(
             variant="ghost"
             className="size-8"
             onClick={() => {
+              const path = editor.read.nodes.path(element);
+
               if (!readOnly && path) editor.update.nodes.remove({ at: path });
             }}
             title="Delete"

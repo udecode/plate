@@ -19,9 +19,10 @@ npm install -D react react-dom @testing-library/react
 
 ## 设置测试
 
-在测试文件顶部添加 JSX pragma：
+使用 `.tsx` 文件，并通过以下 pragma 选择经典 JSX 运行时和测试工厂：
 
 ```typescript
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import {

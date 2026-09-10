@@ -16,7 +16,10 @@ import {
 } from '@/registry/registry';
 import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
-import { buildDocsRegistry } from './build-docs-registry.mts';
+import {
+  createDocsRegistry,
+  createPublicDocsRegistry,
+} from './build-docs-registry.mts';
 import {
   getRegistryBuildTargets,
   getRegistryOutputTarget,
@@ -176,7 +179,7 @@ try {
   rimraf.sync(path.join(process.cwd(), '.registry-build'));
 
   console.info('📖 Building registry-docs.json...');
-  const docsItems = await buildDocsRegistry();
+  const docsRegistry = await createDocsRegistry();
 
   for (const target of buildTargets) {
     const { base, kind, outputDir, registryBaseUrl, registryFile } = target;
@@ -193,7 +196,7 @@ try {
         registry,
         registryFile,
         registryBaseUrl,
-        docsItems
+        docsRegistry.items
       );
     } else {
       await buildRegistryJsonFile(registry, registryFile, registryBaseUrl);
@@ -201,6 +204,12 @@ try {
 
     console.info(`🏗️ Building ${outputDir}...`);
     await buildRegistry(registryFile, outputDir);
+    if (kind === 'canonical') {
+      await fs.writeFile(
+        path.join(process.cwd(), outputDir, 'registry-docs.json'),
+        JSON.stringify(createPublicDocsRegistry(docsRegistry, registryBaseUrl))
+      );
+    }
   }
 
   console.info('🎨 Materializing Base/Nova and sparse style overlays...');

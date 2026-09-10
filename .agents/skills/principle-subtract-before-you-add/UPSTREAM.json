@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-subtract-before-you-add",
+  "files": [
+    {
+      "upstream": "skills/principle-subtract-before-you-add/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "3999888dc21ced33b86054c2ffde1a3cb438e16bed1213f5dab2b5c000446292",
+      "destinationSha256": "a273930bd7083ece67002229005b79ea522540df1229c369423a5a9944a1a3cf",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-subtract-before-you-add/SKILL.md\n+++ skills/principle-subtract-before-you-add/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-subtract-before-you-add\n description: \"Apply when sequencing an addition, refactor, or rewrite. Remove dead weight, redundant validators, and stub references first, then build on the simpler base.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Subtract Before You Add\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

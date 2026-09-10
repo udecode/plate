@@ -414,7 +414,7 @@ describe('migratePlateV54 profile', () => {
         type: 'heading',
       },
       {
-        children: [{ children: [{ text: 'const x = 1' }], type: 'codeLine' }],
+        children: [{ text: 'const x = 1' }],
         language: 'typescript',
         type: 'codeBlock',
       },
@@ -711,7 +711,7 @@ describe('migratePlateV54 profile', () => {
     ).document;
 
     expect(result.children[0]).toMatchObject({
-      columnWidths: [80, 0],
+      columnWidths: [80, null],
       type: 'table',
     });
   });

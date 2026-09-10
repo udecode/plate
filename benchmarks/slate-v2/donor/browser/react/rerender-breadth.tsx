@@ -10,15 +10,15 @@ import React, {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react';
 import type {
   Anchor,
   Descendant,
   EditorSnapshot,
-  Range,
   NodeKey,
+  Range,
 } from '../../../../../packages/plitejs/src/index.ts';
+import { NodeApi } from '../../../../../packages/plitejs/src/index.ts';
 import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
@@ -26,11 +26,11 @@ import {
 import {
   createEditor,
   Editable,
-  EditableElement,
   Plite,
+  PliteElement,
   type PliteAnnotation,
   type PliteAnnotationStore,
-  type PliteProjectionStore,
+  type PliteDecorationSource,
   type PliteWidget,
   type PliteWidgetStore,
   useEditorContext,
@@ -38,11 +38,10 @@ import {
   useEditorSelector,
   usePliteAnnotationStore,
   usePliteAnnotations,
-  usePliteProjectionEntries,
   usePliteWidgetStore,
   usePliteWidgets,
 } from '../../../../../packages/plitejs/src/react/index.ts';
-import { createPliteProjectionStore } from '../../../../../packages/plitejs/src/react/projection-store.ts';
+import { usePliteDecorationEntries } from '../../../../../packages/plitejs/src/react/decoration-context.tsx';
 import {
   cloneCounts,
   deltaCounts,
@@ -60,7 +59,9 @@ const select = (editor: ReturnType<typeof createEditor>, target: Range) => {
 const insertText = (
   editor: ReturnType<typeof createEditor>,
   text: string,
-  options: Parameters<ReturnType<typeof createEditor>['update']['text']['insert']>[1]
+  options: Parameters<
+    ReturnType<typeof createEditor>['update']['text']['insert']
+  >[1],
 ) => {
   editor.update((tx) => {
     tx.text.insert(text, options);
@@ -72,33 +73,12 @@ const selectionOps = Number(process.env.REACT_BREADTH_SELECTION_OPS || 20);
 const leafCount = Number(process.env.REACT_BREADTH_LEAF_COUNT || 24);
 const nestedDepth = Number(process.env.REACT_BREADTH_DEPTH || 12);
 const targetLeafIndex = Number(
-  process.env.REACT_BREADTH_TARGET_LEAF_INDEX || Math.floor(leafCount / 2)
+  process.env.REACT_BREADTH_TARGET_LEAF_INDEX || Math.floor(leafCount / 2),
 );
 
 const now = () => performance.now();
 
 void React;
-
-const EMPTY_PROJECTIONS = Object.freeze([]) as readonly unknown[];
-
-const getProjectionMetricCounts = (
-  store: Pick<PliteProjectionStore<unknown>, 'getMetrics'> | null | undefined
-) => {
-  const metrics =
-    store && typeof store.getMetrics === 'function' ? store.getMetrics() : null;
-
-  return {
-    changedRuntimeBucketCount: metrics?.changedRuntimeBucketCount ?? 0,
-    fullFallbackCount: metrics?.fullFallbackCount ?? 0,
-    globalSubscriberWakeCount: metrics?.globalSubscriberWakeCount ?? 0,
-    invalidRangeDropCount: metrics?.invalidRangeDropCount ?? 0,
-    projectedRangeCount: metrics?.projectedRangeCount ?? 0,
-    recomputeCount: metrics?.recomputeCount ?? 0,
-    runtimeSubscriberWakeCount: metrics?.runtimeSubscriberWakeCount ?? 0,
-    sourceReadCount: metrics?.sourceReadCount ?? 0,
-    sourceSubscriberWakeCount: metrics?.sourceSubscriberWakeCount ?? 0,
-  };
-};
 
 const getDescendantText = (node: Descendant): string => {
   if ('text' in node) {
@@ -192,95 +172,76 @@ const createDecorationToggleChildren = (): Descendant[] => [
   },
 ];
 
-const createSourceInvalidationChildren = (): Descendant[] => [
-  {
-    type: 'paragraph',
-    children: [{ text: 'alpha-left-target' }],
-  },
-  {
-    type: 'paragraph',
-    children: [{ text: 'beta-right-target' }],
-  },
-];
+type DecorationProbe = Readonly<{
+  getReadCount: () => number;
+  refresh: () => void;
+  source: PliteDecorationSource<ReturnType<typeof createEditor>>;
+}>;
 
-const deriveDecorationToggleRanges = (snapshot: EditorSnapshot) =>
-  snapshot.children.flatMap((node, index) => {
-    if (index % 2 !== 0 || !('children' in node)) {
-      return [];
-    }
+const createDecorationProbe = (
+  editor: ReturnType<typeof createEditor>,
+  activeRef: React.RefObject<boolean>,
+): DecorationProbe => {
+  let readCount = 0;
+  let refreshSource:
+    | ((input: { nodeKeys: readonly NodeKey[] }) => void)
+    | null = null;
+  const source: PliteDecorationSource<ReturnType<typeof createEditor>> = {
+    id: 'overlay-toggle',
+    observe: ({ refresh }) => {
+      refreshSource = refresh;
 
-    const child = (node as unknown as { children: unknown[] }).children[0];
-    const text =
-      child && typeof child === 'object' && 'text' in child
-        ? String((child as { text: unknown }).text ?? '')
-        : '';
-
-    if (!text.startsWith('alpha')) {
-      return [];
-    }
-
-    return [
-      {
-        data: { highlight: true },
-        key: `overlay-${index}`,
-        range: {
-          anchor: { path: [index, 0], offset: 0 },
-          focus: { path: [index, 0], offset: Math.min(5, text.length) },
-        },
-      },
-    ];
-  });
-
-const deriveTextTailRanges = (snapshot: EditorSnapshot) => {
-  const text = getTopLevelBlockText(snapshot, 0);
-
-  if (!text) {
-    return [];
-  }
-
-  const start = Math.max(0, text.length - 5);
-
-  return [
-    {
-      data: { highlight: true, source: 'text' },
-      key: 'text-tail',
-      range: {
-        anchor: { path: [0, 0], offset: start },
-        focus: { path: [0, 0], offset: text.length },
-      },
+      return () => {
+        refreshSource = null;
+      };
     },
-  ];
-};
+    read: ({ entry: [node, path] }) => {
+      readCount += 1;
 
-const deriveSelectionRanges = (snapshot: EditorSnapshot) =>
-  snapshot.selection
-    ? [
-        {
-          data: { highlight: true, source: 'selection' },
-          key: 'selection-range',
-          range: snapshot.selection,
-        },
-      ]
-    : [];
+      if (
+        !activeRef.current ||
+        !NodeApi.isText(node) ||
+        path.length !== 2 ||
+        path[0] % 2 !== 0 ||
+        !node.text.startsWith('alpha')
+      ) {
+        return [];
+      }
 
-const deriveExternalRanges = (active: boolean) =>
-  active
-    ? [
+      return [
         {
-          data: { highlight: true, source: 'external' },
-          key: 'external-left',
+          attributes: { 'data-rerender-breadth-overlay': true },
+          key: `overlay-${path[0]}`,
           range: {
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 5 },
+            anchor: { path, offset: 0 },
+            focus: { path, offset: Math.min(5, node.text.length) },
           },
         },
-      ]
-    : [];
+      ];
+    },
+  };
+
+  return {
+    getReadCount: () => readCount,
+    refresh: () => {
+      const snapshot = editorGetSnapshot(editor);
+      const nodeKeys = snapshot.children.flatMap((_node, index) => {
+        const nodeKey =
+          index % 2 === 0 ? snapshot.index.keyAt([index, 0]) : null;
+
+        return nodeKey ? [nodeKey] : [];
+      });
+
+      refreshSource?.({ nodeKeys });
+    },
+    source,
+  };
+};
 
 const formatRange = (range: Range | null) =>
   range
     ? `${range.anchor.path.join('.')}:${range.anchor.offset}|${range.focus.path.join(
-        '.'
+        '.',
       )}:${range.focus.offset}`
     : 'none';
 
@@ -289,7 +250,7 @@ const BroadEditorSlice = memo(
     useEditorContext();
     increment(counts, 'broad');
     return <span id="broad-subscriber">broad</span>;
-  }
+  },
 );
 
 const SelectionSlice = memo(
@@ -301,7 +262,7 @@ const SelectionSlice = memo(
         {selection ? selection.anchor.path.join('.') : 'none'}
       </span>
     );
-  }
+  },
 );
 
 const TopLevelBlockSlice = memo(
@@ -315,14 +276,14 @@ const TopLevelBlockSlice = memo(
     slot: string;
   }) => {
     const value = useEditorSelector((editor) =>
-      getTopLevelBlockText(editorGetSnapshot(editor), index)
+      getTopLevelBlockText(editorGetSnapshot(editor), index),
     );
     increment(counts, slot);
     return <span>{value}</span>;
-  }
+  },
 );
 
-const ProjectionSlice = memo(
+const DecorationSlice = memo(
   ({
     counts,
     runtimeId,
@@ -332,44 +293,12 @@ const ProjectionSlice = memo(
     runtimeId: NodeKey | null;
     slot: string;
   }) => {
-    const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
-      runtimeId
-    );
+    const decorations = usePliteDecorationEntries(runtimeId);
 
     increment(counts, slot);
 
-    return <span>{projections.length}</span>;
-  }
-);
-
-const StoreProjectionSlice = memo(
-  ({
-    counts,
-    runtimeId,
-    slot,
-    store,
-  }: {
-    counts: Record<string, number>;
-    runtimeId: NodeKey | null;
-    slot: string;
-    store: PliteProjectionStore<{
-      highlight?: boolean;
-      source?: string;
-    }>;
-  }) => {
-    const snapshot = useSyncExternalStore(
-      store.subscribe,
-      store.getSnapshot,
-      store.getSnapshot
-    );
-    const projections = (
-      runtimeId ? (snapshot[runtimeId] ?? EMPTY_PROJECTIONS) : EMPTY_PROJECTIONS
-    ) as readonly unknown[];
-
-    increment(counts, slot);
-
-    return <span>{projections.length}</span>;
-  }
+    return <span>{decorations.length}</span>;
+  },
 );
 
 const SelectionBreadthApp = ({
@@ -415,36 +344,36 @@ const ElementRenderMarker = ({
 }) => {
   increment(counts, nodeKey);
   return (
-    <EditableElement as={as} isInline={isInline}>
+    <PliteElement as={as} isInline={isInline}>
       {children}
-    </EditableElement>
+    </PliteElement>
   );
 };
 
 const assertSingleElementHosts = (
   container: HTMLElement,
-  expectedCount: number
+  expectedCount: number,
 ) => {
   const elementHosts = Array.from(
-    container.querySelectorAll<HTMLElement>('[data-plite-node="element"]')
+    container.querySelectorAll<HTMLElement>('[data-plite-node="element"]'),
   );
   const runtimeIds = elementHosts.map(
-    (elementHost) => elementHost.dataset.pliteNodeKey
+    (elementHost) => elementHost.dataset.pliteNodeKey,
   );
 
   assert.equal(
     elementHosts.length,
     expectedCount,
-    'deep-ancestor lane should render one element host per model element'
+    'deep-ancestor lane should render one element host per model element',
   );
   assert.ok(
     runtimeIds.every(Boolean),
-    'deep-ancestor lane should bind every element host to a runtime id'
+    'deep-ancestor lane should bind every element host to a runtime id',
   );
   assert.equal(
     new Set(runtimeIds).size,
     elementHosts.length,
-    'deep-ancestor lane should not duplicate element hosts for a runtime id'
+    'deep-ancestor lane should not duplicate element hosts for a runtime id',
   );
 };
 
@@ -496,7 +425,7 @@ const DeepAncestorApp = ({
           counts={elementCounts}
           isInline={isInline}
           nodeKey={String(
-            (element as { nodeKey?: string }).nodeKey ?? element.type
+            (element as { nodeKey?: string }).nodeKey ?? element.type,
           )}
         >
           {children}
@@ -517,52 +446,34 @@ const DeepAncestorApp = ({
 const DecorationSourceToggleApp = ({
   counts,
   editor,
-  onProjectionStore,
+  onDecorationProbe,
 }: {
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
-  onProjectionStore?: (
-    store: PliteProjectionStore<{ highlight?: boolean }>
-  ) => void;
+  onDecorationProbe?: (probe: DecorationProbe) => void;
 }) => {
   const [active, setActive] = useState(false);
   const activeRef = useRef(active);
   activeRef.current = active;
-  const projectionStore = useMemo(
-    () =>
-      createPliteProjectionStore(
-        editor,
-        (snapshot) =>
-          activeRef.current ? deriveDecorationToggleRanges(snapshot) : [],
-        {
-          dirtiness: 'external',
-          sourceId: 'overlay-toggle',
-        }
-      ),
-    [editor]
+  const decorationProbe = useMemo(
+    () => createDecorationProbe(editor, activeRef),
+    [editor],
   );
 
   useEffect(() => {
-    onProjectionStore?.(projectionStore);
-  }, [onProjectionStore, projectionStore]);
-
-  useEffect(
-    () => () => {
-      projectionStore.destroy();
-    },
-    [projectionStore]
-  );
-
-  useEffect(() => {
-    projectionStore.refresh({ reason: 'external' });
-  }, [active, projectionStore]);
+    onDecorationProbe?.(decorationProbe);
+  }, [decorationProbe, onDecorationProbe]);
 
   return (
-    <Plite decorationSources={[projectionStore]} editor={editor}>
+    <Plite decorations={[decorationProbe.source]} editor={editor}>
       <button
         id="overlay-toggle"
         onClick={() => {
-          setActive((value) => !value);
+          const next = !activeRef.current;
+
+          activeRef.current = next;
+          setActive(next);
+          decorationProbe.refresh();
         }}
         type="button"
       >
@@ -579,22 +490,22 @@ const DecorationSourceToggleSlices = ({
   counts: Record<string, number>;
 }) => {
   const leftLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null,
   );
   const rightLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.keyAt([1, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([1, 0]) ?? null,
   );
 
   return (
     <>
       <TopLevelBlockSlice counts={counts} index={0} slot="leftText" />
       <TopLevelBlockSlice counts={counts} index={1} slot="rightText" />
-      <ProjectionSlice
+      <DecorationSlice
         counts={counts}
         runtimeId={leftLeafId}
         slot="leftOverlay"
       />
-      <ProjectionSlice
+      <DecorationSlice
         counts={counts}
         runtimeId={rightLeafId}
         slot="rightOverlay"
@@ -623,6 +534,64 @@ type AnnotationBreadthWidget = PliteWidget<
     tone: string;
   }
 >;
+
+const arePathsEqual = (left: readonly number[], right: readonly number[]) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+const createAnnotationDecorationSource = (
+  store: PliteAnnotationStore<{
+    kind: string;
+    label: string;
+    tone: string;
+  }>,
+): PliteDecorationSource<ReturnType<typeof createEditor>> => ({
+  id: 'annotation-breadth',
+  observe: ({ editor, refresh }) => {
+    let previous = store.getSnapshot();
+
+    return store.subscribeChanges(({ ids }) => {
+      const next = store.getSnapshot();
+      const snapshot = editorGetSnapshot(editor);
+      const nodeKeys = new Set<NodeKey>();
+
+      for (const id of ids) {
+        const ranges = [previous.byId.get(id)?.range, next.byId.get(id)?.range];
+
+        for (const range of ranges) {
+          if (!range) continue;
+          const nodeKey = snapshot.index.keyAt(range.anchor.path);
+
+          if (nodeKey) nodeKeys.add(nodeKey);
+        }
+      }
+      previous = next;
+      if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
+    });
+  },
+  read: ({ entry: [node, path] }) => {
+    if (!NodeApi.isText(node)) return [];
+
+    return store.getSnapshot().allIds.flatMap((id) => {
+      const annotation = store.getSnapshot().byId.get(id);
+
+      if (
+        !annotation?.range ||
+        !arePathsEqual(annotation.range.anchor.path, path)
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          attributes: { 'data-annotation-id': id },
+          key: `annotation:${id}`,
+          range: annotation.range,
+        },
+      ];
+    });
+  },
+});
 
 const HiddenPanelSidebar = ({
   annotations,
@@ -697,7 +666,7 @@ const HiddenPanelActivityApp = ({
   );
 };
 
-const AnnotationProjectionSlice = memo(
+const AnnotationDecorationSlice = memo(
   ({
     counts,
     runtimeId,
@@ -705,22 +674,28 @@ const AnnotationProjectionSlice = memo(
     counts: Record<string, number>;
     runtimeId: NodeKey | null;
   }) => {
-    usePliteProjectionEntries<{
-      annotationId: string;
-      kind: string;
-      tone?: string;
-    }>(runtimeId);
-    increment(counts, 'annotationProjection');
-    return <span id="annotation-projection">projection</span>;
-  }
+    usePliteDecorationEntries(runtimeId);
+    increment(counts, 'annotationDecoration');
+    return <span id="annotation-decoration">decoration</span>;
+  },
 );
 
 const AnnotationSidebarSlice = memo(
-  ({ counts }: { counts: Record<string, number> }) => {
-    usePliteAnnotations();
+  ({
+    annotationStore,
+    counts,
+  }: {
+    annotationStore: PliteAnnotationStore<{
+      kind: string;
+      label: string;
+      tone: string;
+    }>;
+    counts: Record<string, number>;
+  }) => {
+    usePliteAnnotations(annotationStore);
     increment(counts, 'annotationSidebar');
     return <span id="annotation-sidebar">sidebar</span>;
-  }
+  },
 );
 
 const AnnotationWidgetSlice = memo(
@@ -745,13 +720,19 @@ const AnnotationWidgetSlice = memo(
     usePliteWidgets(widgetStore);
     increment(counts, 'annotationWidget');
     return <span id="annotation-widget">widget</span>;
-  }
+  },
 );
 
 const AnnotationWidgetBreadthSlices = ({
+  annotationStore,
   counts,
   widgetStore,
 }: {
+  annotationStore: PliteAnnotationStore<{
+    kind: string;
+    label: string;
+    tone: string;
+  }>;
   counts: Record<string, number>;
   widgetStore: ReturnType<
     typeof usePliteWidgetStore<
@@ -767,7 +748,7 @@ const AnnotationWidgetBreadthSlices = ({
   >;
 }) => {
   const leftLeafId = useEditorSelector(
-    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null
+    (editor) => editorGetSnapshot(editor).index.keyAt([0, 0]) ?? null,
   );
 
   return (
@@ -778,8 +759,11 @@ const AnnotationWidgetBreadthSlices = ({
         index={1}
         slot="annotationRightText"
       />
-      <AnnotationProjectionSlice counts={counts} runtimeId={leftLeafId} />
-      <AnnotationSidebarSlice counts={counts} />
+      <AnnotationDecorationSlice counts={counts} runtimeId={leftLeafId} />
+      <AnnotationSidebarSlice
+        annotationStore={annotationStore}
+        counts={counts}
+      />
       <AnnotationWidgetSlice counts={counts} widgetStore={widgetStore} />
     </>
   );
@@ -816,6 +800,10 @@ const AnnotationWidgetBreadthApp = ({
 }) => {
   const annotationStore = usePliteAnnotationStore(editor, annotations);
   const widgetStore = usePliteWidgetStore(editor, widgets, annotationStore);
+  const decorationSource = useMemo(
+    () => createAnnotationDecorationSource(annotationStore),
+    [annotationStore],
+  );
 
   useEffect(() => {
     onStores?.({
@@ -825,80 +813,15 @@ const AnnotationWidgetBreadthApp = ({
   }, [annotationStore, onStores, widgetStore]);
 
   return (
-    <Plite annotationStore={annotationStore} editor={editor}>
+    <Plite decorations={[decorationSource]} editor={editor}>
       <AnnotationWidgetBreadthSlices
+        annotationStore={annotationStore}
         counts={counts}
         widgetStore={widgetStore}
       />
     </Plite>
   );
 };
-
-const SourceScopedInvalidationApp = ({
-  counts,
-  editor,
-  externalStore,
-  leftLeafId,
-  rightLeafId,
-  selectionStore,
-  textStore,
-}: {
-  counts: Record<string, number>;
-  editor: ReturnType<typeof createEditor>;
-  externalStore: PliteProjectionStore<{
-    highlight?: boolean;
-    source?: string;
-  }>;
-  leftLeafId: NodeKey | null;
-  rightLeafId: NodeKey | null;
-  selectionStore: PliteProjectionStore<{
-    highlight?: boolean;
-    source?: string;
-  }>;
-  textStore: PliteProjectionStore<{
-    highlight?: boolean;
-    source?: string;
-  }>;
-}) => (
-  <Plite editor={editor}>
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={leftLeafId}
-      slot="selectionLeft"
-      store={selectionStore}
-    />
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={rightLeafId}
-      slot="selectionRight"
-      store={selectionStore}
-    />
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={leftLeafId}
-      slot="textLeft"
-      store={textStore}
-    />
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={rightLeafId}
-      slot="textRight"
-      store={textStore}
-    />
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={leftLeafId}
-      slot="externalLeft"
-      store={externalStore}
-    />
-    <StoreProjectionSlice
-      counts={counts}
-      runtimeId={rightLeafId}
-      slot="externalRight"
-      store={externalStore}
-    />
-  </Plite>
-);
 
 const measureLane = async (run: () => Promise<Record<string, number>>) => {
   const samples: Record<string, number>[] = [];
@@ -929,7 +852,7 @@ const measureSelectionBreadth = async () =>
     });
 
     const mounted = await mountApp(
-      <SelectionBreadthApp counts={counts} editor={editor} />
+      <SelectionBreadthApp counts={counts} editor={editor} />,
     );
     const baseline = cloneCounts(counts);
 
@@ -981,7 +904,7 @@ const measureManyLeafBreadth = async () =>
         blockCounts={blockCounts}
         editor={editor}
         leafCounts={leafCounts}
-      />
+      />,
     );
     const baselineLeafCounts = cloneCounts(leafCounts);
     const baselineBlockCounts = cloneCounts(blockCounts);
@@ -998,13 +921,13 @@ const measureManyLeafBreadth = async () =>
     const leafDelta = deltaCounts(leafCounts, baselineLeafCounts);
     const blockDelta = deltaCounts(blockCounts, baselineBlockCounts);
     const siblingLeafEntries = Object.entries(leafDelta).filter(
-      ([key]) => key !== targetLeafKey
+      ([key]) => key !== targetLeafKey,
     );
 
     assert.equal(
       typeof editorGetSnapshot(editor).children[0],
       'object',
-      'many-leaf lane lost the paragraph root'
+      'many-leaf lane lost the paragraph root',
     );
 
     await mounted.dispose();
@@ -1014,11 +937,11 @@ const measureManyLeafBreadth = async () =>
       editMs,
       editedLeafRenders: leafDelta[targetLeafKey] ?? 0,
       rerenderedSiblingLeafCount: siblingLeafEntries.filter(
-        ([, count]) => count > 0
+        ([, count]) => count > 0,
       ).length,
       siblingLeafRenders: siblingLeafEntries.reduce(
         (total, [, count]) => total + count,
-        0
+        0,
       ),
     };
   });
@@ -1045,7 +968,7 @@ const measureDeepAncestorBreadth = async () =>
         editor={editor}
         elementCounts={elementCounts}
         leafCounts={leafCounts}
-      />
+      />,
     );
     assertSingleElementHosts(mounted.container, ancestorKeys.length + 1);
     const baselineElementCounts = cloneCounts(elementCounts);
@@ -1063,11 +986,11 @@ const measureDeepAncestorBreadth = async () =>
     const elementDelta = deltaCounts(elementCounts, baselineElementCounts);
     const leafDelta = deltaCounts(leafCounts, baselineLeafCounts);
     const rerenderedAncestorCount = ancestorKeys.filter(
-      (key) => (elementDelta[key] ?? 0) > 0
+      (key) => (elementDelta[key] ?? 0) > 0,
     ).length;
     const ancestorRenderEvents = ancestorKeys.reduce(
       (total, key) => total + (elementDelta[key] ?? 0),
-      0
+      0,
     );
 
     await mounted.dispose();
@@ -1086,9 +1009,7 @@ const measureDecorationSourceToggleBreadth = async () =>
   measureLane(async () => {
     const editor = createEditor();
     const counts: Record<string, number> = {};
-    let projectionStore: PliteProjectionStore<{
-      highlight?: boolean;
-    }> | null = null;
+    let decorationProbe: DecorationProbe | null = null;
 
     editorReplace(editor, {
       children: createDecorationToggleChildren(),
@@ -1099,41 +1020,41 @@ const measureDecorationSourceToggleBreadth = async () =>
       <DecorationSourceToggleApp
         counts={counts}
         editor={editor}
-        onProjectionStore={(store) => {
-          projectionStore = store;
+        onDecorationProbe={(probe) => {
+          decorationProbe = probe;
         }}
-      />
+      />,
     );
     const baseline = cloneCounts(counts);
     const view = mounted.container.ownerDocument.defaultView;
     const toggle =
       mounted.container.querySelector<HTMLButtonElement>('#overlay-toggle');
 
-    if (!view || !toggle) {
+    if (!view || !toggle || !decorationProbe) {
       throw new Error('Missing overlay toggle controls');
     }
 
+    const readBaseline = decorationProbe.getReadCount();
     const start = now();
 
     await act(async () => {
       toggle.dispatchEvent(
         new view.MouseEvent('click', {
           bubbles: true,
-        })
+        }),
       );
     });
 
     const toggleMs = now() - start;
     const delta = deltaCounts(counts, baseline);
+    const decorationReadCount = decorationProbe.getReadCount() - readBaseline;
 
     await mounted.dispose();
 
-    const metricCounts = getProjectionMetricCounts(projectionStore);
-
     return {
+      decorationReadCount,
       leftOverlayRenders: delta.leftOverlay ?? 0,
       leftTextRenders: delta.leftText ?? 0,
-      projectionRecomputeCount: metricCounts.recomputeCount,
       rightOverlayRenders: delta.rightOverlay ?? 0,
       rightTextRenders: delta.rightText ?? 0,
       toggleMs,
@@ -1155,7 +1076,7 @@ const measureHiddenPanelActivity = async () =>
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 5 },
       },
-      { deletion: 'drop' }
+      { deletion: 'drop' },
     );
     const annotations = [
       {
@@ -1171,11 +1092,11 @@ const measureHiddenPanelActivity = async () =>
         annotations={annotations}
         counts={counts}
         editor={editor}
-      />
+      />,
     );
     const view = mounted.container.ownerDocument.defaultView;
     const counterButton = mounted.container.querySelector<HTMLButtonElement>(
-      '#activity-panel-count'
+      '#activity-panel-count',
     );
     const toggleButton =
       mounted.container.querySelector<HTMLButtonElement>('#toggle-activity');
@@ -1188,7 +1109,7 @@ const measureHiddenPanelActivity = async () =>
       counterButton.dispatchEvent(
         new view.MouseEvent('click', {
           bubbles: true,
-        })
+        }),
       );
     });
 
@@ -1196,7 +1117,7 @@ const measureHiddenPanelActivity = async () =>
       toggleButton.dispatchEvent(
         new view.MouseEvent('click', {
           bubbles: true,
-        })
+        }),
       );
     });
 
@@ -1216,7 +1137,7 @@ const measureHiddenPanelActivity = async () =>
       toggleButton.dispatchEvent(
         new view.MouseEvent('click', {
           bubbles: true,
-        })
+        }),
       );
     });
 
@@ -1224,7 +1145,8 @@ const measureHiddenPanelActivity = async () =>
     const hiddenDelta = deltaCounts(afterHiddenEdit, afterHide);
     const showDelta = deltaCounts(afterShow, afterHiddenEdit);
     const localCount = Number(
-      mounted.container.querySelector('#activity-panel-count')?.textContent ?? 0
+      mounted.container.querySelector('#activity-panel-count')?.textContent ??
+        0,
     );
     const panelState =
       mounted.container.querySelector('#activity-panel-state')?.textContent ??
@@ -1274,7 +1196,7 @@ const measureAnnotationWidgetBreadth = async () =>
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       },
-      { deletion: 'drop' }
+      { deletion: 'drop' },
     );
     const annotations = [
       {
@@ -1285,10 +1207,6 @@ const measureAnnotationWidgetBreadth = async () =>
           tone: 'persistent',
         },
         id: 'comment-1',
-        projection: {
-          kind: 'annotation',
-          tone: 'persistent',
-        },
       },
     ] as const;
     const widgets = [
@@ -1314,7 +1232,7 @@ const measureAnnotationWidgetBreadth = async () =>
           widgetStore = stores.widgetStore;
         }}
         widgets={widgets}
-      />
+      />,
     );
     const baseline = cloneCounts(counts);
     const start = now();
@@ -1333,177 +1251,18 @@ const measureAnnotationWidgetBreadth = async () =>
     bookmark.release();
 
     return {
-      annotationProjectionRenders: delta.annotationProjection ?? 0,
-      annotationProjectCount: annotationMetrics?.annotationProjectCount ?? 0,
-      annotationProjectionRecomputeCount:
-        annotationMetrics?.recomputeCount ?? 0,
+      annotationChangedCount: annotationMetrics?.changedAnnotationCount ?? 0,
+      annotationDecorationRenders: delta.annotationDecoration ?? 0,
+      annotationRecomputeCount: annotationMetrics?.recomputeCount ?? 0,
       annotationResolveCount: annotationMetrics?.annotationResolveCount ?? 0,
-      annotationRuntimeSubscriberWakeCount:
-        annotationMetrics?.runtimeSubscriberWakeCount ?? 0,
       annotationSidebarRenders: delta.annotationSidebar ?? 0,
+      annotationSubscriberWakeCount:
+        annotationMetrics?.annotationSubscriberWakeCount ?? 0,
       annotationWidgetRenders: delta.annotationWidget ?? 0,
       editMs,
       leftTextRenders: delta.annotationLeftText ?? 0,
       rightTextRenders: delta.annotationRightText ?? 0,
       widgetRecomputeCount: widgetStore?.getMetrics().recomputeCount ?? 0,
-    };
-  });
-
-const measureSourceScopedInvalidation = async () =>
-  measureLane(async () => {
-    const editor = createEditor();
-    const counts: Record<string, number> = {};
-    const externalActiveRef = { current: false };
-
-    editorReplace(editor, {
-      children: createSourceInvalidationChildren(),
-      selection: {
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 5 },
-        kind: 'text',
-      },
-    });
-
-    const snapshot = editorGetSnapshot(editor);
-    const leftLeafId = snapshot.index.keyAt([0, 0]) ?? null;
-    const rightLeafId = snapshot.index.keyAt([1, 0]) ?? null;
-    const selectionStore = createPliteProjectionStore(
-      editor,
-      deriveSelectionRanges,
-      {
-        dirtiness: 'selection',
-        sourceId: 'selection-source',
-      }
-    );
-    const textStore = createPliteProjectionStore(editor, deriveTextTailRanges, {
-      dirtiness: 'text',
-      sourceId: 'text-source',
-    });
-    const externalStore = createPliteProjectionStore(
-      editor,
-      () => deriveExternalRanges(externalActiveRef.current),
-      {
-        dirtiness: 'external',
-        sourceId: 'external-source',
-      }
-    );
-
-    const mounted = await mountApp(
-      <SourceScopedInvalidationApp
-        counts={counts}
-        editor={editor}
-        externalStore={externalStore}
-        leftLeafId={leftLeafId}
-        rightLeafId={rightLeafId}
-        selectionStore={selectionStore}
-        textStore={textStore}
-      />
-    );
-
-    const selectionBaseline = cloneCounts(counts);
-    const selectionSelectionBaseline =
-      getProjectionMetricCounts(selectionStore).recomputeCount;
-    const selectionTextBaseline =
-      getProjectionMetricCounts(textStore).recomputeCount;
-    const selectionExternalBaseline =
-      getProjectionMetricCounts(externalStore).recomputeCount;
-    const selectionStart = now();
-
-    await act(async () => {
-      select(editor, {
-        anchor: { path: [1, 0], offset: 0 },
-        focus: { path: [1, 0], offset: 4 },
-      });
-    });
-
-    const selectionChangeMs = now() - selectionStart;
-    const selectionDelta = deltaCounts(counts, selectionBaseline);
-    const selectionChangeSelectionRecomputeCount =
-      getProjectionMetricCounts(selectionStore).recomputeCount -
-      selectionSelectionBaseline;
-    const selectionChangeTextRecomputeCount =
-      getProjectionMetricCounts(textStore).recomputeCount -
-      selectionTextBaseline;
-    const selectionChangeExternalRecomputeCount =
-      getProjectionMetricCounts(externalStore).recomputeCount -
-      selectionExternalBaseline;
-
-    const textBaseline = cloneCounts(counts);
-    const textSelectionBaseline =
-      getProjectionMetricCounts(selectionStore).recomputeCount;
-    const textTextBaseline =
-      getProjectionMetricCounts(textStore).recomputeCount;
-    const textExternalBaseline =
-      getProjectionMetricCounts(externalStore).recomputeCount;
-    const textStart = now();
-
-    await act(async () => {
-      insertText(editor, '!', {
-        at: { path: [0, 0], offset: 0 },
-      });
-    });
-
-    const textEditMs = now() - textStart;
-    const textDelta = deltaCounts(counts, textBaseline);
-    const textEditSelectionRecomputeCount =
-      getProjectionMetricCounts(selectionStore).recomputeCount -
-      textSelectionBaseline;
-    const textEditTextRecomputeCount =
-      getProjectionMetricCounts(textStore).recomputeCount - textTextBaseline;
-    const textEditExternalRecomputeCount =
-      getProjectionMetricCounts(externalStore).recomputeCount -
-      textExternalBaseline;
-
-    const externalBaseline = cloneCounts(counts);
-    const externalSelectionBaseline =
-      getProjectionMetricCounts(selectionStore).recomputeCount;
-    const externalTextBaseline =
-      getProjectionMetricCounts(textStore).recomputeCount;
-    const externalExternalBaseline =
-      getProjectionMetricCounts(externalStore).recomputeCount;
-    externalActiveRef.current = true;
-    const externalStart = now();
-
-    await act(async () => {
-      externalStore.refresh({ reason: 'external' });
-    });
-
-    const externalRefreshMs = now() - externalStart;
-    const externalDelta = deltaCounts(counts, externalBaseline);
-    const externalRefreshSelectionRecomputeCount =
-      getProjectionMetricCounts(selectionStore).recomputeCount -
-      externalSelectionBaseline;
-    const externalRefreshTextRecomputeCount =
-      getProjectionMetricCounts(textStore).recomputeCount -
-      externalTextBaseline;
-    const externalRefreshExternalRecomputeCount =
-      getProjectionMetricCounts(externalStore).recomputeCount -
-      externalExternalBaseline;
-
-    await mounted.dispose();
-    selectionStore.destroy();
-    textStore.destroy();
-    externalStore.destroy();
-
-    return {
-      externalRefreshExternalLeftRenders: externalDelta.externalLeft ?? 0,
-      externalRefreshExternalRecomputeCount,
-      externalRefreshExternalRightRenders: externalDelta.externalRight ?? 0,
-      externalRefreshMs,
-      externalRefreshSelectionRecomputeCount,
-      externalRefreshTextRecomputeCount,
-      selectionChangeExternalRecomputeCount,
-      selectionChangeMs,
-      selectionChangeSelectionLeftRenders: selectionDelta.selectionLeft ?? 0,
-      selectionChangeSelectionRecomputeCount,
-      selectionChangeSelectionRightRenders: selectionDelta.selectionRight ?? 0,
-      selectionChangeTextRecomputeCount,
-      textEditExternalRecomputeCount,
-      textEditMs,
-      textEditSelectionRecomputeCount,
-      textEditTextLeftRenders: textDelta.textLeft ?? 0,
-      textEditTextRecomputeCount,
-      textEditTextRightRenders: textDelta.textRight ?? 0,
     };
   });
 
@@ -1523,13 +1282,12 @@ const main = async () => {
     decorationSourceToggleBreadth: await measureDecorationSourceToggleBreadth(),
     hiddenPanelActivity: await measureHiddenPanelActivity(),
     annotationWidgetBreadth: await measureAnnotationWidgetBreadth(),
-    sourceScopedInvalidation: await measureSourceScopedInvalidation(),
   };
 
   await mkdir('tmp', { recursive: true });
   await writeFile(
     'tmp/slate-react-rerender-breadth-benchmark.json',
-    JSON.stringify(summary, null, 2)
+    JSON.stringify(summary, null, 2),
   );
 
   console.log(JSON.stringify(summary, null, 2));

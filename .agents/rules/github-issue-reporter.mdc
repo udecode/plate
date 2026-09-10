@@ -1,17 +1,20 @@
 ---
-description: Analyze one or two bug videos or a short bug description from Plate next/Beta testing, treat a two-video report as a main normal baseline versus current next/Beta bug comparison, derive reproducible steps, decide whether fresh recording adds evidence, delegate isolated browser recording to the global recording-browser-repros skill, upload videos through a documented storage API, and create verified [Beta] issues in udecode/plate through the REST API. Invoking this skill authorizes direct issue publication without a second confirmation unless the user explicitly requests analysis or drafting only.
+description: Draft or publish a Plate next/Beta issue from bug videos or text, preserving exact main/next roles, reproduction, real media and final GitHub read-back. Publish only when the user requests it.
 ---
 
 # GitHub Issue Reporter
 
-Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate` GitHub issue. Invoking this skill is explicit authority to
-analyze the supplied evidence, upload it, create the issue, and verify the
-published result in one run. Do not ask for another confirmation or pause after
-showing a draft.
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
-An explicit instruction such as `draft only`, `analyze only`, or
-`do not publish` overrides that default and keeps the run read-only.
+
+Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
+`udecode/plate` GitHub issue. A user request to publish the issue authorizes
+analysis, necessary evidence uploads, creation and read-back in one run. Do not
+ask to reconfirm that authority. Loading this skill as a reference does not
+authorize publication. Complete the concrete local draft before asking for
+missing publication authority.
+
+`draft only`, `analyze only` and `do not publish` keep the result local.
 
 ## Beta-only scope
 
@@ -46,8 +49,10 @@ An explicit instruction such as `draft only`, `analyze only`, or
   URL through the Issues REST API. Keep the Chrome-inserted Markdown at its
   final body location; an API body rewrite can break the attachment binding.
 - Never create a GitHub Release merely to host issue evidence.
-- Never attach to or focus the user's daily Chrome for automated recording.
-  Use an isolated, headless Playwright MCP browser.
+- Use the current project Browser/Chrome control policy for live proof.
+  Prefer a dedicated task tab for evidence and protect unrelated user state.
+  Motion recording requires an actually available recording capability; do not
+  substitute a forbidden browser driver or invent a recording.
 - Never claim expected behavior from appearance alone. Ground it in the
   supplied comparison video, product docs, a reference implementation, tests,
   source, or a clearly labeled user statement.
@@ -131,12 +136,19 @@ title is not enough; compare trigger, affected surface, and actual behavior.
 
 ## Decide whether to record
 
-Use the global `recording-browser-repros` skill when fresh recording adds
-material evidence. Read
-`~/.codex/skills/recording-browser-repros/SKILL.md` and follow its shot-plan,
-safety, recording, and verification workflow. The global skill owns the
-recorder scripts, interaction overlay, schema, and example; do not duplicate
-or locally modify those mechanics here.
+Use an installed recording skill only when its source and recorder capability
+are actually available. If `recording-browser-repros` is installed, follow its
+complete shot-plan, safety, recording and verification method; its scripts,
+overlay, schema and examples remain externally owned.
+
+For supplied videos, use `video-transcripts` and this skill's frame helper.
+For a static state, capture through the current project Browser/Chrome tools;
+`walkthrough` may annotate existing final frames with originals retained. These
+paths do not prove motion or timing. When a fresh motion recording is necessary
+and no permitted recorder is available, complete the source/repro/draft work,
+then name the missing recording capability. Do not claim a recording was made,
+install an unrequested plugin, or turn static frames into simulated evidence.
+Post transcript caches only under explicit message authority.
 
 For Plate issue evidence, prefer 10–30 seconds:
 
@@ -180,11 +192,10 @@ The body must contain:
 - evidence links with timestamp notes
 - caveat when any classification is inferred
 
-Write the title and body to local files before mutation. Unless the user
-explicitly opted out of publication, continue directly through upload, issue
-creation, and verification without showing the draft for approval or asking
-for another confirmation. Show the draft and stop only for an explicit
-read-only request or when a hard boundary above is hit.
+Write the title and body to local files before mutation. When the user has authorized publication, continue through upload, issue
+creation and verification without asking for that authority again. Otherwise
+return the completed local draft. Resolve any material hard boundary before
+publishing.
 
 ## Native Chrome attachment flow
 
@@ -232,8 +243,8 @@ browser-permission limitation, not as a bad video or failed GitHub upload.
 1. Tell the user the standard fix: open `chrome://extensions`, open **Details**
    for the ChatGPT browser extension, and enable **Allow access to file URLs**.
    Do not change that extension permission without the user's approval.
-2. Skill invocation authorizes uploading the supplied evidence file to the
-   target public issue. Prefer the existing native chooser as a non-permission
+2. When the user has authorized publication of the supplied evidence to the
+   target public issue, continue under that authority. Prefer the existing native chooser as a non-permission
    fallback without asking for another confirmation:
    - use Computer Use to click the issue body's **Paste, drop, or click to add
      files** control;
@@ -286,8 +297,8 @@ bash .agents/skills/github-issue-reporter/scripts/publish-issue.sh \
   --dry-run
 ```
 
-Skill invocation supplies public-mutation authority. Pass the publisher's
-mechanical confirmation flag automatically; do not ask the user to confirm it:
+When publication is authorized, pass the publisher's mechanical confirmation
+flag without asking for a second confirmation:
 
 ```bash
 bash .agents/skills/github-issue-reporter/scripts/publish-issue.sh \

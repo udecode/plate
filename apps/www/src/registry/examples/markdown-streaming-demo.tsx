@@ -11,7 +11,7 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import { Plate, useCreateEditor, useStaticEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
-  useCallback,
+  useEffect,
   useReducer,
   useRef,
   useState,
@@ -306,7 +306,7 @@ export default function MarkdownStreamingDemo() {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const pausedRef = useRef(false);
   const [paused, setPaused] = useState(false);
-  const streamSessionRef = useRef(0);
+  const streamRef = useRef<AbortController | null>(null);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [streaming, setStreaming] = useState(false);
   const [isPlateStatic, setIsPlateStatic] = useState(false);
@@ -330,135 +330,92 @@ export default function MarkdownStreamingDemo() {
   const currentChunks = testScenarios[selectedScenario];
   const transformedCurrentChunks = transformedChunks(currentChunks);
 
-  const setPausedState = useCallback((nextPaused: boolean) => {
+  useEffect(() => () => streamRef.current?.abort(), []);
+
+  const setPausedState = (nextPaused: boolean) => {
     pausedRef.current = nextPaused;
     setPaused(nextPaused);
-  }, []);
+  };
 
-  const onStreaming = useCallback(async () => {
-    setStreaming(true);
-    streamSessionRef.current += 1;
-    const sessionId = streamSessionRef.current;
-
-    setPausedState(false);
-    setActiveIndex(0);
-
-    aiChat.store.set({ streaming: false });
-    aiChat.store.set({ _blockChunks: '' });
-    aiChat.store.set({ _blockPath: null });
-
-    for (let i = 0; i < transformedCurrentChunks.length; i++) {
-      while (pausedRef.current) {
-        if (sessionId !== streamSessionRef.current) return;
-        await new Promise((resolve) => {
-          setTimeout(resolve, 100);
-        });
-      }
-
-      if (sessionId !== streamSessionRef.current) return;
-
-      setActiveIndex(i + 1);
-
-      const chunk = transformedCurrentChunks[i];
-
-      aiChat.update.insertChunk(chunk.chunk, {
-        textProps: {
-          [editor.plugin(PLUGINS.ai).schema.key]: true,
-        },
-      });
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, speed ?? chunk.delayInMs);
-      });
-
-      if (sessionId !== streamSessionRef.current) return;
-    }
+  const stopStreaming = () => {
+    streamRef.current?.abort();
+    streamRef.current = null;
     setStreaming(false);
-  }, [
-    aiChat.store,
-    aiChat.update,
-    editor,
-    setPausedState,
-    speed,
-    transformedCurrentChunks,
-  ]);
-
-  const onStreamingStatic = useCallback(async () => {
-    let output = '';
-    setStreaming(true);
-    streamSessionRef.current += 1;
-    const sessionId = streamSessionRef.current;
     setPausedState(false);
-
-    for (const chunk of transformedCurrentChunks) {
-      while (pausedRef.current) {
-        if (sessionId !== streamSessionRef.current) return;
-        await new Promise((resolve) => {
-          setTimeout(resolve, 100);
-        });
-      }
-
-      if (sessionId !== streamSessionRef.current) return;
-
-      output += chunk.chunk;
-      editorStatic.update.value.replace(
-        editorStatic.api.markdown.deserialize(output)
-      );
-      setActiveIndex((prev) => prev + 1);
-      forceUpdate();
-      await new Promise((resolve) => {
-        setTimeout(resolve, speed ?? chunk.delayInMs);
-      });
-    }
-    setStreaming(false);
-  }, [editorStatic, speed, transformedCurrentChunks, setPausedState]);
+  };
 
   const onReset = () => {
+    stopStreaming();
     setActiveIndex(0);
-    if (isPlateStatic) {
-      editorStatic.update.value.replace({ children: [] });
-      forceUpdate();
-    } else {
-      editor.update.value.replace({ children: [] });
-      aiChat.store.set({ streaming: false });
-      aiChat.store.set({ _blockChunks: '' });
-      aiChat.store.set({ _blockPath: null });
+    editor.update.value.replace({ children: [] });
+    editorStatic.update.value.replace({ children: [] });
+    aiChat.store.set({ streaming: false, _blockChunks: '', _blockPath: null });
+    forceUpdate();
+  };
+
+  const onStreaming = async () => {
+    onReset();
+    const stream = new AbortController();
+    streamRef.current = stream;
+    const { signal } = stream;
+    setStreaming(true);
+    let output = '';
+
+    for (let i = 0; i < transformedCurrentChunks.length; i++) {
+      while (pausedRef.current && !signal.aborted) {
+        await waitForChunk(100, signal);
+      }
+      if (signal.aborted) return;
+
+      const chunk = transformedCurrentChunks[i];
+      if (isPlateStatic) {
+        output += chunk.chunk;
+        editorStatic.update.value.replace(
+          editorStatic.api.markdown.deserialize(output)
+        );
+        forceUpdate();
+      } else {
+        aiChat.update.insertChunk(chunk.chunk, {
+          textProps: { [editor.plugin(PLUGINS.ai).schema.key]: true },
+        });
+      }
+      setActiveIndex(i + 1);
+      await waitForChunk(speed ?? chunk.delayInMs, signal);
+      if (signal.aborted) return;
     }
+    streamRef.current = null;
+    setStreaming(false);
   };
 
   const onNavigate = (targetIndex: number) => {
-    // Check if navigation is possible
     if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length) {
       return;
     }
 
+    stopStreaming();
     if (isPlateStatic) {
-      let output = '';
-      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-        output += chunk.chunk;
-      }
-
+      const output = transformedCurrentChunks
+        .slice(0, targetIndex)
+        .map((chunk) => chunk.chunk)
+        .join('');
       editorStatic.update.value.replace(
         editorStatic.api.markdown.deserialize(output)
       );
-      setActiveIndex(targetIndex);
       forceUpdate();
     } else {
       editor.update.value.replace({ children: [] });
-
-      aiChat.store.set({ streaming: false });
-      aiChat.store.set({ _blockChunks: '' });
-      aiChat.store.set({ _blockPath: null });
-
+      aiChat.store.set({
+        streaming: false,
+        _blockChunks: '',
+        _blockPath: null,
+      });
       for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
         aiChat.update.insertChunk(chunk.chunk, {
-          textProps: {
-            [editor.plugin(PLUGINS.ai).schema.key]: true,
-          },
+          textProps: { [editor.plugin(PLUGINS.ai).schema.key]: true },
         });
       }
-      setActiveIndex(targetIndex);
     }
+    setActiveIndex(targetIndex);
   };
 
   const onPrev = () => {
@@ -479,8 +436,7 @@ export default function MarkdownStreamingDemo() {
             value={selectedScenario}
             onChange={(e) => {
               setSelectedScenario(e.target.value as keyof typeof testScenarios);
-              setActiveIndex(0);
-              editor.update.value.replace({ children: [] });
+              onReset();
             }}
           >
             {Object.entries(testScenarios).map(([key]) => (
@@ -495,16 +451,17 @@ export default function MarkdownStreamingDemo() {
 
         {/* Control Buttons */}
         <div className="mb-4 flex items-center gap-2">
-          <Button onClick={onPrev}>
+          <Button aria-label="Previous chunk" onClick={onPrev}>
             <ChevronFirstIcon />
           </Button>
 
           <Button
+            aria-label={
+              streaming && !paused ? 'Pause streaming' : 'Start streaming'
+            }
             onClick={() => {
               if (streaming) {
                 setPausedState(!pausedRef.current);
-              } else if (isPlateStatic) {
-                void onStreamingStatic();
               } else {
                 void onStreaming();
               }
@@ -513,11 +470,12 @@ export default function MarkdownStreamingDemo() {
             {paused || !streaming ? <PlayIcon /> : <PauseIcon />}
           </Button>
 
-          <Button onClick={onNext}>
+          <Button aria-label="Next chunk" onClick={onNext}>
             <ChevronLastIcon />
           </Button>
 
           <Button
+            aria-label="Reset streaming"
             onClick={() => {
               onReset();
             }}
@@ -574,10 +532,6 @@ export default function MarkdownStreamingDemo() {
             }}
           />
         </div>
-
-        <span className="text-sm text-muted-foreground">
-          PlateStatic offers more robust and flawless performance.
-        </span>
       </div>
 
       <div className="my-2 flex gap-10">
@@ -639,6 +593,22 @@ export default function MarkdownStreamingDemo() {
       </div>
     </section>
   );
+}
+
+function waitForChunk(delay: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted) {
+      resolve();
+      return;
+    }
+    const timeout = setTimeout(done, delay);
+    function done() {
+      clearTimeout(timeout);
+      signal.removeEventListener('abort', done);
+      resolve();
+    }
+    signal.addEventListener('abort', done, { once: true });
+  });
 }
 
 type TChunks = {

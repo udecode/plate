@@ -30,6 +30,7 @@ import {
   type InternalEditorSchemaApi,
 } from './core/editor-schema';
 import {
+  assertEditorExtensionPublicationInactive,
   createExtensionRegistry,
   finalizeExtensionRegistry,
   getExtensionRegistry,
@@ -216,6 +217,10 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
+  const preparedDocumentValidated =
+    publication.configurationChanged &&
+    explicitInitialDocument &&
+    publication.documentChange.empty;
 
   try {
     publication.stage();
@@ -246,7 +251,8 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
       }
     }
     const validatePublishedDocument = (
-      requireExplicitDocument = explicitInitialDocument
+      requireExplicitDocument = explicitInitialDocument,
+      validateDocument = true
     ) => {
       const publishedDocument = getEditorDocumentValue(editor);
 
@@ -261,16 +267,19 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
         getLiveSelection(editor),
         publishedDocument
       );
-      if (publication.configurationChanged) {
+      if (validateDocument && publication.configurationChanged) {
         publication.validateDocument(publishedDocument);
-      } else {
+      } else if (validateDocument) {
         const schema: InternalEditorSchemaApi = getEditorSchema(editor);
 
         schema.assertDocument(publishedDocument);
       }
     };
 
-    validatePublishedDocument();
+    validatePublishedDocument(
+      explicitInitialDocument,
+      !preparedDocumentValidated
+    );
 
     if (options.initialValue) {
       initializeEditorSchemaSnapshot(
@@ -329,25 +338,7 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   }
 };
 
-/**
- * Replace the derived base schema on one unchanged raw editor.
- *
- * @internal
- */
-export const initializeEditorExtensions = <TEditor extends AnyEditor>(
-  editor: TEditor,
-  input: EditorExtensionInput,
-  options: Readonly<{
-    initialize?: (
-      transaction: EditorTransactionSpecBuilder<
-        ValueOf<TEditor>,
-        ExtensionsOf<TEditor>
-      >
-    ) => void;
-    /** Resolve one post-publication initial value for direct schema adoption. */
-    initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
-  }> = {}
-) => {
+const assertEditorSchemaBootstrap = (editor: AnyEditor) => {
   if (!PENDING_SCHEMA_BOOTSTRAP.has(editor)) {
     throw new Error(
       'Editor schema initialization requires an editor without an installed schema.'
@@ -369,7 +360,59 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
     );
   }
 
-  publishInitialEditorExtensions(editor, input, hasDocument, options);
+  return hasDocument;
+};
+
+/**
+ * Compile extensions against one unchanged raw editor without publishing them.
+ * API factories and schema validators run; document defaults and activation do not.
+ */
+export const compileEditorSchemaContract = (
+  editor: AnyEditor,
+  input: EditorExtensionInput
+) => {
+  assertEditorExtensionPublicationInactive(editor);
+  const hasDocument = assertEditorSchemaBootstrap(editor);
+
+  if (hasDocument || hasActiveAnchors(editor)) {
+    throw new Error(
+      'Editor schema compilation requires an empty editor without active anchors.'
+    );
+  }
+  const publication = prepareInitialEditorExtensionPublication(
+    editor,
+    input,
+    'schema-contract'
+  );
+
+  try {
+    return publication.schemaContract();
+  } finally {
+    publication.rollback();
+  }
+};
+
+/** Replace the derived base schema on one unchanged raw editor. @internal */
+export const initializeEditorExtensions = <TEditor extends AnyEditor>(
+  editor: TEditor,
+  input: EditorExtensionInput,
+  options: Readonly<{
+    initialize?: (
+      transaction: EditorTransactionSpecBuilder<
+        ValueOf<TEditor>,
+        ExtensionsOf<TEditor>
+      >
+    ) => void;
+    /** Resolve one post-publication initial value for direct schema adoption. */
+    initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
+  }> = {}
+) => {
+  publishInitialEditorExtensions(
+    editor,
+    input,
+    assertEditorSchemaBootstrap(editor),
+    options
+  );
 };
 
 /**

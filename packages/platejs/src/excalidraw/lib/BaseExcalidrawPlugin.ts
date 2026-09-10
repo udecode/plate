@@ -12,10 +12,11 @@ export type ExcalidrawDataState = ImportedDataState;
 
 type ExcalidrawElementData = {
   elements: readonly PropertyJsonValue[];
+  files?: Readonly<Record<string, PropertyJsonValue>>;
   state: Readonly<Record<string, PropertyJsonValue>>;
 } | null;
 
-/** Enables support for Excalidraw drawing tool within a Slate document */
+/** Stores an Excalidraw scene in a void block. */
 export const BaseExcalidrawPlugin = defineBasePlugin(PLUGINS.excalidraw, {
   schema: {
     element: {

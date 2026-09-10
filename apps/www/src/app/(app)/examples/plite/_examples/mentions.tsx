@@ -6,7 +6,6 @@ import {
   RangeApi,
   schema,
   type SchemaElementFor,
-  type SchemaText,
   TextApi,
 } from 'plitejs';
 import { history } from 'plitejs/history';
@@ -337,7 +336,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<SchemaText<typeof MentionSchema>>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

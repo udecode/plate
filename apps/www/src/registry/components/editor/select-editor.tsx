@@ -8,7 +8,7 @@ import {
   useEditor,
   useEditorSelector,
   useCreateEditor,
-  usePlateValue,
+  useEditorContainerRef,
 } from 'platejs/react';
 import { MultiSelectPlugin } from 'platejs/tag/react';
 import * as React from 'react';
@@ -107,7 +107,6 @@ export function SelectEditor({
     <SelectEditorContext value={contextValue}>
       <Command
         className="overflow-visible bg-transparent has-data-readonly:w-fit"
-        shouldFilter={false}
         loop
       >
         {children}
@@ -249,7 +248,7 @@ export const SelectEditorInput = ({
 
 export function SelectEditorCombobox() {
   const editor = useEditor();
-  const containerRef = usePlateValue('containerRef');
+  const containerRef = useEditorContainerRef();
   const {
     controlled,
     hasSelectableItemsRef,

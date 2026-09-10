@@ -1,6 +1,7 @@
 import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
 import {
   Plite,
+  PliteAnnotationProvider,
   useEditorSelector,
   usePliteAnnotationStore,
   usePliteAnnotations,
@@ -511,10 +512,6 @@ const PersistentAnnotationAnchorsExample = () => {
                 tone: 'persistent',
               },
               id: 'comment-anchor',
-              projection: {
-                kind: 'annotation',
-                tone: 'persistent',
-              },
             },
           ]
         : [],
@@ -544,13 +541,15 @@ const PersistentAnnotationAnchorsExample = () => {
   });
 
   return (
-    <Plite annotationStore={annotationStore} editor={editor}>
-      <AnchoredProjectionContent
-        annotation={annotation}
-        editor={editor}
-        setAnnotation={setAnnotation}
-        widgetStore={widgetStore}
-      />
+    <Plite editor={editor}>
+      <PliteAnnotationProvider store={annotationStore}>
+        <AnchoredProjectionContent
+          annotation={annotation}
+          editor={editor}
+          setAnnotation={setAnnotation}
+          widgetStore={widgetStore}
+        />
+      </PliteAnnotationProvider>
     </Plite>
   );
 };

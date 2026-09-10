@@ -2,7 +2,6 @@
 
 import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
 import { Plate, useCreateEditor } from 'platejs/react';
-import * as React from 'react';
 
 import { CodeDrawingElement } from '@/registry/components/editor/code-drawing';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';

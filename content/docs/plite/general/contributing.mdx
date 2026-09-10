@@ -5,7 +5,7 @@ description: "Contribute to the Plite packages with reproducible evidence and th
 
 Plite work happens in the Plate repository. Treat issues and PRs as execution handoffs: name the affected package, show the behavior, and include the smallest proof that would let a maintainer or agent continue locally.
 
-## On This Page
+## On this page
 
 - [What Fits](#what-fits)
 - [Bug Reports](#bug-reports)
@@ -15,7 +15,7 @@ Plite work happens in the Plate repository. Treat issues and PRs as execution ha
 - [Docs Changes](#docs-changes)
 - [Release Authority](#release-authority)
 
-## What Fits
+## What fits
 
 Good Plite contributions improve one of these surfaces:
 
@@ -23,14 +23,14 @@ Good Plite contributions improve one of these surfaces:
 - DOM, clipboard, hotkey, or browser bridge behavior in `plitejs/dom`;
 - React editor behavior in `plitejs/react`;
 - history behavior in `plitejs/history`;
-- Yjs adapter behavior in `platejs/yjs`;
+- Yjs adapter behavior in `plitejs/yjs`;
 - layout proof in `plitejs/pagination`;
 - browser proof in `@platejs/test`;
 - docs and examples under `content/docs/plite/**` and `/examples/plite/*`.
 
 Do not add compatibility aliases, wrapper APIs, or old Plite helper shims. If the current API is wrong, propose the better current API and prove it.
 
-## Bug Reports
+## Bug reports
 
 Editor bugs need more than a screenshot.
 
@@ -47,7 +47,7 @@ Include:
 
 For selection, paste, IME, void, hidden DOM, or huge-document behavior, include browser-visible evidence. Model-only tests are useful, but they do not prove contenteditable behavior.
 
-## Pull Requests
+## Pull requests
 
 Keep PRs narrow and takeover-ready.
 
@@ -62,7 +62,7 @@ Every behavior PR should include:
 
 If a PR changes package exports, run `pnpm brl`. If it changes published package behavior, add the right changeset unless a maintainer explicitly says the release lane does not need one.
 
-## Local Setup
+## Local setup
 
 Install dependencies from the repository root:
 
@@ -90,7 +90,7 @@ Use `pnpm check:plite` for release or deletion confidence:
 pnpm check:plite
 ```
 
-## Plite Proof Lanes
+## Plite proof lanes
 
 | Change                                                 | Start with                                                       |
 | ------------------------------------------------------ | ---------------------------------------------------------------- |
@@ -98,7 +98,7 @@ pnpm check:plite
 | React editor behavior                                  | `pnpm --filter plitejs/react test`                        |
 | History                                                | `pnpm --filter plitejs/history test`                      |
 | DOM bridge or browser harness                          | `pnpm --filter @platejs/test test`                            |
-| Yjs adapter                                            | `pnpm --filter platejs/yjs test`                                |
+| Yjs adapter                                            | `pnpm --filter plitejs/yjs test`                                |
 | Pagination                                             | `pnpm --filter plitejs test:partition:pagination`             |
 | Docs source                                            | `pnpm --filter www check:docs`                                   |
 | Example browser behavior                               | `pnpm --filter plite test:plite-browser:chromium <file-or-grep>` |
@@ -106,7 +106,7 @@ pnpm check:plite
 
 Browser proof should hit `/examples/plite/*`, not docs pages. Docs pages prove reading and navigation. Example routes prove editor behavior.
 
-## Docs Changes
+## Docs changes
 
 Docs should describe the current API, not migration history.
 
@@ -122,6 +122,6 @@ Use:
 
 Do not write placeholder prose, fake APIs, stale upstream URLs, or broad claims that the proof lane does not own.
 
-## Release Authority
+## Release authority
 
 Public release, package promotion, and npm publishing decisions belong to maintainers. A contribution can prepare proof and docs, but it should not claim release readiness unless the release lane has run.

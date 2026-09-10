@@ -29,7 +29,7 @@ For the full runtime — dispatch, ownership, selection context, and custom rule
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -39,7 +39,7 @@ The fastest way to add common text substitutions is with `AutoformatKit`.
 
 <ComponentSource name="autoformat" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -55,11 +55,11 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
-### Feature-Owned Markdown Shortcuts
+### Feature-owned Markdown shortcuts
 
 Markdown shortcuts live on the plugins that own those features:
 
@@ -128,7 +128,7 @@ const editor = createEditor({
 
 - Package rule families own the markdown semantics. Kits register explicit rule instances.
 
-### Local Text Substitutions
+### Local text substitutions
 
 Generic substitutions such as smart quotes, arrows, and fractions are best kept
 as local copied plugin code:
@@ -152,7 +152,7 @@ const editor = createEditor({
 });
 ```
 
-### Fine-Grained Overrides
+### Fine-grained overrides
 
 Rule names are the override unit:
 

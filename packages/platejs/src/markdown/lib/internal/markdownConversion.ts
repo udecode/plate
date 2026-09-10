@@ -12,10 +12,10 @@ import {
   ElementApi,
   ElementIdPlugin,
   type MarkdownPluginRegistry,
-  type NormalizePluginState,
   PLUGINS,
   TextApi,
 } from '../../../core';
+import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
 import { splitIncompleteMdx } from '../deserializer/utils/splitIncompleteMdx';

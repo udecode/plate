@@ -12,6 +12,7 @@ import {
   NODE_TO_RUNTIME_ID,
 } from '../utils/weak-maps';
 import type { DOMEditor } from './dom-editor';
+import { resolveMountedEditorDOMRoot } from './dom-root-runtime';
 
 export const parsePliteDOMPath = (value: string | null): Path | null => {
   if (!value) {
@@ -59,9 +60,13 @@ export const resolveMountedDOMPath = <V extends Value>(
 
 export const findMountedDOMNodeByPath = <V extends Value>(
   editor: DOMEditor<V>,
-  path: Path
+  path: Path,
+  root?: HTMLElement | null
 ): HTMLElement | null => {
-  const editorEl = EDITOR_TO_ELEMENT.get(editor);
+  const mountedRoot =
+    root === undefined ? resolveMountedEditorDOMRoot(editor) : root;
+  const editorEl =
+    mountedRoot === undefined ? EDITOR_TO_ELEMENT.get(editor) : mountedRoot;
 
   if (!editorEl) {
     return null;
@@ -76,6 +81,7 @@ export const findMountedDOMNodeByPath = <V extends Value>(
   const domEl = elements.find(
     (element) =>
       isDOMElement(element) &&
+      element.closest('[data-plite-editor="true"]') === editorEl &&
       element.getAttribute('data-plite-node') &&
       (!nodeKey || element.getAttribute('data-plite-node-key') === nodeKey)
   );

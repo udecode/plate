@@ -1,5 +1,9 @@
 import { NodeApi, RangeApi, type Range as PliteRange } from '../..';
-import { DOMCoverage, replaceDOMSelectionRange } from '../../dom/internal';
+import {
+  type DOMCoverageSession,
+  replaceDOMSelectionRange,
+} from '../../dom/internal';
+import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
 type DOMRangeProjection = {
@@ -10,23 +14,17 @@ type DOMRangeProjection = {
 type BoundaryRangeRole = 'anchor' | 'focus' | 'interior';
 
 const getBoundaryRangeRole = (
-  editor: ReactRuntimeEditor,
+  coverage: DOMCoverageSession,
   boundaryId: string,
   selection: PliteRange
 ): BoundaryRangeRole => {
-  const focusBoundary = DOMCoverage.getBoundaryForPoint(
-    editor,
-    selection.focus
-  );
+  const focusBoundary = coverage.getBoundaryForPoint(selection.focus);
 
   if (focusBoundary?.boundaryId === boundaryId) {
     return 'focus';
   }
 
-  const anchorBoundary = DOMCoverage.getBoundaryForPoint(
-    editor,
-    selection.anchor
-  );
+  const anchorBoundary = coverage.getBoundaryForPoint(selection.anchor);
 
   if (anchorBoundary?.boundaryId === boundaryId) {
     return 'anchor';
@@ -100,10 +98,11 @@ const getFocusSideVisibleRange = (
 
 const getDOMRangeProjection = (
   editor: ReactRuntimeEditor,
-  selection: PliteRange
+  selection: PliteRange,
+  editorElement?: HTMLElement
 ): DOMRangeProjection | null => {
   const fullDOMRange = hasAnchorSideVisibleText(editor, selection)
-    ? editor.api.dom.resolveDOMRange(selection)
+    ? resolveDOMRangeInRoot(editor, selection, editorElement)
     : null;
 
   if (fullDOMRange) {
@@ -113,22 +112,23 @@ const getDOMRangeProjection = (
     };
   }
 
-  const focusSideRange = getFocusSideVisibleRange(editor, selection);
+  for (const range of [
+    getFocusSideVisibleRange(editor, selection),
+    getFocusSideVisibleRange(editor, {
+      anchor: selection.focus,
+      focus: selection.anchor,
+    }),
+  ]) {
+    const domRange = range
+      ? resolveDOMRangeInRoot(editor, range, editorElement)
+      : null;
 
-  if (!focusSideRange) {
-    return null;
+    if (domRange) {
+      return { backward: RangeApi.isBackward(selection), domRange };
+    }
   }
 
-  const focusSideDOMRange = editor.api.dom.resolveDOMRange(focusSideRange);
-
-  if (!focusSideDOMRange) {
-    return null;
-  }
-
-  return {
-    backward: RangeApi.isBackward(focusSideRange),
-    domRange: focusSideDOMRange,
-  };
+  return null;
 };
 
 const applyDOMRangeProjection = (
@@ -166,19 +166,23 @@ const applyDOMRangeProjection = (
 };
 
 export const applyDOMCoverageSelectionPolicy = ({
+  coverage,
   domSelection,
   editor,
+  editorElement,
   forceDOMRangeRebuild = false,
   onDOMSelectionWillChange,
   selection,
 }: {
+  coverage: DOMCoverageSession;
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
+  editorElement?: HTMLElement;
   forceDOMRangeRebuild?: boolean;
   onDOMSelectionWillChange?: () => void;
   selection: PliteRange;
 }) => {
-  const boundaries = DOMCoverage.getBoundariesForRange(editor, selection);
+  const boundaries = coverage.getBoundariesForRange(selection);
 
   if (boundaries.length === 0) {
     return false;
@@ -186,23 +190,18 @@ export const applyDOMCoverageSelectionPolicy = ({
 
   for (const boundary of boundaries) {
     if (boundary.selectionPolicy === 'materialize') {
-      DOMCoverage.materializeBoundary(
-        editor,
-        boundary.boundaryId,
-        'selection',
-        {
-          range: selection,
-          rangeRole: getBoundaryRangeRole(
-            editor,
-            boundary.boundaryId,
-            selection
-          ),
-        }
-      );
+      coverage.materializeBoundary(boundary.boundaryId, 'selection', {
+        range: selection,
+        rangeRole: getBoundaryRangeRole(
+          coverage,
+          boundary.boundaryId,
+          selection
+        ),
+      });
     }
   }
 
-  const projection = getDOMRangeProjection(editor, selection);
+  const projection = getDOMRangeProjection(editor, selection, editorElement);
 
   onDOMSelectionWillChange?.();
   applyDOMRangeProjection(domSelection, projection, forceDOMRangeRebuild);

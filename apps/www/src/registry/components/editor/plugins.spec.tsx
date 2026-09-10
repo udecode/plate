@@ -47,8 +47,8 @@ describe('EditorKit combobox triggers', () => {
         type: 'paragraph',
       },
     ]);
-    expect(editor.plugin('mentionInput').render.node).toBe(MentionInputElement);
-    expect(editor.plugin('slashInput').render.node).toBe(SlashInputElement);
+    expect(editor.plugin('mentionInput').component).toBe(MentionInputElement);
+    expect(editor.plugin('slashInput').component).toBe(SlashInputElement);
     expect(commits).toHaveLength(1);
     expect(commits[0]?.changed.hasAny('structure')).toBe(true);
   });

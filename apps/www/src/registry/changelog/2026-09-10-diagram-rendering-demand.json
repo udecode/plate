@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-10-diagram-rendering-demand",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-10-diagram-rendering-demand.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Render diagrams for preview and export using the latest source",
+  "targets": [
+    {
+      "name": "code-drawing",
+      "files": ["apps/www/src/registry/components/editor/code-drawing.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-10-code-drawing-render-diagrams-preview-export-d8e4b7cf",
+      "kind": "behavior",
+      "summary": "Render diagrams for preview and export using the latest source",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-10",
+          "entry": "2026-09-10-diagram-rendering-demand",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -3,8 +3,7 @@ import { type ConsoleMessage, expect, type Page } from '@playwright/test';
 const DEFAULT_RUNTIME_ERROR_PATTERNS = [
   'Unable to find the path for Plite node',
   'Cannot resolve a Plite node',
-  'Cannot resolve a DOM point',
-  'Cannot resolve a DOM range',
+  'Cannot resolve a DOM ',
 ];
 
 const NEXT_DATA_ACCESS_CONTROL_ERROR =
@@ -14,6 +13,7 @@ const NEXT_DATA_ACCESS_CONTROL_ERROR =
 export type PliteBrowserRuntimeErrorRecorder = {
   assertNone: () => void;
   errors: string[];
+  reset: () => void;
   stop: () => void;
 };
 
@@ -32,6 +32,8 @@ export const recordPliteBrowserRuntimeErrors = (
   page: Page,
   options: {
     patterns?: readonly string[];
+    /** Capture every console/page error, including otherwise ignored errors. */
+    strict?: boolean;
   } = {}
 ): PliteBrowserRuntimeErrorRecorder => {
   const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS;
@@ -39,20 +41,20 @@ export const recordPliteBrowserRuntimeErrors = (
   const onPageError = (error: Error) => {
     const text = error.stack ?? error.message;
 
-    if (!isIgnoredRuntimeError(text)) {
+    if (options.strict || !isIgnoredRuntimeError(text)) {
       errors.push(text);
     }
   };
   const onConsole = (message: ConsoleMessage) => {
     const text = message.text();
 
-    if (isIgnoredRuntimeError(text)) {
+    if (!options.strict && isIgnoredRuntimeError(text)) {
       return;
     }
 
     if (
       message.type() === 'error' &&
-      patterns.some((pattern) => text.includes(pattern))
+      (options.strict || patterns.some((pattern) => text.includes(pattern)))
     ) {
       errors.push(text);
     }
@@ -64,6 +66,9 @@ export const recordPliteBrowserRuntimeErrors = (
   return {
     assertNone: () => expect(errors).toEqual([]),
     errors,
+    reset: () => {
+      errors.length = 0;
+    },
     stop: () => {
       page.off('pageerror', onPageError);
       page.off('console', onConsole);

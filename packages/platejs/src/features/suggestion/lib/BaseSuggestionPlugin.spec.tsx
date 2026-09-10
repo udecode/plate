@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt } from '#platejs-test-internal';
@@ -35,8 +36,8 @@ const getTextSelection = (editor: Editor) => {
 
 // keeps each merged test source isolated.
 {
-  describe('BaseSuggestionPlugin.read.activeDescriptions', () => {
-    it('builds replacement and insertion descriptions from real editor data', () => {
+  describe('BaseSuggestionPlugin.read.reviews', () => {
+    it('groups replacement and insertion changes from real editor data', () => {
       const editor = createEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
@@ -85,26 +86,28 @@ const getTextSelection = (editor: Editor) => {
         ],
       });
 
-      expect(
-        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
-      ).toEqual([
+      expect(editor.plugin(BaseSuggestionPlugin).read.reviews()).toMatchObject([
         {
-          deletedText: 'old',
-          insertedText: 'new',
-          suggestionId: '1',
-          type: 'replacement',
+          id: '1',
+          type: 'replace',
           userId: 'user-a',
+          changes: [
+            { node: { text: 'old' }, data: { id: '1', type: 'remove' } },
+            { node: { text: 'new' }, data: { id: '1', type: 'insert' } },
+          ],
         },
         {
-          insertedText: 'new',
-          suggestionId: '2',
-          type: 'insertion',
+          id: '2',
+          type: 'insert',
           userId: 'user-b',
+          changes: [
+            { node: { text: 'new' }, data: { id: '2', type: 'insert' } },
+          ],
         },
       ]);
     });
 
-    it('returns an empty array when there is no active suggestion node', () => {
+    it('returns an empty array when the document has no suggestions', () => {
       const editor = createEditor({
         plugins: [BaseSuggestionPlugin],
         selection: {
@@ -115,12 +118,10 @@ const getTextSelection = (editor: Editor) => {
         initialValue: [{ type: 'paragraph', children: [{ text: 'plain' }] }],
       });
 
-      expect(
-        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
-      ).toEqual([]);
+      expect(editor.plugin(BaseSuggestionPlugin).read.reviews()).toEqual([]);
     });
 
-    it('builds deletion descriptions when a suggestion only removes text', () => {
+    it('groups deletion changes when a suggestion only removes text', () => {
       const editor = createEditor({
         plugins: [BaseSuggestionPlugin],
         selection: {
@@ -146,15 +147,14 @@ const getTextSelection = (editor: Editor) => {
           },
         ],
       });
-
-      expect(
-        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
-      ).toEqual([
+      expect(editor.plugin(BaseSuggestionPlugin).read.reviews()).toMatchObject([
         {
-          deletedText: 'gone',
-          suggestionId: '3',
-          type: 'deletion',
+          id: '3',
+          type: 'remove',
           userId: 'user-c',
+          changes: [
+            { node: { text: 'gone' }, data: { id: '3', type: 'remove' } },
+          ],
         },
       ]);
     });
@@ -2011,10 +2011,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2050,10 +2047,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2096,10 +2090,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2132,10 +2123,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2167,10 +2155,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2195,10 +2180,7 @@ const getTextSelection = (editor: Editor) => {
 
       const lineBreakData = (editor.read.children()[0] as any).suggestion;
 
-      editor.update.suggestion.accept({
-        keyId: editor.plugin(BaseSuggestionPlugin).api.key(lineBreakData.id),
-        suggestionId: lineBreakData.id,
-      } as any);
+      editor.update.suggestion.accept(lineBreakData.id);
 
       expect(editor.read.children()).toEqual(
         (
@@ -2253,10 +2235,7 @@ const getTextSelection = (editor: Editor) => {
       });
 
       // Accept should replace the remove suggestion with the insert suggestion
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2287,10 +2266,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2322,10 +2298,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.accept({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.accept('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2391,10 +2364,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2430,10 +2400,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2472,10 +2439,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2508,10 +2472,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual([
         {
@@ -2552,45 +2513,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
-
-      expect(editor.read.children()).toEqual(output.children);
-    });
-
-    it('merge nodes when rejecting line break insert suggestion', () => {
-      const lineBreakData = {
-        id: '1',
-        createdAt: Date.now(),
-        isLineBreak: true,
-        type: 'insert',
-        userId: 'testId',
-      };
-
-      const input = (
-        <editor>
-          <hp suggestion={lineBreakData}>test1</hp>
-          <hp>test2</hp>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>test1test2</hp>
-        </editor>
-      ) as any;
-
-      const editor = createEditor({
-        plugins: [suggestionPlugin],
-        initialValue: input.children,
-      });
-
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2639,10 +2562,7 @@ const getTextSelection = (editor: Editor) => {
       });
 
       // Reject should keep the remove suggestion and remove the insert suggestion
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2674,10 +2594,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -2708,10 +2625,7 @@ const getTextSelection = (editor: Editor) => {
         initialValue: input.children,
       });
 
-      editor.update.suggestion.reject({
-        keyId: 'suggestion_1',
-        suggestionId: '1',
-      } as any);
+      editor.update.suggestion.reject('1');
 
       expect(editor.read.children()).toEqual(output.children);
     });

@@ -5,7 +5,7 @@ description: How Plate handles Enter, Backspace, merge, normalize, and selection
 
 Editing behavior is the path from a key press or transaction command to the final document shape. Use [Plugin Rules](/docs/plugin-rules) for declarative node policy, and use [Editor Methods](/docs/editor-methods) when you need an explicit `editor.update(...)`. This guide shows how break, delete, merge, normalize, and selection behavior fit together.
 
-## On This Page
+## On this page
 
 - [Choose the Right Surface](#choose-the-right-surface)
 - [Runtime Pipeline](#runtime-pipeline)
@@ -17,7 +17,7 @@ Editing behavior is the path from a key press or transaction command to the fina
 - [Recipes](#recipes)
 - [API Reference](#api-reference)
 
-## Choose the Right Surface
+## Choose the right surface
 
 Most editing behavior belongs in `plugin.rules`. Reach for an explicit transaction command or Plite extension only when the rule table cannot express the behavior.
 
@@ -34,7 +34,7 @@ Most editing behavior belongs in `plugin.rules`. Reach for an explicit transacti
 
 Rules keep common editor policy close to the plugin that owns the node. Transaction commands are the right tool for toolbar actions and behavior that depends on app state.
 
-## Runtime Pipeline
+## Runtime pipeline
 
 Plate resolves plugins first, then installs the Plite schema and extension fragments contributed by those plugins.
 
@@ -59,7 +59,7 @@ key press or command
 
 Input rules are for text patterns such as markdown shortcuts and autolinks. Plugin rules are for node behavior such as "a heading resets to paragraph on Backspace" or "a callout inserts soft breaks on Enter."
 
-## Break Behavior
+## Break behavior
 
 `rules.break` controls the break transaction that `Enter` calls.
 
@@ -104,7 +104,7 @@ export const AppCalloutPlugin = CalloutPlugin.configure({
 
 That callout keeps normal Enter inside the callout, resets empty callouts to paragraphs, and exits after a trailing empty line.
 
-## Delete Behavior
+## Delete behavior
 
 `rules.delete` controls collapsed `Backspace` behavior. Expanded selections still delete through the normal fragment path unless the whole editor is selected.
 
@@ -156,7 +156,7 @@ When a selection spans multiple blocks, Plate deletes the selected content and
 then calls `tx.nodes.merge(...)` at the end boundary. That means cross-block
 deletion can still enter the merge pipeline below.
 
-## Merge Behavior
+## Merge behavior
 
 Merge behavior decides whether two nodes can join and whether empty nodes at the boundary disappear.
 
@@ -204,7 +204,7 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
   on `tx.table.merge()` and `tx.table.split()`.
 </Callout>
 
-## Normalize Behavior
+## Normalize behavior
 
 `rules.normalize` runs during Plite normalization.
 
@@ -227,7 +227,7 @@ write a convergent Plite correction and contribute it through
 the constructor's root `corrections` field so the behavior is explicit and
 testable.
 
-## Selection Behavior
+## Selection behavior
 
 `rules.selection` controls how marks and inline-like boundaries behave while typing, deleting, and moving the cursor.
 

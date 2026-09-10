@@ -6,6 +6,9 @@ disable-model-invocation: true
 
 # Slate AR
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use this as the single Slate v2 wrapper around
@@ -77,9 +80,10 @@ a mode in this rule or a row in `docs/plans/templates/plite-ar.md`.
   behavior is `checks_failed` or `discard`, not `keep`.
 - Do not run `plite-plan` pass schedules inside Autoresearch.
 
-## Goal And Template Contract
+## Task Plan And Template Contract
 
-Read-only modes do not create goals:
+These read-only modes need no new Task template unless their evidence requires
+a durable artifact:
 
 - `status`
 - `dashboard`
@@ -87,7 +91,9 @@ Read-only modes do not create goals:
 - `finalize preview`
 - `finalize current-tree preview`
 
-Mutating or multi-step modes use `autogoal` with:
+For multi-step work, reuse the active Task file plan. When no suitable plan
+exists, create the project-owned file with the helper below. It does not
+create a native goal; apply the project's standing Autogoal request for long-running work. Keep AR session state in its actual runner files.
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -103,7 +109,7 @@ Add packs only for touched surfaces:
 - `--with package-api` when package exports or public API are touched.
 
 The first checkpoint must copy every explicit prompt requirement. The generated
-plan is the runtime truth. Conditional rows for unused modes are marked
+plan is the supervisor evidence ledger. Conditional rows for unused modes are marked
 `N/A: <reason>` rather than hidden in prose.
 
 ## Natural Modes
@@ -138,6 +144,11 @@ AR_CLI="$(find "${CODEX_HOME:-$HOME/.codex}/plugins/cache/thegreencedar-autorese
 test -n "$AR_CLI"
 node "$AR_CLI" --help --all
 ```
+
+Verify the plugin entry and CLI path exist before using these commands. Read
+the installed entry directly when skill discovery does not expose it. If the
+plugin is absent, report that capability gap and continue any useful Task,
+Patch, Regression or Benchmark work without inventing AR session state.
 
 The installed plugin is executable truth. Treat `../codex-autoresearch` as a
 legacy protocol/reference checkout only. Do not run commands from it, and do
@@ -352,7 +363,8 @@ If recipe output is customized, run `benchmark-lint` before any packet.
 Use this when the user wants a Slate v2 surface made genuinely good, not one
 isolated packet.
 
-Use `autogoal` with `docs/plans/templates/plite-ar.md`. The goal must name:
+Reuse the Task plan with the applicable `docs/plans/templates/plite-ar.md`
+contract. The plan must name:
 
 - surface;
 - measurable or auditable completion threshold;
@@ -384,7 +396,7 @@ Completion requires:
 - relevant behavior gates green or explicitly N/A;
 - relevant Benchmark targets completed or explicitly N/A with correctness green;
 - final broad no-regression proof green when editor behavior is touched;
-- goal plan completion check green.
+- the file-plan completion check green when a template is used.
 
 ## Finalize Mode
 
@@ -400,15 +412,16 @@ node "$AR_CLI" finalize-preview --cwd .
 Use `finalize-current-tree` as a read-only readiness preview when the current
 tree is the intended review unit.
 If the current tree needs iterative until-clean closure after preview, route to
-`autoclosure`; do not rebuild that loop inside Slate AR.
+`task closure`; do not rebuild that loop inside Slate AR.
 
 Do not execute `finalize-autoresearch.mjs <plan>` or create
 `autoresearch-review/*` branches unless the user explicitly asks for review
-branches in the current turn.
+branches in the active task. Existing authorization persists.
 
 Plain `go`, `ok`, `continue`, `next`, `ship`, `finalize`, or `current-tree`
 means keep working on the source branch and report readiness. It does not
-approve branch creation.
+approve branch creation by itself; retain any explicit authorization already
+given in the active task.
 
 ## Ship Mode
 
@@ -421,22 +434,25 @@ Default path:
 1. run finalization preview;
 2. decide whether kept AR evidence or current-tree review is the honest unit;
 3. if current-tree is the honest unit and dirty state blocks finalization, route
-   to `autoclosure` for until-clean closure instead of stopping at "dirty";
+   to `task closure` for until-clean closure instead of stopping at "dirty";
 4. report the recommended review unit;
 5. run proof gates when the user asked to ship, review, commit, or when dirty
    current-tree code needs pre-commit confidence;
-6. run P1 `autoreview` directly only for one review pass by passing
-   `--max-priority P1`; use P2 or P3 only when explicitly requested, and use
-   `autoclosure` when
-   safe fixes and reruns are expected before commit/PR;
-7. pause with `READY TO COMMIT` only when proof/review is clean enough or
-   explicitly blocked with accepted residual risk;
-8. ask for commit approval in plain language.
+6. apply Task's existing review decision: Autoreview only for an explicit
+   review request or actual PR closure, P1 by default, at most three helper
+   invocations for this scope, and never on `next`. Reuse prior findings and
+   evidence; do not add a readiness review. Use `task closure` for authorized
+   fixes and closure;
+7. report `READY TO COMMIT` only when the applicable proof is complete; name
+   any missing review or residual risk without calling it passed;
+8. perform a commit/publication action only with actual user authorization.
+   Existing authority persists. If the next requested action still lacks
+   authority, prepare the reviewable result before asking once.
 
 Plain ship mode may run non-mutating readiness work: finalization preview,
-current-tree preview, focused gates, P1 `autoreview`, and `autoclosure` handoff. It
-must not commit, branch, clean, push, or open a PR unless the user explicitly
-asks.
+current-tree preview, focused gates and `task closure` handoff. Apply the
+Task review decision above. Commit, branch, destructive cleanup, push, PR,
+release and external messages require their actual authorization.
 
 Record timing for expensive readiness steps and repair avoidable slow paths
 before calling the flow ready.

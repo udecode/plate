@@ -16,15 +16,19 @@
       "platejs/callout/react": [
         "../platejs/src/react/features/callout/index.ts"
       ],
+      "platejs/code-block/codemirror": [
+        "../platejs/src/code-block/codemirror/index.ts"
+      ],
       "platejs/code-drawing": ["../platejs/src/code-drawing/index.ts"],
       "platejs/code-drawing/react": [
         "../platejs/src/code-drawing/react/index.ts"
       ],
       "platejs/combobox": ["../platejs/src/features/combobox/index.ts"],
-      "platejs/comment": ["../platejs/src/features/comment/index.ts"],
-      "platejs/comment/react": [
-        "../platejs/src/react/features/comment/index.ts"
+      "platejs/comments": ["../platejs/src/features/comments/index.ts"],
+      "platejs/comments/react": [
+        "../platejs/src/react/features/comments/index.ts"
       ],
+      "platejs/compiler": ["../platejs/src/compiler/index.tsx"],
       "platejs/csv": ["../platejs/src/csv/index.ts"],
       "platejs/date": ["../platejs/src/features/date/index.ts"],
       "platejs/date/react": ["../platejs/src/react/features/date/index.ts"],
@@ -34,19 +38,21 @@
       ],
       "platejs/diff": ["../platejs/src/diff/index.ts"],
       "platejs/dnd/react": ["../platejs/src/dnd/react/index.ts"],
-      "platejs/docx": ["../platejs/src/docx/index.ts"],
+      "platejs/docx": ["../platejs/src/docx/index.tsx"],
+      "platejs/docx/export": ["../platejs/src/docx/export/index.ts"],
+      "platejs/docx/import": ["../platejs/src/docx/import/index.ts"],
       "platejs/dom": ["../platejs/src/dom/index.ts"],
       "platejs/emoji": ["../platejs/src/emoji/index.ts"],
       "platejs/emoji/react": ["../platejs/src/emoji/react/index.ts"],
       "platejs/excalidraw": ["../platejs/src/excalidraw/index.ts"],
       "platejs/excalidraw/react": ["../platejs/src/excalidraw/react/index.ts"],
+      "platejs/find": ["../platejs/src/features/find/index.ts"],
       "platejs/footnote": ["../platejs/src/features/footnote/index.ts"],
       "platejs/footnote/react": [
         "../platejs/src/react/features/footnote/index.ts"
       ],
       "platejs/history": ["../platejs/src/history/index.ts"],
       "platejs/hyperscript": ["../platejs/src/hyperscript/index.ts"],
-      "platejs/juice": ["../platejs/src/juice/index.ts"],
       "platejs/layout": ["../platejs/src/features/layout/index.ts"],
       "platejs/layout/react": ["../platejs/src/react/features/layout/index.ts"],
       "platejs/markdown": ["../platejs/src/markdown/index.ts"],
@@ -85,8 +91,20 @@
       "platejs/testing": ["../platejs/src/testing/index.ts"],
       "platejs/toc": ["../platejs/src/features/toc/index.ts"],
       "platejs/toc/react": ["../platejs/src/react/features/toc/index.ts"],
-      "platejs/yjs": ["../platejs/src/yjs/index.ts"],
-      "platejs/yjs/react": ["../platejs/src/yjs/react/index.ts"],
+      "platejs/yjs": ["../platejs/src/yjs/index.tsx"],
+      "platejs/yjs/react": ["../platejs/src/yjs/react/index.tsx"],
+      "plitejs": ["../plitejs/src/index.ts"],
+      "plitejs/annotations": ["../plitejs/src/annotations/index.ts"],
+      "plitejs/diff": ["../plitejs/src/diff/index.ts"],
+      "plitejs/dom": ["../plitejs/src/dom/index.ts"],
+      "plitejs/history": ["../plitejs/src/history/index.ts"],
+      "plitejs/hyperscript": ["../plitejs/src/hyperscript/index.ts"],
+      "plitejs/pagination": ["../plitejs/src/pagination/index.ts"],
+      "plitejs/pagination/react": ["../plitejs/src/pagination/react.tsx"],
+      "plitejs/react": ["../plitejs/src/react/index.ts"],
+      "plitejs/testing": ["../plitejs/src/testing/index.ts"],
+      "plitejs/yjs": ["../plitejs/src/yjs/index.ts"],
+      "plitejs/yjs/react": ["../plitejs/src/yjs/react/index.ts"],
       "platejs/math/katex.css": ["../platejs/math/katex.css"]
     },
     "types": ["node"]

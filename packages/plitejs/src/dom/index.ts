@@ -17,6 +17,7 @@ export type {
   DOMCoverageReason,
   DOMCoverageRuntimeRange,
   DOMCoverageSelectionPolicy,
+  DOMCoverageSession,
   DOMCoveragePlitePointResult,
 } from './plugin/dom-coverage';
 export { DOMCoverage } from './plugin/dom-coverage';
@@ -52,11 +53,7 @@ export {
   writeDOMFragmentData,
   writeDOMRangeData,
 } from './plugin/dom-clipboard-runtime';
-export {
-  defineHostCodec,
-  hostCodecs,
-  writeHostFragmentData,
-} from './plugin/host-codec';
+export { hostCodecs, writeHostFragmentData } from './plugin/host-codec';
 export { parseDOMClipboardHtml } from './plugin/dom-html';
 export { getEditorDOMRoot } from './plugin/dom-root-runtime';
 export type {
@@ -134,9 +131,3 @@ export {
   isVoid,
   keyToDataAttribute,
 } from './utils/plite-dom-markers';
-
-export {
-  isElementDecorationsEqual,
-  isTextDecorationsEqual,
-  splitDecorationsByChild,
-} from './utils/range-list';

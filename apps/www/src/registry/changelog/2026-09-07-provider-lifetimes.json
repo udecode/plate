@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-provider-lifetimes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-provider-lifetimes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Share toolbar overlay tracking and preserve anchor ref cleanup",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-toolbar-share-overlay-tracking-preserve-b28f026a",
+      "kind": "fix",
+      "summary": "Share toolbar overlay tracking and preserve anchor ref cleanup",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar", "floating-popover"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-provider-lifetimes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

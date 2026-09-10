@@ -104,4 +104,10 @@ MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当�
 | update.toggle(options) | 设置或移除列表语义。 |
 | update.indent(options) | 增加缩进并设置列表语义。 |
 | update.outdent(options) | 减少缩进。 |
+| update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
+| update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
 | read.ordinal(element) | 计算有序项显示编号。 |
+
+`clear` 可通过 `at` 指定位置或节点选区，不会扩展到未选中的相邻列表项。
+`insert({ type }, { replaceEmpty: true, select: true })` 在当前区块之后插入；
+来源区块为空时，在同一个撤销步骤中替换它。`after` 指定来源区块，`at` 指定节点插入位置。

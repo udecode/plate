@@ -1,0 +1,174 @@
+{
+  "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts": {
+    "sha256": "2e1f84f522391a30f017d3f75e318af0ca731191a8f86a4452e2ab1d6ccb7b1a",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.spec.tsx": {
+    "sha256": "d3596f5033ce1cb8f0deb26e1c177d55eed1953b8a26b34e0a5a3c73058a1ef8",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.reviews.spec.tsx": {
+    "sha256": "0c86e056809513188496f1ad50bcc9340dfd3f7ea90ff716684c183b51135991",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/suggestion/useSuggestionReviews.ts": {
+    "sha256": "c5e6a9f0c33217b216cb55af8ea27372cd97ad1e1634af303234d0f3c76aebd7",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/suggestion/SuggestionPlugin.tsx": {
+    "sha256": "e624edafe38aa4c316979e070a0185b096be6db75f8008b197155f24ed67e2bc",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/apps/www/src/registry/components/editor/suggestion.tsx": {
+    "sha256": "c47876061457a6903aa31ae6c23a761652d44bb642499350bd6b3b89cf6710cf",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/apps/www/src/registry/components/editor/discussion.tsx": {
+    "sha256": "b623b96b728e632b3240ea3e3d82c5d8eadd61ecf23e680e8117bc21a4e4dfc8",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/editor.ts": {
+    "sha256": "770419b955f4bcf2cc9db36f132d5fe30cb78614d8a9e12cd56651999c84f7d9",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/public-state.ts": {
+    "sha256": "274c34403f596dd99d9edbb4ee95b9058cb582e8abdfee16b9156d9a5acbdd02",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/change/document-change.ts": {
+    "sha256": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history.ts": {
+    "sha256": "09318f8abe110541799f91b3d5fc89f2e1c3571f5d0b3f33651fa0c139200f22",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history-state.ts": {
+    "sha256": "32230c6ff13925e5735dda6579a67a02a8b9143c9731c1d80a892657c11ca17d",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/src/yjs/core/editor-adapter.ts": {
+    "sha256": "52b8859e793b41b42d22eaae5159d8f31a0d6d3198fb41582bf7262051311b50",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/packages/plitejs/package.json": {
+    "sha256": "82b450a9dea86f1101bbbab90b3b50f549e03c852313e48d1e0d0a13648b72a5",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plans/2026-08-31-hard-cut-comments-ownership.md": {
+    "sha256": "32bf66d6032263929d4a29c7c96e73db4a72348602f87ec9012011e02ea223ba",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plans/2026-09-09-comments-package-data.md": {
+    "sha256": "f00ca87ed37834bfc254d15ddfb0009269b20beb0de9b115414d1499046f746a",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plans/2026-09-09-comments-initialization.md": {
+    "sha256": "582c415efc793317f4e4583cf82ce410726fd53fc62758dcb97a3e1594a393e5",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plans/2026-09-05-comments-complete-source-and-api-execution.md": {
+    "sha256": "b1dfb5924f06cf00d8d21dc6b98027ec3014cac3004001113ad336ed76fc8105",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plans/2026-09-06-comments-discussions-main-parity.md": {
+    "sha256": "51959a709b3f0b3124320471958d0ad52442df6781f02546bca70e2ddd2202cb",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/vision/plate.md": {
+    "sha256": "788b39303d862254bb511e0ad761b350a33e237b677bfd75bdd9e8e501a5f166",
+    "source_ref": "working source"
+  },
+  "/Users/zbeyens/git/plate-2/docs/vision/plite.md": {
+    "sha256": "d6e8b2dafc18763821c77e477aecfc75dd3921f179d1382bf6951f434f387bc8",
+    "source_ref": "working source"
+  },
+  "/tmp/plate-authored-research/yjs/src/utils/Renderer.js": {
+    "sha256": "26eaa4ec5682e36d9257e905f97f4abd75c66c18feaf194fc522179257c6e785",
+    "source_ref": "96c96e1fcb1ef6ce866d5264b3f97f7f77b11f64"
+  },
+  "/tmp/plate-authored-research/yjs/tests/attribution.tests.js": {
+    "sha256": "b66dca50de68832f6e3549eb3dfdae43b6fbc446d2da7ed0851c514ee5e407bd",
+    "source_ref": "96c96e1fcb1ef6ce866d5264b3f97f7f77b11f64"
+  },
+  "/tmp/plate-authored-research/yjs/package.json": {
+    "sha256": "6cc0e7a31c83fca50f8da58a1f84c5f39b6cc767a7e856f4080fa7ab227d029f",
+    "source_ref": "96c96e1fcb1ef6ce866d5264b3f97f7f77b11f64"
+  },
+  "/tmp/plate-authored-research/yjs/LICENSE": {
+    "sha256": "341baa53605ed85d6f95782322854cca56c655ebc7fd4712649b8e7afc6020ff",
+    "source_ref": "96c96e1fcb1ef6ce866d5264b3f97f7f77b11f64"
+  },
+  "/tmp/plate-authored-research/y-prosemirror/ARCHITECTURE.md": {
+    "sha256": "b58b673b05af2b036044b572e5b21dc0dd7e7ab80b9ca2aabab747f2f7bca31c",
+    "source_ref": "20f32ad96cb7f117913bde2469dd29b610bd43b1"
+  },
+  "/tmp/plate-authored-research/y-prosemirror/CAVEATS.md": {
+    "sha256": "6e4e2a3e0abc6f682f0b777510d2f24fb510222af76e6c82e711349119a81836",
+    "source_ref": "20f32ad96cb7f117913bde2469dd29b610bd43b1"
+  },
+  "/Users/zbeyens/git/yhub/API.md": {
+    "sha256": "3e3945e62a5e73e5a3466869f9144a9364ffc66a83379ae523559485d21c6655",
+    "source_ref": "ca33cf4b3d5efee023a6544cc3d7c66b87f28a61"
+  },
+  "/Users/zbeyens/git/yhub/src/compute-worker.js": {
+    "sha256": "2c4d00153d1e1729521023d81723a43e48e02f5da5485525c3eb3647b86ee77e",
+    "source_ref": "ca33cf4b3d5efee023a6544cc3d7c66b87f28a61"
+  },
+  "/Users/zbeyens/git/prosemirror-changeset/src/changeset.ts": {
+    "sha256": "786fa0ee02a60dd04a27e6532f5fcd7aacfc1c0b7a9ad06647752c96cb21b673",
+    "source_ref": "e215757276357b64cf74f536552f3a5ef292fa1a"
+  },
+  "/Users/zbeyens/git/prosemirror-suggest-changes/src/withSuggestChanges.ts": {
+    "sha256": "06c051eeb28b276dc6068d0fe20b989744f601de5e6bf5adcfbf49f70f6ce8f1",
+    "source_ref": "653fba70ba29ef6ea6af3ad8d60244a58df7281b"
+  },
+  "/Users/zbeyens/git/prosemirror-suggest-changes/src/index.ts": {
+    "sha256": "43c82f68d4f2c38725ccebfc2301af0f2b91c1c022d14d6c0b1dcab5de521943",
+    "source_ref": "653fba70ba29ef6ea6af3ad8d60244a58df7281b"
+  },
+  "/Users/zbeyens/git/manuscripts-track-changes-plugin/src/tracking/trackTransaction.ts": {
+    "sha256": "9927d015c2e45a4b6fa5e28fa2636096cdc619447bfee849b146d9e9f7801460",
+    "source_ref": "62f4d19dda4c2d41afa5d9fdecea840fb6bfb0be"
+  },
+  "/Users/zbeyens/git/manuscripts-track-changes-plugin/src/types/track.ts": {
+    "sha256": "b0817a3e849e54f195282d99cfc84fb964df60fd905655062c1d81255853be18",
+    "source_ref": "62f4d19dda4c2d41afa5d9fdecea840fb6bfb0be"
+  },
+  "/Users/zbeyens/git/automerge/javascript/src/implementation.ts": {
+    "sha256": "a986ae23fdaeb8d0b30d95338fa66753aac024c449f759bfd764feb19f4183f3",
+    "source_ref": "1618c976ca23fca8282c4a69ebbb0bb0c3f27ab1"
+  },
+  "/Users/zbeyens/git/loro/crates/loro-internal/src/change_meta.rs": {
+    "sha256": "b8be7937c92bc5f22b83268bbbb0f2601c34693d2b6f15010a18bcc40733eda4",
+    "source_ref": "d5da57dd2a91d735656808cbbe2a3f1c755c2441"
+  },
+  "/Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs": {
+    "sha256": "071b72e45aa45191f5d18ddada616f130b25337e162aa37611c0ab1c56fa26fd",
+    "source_ref": "d5da57dd2a91d735656808cbbe2a3f1c755c2441"
+  },
+  "/Users/zbeyens/git/docx-editor/packages/document-api/src/track-changes/track-changes.ts": {
+    "sha256": "b35d4c2ccd2361b759656a3087d9854a6cfc7b4f64f909d41b6207ccbbc3be50",
+    "source_ref": "cabf6fae68167efa98eeec13ec11bdb0461fb674"
+  },
+  "/Users/zbeyens/git/docx-editor/apps/docs/content/docs/editor/track-changes.mdx": {
+    "sha256": "1f3e48aa8c33eb0b5417c024fb5e60d9d707d2a736d35c51e5fc8242c5eed26c",
+    "source_ref": "cabf6fae68167efa98eeec13ec11bdb0461fb674"
+  },
+  "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/model/history.ts": {
+    "sha256": "ae54f1761b5f1164cd8a332b0f3a5aef1934efbb4ff526c8dc5af887fc02cd27",
+    "source_ref": "14e73cc31b869ce483bd8449f40b9102ac7746da"
+  },
+  "/Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts": {
+    "sha256": "fb98368ea46a27cd6d74332d5ec4ae780850c77e87bd5aea71f2f0db45bcb419",
+    "source_ref": "dd5c41b13193efa9ab1574234d8593d2c9e4f988"
+  },
+  "/Users/zbeyens/git/quill/packages/quill/src/modules/history.ts": {
+    "sha256": "1caafae89a23e8bac1e7e2cb9c6d5c7b77438ad4e15bff5c670417a016e9362c",
+    "source_ref": "539cbffd0a13b18e9c65eb84dd35e6596e403158"
+  },
+  "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/sources/current-owner-probe.mjs": {
+    "sha256": "dedf08f1d52c043890f77c25ebc959102de1d796cc67d9024e9b29312fcf0080",
+    "source_ref": "research probe"
+  }
+}

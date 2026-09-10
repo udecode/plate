@@ -965,6 +965,111 @@ test.describe('On richtext example', () => {
     }
   });
 
+  test('keeps consecutive soft-break lines and a trailing break clickable', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop consecutive soft-break geometry proof'
+    );
+
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    try {
+      await page.setViewportSize({ height: 720, width: 1100 });
+      await editor.click();
+      await page.keyboard.press('ControlOrMeta+A');
+      await page.keyboard.press('Backspace');
+      await page.keyboard.type('alpha');
+      await editor.root.press('Shift+Enter');
+      await editor.root.press('Shift+Enter');
+      await page.keyboard.type('beta');
+      await editor.root.press('Shift+Enter');
+
+      await editor.assert.blockTexts(['alpha\n\nbeta\n']);
+      await editor.assert.selection({
+        anchor: { path: [0, 0], offset: 12 },
+        focus: { path: [0, 0], offset: 12 },
+      });
+
+      const readCaretRect = async (offset: number) => {
+        await editor.selection.collapse({ path: [0, 0], offset });
+        await editor.assert.selection({
+          anchor: { path: [0, 0], offset },
+          focus: { path: [0, 0], offset },
+        });
+
+        const rect = await editor.selection.rect();
+
+        if (!rect) {
+          throw new Error(`Missing soft-break caret rect at offset ${offset}`);
+        }
+
+        expect(rect.height).toBeGreaterThan(0);
+
+        return rect;
+      };
+      const firstLine = await readCaretRect(0);
+      const betaLine = await readCaretRect(7);
+      const lineAdvance = (betaLine.y - firstLine.y) / 2;
+      const emptyLinePoint = {
+        x: firstLine.x + 2,
+        y: firstLine.y + lineAdvance + firstLine.height / 2,
+      };
+      const trailingLinePoint = {
+        x: betaLine.x + 2,
+        y: betaLine.y + lineAdvance + betaLine.height / 2,
+      };
+      const editorRect = await editor.root.boundingBox();
+
+      if (!editorRect) {
+        throw new Error('Missing consecutive soft-break editor rect');
+      }
+
+      expect(lineAdvance).toBeGreaterThan(firstLine.height);
+      expect(emptyLinePoint.y).toBeLessThan(editorRect.y + editorRect.height);
+
+      await page.mouse.click(emptyLinePoint.x, emptyLinePoint.y);
+      await editor.assert.selection({
+        anchor: { path: [0, 0], offset: 6 },
+        focus: { path: [0, 0], offset: 6 },
+      });
+      await page.keyboard.type('middle');
+      await editor.assert.blockTexts(['alpha\nmiddle\nbeta\n']);
+
+      const updatedEditorRect = await editor.root.boundingBox();
+
+      if (!updatedEditorRect) {
+        throw new Error('Missing trailing soft-break editor rect');
+      }
+
+      expect(trailingLinePoint.y).toBeLessThan(
+        updatedEditorRect.y + updatedEditorRect.height
+      );
+
+      await page.mouse.click(trailingLinePoint.x, trailingLinePoint.y);
+      await editor.assert.selection({
+        anchor: { path: [0, 0], offset: 18 },
+        focus: { path: [0, 0], offset: 18 },
+      });
+      await page.keyboard.type('tail');
+
+      await editor.assert.blockTexts(['alpha\nmiddle\nbeta\ntail']);
+      await editor.assert.selection({
+        anchor: { path: [0, 0], offset: 22 },
+        focus: { path: [0, 0], offset: 22 },
+      });
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test('keeps active bold when Enter creates a new paragraph', async ({
     page,
   }, testInfo) => {

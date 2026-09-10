@@ -301,6 +301,49 @@ describe('Dnd node behavior', () => {
     expect(blur).toHaveBeenCalledTimes(1);
   });
 
+  it('owns active drag chrome in the source document and clears it on unmount', () => {
+    document.body.classList.remove('dragging');
+    const foreignDocument =
+      document.implementation.createHTMLDocument('source');
+    currentEditor = createEditor({ plugins: [DndPlugin] });
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const editor = currentEditor;
+    const element = getElement(editor, [0]);
+    const rendered = renderHook(() =>
+      useDraggable({
+        element,
+        nodeRef: { current: foreignDocument.body },
+      })
+    );
+    callDragItem({} as DragSourceMonitor);
+
+    expect(foreignDocument.body.classList.contains('dragging')).toBe(true);
+    expect(document.body.classList.contains('dragging')).toBe(false);
+    rendered.unmount();
+    expect(foreignDocument.body.classList.contains('dragging')).toBe(false);
+    expect(editor.plugin(DndPlugin).store.get('isDragging')).toBe(false);
+  });
+
+  it('does not activate drag state after the source node disappears', () => {
+    currentEditor = createEditor({ plugins: [DndPlugin] });
+    currentEditor.update.value.replace({
+      children: [{ children: [{ text: 'block' }], type: 'paragraph' }],
+      selection: null,
+    });
+    const element = getElement(currentEditor, [0]);
+    renderHook(() => useDraggable({ element }));
+    currentEditor.update.nodes.remove({ at: [0] });
+    if (typeof dragSpec?.item !== 'function') {
+      throw new Error('Expected drag item factory.');
+    }
+
+    expect(dragSpec.item({} as DragSourceMonitor)).toBeNull();
+    expect(currentEditor.plugin(DndPlugin).store.get('isDragging')).toBe(false);
+  });
+
   let clientOffset: null | { x: number; y: number };
   const monitor = {
     canDrop: () => true,
@@ -418,6 +461,98 @@ describe('Dnd node behavior', () => {
       callDrop(dragItem, monitor);
 
       expect(move).not.toHaveBeenCalled();
+    });
+
+    it('rejects the entire selection when a secondary block cannot drop', () => {
+      const canDropNode = mock<NonNullable<UseDropNodeOptions['canDropNode']>>(
+        ({ dragEntry }) => editor.key(dragEntry[0]) !== hoverKey
+      );
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        canDropNode,
+        element: getElement(editor, [2]),
+        nodeRef,
+      });
+      callDrop({ ...dragItem, key: [dragKey, hoverKey] }, monitor);
+
+      expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
+      expect(canDropNode).toHaveBeenCalledTimes(2);
+    });
+
+    it('validates the landing before invoking a custom drop handler', () => {
+      const onDropHandler = mock(() => {});
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        canDropNode: () => false,
+        element: hoverElement,
+        nodeRef,
+        onDropHandler,
+      });
+      callDrop(dragItem, monitor);
+
+      expect(onDropHandler).not.toHaveBeenCalled();
+      expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
+    });
+
+    it('moves between distinct editor instances with the same public id', () => {
+      const sourceEditor = createEditor({ id: 'shared', plugins: [DndPlugin] });
+      const targetEditor = createEditor({ id: 'shared', plugins: [DndPlugin] });
+      sourceEditor.update.value.replace({
+        children: [
+          { children: [{ text: 'source' }], type: 'paragraph' },
+          { children: [{ text: 'keep' }], type: 'paragraph' },
+        ],
+        selection: null,
+      });
+      targetEditor.update.value.replace({
+        children: [{ children: [{ text: 'target' }], type: 'paragraph' }],
+        selection: null,
+      });
+      currentEditor = sourceEditor;
+      renderHook(() =>
+        useDraggable({ element: getElement(sourceEditor, [0]) })
+      );
+      const captured = callDragItem({} as DragSourceMonitor);
+      renderDropNode(targetEditor, {
+        accept: DRAG_ITEM_BLOCK,
+        element: getElement(targetEditor, [0]),
+        nodeRef,
+      });
+      const result = callDrop(captured, monitor);
+      callDragEnd(captured, { ...result, dropEffect: 'move' });
+
+      expect(getTexts(targetEditor)).toEqual(['target', 'source']);
+      expect(getTexts(sourceEditor)).toEqual(['keep']);
+    });
+
+    it('lets a same-editor drop policy reject another editor at matching paths', () => {
+      const sourceEditor = createEditor({ id: editor.id });
+      sourceEditor.update.value.replace({
+        children: [{ children: [{ text: 'foreign' }], type: 'paragraph' }],
+        selection: null,
+      });
+      const onDropHandler = mock(() => {});
+      renderDropNode(editor, {
+        accept: DRAG_ITEM_BLOCK,
+        canDropNode: ({ editor: target, sourceEditor: source }) =>
+          source === target,
+        element: hoverElement,
+        nodeRef,
+        onDropHandler,
+      });
+      callDrop(
+        {
+          editor: sourceEditor,
+          editorId: sourceEditor.id,
+          element: getElement(sourceEditor, [0]),
+          key: getNodeKey(sourceEditor, [0]),
+        },
+        monitor
+      );
+
+      expect(onDropHandler).not.toHaveBeenCalled();
+      expect(getTexts(sourceEditor)).toEqual(['foreign']);
+      expect(getTexts(editor)).toEqual(['drag', 'hover', 'other']);
     });
 
     it('moves every selected block in the same editor', () => {
@@ -1003,7 +1138,7 @@ describe('Dnd node behavior', () => {
       expect(
         getHoverDirection({
           dragItem,
-          editorId: 'target-editor',
+          editor: createEditor({ id: 'target-editor' }),
           element: hoverElement,
           monitor,
           nodeRef,

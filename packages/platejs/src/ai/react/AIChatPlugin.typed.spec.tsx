@@ -1,5 +1,13 @@
-import { definePlatePlugin, usePluginStore } from '../../react/core';
+import type { ChatTransport, UIMessage } from 'ai';
+import type React from 'react';
+
+import {
+  definePlatePlugin,
+  useEditorPlugin,
+  usePluginStore,
+} from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
+import { useAIChat } from './useAIChat';
 
 const Component = () => null;
 
@@ -11,19 +19,30 @@ const AIChatKitPlugin = definePlatePlugin('typedAIChatKit', {
       body: {},
     },
   },
-  useHooks: ({ editor }) => {
-    const { api, read, store, update } = editor.plugin(AIChatPlugin);
-
-    void api;
-    void read;
-    void store;
-    void update;
-  },
+  slots: { afterEditable: AIChatControls },
 });
+
+function AIChatControls() {
+  const { api } = useEditorPlugin(AIChatPlugin);
+  const open: boolean = usePluginStore(AIChatPlugin, 'open');
+  const chatOptions = usePluginStore(AIChatKitPlugin, 'chatOptions');
+  const endpoint: string = chatOptions.api;
+
+  return (
+    <button
+      aria-expanded={open}
+      data-endpoint={endpoint}
+      onClick={() => api.show()}
+      type="button"
+    >
+      Open chat
+    </button>
+  );
+}
 
 const ConfiguredAIChatPlugin = AIChatPlugin.configure({
   component: Component,
-  render: {
+  slots: {
     afterContainer: Component,
     afterEditable: Component,
   },
@@ -32,12 +51,28 @@ const ConfiguredAIChatPlugin = AIChatPlugin.configure({
   },
 });
 
-const useAssertTypedAIChatKitStore = () => {
-  const chatOptions = usePluginStore(AIChatKitPlugin, 'chatOptions');
-  const api: string = chatOptions.api;
-
-  void api;
-};
-
 void ConfiguredAIChatPlugin;
-void useAssertTypedAIChatKitStore;
+
+declare const customTransport: ChatTransport<
+  UIMessage<unknown, { custom: { message: string } }>
+>;
+
+function CustomAIView({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLElement | null>;
+}) {
+  useAIChat({
+    editableRef,
+    transport: customTransport,
+    onData: (part, signal) => {
+      const data: unknown = part.data;
+      const requestSignal: AbortSignal = signal;
+      void data;
+      void requestSignal;
+    },
+  });
+  return null;
+}
+
+void CustomAIView;

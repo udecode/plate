@@ -91,7 +91,6 @@ import {
   writeDOMClipboardSlice,
   writeDOMSelectionData,
 } from './dom-clipboard-runtime';
-import { DOMCoverage } from './dom-coverage';
 import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
@@ -109,6 +108,16 @@ import {
   destroyEditorDOMPhaseSchedulerFallbackForRoot,
   scheduleEditorDOMPhase,
 } from './dom-phase-scheduler';
+import {
+  findDOMRootRuntime,
+  notifyEditorDOMScopeListeners,
+  resolveMountedEditorDOMRoot,
+} from './dom-root-runtime';
+import {
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowOffset,
+  resolveDOMTextFlowPoint,
+} from './dom-text-flow-index';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
 const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
@@ -166,11 +175,11 @@ export interface DOMApi {
   ) => DOMVisualPoint | null;
   root: () => HTMLElement | null;
   scroll: () => HTMLElement | null;
-  /** Scroll a mounted node path, text point/range, or native DOM range. */
+  /** Scroll a mounted target; return cleanup that cancels pending scrolling. */
   scrollIntoView: (
     target: ScrollIntoViewTarget,
     options?: ScrollIntoViewOptions
-  ) => void;
+  ) => () => void;
   resolvePliteNode: (domNode: DOMNode) => Node | null;
   resolvePlitePoint: (
     domPoint: DOMPoint,
@@ -566,12 +575,12 @@ export interface DOMEditorInterface {
     editor: DOMEditor<V, TExtensions>
   ) => HTMLElement | null;
 
-  /** Scroll a Plite path/point/range or native DOM range into view. */
+  /** Scroll a Plite path/point/range or DOM range; return pending-work cleanup. */
   scrollIntoView: <V extends Value, TExtensions extends readonly unknown[]>(
     editor: DOMEditor<V, TExtensions>,
     target: ScrollIntoViewTarget,
     options?: ScrollIntoViewOptions
-  ) => void;
+  ) => () => void;
 
   /**
    * Resolve a Plite node from a native DOM node.
@@ -705,7 +714,7 @@ const isMountedEditorDOMNode = (
   editor: DOMEditor<any>,
   domNode: HTMLElement
 ) => {
-  const editorElement = EDITOR_TO_ELEMENT.get(editor);
+  const editorElement = DOMEditor.editable(editor);
 
   return (
     editorElement?.isConnected === true &&
@@ -718,10 +727,11 @@ const resolvePlitePointFromDOMCoverageBoundary = (
   editor: DOMEditor<any>,
   domPoint: DOMPoint
 ): Point | null => {
-  const boundaryPoint = DOMCoverage.resolvePlitePointFromBoundary(
-    editor,
-    domPoint
-  );
+  const runtime = findDOMRootRuntime(domPoint[0]);
+  const boundaryPoint =
+    runtime?.editor === editor
+      ? runtime.domCoverage.resolvePlitePointFromBoundary(domPoint)
+      : null;
 
   if (boundaryPoint?.type !== 'boundary-point') {
     return null;
@@ -826,15 +836,9 @@ const resolvePointNearCoordinates = (
 const getEditorDOMViewRoot = (editor: EditorType, root?: RootKey) =>
   toInternalRoot(root ?? editor.read.view.root());
 
-const notifyEditorDOMScopeListeners = (editor: EditorType) => {
-  EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor)?.forEach((listener) => {
-    listener();
-  });
-};
-
-const setWeakElement = (
-  map: WeakMap<EditorType, HTMLElement>,
-  editor: EditorType,
+const setWeakElement = <TEditor extends object>(
+  map: WeakMap<TEditor, HTMLElement>,
+  editor: TEditor,
   element: HTMLElement | null
 ) => {
   if (element) {
@@ -894,7 +898,7 @@ export const setEditorDOMEditableElement = (
 };
 
 export const setEditorDOMScrollElement = (
-  editor: EditorType,
+  editor: object,
   element: HTMLElement | null
 ) => {
   if (setWeakElement(EDITOR_TO_DOM_SCROLL, editor, element)) {
@@ -903,7 +907,7 @@ export const setEditorDOMScrollElement = (
 };
 
 export const subscribeEditorDOMScope = (
-  editor: EditorType,
+  editor: object,
   listener: () => void
 ) => {
   const listeners = EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) ?? new Set();
@@ -945,7 +949,168 @@ export const getOrCreateDOMNodeKey = (
   return key;
 };
 
-/** Static DOM bridge operations for framework adapters and installed DOM APIs. */
+/** Resolve native coordinates within an exact mounted DOM root. @internal */
+export const resolveDOMPointInRoot = (
+  editor: DOMEditor<any>,
+  point: Point,
+  root?: HTMLElement | null
+): DOMPoint | null => {
+  if (root === null || root?.isConnected === false) return null;
+  const entry = editor.read((state) => state.nodes.get(point.path));
+
+  if (!entry || !NodeApi.isDescendant(entry[0])) return null;
+
+  const resolvedPoint = editorVoid(editor, { at: point })
+    ? { path: point.path, offset: 0 }
+    : point;
+  const [node] = entry;
+  const resolvedElement = DOMEditor.resolveDOMNode(editor, node);
+  const fallbackElement =
+    resolvedElement &&
+    (!root || resolvedElement.closest('[data-plite-editor="true"]') === root)
+      ? resolvedElement
+      : findMountedDOMNodeByPath(editor, resolvedPoint.path, root);
+  const el = fallbackElement
+    ? cachePliteDOMNode(editor, node, fallbackElement)
+    : null;
+
+  if (!el) {
+    return null;
+  }
+
+  const textFlowPoint = resolveDOMTextFlowPoint(
+    el,
+    resolvedPoint.offset,
+    editorGetNodeKey(editor, resolvedPoint.path) ?? undefined
+  );
+
+  if (textFlowPoint) {
+    return [textFlowPoint.node, textFlowPoint.offset];
+  }
+
+  let domPoint: DOMPoint | undefined;
+
+  // For each leaf, we need to isolate its content, which means filtering
+  // to its direct text and zero-width spans. (We have to filter out any
+  // other siblings that may have been rendered alongside them.)
+  const selector = '[data-plite-string], [data-plite-zero-width]';
+  const texts = Array.from(el.querySelectorAll(selector));
+  let start = 0;
+
+  for (let i = 0; i < texts.length; i++) {
+    const text = texts[i];
+    const domNode = text.childNodes[0] as HTMLElement;
+
+    if (domNode == null || domNode.textContent == null) {
+      continue;
+    }
+
+    const { length } = domNode.textContent;
+    const attr = text.getAttribute('data-plite-length');
+    const trueLength = attr == null ? length : Number.parseInt(attr, 10);
+    const end = start + trueLength;
+
+    // Prefer putting the selection inside the mark placeholder to ensure
+    // composed text is displayed with the correct marks.
+    const nextText = texts[i + 1];
+    if (
+      resolvedPoint.offset === end &&
+      nextText?.hasAttribute('data-plite-mark-placeholder')
+    ) {
+      const domText = nextText.childNodes[0];
+
+      domPoint = [
+        // COMPAT: If we don't explicity set the dom point to be on the
+        // actual dom text element, chrome will put the selection behind
+        // the actual dom text element, causing
+        // domRange.getBoundingClientRect() calls on a collapsed selection
+        // to return incorrect zero values
+        // (https://bugs.chromium.org/p/chromium/issues/detail?id=435438)
+        // which will cause issues when scrolling to it.
+        isDOMText(domText) ? domText : nextText,
+        nextText.textContent?.startsWith('\uFEFF') ? 1 : 0,
+      ];
+      break;
+    }
+
+    if (resolvedPoint.offset <= end) {
+      const offset = Math.min(
+        length,
+        Math.max(0, resolvedPoint.offset - start)
+      );
+      domPoint = [domNode, offset];
+      break;
+    }
+
+    start = end;
+  }
+
+  if (!domPoint) {
+    return null;
+  }
+
+  return domPoint;
+};
+
+/** Resolve native coordinates within an exact mounted DOM root. @internal */
+export const resolveDOMRangeInRoot = (
+  editor: DOMEditor<any>,
+  range: Range,
+  root?: HTMLElement | null
+): DOMRange | null => {
+  const { anchor, focus } = range;
+  const isBackward = RangeApi.isBackward(range);
+  const domAnchor = resolveDOMPointInRoot(editor, anchor, root);
+
+  if (!domAnchor) {
+    return null;
+  }
+
+  const domFocus = RangeApi.isCollapsed(range)
+    ? domAnchor
+    : resolveDOMPointInRoot(editor, focus, root);
+
+  if (!domFocus) {
+    return null;
+  }
+
+  const window =
+    root?.ownerDocument.defaultView ??
+    EDITOR_TO_WINDOW.get(editor) ??
+    domAnchor[0].ownerDocument?.defaultView ??
+    null;
+
+  if (!window) {
+    return null;
+  }
+
+  const domRange = window.document.createRange();
+  const [startNode, startOffset] = isBackward ? domFocus : domAnchor;
+  const [endNode, endOffset] = isBackward ? domAnchor : domFocus;
+
+  // A Plite Point at zero-width Leaf always has an offset of 0 but a native DOM selection at
+  // zero-width node has an offset of 1 so we have to check if we are in a zero-width node and
+  // adjust the offset accordingly.
+  const startEl = (
+    isDOMElement(startNode) ? startNode : startNode.parentElement
+  ) as HTMLElement;
+  const isStartAtZeroWidth = !!startEl.getAttribute('data-plite-zero-width');
+  const endEl = (
+    isDOMElement(endNode) ? endNode : endNode.parentElement
+  ) as HTMLElement;
+  const isEndAtZeroWidth = !!endEl.getAttribute('data-plite-zero-width');
+
+  try {
+    domRange.setStart(startNode, isStartAtZeroWidth ? 1 : startOffset);
+    domRange.setEnd(endNode, isEndAtZeroWidth ? 1 : endOffset);
+  } catch {
+    return null;
+  }
+
+  return domRange;
+};
+
+/** DOM translation, selection, focus, and clipboard operations for a Plite editor. */
 export const DOMEditor: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
 
@@ -982,6 +1147,10 @@ export const DOMEditor: DOMEditorInterface = {
 
   editable: (editor, root) => {
     const rootKey = getEditorDOMViewRoot(editor, root);
+    if (rootKey === getEditorDOMViewRoot(editor)) {
+      const mountedRoot = resolveMountedEditorDOMRoot(editor);
+      if (mountedRoot !== undefined) return mountedRoot;
+    }
     const editable = EDITOR_TO_DOM_EDITABLE.get(editor)?.get(rootKey);
 
     if (editable) return editable;
@@ -1123,7 +1292,7 @@ export const DOMEditor: DOMEditorInterface = {
 
     // Return if no dom node is associated with the editor, which means the editor is not yet mounted
     // or has been unmounted. This can happen especially, while retrying to focus the editor.
-    if (!EDITOR_TO_ELEMENT.get(editor)) {
+    if (!DOMEditor.editable(editor)) {
       return;
     }
 
@@ -1237,7 +1406,7 @@ export const DOMEditor: DOMEditorInterface = {
         return;
       }
 
-      const liveElement = EDITOR_TO_ELEMENT.get(editor);
+      const liveElement = DOMEditor.editable(editor);
 
       if (liveElement !== el || !el.isConnected || el.getRootNode() !== root) {
         return;
@@ -1377,7 +1546,8 @@ export const DOMEditor: DOMEditorInterface = {
 
   hasDOMNode: (editor, target, options = {}) => {
     const { editable = false } = options;
-    const editorEl = DOMEditor.assertDOMNode(editor, editor);
+    const editorEl = DOMEditor.editable(editor);
+    if (!editorEl) return false;
     let targetEl: HTMLElement | null | undefined;
 
     // COMPAT: In Firefox, reading `target.nodeType` will throw an error if
@@ -1473,7 +1643,7 @@ export const DOMEditor: DOMEditorInterface = {
 
   resolveDOMNode: (editor, nodeOrKey) => {
     if (nodeOrKey === editor) return DOMEditor.editable(editor);
-    if (EDITOR_TO_ELEMENT.get(editor)?.isConnected !== true) return null;
+    if (DOMEditor.editable(editor)?.isConnected !== true) return null;
     let node: Node;
 
     if (typeof nodeOrKey === 'string') {
@@ -1493,6 +1663,11 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     if (NodeApi.isEditor(node)) return null;
+    const mappedNode = NODE_TO_ELEMENT.get(node);
+
+    if (mappedNode && isMountedEditorDOMNode(editor, mappedNode)) {
+      return mappedNode;
+    }
     let key: Key;
 
     try {
@@ -1528,89 +1703,7 @@ export const DOMEditor: DOMEditorInterface = {
     );
   },
 
-  resolveDOMPoint: (editor, point) => {
-    const entry = editor.read((state) => state.nodes.get(point.path));
-
-    if (!entry || !NodeApi.isDescendant(entry[0])) return null;
-
-    const resolvedPoint = editorVoid(editor, { at: point })
-      ? { path: point.path, offset: 0 }
-      : point;
-    const [node] = entry;
-    const resolvedElement = DOMEditor.resolveDOMNode(editor, node);
-    const fallbackElement =
-      resolvedElement ?? findMountedDOMNodeByPath(editor, resolvedPoint.path);
-    const el = fallbackElement
-      ? cachePliteDOMNode(editor, node, fallbackElement)
-      : null;
-
-    if (!el) {
-      return null;
-    }
-
-    let domPoint: DOMPoint | undefined;
-
-    // For each leaf, we need to isolate its content, which means filtering
-    // to its direct text and zero-width spans. (We have to filter out any
-    // other siblings that may have been rendered alongside them.)
-    const selector = '[data-plite-string], [data-plite-zero-width]';
-    const texts = Array.from(el.querySelectorAll(selector));
-    let start = 0;
-
-    for (let i = 0; i < texts.length; i++) {
-      const text = texts[i];
-      const domNode = text.childNodes[0] as HTMLElement;
-
-      if (domNode == null || domNode.textContent == null) {
-        continue;
-      }
-
-      const { length } = domNode.textContent;
-      const attr = text.getAttribute('data-plite-length');
-      const trueLength = attr == null ? length : Number.parseInt(attr, 10);
-      const end = start + trueLength;
-
-      // Prefer putting the selection inside the mark placeholder to ensure
-      // composed text is displayed with the correct marks.
-      const nextText = texts[i + 1];
-      if (
-        resolvedPoint.offset === end &&
-        nextText?.hasAttribute('data-plite-mark-placeholder')
-      ) {
-        const domText = nextText.childNodes[0];
-
-        domPoint = [
-          // COMPAT: If we don't explicity set the dom point to be on the
-          // actual dom text element, chrome will put the selection behind
-          // the actual dom text element, causing
-          // domRange.getBoundingClientRect() calls on a collapsed selection
-          // to return incorrect zero values
-          // (https://bugs.chromium.org/p/chromium/issues/detail?id=435438)
-          // which will cause issues when scrolling to it.
-          isDOMText(domText) ? domText : nextText,
-          nextText.textContent?.startsWith('\uFEFF') ? 1 : 0,
-        ];
-        break;
-      }
-
-      if (resolvedPoint.offset <= end) {
-        const offset = Math.min(
-          length,
-          Math.max(0, resolvedPoint.offset - start)
-        );
-        domPoint = [domNode, offset];
-        break;
-      }
-
-      start = end;
-    }
-
-    if (!domPoint) {
-      return null;
-    }
-
-    return domPoint;
-  },
+  resolveDOMPoint: (editor, point) => resolveDOMPointInRoot(editor, point),
 
   assertDOMPoint: (editor, point) => {
     const resolvedPoint = editorVoid(editor, { at: point })
@@ -1654,57 +1747,7 @@ export const DOMEditor: DOMEditorInterface = {
     );
   },
 
-  resolveDOMRange: (editor, range) => {
-    const { anchor, focus } = range;
-    const isBackward = RangeApi.isBackward(range);
-    const domAnchor = DOMEditor.resolveDOMPoint(editor, anchor);
-
-    if (!domAnchor) {
-      return null;
-    }
-
-    const domFocus = RangeApi.isCollapsed(range)
-      ? domAnchor
-      : DOMEditor.resolveDOMPoint(editor, focus);
-
-    if (!domFocus) {
-      return null;
-    }
-
-    const window =
-      EDITOR_TO_WINDOW.get(editor) ??
-      domAnchor[0].ownerDocument?.defaultView ??
-      null;
-
-    if (!window) {
-      return null;
-    }
-
-    const domRange = window.document.createRange();
-    const [startNode, startOffset] = isBackward ? domFocus : domAnchor;
-    const [endNode, endOffset] = isBackward ? domAnchor : domFocus;
-
-    // A Plite Point at zero-width Leaf always has an offset of 0 but a native DOM selection at
-    // zero-width node has an offset of 1 so we have to check if we are in a zero-width node and
-    // adjust the offset accordingly.
-    const startEl = (
-      isDOMElement(startNode) ? startNode : startNode.parentElement
-    ) as HTMLElement;
-    const isStartAtZeroWidth = !!startEl.getAttribute('data-plite-zero-width');
-    const endEl = (
-      isDOMElement(endNode) ? endNode : endNode.parentElement
-    ) as HTMLElement;
-    const isEndAtZeroWidth = !!endEl.getAttribute('data-plite-zero-width');
-
-    try {
-      domRange.setStart(startNode, isStartAtZeroWidth ? 1 : startOffset);
-      domRange.setEnd(endNode, isEndAtZeroWidth ? 1 : endOffset);
-    } catch {
-      return null;
-    }
-
-    return domRange;
-  },
+  resolveDOMRange: (editor, range) => resolveDOMRangeInRoot(editor, range),
 
   assertDOMRange: (editor, range) => {
     const domRange = DOMEditor.resolveDOMRange(editor, range);
@@ -1735,8 +1778,12 @@ export const DOMEditor: DOMEditorInterface = {
     );
   },
 
-  root: (editor) =>
-    EDITOR_TO_DOM_ROOT.get(editor) ?? DOMEditor.editable(editor) ?? null,
+  root: (editor) => {
+    const mountedRoot = resolveMountedEditorDOMRoot(editor);
+    return mountedRoot === undefined
+      ? (EDITOR_TO_DOM_ROOT.get(editor) ?? DOMEditor.editable(editor) ?? null)
+      : mountedRoot;
+  },
 
   scroll: (editor) =>
     EDITOR_TO_DOM_SCROLL.get(editor) ??
@@ -1832,7 +1879,7 @@ export const DOMEditor: DOMEditorInterface = {
     };
 
     if (typeof options !== 'object' || options.scrollMode !== 'always') {
-      scheduleEditorDOMPhase(
+      return scheduleEditorDOMPhase(
         editor,
         'dom-write',
         'dom-editor-scroll-into-view',
@@ -1842,7 +1889,6 @@ export const DOMEditor: DOMEditorInterface = {
           timing: 'animation-frame',
         }
       );
-      return;
     }
 
     const scheduleNavigation = (label: string, callback: () => void) =>
@@ -1851,19 +1897,37 @@ export const DOMEditor: DOMEditorInterface = {
         timing: 'animation-frame',
       });
 
-    scheduleNavigation('dom-editor-scroll-into-view-settle', () => {
-      scheduleNavigation('dom-editor-scroll-into-view', run);
-    });
+    let cancelScroll: (() => void) | undefined;
+    const cancelSettle = scheduleNavigation(
+      'dom-editor-scroll-into-view-settle',
+      () => {
+        cancelScroll = scheduleNavigation('dom-editor-scroll-into-view', run);
+      }
+    );
+
+    return () => {
+      cancelSettle();
+      cancelScroll?.();
+    };
   },
 
   resolvePliteNode: (editor, domNode) => {
+    const textFlowEntry = resolveDOMTextFlowEntry(domNode, 0);
+
+    if (textFlowEntry) {
+      const flowNode = editor.read(
+        (state) => state.nodes.get(textFlowEntry.nodeKey as NodeKey)?.[0]
+      );
+
+      if (flowNode && NodeApi.isDescendant(flowNode)) return flowNode;
+    }
     let domEl = isDOMElement(domNode) ? domNode : domNode.parentElement;
 
     if (domEl && !domEl.hasAttribute('data-plite-node')) {
       domEl = domEl.closest('[data-plite-node]');
     }
 
-    const editorEl = EDITOR_TO_ELEMENT.get(editor);
+    const editorEl = DOMEditor.editable(editor);
     const belongsToEditor =
       domEl &&
       editorEl &&
@@ -1940,6 +2004,19 @@ export const DOMEditor: DOMEditorInterface = {
     const [nearestNode, nearestOffset] = exactMatch
       ? domPoint
       : normalizeDOMPoint(domPoint);
+    const textFlowEntry = resolveDOMTextFlowEntry(nearestNode, nearestOffset);
+
+    if (textFlowEntry) {
+      const path = [...textFlowEntry.path] as Path;
+      const node = editor.read((state) => state.nodes.get(path)?.[0]);
+
+      if (node && NodeApi.isText(node)) {
+        return {
+          path,
+          offset: Math.max(0, Math.min(node.text.length, textFlowEntry.offset)),
+        };
+      }
+    }
     const parentNode = nearestNode.parentNode as DOMElement;
     let { searchDirection } = options;
     let textNode: DOMElement | null = null;
@@ -1978,52 +2055,62 @@ export const DOMEditor: DOMEditorInterface = {
         textNode = leafNode.closest('[data-plite-node="text"]');
 
         if (textNode) {
-          const window = DOMEditor.getWindow(editor);
-          const range = window.document.createRange();
-          range.setStart(textNode, 0);
-          range.setEnd(nearestNode, nearestOffset);
+          const textFlowOffset = resolveDOMTextFlowOffset(
+            textNode as HTMLElement,
+            nearestNode,
+            nearestOffset
+          );
 
-          const contents = range.cloneContents();
-          const removals = [
-            ...Array.prototype.slice.call(
-              contents.querySelectorAll('[data-plite-zero-width]')
-            ),
-            ...Array.prototype.slice.call(
-              contents.querySelectorAll('[contenteditable=false]')
-            ),
-          ];
+          if (textFlowOffset != null) {
+            offset = textFlowOffset;
+          } else {
+            const window = DOMEditor.getWindow(editor);
+            const range = window.document.createRange();
+            range.setStart(textNode, 0);
+            range.setEnd(nearestNode, nearestOffset);
 
-          removals.forEach((el) => {
-            // COMPAT: While composing at the start of a text node, some keyboards put
-            // the text content inside the zero width space.
-            if (
-              isAndroidDOMHost(el) &&
-              !exactMatch &&
-              el.hasAttribute('data-plite-zero-width') &&
-              el.textContent.length > 0 &&
-              el.textContext !== '\uFEFF'
-            ) {
-              if (el.textContent.startsWith('\uFEFF')) {
-                el.textContent = el.textContent.slice(1);
+            const contents = range.cloneContents();
+            const removals = [
+              ...Array.prototype.slice.call(
+                contents.querySelectorAll('[data-plite-zero-width]')
+              ),
+              ...Array.prototype.slice.call(
+                contents.querySelectorAll('[contenteditable=false]')
+              ),
+            ];
+
+            removals.forEach((el) => {
+              // COMPAT: While composing at the start of a text node, some keyboards put
+              // the text content inside the zero width space.
+              if (
+                isAndroidDOMHost(el) &&
+                !exactMatch &&
+                el.hasAttribute('data-plite-zero-width') &&
+                el.textContent.length > 0 &&
+                el.textContext !== '\uFEFF'
+              ) {
+                if (el.textContent.startsWith('\uFEFF')) {
+                  el.textContent = el.textContent.slice(1);
+                }
+
+                return;
               }
 
-              return;
-            }
+              const node = el ?? failInvariant('Expected value to be defined');
 
-            const node = el ?? failInvariant('Expected value to be defined');
+              if (!node.parentNode) {
+                failInvariant('Expected value to be defined');
+              }
+              node.remove();
+            });
 
-            if (!node.parentNode) {
-              failInvariant('Expected value to be defined');
-            }
-            node.remove();
-          });
-
-          // COMPAT: Edge has a bug where Range.prototype.toString() will
-          // convert \n into \r\n. The bug causes a loop when plite-dom
-          // attempts to reposition its cursor to match the native position. Use
-          // textContent.length instead.
-          // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10291116/
-          offset = contents.textContent.length;
+            // COMPAT: Edge has a bug where Range.prototype.toString() will
+            // convert \n into \r\n. The bug causes a loop when plite-dom
+            // attempts to reposition its cursor to match the native position. Use
+            // textContent.length instead.
+            // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10291116/
+            offset = contents.textContent.length;
+          }
           domNode = textNode;
         }
       } else if (voidNode) {
@@ -2629,9 +2716,8 @@ export const createDOMEditorCapability = <
     resolveVisualPoint,
     root: () => DOMEditor.root(editor),
     scroll: () => DOMEditor.scroll(editor),
-    scrollIntoView: (target, options) => {
-      DOMEditor.scrollIntoView(editor, target, options);
-    },
+    scrollIntoView: (target, options) =>
+      DOMEditor.scrollIntoView(editor, target, options),
     resolvePliteNode: (domNode) => DOMEditor.resolvePliteNode(editor, domNode),
     resolvePlitePoint: (domPoint, options) =>
       DOMEditor.resolvePlitePoint(editor, domPoint, options),

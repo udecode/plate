@@ -5,38 +5,10 @@ import {
   ListType,
   type RenderStaticNodeWrapper,
 } from 'platejs';
-import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
-
-const config: Record<
-  string,
-  {
-    Li: React.FC<
-      Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-        indent?: number;
-        listStart?: number;
-        listStyle?: string;
-        listType: ListType;
-      }
-    >;
-    Marker: React.FC<
-      Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-        indent?: number;
-        listStart?: number;
-        listStyle?: string;
-        listType: ListType;
-      }
-    >;
-  }
-> = {
-  task: {
-    Li: TodoLiStatic,
-    Marker: TodoMarkerStatic,
-  },
-};
 
 export const BlockListStatic: ListWrapper = (props) => {
   const { indent, listStyle, listType } = props.element;
@@ -67,7 +39,7 @@ function List(
   }
 ) {
   const { indent, listStart, listStyle, listType } = props;
-  const { Li, Marker } = config[listType] ?? {};
+  const isTask = listType === ListType.Task;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
@@ -81,8 +53,20 @@ function List(
       style={{ listStyleType: markerStyle, marginLeft }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
-      {Marker && <Marker {...props} />}
-      {Li ? <Li {...props} /> : <li>{props.children}</li>}
+      {isTask && <TodoMarkerStatic {...props} />}
+      <li
+        className={
+          isTask
+            ? cn(
+                'list-none',
+                props.element.checked === true &&
+                  'text-muted-foreground line-through'
+              )
+            : undefined
+        }
+      >
+        {props.children}
+      </li>
     </InnerList>
   );
 }
@@ -112,25 +96,5 @@ function TodoMarkerStatic(
         </div>
       </button>
     </div>
-  );
-}
-
-function TodoLiStatic(
-  props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
-    listStart?: number;
-    listStyle?: string;
-    listType: ListType;
-  }
-) {
-  return (
-    <li
-      className={cn(
-        'list-none',
-        props.element.checked === true && 'text-muted-foreground line-through'
-      )}
-    >
-      {props.children}
-    </li>
   );
 }

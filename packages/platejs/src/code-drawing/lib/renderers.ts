@@ -16,12 +16,17 @@ function svgToDataUrl(svg: string): string {
  * Render PlantUml diagram
  * Uses plantuml-encoder to encode content and fetches SVG from PlantUml server
  */
-async function renderPlantUml(content: string): Promise<string> {
+async function renderPlantUml(
+  content: string,
+  server: string | undefined
+): Promise<string> {
+  if (!server) throw new Error('PlantUML rendering requires a server URL');
+
   try {
     // Dynamic import of plantuml-encoder
     const plantumlEncoder = await import('plantuml-encoder');
     const encoded = plantumlEncoder.default.encode(content);
-    const svgUrl = `https://www.plantuml.com/plantuml/svg/${encoded}`;
+    const svgUrl = `${server.replace(/\/$/, '')}/svg/${encoded}`;
 
     // Fetch SVG
     const response = await fetch(svgUrl);
@@ -52,7 +57,11 @@ async function renderGraphviz(content: string): Promise<string> {
       fullRender = await import('viz.js/full.render');
     }
 
-    const viz = new Viz(fullRender);
+    const viz = new Viz(
+      'default' in fullRender
+        ? (fullRender.default as typeof fullRender)
+        : fullRender
+    );
     const svg = await viz.renderString(content, {
       format: 'svg',
       engine: 'dot',
@@ -80,11 +89,12 @@ async function renderFlowchart(content: string): Promise<string> {
     el.style.display = 'none';
     document.body.appendChild(el);
 
-    chart.drawSVG(el);
-    const svg = el.innerHTML;
-    el.remove();
-
-    return svgToDataUrl(svg);
+    try {
+      chart.drawSVG(el);
+      return svgToDataUrl(el.innerHTML);
+    } finally {
+      el.remove();
+    }
   } catch (error) {
     console.error('Flowchart rendering error:', error);
     throw error;
@@ -128,7 +138,8 @@ async function renderMermaid(content: string): Promise<string> {
  */
 export async function renderCodeDrawing(
   language: CodeDrawingLanguage,
-  content: string
+  content: string,
+  options: { plantUmlServer?: string } = {}
 ): Promise<string> {
   if (!content || !content.trim()) {
     return '';
@@ -136,7 +147,7 @@ export async function renderCodeDrawing(
 
   switch (language) {
     case 'plantuml': {
-      return renderPlantUml(content);
+      return renderPlantUml(content, options.plantUmlServer);
     }
     case 'graphviz': {
       return renderGraphviz(content);

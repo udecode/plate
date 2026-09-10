@@ -10,8 +10,12 @@ import {
   type NodeKey,
   type Selection as EditorSelection,
 } from '../..';
+import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
-import type { EditableDOMStrategyScrollAlign } from '../components/editable';
+import type {
+  EditableDOMStrategyMetrics,
+  EditableDOMStrategyScrollAlign,
+} from '../components/editable';
 import {
   didSyncTextPathToDOM,
   getPliteNodeElementByPath,
@@ -27,6 +31,7 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   beginEditableEventFrame,
   type EditableCommand,
@@ -60,6 +65,7 @@ import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
   executeEditableSelectionImport,
+  isEditableModelSelectionPreferred,
   setEditableModelSelectionPreference,
   syncEditableDOMSelectionToEditor,
   syncEditorSelectionFromDOM,
@@ -90,6 +96,9 @@ export type PliteBrowserHandle = {
   getKernelTrace: () => readonly EditableKernelTraceEntry[];
   getHistory: () => unknown;
   getInputState: () => unknown;
+  getExternalTextMetrics: () =>
+    | EditableDOMStrategyMetrics['externalText']
+    | null;
   getLastCommit: () => unknown;
   getBlockText: (index: number) => string | null;
   getBlockTexts: () => string[];
@@ -101,6 +110,7 @@ export type PliteBrowserHandle = {
   getPathByNodeKey: (nodeKey: NodeKey) => Path | null;
   getProjectedNativeAffordanceMatrix: () => unknown;
   getNodeKey: (path: Path) => NodeKey | null;
+  resolveDOMPoint: (point: Point) => readonly [globalThis.Node, number] | null;
   getModelSelection: () => EditorSelection;
   getSelection: () => Range | null;
   getText: () => string;
@@ -436,7 +446,7 @@ export const attachPliteBrowserHandle = ({
       }
 
       const root = ReactEditor.findDocumentOrShadowRoot(editor);
-      const selection = 'getSelection' in root ? root.getSelection() : null;
+      const selection = getSelection(root);
 
       if (!selection || selection.rangeCount === 0) {
         return false;
@@ -520,6 +530,9 @@ export const attachPliteBrowserHandle = ({
       });
     },
     getKernelTrace: () => [...getEditableKernelTrace(editor)],
+    getExternalTextMetrics: () =>
+      getMountedEditableDOMRuntime(editor, element)?.externalText.metrics() ??
+      null,
     getHistory: () =>
       editor.read((state) => {
         const { history } = state as {
@@ -578,25 +591,40 @@ export const attachPliteBrowserHandle = ({
     getPathByNodeKey: (nodeKey) => editorGetPathByNodeKey(editor, nodeKey),
     getProjectedNativeAffordanceMatrix,
     getNodeKey: (path) => editorGetNodeKey(editor, path),
+    resolveDOMPoint: (point) => editor.api.dom.resolveDOMPoint(point),
     getModelSelection: () => readRuntimeSelection(editor),
     getSelection: () => cloneRange(editor.read.selection()),
-    getInputState: () => ({
-      activeIntent: inputController.state.activeIntent,
-      isProjectingSelection: inputController.state.isProjectingSelection,
-      modelOwnedTextInputGuard:
-        inputController.state.modelOwnedTextInputGuard ?? 0,
-      modelSelectionPreference: inputController.state.modelSelectionPreference,
-      pendingNativeTextInputRepairOffset:
-        inputController.state.pendingNativeTextInputRepairOffset ?? null,
-      pendingNativeTextInputRepairPathKey:
-        inputController.state.pendingNativeTextInputRepairPathKey ?? null,
-      preferModelSelection:
-        inputController.preferModelSelectionForInputRef.current,
-      recentTextInputRepairEcho:
-        inputController.state.recentTextInputRepairEcho ?? null,
-      selectionChangeOrigin: inputController.state.selectionChangeOrigin,
-      selectionSource: inputController.state.selectionSource,
-    }),
+    getInputState: () => {
+      const selection = getSelectionDOMRange(
+        editor,
+        readRuntimeSelection(editor)
+      );
+      const modelOwnedDOMCoverageSelection =
+        !!selection &&
+        (getMountedEditableDOMRuntime(editor, element)
+          ?.domCoverage.getBoundariesForRange(selection)
+          .some((boundary) => boundary.selectionPolicy !== 'materialize') ??
+          false);
+      return {
+        activeIntent: inputController.state.activeIntent,
+        isProjectingSelection: inputController.state.isProjectingSelection,
+        modelOwnedTextInputGuard:
+          inputController.state.modelOwnedTextInputGuard ?? 0,
+        modelSelectionPreference:
+          inputController.state.modelSelectionPreference,
+        modelOwnedDOMCoverageSelection,
+        pendingNativeTextInputRepairOffset:
+          inputController.state.pendingNativeTextInputRepairOffset ?? null,
+        pendingNativeTextInputRepairPathKey:
+          inputController.state.pendingNativeTextInputRepairPathKey ?? null,
+        preferModelSelection:
+          inputController.preferModelSelectionForInputRef.current,
+        recentTextInputRepairEcho:
+          inputController.state.recentTextInputRepairEcho ?? null,
+        selectionChangeOrigin: inputController.state.selectionChangeOrigin,
+        selectionSource: inputController.state.selectionSource,
+      };
+    },
     getBlockText: (index) => {
       const snapshot = editorGetSnapshot(editor);
 
@@ -612,7 +640,7 @@ export const attachPliteBrowserHandle = ({
       ),
     getDOMSelection: () => {
       const root = ReactEditor.findDocumentOrShadowRoot(editor);
-      const selection = 'getSelection' in root ? root.getSelection() : null;
+      const selection = getSelection(root);
 
       if (!selection || selection.rangeCount === 0) {
         return null;
@@ -750,6 +778,10 @@ export const attachPliteBrowserHandle = ({
       }
       getCurrentHandleElement().focus({ preventScroll: true });
       const syncDOMSelection = () => {
+        if (!isEditableModelSelectionPreferred(inputController)) {
+          return;
+        }
+
         syncEditableDOMSelectionToEditor({
           editor,
           editorElement: getCurrentHandleElement(),
@@ -798,10 +830,7 @@ export const attachPliteBrowserHandle = ({
       const rootNode = currentElement.getRootNode() as Document | ShadowRoot;
       const ShadowRootConstructor =
         currentElement.ownerDocument.defaultView?.ShadowRoot;
-      const nativeSelection =
-        'getSelection' in rootNode
-          ? rootNode.getSelection()
-          : currentElement.ownerDocument.getSelection();
+      const nativeSelection = getSelection(rootNode);
 
       if (!nativeSelection) {
         return false;

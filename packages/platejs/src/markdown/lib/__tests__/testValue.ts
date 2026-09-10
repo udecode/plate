@@ -23,8 +23,6 @@ export const testValue = [
         text: 'Add ',
       },
       {
-        comment: true,
-        comment_discussion1: true,
         text: 'comments to your content',
       },
       {
@@ -54,8 +52,6 @@ export const testValue = [
         text: ', or ',
       },
       {
-        comment: true,
-        comment_discussion2: true,
         text: 'collaborate',
       },
       {
@@ -293,36 +289,7 @@ export const testValue = [
     language: 'javascript',
     children: [
       {
-        type: 'codeLine',
-        children: [
-          {
-            text: '// Use code blocks to showcase code snippets',
-          },
-        ],
-      },
-      {
-        type: 'codeLine',
-        children: [
-          {
-            text: 'function greet() {',
-          },
-        ],
-      },
-      {
-        type: 'codeLine',
-        children: [
-          {
-            text: "  console.info('Hello World!');",
-          },
-        ],
-      },
-      {
-        type: 'codeLine',
-        children: [
-          {
-            text: '}',
-          },
-        ],
+        text: "// Use code blocks to showcase code snippets\nfunction greet() {\n  console.info('Hello World!');\n}",
       },
     ],
   },

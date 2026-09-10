@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "../../content/docs/api/plite/location-ref.mdx",
-      "content": "---\ntitle: Anchor\ndescription: Root-aware live paths, points, and ranges in Plite.\n---\n\nCreate an anchor through `editor.anchor(value, options)`. The anchor maps\nits path, point, or range through each committed `DocumentChange` until\n`release()` detaches it.\n\nSee the canonical [Anchor API](/docs/plite/api/locations/anchor).\n",
+      "content": "---\ntitle: Anchor\ndescription: Root-aware live paths, points, and ranges in Plite.\n---\n\nCreate an anchor through `editor.anchor(value, options)`. The anchor maps\nits path, point, or range through each committed `DocumentChange` until\n`release()` detaches it.\n\nPersistent anchors with `deletion: \"nearest\"` restore their exact before and\nafter locations through saved undo and redo history.\n\nSee the canonical [Anchor API](/docs/plate/plite/api/locations/anchor).\n",
       "type": "registry:file",
       "target": "content/docs/plate/api/plite/location-ref.mdx"
     }

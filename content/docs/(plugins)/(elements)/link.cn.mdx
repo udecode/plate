@@ -91,7 +91,7 @@ const editor = createEditor({
     // ...其他插件
     LinkPlugin.configure({
       component: LinkElement,
-      render: {
+      slots: {
         afterEditable: LinkFloatingToolbar,
       },
     }),
@@ -99,7 +99,7 @@ const editor = createEditor({
 });
 ```
 
-- `render.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑
+- `slots.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑
 - `.configure({ component: LinkElement })`：使用
   [`LinkElement`](/docs/components/link) 渲染链接元素
 
@@ -213,9 +213,11 @@ editor.update.link.unwrap({ split: true });
 | --- | --- |
 | `editor.update.link.insert(node, options?)` | 插入链接节点。 |
 | `editor.update.link.unwrap(options?)` | 解包匹配的链接；`split` 仅更新选中部分。 |
-| `editor.update.link.upsert(options)` | 在选区插入或更新链接，并验证 URL。 |
+| `editor.update.link.upsert(options)` | 处理 URL 输入后，在选区插入或更新链接。 |
 | `editor.update.link.upsertText(options)` | 替换选区上方链接的文本。 |
 | `editor.update.link.wrap(options)` | 将选中文本包裹为链接。 |
+
+`upsert` 会编码未转义的 URI 字符，调用 `transformInput`，并在修改文档前验证结果。已有的有效百分号转义保持不变。`skipValidation` 只跳过验证，仍会处理输入。当 `insertTextInLink` 在已有链接内插入文本时，输入会保留为原始文本。
 
 ## 插件 API
 

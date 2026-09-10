@@ -5,6 +5,7 @@ import {
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const AI_CASE_ID = 'ai:floating-menu-single-shell';
+const LINK_DISCUSSION_CASE_ID = 'link:floating-toolbar-discussion-spacing';
 const LINK_CASE_ID = 'link:floating-toolbar-visible-boundary';
 const TABLE_CASE_ID = 'table:floating-toolbar-single-shell';
 
@@ -166,6 +167,17 @@ test(LINK_CASE_ID, async ({ page }, testInfo) => {
     const surface = editLink.locator(
       'xpath=ancestor::div[contains(@class, "cn-popover-content")]'
     );
+    const [linkBox, initialSurfaceBox] = await Promise.all([
+      link.boundingBox(),
+      surface.boundingBox(),
+    ]);
+
+    expect(linkBox).not.toBeNull();
+    expect(initialSurfaceBox).not.toBeNull();
+    expect(
+      initialSurfaceBox!.y + initialSurfaceBox!.height
+    ).toBeLessThanOrEqual(linkBox!.y);
+
     const appearance = await surface.evaluate((element) => {
       const style = getComputedStyle(element);
 
@@ -215,6 +227,50 @@ test(LINK_CASE_ID, async ({ page }, testInfo) => {
     await page.keyboard.press('Escape');
     await expect(editLink).toBeVisible();
     await expect(editor).toBeFocused();
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(LINK_DISCUSSION_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+
+  try {
+    await page.setViewportSize({ height: 900, width: 1280 });
+    await page.goto('/view/editor-ai', { waitUntil: 'commit' });
+
+    const editor = page
+      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .first();
+    const commentedLink = editor.getByRole('link', { name: 'comments' });
+    const discussion = page.locator('[data-discussion-popover]');
+    const editLink = page.getByRole('button', { name: 'Edit link' });
+
+    await expect(
+      commentedLink.locator('[data-comment-id="discussion1"]')
+    ).toBeVisible({ timeout: 20_000 });
+    await commentedLink.click();
+    await expect(editLink).toBeVisible();
+    await expect(discussion).toBeVisible();
+    await expect(
+      discussion.locator('[data-comment-thread="discussion1"]')
+    ).toBeVisible();
+
+    const linkSurface = editLink.locator(
+      'xpath=ancestor::div[contains(@class, "cn-popover-content")]'
+    );
+    const [discussionBox, linkBox] = await Promise.all([
+      discussion.boundingBox(),
+      linkSurface.boundingBox(),
+    ]);
+
+    expect(discussionBox).not.toBeNull();
+    expect(linkBox).not.toBeNull();
+    expect(linkBox!.y + linkBox!.height).toBeLessThan(discussionBox!.y);
+
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

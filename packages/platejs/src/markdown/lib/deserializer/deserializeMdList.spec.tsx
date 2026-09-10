@@ -261,12 +261,7 @@ Break between lists.
         type: 'paragraph',
       },
       {
-        children: [
-          {
-            children: [{ text: 'console.info("code fence");' }],
-            type: 'codeLine',
-          },
-        ],
+        children: [{ text: 'console.info("code fence");' }],
         indent: 3,
         type: 'codeBlock',
       },

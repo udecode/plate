@@ -1,7 +1,8 @@
 import React from 'react';
 
 import type { NodeKey } from '../../../core';
-import { useEditorSelector, useClaimEditableDOMCommit } from '../../core';
+import { useEditorSelector } from '../../core';
+import { useClaimEditableDOMCommit } from '../../plite-react';
 import { TablePlugin } from './TablePlugin';
 
 /** Synchronizes structural table selection with the rendered table DOM. */

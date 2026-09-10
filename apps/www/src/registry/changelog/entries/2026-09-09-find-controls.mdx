@@ -1,0 +1,14 @@
+---
+id: 2026-09-09-find-controls
+date: 2026-09-09
+status: draft
+kind: wiring
+summary: 'Use FindPlugin for custom controls and return focus when closing Find.'
+change: { 'type': 'source', 'date': '2026-09-09', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-09-find-controls","kind":"wiring","migrationNotes":[]} -->
+
+- **`find`**: Call custom controls through `FindPlugin` and subscribe to individual search fields. Closing the bar returns focus to its editor view; mounting another command button preserves the current query.

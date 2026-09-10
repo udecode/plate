@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  type LucideProps,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
@@ -15,7 +14,7 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
-import { type Path, PathApi } from 'platejs';
+import { PathApi } from 'platejs';
 import { useDraggable, useDropLine } from 'platejs/dnd/react';
 import {
   type PlateElementProps,
@@ -30,13 +29,14 @@ import {
   useFocusedLast,
   usePluginStore,
   useElementSelector,
+  usePath,
 } from 'platejs/react';
-import { resizeLengthClampStatic } from 'platejs/resizable/react';
 import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
   useTableSelectionDOM,
+  useTableResize,
 } from 'platejs/table/react';
 import * as React from 'react';
 
@@ -77,20 +77,9 @@ type TableResizeStartOptions = {
   rowIndex: number;
 };
 
-type TableResizeDragState = {
-  colIndex: number;
-  direction: TableResizeDirection;
-  initialPosition: number;
-  initialSize: number;
-  marginLeft: number;
-  rowIndex: number;
-};
-
 type TableResizeContextValue = {
-  colSizeOverrides: Map<number, number>;
   disableMarginLeft: boolean;
   hasMultiRowSelection: boolean;
-  marginLeftOverride: number | null;
   rowSizeOverrides: Map<number, number>;
   clearResizePreview: (handleKey: string) => void;
   showResizePreview: (
@@ -113,8 +102,7 @@ const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
 const TABLE_SELECTION_OVERLAY_CLASS =
   'pointer-events-none absolute inset-0 z-1 bg-brand/[.13]';
 
-const roundCellSizeToStep = (size: number, step?: number) =>
-  step ? Math.round(size / step) * step : size;
+const TableNodeSelectionContext = React.createContext(false);
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -130,481 +118,21 @@ function useTableResizeContext() {
   return context;
 }
 
-function useTableResizeController({
-  baseColSizes,
-  deferColumnResize,
-  dragIndicatorRef,
-  hoverIndicatorRef,
-  marginLeft,
-  overrideColSize,
-  overrideMarginLeft,
-  overrideRowSize,
-  controlColumnWidth,
-  tablePath,
-  tableRef,
-  wrapperRef,
-}: {
-  baseColSizes: number[];
-  deferColumnResize: boolean;
-  dragIndicatorRef: React.RefObject<HTMLDivElement | null>;
-  hoverIndicatorRef: React.RefObject<HTMLDivElement | null>;
-  marginLeft: number;
-  overrideColSize: (index: number, size: number | null) => void;
-  overrideMarginLeft: React.Dispatch<React.SetStateAction<number | null>>;
-  overrideRowSize: (index: number, size: number | null) => void;
-  controlColumnWidth: number;
-  tablePath: Path;
-  tableRef: React.RefObject<HTMLTableElement | null>;
-  wrapperRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const editor = useEditor();
-  const { store } = useEditorPlugin(TablePlugin);
-  const { disableMarginLeft = false, minColumnWidth = 0 } = store.get();
-  const effectiveColSizes = React.useMemo(
-    () => baseColSizes.map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH),
-    [baseColSizes]
-  );
-  const effectiveColSizesRef = React.useRef(effectiveColSizes);
-  const activeHandleKeyRef = React.useRef<string | null>(null);
-  const activeRowElementRef = React.useRef<HTMLTableRowElement | null>(null);
-  const cleanupListenersRef = React.useRef<(() => void) | null>(null);
-  const marginLeftRef = React.useRef(marginLeft);
-  const dragStateRef = React.useRef<TableResizeDragState | null>(null);
-  const frozenRowIndicesRef = React.useRef<number[] | null>(null);
-  const previewHandleKeyRef = React.useRef<string | null>(null);
-  React.useEffect(() => {
-    effectiveColSizesRef.current = effectiveColSizes;
-  }, [effectiveColSizes]);
-
-  React.useEffect(() => {
-    marginLeftRef.current = marginLeft;
-  }, [marginLeft]);
-
-  const hideDeferredResizeIndicator = React.useCallback(() => {
-    const indicator = dragIndicatorRef.current;
-
-    if (!indicator) return;
-
-    indicator.style.display = 'none';
-    indicator.style.removeProperty('left');
-  }, [dragIndicatorRef]);
-
-  const showDeferredResizeIndicator = React.useCallback(
-    (offset: number) => {
-      const indicator = dragIndicatorRef.current;
-
-      if (!indicator) return;
-
-      indicator.style.display = 'block';
-      indicator.style.left = `${offset}px`;
-    },
-    [dragIndicatorRef]
-  );
-
-  const hideResizeIndicator = React.useCallback(() => {
-    const indicator = hoverIndicatorRef.current;
-
-    if (!indicator) return;
-
-    indicator.style.display = 'none';
-    indicator.style.removeProperty('left');
-  }, [hoverIndicatorRef]);
-
-  const clearFrozenRowHeights = React.useCallback(() => {
-    const frozenRowIndices = frozenRowIndicesRef.current;
-
-    if (!frozenRowIndices) return;
-
-    frozenRowIndicesRef.current = null;
-
-    frozenRowIndices.forEach((rowIndex) => {
-      overrideRowSize(rowIndex, null);
-    });
-  }, [overrideRowSize]);
-
-  const freezeRowHeights = React.useCallback(() => {
-    const table = tableRef.current;
-
-    if (!table || deferColumnResize) return;
-
-    clearFrozenRowHeights();
-
-    const frozenRowIndices: number[] = [];
-
-    Array.from(table.rows).forEach((row, rowIndex) => {
-      const { height } = row.getBoundingClientRect();
-
-      if (!height) return;
-
-      overrideRowSize(rowIndex, height);
-      frozenRowIndices.push(rowIndex);
-    });
-
-    frozenRowIndicesRef.current = frozenRowIndices;
-  }, [clearFrozenRowHeights, deferColumnResize, overrideRowSize, tableRef]);
-
-  const showResizeIndicatorAtOffset = React.useCallback(
-    (offset: number) => {
-      const indicator = hoverIndicatorRef.current;
-
-      if (!indicator) return;
-
-      indicator.style.display = 'block';
-      indicator.style.left = `${offset}px`;
-    },
-    [hoverIndicatorRef]
-  );
-
-  const showResizeIndicator = React.useCallback(
-    ({
-      event,
-      direction,
-    }: Pick<TableResizeStartOptions, 'direction'> & {
-      event: React.PointerEvent<HTMLDivElement>;
-    }) => {
-      if (direction === 'bottom') return;
-
-      const wrapper = wrapperRef.current;
-
-      if (!wrapper) return;
-
-      const handleRect = event.currentTarget.getBoundingClientRect();
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const boundaryOffset =
-        handleRect.left - wrapperRect.left + handleRect.width / 2;
-
-      showResizeIndicatorAtOffset(boundaryOffset);
-    },
-    [showResizeIndicatorAtOffset, wrapperRef]
-  );
-
-  const showResizePreview = React.useCallback(
-    (
-      event: React.PointerEvent<HTMLDivElement>,
-      options: TableResizeStartOptions
-    ) => {
-      if (activeHandleKeyRef.current) return;
-      if (event.buttons !== 0) return;
-
-      previewHandleKeyRef.current = options.handleKey;
-      showResizeIndicator({ ...options, event });
-    },
-    [showResizeIndicator]
-  );
-
-  const clearResizePreview = React.useCallback(
-    (handleKey: string) => {
-      if (activeHandleKeyRef.current) return;
-      if (previewHandleKeyRef.current !== handleKey) return;
-
-      previewHandleKeyRef.current = null;
-      hideResizeIndicator();
-    },
-    [hideResizeIndicator]
-  );
-
-  const commitColSize = React.useCallback(
-    (colIndex: number, width: number) => {
-      editor
-        .plugin(TablePlugin)
-        .update.setColumnWidth({ colIndex, width }, { at: tablePath });
-      setTimeout(() => {
-        overrideColSize(colIndex, null);
-      }, 0);
-    },
-    [editor, overrideColSize, tablePath]
-  );
-
-  const commitRowSize = React.useCallback(
-    (rowIndex: number, height: number) => {
-      editor
-        .plugin(TablePlugin)
-        .update.setRowHeight({ height, rowIndex }, { at: tablePath });
-      setTimeout(() => {
-        overrideRowSize(rowIndex, null);
-      }, 0);
-    },
-    [editor, overrideRowSize, tablePath]
-  );
-
-  const commitMarginLeft = React.useCallback(
-    (nextMarginLeft: number) => {
-      editor
-        .plugin(TablePlugin)
-        .update.set({ marginLeft: nextMarginLeft }, { at: tablePath });
-      setTimeout(() => {
-        overrideMarginLeft(null);
-      }, 0);
-    },
-    [editor, overrideMarginLeft, tablePath]
-  );
-
-  const getColumnBoundaryOffset = React.useCallback(
-    (colIndex: number, currentWidth: number) =>
-      controlColumnWidth +
-      effectiveColSizesRef.current
-        .slice(0, colIndex)
-        .reduce((total, colSize) => total + colSize, 0) +
-      currentWidth,
-    [controlColumnWidth]
-  );
-
-  const applyResize = React.useCallback(
-    (event: PointerEvent, finished: boolean) => {
-      const dragState = dragStateRef.current;
-
-      if (!dragState) return;
-
-      const currentPosition =
-        dragState.direction === 'bottom' ? event.clientY : event.clientX;
-      const delta = currentPosition - dragState.initialPosition;
-
-      if (dragState.direction === 'bottom') {
-        const newHeight = roundCellSizeToStep(
-          dragState.initialSize + delta,
-          undefined
-        );
-
-        if (finished) {
-          commitRowSize(dragState.rowIndex, newHeight);
-        } else {
-          overrideRowSize(dragState.rowIndex, newHeight);
-        }
-
-        return;
-      }
-
-      if (dragState.direction === 'left') {
-        const initial =
-          effectiveColSizesRef.current[dragState.colIndex] ??
-          dragState.initialSize;
-        const complement = (width: number) =>
-          initial + dragState.marginLeft - width;
-        const nextMarginLeft = roundCellSizeToStep(
-          resizeLengthClampStatic(dragState.marginLeft + delta, {
-            max: complement(minColumnWidth),
-            min: 0,
-          }),
-          undefined
-        );
-        const nextWidth = complement(nextMarginLeft);
-
-        if (finished) {
-          commitMarginLeft(nextMarginLeft);
-          commitColSize(dragState.colIndex, nextWidth);
-        } else if (deferColumnResize) {
-          showDeferredResizeIndicator(
-            controlColumnWidth + (nextMarginLeft - dragState.marginLeft)
-          );
-        } else {
-          showResizeIndicatorAtOffset(
-            controlColumnWidth + (nextMarginLeft - dragState.marginLeft)
-          );
-          overrideMarginLeft(nextMarginLeft);
-          overrideColSize(dragState.colIndex, nextWidth);
-        }
-
-        return;
-      }
-
-      const currentInitial =
-        effectiveColSizesRef.current[dragState.colIndex] ??
-        dragState.initialSize;
-      const nextInitial = effectiveColSizesRef.current[dragState.colIndex + 1];
-      const complement = (width: number) =>
-        currentInitial + nextInitial - width;
-      const currentWidth = roundCellSizeToStep(
-        resizeLengthClampStatic(currentInitial + delta, {
-          max: nextInitial ? complement(minColumnWidth) : undefined,
-          min: minColumnWidth,
-        }),
-        undefined
-      );
-      const nextWidth = nextInitial ? complement(currentWidth) : undefined;
-
-      if (finished) {
-        commitColSize(dragState.colIndex, currentWidth);
-
-        if (nextWidth !== undefined) {
-          commitColSize(dragState.colIndex + 1, nextWidth);
-        }
-      } else if (deferColumnResize) {
-        showDeferredResizeIndicator(
-          getColumnBoundaryOffset(dragState.colIndex, currentWidth)
-        );
-      } else {
-        showResizeIndicatorAtOffset(
-          getColumnBoundaryOffset(dragState.colIndex, currentWidth)
-        );
-        overrideColSize(dragState.colIndex, currentWidth);
-
-        if (nextWidth !== undefined) {
-          overrideColSize(dragState.colIndex + 1, nextWidth);
-        }
-      }
-    },
-    [
-      commitColSize,
-      commitMarginLeft,
-      commitRowSize,
-      controlColumnWidth,
-      deferColumnResize,
-      getColumnBoundaryOffset,
-      showDeferredResizeIndicator,
-      showResizeIndicatorAtOffset,
-      minColumnWidth,
-      overrideColSize,
-      overrideMarginLeft,
-      overrideRowSize,
-    ]
-  );
-
-  const stopResize = React.useCallback(() => {
-    cleanupListenersRef.current?.();
-    cleanupListenersRef.current = null;
-    activeHandleKeyRef.current = null;
-    previewHandleKeyRef.current = null;
-    dragStateRef.current = null;
-
-    if (activeRowElementRef.current) {
-      delete activeRowElementRef.current.dataset.tableResizing;
-      activeRowElementRef.current = null;
-    }
-
-    hideDeferredResizeIndicator();
-    hideResizeIndicator();
-    clearFrozenRowHeights();
-  }, [clearFrozenRowHeights, hideDeferredResizeIndicator, hideResizeIndicator]);
-
-  const stopResizeRef = React.useRef(stopResize);
-
-  React.useEffect(() => {
-    stopResizeRef.current = stopResize;
-  }, [stopResize]);
-
-  React.useEffect(
-    () => () => {
-      stopResizeRef.current();
-    },
-    []
-  );
-
-  const startResize = React.useCallback(
-    (
-      event: React.PointerEvent<HTMLDivElement>,
-      { colIndex, direction, handleKey, rowIndex }: TableResizeStartOptions
-    ) => {
-      const rowHeight =
-        tableRef.current?.rows.item(rowIndex)?.getBoundingClientRect().height ??
-        0;
-
-      dragStateRef.current = {
-        colIndex,
-        direction,
-        initialPosition: direction === 'bottom' ? event.clientY : event.clientX,
-        initialSize:
-          direction === 'bottom'
-            ? rowHeight
-            : (effectiveColSizesRef.current[colIndex] ??
-              TABLE_DEFAULT_COLUMN_WIDTH),
-        marginLeft: marginLeftRef.current,
-        rowIndex,
-      };
-      activeHandleKeyRef.current = handleKey;
-      previewHandleKeyRef.current = null;
-
-      const rowElement = tableRef.current?.rows.item(rowIndex) ?? null;
-
-      if (
-        activeRowElementRef.current &&
-        activeRowElementRef.current !== rowElement
-      ) {
-        delete activeRowElementRef.current.dataset.tableResizing;
-      }
-
-      activeRowElementRef.current = rowElement;
-
-      if (rowElement) {
-        rowElement.dataset.tableResizing = 'true';
-      }
-
-      cleanupListenersRef.current?.();
-
-      if (direction !== 'bottom') {
-        freezeRowHeights();
-      }
-
-      const handlePointerMove = (pointerEvent: PointerEvent) => {
-        applyResize(pointerEvent, false);
-      };
-
-      const handlePointerEnd = (pointerEvent: PointerEvent) => {
-        applyResize(pointerEvent, true);
-        stopResize();
-      };
-
-      // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- [P0 owned teardown] The ref-owned cleanup runs before restart, on pointer end, and on unmount.
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerEnd);
-      window.addEventListener('pointercancel', handlePointerEnd);
-
-      cleanupListenersRef.current = () => {
-        window.removeEventListener('pointermove', handlePointerMove);
-        window.removeEventListener('pointerup', handlePointerEnd);
-        window.removeEventListener('pointercancel', handlePointerEnd);
-      };
-
-      if (deferColumnResize && direction !== 'bottom') {
-        hideResizeIndicator();
-        showDeferredResizeIndicator(
-          direction === 'left'
-            ? controlColumnWidth
-            : getColumnBoundaryOffset(
-                colIndex,
-                effectiveColSizesRef.current[colIndex] ??
-                  TABLE_DEFAULT_COLUMN_WIDTH
-              )
-        );
-      } else {
-        showResizeIndicator({ direction, event });
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-    },
-    [
-      controlColumnWidth,
-      deferColumnResize,
-      getColumnBoundaryOffset,
-      hideResizeIndicator,
-      showDeferredResizeIndicator,
-      showResizeIndicator,
-      stopResize,
-      tableRef,
-      applyResize,
-      freezeRowHeights,
-    ]
-  );
-
-  return React.useMemo(
-    () => ({
-      clearResizePreview,
-      disableMarginLeft,
-      showResizePreview,
-      startResize,
-    }),
-    [clearResizePreview, disableMarginLeft, showResizePreview, startResize]
-  );
-}
+const paintIndicator = (
+  ref: React.RefObject<HTMLDivElement | null>,
+  offset: number | null
+) => {
+  const indicator = ref.current;
+
+  if (!indicator) return;
+  indicator.style.display = offset === null ? 'none' : 'block';
+  if (offset === null) indicator.style.removeProperty('left');
+  else indicator.style.left = `${offset}px`;
+};
 
 export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
-  return <TableElementContent {...props} />;
-}
-
-function TableElementContent({
-  children,
-  ...props
-}: PlateElementProps<typeof TablePlugin>) {
+  const { children } = props;
+  const isSelectingTable = useElementSelected({ mode: 'node' });
   const editor = useEditor();
   const { api, read, store } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false } = store.get();
@@ -623,19 +151,6 @@ function TableElementContent({
   const [marginLeftOverride, overrideMarginLeft] = React.useState<
     number | null
   >(null);
-  const overrideColSize = React.useCallback(
-    (index: number, size: number | null) => {
-      setColSizeOverrides((overrides) => {
-        const next = new Map(overrides);
-
-        if (size === null) next.delete(index);
-        else next.set(index, size);
-
-        return next;
-      });
-    },
-    []
-  );
   const overrideRowSize = React.useCallback(
     (index: number, size: number | null) => {
       setRowHeightOverrides((overrides) => {
@@ -662,9 +177,13 @@ function TableElementContent({
   const deferColumnResize =
     (columnWidths?.length ?? 0) * (props.element.children?.length ?? 0) >
     TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
-  const tablePath = useElementSelector(TablePlugin, ([, path]) => path);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const tableNodeKey = props.editor.key(props.element);
+  const hasExpandedCellSelection = useEditorSelector((innerEditor) => {
+    const view = innerEditor.plugin(TablePlugin).read.selection();
+
+    return Boolean(view?.tableKey === tableNodeKey && view.anchors.length > 1);
+  });
   const hasMultiRowSelection = useEditorSelector((innerEditor) => {
     const view = innerEditor.plugin(TablePlugin).read.selection();
 
@@ -673,38 +192,160 @@ function TableElementContent({
       view.grid.problems.length === 0 &&
       view.tableKey === tableNodeKey &&
       view.anchors.length > 1 &&
-      view.cellKeys.length === view.anchors.length &&
       view.bounds.maxRow > view.bounds.minRow
     );
   });
-  const resizeController = useTableResizeController({
-    baseColSizes,
-    controlColumnWidth,
-    deferColumnResize,
-    dragIndicatorRef,
-    hoverIndicatorRef,
-    marginLeft,
-    overrideColSize,
-    overrideMarginLeft,
-    overrideRowSize,
-    tablePath,
+  const activeHandleKeyRef = React.useRef<string | null>(null);
+  const activeRowElementRef = React.useRef<HTMLTableRowElement | null>(null);
+  const previewHandleKeyRef = React.useRef<string | null>(null);
+
+  const clearResize = () => {
+    activeHandleKeyRef.current = null;
+    previewHandleKeyRef.current = null;
+    if (activeRowElementRef.current) {
+      delete activeRowElementRef.current.dataset.tableResizing;
+      activeRowElementRef.current = null;
+    }
+    paintIndicator(dragIndicatorRef, null);
+    paintIndicator(hoverIndicatorRef, null);
+    setColSizeOverrides(new Map());
+    setRowHeightOverrides(new Map());
+    overrideMarginLeft(null);
+  };
+  const beginResize = useTableResize({
+    element: props.element,
     tableRef,
-    wrapperRef,
+    onResizeEnd: clearResize,
+    onResize: (resize) => {
+      if (resize.edge === 'bottom') {
+        overrideRowSize(resize.rowIndex, resize.height);
+        return;
+      }
+
+      const first = resize.columns[0];
+      const offset =
+        resize.marginLeft === undefined
+          ? controlColumnWidth +
+            baseColSizes
+              .slice(0, first.colIndex)
+              .reduce((total, width) => total + width, 0) +
+            first.width
+          : controlColumnWidth + resize.marginLeft - marginLeft;
+
+      paintIndicator(
+        deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
+        offset
+      );
+      if (deferColumnResize) return;
+      setColSizeOverrides(
+        new Map(resize.columns.map(({ colIndex, width }) => [colIndex, width]))
+      );
+      if (resize.marginLeft !== undefined) {
+        overrideMarginLeft(resize.marginLeft);
+      }
+    },
   });
+  const showResizePreview = React.useCallback(
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      { direction, handleKey }: TableResizeStartOptions
+    ) => {
+      if (
+        activeHandleKeyRef.current ||
+        event.buttons !== 0 ||
+        direction === 'bottom'
+      ) {
+        return;
+      }
+      const wrapper = wrapperRef.current;
+
+      if (!wrapper) return;
+      previewHandleKeyRef.current = handleKey;
+      const handleRect = event.currentTarget.getBoundingClientRect();
+      paintIndicator(
+        hoverIndicatorRef,
+        handleRect.left -
+          wrapper.getBoundingClientRect().left +
+          handleRect.width / 2
+      );
+    },
+    []
+  );
+  const clearResizePreview = React.useCallback((handleKey: string) => {
+    if (
+      activeHandleKeyRef.current ||
+      previewHandleKeyRef.current !== handleKey
+    ) {
+      return;
+    }
+    previewHandleKeyRef.current = null;
+    paintIndicator(hoverIndicatorRef, null);
+  }, []);
+  const startResize = React.useCallback(
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      { colIndex, direction, handleKey, rowIndex }: TableResizeStartOptions
+    ) => {
+      if (
+        !beginResize(
+          event,
+          direction === 'bottom'
+            ? { edge: 'bottom', rowIndex }
+            : direction === 'left'
+              ? { edge: 'left' }
+              : { edge: 'right', colIndex }
+        )
+      ) {
+        return;
+      }
+
+      activeHandleKeyRef.current = handleKey;
+      previewHandleKeyRef.current = null;
+      const table = tableRef.current;
+      const row = table?.rows.item(rowIndex);
+
+      activeRowElementRef.current = row ?? null;
+      if (row) row.dataset.tableResizing = 'true';
+      if (direction === 'bottom' || !table) return;
+      if (!deferColumnResize) {
+        setRowHeightOverrides(
+          new Map(
+            Array.from(table.rows, (entry, index) => [
+              index,
+              entry.getBoundingClientRect().height,
+            ])
+          )
+        );
+      }
+      paintIndicator(hoverIndicatorRef, null);
+      paintIndicator(
+        deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
+        controlColumnWidth +
+          (direction === 'left'
+            ? 0
+            : baseColSizes
+                .slice(0, colIndex + 1)
+                .reduce((total, width) => total + width, 0))
+      );
+    },
+    [baseColSizes, beginResize, controlColumnWidth, deferColumnResize]
+  );
   const tableResizeContext = React.useMemo(
     () => ({
-      ...resizeController,
-      colSizeOverrides,
+      clearResizePreview,
+      disableMarginLeft,
       hasMultiRowSelection,
-      marginLeftOverride,
       rowSizeOverrides,
+      showResizePreview,
+      startResize,
     }),
     [
-      colSizeOverrides,
+      clearResizePreview,
+      disableMarginLeft,
       hasMultiRowSelection,
-      marginLeftOverride,
-      resizeController,
       rowSizeOverrides,
+      showResizePreview,
+      startResize,
     ]
   );
   const resolvedColSizes = React.useMemo(() => {
@@ -728,11 +369,6 @@ function TableElementContent({
     }),
     [controlColumnWidth, resolvedColSizes]
   );
-
-  const isSelectingTable = useElementSelected({
-    at: tableNodeKey,
-    mode: 'node',
-  });
 
   const content = (
     <PlateElement
@@ -765,7 +401,10 @@ function TableElementContent({
           {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] A new table interaction collapses the prior expanded cell selection. */}
           <table
             ref={tableRef}
-            className="mr-0 ml-px table h-px table-fixed border-collapse [&:has([data-table-cell-selected=true])_*::selection]:bg-transparent"
+            className={cn(
+              'mr-0 ml-px table h-px table-fixed border-collapse',
+              hasExpandedCellSelection && '[&_*::selection]:bg-transparent'
+            )}
             style={tableStyle}
             onMouseDown={() => {
               if ((read.selection()?.anchors.length ?? 0) > 1) {
@@ -796,16 +435,12 @@ function TableElementContent({
                 ))}
               </colgroup>
             )}
-            <tbody className="min-w-full">{children}</tbody>
+            <tbody className="min-w-full">
+              <TableNodeSelectionContext value={isSelectingTable}>
+                {children}
+              </TableNodeSelectionContext>
+            </tbody>
           </table>
-
-          {isSelectingTable && (
-            <div
-              className={TABLE_SELECTION_OVERLAY_CLASS}
-              contentEditable={false}
-              data-slot="node-selection-highlight"
-            />
-          )}
         </div>
       </TableResizeContext>
     </PlateElement>
@@ -840,7 +475,7 @@ function TableFloatingToolbar({
     <FloatingPopover open={isToolbarOpen} modal={false}>
       <FloatingPopoverAnchor element={children as React.ReactElement} />
       {isCollapsedToolbarOpen && (
-        <CollapsedTableFloatingToolbarContent {...props} />
+        <TableFloatingToolbarContent {...props} collapsedInside />
       )}
       {isExpandedSelectionPending && (
         <DelayedExpandedSelectionTableFloatingToolbarContent {...props} />
@@ -866,13 +501,17 @@ function DelayedExpandedSelectionTableFloatingToolbarContent(
 
   if (!isReady) return null;
 
-  return <ExpandedSelectionTableFloatingToolbarContent {...props} />;
+  return <TableFloatingToolbarContent {...props} />;
 }
 
-function ExpandedSelectionTableFloatingToolbarContent(
-  props: React.ComponentProps<typeof FloatingPopoverContent>
-) {
+function TableFloatingToolbarContent({
+  collapsedInside = false,
+  ...props
+}: React.ComponentProps<typeof FloatingPopoverContent> & {
+  collapsedInside?: boolean;
+}) {
   const editor = useEditor();
+  const element = useElement(TablePlugin);
   const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
   const canMergeSelection = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.canMerge()
@@ -880,99 +519,11 @@ function ExpandedSelectionTableFloatingToolbarContent(
   const canSplitSelection = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.canSplit()
   );
-  const canMerge = !disableMerge && canMergeSelection;
+  const canMerge = !collapsedInside && !disableMerge && canMergeSelection;
   const canSplit = !disableMerge && canSplitSelection;
 
-  if (!canMerge && !canSplit) return null;
+  if (!collapsedInside && !canMerge && !canSplit) return null;
 
-  return (
-    <TableFloatingToolbarContent
-      canMerge={canMerge}
-      canSplit={canSplit}
-      onMerge={() => {
-        editor.plugin(TablePlugin).update.merge();
-      }}
-      onSplit={() => {
-        editor.plugin(TablePlugin).update.split();
-      }}
-      {...props}
-    />
-  );
-}
-
-function CollapsedTableFloatingToolbarContent(
-  props: React.ComponentProps<typeof FloatingPopoverContent>
-) {
-  const editor = useEditor();
-  const element = useElement(TablePlugin);
-  const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
-  const canSplitSelection = useEditorSelector((innerEditor) =>
-    innerEditor.plugin(TablePlugin).read.canSplit()
-  );
-  const canSplit = !disableMerge && canSplitSelection;
-
-  return (
-    <TableFloatingToolbarContent
-      canSplit={canSplit}
-      collapsedInside
-      onDeleteTable={() => {
-        editor.update.nodes.remove({ at: element });
-        editor.api.dom.focus();
-      }}
-      onDeleteColumn={() => {
-        editor.plugin(TablePlugin).update.removeColumn();
-      }}
-      onDeleteRow={() => {
-        editor.plugin(TablePlugin).update.removeRow();
-      }}
-      onInsertColumnAfter={() => {
-        editor.plugin(TablePlugin).update.insertColumn();
-      }}
-      onInsertColumnBefore={() => {
-        editor.plugin(TablePlugin).update.insertColumn({ before: true });
-      }}
-      onInsertRowAfter={() => {
-        editor.plugin(TablePlugin).update.insertRow();
-      }}
-      onInsertRowBefore={() => {
-        editor.plugin(TablePlugin).update.insertRow({ before: true });
-      }}
-      onSplit={() => {
-        editor.plugin(TablePlugin).update.split();
-      }}
-      {...props}
-    />
-  );
-}
-
-function TableFloatingToolbarContent({
-  canMerge = false,
-  canSplit = false,
-  collapsedInside = false,
-  onDeleteColumn,
-  onDeleteRow,
-  onDeleteTable,
-  onInsertColumnAfter,
-  onInsertColumnBefore,
-  onInsertRowAfter,
-  onInsertRowBefore,
-  onMerge,
-  onSplit,
-  ...props
-}: React.ComponentProps<typeof FloatingPopoverContent> & {
-  canMerge?: boolean;
-  canSplit?: boolean;
-  collapsedInside?: boolean;
-  onDeleteColumn?: () => void;
-  onDeleteRow?: () => void;
-  onDeleteTable?: () => void;
-  onInsertColumnAfter?: () => void;
-  onInsertColumnBefore?: () => void;
-  onInsertRowAfter?: () => void;
-  onInsertRowBefore?: () => void;
-  onMerge?: () => void;
-  onSplit?: () => void;
-}) {
   return (
     <FloatingPopoverContent
       className="w-auto border-0 bg-transparent p-0 shadow-none ring-0"
@@ -990,19 +541,23 @@ function TableFloatingToolbarContent({
           <ColorDropdownMenu tooltip="Background color">
             <PaintBucketIcon />
           </ColorDropdownMenu>
-          {canMerge && onMerge && (
+          {canMerge && (
             <ToolbarButton
               aria-label="Merge cells"
-              onClick={onMerge}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.merge();
+              }}
               tooltip="Merge cells"
             >
               <CombineIcon />
             </ToolbarButton>
           )}
-          {canSplit && onSplit && (
+          {canSplit && (
             <ToolbarButton
               aria-label="Split cell"
-              onClick={onSplit}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.split();
+              }}
               tooltip="Split cell"
             >
               <SquareSplitHorizontalIcon />
@@ -1025,7 +580,10 @@ function TableFloatingToolbarContent({
             <ToolbarGroup>
               <ToolbarButton
                 aria-label="Delete table"
-                onClick={onDeleteTable}
+                onClick={() => {
+                  editor.update.nodes.remove({ at: element });
+                  editor.api.dom.focus();
+                }}
                 tooltip="Delete table"
               >
                 <Trash2Icon />
@@ -1038,21 +596,27 @@ function TableFloatingToolbarContent({
           <ToolbarGroup>
             <ToolbarButton
               aria-label="Insert row before"
-              onClick={onInsertRowBefore}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertRow({ before: true });
+              }}
               tooltip="Insert row before"
             >
               <ArrowUp />
             </ToolbarButton>
             <ToolbarButton
               aria-label="Insert row after"
-              onClick={onInsertRowAfter}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertRow();
+              }}
               tooltip="Insert row after"
             >
               <ArrowDown />
             </ToolbarButton>
             <ToolbarButton
               aria-label="Delete row"
-              onClick={onDeleteRow}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.removeRow();
+              }}
               tooltip="Delete row"
             >
               <XIcon />
@@ -1064,21 +628,29 @@ function TableFloatingToolbarContent({
           <ToolbarGroup>
             <ToolbarButton
               aria-label="Insert column before"
-              onClick={onInsertColumnBefore}
+              onClick={() => {
+                editor
+                  .plugin(TablePlugin)
+                  .update.insertColumn({ before: true });
+              }}
               tooltip="Insert column before"
             >
               <ArrowLeft />
             </ToolbarButton>
             <ToolbarButton
               aria-label="Insert column after"
-              onClick={onInsertColumnAfter}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.insertColumn();
+              }}
               tooltip="Insert column after"
             >
               <ArrowRight />
             </ToolbarButton>
             <ToolbarButton
               aria-label="Delete column"
-              onClick={onDeleteColumn}
+              onClick={() => {
+                editor.plugin(TablePlugin).update.removeColumn();
+              }}
               tooltip="Delete column"
             >
               <XIcon />
@@ -1117,7 +689,7 @@ function TableBordersDropdownMenuContent(
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'top' });
           }}
         >
-          <BorderTopIcon />
+          <BorderIcon side="top" />
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
@@ -1128,7 +700,7 @@ function TableBordersDropdownMenuContent(
               .update.toggleBorders({ border: 'right' });
           }}
         >
-          <BorderRightIcon />
+          <BorderIcon side="right" />
           <div>Right Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
@@ -1139,7 +711,7 @@ function TableBordersDropdownMenuContent(
               .update.toggleBorders({ border: 'bottom' });
           }}
         >
-          <BorderBottomIcon />
+          <BorderIcon side="bottom" />
           <div>Bottom Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
@@ -1148,7 +720,7 @@ function TableBordersDropdownMenuContent(
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'left' });
           }}
         >
-          <BorderLeftIcon />
+          <BorderIcon side="left" />
           <div>Left Border</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
@@ -1160,7 +732,7 @@ function TableBordersDropdownMenuContent(
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'none' });
           }}
         >
-          <BorderNoneIcon />
+          <BorderIcon side="none" />
           <div>No Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
@@ -1171,7 +743,7 @@ function TableBordersDropdownMenuContent(
               .update.toggleBorders({ border: 'outer' });
           }}
         >
-          <BorderAllIcon />
+          <BorderIcon side="outer" />
           <div>Outside Borders</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
@@ -1235,17 +807,15 @@ export function TableRowElement({
   ...props
 }: PlateElementProps<typeof TableRowPlugin>) {
   const { element } = props;
+  const isSelectingRow = useElementSelected({ mode: 'node' });
+  const isSelectingTable = React.useContext(TableNodeSelectionContext);
   const readOnly = useEditorReadOnly();
-  const rowIndex = useElementSelector(TableRowPlugin, ([, path]) => {
-    const index = path.at(-1);
+  const rowIndex = usePath((path) => path.at(-1));
 
-    if (index === undefined) {
-      throw new Error('Table row path must include an index.');
-    }
-
-    return index;
-  });
-  const rowSize = useElementSelector(TableRowPlugin, ([node]) => node.height);
+  if (rowIndex === undefined) {
+    throw new Error('Table row path must include an index.');
+  }
+  const rowSize = useElementSelector(TableRowPlugin, (node) => node.height);
   const { hasMultiRowSelection, rowSizeOverrides } = useTableResizeContext();
   const rowMinHeight = rowSizeOverrides.get(rowIndex) ?? rowSize;
   const hasControls = !readOnly;
@@ -1253,7 +823,8 @@ export function TableRowElement({
   const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
     type: element.type,
-    canDropNode: ({ dragEntry, dropEntry }) =>
+    canDropNode: ({ dragEntry, dropEntry, editor, sourceEditor }) =>
+      sourceEditor === editor &&
       PathApi.equals(
         PathApi.parent(dragEntry[1]),
         PathApi.parent(dropEntry[1])
@@ -1303,7 +874,9 @@ export function TableRowElement({
         </td>
       )}
 
-      {children}
+      <TableNodeSelectionContext value={isSelectingRow || isSelectingTable}>
+        {children}
+      </TableNodeSelectionContext>
     </PlateElement>
   );
 }
@@ -1359,30 +932,13 @@ export function TableCellElement(
   const { element } = props;
   const isHeader = element.header === true;
 
-  const tableKey = useElementSelector(TablePlugin, ([node]) =>
-    editor.key(node)
-  );
-  const rowKey = useElementSelector(TableRowPlugin, ([node]) =>
-    editor.key(node)
-  );
-  const isSelectingTable = useElementSelected({
-    at: tableKey,
-    mode: 'node',
-  });
-  const isSelectingRow =
-    useElementSelected({ at: rowKey, mode: 'node' }) || isSelectingTable;
-  const cellIndices = useEditorSelector(
-    (innerEditor) =>
-      innerEditor.plugin(TablePlugin).read.getCellIndices(element),
+  const isSelectingRow = React.useContext(TableNodeSelectionContext);
+  const cellIndices = useElementSelector(
+    TablePlugin,
+    () => editor.plugin(TablePlugin).read.getCellIndices(element),
     {
       equalityFn: (next, previous) =>
         next?.col === previous?.col && next?.row === previous?.row,
-      shouldUpdate: (change) =>
-        !change ||
-        change.changed.hasAny('properties') ||
-        change.changed.hasAny('structure') ||
-        change.changed.hasAny('replace') ||
-        change.changed.hasAny('root-order'),
     }
   );
   const indices = cellIndices ?? { col: 0, row: 0 };
@@ -1443,6 +999,7 @@ export function TableCellElement(
         <div
           className={TABLE_SELECTION_OVERLAY_CLASS}
           contentEditable={false}
+          data-plite-root-chrome-ignore="true"
           data-slot="node-selection-highlight"
         />
       )}
@@ -1580,861 +1137,35 @@ export const TableKit = [
   TableCellPlugin.configure({ component: TableCellElement }),
 ];
 
-function BorderAllIcon(props: LucideProps) {
-  return (
-    <svg
-      fill="none"
-      height="15"
-      viewBox="0 0 15 15"
-      width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Border All</title>
-      <path
-        clipRule="evenodd"
-        d="M0.25 1C0.25 0.585786 0.585786 0.25 1 0.25H14C14.4142 0.25 14.75 0.585786 14.75 1V14C14.75 14.4142 14.4142 14.75 14 14.75H1C0.585786 14.75 0.25 14.4142 0.25 14V1ZM1.75 1.75V13.25H13.25V1.75H1.75Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="5" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="3" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="11" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="9" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="11" />
-    </svg>
-  );
-}
+function BorderIcon({
+  side,
+}: {
+  side: 'top' | 'right' | 'bottom' | 'left' | 'none' | 'outer';
+}) {
+  const border = {
+    top: 'M1 1h12',
+    right: 'M13 1v12',
+    bottom: 'M1 13h12',
+    left: 'M1 1v12',
+    none: '',
+    outer: 'M1 1h12v12H1z',
+  }[side];
 
-function BorderBottomIcon(props: LucideProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       height="15"
       viewBox="0 0 15 15"
       width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
     >
-      <title>Border Bottom</title>
       <path
-        clipRule="evenodd"
-        d="M1 13.25L14 13.25V14.75L1 14.75V13.25Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="5" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="5" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="3" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="3" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="11" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="11" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="9" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="9" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="11" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="11" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="5" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="3" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="7" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="1" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="9" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="11" />
-    </svg>
-  );
-}
-
-function BorderLeftIcon(props: LucideProps) {
-  return (
-    <svg
-      fill="none"
-      height="15"
-      viewBox="0 0 15 15"
-      width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Border Left</title>
-      <path
-        clipRule="evenodd"
-        d="M1.75 1L1.75 14L0.249999 14L0.25 1L1.75 1Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 10 7)"
-        width="1"
-        x="10"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 10 13)"
-        width="1"
-        x="10"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 12 7)"
-        width="1"
-        x="12"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 12 13)"
-        width="1"
-        x="12"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 7)"
-        width="1"
-        x="8"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 7)"
-        width="1"
-        x="14"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 13)"
-        width="1"
-        x="8"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 13)"
-        width="1"
-        x="14"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 5)"
-        width="1"
-        x="8"
-        y="5"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 5)"
-        width="1"
-        x="14"
-        y="5"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 3)"
-        width="1"
-        x="8"
-        y="3"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 3)"
-        width="1"
-        x="14"
-        y="3"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 9)"
-        width="1"
-        x="8"
-        y="9"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 9)"
-        width="1"
-        x="14"
-        y="9"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 11)"
-        width="1"
-        x="8"
-        y="11"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 11)"
-        width="1"
-        x="14"
-        y="11"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 6 7)"
-        width="1"
-        x="6"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 6 13)"
-        width="1"
-        x="6"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 4 7)"
-        width="1"
-        x="4"
-        y="7"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 4 13)"
-        width="1"
-        x="4"
-        y="13"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 10 1)"
-        width="1"
-        x="10"
-        y="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 12 1)"
-        width="1"
-        x="12"
-        y="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 8 1)"
-        width="1"
-        x="8"
-        y="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 14 1)"
-        width="1"
-        x="14"
-        y="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 6 1)"
-        width="1"
-        x="6"
-        y="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(90 4 1)"
-        width="1"
-        x="4"
-        y="1"
-      />
-    </svg>
-  );
-}
-
-function BorderNoneIcon(props: LucideProps) {
-  return (
-    <svg
-      fill="none"
-      height="15"
-      viewBox="0 0 15 15"
-      width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Border None</title>
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="5.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="5.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="3.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="3.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="7.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="13.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="7.025" />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        width="1"
-        x="13"
-        y="13.025"
-      />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="7.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="13.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="5" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="7.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="13.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="3" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="7.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="13.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="9" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="11" y="7.025" />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        width="1"
-        x="11"
-        y="13.025"
-      />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="11" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="9.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="13" y="9.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="7" y="11.025" />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        width="1"
-        x="13"
-        y="11.025"
-      />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="5.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="3.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="7.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="13.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="1.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="9.025" />
-      <rect fill="currentColor" height="1" rx=".5" width="1" x="1" y="11.025" />
-    </svg>
-  );
-}
-
-function BorderRightIcon(props: LucideProps) {
-  return (
-    <svg
-      fill="none"
-      height="15"
-      viewBox="0 0 15 15"
-      width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Border Right</title>
-      <path
-        clipRule="evenodd"
-        d="M13.25 1L13.25 14L14.75 14L14.75 1L13.25 1Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 5 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 5 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 3 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 3 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 5)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 5)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 3)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 3)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 9)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 9)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 11)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 11)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 9 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 9 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 11 7)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 11 13)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 5 1)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 3 1)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 7 1)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 1 1)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 9 1)"
-        width="1"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="matrix(0 1 1 0 11 1)"
-        width="1"
-      />
-    </svg>
-  );
-}
-
-function BorderTopIcon(props: LucideProps) {
-  return (
-    <svg
-      fill="none"
-      height="15"
-      viewBox="0 0 15 15"
-      width="15"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Border Top</title>
-      <path
-        clipRule="evenodd"
-        d="M14 1.75L1 1.75L1 0.249999L14 0.25L14 1.75Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 10)"
-        width="1"
-        x="8"
-        y="10"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 10)"
-        width="1"
-        x="2"
-        y="10"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 12)"
-        width="1"
-        x="8"
-        y="12"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 12)"
-        width="1"
-        x="2"
-        y="12"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 8)"
-        width="1"
-        x="8"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 14)"
-        width="1"
-        x="8"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 8)"
-        width="1"
-        x="2"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 14)"
-        width="1"
-        x="2"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 10 8)"
-        width="1"
-        x="10"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 10 14)"
-        width="1"
-        x="10"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 12 8)"
-        width="1"
-        x="12"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 12 14)"
-        width="1"
-        x="12"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 6 8)"
-        width="1"
-        x="6"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 6 14)"
-        width="1"
-        x="6"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 4 8)"
-        width="1"
-        x="4"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 4 14)"
-        width="1"
-        x="4"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 6)"
-        width="1"
-        x="8"
-        y="6"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 6)"
-        width="1"
-        x="2"
-        y="6"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 8 4)"
-        width="1"
-        x="8"
-        y="4"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 2 4)"
-        width="1"
-        x="2"
-        y="4"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 10)"
-        width="1"
-        x="14"
-        y="10"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 12)"
-        width="1"
-        x="14"
-        y="12"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 8)"
-        width="1"
-        x="14"
-        y="8"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 14)"
-        width="1"
-        x="14"
-        y="14"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 6)"
-        width="1"
-        x="14"
-        y="6"
-      />
-      <rect
-        fill="currentColor"
-        height="1"
-        rx=".5"
-        transform="rotate(-180 14 4)"
-        width="1"
-        x="14"
-        y="4"
-      />
+        d="M1 1h12v12H1z M7 1v12 M1 7h12"
+        stroke="currentColor"
+        strokeDasharray="0 2"
+        strokeLinecap="round"
+      />
+      <path d={border} stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }

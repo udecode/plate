@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-build-the-lever",
+  "files": [
+    {
+      "upstream": "skills/principle-build-the-lever/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "3a0b02b1b890538810f27d00c525b2e677bb5d931f602fd7a774d5cd13b61c93",
+      "destinationSha256": "4f31f63ff382c58ec72c333e981f33993c0df7b36dcfd98ce8af3014e44ca53c",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-build-the-lever/SKILL.md\n+++ skills/principle-build-the-lever/SKILL.md\n@@ -1,8 +1,10 @@\n ---\n name: principle-build-the-lever\n description: \"Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n+\n # Build the Lever\n \n When the work isn't trivial, build the tool that does it instead of doing it by hand.\n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

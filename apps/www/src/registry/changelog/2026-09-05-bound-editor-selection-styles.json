@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-05-bound-editor-selection-styles",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-05-bound-editor-selection-styles.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Responsive scrolling beside large editors",
+  "targets": [
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "settings-dialog",
+      "files": ["apps/www/src/registry/components/editor/settings-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-05-table-responsive-scrolling-beside-large-74ffc3a8",
+      "kind": "fix",
+      "summary": "Responsive scrolling beside large editors",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table", "settings-dialog"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-bound-editor-selection-styles",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-05-code-block-native-text-geometry",
+      "kind": "fix",
+      "summary": "Responsive scrolling around large highlighted native code blocks",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-bound-editor-selection-styles",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

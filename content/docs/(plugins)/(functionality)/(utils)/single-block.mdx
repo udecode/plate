@@ -48,7 +48,7 @@ export const editor = createEditor({
 });
 ```
 
-## Compose With A Broad Editor Kit
+## Compose with a broad editor kit
 
 `SingleBlockPlugin` weakly disables an installed `TrailingBlockPlugin`, so the
 package remains correct even when it cannot control the consumer's broad kit:
@@ -105,7 +105,7 @@ Both behavior plugins register Plite corrections.
 Each correction runs in the active Plite transaction, so the root collapse
 publishes as one update.
 
-## Demo Toggle
+## Demo toggle
 
 The registry example switches plugins from a checkbox.
 
@@ -131,4 +131,4 @@ const plugins = [
 | `SingleLinePlugin`                     | `platejs` | One root block with all line breaks removed.                              |
 | `PLUGINS.singleBlock`                  | `platejs` | Plugin name for `SingleBlockPlugin`.                                      |
 | `PLUGINS.singleLine`                   | `platejs` | Plugin name for `SingleLinePlugin`.                                       |
-| `override.plugins[PLUGINS.trailingBlock]` | `platejs`          | Package-owned weak peer that disables Trailing Block only when installed. |
+| `override[PLUGINS.trailingBlock]`         | `platejs`          | Package-owned weak peer that disables Trailing Block only when installed. |

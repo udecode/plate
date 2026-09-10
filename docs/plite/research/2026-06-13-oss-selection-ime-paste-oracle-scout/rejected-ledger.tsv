@@ -1,0 +1,5 @@
+id	source	reason	disposition
+monaco-command-smoke-as-native-proof	Monaco smoke tests	Monaco uses editor command APIs for typing smoke; useful for Monaco packaging but not a substitute for Slate native mouse/keyboard/selection proof.	rejected
+tiptap-as-separate-core-input-engine	Tiptap package scan	Tiptap mostly rides ProseMirror for core browser input; useful feature-level ideas exist, but it is not an independent low-level oracle source here.	rejected
+feature-paste-as-generic-proof	feature package scan	Many paste findings are feature-specific, especially tables/images/links; generic Slate proof should not copy those semantics wholesale.	rejected
+raw-mobile-claim-from-discussion	ProseMirror Android discussion	Discussion confirms mobile/contenteditable risk, but no raw-device artifact ran in this packet.	rejected-until-device-proof

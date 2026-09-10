@@ -1949,7 +1949,7 @@ describe('editor schema', () => {
     const editor = createEditor();
     editor.install(
       defineContractSchema('element-behavior', {
-        'editable-embed': { void: 'editable-island' } as const,
+        'text-embed': { content: schema.content.text() } as const,
         'mention-card': {
           atom: true,
           isolating: true,
@@ -1959,7 +1959,7 @@ describe('editor schema', () => {
     );
 
     const atom = { type: 'mention-card', children: [{ text: 'label' }] };
-    const island = { type: 'editable-embed', children: [{ text: 'inside' }] };
+    const textEmbed = { type: 'text-embed', children: [{ text: 'inside' }] };
 
     assert.equal(
       editor.read((state) => state.schema.isAtom(atom)),
@@ -1974,11 +1974,11 @@ describe('editor schema', () => {
       true
     );
     assert.equal(
-      editor.read((state) => state.schema.isEditableIsland(island)),
-      true
+      editor.read((state) => state.schema.isVoid(textEmbed)),
+      false
     );
     assert.equal(
-      editor.read((state) => state.schema.isAtom(island)),
+      editor.read((state) => state.schema.isAtom(textEmbed)),
       false
     );
   });

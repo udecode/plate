@@ -3,18 +3,11 @@ import type {
   AnyBasePluginContext,
   BasePluginContext,
 } from '../lib/plugin/BasePlugin';
-import type {
-  BasePluginDefinition,
-  InferPluginDecoration,
-} from '../lib/plugin/PluginDefinition';
+import type { BasePluginDefinition } from '../lib/plugin/PluginDefinition';
 import type { AnyObject } from '../lib/types/AnyObject';
 import type { RenderElementProps } from '../lib/types/RenderElementProps';
 import type { StaticRenderLeafProps } from '../lib/types/RenderLeafProps';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
-
-export type BoxStaticProps = React.ComponentProps<'div'> & {
-  as?: React.ElementType;
-};
 
 export type PliteRenderElementProps<
   N extends Element = Element,
@@ -24,8 +17,7 @@ export type PliteRenderElementProps<
 export type PliteRenderLeafProps<
   N extends Text = Text,
   C extends BasePluginDefinition = BasePluginDefinition,
-> = PliteRenderNodeProps<C> &
-  StaticRenderLeafProps<N, N & Partial<InferPluginDecoration<NoInfer<C>>>>;
+> = PliteRenderNodeProps<C> & StaticRenderLeafProps<N, N>;
 
 type ErasedBasePluginContext = AnyBasePluginContext;
 

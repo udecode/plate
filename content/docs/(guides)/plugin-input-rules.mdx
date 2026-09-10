@@ -7,7 +7,7 @@ Plugin Input Rules convert typed editor patterns: markdown prefixes become headi
 Use [Plugin Rules](/docs/plugin-rules) for node behavior policy such as how `Enter` or `Backspace` works inside a block.
 This page covers shipped markdown rules, local substitutions, custom authoring, execution order, and helper reference.
 
-## On This Page
+## On this page
 
 - [What Plugin Input Rules Are](#what-plugin-input-rules-are)
 - [Quick Start](#quick-start)
@@ -17,7 +17,7 @@ This page covers shipped markdown rules, local substitutions, custom authoring, 
 - [How Rule Execution Works](#how-rule-execution-works)
 - [API Reference](#api-reference)
 
-## What Plugin Input Rules Are
+## What plugin input rules are
 
 When you type a character, press Enter, or paste data, Plate asks every
 registered input rule "does this fire?" before running the default transform.
@@ -52,7 +52,7 @@ rules; you must pass them to `inputRules`. There is no hidden default set and no
 string-keyed activation layer.
 </Callout>
 
-## Quick Start
+## Quick start
 
 Input rules ship as concrete instances you pass into a plugin's `inputRules` array. The two fastest setup paths are:
 
@@ -61,7 +61,7 @@ Input rules ship as concrete instances you pass into a plugin's `inputRules` arr
 
 You can use one, both, or neither.
 
-### Add Feature-Owned Markdown Rules
+### Add feature-owned Markdown rules
 
 Use the same kits you already use for nodes and marks. Each kit registers its own markdown rules on the right plugins, so you don't wire anything by hand:
 
@@ -92,7 +92,7 @@ fence creates a code block, `- ` starts a bulleted list, `[label](url)` creates
 a link, and so on. Each kit owns its rule wiring — the kit source shows exactly
 which rules it registers and on which plugins.
 
-### Add Local Text Substitutions
+### Add local text substitutions
 
 `AutoformatKit` is copied registry code that lives in your app and uses
 `createTextSubstitutionInputRule` under the hood. You own the code and can edit
@@ -124,13 +124,13 @@ path.
 
 That's the whole surface in under a minute. Type `# `, type `->`, watch them land.
 
-## Feature-Owned Markdown Rules
+## Feature-owned Markdown rules
 
 Feature packages export semantic rule families. Each family exposes one or more
 factory functions that return a concrete rule you pass into the matching
 plugin's `inputRules`.
 
-### Basic Blocks
+### Basic blocks
 
 Basic block rules ship with `platejs`. Register them per plugin.
 
@@ -186,7 +186,7 @@ export const HorizontalRuleInputRulesPlugin = HorizontalRulePlugin.configure({
 
 `---` and `___` both create a horizontal rule. Register only the variants you want to support.
 
-### Basic Marks
+### Basic marks
 
 Mark rules live in the same package. Each factory returns a single rule, so register one per trigger you want to support.
 
@@ -285,7 +285,7 @@ Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~`.
 Superscript is `^x^`. Highlight accepts `==x==` or `≡x≡` — pick either, both,
 or pass a different variant.
 
-### Code Blocks
+### Code blocks
 
 Code blocks are fenced, which makes them different from simple marks or block prefixes. They ship as a **block fence rule**, and you must pass `on` to pick when the fence commits.
 
@@ -401,7 +401,7 @@ Register whichever variants you want — you can pick one, two, or all four.
 
 That's the full feature-owned catalog. Every package you add contributes its own rules; the editor picks them up the moment you register them.
 
-## Local Copied Shortcuts
+## Local copied shortcuts
 
 Sometimes you want small text substitutions — smart quotes, arrows, fractions,
 trademarks — that don't belong to any feature package. Use
@@ -447,7 +447,7 @@ A few details worth knowing:
 - `trigger` defaults to the last character of each match, which is almost always what you want. Override it only if you need a distinct commit char.
 - `enabled` gates the whole rule, so you don't have to guard each pattern individually.
 
-### Use AutoformatKit As A Starting Point
+### Use AutoformatKit as a starting point
 
 The `autoformat.tsx` file in Plate's registry wires up a full set of
 substitutions — arrows, comparisons, equalities, fractions, legal symbols, smart
@@ -506,14 +506,14 @@ substitutions with feature-owned `inputRules` in copied registry code or your
 own local kit so the rules stay visible and editable.
 </Callout>
 
-### When To Reach For defineInputRule
+### When to reach for defineInputRule
 
 Text substitution covers the glyph-for-glyph case. When you need more — reading
 the current block, dispatching a richer transform, or detecting a pattern that
 isn't a simple character match — drop down to `defineInputRule` or one of the
 low-level builders.
 
-## Custom Rules
+## Custom rules
 
 Everything above is sugar on top of three low-level authoring surfaces:
 
@@ -526,7 +526,7 @@ Everything above is sugar on top of three low-level authoring surfaces:
 
 Use this section when none of the shipped families fit your need or when you're authoring your own reusable rule family.
 
-### Register Explicit Rule Instances
+### Register explicit rule instances
 
 Rules are concrete objects. You pass them into `inputRules` exactly as-is. To
 override a field like `priority` or `enabled` on a finished instance, spread the
@@ -563,7 +563,7 @@ const gatedBlockquoteRule = {
 };
 ```
 
-### Plugin-Side Factories
+### Plugin-side factories
 
 For plugin authors, the `inputRules` option also accepts a function that
 receives a `rule` builder. Use this form when your rules depend on plugin-local
@@ -618,7 +618,7 @@ The `rule` builder exposes six primitives:
 
 Use the factory form when you need that co-location; use the array form when you just want to register a handful of concrete instances.
 
-### Author A Rule Family
+### Author a rule family
 
 When you're shipping a package, you usually want a public factory like
 `MyNodeRules.markdown(...)` that takes a narrow options object and hides the
@@ -666,7 +666,7 @@ Done. Between `defineInputRule`, the four specialized builders, the plugin-side
 `rule` builder, and `createRuleFactory`, every rule in Plate — yours included —
 comes from the same small core.
 
-## How Rule Execution Works
+## How rule execution works
 
 Input rules run inside the `insertText`, `insertBreak`, and `insertData`
 transforms. For each call, the runtime walks every registered rule for that
@@ -691,7 +691,7 @@ The high-level factories set `target` for you:
 
 `defineInputRule` lets you pick any target by setting the `target` field directly.
 
-### Selection Context
+### Selection context
 
 Every `enabled`, `resolve`, and `apply` call receives a context object with the live editor, the selection state, and a handful of lazy helpers.
 
@@ -749,7 +749,7 @@ and makes rules harder to compose.
 
 Low-level surface. Reach for this when the high-level factories don't cover your case. Everything below is exported from `platejs`.
 
-### Rule Targets
+### Rule targets
 
 ```ts
 type InputRuleTarget = 'insertText' | 'insertBreak' | 'insertData';
@@ -1018,7 +1018,7 @@ import { matchBlockStart } from 'platejs';
 const startMatch = matchBlockStart(context, { match: '>' });
 ```
 
-### Package Rule Families
+### Package rule families
 
 Every family below is a single export from its package. Each `.markdown()` (or `.autolink()`) call returns a concrete rule you pass into the matching plugin's `inputRules`.
 

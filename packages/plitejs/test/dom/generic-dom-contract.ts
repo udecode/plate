@@ -10,9 +10,9 @@ import {
 } from 'plitejs';
 import {
   clipboardHandler,
-  defineHostCodec,
   dom,
   type DOMClipboardHandler,
+  type HostCodec,
   hostCodecs,
 } from 'plitejs/dom';
 
@@ -34,7 +34,7 @@ declare const pliteNode: PliteNode;
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },
 ];
-const jsonCodec = defineHostCodec<CustomValue>({
+const jsonCodec: HostCodec<CustomValue> = {
   format: 'application/x-custom-value+json',
   key: 'custom-value-json',
   parse: ({ data, state }) => {
@@ -49,7 +49,7 @@ const jsonCodec = defineHostCodec<CustomValue>({
 
     return JSON.stringify({ children, content });
   },
-});
+};
 
 const DomExtension = dom();
 const ImageExtension = defineExtension('img', {

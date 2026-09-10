@@ -5,9 +5,8 @@ import matter from 'gray-matter';
 
 import { PLATE_DEFAULT_REGISTRY_STYLE } from '@/lib/plate-registry-styles';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { registryEditor } from '@/registry/registry-editor';
+import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
-import { registryFeatures } from '@/registry/registry-features';
 import type { SidebarNavItem } from '@/types/nav';
 
 import {
@@ -352,9 +351,9 @@ async function getFrontmatterTitle(filePath: string) {
 
 function checkNavRoutes(meta: DocsMeta, sourceUrls: Set<string>) {
   const registryFallbackUrls = new Set([
-    ...[...registryEditor, ...registryFeatures].map(
-      (item) => `/docs/components/${item.name}`
-    ),
+    ...registry.items
+      .filter((item) => item.type === 'registry:component')
+      .map((item) => `/docs/components/${item.name}`),
     ...registryExamples.map(
       (item) => `/docs/examples/${item.name.replace(DEMO_SUFFIX_REGEX, '')}`
     ),

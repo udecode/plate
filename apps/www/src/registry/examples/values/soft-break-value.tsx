@@ -21,8 +21,6 @@ export const softBreakValue = (
     <hblockquote>
       <hp>Try here ⏎</hp>
     </hblockquote>
-    <hcodeblock>
-      <hcodeline>And here ⏎ as well.</hcodeline>
-    </hcodeblock>
+    <hcodeblock>And here ⏎ as well.</hcodeblock>
   </fragment>
 );

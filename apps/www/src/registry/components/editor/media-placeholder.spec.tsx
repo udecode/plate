@@ -8,7 +8,7 @@ import {
   mock,
 } from 'bun:test';
 
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
 mock.module('@/lib/utils', () => ({
@@ -51,87 +51,45 @@ describe('ImageProgress', () => {
     mock.restore();
   });
 
-  it('reports natural geometry before releasing the local preview', async () => {
+  it('renders a local preview and releases its object URL on unmount', async () => {
     const { ImageProgress } = await import(
       `./media-placeholder?test=${Math.random().toString(36).slice(2)}`
     );
-    const onNaturalSize = mock();
     const file = new File(['image'], 'image.png', { type: 'image/png' });
-    const view = render(
-      <ImageProgress file={file} onNaturalSize={onNaturalSize} />
-    );
+    const view = render(<ImageProgress file={file} progress={25} />);
     const image = await waitFor(() => {
       const element = view.container.querySelector('img');
-
       if (!element) throw new Error('Expected image preview');
-
       return element;
     });
-
-    Object.defineProperties(image, {
-      naturalHeight: { value: 360 },
-      naturalWidth: { value: 640 },
-    });
-    fireEvent.load(image);
-
-    expect(onNaturalSize).toHaveBeenCalledWith(file, {
-      naturalHeight: 360,
-      naturalWidth: 640,
-    });
-
+    expect(image.getAttribute('src')).toBe('blob:image-preview-1');
+    expect(image.getAttribute('alt')).toBe('image.png');
+    expect(view.getByText('25%')).toBeTruthy();
     view.unmount();
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:image-preview-1');
   });
 
-  it('never attributes a stale preview to a colliding replacement file', async () => {
+  it('replaces the preview for a different file with colliding metadata', async () => {
     const { ImageProgress } = await import(
       `./media-placeholder?test=${Math.random().toString(36).slice(2)}`
     );
-    const onNaturalSize = mock();
     const fileOptions = { lastModified: 1, type: 'image/png' };
     const firstFile = new File(['same'], 'image.png', fileOptions);
     const secondFile = new File(['same'], 'image.png', fileOptions);
-    const view = render(
-      <ImageProgress file={firstFile} onNaturalSize={onNaturalSize} />
+    const view = render(<ImageProgress file={firstFile} />);
+    await waitFor(() =>
+      expect(view.container.querySelector('img')?.getAttribute('src')).toBe(
+        'blob:image-preview-1'
+      )
     );
-    const firstImage = await waitFor(() => {
-      const element = view.container.querySelector('img');
-
-      if (element?.getAttribute('src') !== 'blob:image-preview-1') {
-        throw new Error('Expected first image preview');
-      }
-
-      return element;
-    });
-
-    view.rerender(
-      <ImageProgress file={secondFile} onNaturalSize={onNaturalSize} />
+    view.rerender(<ImageProgress file={secondFile} />);
+    await waitFor(() =>
+      expect(view.container.querySelector('img')?.getAttribute('src')).toBe(
+        'blob:image-preview-2'
+      )
     );
-    const secondImage = await waitFor(() => {
-      const element = view.container.querySelector('img');
-
-      if (element?.getAttribute('src') !== 'blob:image-preview-2') {
-        throw new Error('Expected replacement image preview');
-      }
-
-      return element;
-    });
-
-    Object.defineProperties(firstImage, {
-      naturalHeight: { value: 180 },
-      naturalWidth: { value: 320 },
-    });
-    fireEvent.load(firstImage);
-    expect(onNaturalSize).not.toHaveBeenCalled();
-
-    Object.defineProperties(secondImage, {
-      naturalHeight: { value: 360 },
-      naturalWidth: { value: 640 },
-    });
-    fireEvent.load(secondImage);
-    expect(onNaturalSize).toHaveBeenCalledWith(secondFile, {
-      naturalHeight: 360,
-      naturalWidth: 640,
-    });
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:image-preview-1');
+    view.unmount();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:image-preview-2');
   });
 });

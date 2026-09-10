@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -7,7 +9,6 @@ import {
   createAffectedPlan,
   createCheckSteps,
   getComparisonBase,
-  plateAdopterPackages,
   plitePackages,
   repoRoot,
 } from './check-plite.mjs';
@@ -20,7 +21,6 @@ const compareStrings = (left, right) => {
 };
 
 const ids = (steps) => steps.map(({ id }) => id);
-const adopterNames = plateAdopterPackages.map(({ name }) => name);
 const collectFiles = (root) => {
   const files = [];
 
@@ -65,6 +65,111 @@ test('strict and package checks compose each proof owner exactly once', () => {
   );
 });
 
+test('planner edits execute only their contract while shared inputs keep full proof', () => {
+  const steps = createCheckSteps(
+    'dev',
+    createAffectedPlan([
+      'tooling/scripts/check-plite.mjs',
+      'tooling/scripts/check-plite.test.mjs',
+      'docs/plans/example.md',
+    ])
+  );
+
+  assert.deepEqual(steps, [
+    {
+      args: ['--test', 'tooling/scripts/check-plite.test.mjs'],
+      command: 'node',
+      id: 'contracts',
+    },
+  ]);
+  for (const input of ['pnpm-lock.yaml', 'tooling/config/tsconfig.base.json']) {
+    const shared = createCheckSteps('dev', createAffectedPlan([input]));
+    assert.deepEqual(shared.find(({ id }) => id === 'contracts')?.args, [
+      'check:plite:contracts',
+    ]);
+    assert.ok(ids(shared).includes('browser-smoke'));
+  }
+});
+
+test('browser runner tests stay headless and runtime edits retain browser proof', () => {
+  const input = 'apps/plite/scripts/plite-browser-runner.test.mjs';
+  const tests = createAffectedPlan([input]);
+  assert.equal(tests.browserSmoke, false);
+  assert.deepEqual(createCheckSteps('dev', tests), [
+    {
+      args: ['--test', input],
+      command: 'node',
+      id: 'contracts',
+    },
+  ]);
+  const runtime = createAffectedPlan([
+    'apps/plite/scripts/plite-browser-runner.mjs',
+  ]);
+  assert.equal(runtime.browserSmoke, true);
+  assert.ok(runtime.contractFiles.includes(input));
+  assert.ok(
+    runtime.contractFiles.includes(
+      'apps/plite/scripts/run-plite-browser.integration.test.mjs'
+    )
+  );
+});
+
+test('CI uses the same affected decision and fails closed without a valid base', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-proof-plan-'));
+  const output = path.join(directory, 'output');
+  const run = (mode, environment) => {
+    fs.writeFileSync(output, '');
+    const env = { ...process.env, GITHUB_OUTPUT: output };
+    delete env.PLITE_CHECK_BASE;
+    delete env.PLITE_CHECK_CHANGED_FILES;
+    delete env.GITHUB_BASE_SHA;
+    const result = spawnSync(
+      process.execPath,
+      ['tooling/scripts/check-plite.mjs', mode, '--dry-run', '--github-output'],
+      { cwd: repoRoot, env: { ...env, ...environment }, encoding: 'utf-8' }
+    );
+    assert.equal(result.status, 0, result.stderr);
+    return fs.readFileSync(output, 'utf-8');
+  };
+  try {
+    for (const input of [
+      'docs/plans/example.md',
+      'tooling/scripts/check-plite.mjs',
+      'packages/plitejs/test/react/plite-element-node-ref.test.tsx',
+      'apps/plite/scripts/plite-browser-runner.test.mjs',
+    ]) {
+      assert.equal(
+        run('dev', { PLITE_CHECK_CHANGED_FILES: input }),
+        'browser=false\n',
+        input
+      );
+    }
+    for (const input of [
+      'packages/plitejs/src/react/hooks/use-plite-node-ref.tsx',
+      'apps/plite/tests/plite-browser/plite-examples.spec.ts',
+      '.github/actions/pnpm-install/action.yml',
+      'tooling/entrypoints/entrypoint-runtime.mjs',
+      'apps/www/src/registry/components/editor/editor.tsx',
+    ]) {
+      assert.equal(
+        run('dev', { PLITE_CHECK_CHANGED_FILES: input }),
+        'browser=true\n',
+        input
+      );
+    }
+    assert.equal(
+      run('strict', { PLITE_CHECK_CHANGED_FILES: '' }),
+      'browser=true\n'
+    );
+    assert.equal(
+      run('dev', { PLITE_CHECK_BASE: 'missing-proof-base-ref' }),
+      'browser=true\n'
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('affected package work uses bounded workspace concurrency', () => {
   const plan = createAffectedPlan(['packages/plitejs/src/index.ts']);
   const steps = createCheckSteps('dev', plan);
@@ -105,13 +210,7 @@ test('a core source change invalidates every dependent Plite package', () => {
   const plan = createAffectedPlan(['packages/plitejs/src/index.ts']);
 
   assert.deepEqual(plan.packageNames, ['plitejs', 'platejs', '@platejs/test']);
-  assert.deepEqual(plan.adopterPackageNames, adopterNames);
-  assert.deepEqual(plan.adopterTestPackageNames, []);
-  assert.deepEqual(plan.typecheckPackageNames, [
-    ...plan.packageNames,
-    ...adopterNames,
-    'plite',
-  ]);
+  assert.deepEqual(plan.typecheckPackageNames, [...plan.packageNames, 'plite']);
   assert.deepEqual(plan.testPackageNames, plan.packageNames);
   assert.equal(plan.packageNames.includes('@platejs/test'), true);
   assert.equal(plan.browserSmoke, true);
@@ -146,6 +245,16 @@ test('Plite-family test edits do not invalidate runtime dependents', () => {
   assert.equal(domTest.browserSmoke, false);
 });
 
+test('a runtime deletion retains proof even when its replacement is outside the package', () => {
+  const plan = createAffectedPlan([
+    'packages/plitejs/src/react/hooks/use-plite-node-ref.tsx',
+    'docs/archived-node-ref.tsx',
+  ]);
+
+  assert.equal(plan.browserSmoke, true);
+  assert.deepEqual(plan.packageNames, ['plitejs', 'platejs', '@platejs/test']);
+});
+
 test('fixture JSX config maps to the consolidated package proof', () => {
   for (const input of [
     'config/plite-test-jsx.js',
@@ -171,35 +280,6 @@ test('a Plite DOM runtime edit reaches consolidated dependents', () => {
   const plan = createAffectedPlan(['packages/plitejs/src/dom/index.ts']);
 
   assert.deepEqual(plan.packageNames, ['plitejs', 'platejs', '@platejs/test']);
-  assert.deepEqual(plan.adopterPackageNames, adopterNames);
-  assert.deepEqual(plan.adopterTestPackageNames, []);
-});
-
-test('reviewed Plate adopters map to package-local source-first proof', () => {
-  for (const { name, root } of plateAdopterPackages) {
-    if (name === 'platejs') continue;
-
-    const plan = createAffectedPlan([`${root}/src/index.ts`]);
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(repoRoot, root, 'package.json'), 'utf-8')
-    );
-
-    assert.equal(manifest.name, name, root);
-    assert.equal(manifest.scripts?.typecheck, 'plate-pkg p:typecheck', root);
-    assert.equal(typeof manifest.scripts?.test, 'string', root);
-    assert.deepEqual(plan.packageNames, [], root);
-    assert.deepEqual(plan.adopterPackageNames, [name], root);
-    assert.deepEqual(plan.adopterTestPackageNames, [name], root);
-    assert.deepEqual(plan.typecheckPackageNames, [name], root);
-    assert.deepEqual(plan.testPackageNames, [name], root);
-    assert.equal(plan.relevant, true, root);
-    assert.equal(plan.appTypecheck, false, root);
-    assert.equal(plan.browserSmoke, false, root);
-    assert.deepEqual(ids(createCheckSteps('dev', plan)), [
-      'typecheck',
-      'package-tests',
-    ]);
-  }
 });
 
 test('Plate runtime invalidates integration owners while Plate tests stay local', () => {
@@ -210,19 +290,14 @@ test('Plate runtime invalidates integration owners while Plate tests stay local'
     'packages/platejs/src/lib/editor/Editor.spec.ts',
   ]);
 
-  assert.deepEqual(runtime.adopterPackageNames, adopterNames);
-  assert.deepEqual(runtime.adopterTestPackageNames, []);
   assert.deepEqual(runtime.packageNames, ['platejs', '@platejs/test']);
   assert.deepEqual(runtime.typecheckPackageNames, [
     'platejs',
     '@platejs/test',
-    ...adopterNames,
     'plite',
   ]);
   assert.deepEqual(runtime.testPackageNames, ['platejs', '@platejs/test']);
   assert.equal(runtime.browserSmoke, true);
-  assert.deepEqual(testOnly.adopterPackageNames, []);
-  assert.deepEqual(testOnly.adopterTestPackageNames, []);
   assert.deepEqual(testOnly.packageNames, ['platejs']);
   assert.deepEqual(testOnly.typecheckPackageNames, ['platejs']);
   assert.deepEqual(testOnly.testPackageNames, ['platejs']);
@@ -414,7 +489,6 @@ test('Plite CI watches and typechecks the bounded www adopter surface', () => {
     )?.length,
     2
   );
-  assert.doesNotMatch(workflow, /check:plite:adopters/u);
   assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.ts'));
   assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.tsx'));
   assert.ok(config.include.includes('src/types/**/*.d.ts'));
@@ -511,8 +585,7 @@ test('Plite workflows route benchmark authorities to one package-check owner', (
     'tooling/scripts/run-bounded-process.mjs',
     'tooling/scripts/run-bounded-process.test.mjs',
     'tooling/scripts/run-bounded-process.slow.test.mjs',
-    'tooling/scripts/test-fast.mjs',
-    'tooling/scripts/test-slow.mjs',
+    'tooling/scripts/test-suite.mjs',
     'tooling/scripts/test-slowest.mjs',
     'tooling/scripts/test-suite-routing.test.mjs',
   ]) {
@@ -534,24 +607,6 @@ test('Plite workflows route benchmark authorities to one package-check owner', (
   assert.doesNotMatch(pliteWorkflow, /plite:bench:targets:run/u);
 });
 
-test('Plite runtime has no redundant package-adopter lane', () => {
-  const runtime = createAffectedPlan(['packages/plitejs/src/index.ts']);
-
-  const workflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const sourceTypecheck = fs.readFileSync(
-    path.join(repoRoot, 'tooling/scripts/typecheck-package-source.mjs'),
-    'utf-8'
-  );
-
-  assert.deepEqual(runtime.adopterPackageNames, []);
-  assert.doesNotMatch(workflow, /^ {2}plite-adopters:$/mu);
-  assert.doesNotMatch(workflow, /check:plite:adopters/u);
-  assert.doesNotMatch(sourceTypecheck, /\bbuild\b/u);
-});
-
 test('local affected proof uses working changes unless CI supplies a base', () => {
   assert.equal(getComparisonBase({}), null);
   assert.equal(
@@ -567,15 +622,13 @@ test('local affected proof uses working changes unless CI supplies a base', () =
   );
 });
 
-test('Plate runtime fans out to all adopters', () => {
+test('Plate runtime selects its package dependents and browser proof', () => {
   const core = createAffectedPlan(['packages/platejs/src/index.ts']);
 
   assert.deepEqual(core.packageNames, ['platejs', '@platejs/test']);
-  assert.deepEqual(core.adopterPackageNames, adopterNames);
   assert.deepEqual(core.typecheckPackageNames, [
     'platejs',
     '@platejs/test',
-    ...adopterNames,
     'plite',
   ]);
   assert.deepEqual(core.testPackageNames, ['platejs', '@platejs/test']);
@@ -592,7 +645,6 @@ test('root scripts keep source-first typecheck and strict browser closure separa
     scripts['check:plite'],
     'node tooling/scripts/check-plite.mjs strict'
   );
-  assert.equal(scripts['check:plite:adopters'], undefined);
   assert.equal(
     scripts['check:plite:packages'],
     'node tooling/scripts/check-plite.mjs packages'

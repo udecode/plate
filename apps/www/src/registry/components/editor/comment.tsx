@@ -14,31 +14,15 @@ import {
   TrashIcon,
   XIcon,
 } from 'lucide-react';
-import {
-  type DefinitionOf,
-  type Path,
-  type Value,
-  nanoid,
-  NodeApi,
-  TextApi,
-} from 'platejs';
-import {
-  BaseCommentPlugin,
-  getCommentCount,
-  getCommentKey,
-  getDraftCommentKey,
-} from 'platejs/comment';
-import type { CommentPlugin } from 'platejs/comment/react';
+import { type PliteDecorationAttributes, type Value, NodeApi } from 'platejs';
+import type { CommentMessage, CommentThread } from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
 import {
   Plate,
-  PlateLeaf,
-  type PlateLeafProps,
-  toPlatePlugin,
-  useEditor,
-  useEditorPlugin,
-  useEditorSelector,
   useCreateEditor,
+  useEditorPlugin,
   usePluginStore,
+  useStaticEditor,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -46,11 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
-import {
-  type TDiscussion,
-  discussionPlugin,
-  getDiscussionClickTarget,
-} from '@/registry/components/editor/discussion';
+import { BaseBasicMarksKit } from '@/registry/components/editor/basic-marks-static';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,321 +39,466 @@ import {
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
 
-import { Editor, EditorContainer } from './editor';
+import { Editor, EditorContainer, EditorView } from './editor';
 
-export type CommentPluginState = {
-  activeId: string | null;
-  commentingBlock: Path | null;
+export const commentDecorationAttributes: PliteDecorationAttributes = {
+  className:
+    'border-b-2 border-b-highlight/40 bg-highlight/15 transition-colors hover:border-b-highlight/70 hover:bg-highlight/25 data-comment-active:border-b-highlight! data-comment-active:bg-highlight/30! [&_[data-comment-id]]:border-b-highlight/80 [&_[data-comment-id]]:bg-highlight/25',
 };
 
-const initialState: CommentPluginState = {
-  activeId: null,
-  commentingBlock: null,
-};
+export const CommentKit = [
+  CommentsPlugin.configure({
+    decorate: { attributes: commentDecorationAttributes },
+  }),
+];
 
-export function CommentLeaf(props: PlateLeafProps<typeof CommentPlugin>) {
-  const { children, leaf } = props;
-  const { api, store } = useEditorPlugin(commentPlugin);
-  const activeId = usePluginStore(commentPlugin, 'activeId');
-  const isOverlapping = getCommentCount(leaf) > 1;
-  const currentId = api.id(leaf);
-  const isActive = activeId === currentId;
+export const createCommentValue = (text = ''): Value => [
+  { children: [{ text }], type: 'paragraph' },
+];
 
-  return (
-    <PlateLeaf
-      {...props}
-      className={cn(
-        'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200 hover:border-b-highlight hover:bg-highlight/25',
-        isActive && 'border-b-highlight bg-highlight/25',
-        isOverlapping &&
-          'border-b-2 border-b-highlight/[.7] bg-highlight/25 hover:border-b-highlight hover:bg-highlight/45',
-        isActive && isOverlapping && 'border-b-highlight bg-highlight/45'
-      )}
-      attributes={{
-        ...props.attributes,
-        onClick: () => {
-          store.set({ activeId: currentId ?? null });
-        },
-      }}
-    >
-      {children}
-    </PlateLeaf>
+const cloneCommentValue = (body: Value): Value => structuredClone(body);
+const getCommentText = (body: Value) =>
+  body.map((node) => NodeApi.string(node)).join('\n');
+const normalizeBody = (body: Value) =>
+  getCommentText(body).trim() ? cloneCommentValue(body) : null;
+
+const EMPTY_COMMENT_IDS = Object.freeze([]) as readonly string[];
+
+export const useCommentUser = (id: string | null) =>
+  usePluginStore(CommentsPlugin, (state) => (id ? state.users[id] : undefined));
+
+const useCurrentCommentUserId = () =>
+  usePluginStore(CommentsPlugin, 'currentUserId');
+
+export const usePendingComment = () => {
+  const { api: comments } = useEditorPlugin(CommentsPlugin);
+
+  return React.useSyncExternalStore(
+    comments.subscribePending,
+    () => comments.getSnapshot().pending,
+    () => comments.getSnapshot().pending
   );
+};
+
+export const useCommentThread = (id: string) => {
+  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const subscribe = React.useCallback(
+    (listener: () => void) => comments.subscribeThread(id, listener),
+    [comments, id]
+  );
+
+  return React.useSyncExternalStore(
+    subscribe,
+    () => comments.getThread(id),
+    () => comments.getThread(id)
+  );
+};
+
+export const useVisibleCommentThreadIds = () => {
+  const portal = useEditorPlugin(CommentsPlugin);
+  const comments = portal.installed ? portal.api : null;
+  const subscribe = React.useCallback(
+    (listener: () => void) =>
+      comments?.subscribeVisibleThreadIds(listener) ?? (() => {}),
+    [comments]
+  );
+
+  return React.useSyncExternalStore(
+    subscribe,
+    () => comments?.getSnapshot().visibleThreadIds ?? EMPTY_COMMENT_IDS,
+    () => comments?.getSnapshot().visibleThreadIds ?? EMPTY_COMMENT_IDS
+  );
+};
+
+export const useDraftCommentThreadIds = () => {
+  const portal = useEditorPlugin(CommentsPlugin);
+  const comments = portal.installed ? portal.api : null;
+  const subscribe = React.useCallback(
+    (listener: () => void) =>
+      comments?.subscribeDraftThreadIds(listener) ?? (() => {}),
+    [comments]
+  );
+
+  return React.useSyncExternalStore(
+    subscribe,
+    () => comments?.getSnapshot().draftThreadIds ?? EMPTY_COMMENT_IDS,
+    () => comments?.getSnapshot().draftThreadIds ?? EMPTY_COMMENT_IDS
+  );
+};
+
+export function CommentComposer(props: {
+  ariaLabel: string;
+  onSubmit: (
+    body: Value
+  ) => boolean | string | null | Promise<boolean | string | null>;
+  placeholder: string;
+  autoFocus?: boolean;
+  initialBody?: Value;
+  onCancel?: () => void;
+}) {
+  return <CommentInput {...props} showAvatar />;
 }
 
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-  on: {
-    click: ({ api, event, name, read, store }) => {
-      const activeTarget = getDiscussionClickTarget({
-        selector: `.plite-${name}`,
-        target: event.target,
-      });
-
-      if (!activeTarget) {
-        store.set({ activeId: null });
-        return;
-      }
-
-      const commentEntry = read.node();
-
-      store.set({
-        activeId: commentEntry ? (api.id(commentEntry[0]) ?? null) : null,
-      });
-    },
-  },
-  initialState,
-})
-  .extend(({ schema, store }) => ({
-    update: ({ tx }) => ({
-      setDraft: (options = {}) => {
-        const selection = tx.selection();
-        const commentingBlock = selection
-          ? selection.focus.path.slice(0, 1)
-          : null;
-
-        if (tx.selection.isCollapsed()) {
-          const blockEntry = tx.nodes.block();
-
-          if (blockEntry) {
-            tx.selection.set(blockEntry[1]);
-          }
-        }
-
-        tx.nodes.set(
-          {
-            [getDraftCommentKey()]: true,
-            [schema.key]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
-
-        tx.selection.collapse();
-        store.set({ activeId: getDraftCommentKey() });
-        store.set({ commentingBlock });
-      },
-    }),
-  }))
-  .configure({
-    component: CommentLeaf,
-    shortcuts: {
-      setDraft: { keys: 'mod+shift+m' },
-    },
-  });
-
-export type CommentDefinition = DefinitionOf<typeof commentPlugin>;
-
-export const CommentKit = [commentPlugin] as const;
-
-export type TComment = {
-  id: string;
-  contentRich: Value;
-  createdAt: Date;
-  discussionId: string;
-  isEdited: boolean;
-  userId: string;
-};
-
-export function Comment(props: {
-  comment: TComment;
-  discussionLength: number;
-  editingId: string | null;
-  index: number;
-  setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
-  documentContent?: string;
-  showDocumentContent?: boolean;
-  onEditorClick?: () => void;
+function CommentInput({
+  ariaLabel,
+  autoFocus = false,
+  initialBody,
+  onCancel,
+  onSubmit,
+  placeholder,
+  showAvatar,
+}: {
+  ariaLabel: string;
+  onSubmit: (
+    body: Value
+  ) => boolean | string | null | Promise<boolean | string | null>;
+  placeholder: string;
+  showAvatar: boolean;
+  autoFocus?: boolean;
+  initialBody?: Value;
+  onCancel?: () => void;
 }) {
-  const {
-    comment,
-    discussionLength,
-    documentContent,
-    editingId,
-    index,
-    setEditingId,
-    showDocumentContent = false,
-    onEditorClick,
-  } = props;
-
-  const editor = useEditor();
-  const userInfo = usePluginStore(discussionPlugin, 'user', comment.userId);
-  const currentUserId = usePluginStore(discussionPlugin, 'currentUserId');
-
-  const resolveDiscussion = (id: string) => {
-    const updatedDiscussions = editor
-      .plugin(discussionPlugin)
-      .store.get('discussions')
-      .map((discussion) => {
-        if (discussion.id === id) {
-          return { ...discussion, isResolved: true };
-        }
-        return discussion;
-      });
-    editor
-      .plugin(discussionPlugin)
-      .store.set({ discussions: updatedDiscussions });
-  };
-
-  const removeDiscussion = (id: string) => {
-    const updatedDiscussions = editor
-      .plugin(discussionPlugin)
-      .store.get('discussions')
-      .filter((discussion) => discussion.id !== id);
-    editor
-      .plugin(discussionPlugin)
-      .store.set({ discussions: updatedDiscussions });
-  };
-
-  const updateComment = (input: {
-    id: string;
-    contentRich: Value;
-    discussionId: string;
-    isEdited: boolean;
-  }) => {
-    const updatedDiscussions = editor
-      .plugin(discussionPlugin)
-      .store.get('discussions')
-      .map((discussion) => {
-        if (discussion.id === input.discussionId) {
-          const updatedComments = discussion.comments.map((innerComment) => {
-            if (innerComment.id === input.id) {
-              return {
-                ...innerComment,
-                contentRich: input.contentRich,
-                isEdited: true,
-                updatedAt: new Date(),
-              };
-            }
-            return innerComment;
-          });
-          return { ...discussion, comments: updatedComments };
-        }
-        return discussion;
-      });
-    editor
-      .plugin(discussionPlugin)
-      .store.set({ discussions: updatedDiscussions });
-  };
-
-  // Replace to your own backend or refer to potion
-  const isMyComment = currentUserId === comment.userId;
-
-  const initialValue = comment.contentRich;
-
+  const currentUserId = useCurrentCommentUserId();
+  const currentUser = useCommentUser(currentUserId);
+  const initialValue = React.useMemo(
+    () => cloneCommentValue(initialBody ?? createCommentValue()),
+    [initialBody]
+  );
   const commentEditor = useCreateEditor(
     {
-      id: comment.id,
       plugins: BasicMarksKit,
       initialValue,
     },
     [initialValue]
   );
-
-  const onCancel = () => {
-    setEditingId(null);
-    commentEditor
-      .update({ history: 'skip' })
-      .value.replace({ children: initialValue, selection: null });
+  const [canSubmit, setCanSubmit] = React.useState(
+    Boolean(normalizeBody(initialValue))
+  );
+  const [saving, setSaving] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const submitting = React.useRef(false);
+  const submit = async () => {
+    if (submitting.current) return;
+    const nextBody = normalizeBody(commentEditor.read.value().children);
+    if (!nextBody) return;
+    submitting.current = true;
+    setSaving(true);
+    setFailed(false);
+    try {
+      const saved = await onSubmit(nextBody);
+      if (!saved) {
+        setFailed(true);
+        return;
+      }
+      commentEditor.update({ history: 'skip' }).value.replace({
+        children: createCommentValue(),
+        selection: null,
+      });
+      setCanSubmit(false);
+    } catch {
+      setFailed(true);
+    } finally {
+      submitting.current = false;
+      setSaving(false);
+    }
   };
-
-  const onSave = () => {
-    updateComment({
-      id: comment.id,
-      contentRich: commentEditor.read.value().children,
-      discussionId: comment.discussionId,
-      isEdited: true,
-    });
-    setEditingId(null);
-  };
-
-  const onResolveComment = () => {
-    resolveDiscussion(comment.discussionId);
-    editor.plugin(commentPlugin).update.unsetMark({ id: comment.discussionId });
-    editor.api.dom.focus();
-  };
-
-  const isFirst = index === 0;
-  const isLast = index === discussionLength - 1;
-  const isEditing = editingId && editingId === comment.id;
-
-  const [hovering, setHovering] = React.useState(false);
-  const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
   return (
-    <div
-      onMouseEnter={() => {
-        setHovering(true);
-      }}
-      onMouseLeave={() => {
-        setHovering(false);
+    <form
+      aria-busy={saving}
+      className="flex w-full"
+      data-plite-keep-selection-visible
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
       }}
     >
+      {showAvatar && (
+        <div className="mt-2 mr-1 shrink-0">
+          <Avatar className="size-5">
+            <AvatarImage alt={currentUser?.name} src={currentUser?.avatarUrl} />
+            <AvatarFallback>{currentUser?.name?.[0] ?? '?'}</AvatarFallback>
+          </Avatar>
+        </div>
+      )}
+
+      <div className="relative flex grow flex-col gap-2">
+        <Plate
+          editor={commentEditor}
+          readOnly={saving}
+          onValueChange={({ value }) => {
+            setCanSubmit(Boolean(normalizeBody(value.children)));
+          }}
+        >
+          <EditorContainer variant="comment">
+            <Editor
+              aria-label={ariaLabel}
+              autoComplete="off"
+              autoFocus={autoFocus}
+              className={cn(
+                'min-h-[25px] grow pt-0.5',
+                showAvatar ? 'pr-8' : 'pr-16'
+              )}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && onCancel && !submitting.current) {
+                  event.preventDefault();
+                  onCancel();
+                  return true;
+                }
+                if (
+                  event.key === 'Enter' &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing
+                ) {
+                  event.preventDefault();
+                  void submit();
+                  return true;
+                }
+                return undefined;
+              }}
+              placeholder={placeholder}
+              variant="comment"
+            />
+
+            {!showAvatar && onCancel && (
+              <div className="ml-auto flex shrink-0 gap-1">
+                <Button
+                  aria-label="Cancel comment"
+                  className="size-[28px]"
+                  disabled={saving}
+                  onClick={onCancel}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/40">
+                    <XIcon className="size-3 stroke-[3px] text-background" />
+                  </span>
+                </Button>
+                <Button
+                  aria-label="Send comment"
+                  disabled={!canSubmit || saving}
+                  size="icon"
+                  type="submit"
+                  variant="ghost"
+                >
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-brand">
+                    <CheckIcon className="size-3 stroke-[3px] text-background" />
+                  </span>
+                </Button>
+              </div>
+            )}
+
+            {showAvatar && (
+              <Button
+                aria-label="Send comment"
+                className="absolute right-0.5 bottom-0.5 ml-auto size-6 shrink-0"
+                disabled={!canSubmit || saving}
+                size="icon"
+                type="submit"
+                variant="ghost"
+              >
+                <span className="flex size-6 items-center justify-center rounded-full">
+                  <ArrowUpIcon />
+                </span>
+              </Button>
+            )}
+          </EditorContainer>
+        </Plate>
+        {failed && (
+          <p className="text-xs text-destructive" role="alert">
+            Could not save comment. Try again.
+          </p>
+        )}
+      </div>
+    </form>
+  );
+}
+
+function CommentBody({ body }: { body: Value }) {
+  const initialValue = React.useMemo(() => cloneCommentValue(body), [body]);
+  const commentEditor = useStaticEditor(
+    {
+      plugins: BaseBasicMarksKit,
+      initialValue,
+    },
+    [initialValue]
+  );
+
+  return (
+    <EditorView
+      className="min-h-0 w-auto grow px-1 py-1.5 text-sm"
+      editor={commentEditor}
+      variant="comment"
+    />
+  );
+}
+
+export function CommentThreadCard({ id }: { id: string }) {
+  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const thread = useCommentThread(id);
+  const currentUserId = useCurrentCommentUserId();
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+
+  if (!thread) return null;
+
+  return (
+    <article
+      className="relative"
+      data-comment-thread={id}
+      data-status={thread.status}
+    >
+      {thread.messages.map((message, index) => (
+        <CommentMessageRow
+          editing={editingId === message.id}
+          excerpt={thread.excerpt}
+          id={id}
+          index={index}
+          isLast={index === thread.messages.length - 1}
+          key={message.id}
+          message={message}
+          onEdit={() => setEditingId(message.id)}
+          onEditingChange={setEditingId}
+          mine={message.userId === currentUserId}
+          showExcerpt={thread.target.type === 'range' && index === 0}
+          status={thread.status}
+          threadLength={thread.messages.length}
+        />
+      ))}
+
+      {thread.target.type === 'range' && (
+        <CommentComposer
+          ariaLabel="Reply to thread"
+          onSubmit={(body) => comments.reply(id, body)}
+          placeholder="Reply..."
+        />
+      )}
+    </article>
+  );
+}
+
+function CommentMessageRow({
+  editing,
+  excerpt,
+  id,
+  index,
+  isLast,
+  message,
+  mine,
+  onEdit,
+  onEditingChange,
+  showExcerpt,
+  status,
+  threadLength,
+}: {
+  editing: boolean;
+  excerpt: string;
+  id: string;
+  index: number;
+  isLast: boolean;
+  message: CommentMessage;
+  mine: boolean;
+  onEdit: () => void;
+  onEditingChange: React.Dispatch<React.SetStateAction<string | null>>;
+  showExcerpt: boolean;
+  status: CommentThread['status'];
+  threadLength: number;
+}) {
+  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const user = useCommentUser(message.userId);
+
+  return (
+    <div className="group/comment-message" data-comment-message={message.id}>
       <div className="relative flex items-center">
         <Avatar className="size-5">
-          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
+          <AvatarImage alt={user?.name} src={user?.avatarUrl} />
+          <AvatarFallback>{user?.name?.[0] ?? '?'}</AvatarFallback>
         </Avatar>
         <h4 className="mx-2 text-sm leading-none font-semibold">
-          {/* Replace to your own backend or refer to potion */}
-          {userInfo?.name}
+          {user?.name ?? 'Unknown'}
         </h4>
-
         <div className="text-xs leading-none text-muted-foreground/80">
           <span className="mr-1">
-            {formatCommentDate(new Date(comment.createdAt))}
+            {formatCommentDate(message.editedAt ?? message.createdAt)}
           </span>
-          {comment.isEdited && <span>(edited)</span>}
+          {message.editedAt && <span>(edited)</span>}
+          {status === 'draft' && index === 0 && (
+            <span className="ml-1">AI draft</span>
+          )}
         </div>
 
-        {isMyComment && (hovering || dropdownOpen) && (
-          <div className="absolute top-0 right-0 flex space-x-1">
+        {mine && !editing && (
+          <div
+            className={cn(
+              'pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 group-focus-within/comment-message:pointer-events-auto group-focus-within/comment-message:opacity-100 group-hover/comment-message:pointer-events-auto group-hover/comment-message:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
+              menuOpen && 'pointer-events-auto opacity-100'
+            )}
+          >
             {index === 0 && (
               <Button
-                variant="ghost"
+                aria-label="Resolve thread"
                 className="h-6 p-1 text-muted-foreground"
-                onClick={onResolveComment}
+                onClick={() => {
+                  if (comments.resolve(id)) {
+                    comments.setActive([]);
+                  }
+                }}
                 type="button"
+                variant="ghost"
               >
                 <CheckIcon className="size-4" />
               </Button>
             )}
 
-            <CommentMoreDropdown
-              onFinalFocus={() => {
-                setTimeout(() => {
-                  commentEditor.update((tx) => {
-                    const point = tx.points.end([]);
-
-                    if (point) {
-                      tx.selection.set({ anchor: point, focus: point });
-                    }
-                  });
-                  commentEditor.api.dom.focus();
-                }, 0);
-              }}
-              onRemoveComment={() => {
-                if (discussionLength === 1) {
-                  editor
-                    .plugin(commentPlugin)
-                    .update.unsetMark({ id: comment.discussionId });
-                  removeDiscussion(comment.discussionId);
-                }
-              }}
-              comment={comment}
-              dropdownOpen={dropdownOpen}
-              setDropdownOpen={setDropdownOpen}
-              setEditingId={setEditingId}
-            />
+            <DropdownMenu
+              modal={false}
+              open={menuOpen}
+              onOpenChange={setMenuOpen}
+            >
+              <DropdownMenuTrigger>
+                <Button
+                  aria-label="More comment actions"
+                  className="h-6 p-1 text-muted-foreground"
+                  type="button"
+                  variant="ghost"
+                >
+                  <MoreHorizontalIcon className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={onEdit}>
+                    <PencilIcon className="size-4" />
+                    Edit comment
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (comments.removeMessage(id, message.id)) {
+                        onEditingChange(null);
+                      }
+                    }}
+                  >
+                    <TrashIcon className="size-4" />
+                    Delete comment
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
 
-      {isFirst && showDocumentContent && (
-        <div className="text-subtle-foreground relative mt-1 flex pl-[32px] text-sm">
-          {discussionLength > 1 && (
+      {showExcerpt && (
+        <div
+          className="text-subtle-foreground relative mt-1 flex pl-[32px] text-sm"
+          data-comment-excerpt=""
+        >
+          {threadLength > 1 && (
             <div className="absolute top-[5px] left-3 h-full w-0.5 shrink-0 bg-muted" />
           )}
           <div className="my-px w-0.5 shrink-0 bg-highlight" />
-          {documentContent && <div className="ml-2">{documentContent}</div>}
+          {excerpt && <div className="ml-2">{excerpt}</div>}
         </div>
       )}
 
@@ -381,396 +506,37 @@ export function Comment(props: {
         {!isLast && (
           <div className="absolute top-0 left-3 h-full w-0.5 shrink-0 bg-muted" />
         )}
-        <Plate readOnly={!isEditing} editor={commentEditor}>
-          <EditorContainer variant="comment">
-            <Editor
-              variant="comment"
-              className="w-auto grow"
-              onClick={() => onEditorClick?.()}
-            />
-
-            {isEditing && (
-              <div className="ml-auto flex shrink-0 gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="size-[28px]"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    onCancel();
-                  }}
-                >
-                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
-                    <XIcon className="size-3 stroke-[3px] text-background" />
-                  </div>
-                </Button>
-
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    onSave();
-                  }}
-                >
-                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
-                    <CheckIcon className="size-3 stroke-[3px] text-background" />
-                  </div>
-                </Button>
-              </div>
-            )}
-          </EditorContainer>
-        </Plate>
+        {editing ? (
+          <CommentInput
+            ariaLabel="Edit comment"
+            autoFocus
+            initialBody={message.body}
+            onCancel={() => onEditingChange(null)}
+            onSubmit={async (body) => {
+              const saved = await comments.edit(id, message.id, body);
+              if (saved) onEditingChange(null);
+              return saved;
+            }}
+            placeholder="Edit comment"
+            showAvatar={false}
+          />
+        ) : (
+          <CommentBody body={message.body} />
+        )}
       </div>
     </div>
   );
 }
 
-function CommentMoreDropdown(props: {
-  comment: TComment;
-  dropdownOpen: boolean;
-  setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
-  onFinalFocus?: () => void;
-  onRemoveComment?: () => void;
-}) {
-  const {
-    comment,
-    dropdownOpen,
-    setDropdownOpen,
-    setEditingId,
-    onFinalFocus,
-    onRemoveComment,
-  } = props;
-
-  const editor = useEditor();
-
-  const selectedEditCommentRef = React.useRef<boolean>(false);
-
-  const onDeleteComment = React.useCallback(() => {
-    if (!comment.id) {
-      // oxlint-disable-next-line no-alert -- [P1 local-invariant] This copied UI deliberately uses the native blocking fallback.
-      alert('You are operating too quickly, please try again later.');
-      return;
-    }
-
-    // Find and update the discussion
-    const updatedDiscussions = editor
-      .plugin(discussionPlugin)
-      .store.get('discussions')
-      .map((discussion) => {
-        if (discussion.id !== comment.discussionId) {
-          return discussion;
-        }
-
-        const commentIndex = discussion.comments.findIndex(
-          (c) => c.id === comment.id
-        );
-        if (commentIndex === -1) {
-          return discussion;
-        }
-
-        return {
-          ...discussion,
-          comments: [
-            ...discussion.comments.slice(0, commentIndex),
-            ...discussion.comments.slice(commentIndex + 1),
-          ],
-        };
-      });
-
-    // Save back to session storage
-    editor
-      .plugin(discussionPlugin)
-      .store.set({ discussions: updatedDiscussions });
-    onRemoveComment?.();
-  }, [comment.discussionId, comment.id, editor, onRemoveComment]);
-
-  const onEditComment = React.useCallback(() => {
-    selectedEditCommentRef.current = true;
-
-    if (!comment.id) {
-      // oxlint-disable-next-line no-alert -- [P1 local-invariant] This copied UI deliberately uses the native blocking fallback.
-      alert('You are operating too quickly, please try again later.');
-      return;
-    }
-
-    setEditingId(comment.id);
-  }, [comment.id, setEditingId]);
-
-  return (
-    <DropdownMenu
-      open={dropdownOpen}
-      onOpenChange={setDropdownOpen}
-      modal={false}
-    >
-      <DropdownMenuTrigger
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
-          <MoreHorizontalIcon className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-48"
-        onFinalFocus={(e) => {
-          if (selectedEditCommentRef.current) {
-            onFinalFocus?.();
-            selectedEditCommentRef.current = false;
-          }
-
-          e.preventDefault();
-        }}
-      >
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={onEditComment}>
-            <PencilIcon className="size-4" />
-            Edit comment
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDeleteComment}>
-            <TrashIcon className="size-4" />
-            Delete comment
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function CommentCreateForm({
-  autoFocus = false,
-  className,
-  discussionId: discussionIdProp,
-  focusOnMount = false,
-}: {
-  autoFocus?: boolean;
-  className?: string;
-  discussionId?: string;
-  focusOnMount?: boolean;
-}) {
-  const discussions = usePluginStore(discussionPlugin, 'discussions');
-
-  const editor = useEditor();
-  const commentId = useEditorSelector((innerEditor) => {
-    if (
-      !innerEditor.read.selection() ||
-      innerEditor.read.selection.isExpanded()
-    ) {
-      return undefined;
-    }
-    const { api, read } = innerEditor.plugin(BaseCommentPlugin);
-    const commentNode = read.node();
-
-    if (commentNode) return api.id(commentNode[0]);
-
-    return undefined;
-  });
-  const discussionId = discussionIdProp ?? commentId;
-
-  const userInfo = usePluginStore(discussionPlugin, 'currentUser');
-  const [commentValue, setCommentValue] = React.useState<Value | undefined>();
-  const commentContent = React.useMemo(
-    () => commentValue?.map((node) => NodeApi.string(node)).join('') ?? '',
-    [commentValue]
-  );
-  const commentEditor = useCreateEditor({
-    id: 'comment',
-    plugins: BasicMarksKit,
-  });
-
-  React.useEffect(() => {
-    if (commentEditor && focusOnMount) {
-      commentEditor.api.dom.focus();
-    }
-  }, [commentEditor, focusOnMount]);
-
-  const onAddComment = React.useCallback(() => {
-    if (!commentValue) return;
-
-    commentEditor
-      .update({ history: 'skip' })
-      .value.replace({ children: [], selection: null });
-
-    if (discussionId) {
-      // Get existing discussion
-      const discussion = discussions.find((d) => d.id === discussionId);
-      if (!discussion) {
-        // Mock creating suggestion
-        const newDiscussion: TDiscussion = {
-          id: discussionId,
-          comments: [
-            {
-              id: nanoid(),
-              contentRich: commentValue,
-              createdAt: new Date(),
-              discussionId,
-              isEdited: false,
-              userId: editor
-                .plugin(discussionPlugin)
-                .store.get('currentUserId'),
-            },
-          ],
-          createdAt: new Date(),
-          isResolved: false,
-          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-        };
-
-        editor
-          .plugin(discussionPlugin)
-          .store.set({ discussions: [...discussions, newDiscussion] });
-        return;
-      }
-
-      // Create reply comment
-      const comment: TComment = {
-        id: nanoid(),
-        contentRich: commentValue,
-        createdAt: new Date(),
-        discussionId,
-        isEdited: false,
-        userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-      };
-
-      // Add reply to discussion comments
-      const updatedDiscussion = {
-        ...discussion,
-        comments: [...discussion.comments, comment],
-      };
-
-      // Filter out old discussion and add updated one
-      const updatedDiscussions = discussions
-        .filter((d) => d.id !== discussionId)
-        .concat(updatedDiscussion);
-
-      editor
-        .plugin(discussionPlugin)
-        .store.set({ discussions: updatedDiscussions });
-
-      return;
-    }
-
-    const commentsNodeEntry = editor.plugin(commentPlugin).read.nodes({
-      at: [],
-      isDraft: true,
-    });
-
-    if (commentsNodeEntry.length === 0) return;
-
-    const documentContent = commentsNodeEntry
-      .map(([node]) => node.text)
-      .join('');
-
-    const _discussionId = nanoid();
-    // Mock creating new discussion
-    const newDiscussion: TDiscussion = {
-      id: _discussionId,
-      comments: [
-        {
-          id: nanoid(),
-          contentRich: commentValue,
-          createdAt: new Date(),
-          discussionId: _discussionId,
-          isEdited: false,
-          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-        },
-      ],
-      createdAt: new Date(),
-      documentContent,
-      isResolved: false,
-      userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-    };
-
-    editor
-      .plugin(discussionPlugin)
-      .store.set({ discussions: [...discussions, newDiscussion] });
-
-    const { id } = newDiscussion;
-
-    editor.update((tx) => {
-      commentsNodeEntry.forEach(([, path]) => {
-        tx.nodes.set(
-          {
-            [getCommentKey(id)]: true,
-          },
-          { at: path, split: true }
-        );
-        const draftKeys: string[] = [getDraftCommentKey()];
-
-        tx.nodes.unset(draftKeys, { at: path });
-      });
-    });
-  }, [commentValue, commentEditor, discussionId, editor, discussions]);
-
-  return (
-    <div className={cn('flex w-full', className)}>
-      <div className="mt-2 mr-1 shrink-0">
-        {/* Replace to your own backend or refer to potion */}
-        <Avatar className="size-5">
-          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
-        </Avatar>
-      </div>
-
-      <div className="relative flex grow gap-2">
-        <Plate
-          onValueChange={({ value }) => {
-            setCommentValue(value.children);
-          }}
-          editor={commentEditor}
-        >
-          <EditorContainer variant="comment">
-            <Editor
-              variant="comment"
-              className="min-h-[25px] grow pt-0.5 pr-8"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  onAddComment();
-                }
-              }}
-              placeholder="Reply..."
-              autoComplete="off"
-              autoFocus={autoFocus}
-            />
-
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute right-0.5 bottom-0.5 ml-auto size-6 shrink-0"
-              disabled={commentContent.trim().length === 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddComment();
-              }}
-            >
-              <div className="flex size-6 items-center justify-center rounded-full">
-                <ArrowUpIcon />
-              </div>
-            </Button>
-          </EditorContainer>
-        </Plate>
-      </div>
-    </div>
-  );
-}
-
-export const formatCommentDate = (date: Date) => {
+export const formatCommentDate = (date: Date | string) => {
   const now = new Date();
   const diffMinutes = differenceInMinutes(now, date);
   const diffHours = differenceInHours(now, date);
   const diffDays = differenceInDays(now, date);
 
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours}h`;
-  }
-  if (diffDays < 2) {
-    return `${diffDays}d`;
-  }
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 2) return `${diffDays}d`;
 
   return format(date, 'MM/dd/yyyy');
 };

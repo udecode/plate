@@ -30,40 +30,53 @@ const TonePlugin = definePlatePlugin('tone', {
 });
 
 const BaseDecoratedPlugin = defineBasePlugin('decorated', {
-  decorate: () => [
-    {
-      anchor: { offset: 0, path: [0] },
-      className: 'token',
-      focus: { offset: 1, path: [0] },
-      token: true as const,
-    },
-  ],
+  decorate: {
+    read: ({ entry }) => [
+      {
+        attributes: { className: 'token', 'data-token': true },
+        key: `decorated:${entry[1].join('.')}`,
+        range: {
+          anchor: { offset: 0, path: entry[1] },
+          focus: { offset: 1, path: entry[1] },
+        },
+      },
+    ],
+  },
   schema: { mark: property.boolean() },
 });
 
 const PlateDecoratedPlugin = definePlatePlugin('decorated', {
-  decorate: () => [
-    {
-      anchor: { offset: 0, path: [0] },
-      className: 'token',
-      focus: { offset: 1, path: [0] },
-      token: true as const,
-    },
-  ],
+  decorate: {
+    read: ({ entry }) => [
+      {
+        attributes: { className: 'token', 'data-token': true },
+        key: `decorated:${entry[1].join('.')}`,
+        range: {
+          anchor: { offset: 0, path: entry[1] },
+          focus: { offset: 1, path: entry[1] },
+        },
+      },
+    ],
+  },
   schema: { mark: property.boolean() },
 });
 
 const StagedDecoratedPlugin = defineBasePlugin('stagedDecorated', {
   schema: { mark: property.boolean() },
-}).extend(() => ({
-  decorate: () => [
-    {
-      anchor: { offset: 0, path: [0] },
-      focus: { offset: 1, path: [0] },
-      transientScore: 1,
-    },
-  ],
-}));
+}).extend({
+  decorate: {
+    read: ({ entry }) => [
+      {
+        attributes: { 'data-staged': true },
+        key: `staged:${entry[1].join('.')}`,
+        range: {
+          anchor: { offset: 0, path: entry[1] },
+          focus: { offset: 1, path: entry[1] },
+        },
+      },
+    ],
+  },
+});
 
 const AdaptedDecoratedPlugin = toPlatePlugin(BaseDecoratedPlugin, {
   dependencies: [],
@@ -90,20 +103,14 @@ const plateLeafTone: string | undefined = plateLeafProps.leaf.tone;
 const plateTextTone: string | undefined = plateTextProps.text.tone;
 const pliteLeafTone: string | undefined = pliteLeafProps.leaf.tone;
 const pliteTextTone: string | undefined = pliteTextProps.text.tone;
-const baseDecorationClassName: string | undefined =
-  baseDecoratedLeafProps.leaf.className;
-const plateDecorationClassName: string | undefined =
-  plateDecoratedLeafProps.leaf.className;
-const plateDecorationToken: true | undefined =
-  plateDecoratedLeafProps.leaf.token;
-const stagedDecorationScore: number | undefined =
-  stagedDecoratedLeafProps.leaf.transientScore;
-const adaptedDecorationClassName: string | undefined =
-  adaptedDecoratedLeafProps.leaf.className;
-
-type DecorationLeaksIntoText =
-  'className' extends keyof typeof plateDecoratedLeafProps.text ? true : false;
-const decorationStaysLeafOnly: DecorationLeaksIntoText = false;
+const baseDecorationMark: boolean | undefined =
+  baseDecoratedLeafProps.leaf.decorated;
+const plateDecorationMark: boolean | undefined =
+  plateDecoratedLeafProps.leaf.decorated;
+const stagedDecorationMark: boolean | undefined =
+  stagedDecoratedLeafProps.leaf.stagedDecorated;
+const adaptedDecorationMark: boolean | undefined =
+  adaptedDecoratedLeafProps.leaf.decorated;
 
 const exactPlateApi: 'tone' = plateLeafProps.api.value();
 const exactBaseApi: 'tone' = pliteLeafProps.api.value();
@@ -177,12 +184,10 @@ void exactBaseApi;
 void exactPlateApi;
 void missingToneField;
 void plateLeafTone;
-void baseDecorationClassName;
-void adaptedDecorationClassName;
-void decorationStaysLeafOnly;
-void plateDecorationClassName;
-void plateDecorationToken;
-void stagedDecorationScore;
+void baseDecorationMark;
+void plateDecorationMark;
+void stagedDecorationMark;
+void adaptedDecorationMark;
 void plateTextTone;
 void pliteLeafTone;
 void pliteTextTone;

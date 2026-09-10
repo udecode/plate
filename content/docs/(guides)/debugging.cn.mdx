@@ -176,36 +176,18 @@ Zustand 以及 zustand-x 可以与 Redux DevTools 浏览器扩展一起使用。
 
 ## 调试错误类型
 
-Plate 使用几个预定义的错误类型来帮助识别开发过程中的特定问题。以下是这些错误类型及其描述的列表：
+`editor.api.debug.error(message, type, details)` 使用传入的类型作为日志前缀。
+开发环境中启用 `throwErrors` 时会抛出 `PlateError`，默认类型为 `DEFAULT`。
+应用可以传入自己的字符串来标记诊断信息。
 
-### DEFAULT
+插件配置还会校验描述符、依赖关系和 schema 所有权：
 
-一个不适合其他特定类别的一般错误。当没有其他错误类型适用于该情况时使用。
+| 信息 | 检查项 |
+| --- | --- |
+| `USE_CREATE_PLUGIN` | 使用 `defineBasePlugin` 或 `definePlatePlugin` 创建插件。 |
+| `Pass a plugin descriptor, not its name.` | 在 `dependencies` 中传入描述符，而不是字符串。 |
+| `requires disabled plugin` | 保持必需的依赖插件启用。 |
+| `Circular plugin dependency` | 移除错误信息中列出的依赖循环。 |
+| `cannot declare both schema.element and schema.mark` | 每个插件只声明一种 schema 角色。 |
 
-### OPTION_UNDEFINED
-
-当尝试访问未定义的插件选项时抛出。这发生在尝试使用尚未设置或未定义的插件选项时。
-
-### OVERRIDE_MISSING
-
-表示插件配置中缺少预期的覆盖。当插件期望提供某些覆盖但它们不在配置中时，会发生这种情况。
-
-### PLUGIN_DEPENDENCY_MISSING
-
-当找不到必需的插件依赖项时发生。当插件依赖于尚未注册或包含在编辑器配置中的另一个插件时，会抛出此错误。
-
-### PLUGIN_MISSING
-
-表示尝试使用尚未注册的插件。这发生在尝试访问或使用不属于当前编辑器配置的插件时。
-
-### USE_CREATE_PLUGIN
-
-当插件不是使用 `defineBasePlugin` 或 `definePlatePlugin` 函数创建时抛出。当插件被添加到编辑器中但未使用指定函数正确创建时，会发生此错误。
-
-### USE_ELEMENT_CONTEXT
-
-表示 `useElement` hook 在适当的 element 上下文之外使用。这发生在尝试在正确的组件上下文之外访问 element 特定的数据或功能时。
-
-### PLUGIN_NODE_TYPE
-
-当插件同时声明 `schema.element` 和 `schema.mark` 时抛出。一个插件只能拥有 element 类型或文本属性，不能同时拥有两者。
+依赖会通过描述符自动安装，无需在应用的插件列表中重复添加必需依赖。

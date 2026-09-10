@@ -45,14 +45,11 @@ const editor = createEditor({
   plugins: [
     // ...其他插件,
     ...CopilotKit,
-    // 将使用 Tab 键的插件放在 CopilotKit 之后以避免冲突
-    // IndentPlugin,
-    // TabbablePlugin,
   ],
 });
 ```
 
-**Tab 键处理**: Copilot 插件使用 Tab 键来接受建议。为避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）冲突，请确保 `CopilotKit` 在插件配置中位于它们之前。
+Tab 优先接受可见的补全；没有补全时，Tab 保留缩进或表格导航等编辑器行为。
 
 ### 添加 API 路由
 
@@ -65,7 +62,7 @@ Copilot 需要一个服务器端 API 端点来与 AI 模型通信。添加预配
 确保您的 OpenAI API 密钥已设置在环境变量中：
 
 ```bash title=".env.local"
-OPENAI_API_KEY="您的-api-密钥"
+AI_GATEWAY_API_KEY="您的-api-密钥"
 ```
 
 </Steps>
@@ -92,9 +89,6 @@ const editor = createEditor({
     // ...其他插件,
     MarkdownPlugin,
     CopilotPlugin,
-    // 将使用 Tab 键的插件放在 CopilotPlugin 之后以避免冲突
-    // IndentPlugin,
-    // TabbablePlugin,
   ],
 });
 ```
@@ -102,41 +96,24 @@ const editor = createEditor({
 - `MarkdownPlugin`: 用于将编辑器内容序列化为提示词发送。
 - `CopilotPlugin`: 启用 AI 驱动的文本补全。
 
-**Tab 键处理**: Copilot 插件使用 Tab 键来接受建议。为避免与其他使用 Tab 的插件（如 `IndentPlugin` 或 `TabbablePlugin`）冲突，请确保 `CopilotPlugin` 在插件配置中位于它们之前。
+Tab 优先接受可见的补全；没有补全时，Tab 保留缩进或表格导航等编辑器行为。
 
 ### 配置插件
 
 ```tsx
 import { CopilotPlugin } from 'platejs/ai/react';
-import {
-  MarkdownPlugin,
-  stripMarkdown,
-} from 'platejs/markdown';
+import { MarkdownPlugin } from 'platejs/markdown';
 import { GhostText } from '@/components/editor/copilot';
 
 const plugins = [
   // ...其他插件,
-  MarkdownPlugin.configure({
-    initialState: {
-      remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
-    },
-  }),
-  CopilotPlugin.extend(({ api }) => ({
+  MarkdownPlugin,
+  CopilotPlugin.configure(({ update }) => ({
     initialState: {
       completeOptions: {
         api: '/api/ai/copilot',
-        onError: () => {
-          // 模拟 API 响应。在实现路由 /api/ai/copilot 后移除
-          api.setBlockSuggestion({
-            text: stripMarkdown('这是一个模拟建议。'),
-          });
-        },
         onFinish: (_, completion) => {
-          if (completion === '0') return;
-
-          api.setBlockSuggestion({
-            text: stripMarkdown(completion),
-          });
+          if (completion === '0') update.reject();
         },
       },
       debounceDelay: 500,
@@ -154,8 +131,8 @@ const plugins = [
 
 - `completeOptions`: 配置补全传输。
   - `api`: 必需的 AI 补全路由端点。
-  - `onError`: 处理错误的回调（用于开发期间的模拟）。
-  - `onFinish`: 处理完成建议的回调。此处将建议设置到编辑器中。
+  - `onError`: 处理当前请求错误的回调。
+  - `onFinish`: 插件保存建议后调用此回调。示例拒绝应用约定的 `0` 响应。
 - `debounceDelay`: 用户停止输入后自动触发建议的延迟时间（毫秒）。
 - `renderGhostText`: 用于内联显示建议的 React 组件。
 - `shortcuts`: 定义与 Copilot 建议交互的键盘快捷键。
@@ -164,57 +141,9 @@ const plugins = [
 
 在 `app/api/ai/copilot/route.ts` 创建 API 路由处理程序来处理 AI 请求。此端点将接收来自编辑器的提示词并调用 AI 模型。
 
-```tsx title="app/api/ai/copilot/route.ts"
-import type { NextRequest } from 'next/server';
+<ComponentSource name="copilot-api" />
 
-import { createOpenAI } from '@ai-sdk/openai';
-import { generateText } from 'ai';
-import { NextResponse } from 'next/server';
-
-export async function POST(req: NextRequest) {
-  const {
-    apiKey: key,
-    model = 'gpt-4o-mini',
-    prompt,
-    system,
-  } = await req.json();
-
-  const apiKey = key || process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: '缺少 OpenAI API 密钥。' },
-      { status: 401 }
-    );
-  }
-
-  const openai = createOpenAI({ apiKey });
-
-  try {
-    const result = await generateText({
-      abortSignal: req.signal,
-      maxTokens: 50,
-      model: openai(model),
-      prompt: prompt,
-      system,
-      temperature: 0.7,
-    });
-
-    return NextResponse.json(result);
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      return NextResponse.json(null, { status: 408 });
-    }
-
-    return NextResponse.json(
-      { error: '处理 AI 请求失败' },
-      { status: 500 }
-    );
-  }
-}
-```
-
-然后，在 `.env.local` 中设置您的 `OPENAI_API_KEY`。
+然后，在 `.env.local` 中设置您的 `AI_GATEWAY_API_KEY`。
 
 ### 系统提示词
 
@@ -305,7 +234,7 @@ export async function POST(req: NextRequest) {
       break;
     case 'openai':
     default:
-      aiProvider = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      aiProvider = createOpenAI({ apiKey: process.env.AI_GATEWAY_API_KEY });
       break;
   }
 
@@ -456,6 +385,8 @@ export async function POST(req: NextRequest) {
 仅接受当前建议的下一个单词，允许逐步接受建议。
 
 示例快捷键: `Cmd + →`
+
+Stop、关闭操作、只读切换和最后一个视图卸载都会取消请求。过期响应不能发布建议或清除新请求。
 
 ## API
 

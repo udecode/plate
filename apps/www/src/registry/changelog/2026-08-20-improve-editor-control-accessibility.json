@@ -21,7 +21,8 @@
       "name": "toolbar",
       "files": [
         "apps/www/src/registry/bases/base/toolbar.tsx",
-        "apps/www/src/registry/bases/radix/toolbar.tsx"
+        "apps/www/src/registry/bases/radix/toolbar.tsx",
+        "apps/www/src/registry/components/editor/toolbar-overlay.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []

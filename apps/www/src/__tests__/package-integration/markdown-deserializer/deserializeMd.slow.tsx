@@ -238,12 +238,9 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hcodeblock>
-              <hcodeline>Code block 1 line 1</hcodeline>
-              <hcodeline>Code block 1 line 2</hcodeline>
+              Code block 1 line 1{'\n'}Code block 1 line 2
             </hcodeblock>
-            <hcodeblock>
-              <hcodeline>Code block 2 line 1</hcodeline>
-            </hcodeblock>
+            <hcodeblock>Code block 2 line 1</hcodeblock>
           </fragment>
         ),
       },

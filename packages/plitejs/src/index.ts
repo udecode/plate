@@ -51,7 +51,6 @@ export { property, schema, target } from './core/schema-definition';
 export type { PropertyBuilderApi } from './core/schema-definition';
 export { EditorSchemaValidationError } from './core/schema-validation';
 export {
-  createEditorSchemaContract,
   diffEditorSchemaContracts,
   readEditorSchemaContract,
   restoreEditorSchemaContract,
@@ -66,10 +65,8 @@ export {
 } from './core/schema-compiler';
 export { defineFacet } from './core/facet';
 export {
-  getCollabEffects,
   repairEditorValue,
   runTrustedUpdate,
-  scheduleAfterCommitNotification,
   setEditorMaxLength,
   setEditorReadOnly,
   setEditorSnapshotInputTransform,
@@ -95,6 +92,7 @@ export {
 export { txOnly, txRead } from './core/tx-only';
 export type { TxOnlyMethod, TxReadMethod } from './core/tx-only';
 export {
+  compileEditorSchemaContract,
   createEditor,
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
@@ -302,49 +300,26 @@ export type {
 } from './interfaces/editor';
 export { EditorExtensionPublicationError } from './core/editor-extension';
 export {
-  compileEditorExtension,
   containsCompleteEditorSchema,
-  getCandidateEditorExtensionApi,
-  getInstalledEditorExtension,
   isEditorExtension,
 } from './core/editor-extension';
 export { reportEditorLifecycleError } from './core/lifecycle-error';
 export {
   areEditorSchemaIdentitiesEqual,
-  getCompiledPropertyMergeStrategy,
-  getCompiledSchemaPropertyId,
   preserveCompiledSchemaPropertyIdentity,
   readEditorSchemaIdentity,
 } from './core/schema-compiler';
 export { getSchemaElementSourceReference } from './core/schema-definition';
 export { getCompiledEditorSchemaFromApi } from './core/editor-schema';
-export {
-  getCompiledEditorSchema,
-  getExtensionRegistry as getEditorExtensionRegistry,
-} from './core/extension-registry';
 export { getEditorRuntimeOwner } from './core/editor-runtime';
 export { getEditorCommitSnapshot } from './core/commit';
-export {
-  MAIN_ROOT_KEY,
-  toInternalRoot as normalizeRootKey,
-} from './core/public-root';
-export {
-  createInternalRootChangeFromSections as createDocumentChangeFromRootSections,
-  getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys,
-} from './core/change/document-change';
-export {
-  type DocumentChangeRelocation,
-  getDocumentChangeRelocations,
-  getExactDocumentChangeRelocation,
-} from './core/change/mapping';
+export { MAIN_ROOT_KEY } from './core/public-root';
 export {
   getSelectionDOMRange,
   getSelectionRange,
   mapSelectionThroughChange,
 } from './core/selection-protocol';
 export { mapSemanticUpdateMethodArguments } from './core/semantic-update-method';
-export { assertEditorJsonValue } from './core/value-codec';
-export { createEditorEffect } from './core/transaction-values';
 export type {
   EditorSchemaSource,
   EditorSchemaSourceProvider,
@@ -357,6 +332,7 @@ export type {
   EditorExtensionWitnessFor,
   EditorGenericMethod,
 } from './interfaces/editor';
+export type * from './interfaces/decoration';
 export * from './interfaces/element';
 export * from './interfaces/location';
 export * from './interfaces/node';

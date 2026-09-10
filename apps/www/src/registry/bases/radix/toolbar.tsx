@@ -7,54 +7,10 @@ import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-
-type ToolbarOverlayContextValue = (id: symbol, open: boolean) => void;
-
-const ToolbarOverlayContext = React.createContext<ToolbarOverlayContextValue>(
-  () => {}
-);
-
-type ToolbarOverlayTriggerProps = Pick<
-  React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
-  'aria-expanded' | 'aria-haspopup'
->;
-
-const isOverlayTrigger = ({
-  'aria-haspopup': hasPopup,
-}: ToolbarOverlayTriggerProps) => hasPopup !== undefined && hasPopup !== false;
-
-const isOverlayOpen = ({
-  'aria-expanded': expanded,
-}: ToolbarOverlayTriggerProps) => expanded === true || expanded === 'true';
-
-const useToolbarOverlayTrigger = (props: ToolbarOverlayTriggerProps) => {
-  const [overlayId] = React.useState(() => Symbol('toolbar-overlay'));
-  const reportOverlayOpen = React.useContext(ToolbarOverlayContext);
-  const ownsOverlay = isOverlayTrigger(props);
-  const open = isOverlayOpen(props);
-  const registeredRef = React.useRef(false);
-
-  React.useEffect(() => {
-    if (ownsOverlay) {
-      registeredRef.current = true;
-      reportOverlayOpen(overlayId, open);
-    } else if (registeredRef.current) {
-      registeredRef.current = false;
-      reportOverlayOpen(overlayId, false);
-    }
-  }, [open, overlayId, ownsOverlay, reportOverlayOpen]);
-
-  React.useEffect(
-    () => () => {
-      if (registeredRef.current) reportOverlayOpen(overlayId, false);
-    },
-    [overlayId, reportOverlayOpen]
-  );
-
-  return () => {
-    if (ownsOverlay) reportOverlayOpen(overlayId, true);
-  };
-};
+import {
+  ToolbarOverlayProvider,
+  useToolbarOverlayTrigger,
+} from '@/registry/components/editor/toolbar-overlay';
 
 export function Toolbar({
   className,
@@ -63,37 +19,16 @@ export function Toolbar({
 }: React.ComponentProps<typeof ToolbarPrimitive.Root> & {
   onOverlayOpenChange?: (open: boolean) => void;
 }) {
-  const openOverlayIdsRef = React.useRef(new Set<symbol>());
-  const overlayOpenRef = React.useRef(false);
-  const reportOverlayOpen = React.useCallback<ToolbarOverlayContextValue>(
-    (id, open) => {
-      if (open) {
-        openOverlayIdsRef.current.add(id);
-      } else {
-        openOverlayIdsRef.current.delete(id);
-      }
-
-      const nextOpen = openOverlayIdsRef.current.size > 0;
-
-      if (overlayOpenRef.current !== nextOpen) {
-        overlayOpenRef.current = nextOpen;
-        onOverlayOpenChange?.(nextOpen);
-      }
-    },
-    [onOverlayOpenChange]
-  );
-
   return (
-    <ToolbarOverlayContext.Provider value={reportOverlayOpen}>
+    <ToolbarOverlayProvider onOpenChange={onOverlayOpenChange}>
       <ToolbarPrimitive.Root
         className={cn('relative flex select-none items-center', className)}
         {...props}
       />
-    </ToolbarOverlayContext.Provider>
+    </ToolbarOverlayProvider>
   );
 }
 
-// From toggleVariants
 const toolbarButtonVariants = cva(
   'cn-toggle group/toggle inline-flex cursor-pointer items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {

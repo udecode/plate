@@ -1,40 +1,45 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createPluginContext, createEditor } from 'platejs';
+import { createEditor } from 'platejs';
+import { BaseDatePlugin } from 'platejs/date';
+import { PlateStatic } from 'platejs/static';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+import { BaseSuggestionKit } from './suggestion-static';
 
 describe('BaseSuggestionKit', () => {
-  it('injects inline suggestion type for static inline element rendering', async () => {
-    const { BaseSuggestionKit } = await import('./suggestion-static');
-
+  it('injects inline suggestion type for static inline element rendering', () => {
     const editor = createEditor({
-      plugins: BaseSuggestionKit,
-    });
-    const suggestion = createPluginContext(editor, BaseSuggestionKit[0]);
-    const transformProps = suggestion.inject?.nodeProps?.transformProps;
-
-    if (!transformProps) throw new Error('Missing transformProps');
-
-    expect(
-      transformProps({
-        ...suggestion,
-        element: {
+      plugins: [
+        BaseDatePlugin.configure({ component: 'span' }),
+        ...BaseSuggestionKit,
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
           children: [
             {
-              suggestion_1: {
-                createdAt: 0,
-                id: 'suggestion-1',
-                type: 'remove',
-                userId: 'alice',
-              },
-              text: '',
+              type: 'date',
+              value: '2026-09-04',
+              children: [
+                {
+                  suggestion_1: {
+                    createdAt: 0,
+                    id: 'suggestion-1',
+                    type: 'remove',
+                    userId: 'alice',
+                  },
+                  text: '',
+                },
+              ],
             },
           ],
-          type: 'date',
         },
-        props: {},
-      })
-    ).toEqual({
-      'data-inline-suggestion': 'remove',
+      ],
     });
+
+    const markup = renderToStaticMarkup(createElement(PlateStatic, { editor }));
+    expect(markup).toContain('data-inline-suggestion="remove"');
   });
 });

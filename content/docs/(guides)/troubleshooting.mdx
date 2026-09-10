@@ -7,15 +7,15 @@ Most Plate issues come from version skew, duplicate React/Plite runtimes, or
 crossing the server/client import boundary. Start with package alignment, then
 check runtime ownership, then inspect plugin resolution with `DebugPlugin`.
 
-## Start Here
+## Start here
 
 | Symptom | First check |
 | --- | --- |
 | Invalid hook call, null dispatcher, or React hook crashes. | Duplicate `react` / `react-dom` or mixed package-manager installs. |
 | Plugins render as plain text or components do not attach. | Missing plugin, wrong `/react` versus base import, or wrong component map. |
 | Server Component crashes on import. | A Server Component imported `platejs/react` or `platejs/<feature>/react`. |
-| `OPTION_UNDEFINED` in the console. | Code reads or writes an option that is not declared in the plugin. |
-| `PLUGIN_DEPENDENCY_MISSING` in the console. | A plugin dependency name is not present in the editor plugin list. |
+| `requires disabled plugin` in the console. | An explicitly disabled plugin is required by an enabled plugin. |
+| `Pass a plugin descriptor, not its name.` | A dependency contains a string instead of a plugin descriptor. |
 | Markdown, HTML, or static rendering misses nodes. | The static/base plugin kit does not include the serializer or node plugin. |
 
 Use the focused guide when the issue belongs to one area:
@@ -122,12 +122,13 @@ Common debug errors:
 
 | Message | Meaning |
 | --- | --- |
-| `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency name that is not registered. |
+| `requires disabled plugin` | An enabled plugin requires a dependency that the app disabled. |
+| `Circular plugin dependency` | Plugin dependencies form a cycle. |
 
 Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`,
 `enabled`, and `override.*` behavior.
 
-## Reset The Install
+## Reset the install
 
 When the dependency tree looks correct but the runtime still behaves like two
 React or Plite copies are loaded, reinstall from the existing lockfile.
@@ -145,7 +146,7 @@ pnpm install
 Delete the lockfile only when you intentionally want a fresh dependency
 resolution. That is a package-management decision, not a Plate fix.
 
-## Report A Reproduction
+## Report a reproduction
 
 When you open an issue, include the smallest editor that reproduces the problem:
 

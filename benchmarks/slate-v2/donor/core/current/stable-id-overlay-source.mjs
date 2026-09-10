@@ -4,8 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { cpus, platform } from 'node:os';
 
-import { createStableIdMappedSource } from '../../../../../packages/plitejs/src/react/stable-id-mapped-source.ts';
-import { composeProjectionSources } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
+import { createStableIdMappedSource } from '../../../../../packages/plitejs/src/internal/view/stable-id-mapped-source.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const sizes = (process.env.PLITE_OVERLAY_SOURCE_BENCH_SIZES ?? '100,1000,10000,100000')
@@ -18,9 +17,9 @@ const frameBudgetMs = 16.67;
 const wideBudgetMs = 100;
 const measuredFiles = [
   'benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs',
-  'packages/plitejs/src/react/stable-id-mapped-source.ts',
-  'packages/plitejs/src/react/mapped-view-store.ts',
-  'packages/plitejs/src/react/annotation-store.ts',
+  'packages/plitejs/src/internal/view/stable-id-mapped-source.ts',
+  'packages/plitejs/src/internal/view/mapped-view-store.ts',
+  'packages/plitejs/src/annotations/store.ts',
   'packages/plitejs/src/react/widget-store.ts',
   'packages/plitejs/src/react/decoration-source.ts',
   'pnpm-lock.yaml',
@@ -158,62 +157,9 @@ for (const size of sizes) {
   }
 }
 
-const composedSources = sizes.map((size) => {
-  let enumerated = 0;
-  let aggregateReads = 0;
-  let runtimeReads = 0;
-  const items = Array.from({ length: size }, (_, index) => ({ id: 'node-' + index, value: 0 }));
-  const createSource = (input) => {
-    const source = createStableIdMappedSource(input, {
-      getId: (item) => item.id,
-      isEntityEqual: Object.is,
-      isItemEqual: Object.is,
-      isOutputEqual: Object.is,
-      map: (item) => ({ entity: item, outputs: [{ key: item.id, value: { data: item.value, end: 1, key: item.id, start: 0 } }] }),
-    });
-    let current;
-    let snapshot;
-    return { source, projection: {
-      getRuntimeSnapshot(key) { runtimeReads++; return source.getSnapshot().byOutputKey[key] ?? []; },
-      getSnapshot() {
-        aggregateReads++;
-        const next = source.getSnapshot().byOutputKey;
-        if (next !== current) {
-          current = next;
-          snapshot = new Proxy(next, {
-            ownKeys(target) { const keys = Reflect.ownKeys(target); enumerated += keys.length; return keys; },
-          });
-        }
-        return snapshot;
-      },
-      subscribe: () => () => {},
-    } };
-  };
-  const primary = createSource(items);
-  const secondary = createSource(items.map((item) => ({ ...item })));
-  const composed = composeProjectionSources([primary.projection, secondary.projection]);
-  const unchanged = composed.getRuntimeSnapshot('node-' + (size - 1));
-  const samples = [];
-  let identityFailures = 0;
-  for (let sample = 0; sample < sampleCount + warmupCount; sample++) {
-    const previous = composed.getRuntimeSnapshot('node-0');
-    items[0] = { id: 'node-0', value: sample + 1 };
-    primary.source.refresh(items, { changedIds: ['node-0'] });
-    const started = performance.now();
-    const next = composed.getRuntimeSnapshot('node-0');
-    const untouched = composed.getRuntimeSnapshot('node-' + (size - 1));
-    const duration = performance.now() - started;
-    assert.deepEqual(next.map((slice) => slice.data), [sample + 1, 0]);
-    assert.deepEqual(previous.map((slice) => slice.data), [sample, 0]);
-    if (untouched !== unchanged) identityFailures++;
-    if (sample >= warmupCount) samples.push(duration);
-  }
-  const summary = summarize(samples);
-  return { size, summary, counters: { aggregateReads, enumerated, identityFailures, runtimeReads }, pass: aggregateReads === 0 && enumerated === 0 && identityFailures === 0 && summary.p95 <= frameBudgetMs };
-});
 const afterFingerprints = fingerprints();
 const sourceStable = JSON.stringify(beforeFingerprints) === JSON.stringify(afterFingerprints);
-const pass = sourceStable && rows.every((row) => row.pass) && composedSources.every((row) => row.pass);
+const pass = sourceStable && rows.every((row) => row.pass);
 const artifact = {
   artifactVersion: 2,
   benchmark: 'plite-react-stable-id-overlay-source',
@@ -222,7 +168,6 @@ const artifact = {
   environment: { bun: Bun.version, cpu: cpus()[0]?.model, platform: platform() },
   pass,
   rows,
-  composedSources,
   sourceIdentity: {
     after: afterFingerprints,
     before: beforeFingerprints,
@@ -233,12 +178,11 @@ const artifact = {
     correctnessFailures: 0,
     maxTrustedOneIdP95Ms: Math.max(...rows.filter((row) => row.update === 'one' && ['distributed', 'divergent-unicode'].includes(row.layout)).map((row) => row.summary.p95)),
     redRows: rows.filter((row) => !row.pass).map((row) => row.layout + ':' + row.update + ':' + row.size),
-    workPass: rows.every((row) => row.workPass) && composedSources.every((row) => row.pass),
+    workPass: rows.every((row) => row.workPass),
   },
 };
 await writeBenchmarkArtifact('tmp/plite-stable-id-overlay-source-benchmark.json', artifact);
 console.log('METRIC plite_mapped_source_trusted_one_id_p95_ms=' + artifact.summary.maxTrustedOneIdP95Ms);
 console.log('METRIC plite_mapped_source_work_pass=' + Number(artifact.summary.workPass));
-console.log('METRIC plite_composed_source_worst_p95_ms=' + Math.max(...composedSources.map((row) => row.summary.p95)));
 console.log(JSON.stringify(artifact.summary));
 if (strict && !pass) process.exitCode = 1;

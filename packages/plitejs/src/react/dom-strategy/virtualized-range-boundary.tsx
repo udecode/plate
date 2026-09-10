@@ -1,8 +1,7 @@
 import React from 'react';
 
 import type { Path, NodeKey } from '../..';
-import { DOMCoverage } from '../../dom/internal';
-import { useEditorContext } from '../hooks/use-editor-context';
+import { useEditableDOMRuntime } from '../hooks/use-claim-editable-dom-commit';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 
 export const DOMStrategyVirtualizedRangeBoundary = React.memo(
@@ -19,7 +18,7 @@ export const DOMStrategyVirtualizedRangeBoundary = React.memo(
     focusNodeKey: NodeKey | null;
     startIndex: number;
   }) => {
-    const editor = useEditorContext();
+    const coverage = useEditableDOMRuntime()?.domCoverage;
     const boundary = React.useMemo(
       () => ({
         anchor: { type: 'placeholder' as const },
@@ -47,8 +46,8 @@ export const DOMStrategyVirtualizedRangeBoundary = React.memo(
     );
 
     useIsomorphicLayoutEffect(
-      () => DOMCoverage.registerBoundary(editor, boundary),
-      [boundary, editor]
+      () => coverage?.registerBoundary(boundary),
+      [boundary, coverage]
     );
 
     return (

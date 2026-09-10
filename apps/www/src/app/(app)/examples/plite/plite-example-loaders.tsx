@@ -46,6 +46,10 @@ export const pliteExampleComponents = {
     () => import('./_examples/editable-voids')
   ),
   embeds: createPliteExampleLoader(() => import('./_examples/embeds')),
+  'external-text': dynamic(() => import('./_examples/external-text'), {
+    loading: () => null,
+    ssr: true,
+  }),
   'forced-layout': createPliteExampleLoader(
     () => import('./_examples/forced-layout')
   ),

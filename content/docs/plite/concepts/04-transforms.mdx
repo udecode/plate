@@ -16,7 +16,7 @@ editor.update.text.insert("some words");
 Use the callback form when a command composes multiple writes, reads transaction
 state, adjusts update tags, or registers post-commit work.
 
-## Transaction Groups
+## Transaction groups
 
 ```javascript
 editor.update((tx) => {
@@ -55,7 +55,7 @@ changed-range corrections automatically.
 See [Transforms API](../api/transforms) for method options and the complete
 transaction reference.
 
-## Value Replacement
+## Value replacement
 
 Use `editor.update.value.replace(...)` for one-shot imports, reset buttons, and
 controlled external replacements.
@@ -206,7 +206,7 @@ editor.update((tx) => {
 });
 ```
 
-## Canonical Changes
+## Canonical changes
 
 Canonical change application is still a transaction. Import remote or stored
 changes through `tx.changes.apply(...)` so replay follows the same correction,
@@ -218,7 +218,7 @@ editor.update({ tags: "remote-import" }, (tx) => {
 });
 ```
 
-## The `at` Option
+## The `at` option
 
 When `at` is omitted, selection-sensitive methods use the transaction target.
 When `at` is provided, Plite uses that exact location and does not import or
@@ -250,7 +250,7 @@ editor.update((tx) => {
 });
 ```
 
-## The `match` Option
+## The `match` option
 
 Node methods accept an independent structural `type` selector and optional
 `match` predicate.

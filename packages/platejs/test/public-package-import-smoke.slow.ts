@@ -56,13 +56,9 @@ const exactPublicPackageRuntimeExportExpectations = {
     'TextApi',
     'ContentSlice',
     'areEditorSchemaIdentitiesEqual',
-    'assertEditorJsonValue',
-    'compileEditorExtension',
+    'compileEditorSchemaContract',
     'containsCompleteEditorSchema',
-    'createDocumentChangeFromRootSections',
     'createEditor',
-    'createEditorEffect',
-    'createEditorSchemaContract',
     'createEditorView',
     'decodeEditorEffect',
     'defineCommand',
@@ -81,19 +77,9 @@ const exactPublicPackageRuntimeExportExpectations = {
     'editorReads',
     'encodeEditorEffect',
     'evaluateCommand',
-    'getCandidateEditorExtensionApi',
-    'getCollabEffects',
-    'getCompiledEditorSchema',
     'getCompiledEditorSchemaFromApi',
-    'getCompiledPropertyMergeStrategy',
-    'getCompiledSchemaPropertyId',
-    'getDocumentChangeRelocations',
-    'getDocumentChangeRootKeys',
     'getEditorCommitSnapshot',
-    'getEditorExtensionRegistry',
     'getEditorRuntimeOwner',
-    'getExactDocumentChangeRelocation',
-    'getInstalledEditorExtension',
     'getSchemaElementSourceReference',
     'getSelectionDOMRange',
     'getSelectionRange',
@@ -104,7 +90,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'mapEffect',
     'mapSelectionThroughChange',
     'mapSemanticUpdateMethodArguments',
-    'normalizeRootKey',
     'preserveCompiledSchemaPropertyIdentity',
     'probeCommandNativeEquivalent',
     'property',
@@ -115,7 +100,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'reportEditorLifecycleError',
     'restoreEditorSchemaContract',
     'runTrustedUpdate',
-    'scheduleAfterCommitNotification',
     'schema',
     'screenReaderAnnouncementEffect',
     'setEditorReadOnly',
@@ -131,6 +115,27 @@ const exactPublicPackageRuntimeExportExpectations = {
     'valueCodecs',
     'withTransactionSpecDraftRead',
   ],
+  'plitejs/annotations': ['createPliteAnnotationStore'],
+  'plitejs/yjs': [
+    'YjsUpdatePolicy',
+    'createYjsAwarenessSelection',
+    'yjs',
+    'readYjsAwarenessSelection',
+    'plitePointToYjsRelativePosition',
+    'pliteRangeToYjsRelativeRange',
+    'yjsAwarenessSelectionsEqual',
+    'yjsRelativePositionToPlitePoint',
+    'yjsRelativeRangeToPliteRange',
+    'yjsRelativeRangesEqual',
+  ],
+  'plitejs/yjs/react': [
+    'useYjsProviderStatus',
+    'useYjsProviderSynced',
+    'useYjsRemoteCursor',
+    'useYjsRemoteCursorGeometry',
+    'useYjsRemoteCursorIds',
+  ],
+  'platejs/compiler': ['compileEditor'],
   'platejs/yjs': [
     'BaseYjsPlugin',
     'YjsUpdatePolicy',
@@ -147,10 +152,6 @@ const exactPublicPackageRuntimeExportExpectations = {
   'platejs/yjs/react': [
     'BaseYjsPlugin',
     'YjsPlugin',
-    'getYjsAwarenessRevision',
-    'getYjsProviderRevision',
-    'getYjsProviderStatus',
-    'getYjsProviderSynced',
     'useYjsProviderStatus',
     'useYjsProviderSynced',
     'useYjsRemoteCursor',
@@ -257,7 +258,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'closestShadowAware',
     'containsShadowAware',
     'createCompiledHotkeyMatcher',
-    'defineHostCodec',
     'dom',
     'getActiveElement',
     'getDOMClipboardFormatKey',
@@ -276,7 +276,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'isDOMText',
     'isEditor',
     'isElement',
-    'isElementDecorationsEqual',
     'isGeckoDOMHost',
     'isHotkey',
     'isLeaf',
@@ -284,7 +283,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'isPlainTextOnlyPaste',
     'isString',
     'isText',
-    'isTextDecorationsEqual',
     'isTrackedMutation',
     'isVoid',
     'keyToDataAttribute',
@@ -294,7 +292,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'normalizeRange',
     'normalizeStringDiff',
     'parseDOMClipboardHtml',
-    'splitDecorationsByChild',
     'targetRange',
     'usesAppleDOMHotkeys',
     'verifyDiffState',
@@ -323,7 +320,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'createPliteLayout',
     'createPlitePage',
     'createPlitePageBreakSnapshot',
-    'createPlitePageLayout',
     'getPlitePageLayoutDecorations',
     'getPlitePageLayoutFragments',
     'getPlitePageLayoutGeometry',
@@ -341,7 +337,6 @@ const exactPublicPackageRuntimeExportExpectations = {
     'createPliteLayout',
     'createPlitePage',
     'createPlitePageBreakSnapshot',
-    'createPlitePageLayout',
     'getPlitePageLayoutDecorations',
     'getPlitePageLayoutFragments',
     'getPlitePageLayoutGeometry',
@@ -355,17 +350,14 @@ const exactPublicPackageRuntimeExportExpectations = {
     'plitePageSettingsCodec',
     'pretextPageLayoutEngine',
     'usePliteLayout',
-    'usePliteLayoutFragments',
     'usePliteLayoutFragmentsAtPath',
     'usePliteLayoutSnapshot',
-    'usePlitePageLayout',
-    'usePlitePageLayoutSnapshot',
   ],
   'plitejs/react': [
     'Editable',
-    'EditableElement',
     'EditorReadOnlyProvider',
     'Plite',
+    'PliteAnnotationProvider',
     'PliteElement',
     'PliteLeaf',
     'PlitePlaceholder',
@@ -373,12 +365,10 @@ const exactPublicPackageRuntimeExportExpectations = {
     'PliteRuntime',
     'PliteText',
     'createEditor',
-    'defaultScrollSelectionIntoView',
     'react',
     'setDOMTextSyncRendererCapability',
     'useClaimEditableDOMCommit',
     'useDOMStrategyVirtualOffset',
-    'useDecorationSelector',
     'useEditor',
     'useEditorComposing',
     'useEditorContext',
@@ -409,11 +399,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'usePliteChildRoot',
     'usePliteCommand',
     'usePliteContentRoot',
-    'usePliteDecorationSource',
     'usePliteHistory',
-    'usePliteNodeRef',
-    'usePliteProjectionEntries',
-    'usePliteRangeDecorationSource',
     'usePliteRootChrome',
     'usePliteRootEditor',
     'usePliteRootEffect',
@@ -421,6 +407,9 @@ const exactPublicPackageRuntimeExportExpectations = {
     'usePliteRuntime',
     'usePliteRuntimeState',
     'usePliteWidget',
+    'usePliteWidgetGeometry',
+    'usePliteWidgetIds',
+    'useSelectionGeometry',
     'usePliteWidgetStore',
     'usePliteWidgets',
     'useStateFieldValue',
@@ -504,6 +493,7 @@ const internalBridgeRuntimeExportExpectations = {
     'first',
     'formatDebugValue',
     'fragment',
+    'observeAnchorStateWork',
     'getActiveEditorTransaction',
     'getCandidateEditorExtensionApi',
     'getChildren',
@@ -654,6 +644,20 @@ const internalBridgeRuntimeExportExpectations = {
     'wrapNodes',
   ],
   '../../plitejs/src/dom/internal': [
+    'getPliteTextHostStrings',
+    'isDOMTextFlowSegmentSynchronized',
+    'releaseDOMTextFlowIndex',
+    'releaseDOMTextFlowRecordIndex',
+    'resolveDOMTextFlowEntry',
+    'resolveDOMTextFlowInsertTarget',
+    'resolveDOMTextFlowOffset',
+    'resolveDOMTextFlowPoint',
+    'resolveDOMTextFlowRecordDOMText',
+    'resolveDOMTextFlowRecordText',
+    'resolveDOMTextFlowStringOffset',
+    'setDOMTextFlowIndex',
+    'setDOMTextFlowRecordIndex',
+    'setDOMTextFlowRecordIndexes',
     'DOMCoverage',
     'DOMEditor',
     'DOMIntegrityObserver',
@@ -750,7 +754,7 @@ describe('public package imports', () => {
             getRuntimeSpecifierFromExportPath(packageName, exportPath)
         )
       )
-      .concat(['platejs/yjs', 'platejs/yjs/react'])
+      .concat(['platejs/compiler', 'platejs/yjs', 'platejs/yjs/react'])
       .filter(
         (specifier) =>
           !specifier.endsWith('/internal') &&
@@ -771,18 +775,22 @@ describe('public package imports', () => {
       const exportedNames = Object.keys(module).sort();
 
       const expectedNames =
-        specifier === 'plitejs/react' || specifier === 'platejs/yjs/react'
+        specifier === 'plitejs/react' || specifier.endsWith('/yjs/react')
           ? [
               ...new Set([
                 ...exactPublicPackageRuntimeExportExpectations[
-                  specifier === 'plitejs/react' ? 'plitejs' : 'platejs/yjs'
+                  specifier === 'plitejs/react'
+                    ? 'plitejs'
+                    : specifier.replace(/\/react$/, '')
                 ],
                 ...names,
               ]),
             ]
           : names;
 
-      expect(exportedNames).toEqual([...expectedNames].sort());
+      expect(exportedNames).toEqual(
+        [...expectedNames].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      );
     });
   }
 

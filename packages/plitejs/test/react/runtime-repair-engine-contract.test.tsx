@@ -1,4 +1,5 @@
 import { act, render, renderHook } from '@testing-library/react';
+import type { Value } from 'plitejs';
 
 import { EDITOR_TO_FORCE_RENDER } from '../../src/dom/internal';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -28,7 +29,7 @@ const renderRepairEngine = (editor: ReactRuntimeEditor) => {
 };
 
 test('exports the unchanged composition selection after its repair render', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = createRuntime(editor);
   const syncDOMSelectionToEditor = vi.fn();
   const isFocused = vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
@@ -47,7 +48,7 @@ test('exports the unchanged composition selection after its repair render', () =
 });
 
 test('does not export composition selection after focus leaves the editor', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = createRuntime(editor);
   const syncDOMSelectionToEditor = vi.fn();
   let focused = true;
@@ -72,7 +73,7 @@ test('does not export composition selection after focus leaves the editor', () =
 });
 
 test('does not export when model selection drifts before the repair render', () => {
-  const editor = createEditor({
+  const editor = createEditor<Value>({
     initialSelection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
@@ -103,7 +104,7 @@ test('does not export when model selection drifts before the repair render', () 
 });
 
 test('does not export a stale composition selection after a newer commit', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const snapshot = editor.read.runtime.snapshot();
 
   expect(
@@ -119,7 +120,7 @@ test('does not export a stale composition selection after a newer commit', () =>
 });
 
 test('does not export when selection changes without a document commit', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const snapshot = editor.read.runtime.snapshot();
   expect(
     shouldExportPendingModelSelection(
@@ -138,9 +139,9 @@ test('does not export when selection changes without a document commit', () => {
 });
 
 test('settles only the latest explicit focus target after the repair render', () => {
-  const editor = createEditor();
-  const staleTarget = createEditor();
-  const target = createEditor();
+  const editor = createEditor<Value>();
+  const staleTarget = createEditor<Value>();
+  const target = createEditor<Value>();
   const focus = vi.spyOn(ReactEditor, 'focus').mockImplementation(() => {});
   const { result } = renderRepairEngine(editor);
   const requestRepair = result.current.requestEditableRepair as unknown as (
@@ -173,8 +174,8 @@ test('settles only the latest explicit focus target after the repair render', ()
 });
 
 test('fails closed when an explicit focus target is unavailable after render', () => {
-  const editor = createEditor();
-  const target = createEditor();
+  const editor = createEditor<Value>();
+  const target = createEditor<Value>();
   const focus = vi.spyOn(ReactEditor, 'focus').mockImplementation(() => {
     throw new Error('unmounted target');
   });
@@ -198,7 +199,7 @@ test('fails closed when an explicit focus target is unavailable after render', (
 });
 
 test('repair engine registers force render only after commit and cleans up on unmount', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const ThrowingHarness = () => {
     useRuntimeRepairEngine({
       runtime: createRuntime(editor),
@@ -227,7 +228,7 @@ test('repair engine registers force render only after commit and cleans up on un
 });
 
 test('repair engine cleanup preserves a newer force render for the same editor', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const first = renderRepairEngine(editor);
   const firstForceRender = first.result.current.forceRender;
   const second = renderRepairEngine(editor);

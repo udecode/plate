@@ -63,30 +63,23 @@ describe('ExitBreakPlugin', () => {
   });
 
   it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
-    const CodeLinePlugin = defineBasePlugin('codeline', {
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-    });
     const CodeBlockPlugin = defineBasePlugin('codeblock', {
       schema: {
         element: {
-          content: schema.content.element(CodeLinePlugin, { min: 1 }),
+          content: schema.content.text({ default: 'text', min: 1, max: 1 }),
         },
       },
     });
     const editor = createEditor({
-      plugins: [ExitBreakPlugin, CodeBlockPlugin, CodeLinePlugin],
+      plugins: [ExitBreakPlugin, CodeBlockPlugin],
       selection: {
         kind: 'text',
-        anchor: { offset: 4, path: [0, 0, 0] },
-        focus: { offset: 4, path: [0, 0, 0] },
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
       },
       initialValue: [
         {
-          children: [{ children: [{ text: 'code' }], type: 'codeline' }],
+          children: [{ text: 'code' }],
           type: 'codeblock',
         },
       ],
@@ -96,7 +89,7 @@ describe('ExitBreakPlugin', () => {
 
     expect(editor.read.children()).toEqual([
       {
-        children: [{ children: [{ text: 'code' }], type: 'codeline' }],
+        children: [{ text: 'code' }],
         type: 'codeblock',
       },
       { children: [{ text: '' }], type: 'paragraph' },

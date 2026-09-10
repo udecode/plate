@@ -1,0 +1,15 @@
+---
+id: 2026-09-08-find-session
+date: 2026-09-08
+status: draft
+kind: fix
+summary: 'Use the editor-owned Find query with local search controls.'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-08-find-editor-owned-query-local-5b6dbd6c","kind":"fix","migrationNotes":[]} -->
+
+- **`find`**: Search through `BaseFindPlugin` while keeping the search bar, deferred input, focus and scroll behavior local. Preserve IME confirmation and opening before the first query.
+- **`editor`**: Style the current match separately from other matches using the feature’s transient data attributes.

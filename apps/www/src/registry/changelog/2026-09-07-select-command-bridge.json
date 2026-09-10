@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-select-command-bridge",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-select-command-bridge.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep tag selection controls in a smaller copied command menu",
+  "targets": [
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-select-editor-keep-tag-selection-controls-020bce4b",
+      "kind": "wiring",
+      "summary": "Keep search, first-item selection, and Enter activation in the copied command bridge while Fzf owns matching; install only the menu parts used by the tag picker.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-select-command-bridge",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

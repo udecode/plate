@@ -1,0 +1,213 @@
+{
+  "at": "2026-09-10T14:18:55.836119+00:00",
+  "scope": "assessment validation; runtime target unselected; concurrent shared-field convergence remains failing",
+  "commands": {
+    "contracts": {
+      "argv": [
+        "bun",
+        "test",
+        "--preload",
+        "./config/plite-source-test-setup.ts",
+        "./packages/plitejs/test/runtime-contracts.test.ts",
+        "./packages/plitejs/test/history/announcement-history-contract.test.ts",
+        "./packages/plitejs/test/yjs/shared-effect-compaction-contract.spec.ts",
+        "--test-name-pattern",
+        "document meta|shared effect compaction"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "sources/skill-audit-contract-tests.log",
+      "scope": "existing facility contracts",
+      "summary": {
+        "passed": 31,
+        "filtered_out": 865,
+        "failed": 0
+      }
+    },
+    "suggestion_observations": {
+      "argv": [
+        "bun",
+        "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/sources/current-owner-probe.mjs"
+      ],
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log": "sources/skill-audit-current-owner-probe.log",
+      "scope": "current-source observation; no candidate proof",
+      "observations": [
+        {
+          "case": "canonical-change-under-suggesting-mode",
+          "isSuggesting": true,
+          "text": "replacement",
+          "reviews": []
+        },
+        {
+          "case": "reject-one-overlapping-insertion-id",
+          "initialReviews": [
+            "alice",
+            "bob"
+          ],
+          "rejectedId": "alice",
+          "text": "",
+          "reviews": []
+        }
+      ]
+    },
+    "shared_field_convergence": {
+      "argv": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/sources/shared-field-probe.mjs"
+      ],
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "log": "sources/skill-audit-shared-field-probe.log",
+      "scope": "current-source observation; no candidate proof",
+      "observation": {
+        "case": "concurrent-shared-field-replacements",
+        "first": [
+          "bob-record"
+        ],
+        "second": [
+          "alice-record"
+        ],
+        "stateVectorsEqual": true,
+        "sharedDocumentJsonEqual": true,
+        "acceptedText": "accepted",
+        "expected": "Matching active shared-field values after full synchronization.",
+        "observation": "Concurrent absolute replacements are not a merge contract for independent records."
+      }
+    }
+  },
+  "source_fingerprints": {
+    "/Users/zbeyens/git/automerge/javascript/src/implementation.ts": "a986ae23fdaeb8d0b30d95338fa66753aac024c449f759bfd764feb19f4183f3",
+    "/Users/zbeyens/git/ckeditor5/packages/ckeditor5-engine/src/model/history.ts": "ae54f1761b5f1164cd8a332b0f3a5aef1934efbb4ff526c8dc5af887fc02cd27",
+    "/Users/zbeyens/git/docx-editor/apps/docs/content/docs/editor/track-changes.mdx": "1f3e48aa8c33eb0b5417c024fb5e60d9d707d2a736d35c51e5fc8242c5eed26c",
+    "/Users/zbeyens/git/docx-editor/packages/document-api/src/track-changes/track-changes.ts": "b35d4c2ccd2361b759656a3087d9854a6cfc7b4f64f909d41b6207ccbbc3be50",
+    "/Users/zbeyens/git/lexical/packages/lexical-history/src/index.ts": "fb98368ea46a27cd6d74332d5ec4ae780850c77e87bd5aea71f2f0db45bcb419",
+    "/Users/zbeyens/git/loro/crates/loro-internal/src/change_meta.rs": "b8be7937c92bc5f22b83268bbbb0f2601c34693d2b6f15010a18bcc40733eda4",
+    "/Users/zbeyens/git/loro/crates/loro-internal/src/undo.rs": "071b72e45aa45191f5d18ddada616f130b25337e162aa37611c0ab1c56fa26fd",
+    "/Users/zbeyens/git/manuscripts-track-changes-plugin/src/tracking/trackTransaction.ts": "9927d015c2e45a4b6fa5e28fa2636096cdc619447bfee849b146d9e9f7801460",
+    "/Users/zbeyens/git/manuscripts-track-changes-plugin/src/types/track.ts": "b0817a3e849e54f195282d99cfc84fb964df60fd905655062c1d81255853be18",
+    "/Users/zbeyens/git/plate-2/apps/www/src/registry/components/editor/discussion.tsx": "b623b96b728e632b3240ea3e3d82c5d8eadd61ecf23e680e8117bc21a4e4dfc8",
+    "/Users/zbeyens/git/plate-2/apps/www/src/registry/components/editor/suggestion.tsx": "c47876061457a6903aa31ae6c23a761652d44bb642499350bd6b3b89cf6710cf",
+    "/Users/zbeyens/git/plate-2/config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "/Users/zbeyens/git/plate-2/config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+    "/Users/zbeyens/git/plate-2/docs/plans/2026-08-31-hard-cut-comments-ownership.md": "32bf66d6032263929d4a29c7c96e73db4a72348602f87ec9012011e02ea223ba",
+    "/Users/zbeyens/git/plate-2/docs/plans/2026-09-05-comments-complete-source-and-api-execution.md": "b1dfb5924f06cf00d8d21dc6b98027ec3014cac3004001113ad336ed76fc8105",
+    "/Users/zbeyens/git/plate-2/docs/plans/2026-09-06-comments-discussions-main-parity.md": "51959a709b3f0b3124320471958d0ad52442df6781f02546bca70e2ddd2202cb",
+    "/Users/zbeyens/git/plate-2/docs/plans/2026-09-09-comments-initialization.md": "582c415efc793317f4e4583cf82ce410726fd53fc62758dcb97a3e1594a393e5",
+    "/Users/zbeyens/git/plate-2/docs/plans/2026-09-09-comments-package-data.md": "f00ca87ed37834bfc254d15ddfb0009269b20beb0de9b115414d1499046f746a",
+    "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/sources/current-owner-probe.mjs": "dedf08f1d52c043890f77c25ebc959102de1d796cc67d9024e9b29312fcf0080",
+    "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/sources/shared-field-probe.mjs": "327f9c3c1ab5c50a3e2f890c4fa60a1364914caa9078c6b73032c756e28287ca",
+    "/Users/zbeyens/git/plate-2/docs/vision/plate.md": "788b39303d862254bb511e0ad761b350a33e237b677bfd75bdd9e8e501a5f166",
+    "/Users/zbeyens/git/plate-2/docs/vision/plite.md": "d6e8b2dafc18763821c77e477aecfc75dd3921f179d1382bf6951f434f387bc8",
+    "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.reviews.spec.tsx": "0c86e056809513188496f1ad50bcc9340dfd3f7ea90ff716684c183b51135991",
+    "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.spec.tsx": "d3596f5033ce1cb8f0deb26e1c177d55eed1953b8a26b34e0a5a3c73058a1ef8",
+    "/Users/zbeyens/git/plate-2/packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin.ts": "2e1f84f522391a30f017d3f75e318af0ca731191a8f86a4452e2ab1d6ccb7b1a",
+    "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/suggestion/SuggestionPlugin.tsx": "e624edafe38aa4c316979e070a0185b096be6db75f8008b197155f24ed67e2bc",
+    "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/suggestion/useSuggestionReviews.ts": "c5e6a9f0c33217b216cb55af8ea27372cd97ad1e1634af303234d0f3c76aebd7",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/package.json": "82b450a9dea86f1101bbbab90b3b50f549e03c852313e48d1e0d0a13648b72a5",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/change/document-change.ts": "aff8c5076cb04a4a67e0c700be72713a782a075b32280ea6d2c5751bb8f7c789",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/public-state.ts": "442749f3af8aa3dab59f5b1286b37d6fdce4c556d34a2dc02bbdc80f9cacc4da",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/state-field.ts": "02c0068400310b7281c3b00dbd47f9645784b5813ecb07ed587a977212c125be",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/editor-runtime-view.ts": "939f590ba11038bf0845d09c36e247376a9bbf5afaaaa7aafa011977a9b7c844",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history-codec.ts": "dccceef639744b283e085c3af38508bb1d8d776be1b9c033cd51b544410d7721",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history-state.ts": "32230c6ff13925e5735dda6579a67a02a8b9143c9731c1d80a892657c11ca17d",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/history/history.ts": "09318f8abe110541799f91b3d5fc89f2e1c3571f5d0b3f33651fa0c139200f22",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/editor.ts": "770419b955f4bcf2cc9db36f132d5fe30cb78614d8a9e12cd56651999c84f7d9",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/yjs/core/controller.ts": "c9dd654511c12dcfa6e09d69240974f5244d530d950f15992ee2a3f53002eee2",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/yjs/core/editor-adapter.ts": "52b8859e793b41b42d22eaae5159d8f31a0d6d3198fb41582bf7262051311b50",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/collab-document-state-contract.ts": "d25c9f26aa1412f6d814ad353fbb649033bd47aac09316231269529a137c2e1f",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/document-state-contract.ts": "78e652690096ff36f5e2428a532efbb77a7e0957a7baf612558abe4137c358d9",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/history/announcement-history-contract.test.ts": "ec175d7d999de582bc6e9a50f21832a77af63ddc4112c7c5485ca521373df189",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/history/document-state-history-contract.ts": "48624ff0057e784db1cf4faf0e28a3937747571fa768ef2f7d461e0bdf9e0afe",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/runtime-contracts.test.ts": "a7d0e2f69962554ddded844fce36fd3b1417f391b0362333ca6f1a824060ccf2",
+    "/Users/zbeyens/git/plate-2/packages/plitejs/test/yjs/shared-effect-compaction-contract.spec.ts": "9600c63bb00c985b13a6a6e3b57f47672e13cfdc669135fed24e3f687d5f1ed2",
+    "/Users/zbeyens/git/prosemirror-changeset/src/changeset.ts": "786fa0ee02a60dd04a27e6532f5fcd7aacfc1c0b7a9ad06647752c96cb21b673",
+    "/Users/zbeyens/git/prosemirror-suggest-changes/src/index.ts": "43c82f68d4f2c38725ccebfc2301af0f2b91c1c022d14d6c0b1dcab5de521943",
+    "/Users/zbeyens/git/prosemirror-suggest-changes/src/withSuggestChanges.ts": "06c051eeb28b276dc6068d0fe20b989744f601de5e6bf5adcfbf49f70f6ce8f1",
+    "/Users/zbeyens/git/quill/packages/quill/src/modules/history.ts": "1caafae89a23e8bac1e7e2cb9c6d5c7b77438ad4e15bff5c670417a016e9362c",
+    "/Users/zbeyens/git/yhub/API.md": "3e3945e62a5e73e5a3466869f9144a9364ffc66a83379ae523559485d21c6655",
+    "/Users/zbeyens/git/yhub/src/compute-worker.js": "2c4d00153d1e1729521023d81723a43e48e02f5da5485525c3eb3647b86ee77e",
+    "/tmp/plate-authored-research/y-prosemirror/ARCHITECTURE.md": "b58b673b05af2b036044b572e5b21dc0dd7e7ab80b9ca2aabab747f2f7bca31c",
+    "/tmp/plate-authored-research/y-prosemirror/CAVEATS.md": "6e4e2a3e0abc6f682f0b777510d2f24fb510222af76e6c82e711349119a81836",
+    "/tmp/plate-authored-research/yjs/LICENSE": "341baa53605ed85d6f95782322854cca56c655ebc7fd4712649b8e7afc6020ff",
+    "/tmp/plate-authored-research/yjs/package.json": "6cc0e7a31c83fca50f8da58a1f84c5f39b6cc767a7e856f4080fa7ab227d029f",
+    "/tmp/plate-authored-research/yjs/src/utils/Renderer.js": "26eaa4ec5682e36d9257e905f97f4abd75c66c18feaf194fc522179257c6e785",
+    "/tmp/plate-authored-research/yjs/tests/attribution.tests.js": "b66dca50de68832f6e3549eb3dfdae43b6fbc446d2da7ed0851c514ee5e407bd"
+  },
+  "source_drift_during_final_probes": false,
+  "changed_since_initial_assessment": [
+    "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/public-state.ts"
+  ],
+  "ledgers": {
+    "query-ledger.tsv": {
+      "rows": 18,
+      "columns": 9,
+      "bad_rows": []
+    },
+    "rejected-ledger.tsv": {
+      "rows": 6,
+      "columns": 5,
+      "bad_rows": []
+    },
+    "decisions.tsv": {
+      "rows": 9,
+      "columns": 6,
+      "bad_rows": []
+    },
+    "promoted-ledger.tsv": {
+      "rows": 1,
+      "columns": 6,
+      "bad_rows": []
+    },
+    "repo-registry.tsv": {
+      "rows": 15,
+      "columns": 11,
+      "bad_rows": []
+    },
+    "lead-ledger.tsv": {
+      "rows": 8,
+      "columns": 15,
+      "bad_rows": []
+    },
+    "read-log.tsv": {
+      "rows": 67,
+      "columns": 8,
+      "bad_rows": []
+    }
+  },
+  "review_method_count": 19,
+  "local_links": "pass",
+  "errors": [],
+  "artifact_sha256": {
+    "README.md": "b4827ff4cfe475c4a3d2681cd7815a6f0da9b27b2b079d6d7d405b35d32ee34c",
+    "assessment.md": "babfc245377350a86c09ea2b4fe3ced999fe0f9c606f13b52ae3c1785ea484bb",
+    "skill-audit.md": "689fde5d0c9bf2cf6e5888ae192c3cc40b8c681083109661c26ce0bf7fffead1",
+    "decisions.tsv": "9b15b4d6ffb737b81b1d168f5436cba5e371cfd5e1761201ba7ac788dfabe434",
+    "lead-ledger.tsv": "4e653d2a52ad470d75be34c640b5f6d83d7d4eb7ef6aa5ee1d97673ae7365eee",
+    "rejected-ledger.tsv": "9addd9212ab9207813458603e757330446cb184b2503b4bd47b2058f36af9276",
+    "promoted-ledger.tsv": "56d3dcc9f637f437ddfe41707e9ba8053a522dad7a886c92e23410a8554f387b",
+    "read-log.tsv": "689020808b23990da27eb11fa8dd1b45fbe40cb1d745212d8112022fe4bbb310",
+    "shards/001-authored-review.md": "e99abf14792424094d417904c34ed237d17f67feb98d6c6aae1c8d3189874c87"
+  },
+  "prose_scan": [
+    {
+      "file": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-10-authored-changes/skill-audit.md",
+      "sha256": "689fde5d0c9bf2cf6e5888ae192c3cc40b8c681083109661c26ce0bf7fffead1",
+      "findings": [],
+      "signals": {
+        "wordCount": 2067,
+        "sentenceCount": 150,
+        "meanSentenceWords": 13.78,
+        "sentenceLengthCv": 0.56,
+        "similarLengthRuns": 5,
+        "repeatedStarts": {
+          "do not": 3
+        }
+      }
+    }
+  ],
+  "completed_at": "2026-09-10T14:19:48.907946+00:00"
+}

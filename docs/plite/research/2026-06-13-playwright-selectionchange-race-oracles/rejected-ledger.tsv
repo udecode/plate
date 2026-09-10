@@ -1,0 +1,3 @@
+lead_key	repo_key	source_ref	reason_rejected
+playwright:runtime-patch-from-selectionchange-race	github/janpe/playwright-selectionchange-race-repro	race-playwright-spec	The repro is valuable as an invariant but not as runtime patch evidence. Slate already gates DOM import through selectable target checks; patch only from a Slate-native red route/package test.
+playwright:bare-contenteditable-home-shift-end-route	github/janpe/playwright-selectionchange-race-repro	race-vitest-spec	Do not add a Slate example route that replaces DOM text nodes outside Slate just to reproduce a bare contenteditable failure. The Slate-native owner is detached endpoint import safety.

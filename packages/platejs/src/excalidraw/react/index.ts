@@ -3,3 +3,4 @@
  */
 
 export * from './ExcalidrawPlugin';
+export * from './useExcalidrawSync';

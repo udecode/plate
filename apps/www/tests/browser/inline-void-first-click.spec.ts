@@ -9,8 +9,7 @@ const focusOutsideEditor = async (page: Page) => {
   await expect
     .poll(() =>
       page.evaluate(
-        (editorSelector) =>
-          !document.activeElement?.closest(editorSelector),
+        (editorSelector) => !document.activeElement?.closest(editorSelector),
         EDITOR_ROOT
       )
     )
@@ -29,10 +28,7 @@ const focusDateParagraph = async (page: Page, date: Locator) => {
   const box = await precedingText.boundingBox();
 
   expect(box).not.toBeNull();
-  await page.mouse.click(
-    box!.x + box!.width * 0.7,
-    box!.y + box!.height / 2
-  );
+  await page.mouse.click(box!.x + box!.width * 0.7, box!.y + box!.height / 2);
   await expect
     .poll(() =>
       page.evaluate((editorSelector) => {
@@ -66,19 +62,16 @@ const clickWithPageMouse = async (page: Page, target: Locator) => {
   await page.mouse.up();
 };
 
-const traceFirstGesture = async (
-  page: Page,
-  selector: string,
-  index = 0
-) => {
+const traceFirstGesture = async (page: Page, selector: string, index = 0) => {
   await page.evaluate(
     ({ index: targetIndex, selector: targetSelector }) => {
       const target = document.querySelectorAll(targetSelector)[targetIndex];
       const editor = target?.closest('[data-plite-editor="true"]');
       const trace: string[] = [];
 
-      (window as typeof window & { __focusFirstClickTrace?: string[] })
-        .__focusFirstClickTrace = trace;
+      (
+        window as typeof window & { __focusFirstClickTrace?: string[] }
+      ).__focusFirstClickTrace = trace;
 
       if (target instanceof Element) {
         trace.push(`expanded:${target.getAttribute('aria-expanded')}`);
@@ -248,7 +241,9 @@ test('inline equation opens from the first focus-owning click', async ({
   }
 });
 
-test('block equation remains a one-click control', async ({ page }, testInfo) => {
+test('block equation remains a one-click control', async ({
+  page,
+}, testInfo) => {
   expect(testInfo.retry).toBe(0);
   const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 

@@ -49,7 +49,7 @@ Three current Plate API clusters are materially worse than the comparison set:
 
 1. Six heading types and descriptors should become one `heading` node with a
    required `level: 1 | 2 | 3 | 4 | 5 | 6`.
-2. `codeBlock.lang` should be `codeBlock.language`.
+2. Code blocks should store `language` and one newline-bearing text child.
 3. Table's `colSizes`, `background`, and overloaded `size` vocabulary should
    become semantic `columnWidths`, `backgroundColor`, `height`, and border
    `width`; cell import widths should normalize into table column widths rather
@@ -114,7 +114,7 @@ not used; clean official clones were created separately.
 | `NODE-02` | Additional field placement | Schema-owned fields are flat on nodes | MDAST/Lexical/Slate are flat; ProseMirror/BlockNote/Editor.js add attrs/props/data bags | Keep flat fields. Schema handles already solve ownership and collisions | Keep |
 | `NODE-03` | Text marks | Boolean/string properties live on text leaves | MDAST wrappers, ProseMirror mark arrays, Portable Text refs, Lexical bitmasks, BlockNote styles all add another representation layer | Keep leaf properties and `script: "sub" | "sup"` | Keep |
 | `NODE-04` | Headings | Six types/plugins: `h1`…`h6`; six near-identical codec declarations | ProseMirror and BlockNote use `heading + level`; Slate typed examples use level; Lexical uses one heading type plus tag; only MDAST calls it depth | One `heading` type and descriptor with required numeric `level`; do not use MDAST `depth` | P1 `best-api -> plate-plan` |
-| `NODE-05` | Code blocks | Editable `codeBlock -> codeLine -> Text`, property `lang` | Lexical and BlockNote keep editable element nodes and persist `language`; Portable Text also says `language`; MDAST alone says `lang` | Keep structure; rename `lang` to `language`; map to MDAST `lang` only in codec | P1 `best-api -> plate-plan` |
+| `NODE-05` | Code blocks | Editable `codeBlock -> Text`, property `language` | ProseMirror, Lexical, CodeMirror, and Wordgard keep source text independent from physical-line rendering; Portable Text also says `language`; MDAST alone says `lang` | Keep one newline-bearing text child; derive physical lines from offsets; map to MDAST `lang` only in the codec | Accepted `best-api -> plate-plan` |
 | `NODE-06` | Lists | Flat semantic properties on ordinary blocks: `listType`, `listStyle`, `indent`, `checked`, `listStart`, and `listRestart` | Portable Text and Quill prove flat line/block list metadata; MDAST/ProseMirror/Lexical use structural lists; BlockNote uses list block types and nested children | Keep the flat representation. Make `listStart` conditional author intent, `listRestart` a forced boundary, and derive display ordinals at runtime | Accepted `best-api -> plate-plan` |
 | `NODE-07` | Media and captions | Media has `url`; editable caption is direct `children`; image persists `naturalWidth`/`naturalHeight` separately from rendered `width` | MDAST images cannot own editable captions; Lexical and BlockNote use rendered width; WHATWG and CSS Images call image-owned geometry natural dimensions | Keep direct children and `url`. Keep rendered `width` separate from source-image `naturalWidth`/`naturalHeight` | Accepted `best-api -> plate-plan` |
 | `NODE-08` | Tables | Strong table/row/cell grammar; `colSizes`, `background`, cell/row/border `size`, boolean `header` | Lexical and BlockNote use explicit widths, backgroundColor, row/column header metadata; MDAST cells are too weak for rich blocks | Keep grammar and `header`; rename table-owned fields, remove canonical cell size after import normalization | P1 `best-api -> plate-plan` |
@@ -196,12 +196,12 @@ The v54 migration maps `h1`…`h6` to `heading` plus `level`.
 type CodeBlockElement = {
   type: 'codeBlock';
   language?: string;
-  children: readonly CodeLineElement[];
+  children: readonly [Text];
 };
 ```
 
-Keep MDAST's external `lang` literal inside the codec. Do not let the Markdown
-format choose the editor's public domain name.
+Keep MDAST's external `lang` literal inside the codec. Newlines define physical
+lines without adding persisted structural nodes.
 
 ### P1: Table vocabulary
 
@@ -245,7 +245,7 @@ row/column-scope user job earns more state.
   `content`/`children` model.
 - Flat schema-owned properties rather than `attrs`/`props`/`data`.
 - Leaf mark properties, including the mutually exclusive `script` enum.
-- Editable `codeBlock`/`codeLine` structure.
+- Editable `codeBlock` with one newline-bearing text child.
 - Flat list annotations.
 - Direct editable media-caption children.
 - Table/row/cell structural grammar and boolean header identity.

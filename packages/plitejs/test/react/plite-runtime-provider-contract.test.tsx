@@ -14,6 +14,10 @@ import {
   defineExtensionSlot,
   defineFacet,
   type Element,
+  type EditorCommit,
+  type InitialValue,
+  type Value,
+  NodeApi,
   schema,
 } from 'plitejs';
 import { clipboardHandler } from 'plitejs/dom';
@@ -23,7 +27,6 @@ import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
   EDITOR_TO_PENDING_SELECTION,
-  IS_COMPOSING,
 } from '../../src/dom/internal';
 import {
   createEditor,
@@ -42,10 +45,11 @@ import {
   usePliteRuntime,
   usePliteRuntimeState,
 } from '../../src/react';
+import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { useRootDocumentEpoch } from '../../src/react/editable/root-selector-sources';
 import { didSyncTextPathToDOM } from '../../src/react/hooks/use-plite-node-ref';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -53,7 +57,7 @@ const paragraph = (text: string): Descendant => ({
 const markedParagraph = (
   text: string,
   marks: Record<string, unknown>
-): Descendant => ({
+): Element => ({
   type: 'paragraph',
   children: [{ text, ...marks }],
 });
@@ -70,30 +74,29 @@ class FakeDataTransfer {
   }
 }
 
-const rootText = (state: { nodes: { children: () => Descendant[] } }) => {
-  const [firstBlock] = state.nodes.children() as Array<{
-    children: Array<{ text: string }>;
-  }>;
+const rootText = (state: {
+  nodes: { children: () => readonly Descendant[] };
+}) => {
+  const [firstBlock] = state.nodes.children();
 
-  return firstBlock?.children[0]?.text ?? '';
+  return firstBlock ? NodeApi.string(firstBlock) : '';
 };
 
-const initialValue = () => ({
+const initialValue = (): InitialValue => ({
   children: [paragraph('body')],
   roots: { footer: [paragraph('footer')], header: [paragraph('header')] },
 });
 
-const editableIsland = defineEditorSchema('schema:test-editable-island', {
+const formCard = defineEditorSchema('schema:test-form-card', {
   elements: {
     'editable-void': {
-      content: schema.content.open(),
       contentRoots: {
         body: schema.content.not(schema.content.text()),
       },
-      void: 'editable-island',
+      void: 'block',
     },
   },
-  id: 'test-editable-island',
+  id: 'test-form-card',
   root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
@@ -115,7 +118,7 @@ const contentRootExtension = defineEditorSchema('schema:test-content-root', {
 });
 
 const createRuntimeWrapper =
-  (value = initialValue()) =>
+  (value: InitialValue = initialValue()) =>
   ({ children }: { children: ReactNode }) => {
     const runtime = usePliteRuntime({ initialValue: value });
 
@@ -230,7 +233,7 @@ describe('PliteRuntime provider contract', () => {
   test('usePliteChildRoot renders same-runtime rich island content', async () => {
     const childRoot = 'island-a:body';
     const editor = createEditor({
-      extensions: [editableIsland],
+      extensions: [formCard],
       initialValue: {
         children: [
           {
@@ -515,87 +518,105 @@ describe('PliteRuntime provider contract', () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
-  test('Plite callbacks publish nested commits in version order with paired snapshots', async () => {
-    const editor = createEditor({ initialValue: [paragraph('body')] });
-    const onCommit = vi.fn();
-    const onValueChange = vi.fn();
-    const outerVersion = editor.read.runtime.snapshot().version + 1;
-    let nested = false;
+  test.each(['direct', 'runtime'] as const)(
+    'Plite %s callbacks publish nested commits in version order with paired snapshots',
+    async (mode) => {
+      const { result } = renderHook(() =>
+        usePliteRuntime({ initialValue: [paragraph('body')] })
+      );
+      const { editor } = result.current;
+      const onCommit = vi.fn();
+      const onValueChange = vi.fn();
+      const outerVersion = editor.read.runtime.snapshot().version + 1;
+      let nested = false;
 
-    editor.subscribeCommit((commit) => {
-      if (nested || !commit.changed.has('text')) return;
+      editor.subscribeCommit((commit) => {
+        if (nested || !commit.changed.has('text')) return;
 
-      nested = true;
-      editor.update((tx) => {
-        tx.text.insert('?', { at: { path: [0, 0], offset: 5 } });
+        nested = true;
+        editor.update((tx) => {
+          tx.text.insert('?', { at: { path: [0, 0], offset: 5 } });
+        });
       });
-    });
 
-    render(
-      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
-        <span />
-      </Plite>
-    );
+      render(
+        mode === 'direct' ? (
+          <Plite
+            editor={editor}
+            onCommit={onCommit}
+            onValueChange={onValueChange}
+          >
+            <span />
+          </Plite>
+        ) : (
+          <PliteRuntime runtime={result.current}>
+            <Plite onCommit={onCommit} onValueChange={onValueChange}>
+              <span />
+            </Plite>
+          </PliteRuntime>
+        )
+      );
 
-    await act(async () => {
-      editor.update((tx) => {
-        tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      await act(async () => {
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+        });
       });
-    });
 
-    expect(onCommit).toHaveBeenCalledTimes(2);
-    expect(onValueChange).toHaveBeenCalledTimes(2);
+      expect(onCommit).toHaveBeenCalledTimes(2);
+      expect(onValueChange).toHaveBeenCalledTimes(2);
 
-    expect(
-      onCommit.mock.calls.map(([context]) => context.commit.version)
-    ).toEqual([outerVersion, outerVersion + 1]);
-    expect(
-      onValueChange.mock.calls.map(([context]) => context.commit.version)
-    ).toEqual([outerVersion, outerVersion + 1]);
-    expect(
-      [
-        ...onCommit.mock.calls.map(([context], index) => ({
-          kind: 'commit',
-          order: onCommit.mock.invocationCallOrder[index],
-          version: context.commit.version,
-        })),
-        ...onValueChange.mock.calls.map(([context], index) => ({
-          kind: 'value',
-          order: onValueChange.mock.invocationCallOrder[index],
-          version: context.commit.version,
-        })),
-      ]
-        .sort((a, b) => a.order! - b.order!)
-        .map(({ kind, version }) => `${kind}:${version}`)
-    ).toEqual([
-      `commit:${outerVersion}`,
-      `value:${outerVersion}`,
-      `commit:${outerVersion + 1}`,
-      `value:${outerVersion + 1}`,
-    ]);
+      expect(
+        onCommit.mock.calls.map(([context]) => context.commit.version)
+      ).toEqual([outerVersion, outerVersion + 1]);
+      expect(
+        onValueChange.mock.calls.map(([context]) => context.commit.version)
+      ).toEqual([outerVersion, outerVersion + 1]);
+      expect(
+        [
+          ...onCommit.mock.calls.map(([context], index) => ({
+            kind: 'commit',
+            order: onCommit.mock.invocationCallOrder[index],
+            version: context.commit.version,
+          })),
+          ...onValueChange.mock.calls.map(([context], index) => ({
+            kind: 'value',
+            order: onValueChange.mock.invocationCallOrder[index],
+            version: context.commit.version,
+          })),
+        ]
+          .sort((a, b) => a.order - b.order)
+          .map(({ kind, version }) => `${kind}:${version}`)
+      ).toEqual([
+        `commit:${outerVersion}`,
+        `value:${outerVersion}`,
+        `commit:${outerVersion + 1}`,
+        `value:${outerVersion + 1}`,
+      ]);
 
-    for (const [context] of onCommit.mock.calls) {
-      expect(context.snapshot.version).toBe(context.commit.version);
+      for (const [context] of onCommit.mock.calls) {
+        expect(context.snapshot.version).toBe(context.commit.version);
+      }
+      for (const [context] of onValueChange.mock.calls) {
+        expect(context.snapshot.version).toBe(context.commit.version);
+        expect(context.value).toBe(context.snapshot.children);
+      }
+
+      const outerCommit = onValueChange.mock.calls
+        .map(([context]) => context)
+        .find((context) => context.commit.version === outerVersion);
+
+      expect(outerCommit).toEqual(
+        expect.objectContaining({
+          snapshot: expect.objectContaining({
+            children: [paragraph('body!')],
+            version: outerVersion,
+          }),
+          value: [paragraph('body!')],
+        })
+      );
     }
-    for (const [context] of onValueChange.mock.calls) {
-      expect(context.snapshot.version).toBe(context.commit.version);
-      expect(context.value).toBe(context.snapshot.children);
-    }
-
-    const outerCommit = onValueChange.mock.calls
-      .map(([context]) => context)
-      .find((context) => context.commit.version === outerVersion);
-
-    expect(outerCommit).toEqual(
-      expect.objectContaining({
-        snapshot: expect.objectContaining({
-          children: [paragraph('body!')],
-          version: outerVersion,
-        }),
-        value: [paragraph('body!')],
-      })
-    );
-  });
+  );
 
   test('Plite onCommit observes sibling commits while selection callbacks stay root-scoped', async () => {
     const editor = createEditor({ initialValue: initialValue() });
@@ -650,7 +671,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     const expectedSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -944,7 +965,7 @@ describe('PliteRuntime provider contract', () => {
 
   test('usePliteRuntimeState forwards commits to shouldUpdate filters', async () => {
     let runtime!: ReturnType<typeof usePliteRuntime>;
-    const shouldUpdate = vi.fn(() => false);
+    const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => false);
 
     const Probe = () => {
       usePliteRuntimeState(rootText, { shouldUpdate });
@@ -978,7 +999,7 @@ describe('PliteRuntime provider contract', () => {
         }),
       }),
     ]);
-    expect(shouldUpdate.mock.calls.at(-1)?.[0].changed.has('document')).toBe(
+    expect(shouldUpdate.mock.calls.at(-1)?.[0]?.changed.has('document')).toBe(
       true
     );
   });
@@ -1129,6 +1150,39 @@ describe('PliteRuntime provider contract', () => {
     expect(main.result.current.text).toBe('body!');
   });
 
+  test('mounted command views retain identity across permission changes and reject stale writes after unmount', () => {
+    const editor = createEditor({ initialValue: initialValue() });
+    let view: ReturnType<typeof useEditorContext> | undefined;
+    const Capture = () => {
+      view = useEditorContext();
+      return <Editable aria-label="view" />;
+    };
+    const App = ({ readOnly = false }: { readOnly?: boolean }) => (
+      <Plite editor={editor}>
+        <Plite readOnly={readOnly}>
+          <Capture />
+        </Plite>
+      </Plite>
+    );
+    const result = render(<App />);
+    const captured = view!;
+    const { insert } = captured.update.text;
+    result.rerender(<App readOnly />);
+    expect(view).toBe(captured);
+    expect(captured.read.view.isReadOnly()).toBe(true);
+    expect(() => insert('!', { at: { path: [0, 0], offset: 4 } })).toThrow(
+      /read-only/
+    );
+    result.rerender(<App />);
+    expect(view).toBe(captured);
+    act(() => insert('!', { at: { path: [0, 0], offset: 4 } }));
+    expect(editor.read.text.string([])).toBe('body!');
+    result.unmount();
+    expect(() => insert('!', { at: { path: [0, 0], offset: 4 } })).toThrow(
+      /read-only/
+    );
+  });
+
   test('read-only root Plite makes nested Editable read-only', () => {
     const RuntimeViews = () => {
       const runtime = usePliteRuntime({ initialValue: initialValue() });
@@ -1237,6 +1291,93 @@ describe('PliteRuntime provider contract', () => {
     }
   });
 
+  for (const event of ['selectionchange', 'mousedown']) {
+    test(`read-only sibling preserves the writable view selection after ${event}`, async () => {
+      const editor = createEditor({ initialValue: [paragraph('body')] });
+
+      render(
+        <Plite editor={editor}>
+          <Editable aria-label="Writable view" />
+          <Plite editor={editor} readOnly>
+            <Editable aria-label="Read-only sibling" />
+          </Plite>
+        </Plite>
+      );
+
+      const writable = screen.getByLabelText('Writable view');
+      const text = document
+        .createTreeWalker(writable, NodeFilter.SHOW_TEXT)
+        .nextNode()!;
+      const selection = {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      };
+
+      await act(async () => {
+        writable.focus();
+        editor.update.selection.set(selection);
+        const range = document.createRange();
+        range.setStart(text, 1);
+        range.collapse(true);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+        if (event === 'mousedown') fireEvent.mouseDown(writable);
+        else fireEvent(document, new Event('selectionchange'));
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 200);
+        });
+      });
+
+      expect(editor.read.selection()).toEqual(selection);
+      expect(window.getSelection()?.anchorNode).toBe(text);
+      expect(window.getSelection()?.anchorOffset).toBe(1);
+      expect(document.activeElement).toBe(writable);
+    });
+  }
+
+  test('leaving a read-only editor clears its selection while preserving an independent editor', async () => {
+    const previous = createEditor({ initialValue: [paragraph('previous')] });
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const selection = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    };
+    previous.update.selection.set(selection);
+
+    render(
+      <>
+        <Plite editor={previous} readOnly>
+          <Editable aria-label="Previous editor" />
+        </Plite>
+        <Plite editor={editor}>
+          <Editable aria-label="Independent editor" />
+        </Plite>
+      </>
+    );
+
+    const writable = screen.getByLabelText('Independent editor');
+    const text = document
+      .createTreeWalker(writable, NodeFilter.SHOW_TEXT)
+      .nextNode()!;
+    await act(async () => {
+      writable.focus();
+      editor.update.selection.set(selection);
+      const range = document.createRange();
+      range.setStart(text, 1);
+      range.collapse(true);
+      window.getSelection()!.removeAllRanges();
+      window.getSelection()!.addRange(range);
+      fireEvent.mouseDown(writable);
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 200);
+      });
+    });
+
+    expect(previous.read.selection()).toBeNull();
+    expect(editor.read.selection()).toEqual(selection);
+    expect(document.activeElement).toBe(writable);
+  });
+
   test('runtime root text sync uses mounted root view editors', async () => {
     let headerEditor!: ReturnType<typeof useEditorContext>;
 
@@ -1287,9 +1428,19 @@ describe('PliteRuntime provider contract', () => {
       </Plite>
     );
 
-    IS_COMPOSING.set(editor, true);
+    const runtime = getMountedEditableDOMRuntime(editor)!;
+    act(() => runtime.setComposing(true));
 
     try {
+      const textHost = screen
+        .getByLabelText('Body editor')
+        .querySelector<HTMLElement>('[data-plite-node="text"]');
+      const textNode =
+        textHost &&
+        document.createTreeWalker(textHost, NodeFilter.SHOW_TEXT).nextNode();
+
+      expect(textNode?.nodeType).toBe(Node.TEXT_NODE);
+      textNode!.nodeValue = 'body!';
       await act(async () => {
         editor.update((tx) => {
           tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
@@ -1299,7 +1450,7 @@ describe('PliteRuntime provider contract', () => {
       expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
       expect(screen.getByLabelText('Body editor')).toHaveTextContent('body!');
     } finally {
-      IS_COMPOSING.delete(editor);
+      act(() => runtime.setComposing(false));
     }
   });
 
@@ -1314,7 +1465,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({
+      const runtime = usePliteRuntime<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: {
@@ -1421,7 +1572,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({
+      const runtime = usePliteRuntime<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: {
@@ -1790,11 +1941,15 @@ describe('PliteRuntime provider contract', () => {
 
     render(<RuntimeViews />);
 
+    const headerRoot = screen.getByLabelText('Header editor');
+
     await act(async () => {
+      headerRoot.focus();
       headerEditor.api.dom.focus({ retries: 1 });
-      fireEvent.focusIn(screen.getByLabelText('Header editor'));
     });
 
+    expect(document.activeElement).toBe(headerRoot);
+    expect(headerEditor.api.dom.isFocused()).toBe(true);
     await waitFor(() => {
       expect(screen.getByTestId('header-focused')).toHaveTextContent('true');
     });
@@ -1830,11 +1985,15 @@ describe('PliteRuntime provider contract', () => {
       </Plite>
     );
 
+    const headerRoot = screen.getByLabelText('Header editor');
+
     await act(async () => {
+      headerRoot.focus();
       headerEditor.api.dom.focus({ retries: 1 });
-      fireEvent.focusIn(screen.getByLabelText('Header editor'));
     });
 
+    expect(document.activeElement).toBe(headerRoot);
+    expect(headerEditor.api.dom.isFocused()).toBe(true);
     await waitFor(() => {
       expect(screen.getByTestId('header-focused')).toHaveTextContent('true');
     });
@@ -1947,7 +2106,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     const expectedSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 7, root: 'header' },
       focus: { path: [0, 0], offset: 7, root: 'header' },
     };

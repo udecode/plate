@@ -6,15 +6,15 @@ Require React and React DOM 19.2 or newer.
 
 Copy the media node renderers, `media-toolbar`, and `media-preview-dialog` for rendering, URL editing, preview state, navigation, scale, translation, and download behavior. Each copied renderer reads its typed element and primitive editor state directly. Remove public media UI stores, providers, monolithic components, and UI-only hooks.
 
-Export complete `*PluginState` contracts for audio, file, video, image, media embed, and React placeholder descriptors.
+Export complete `*PluginState` contracts for audio, file, video, image, media embed, and placeholder descriptors.
 
 - Insert images with `editor.plugin(BaseImagePlugin).update.insert({ url }, options)`
 - Insert embeds with `editor.plugin(BaseMediaEmbedPlugin).update.insert({ url }, options)`
 - Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert({ mediaType }, options)`
-- Insert React upload placeholders with `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)`
-- Replace a React upload placeholder with `editor.plugin(PlaceholderPlugin).update.replaceMedia({ plugin, ...input }, options)`; the media descriptor or capability name selects the destination while its persisted schema type remains application-configurable
-- Manage upload records through `editor.plugin(PlaceholderPlugin).api` and read one with `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
-- Insert prompted image and embed URLs with `insertMediaUrl` from `platejs/react`
+- Insert upload placeholders with `editor.plugin(BasePlaceholderPlugin).update.insertMedia(files, options)`
+- Configure `upload(file, { signal, onProgress })` on `BasePlaceholderPlugin`; it owns validation, request lifetime, and guarded replacement of the same live placeholder
+- Start or cancel an existing placeholder's upload with `api.upload(key, file)` or `api.cancelUpload(key)`; subscribe to its progress through `store.get('uploadTask', key)`
+- Insert prompted image and embed URLs through the installed media descriptor's `api.insertUrl(getUrl, options)`; copied UI supplies the prompt
 - Remove the standalone `insertImage`, `insertMedia`, `insertMediaEmbed`, `insertPlaceholder`, and `getUploadingFile` helpers
 - Remove `fileSizeToBytes`, `getMediaType`, `groupFilesByType`, `matchFileType`, `validateFileItem`, and `validateFiles`
 - Pass image uploads to `uploadImage` as data URL strings
@@ -22,12 +22,12 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Remove the `withImage*`, `insertImagePlaceholder`, `setMediaNode`, `mediaStore`, `useMediaController*`, `placeholderStore`, and `usePlaceholder*` store and component-state exports
 - Honor disabled file drops and upload configurations without a file-size limit
 - Keep package upload defaults limit-free; copied `MediaKit` owns concrete file counts and size quotas
-- Target image, embed, and placeholder insertion through exact `at` locations
+- Target image, embed, and placeholder insertion through exact `at` locations or a live source node through `after`; `replaceEmpty` replaces only an empty writable text block
 - Preserve plugin API inference in typed component integrations and accept arrays when inserting placeholder media
 - Publish pending upload state only after its placeholder transaction commits
 - Expose the `MediaPlugin` union for typed floating-media URL controls
 - Rename `MediaPluginOptions` to `MediaPluginState`
-- Replace `MediaPlaceholderOptions` with the React `PlaceholderPluginState`; the headless `BasePlaceholderPlugin` is state-free
+- Use `PlaceholderPluginState` for the shared upload owner; the React `PlaceholderPlugin` adds DOM input adaptation
 - Register media properties and required direct inline caption children in compiled schemas.
 - Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migratePlateV54` application document step.
 - Accept caption strings or inline children as construction input and persist them as direct media children.

@@ -57,7 +57,7 @@ type Contribution<D extends AnyBasePluginDefinition> =
   InferExactPluginSchemaContribution<D>;
 
 type ContributionSource<D extends AnyBasePluginDefinition> =
-  EditorSchemaSourceProvider<Contribution<D>>;
+  EditorSchemaSourceProvider<() => Contribution<D>>;
 
 type ContributionElementType<D extends AnyBasePluginDefinition> = Extract<
   InferPluginDocumentType<D>,
@@ -154,7 +154,6 @@ type DefaultMdastNode<TType extends string> = TType extends 'link'
                                           : TType extends
                                                 | 'backgroundColor'
                                                 | 'color'
-                                                | 'comment'
                                                 | 'date'
                                                 | 'fontFamily'
                                                 | 'fontSize'

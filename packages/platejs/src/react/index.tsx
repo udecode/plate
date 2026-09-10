@@ -4,8 +4,6 @@ export * from '../root';
 export * from './core';
 export {
   createEditor,
-  createPluginContext,
-  omitPluginContext,
   type CreateEditorOptions,
   type Decorate,
   type Editor,
@@ -15,7 +13,6 @@ export {
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
-  type ResolvedPlatePlugin,
   type TransformOptions,
 } from './core';
 export * from './features/basic-nodes';

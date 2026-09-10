@@ -21,7 +21,7 @@ type RunnerJob = TablePerfHarnessConfig & {
 
 type RunnerPressure = {
   domNodes: number;
-  dragHandles: number;
+  rowDragHandles: number;
   selectedCellElements: number;
   tableCells: number;
   usedJSHeapSize: number | null;
@@ -29,6 +29,7 @@ type RunnerPressure = {
 
 type RunnerSnapshot = TablePerfHarnessSnapshot & {
   pressure: RunnerPressure;
+  renderProfile?: Record<string, number>;
 };
 
 type RunnerJobResult = {
@@ -196,9 +197,9 @@ async function readPressure(page: Page): Promise<RunnerPressure> {
 
     return {
       domNodes: root?.querySelectorAll('*').length ?? 0,
-      dragHandles:
-        root?.querySelectorAll('[data-table-cell-drag-handle="true"]').length ??
-        0,
+      rowDragHandles:
+        root?.querySelectorAll('button[aria-label="Select or move row"]')
+          .length ?? 0,
       selectedCellElements:
         root?.querySelectorAll('[data-table-cell-selected="true"]').length ?? 0,
       tableCells: root?.querySelectorAll('td,th').length ?? 0,
@@ -257,7 +258,7 @@ function getBudgetFailures(runs: RunnerJobResult[]) {
       [
         BenchmarkName,
         {
-          dragHandles?: number;
+          rowDragHandles?: number;
           maxMs: number;
           p95Ms: number;
           p99Ms: number;
@@ -306,11 +307,11 @@ function getBudgetFailures(runs: RunnerJobResult[]) {
       }
       if (
         benchmark === 'selection' &&
-        threshold.dragHandles !== undefined &&
-        snapshot?.pressure.dragHandles !== threshold.dragHandles
+        threshold.rowDragHandles !== undefined &&
+        snapshot?.pressure.rowDragHandles !== threshold.rowDragHandles
       ) {
         failures.push(
-          `${run.id}:${benchmark} rendered ${snapshot?.pressure.dragHandles ?? 0} drag handles, expected ${threshold.dragHandles}`
+          `${run.id}:${benchmark} rendered ${snapshot?.pressure.rowDragHandles ?? 0} row drag handles, expected ${threshold.rowDragHandles}`
         );
       }
     }
@@ -325,6 +326,8 @@ async function main() {
   const summaryOutArg =
     getArg('summary-out') ?? '../../tmp/table-perf-smoke-summary.json';
   const preset = getArg('preset') as PresetName | undefined;
+  const captureCPUProfile = process.argv.includes('--cpu-profile');
+  const captureRenderProfile = process.argv.includes('--render-profile');
   const timeoutMs = parseNumberArg('timeout', 120_000);
 
   const jobs = preset
@@ -380,14 +383,62 @@ async function main() {
 
       for (const benchmark of job.benchmarks) {
         console.log(`[table-perf] running ${job.id}:${benchmark}`);
-        const snapshot = await runBenchmark(
-          page,
-          benchmark,
-          job.timeoutMs ?? timeoutMs
-        );
+        if (captureRenderProfile) {
+          await page.evaluate(() => {
+            const counts: Record<string, number> = {};
+            const target = globalThis as typeof globalThis & {
+              __tableRenderProfile?: Record<string, number>;
+            };
+            target.__tableRenderProfile = counts;
+            globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+              record(event) {
+                const key = `${event.kind}:${event.id ?? ''}`;
+                counts[key] = (counts[key] ?? 0) + 1;
+              },
+            };
+          });
+        }
+        const profiler = captureCPUProfile
+          ? await page.createCDPSession()
+          : null;
+        if (profiler) {
+          await profiler.send('Profiler.enable');
+          await profiler.send('Profiler.start');
+        }
+        let snapshot: TablePerfHarnessSnapshot;
+        try {
+          snapshot = await runBenchmark(
+            page,
+            benchmark,
+            job.timeoutMs ?? timeoutMs
+          );
+        } finally {
+          if (profiler) {
+            const { profile } = await profiler.send('Profiler.stop');
+            const profilePath = path.resolve(
+              process.cwd(),
+              `${outArg}.${job.id}.${benchmark}.cpuprofile.json`
+            );
+            await mkdir(path.dirname(profilePath), { recursive: true });
+            await writeFile(profilePath, JSON.stringify(profile));
+            await profiler.detach();
+          }
+        }
         jobResult.benchmarks[benchmark] = {
           ...snapshot,
           pressure: await readPressure(page),
+          ...(captureRenderProfile
+            ? {
+                renderProfile: await page.evaluate(
+                  () =>
+                    (
+                      globalThis as typeof globalThis & {
+                        __tableRenderProfile: Record<string, number>;
+                      }
+                    ).__tableRenderProfile
+                ),
+              }
+            : {}),
         };
       }
 

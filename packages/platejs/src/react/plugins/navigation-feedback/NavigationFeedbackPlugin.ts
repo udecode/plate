@@ -1,279 +1,173 @@
-import { defineEffect, type Path, PathApi } from '../../../facade';
-import type { Editor } from '../../../lib/editor';
-import type { DefinitionOf } from '../../../lib/plugin';
-import { definePlatePlugin } from '../../plugin';
-import { useEditorPluginStore } from '../../stores';
+import React from 'react';
+
+import { ElementApi, type NodeKey } from '../../../facade';
+import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
+import { useEditorRootElement } from '../../plite-react';
+import {
+  definePlatePlugin,
+  type PlateViewElementAttributes,
+} from '../../plugin';
 import type {
   NavigationFeedbackPluginState,
-  NavigationFeedbackStoredTarget,
   NavigationFlashTargetOptions,
-  NavigationNavigateOptions,
 } from './types';
-import { NAVIGATION_FEEDBACK_NAME } from './types';
 
-type NavigationFeedbackEffect =
-  | { type: 'clear' }
-  | { options: NavigationFlashTargetOptions; type: 'flash' }
-  | { options: NavigationNavigateOptions; type: 'navigate' };
+type FeedbackTarget = Readonly<{
+  key: NodeKey;
+  attributes: PlateViewElementAttributes;
+  duration: number;
+  pulse: number;
+}>;
 
-const navigationFeedbackEffect = defineEffect<NavigationFeedbackEffect>({
-  collab: 'local',
-  history: 'skip',
-  key: 'plate.navigation-feedback',
-});
-
-const NAVIGATION_FEEDBACK_TIMEOUT = new WeakMap<
-  Editor,
-  ReturnType<typeof setTimeout>
->();
-const NAVIGATION_FEEDBACK_PULSE = new WeakMap<Editor, number>();
-const NAVIGATION_FEEDBACK_TARGET = new WeakMap<
-  Editor,
-  NavigationFeedbackStoredTarget
->();
-
-const initialState: NavigationFeedbackPluginState = {
-  duration: 1600,
-  target: null,
+type MountedFeedback = {
+  root: HTMLElement;
+  target: FeedbackTarget | null;
+  pulse: number;
+  timeout: ReturnType<typeof setTimeout> | null;
+  listeners: Set<() => void>;
 };
 
-export const NavigationFeedbackPlugin = definePlatePlugin(
-  NAVIGATION_FEEDBACK_NAME,
-  {
-    effectTypes: [navigationFeedbackEffect],
-    inject: {
-      isElement: true,
-      nodeProps: {
-        transformProps: ({ editor, element, path, plugin, props, text }) => {
-          // oxlint-disable-next-line react-hooks/rules-of-hooks -- [P0 behavior-boundary] Plate invokes this transform at a fixed render position; the hook order is stable behind the node-props protocol.
-          const activeTarget = useEditorPluginStore(
-            editor,
-            plugin,
-            (state) => state.target
-          );
-          const target = element ?? text;
+const mountedFeedback = new WeakMap<object, MountedFeedback>();
+const emptySnapshot = () => null;
 
-          if (!activeTarget || !target) return props;
-          if (!path || !PathApi.equals(activeTarget.path, path)) {
-            return props;
+const publish = (state: MountedFeedback, target: FeedbackTarget | null) => {
+  if (state.target === target) return;
+  state.target = target;
+  state.listeners.forEach((listener) => listener());
+};
+
+const clear = (state: MountedFeedback) => {
+  if (state.timeout !== null) {
+    clearTimeout(state.timeout);
+    state.timeout = null;
+  }
+  publish(state, null);
+};
+
+const initialState: NavigationFeedbackPluginState = { duration: 1600 };
+
+export const NavigationFeedbackPlugin = definePlatePlugin('navigation', {
+  dependencies: [DOMPlugin],
+  initialState,
+  api: ({ editor, store }) => ({
+    /** Flash one live element in this mounted view without changing the document or selection. */
+    flashTarget: ({
+      key,
+      attributes = {},
+      duration = store.get('duration'),
+    }: NavigationFlashTargetOptions) => {
+      const state = mountedFeedback.get(editor);
+      if (!state || state.root !== editor.api.dom.root()) return false;
+      const path = editor.read.nodes.path(key);
+      if (!path || !ElementApi.isElement(editor.read.nodes.get(path)?.[0])) {
+        return false;
+      }
+      if (!Number.isFinite(duration) || duration < 0) {
+        throw new RangeError(
+          'Flash duration must be a finite non-negative number.'
+        );
+      }
+      if (state.timeout !== null) clearTimeout(state.timeout);
+      state.pulse += 1;
+      const { pulse } = state;
+      const copied = Object.freeze({
+        ...attributes,
+        ...(attributes.style
+          ? { style: Object.freeze({ ...attributes.style }) }
+          : {}),
+      });
+      publish(
+        state,
+        Object.freeze({ key, attributes: copied, duration, pulse })
+      );
+      state.timeout = setTimeout(() => {
+        if (
+          mountedFeedback.get(editor) === state &&
+          state.target?.pulse === pulse
+        ) {
+          clear(state);
+        }
+      }, duration);
+      return true;
+    },
+    /** Clear this mounted view's feedback, returning whether a target was active. */
+    clear: () => {
+      const state = mountedFeedback.get(editor);
+      if (!state || state.root !== editor.api.dom.root()) return false;
+      const hadTarget = state.target !== null;
+      clear(state);
+      return hadTarget;
+    },
+  }),
+  render: {
+    useViewElementAttributes({ view }) {
+      const root = useEditorRootElement(view);
+      const [state, setState] = React.useState<MountedFeedback | null>(null);
+
+      React.useLayoutEffect(() => {
+        if (!root) return undefined;
+        const next: MountedFeedback = {
+          root,
+          target: null,
+          pulse: 0,
+          timeout: null,
+          listeners: new Set(),
+        };
+        mountedFeedback.set(view, next);
+        setState(next);
+        const unsubscribe = view.subscribeCommit(() => {
+          if (next.target && !view.read.nodes.path(next.target.key)) {
+            clear(next);
           }
+        });
+        return () => {
+          unsubscribe();
+          if (mountedFeedback.get(view) === next) mountedFeedback.delete(view);
+          next.listeners.clear();
+          clear(next);
+        };
+      }, [root, view]);
 
-          return {
-            ...props,
-            'data-nav-cycle': String(activeTarget.cycle),
-            'data-nav-highlight': activeTarget.variant,
-            'data-nav-pulse': String(activeTarget.pulse),
-            'data-nav-target': 'true',
-            style: {
-              ...props.style,
-              '--plate-nav-feedback-duration': `${activeTarget.duration}ms`,
-            },
+      const subscribe = React.useCallback(
+        (listener: () => void) => {
+          state?.listeners.add(listener);
+          return () => {
+            state?.listeners.delete(listener);
           };
         },
-      },
+        [state]
+      );
+      const getSnapshot = React.useCallback(
+        () => state?.target ?? null,
+        [state]
+      );
+      const target = React.useSyncExternalStore(
+        subscribe,
+        getSnapshot,
+        emptySnapshot
+      );
+
+      return React.useMemo(
+        () =>
+          target
+            ? [
+                {
+                  key: target.key,
+                  attributes: {
+                    ...target.attributes,
+                    'data-nav-target': 'true',
+                    'data-nav-pulse': String(target.pulse),
+                    'data-nav-cycle': String(target.pulse % 2),
+                    style: {
+                      ...target.attributes.style,
+                      '--plate-nav-feedback-duration': `${target.duration}ms`,
+                    },
+                  },
+                },
+              ]
+            : [],
+        [target]
+      );
     },
-    initialState,
-    on: {
-      commit({ commit, editor, store }) {
-        const refreshDecorations = () => {
-          editor.api.react.refreshDecorations();
-        };
-        const clear = (pulse?: number) => {
-          const activeTarget = store.get('target');
-          const storedTarget = NAVIGATION_FEEDBACK_TARGET.get(editor);
-
-          if (!activeTarget && !storedTarget) return false;
-          if (
-            pulse !== undefined &&
-            (activeTarget?.pulse ?? storedTarget?.pulse) !== pulse
-          ) {
-            return false;
-          }
-
-          const timeoutId = NAVIGATION_FEEDBACK_TIMEOUT.get(editor);
-
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            NAVIGATION_FEEDBACK_TIMEOUT.delete(editor);
-          }
-
-          storedTarget?.pathAnchor.release();
-          NAVIGATION_FEEDBACK_TARGET.delete(editor);
-          store.set({ target: null });
-          refreshDecorations();
-
-          return true;
-        };
-        const flash = ({
-          duration,
-          target,
-          variant = 'navigated',
-        }: NavigationFlashTargetOptions) => {
-          if (!editor.read.nodes.get(target.path)) return false;
-
-          const pulse = (NAVIGATION_FEEDBACK_PULSE.get(editor) ?? 0) + 1;
-
-          NAVIGATION_FEEDBACK_PULSE.set(editor, pulse);
-
-          const timeoutMs = duration ?? store.get('duration') ?? 800;
-          const previousTarget = NAVIGATION_FEEDBACK_TARGET.get(editor);
-          const timeoutId = NAVIGATION_FEEDBACK_TIMEOUT.get(editor);
-
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-            NAVIGATION_FEEDBACK_TIMEOUT.delete(editor);
-          }
-
-          previousTarget?.pathAnchor.release();
-          NAVIGATION_FEEDBACK_TARGET.set(editor, {
-            cycle: pulse % 2 === 0 ? 0 : 1,
-            duration: timeoutMs,
-            pathAnchor: editor.anchor(target.path, {
-              association: 'forward',
-              deletion: 'drop',
-            }),
-            pulse,
-            type: target.type,
-            variant,
-          });
-          store.set({
-            target: {
-              cycle: pulse % 2 === 0 ? 0 : 1,
-              duration: timeoutMs,
-              path: [...target.path],
-              pulse,
-              type: target.type,
-              variant,
-            },
-          });
-          refreshDecorations();
-
-          NAVIGATION_FEEDBACK_TIMEOUT.set(
-            editor,
-            setTimeout(() => {
-              clear(pulse);
-            }, timeoutMs)
-          );
-
-          return true;
-        };
-
-        commit.effects.forEach((effect) => {
-          if (effect.type !== navigationFeedbackEffect) return;
-
-          if (effect.value.type === 'clear') {
-            clear();
-          } else if (effect.value.type === 'flash') {
-            flash(effect.value.options);
-          } else {
-            const {
-              flash: flashOptions,
-              focus = true,
-              scroll = true,
-              scrollTarget,
-              select,
-              target,
-            } = effect.value.options;
-
-            if (!editor.read.nodes.get(target.path)) return;
-
-            if (focus) editor.api.dom.focus();
-
-            if (scroll) {
-              const point =
-                scrollTarget ??
-                (select && 'focus' in select && select.focus
-                  ? select.focus
-                  : select && 'anchor' in select && select.anchor
-                    ? select.anchor
-                    : select && 'path' in select
-                      ? select
-                      : editor.read.points.start(target.path));
-
-              if (point) editor.api.dom.scrollIntoView(point);
-            }
-
-            if (flashOptions !== false) {
-              flash({
-                duration: flashOptions?.duration,
-                target,
-                variant: flashOptions?.variant,
-              });
-            }
-          }
-        });
-        const storedTarget = NAVIGATION_FEEDBACK_TARGET.get(editor);
-
-        if (!storedTarget) return;
-
-        const path = storedTarget.pathAnchor.resolve();
-
-        if (!path) {
-          clear(storedTarget.pulse);
-
-          return;
-        }
-
-        const activeTarget = store.get('target');
-
-        if (activeTarget && !PathApi.equals(activeTarget.path, path)) {
-          store.set({
-            target: {
-              ...activeTarget,
-              path,
-            },
-          });
-          refreshDecorations();
-        }
-      },
-    },
-    selectors: {
-      activeTarget: (state) => state.target,
-      isTarget: (state, path: Path) =>
-        !!state.target && PathApi.equals(state.target.path, path),
-    },
-    update: ({ tx }) => ({
-      clear: () => {
-        tx.effects.emit(navigationFeedbackEffect, { type: 'clear' });
-      },
-      flashTarget: (options: NavigationFlashTargetOptions) => {
-        if (!tx.nodes.get(options.target.path)) return false;
-
-        tx.tags.add('skip-scroll-into-view');
-        tx.effects.emit(navigationFeedbackEffect, {
-          options,
-          type: 'flash',
-        });
-
-        return true;
-      },
-      navigate: (options: NavigationNavigateOptions) => {
-        if (!tx.nodes.get(options.target.path)) return false;
-
-        if (options.select) {
-          if ('focus' in options.select) {
-            tx.selection.set(options.select);
-          } else {
-            tx.selection.set({
-              anchor: options.select,
-              focus: options.select,
-            });
-          }
-        }
-
-        tx.effects.emit(navigationFeedbackEffect, {
-          options,
-          type: 'navigate',
-        });
-
-        return true;
-      },
-    }),
-  }
-);
-
-export type NavigationFeedbackDefinition = DefinitionOf<
-  typeof NavigationFeedbackPlugin
->;
-
-export type NavigationFeedbackUpdate = NavigationFeedbackDefinition['update'];
+  },
+});

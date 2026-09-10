@@ -1,6 +1,92 @@
-import { migrateElementIds, type Value } from 'platejs';
+import {
+  BaseHeadingPlugin,
+  defineBasePlugin,
+  migrateElementIds,
+  property,
+  schema,
+  type Value,
+} from 'platejs';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
+
+import type { EditorPerfPluginSetId } from './plugin-census';
+
+const BenchmarkHeadingSchema = defineBasePlugin('benchmarkHeadingSchema', {
+  schema: {
+    element: {
+      ...BaseHeadingPlugin.schema.element,
+      type: 'heading',
+    },
+  },
+});
+
+const BenchmarkBlockquoteSchema = defineBasePlugin(
+  'benchmarkBlockquoteSchema',
+  {
+    schema: { element: { ...schema.element.textBlock(), type: 'blockquote' } },
+  }
+);
+
+const BenchmarkFallbackSchema = defineBasePlugin('benchmarkFallbackSchema', {
+  schema: { element: { ...schema.element.textBlock(), type: 'quote' } },
+});
+
+const BenchmarkCodeSchema = defineBasePlugin('benchmarkCodeSchema', {
+  schema: { properties: { code: schema.textProperty(property.boolean()) } },
+});
+
+const BenchmarkDenseInlinePropsSchema = defineBasePlugin(
+  'benchmarkDenseInlineProps',
+  {
+    schema: {
+      properties: {
+        commentId: schema.textProperty(property.string()),
+        search: schema.textProperty(property.string()),
+        tokenCount: schema.textProperty(property.number()),
+      },
+    },
+  }
+);
+
+export function getEditorPerfWorkloadPlugins(
+  workloadId: EditorPerfWorkloadId,
+  plugins: EditorPerfPluginSetId = 'none'
+) {
+  const workloadPlugins = [];
+
+  // Minimal editor lanes still validate the same document as plugin lanes.
+  if (
+    (workloadId === 'huge-mixed-block' ||
+      workloadId === 'huge-heading' ||
+      workloadId === 'huge-paragraph-fallback') &&
+    plugins !== 'basic' &&
+    plugins !== 'heading-only'
+  ) {
+    workloadPlugins.push(BenchmarkHeadingSchema);
+  }
+  if (
+    workloadId === 'huge-blockquote' &&
+    plugins !== 'basic' &&
+    plugins !== 'blockquote-only'
+  ) {
+    workloadPlugins.push(BenchmarkBlockquoteSchema);
+  }
+  if (workloadId === 'huge-paragraph-fallback') {
+    workloadPlugins.push(BenchmarkFallbackSchema);
+  }
+  if (
+    workloadId === 'huge-code' &&
+    plugins !== 'basic' &&
+    plugins !== 'code-only'
+  ) {
+    workloadPlugins.push(BenchmarkCodeSchema);
+  }
+  if (workloadId === 'huge-dense-inline-props') {
+    workloadPlugins.push(BenchmarkDenseInlinePropsSchema);
+  }
+
+  return workloadPlugins;
+}
 
 export type EditorPerfWorkloadId =
   | 'huge-mixed-block'
@@ -34,24 +120,24 @@ type WorkloadDefinition = {
 };
 
 const BLOCKQUOTE_TEXT =
-  'Blockquote benchmark copy. This forces render.as-only element plugins instead of the fallback paragraph path.';
+  'Blockquote benchmark copy. This forces intrinsic element components instead of the fallback paragraph path.';
 const BOLD_TEXT =
-  'Bold benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+  'Bold benchmark copy. This forces intrinsic mark components without changing the element path.';
 const CODE_TEXT =
-  'Code benchmark copy. This forces render.as-only decoration plugins without changing the element path.';
+  'Code benchmark copy. This forces intrinsic code components without changing the element path.';
 const HIGHLIGHT_TEXT =
-  'Highlight benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+  'Highlight benchmark copy. This forces intrinsic mark components without changing the element path.';
 const HR_TEXT = '';
 const ITALIC_TEXT =
-  'Italic benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+  'Italic benchmark copy. This forces intrinsic mark components without changing the element path.';
 const KBD_TEXT =
-  'Kbd benchmark copy. This forces hard-affinity render.as-only mark plugins without changing the element path.';
+  'Kbd benchmark copy. This forces a hard-affinity intrinsic mark component without changing the element path.';
 const STRIKETHROUGH_TEXT =
-  'Strikethrough benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+  'Strikethrough benchmark copy. This forces an intrinsic mark component without changing the element path.';
 const SCRIPT_TEXT =
   'Script benchmark copy. This forces an enum-valued mark renderer without changing the element path.';
 const UNDERLINE_TEXT =
-  'Underline benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+  'Underline benchmark copy. This forces an intrinsic mark component without changing the element path.';
 const DENSE_TEXT_SEGMENTS = [
   'Alpha segment.',
   'Beta segment.',

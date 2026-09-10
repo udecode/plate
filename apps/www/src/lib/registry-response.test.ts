@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 import {
   PLATE_REGISTRY_BASES,
@@ -155,7 +155,16 @@ describe('registry style responses', () => {
 
     expect(fileNames.length).toBeGreaterThan(0);
 
-    expect(fileNames).toHaveLength(367);
+    const registry = JSON.parse(
+      await readFile('public/r/registry.json', 'utf-8')
+    ) as { items: Array<{ name: string }> };
+    expect(fileNames.toSorted()).toEqual(
+      [
+        'registry.json',
+        'registry-docs.json',
+        ...registry.items.map(({ name }) => `${name}.json`),
+      ].toSorted()
+    );
 
     for (const style of SUPPORTED_STYLES) {
       for (const fileName of fileNames) {

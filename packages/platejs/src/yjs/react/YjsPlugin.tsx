@@ -1,46 +1,78 @@
-import { RangeApi, TextApi } from '../../core';
-import { type Editor, toPlatePlugin } from '../../react/core';
-import { setPlatePluginDecorationSourceComponent } from '../../react/internal/PlatePluginDecorationSources';
+import { PathApi, RangeApi, TextApi } from '../../core';
+import { toPlatePlugin } from '../../react/core';
 import { BaseYjsPlugin } from '../BaseYjsPlugin';
-import { getYjsRemoteCursorsAtPath } from '../core/awareness-adapter';
-import { getYjsCursorCache } from './cursor-widget-store';
-import { YjsPluginDecorationSource } from './yjs-decoration-source.internal';
 
-const decorateYjsRemoteCursor = setPlatePluginDecorationSourceComponent(
-  ({
-    editor,
-    entry: [node, path],
-  }: {
-    editor: Editor;
-    entry: readonly [unknown, readonly number[]];
-  }) => {
-    if (!TextApi.isText(node)) return [];
+/** Installs Yjs collaboration and unstyled remote-selection decorations. */
+export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
+  decorate: {
+    observe: ({ editor, read, refresh }) => {
+      let previous = new Map(
+        read.remoteCursors().map((cursor) => [
+          cursor.clientId,
+          {
+            cursor,
+            nodeKey: cursor.selection
+              ? editor.key(cursor.selection.anchor.path)
+              : null,
+          },
+        ])
+      );
 
-    return getYjsRemoteCursorsAtPath(getYjsCursorCache(editor), path).flatMap(
-      (cursor) => {
+      return read.subscribeRemoteCursors(() => {
+        const next = new Map(
+          read.remoteCursors().map((cursor) => [
+            cursor.clientId,
+            {
+              cursor,
+              nodeKey: cursor.selection
+                ? editor.key(cursor.selection.anchor.path)
+                : null,
+            },
+          ])
+        );
+        const nodeKeys = new Set(
+          [...previous.keys(), ...next.keys()].flatMap((clientId) => {
+            const before = previous.get(clientId);
+            const after = next.get(clientId);
+
+            if (before?.cursor === after?.cursor) return [];
+
+            return [before?.nodeKey, after?.nodeKey].filter(
+              (nodeKey): nodeKey is NonNullable<typeof nodeKey> =>
+                nodeKey != null
+            );
+          })
+        );
+
+        previous = next;
+        if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
+      });
+    },
+    read: ({ read, entry: [node, path] }) => {
+      if (!TextApi.isText(node)) return [];
+
+      return read.remoteCursors().flatMap((cursor) => {
         const { selection } = cursor;
 
-        if (!selection || RangeApi.isCollapsed(selection)) {
+        if (
+          !selection ||
+          RangeApi.isCollapsed(selection) ||
+          !PathApi.equals(selection.anchor.path, path)
+        ) {
           return [];
         }
 
         return [
           {
-            ...selection,
-            yjsRemoteCursor: {
-              clientId: cursor.clientId,
-              cursor,
-              ...(cursor.data === undefined ? {} : { data: cursor.data }),
+            attributes: {
+              'data-client-id': cursor.clientId,
+              'data-remote-selection': '',
             },
+            key: String(cursor.clientId),
+            range: selection,
           },
         ];
-      }
-    );
+      });
+    },
   },
-  YjsPluginDecorationSource
-);
-
-/** Installs Yjs collaboration in a React Plate editor. */
-export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
-  decorate: decorateYjsRemoteCursor,
 });

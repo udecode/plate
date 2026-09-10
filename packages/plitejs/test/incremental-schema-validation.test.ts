@@ -5,8 +5,10 @@ import fc from 'fast-check';
 import {
   createEditor,
   defineEditorSchema,
+  defineExtensionSlot,
   DocumentChange,
   type EditorDocumentValue,
+  ElementApi,
   type Element,
   NodeApi,
   property,
@@ -47,7 +49,7 @@ const section = (children: Element[]): Element => ({
   children,
   type: 'section',
 });
-const createValidationEditor = () =>
+const createValidationEditor = (maxBlocks = 3) =>
   createEditor({
     extensions: [
       defineEditorSchema('schema:incremental-validation-laws', {
@@ -78,7 +80,7 @@ const createValidationEditor = () =>
         ],
         root: schema.content.types(['paragraph', 'section'], {
           default: { type: 'paragraph' },
-          max: 3,
+          max: maxBlocks,
           min: 1,
         }),
         roots: {
@@ -203,7 +205,8 @@ const freezeDocument = (value: EditorDocumentValue) => {
 const validateWithBuilder = (
   before: JsonEditorValue,
   change: DocumentChange,
-  schemaApi: ReturnType<typeof getEditorSchema>
+  schemaApi: ReturnType<typeof getEditorSchema>,
+  mode: 'constructed' | 'canonical' = 'constructed'
 ) => {
   const builder = new ChangeDraft(before, {
     indexConstructedRoot: schemaApi.indexConstructedRoot,
@@ -223,74 +226,229 @@ const validateWithBuilder = (
     },
   });
 
-  builder.apply(change);
+  if (mode === 'canonical') builder.applyCanonical(change);
+  else builder.apply(change);
   builder.finalize();
 
   return builder.value;
 };
 
 describe('incremental schema validation', () => {
-  it('validates each changed node property once per transaction', () => {
-    type Trace = Readonly<{
-      kind: 'element' | 'text';
-    }>;
-    const visits = { element: 0, text: 0 };
-    const descriptor = property.json({
-      validate: (value): value is Trace => {
-        if (
-          typeof value !== 'object' ||
-          value === null ||
-          !('kind' in value) ||
-          (value.kind !== 'element' && value.kind !== 'text')
-        ) {
-          return false;
-        }
-
-        visits[value.kind] += 1;
-
-        return true;
+  it('preserves contextual defaults through sparse edits and ancestor type changes', () => {
+    const contextual = defineEditorSchema('schema:sparse-context-laws', {
+      elements: {
+        aside: { content: schema.content.type('paragraph', { min: 1 }) },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        section: { content: schema.content.type('paragraph', { min: 1 }) },
       },
-      validationVersion: 1,
-    });
-    const editor = createEditor({
-      extensions: [
-        defineEditorSchema('schema:incremental-validation-locality', {
-          elements: {
-            paragraph: {
-              content: schema.content.text(),
-              properties: { trace: descriptor },
-            } as const,
-          },
-          id: 'incremental-validation-locality',
-          properties: [
-            schema.textProperty('trace', descriptor, {
-              target: target.type('paragraph'),
-            }),
-          ],
-          root: schema.content.type('paragraph', { min: 1 }),
-          unknown: 'reject',
-          version: 1,
+      id: 'sparse-context-laws',
+      properties: [
+        schema.textProperty('scoped', property.boolean({ default: true }), {
+          target: target.and(
+            target.type('paragraph'),
+            target.parent(target.type('section'))
+          ),
         }),
       ],
-      initialValue: {
-        children: [
-          {
+      root: schema.content.types(['section', 'aside'], {
+        default: { type: 'aside' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      extensions: [contextual],
+      initialValue: [
+        {
+          type: 'aside',
+          children: Array.from({ length: 8 }, () => paragraph('word')),
+        },
+      ],
+    });
+    const before = editor.read.value();
+
+    editor.update((tx) => {
+      tx.nodes.insert({ text: 'x' }, { at: { path: [0, 4, 0], offset: 0 } });
+      tx.nodes.insert({ text: 'y' }, { at: { path: [0, 1, 0], offset: 0 } });
+      tx.nodes.set({ type: 'section' }, { at: [0] });
+    });
+
+    const after = editor.read.value();
+    const changedSection = after.children[0];
+    assert.ok(ElementApi.isElement(changedSection));
+    for (const [index, child] of changedSection.children.entries()) {
+      assert.ok(ElementApi.isElement(child));
+      assert.deepEqual(child.children, [
+        {
+          scoped: true,
+          text: `${index === 4 ? 'x' : index === 1 ? 'y' : ''}word`,
+        },
+      ]);
+    }
+    assert.deepEqual(editor.read.lastCommit()!.changes.apply(before), after);
+    editor.read.schema.assertDocument(after);
+  });
+
+  it('canonicalizes untrusted frozen input and a baseline from an older schema', () => {
+    const schemaAt = (version: number, withDefault: boolean) =>
+      defineEditorSchema('schema:canonical-baseline-authority', {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        id: 'canonical-baseline-authority',
+        properties: withDefault
+          ? [schema.textProperty('flag', property.boolean({ default: true }))]
+          : [],
+        root: schema.content.type('paragraph', { min: 1 }),
+        unknown: 'reject',
+        version,
+      });
+    const slot = defineExtensionSlot('canonical-baseline-authority');
+    const editor = createEditor({
+      extensions: [slot.of(schemaAt(1, false))],
+      initialValue: [paragraph('word')],
+    });
+    const before = editor.read.children();
+
+    editor.update.extensions.reconfigure(slot, schemaAt(2, true), {
+      migrate: ({ document, next }) => next.fitDocument(document),
+    });
+    const schemaApi = getEditorSchema(editor);
+    const expected = [
+      { type: 'paragraph', children: [{ flag: true, text: 'word' }] },
+    ];
+
+    assert.deepEqual(
+      schemaApi.canonicalizeChildren(before, 'main', [], false, {
+        children: before,
+        from: 0,
+        path: [],
+      }),
+      expected
+    );
+
+    const untrusted = Object.freeze([paragraph('word')]);
+    assert.deepEqual(
+      schemaApi.canonicalizeChildren(untrusted, 'main', [], false, {
+        children: untrusted,
+        from: 0,
+        path: [],
+      }),
+      expected
+    );
+  });
+
+  it('bounds local and imported canonical validation to changed properties', () => {
+    for (const blocks of [8, 128]) {
+      type Trace = Readonly<{
+        kind: 'element' | 'text';
+      }>;
+      const visits = { element: 0, text: 0 };
+      const descriptor = property.json({
+        validate: (value): value is Trace => {
+          if (
+            typeof value !== 'object' ||
+            value === null ||
+            !('kind' in value) ||
+            (value.kind !== 'element' && value.kind !== 'text')
+          ) {
+            return false;
+          }
+
+          visits[value.kind] += 1;
+
+          return true;
+        },
+        validationVersion: 1,
+      });
+      const editor = createEditor({
+        extensions: [
+          defineEditorSchema('schema:incremental-validation-locality', {
+            elements: {
+              paragraph: {
+                content: schema.content.text(),
+                properties: { trace: descriptor },
+              } as const,
+            },
+            id: 'incremental-validation-locality',
+            properties: [
+              schema.textProperty('trace', descriptor, {
+                target: target.type('paragraph'),
+              }),
+            ],
+            root: schema.content.type('paragraph', { min: 1 }),
+            unknown: 'reject',
+            version: 1,
+          }),
+        ],
+        initialValue: {
+          children: Array.from({ length: blocks }, () => ({
             children: [{ text: 'x', trace: { kind: 'text' } }],
             trace: { kind: 'element' },
             type: 'paragraph',
+          })),
+        },
+      });
+
+      visits.element = 0;
+      visits.text = 0;
+
+      editor.update((tx) =>
+        tx.text.insert('!', { at: { offset: 1, path: [0, 0] } })
+      );
+
+      assert.deepEqual(visits, { element: 1, text: 1 });
+
+      visits.element = 0;
+      visits.text = 0;
+      const before = editor.read.value();
+      const imported = DocumentChange.between(before, {
+        children: [
+          {
+            ...before.children[0],
+            children: [{ text: 'remote', trace: { kind: 'text' } }],
           },
+          ...before.children.slice(1),
         ],
-      },
-    });
+      });
+      const profilerGlobal = globalThis as typeof globalThis & {
+        __PLITE_REACT_RENDER_PROFILER__?: {
+          record: (event: { id: string }) => void;
+        };
+      };
+      const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+      const events: string[] = [];
+      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+        record: ({ id }) => events.push(id),
+      };
 
-    visits.element = 0;
-    visits.text = 0;
-
-    editor.update((tx) =>
-      tx.text.insert('!', { at: { offset: 1, path: [0, 0] } })
-    );
-
-    assert.deepEqual(visits, { element: 1, text: 1 });
+      try {
+        editor.update((tx) => tx.changes.apply(imported));
+        assert.deepEqual(visits, { element: 1, text: 1 });
+        assert.equal(
+          events.filter((id) => id === 'schema-validation-incremental-hit')
+            .length,
+          1
+        );
+        assert.equal(
+          events.filter(
+            (id) => id === 'schema-validation-full-document-boundary'
+          ).length,
+          0
+        );
+        assert.equal(
+          editor.read.value().children[0].children[0].text,
+          'remote'
+        );
+      } finally {
+        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      }
+    }
   });
 
   it('prunes descendant validation without confusing sibling path prefixes', () => {
@@ -1082,6 +1240,269 @@ describe('incremental schema validation', () => {
     assert.match(
       errorMessage(() => validateWithBuilder(before, change, schemaApi)) ?? '',
       /content root "owned:missing" is missing/i
+    );
+  });
+  it('rejects malformed and noncanonical imported changes without publishing them', () => {
+    const editor = createValidationEditor();
+    const before = editor.read.value();
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    try {
+      const malformed = DocumentChange.between(before, {
+        ...before,
+        children: [paragraphWithText('invalid', { bold: 'not-a-boolean' })],
+      });
+      assert.throws(
+        () => editor.update((tx) => tx.changes.apply(malformed)),
+        /boolean/i
+      );
+      assert.equal(editor.read.value().children, before.children);
+      assert.deepEqual(editor.read.value(), before);
+      assert.equal(commits, 0);
+
+      const noncanonical = DocumentChange.between(before, {
+        ...before,
+        children: [
+          { type: 'paragraph', children: [{ text: 'a' }, { text: 'b' }] },
+        ],
+      });
+      assert.throws(
+        () => editor.update((tx) => tx.changes.apply(noncanonical)),
+        /canonical/i
+      );
+      assert.equal(editor.read.value().children, before.children);
+      assert.deepEqual(editor.read.value(), before);
+      assert.equal(commits, 0);
+
+      const valid = DocumentChange.between(before, {
+        ...before,
+        children: [paragraph('accepted')],
+      });
+      editor.update((tx) => tx.changes.apply(valid));
+      assert.deepEqual(editor.read.value().children, [paragraph('accepted')]);
+      assert.equal(commits, 1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('validates accumulated main and named-root changes against the original baseline', () => {
+    for (const prefix of ['local', 'canonical'] as const) {
+      const editor = createValidationEditor();
+      const before = editor.read.value();
+      const intermediate = {
+        ...before,
+        children: [section([paragraph('alpha!'), paragraph('beta')])],
+      };
+      const after = {
+        ...intermediate,
+        roots: {
+          header: [{ type: 'heading', children: [{ text: 'changed title' }] }],
+        },
+      };
+      editor.update((tx) => {
+        if (prefix === 'local') {
+          tx.text.insert('!', { at: { path: [0, 0, 0], offset: 5 } });
+        } else tx.changes.apply(DocumentChange.between(before, intermediate));
+        tx.changes.apply(DocumentChange.between(intermediate, after));
+      });
+      assert.deepEqual(editor.read.value(), after);
+    }
+  });
+
+  it('accepts an imported inverse that cancels a draft root, with or without another changed root', () => {
+    for (const changeHeader of [false, true]) {
+      const editor = createValidationEditor();
+      const before = editor.read.value();
+      const intermediate = {
+        ...before,
+        children: [section([paragraph('alpha!'), paragraph('beta')])],
+      };
+      const local = DocumentChange.between(before, intermediate);
+      const inverse = local.invert(before);
+      assert.equal(local.compose(inverse, before).empty, true);
+      const expected = changeHeader
+        ? {
+            ...before,
+            roots: {
+              header: [{ type: 'heading', children: [{ text: 'changed' }] }],
+            },
+          }
+        : before;
+
+      editor.update((tx) => {
+        if (changeHeader) {
+          tx.changes.apply(DocumentChange.between(before, expected));
+        }
+        tx.text.insert('!', { at: { path: [0, 0, 0], offset: 5 } });
+        tx.changes.apply(inverse);
+      });
+      assert.deepEqual(editor.read.value(), expected);
+    }
+  });
+
+  it('preserves the staged draft and rejects invalid cross-root authority after an imported change fails', () => {
+    const editor = createValidationEditor();
+    const before = editor.read.value();
+    const schemaApi = getEditorSchema(editor);
+    let validatedCandidate: JsonEditorValue | undefined;
+    let indexedRoots = 0;
+    const builder = new ChangeDraft(before, {
+      indexConstructedRoot: (input) => {
+        indexedRoots += 1;
+        schemaApi.indexConstructedRoot(input);
+      },
+      validateConstructed: (input) => {
+        assert.ok(isEditorDocumentValue(input.before));
+        assert.ok(isEditorDocumentValue(input.after));
+        validatedCandidate = input.after;
+        schemaApi.validateDocumentChange({
+          ...input,
+          after: input.after,
+          before: input.before,
+        });
+      },
+    });
+    builder.apply(
+      DocumentChange.between(before, {
+        ...before,
+        children: [paragraph('local')],
+      })
+    );
+    const staged = builder.value;
+    const stagedChange = builder.change;
+    const stagedIndex = builder.indexedAfter().get('main');
+    const indexedBeforeRejection = indexedRoots;
+    const malformed = DocumentChange.between(staged, {
+      ...staged,
+      children: [paragraph('valid candidate main')],
+      roots: { header: [paragraph('invalid header')] },
+    });
+
+    assert.throws(
+      () => builder.applyCanonical(malformed),
+      /root "header" cannot contain "paragraph"/i
+    );
+    assert.equal(builder.value, staged);
+    assert.equal(builder.change, stagedChange);
+    assert.equal(builder.indexedAfter().get('main'), stagedIndex);
+    assert.equal(indexedRoots, indexedBeforeRejection);
+    assert.ok(validatedCandidate);
+
+    const invalidBaseline = validatedCandidate;
+    const otherwiseValid = DocumentChange.between(invalidBaseline, {
+      ...invalidBaseline,
+      children: [paragraph('another valid main')],
+    });
+    assert.throws(
+      () =>
+        validateWithBuilder(
+          invalidBaseline,
+          otherwiseValid,
+          schemaApi,
+          'canonical'
+        ),
+      /explicitly validated immutable baseline/u
+    );
+
+    const valid = {
+      ...staged,
+      roots: {
+        header: [{ type: 'heading', children: [{ text: 'accepted' }] }],
+      },
+    };
+    builder.applyCanonical(DocumentChange.between(staged, valid));
+    builder.finalize();
+    assert.deepEqual(builder.value, valid);
+  });
+
+  it('rejects prior unvalidated local edits when an imported change touches another root', () => {
+    const editor = createValidationEditor();
+    const before = editor.read.value();
+    const schemaApi = getEditorSchema(editor);
+    const builder = new ChangeDraft(before, {
+      indexConstructedRoot: schemaApi.indexConstructedRoot,
+      validateConstructed: (input) => {
+        assert.ok(isEditorDocumentValue(input.before));
+        assert.ok(isEditorDocumentValue(input.after));
+        schemaApi.validateDocumentChange({
+          ...input,
+          after: input.after,
+          before: input.before,
+        });
+      },
+    });
+    builder.apply(
+      DocumentChange.between(before, {
+        ...before,
+        children: [
+          paragraphWithText('invalid local', { bold: 'not-a-boolean' }),
+        ],
+      })
+    );
+    const staged = builder.value;
+    const stagedChange = builder.change;
+    const stagedIndex = builder.indexedAfter().get('main');
+    const imported = DocumentChange.between(staged, {
+      ...staged,
+      roots: {
+        header: [{ type: 'heading', children: [{ text: 'valid remote' }] }],
+      },
+    });
+
+    assert.throws(() => builder.applyCanonical(imported), /boolean/i);
+    assert.equal(builder.value, staged);
+    assert.equal(builder.change, stagedChange);
+    assert.equal(builder.indexedAfter().get('main'), stagedIndex);
+    assert.throws(() => builder.finalize(), /boolean/i);
+  });
+
+  it('requires explicit immutable baseline authority for imported canonical changes', () => {
+    const editor = createValidationEditor();
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
+    const detached = structuredClone(editor.read.value());
+    freezeDocument(detached);
+    const change = DocumentChange.between(detached, {
+      ...detached,
+      children: [paragraph('changed')],
+    });
+    assert.throws(
+      () => validateWithBuilder(detached, change, schemaApi, 'canonical'),
+      /explicitly validated immutable baseline/u
+    );
+    schemaApi.assertDocument(detached);
+    assert.deepEqual(
+      validateWithBuilder(detached, change, schemaApi, 'canonical').children,
+      [paragraph('changed')]
+    );
+  });
+
+  it('rejects baseline authority from a different compiled schema', () => {
+    const editor = createValidationEditor();
+    const before = editor.read.value();
+    const nextSchema: InternalEditorSchemaApi = getEditorSchema(
+      createValidationEditor(4)
+    );
+    assert.notEqual(
+      getCompiledEditorSchemaFromApi(getEditorSchema(editor))?.identity
+        .fingerprint,
+      getCompiledEditorSchemaFromApi(nextSchema)?.identity.fingerprint
+    );
+    const change = DocumentChange.between(before, {
+      ...before,
+      children: [paragraph('changed')],
+    });
+    assert.throws(
+      () => validateWithBuilder(before, change, nextSchema, 'canonical'),
+      /explicitly validated immutable baseline/u
+    );
+    nextSchema.assertDocument(before);
+    assert.deepEqual(
+      validateWithBuilder(before, change, nextSchema, 'canonical').children,
+      [paragraph('changed')]
     );
   });
 });

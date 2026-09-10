@@ -80,6 +80,7 @@ type CommitInput<V extends Value> = Omit<
 };
 
 type EditorCommitSnapshotSource = Readonly<{
+  beforeValue: JsonEditorValue;
   editor: Editor;
   value: JsonEditorValue;
 }>;
@@ -90,19 +91,20 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
 >();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
-  Map<RootKey, EditorSnapshot>
+  { after: Map<RootKey, EditorSnapshot>; before: Map<RootKey, EditorSnapshot> }
 >();
 
 /**
- * Return the immutable post-commit snapshot for one document root.
+ * Return an immutable commit snapshot for one document root.
  *
  * @internal
  */
 export const getEditorCommitSnapshot = <V extends Value>(
   commit: EditorCommit<V>,
-  root: RootKey = 'main'
+  root: RootKey = 'main',
+  phase: 'after' | 'before' = 'after'
 ): EditorSnapshot<V> => {
-  if (root === 'main') return commit.after;
+  if (root === 'main') return commit[phase];
 
   const source = EDITOR_COMMIT_SNAPSHOT_SOURCES.get(commit);
 
@@ -112,21 +114,29 @@ export const getEditorCommitSnapshot = <V extends Value>(
   let snapshots = EDITOR_COMMIT_ROOT_SNAPSHOTS.get(commit);
 
   if (!snapshots) {
-    snapshots = new Map([['main', commit.after]]);
+    snapshots = { after: new Map(), before: new Map() };
     EDITOR_COMMIT_ROOT_SNAPSHOTS.set(commit, snapshots);
   }
-  const cached = snapshots.get(root);
+  const cache = snapshots[phase];
+  const cached = cache.get(root);
 
   if (cached) return cached as EditorSnapshot<V>;
-  const children = valueRoot(source.value, root) as V;
+  const children = valueRoot(
+    phase === 'before' ? source.beforeValue : source.value,
+    root
+  ) as V;
+  const selectionRoot =
+    phase === 'before' ? commit.selectionBeforeRoot : commit.selectionAfterRoot;
   let index: SnapshotIndex | undefined;
   const snapshot = {
     children,
     selection:
-      toInternalRoot(commit.selectionAfterRoot) === root
-        ? commit.selectionAfter
+      toInternalRoot(selectionRoot) === root
+        ? phase === 'before'
+          ? commit.selectionBefore
+          : commit.selectionAfter
         : null,
-    version: commit.version,
+    version: phase === 'before' ? commit.previousVersion : commit.version,
   };
 
   Object.defineProperty(snapshot, 'index', {
@@ -139,7 +149,7 @@ export const getEditorCommitSnapshot = <V extends Value>(
   });
   const frozen = Object.freeze(snapshot) as EditorSnapshot<V>;
 
-  snapshots.set(root, frozen);
+  cache.set(root, frozen);
 
   return frozen;
 };
@@ -903,19 +913,6 @@ const createCommitChanged = ({
         ]);
         break;
       }
-      case 'projection': {
-        const details = getRootDetails(root);
-
-        result = Object.freeze([
-          ...new Set([
-            ...details.changedNodeKeys,
-            ...details.touchedNodeKeys,
-            ...details.pathNodeKeys,
-            ...getSelectionIds(root),
-          ]),
-        ]);
-        break;
-      }
       case 'node': {
         result = Object.freeze([...getRootDetails(root).changedNodeKeys]);
         break;
@@ -1040,6 +1037,7 @@ export const createEditorCommit = <V extends Value>(
   });
 
   EDITOR_COMMIT_SNAPSHOT_SOURCES.set(commit, {
+    beforeValue,
     editor,
     value: afterValue,
   });

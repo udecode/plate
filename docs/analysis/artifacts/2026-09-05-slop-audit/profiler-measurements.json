@@ -1,0 +1,107 @@
+{
+  "runtime": "1.3.12",
+  "iterations": 1000000,
+  "samples": [
+    {
+      "round": 0,
+      "lane": "direct",
+      "ms": 3.3835419999999985,
+      "checksum": 499999500000
+    },
+    {
+      "round": 0,
+      "lane": "profiled",
+      "ms": 3.4429170000000013,
+      "checksum": 499999500000
+    },
+    {
+      "round": 1,
+      "lane": "profiled",
+      "ms": 3.442707999999996,
+      "checksum": 499999500000
+    },
+    {
+      "round": 1,
+      "lane": "direct",
+      "ms": 3.4116659999999968,
+      "checksum": 499999500000
+    },
+    {
+      "round": 2,
+      "lane": "direct",
+      "ms": 3.257916999999992,
+      "checksum": 499999500000
+    },
+    {
+      "round": 2,
+      "lane": "profiled",
+      "ms": 3.447708999999989,
+      "checksum": 499999500000
+    },
+    {
+      "round": 3,
+      "lane": "profiled",
+      "ms": 3.3889580000000024,
+      "checksum": 499999500000
+    },
+    {
+      "round": 3,
+      "lane": "direct",
+      "ms": 3.3404999999999916,
+      "checksum": 499999500000
+    },
+    {
+      "round": 4,
+      "lane": "direct",
+      "ms": 3.7067499999999995,
+      "checksum": 499999500000
+    },
+    {
+      "round": 4,
+      "lane": "profiled",
+      "ms": 3.3866250000000093,
+      "checksum": 499999500000
+    },
+    {
+      "round": 5,
+      "lane": "profiled",
+      "ms": 3.6400000000000006,
+      "checksum": 499999500000
+    },
+    {
+      "round": 5,
+      "lane": "direct",
+      "ms": 3.7018330000000077,
+      "checksum": 499999500000
+    },
+    {
+      "round": 6,
+      "lane": "direct",
+      "ms": 3.2739170000000115,
+      "checksum": 499999500000
+    },
+    {
+      "round": 6,
+      "lane": "profiled",
+      "ms": 3.381791000000007,
+      "checksum": 499999500000
+    },
+    {
+      "round": 7,
+      "lane": "profiled",
+      "ms": 3.3133750000000077,
+      "checksum": 499999500000
+    },
+    {
+      "round": 7,
+      "lane": "direct",
+      "ms": 3.6339169999999967,
+      "checksum": 499999500000
+    }
+  ],
+  "sha256": {
+    "packages/plitejs/src/react/editable/mutation-profiler.ts": "a9343a3d6a6e34f63faa1245a91f2a7f1fce0ab1ab7778f67782e4f89cdf7a83",
+    "packages/plitejs/src/react/render-profiler.ts": "d38cd210b1b8303cf6d0aa80d8ca48b4c20a6541faebf89880ebf575fd132859"
+  },
+  "limitation": "Synthetic disabled-profiler diagnostic. JIT may inline or eliminate work. Not editor latency, browser allocation, or an end-to-end speedup estimate."
+}

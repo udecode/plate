@@ -1,5 +1,11 @@
 import type { DefinitionOf } from 'platejs';
-import { createEditor, definePlatePlugin } from 'platejs/react';
+import {
+  createEditor,
+  definePlatePlugin,
+  type PlateViewElementAttributes,
+  useEditorPlugin,
+  usePluginStore,
+} from 'platejs/react';
 
 import { ContentSlice } from '../src/core';
 import { createPluginContext } from '../src/react/plugin/createPluginContext.internal';
@@ -416,16 +422,60 @@ const DependencyEditorApiPlugin = definePlatePlugin('dependencyEditorApi', {
   }),
 });
 
-const DependentHooksPlugin = definePlatePlugin('dependentHooks', {
+const DependentComponentPlugin = definePlatePlugin('dependentComponent', {
   dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
-  useHooks: ({ editor }) => {
-    const dependencyValue: true = editor.api.dependencyApi.read();
-    const dependencyEditorValue: true = editor.api.dependencyEditorApi.read();
+  slots: { afterEditable: DependencyStatus },
+});
 
-    void dependencyEditorValue;
-    void dependencyValue;
+function DependencyStatus() {
+  const dependency = useEditorPlugin(DependencyApiPlugin);
+  const dependencyEditor = useEditorPlugin(DependencyEditorApiPlugin);
+  const dependencyIsAny: IsAny<typeof dependency> = false;
+  const dependencyValue: true = dependency.api.read();
+  const dependencyEditorValue: true = dependencyEditor.api.read();
+
+  void dependencyIsAny;
+  void dependencyEditorValue;
+  void dependencyValue;
+
+  return null;
+}
+
+const ViewElementAttributesPlugin = definePlatePlugin('viewElementAttributes', {
+  initialState: { active: true },
+  render: {
+    useViewElementAttributes: ({ editor, plugin, view }) => {
+      const editorIsAny: IsAny<typeof editor> = false;
+      const pluginIsAny: IsAny<typeof plugin> = false;
+      const viewIsAny: IsAny<typeof view> = false;
+      const active = usePluginStore(plugin, (state) => state.active);
+      const key = view.key([0]);
+
+      void editorIsAny;
+      void pluginIsAny;
+      void viewIsAny;
+
+      return active && key
+        ? [
+            {
+              attributes: {
+                'data-active': 'true',
+                style: { '--view-opacity': 1 },
+              },
+              key,
+            },
+          ]
+        : [];
+    },
   },
 });
+
+const invalidViewElementAttributes = {
+  // @ts-expect-error Event handlers are not safe view attributes.
+  onClick: () => {},
+} satisfies PlateViewElementAttributes;
+
+void invalidViewElementAttributes;
 
 const PlateReadContextPlugin = definePlatePlugin('plateReadContext', {
   read: ({ state }) => ({
@@ -433,10 +483,15 @@ const PlateReadContextPlugin = definePlatePlugin('plateReadContext', {
   }),
 })
   .extend({
-    useHooks: ({ read }) => {
-      const childCount: number = read.childCount();
+    render: {
+      useViewElementAttributes: ({ read, view }) => {
+        const childCount: number = read.childCount();
+        const key = view.key([0]);
 
-      void childCount;
+        return key
+          ? [{ key, attributes: { 'data-child-count': childCount } }]
+          : [];
+      },
     },
   })
   .configure({
@@ -466,7 +521,8 @@ const createdPlateEditor = createEditor({
     MentionPlugin,
     ExplicitPlugin,
     ReactOnPlugin,
-    DependentHooksPlugin,
+    DependentComponentPlugin,
+    ViewElementAttributesPlugin,
   ],
 });
 const stateInferenceEditor = createEditor({

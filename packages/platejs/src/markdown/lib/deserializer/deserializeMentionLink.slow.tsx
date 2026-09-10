@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '#platejs-test-internal';
 

@@ -5,7 +5,28 @@
   "extends": "../tsconfig.type-tests.json",
   "references": [
     {
+      "path": "./code-block-codemirror.json"
+    },
+    {
+      "path": "./combobox.json"
+    },
+    {
+      "path": "./comments.json"
+    },
+    {
+      "path": "./comments-react.json"
+    },
+    {
       "path": "./core.json"
+    },
+    {
+      "path": "./footnote-react.json"
+    },
+    {
+      "path": "./mention.json"
+    },
+    {
+      "path": "./migrations.json"
     },
     {
       "path": "./proxies.json"

@@ -6,8 +6,9 @@ import type {
   EditorSnapshot,
   NodeKey,
 } from '../../../../../packages/plitejs/src/index.ts';
+import { NodeApi } from '../../../../../packages/plitejs/src/index.ts';
 import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plitejs/src/internal/index.ts';
-import { createDecorationSource } from '../../../../../packages/plitejs/src/react/decoration-source.ts';
+import { usePliteDecorationEntries } from '../../../../../packages/plitejs/src/react/decoration-context.tsx';
 import {
   createEditor,
   Editable,
@@ -16,7 +17,6 @@ import {
   type PliteDecorationSource,
   useEditorSelector,
   useElementPath,
-  usePliteProjectionEntries,
 } from '../../../../../packages/plitejs/src/react/index.ts';
 import { createPliteReactRenderCounter } from '../../../../../packages/plitejs/src/react/render-profiler.ts';
 import {
@@ -90,62 +90,68 @@ const getTopLevelBlockText = (snapshot: EditorSnapshot, index: number) => {
   return block.children.map(getDescendantText).join('');
 };
 
-const createOverlayRanges = (snapshot: EditorSnapshot) => {
-  const start = getFarBlockIndex();
-  const end = Math.min(blockCount, start + 3);
-  const ranges: {
-    data: {
-      highlight: boolean;
-    };
-    key: string;
-    range: {
-      anchor: {
-        offset: number;
-        path: [number, 0];
+type DecorationProbe = Readonly<{
+  getReadCount: () => number;
+  refresh: () => void;
+  source: PliteDecorationSource<Editor>;
+}>;
+
+const createDecorationProbe = (
+  editor: Editor,
+  activeRef: React.RefObject<boolean>
+): DecorationProbe => {
+  let readCount = 0;
+  let refreshSource: ((input: { nodeKeys: readonly NodeKey[] }) => void) | null =
+    null;
+  const source: PliteDecorationSource<Editor> = {
+    id: 'huge-document-overlays',
+    observe: ({ refresh }) => {
+      refreshSource = refresh;
+
+      return () => {
+        refreshSource = null;
       };
-      focus: {
-        offset: number;
-        path: [number, 0];
-      };
-    };
-  }[] = [];
+    },
+    read: ({ entry: [node, path] }) => {
+      readCount += 1;
+      const blockIndex = path[0];
+      const start = getFarBlockIndex();
 
-  for (let index = start; index < end; index += 1) {
-    const text = getTopLevelBlockText(snapshot, index);
+      if (
+        !activeRef.current ||
+        !NodeApi.isText(node) ||
+        path.length !== 2 ||
+        blockIndex < start ||
+        blockIndex >= Math.min(blockCount, start + 3)
+      ) {
+        return [];
+      }
 
-    if (!text) {
-      continue;
-    }
-
-    ranges.push({
-      data: { highlight: true },
-      key: `far-overlay-${index}`,
-      range: {
-        anchor: { path: [index, 0], offset: 0 },
-        focus: { path: [index, 0], offset: Math.min(8, text.length) },
-      },
-    });
-  }
-
-  return ranges;
-};
-
-const getProjectionMetricCounts = (
-  store: Pick<PliteDecorationSource<unknown>, 'getMetrics'> | null | undefined
-) => {
-  const metrics =
-    store && typeof store.getMetrics === 'function' ? store.getMetrics() : null;
+      return [
+        {
+          attributes: { 'data-huge-document-overlay': true },
+          key: `far-overlay-${blockIndex}`,
+          range: {
+            anchor: { path, offset: 0 },
+            focus: { path, offset: Math.min(8, node.text.length) },
+          },
+        },
+      ];
+    },
+  };
 
   return {
-    changedRuntimeBucketCount: metrics?.changedRuntimeBucketCount ?? 0,
-    fullFallbackCount: metrics?.fullFallbackCount ?? 0,
-    globalSubscriberWakeCount: metrics?.globalSubscriberWakeCount ?? 0,
-    invalidRangeDropCount: metrics?.invalidRangeDropCount ?? 0,
-    projectedRangeCount: metrics?.projectedRangeCount ?? 0,
-    recomputeCount: metrics?.recomputeCount ?? 0,
-    runtimeSubscriberWakeCount: metrics?.runtimeSubscriberWakeCount ?? 0,
-    sourceReadCount: metrics?.sourceReadCount ?? 0,
-    sourceSubscriberWakeCount: metrics?.sourceSubscriberWakeCount ?? 0,
+    getReadCount: () => readCount,
+    refresh: () => {
+      const snapshot = editorGetSnapshot(editor);
+      const start = getFarBlockIndex();
+      const nodeKeys = Array.from({ length: 3 }, (_value, offset) =>
+        snapshot.index.keyAt([start + offset, 0])
+      ).filter((nodeKey): nodeKey is NodeKey => !!nodeKey);
+
+      refreshSource?.({ nodeKeys });
+    },
+    source,
   };
 };
 
@@ -167,7 +173,7 @@ const TopLevelBlockSlice = memo(
   }
 );
 
-const ProjectionCountSlice = memo(
+const DecorationCountSlice = memo(
   ({
     counts,
     runtimeId,
@@ -177,12 +183,10 @@ const ProjectionCountSlice = memo(
     runtimeId: NodeKey | null;
     slot: string;
   }) => {
-    const projections = usePliteProjectionEntries<{ highlight?: boolean }>(
-      runtimeId
-    ) as readonly unknown[];
+    const decorations = usePliteDecorationEntries(runtimeId);
 
     increment(counts, slot);
-    return <span>{projections.length}</span>;
+    return <span>{decorations.length}</span>;
   }
 );
 
@@ -220,53 +224,34 @@ const TrackedElement = ({
 const RenderingStrategyOverlayApp = ({
   counts,
   editor,
-  onDecorationSource,
+  onDecorationProbe,
 }: {
   counts: Record<string, number>;
   editor: Editor;
-  onDecorationSource?: (
-    source: PliteDecorationSource<{ highlight?: boolean }>
-  ) => void;
+  onDecorationProbe?: (probe: DecorationProbe) => void;
 }) => {
   const [overlayActive, setOverlayActive] = useState(false);
   const overlayActiveRef = useRef(overlayActive);
   overlayActiveRef.current = overlayActive;
-  const decorationSource = useMemo(
-    () =>
-      createDecorationSource(editor, {
-        id: 'huge-document-overlays',
-        read: ({ snapshot }) =>
-          overlayActiveRef.current ? createOverlayRanges(snapshot) : [],
-        dirtiness: 'external',
-      }),
+  const decorationProbe = useMemo(
+    () => createDecorationProbe(editor, overlayActiveRef),
     [editor]
   );
-  const decorationSources = useMemo(
-    () => [decorationSource] as const,
-    [decorationSource]
-  );
 
   useEffect(() => {
-    onDecorationSource?.(decorationSource);
-  }, [onDecorationSource, decorationSource]);
-
-  useEffect(
-    () => () => {
-      decorationSource.destroy();
-    },
-    [decorationSource]
-  );
-
-  useEffect(() => {
-    decorationSource.refresh({ reason: 'external' });
-  }, [decorationSource, overlayActive]);
+    onDecorationProbe?.(decorationProbe);
+  }, [decorationProbe, onDecorationProbe]);
 
   return (
-    <Plite decorationSources={decorationSources} editor={editor}>
+    <Plite decorations={[decorationProbe.source]} editor={editor}>
       <RenderingStrategyOverlayInner
         counts={counts}
         onToggle={() => {
-          setOverlayActive((value) => !value);
+          const next = !overlayActiveRef.current;
+
+          overlayActiveRef.current = next;
+          setOverlayActive(next);
+          decorationProbe.refresh();
         }}
         overlayActive={overlayActive}
       />
@@ -297,18 +282,18 @@ const RenderingStrategyOverlayInner = ({
       <button id="overlay-toggle" onClick={onToggle} type="button">
         {overlayActive ? 'on' : 'off'}
       </button>
-      <span id="active-projection-count">
-        <ProjectionCountSlice
+      <span id="active-decoration-count">
+        <DecorationCountSlice
           counts={counts}
           runtimeId={activeLeafId}
-          slot="activeProjection"
+          slot="activeDecoration"
         />
       </span>
-      <span id="far-projection-count">
-        <ProjectionCountSlice
+      <span id="far-decoration-count">
+        <DecorationCountSlice
           counts={counts}
           runtimeId={farLeafId}
-          slot="farProjection"
+          slot="farDecoration"
         />
       </span>
       <TopLevelBlockSlice counts={counts} index={0} slot="activeText" />
@@ -349,8 +334,7 @@ const countShells = (container: HTMLElement) =>
 const setupScenario = async () => {
   const editor = createEditor();
   const counts: Record<string, number> = {};
-  let decorationSource: PliteDecorationSource<{ highlight?: boolean }> | null =
-    null;
+  let decorationProbe: DecorationProbe | null = null;
 
   editorReplace(editor, {
     children: createChildren(),
@@ -361,8 +345,8 @@ const setupScenario = async () => {
     <RenderingStrategyOverlayApp
       counts={counts}
       editor={editor}
-      onDecorationSource={(source) => {
-        decorationSource = source;
+      onDecorationProbe={(probe) => {
+        decorationProbe = probe;
       }}
     />
   );
@@ -374,7 +358,7 @@ const setupScenario = async () => {
     '#huge-document-overlays'
   );
 
-  if (!view || !toggle || !root || !decorationSource) {
+  if (!view || !toggle || !root || !decorationProbe) {
     throw new Error('Missing rendering-strategy overlay benchmark controls');
   }
 
@@ -382,7 +366,7 @@ const setupScenario = async () => {
     counts,
     editor,
     mounted,
-    projectionStore: decorationSource,
+    decorationProbe,
     root,
     toggle,
     view,
@@ -435,13 +419,12 @@ const promoteSegment = async ({
 
 const measureOverlayToggle = async () =>
   measureLane(async () => {
-    const { counts, mounted, projectionStore, toggle, view } =
+    const { counts, decorationProbe, mounted, toggle, view } =
       await setupScenario();
     const partialDOMCountBefore = countShells(mounted.container);
     const mountedTextBefore = countMountedTextNodes(mounted.container);
     const baseline = cloneCounts(counts);
-    const recomputeBaseline =
-      getProjectionMetricCounts(projectionStore).recomputeCount;
+    const readBaseline = decorationProbe.getReadCount();
     const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     const renderCounter =
       process.env.REACT_HUGE_DOC_DEBUG_PROFILE === '1'
@@ -466,21 +449,22 @@ const measureOverlayToggle = async () =>
     const delta = deltaCounts(counts, baseline);
     const partialDOMCountAfter = countShells(mounted.container);
     const mountedTextAfter = countMountedTextNodes(mounted.container);
-    const activeProjectionValue = Number(
-      mounted.container.querySelector('#active-projection-count')
+    const activeDecorationValue = Number(
+      mounted.container.querySelector('#active-decoration-count')
         ?.textContent ?? 0
     );
-    const farProjectionValue = Number(
-      mounted.container.querySelector('#far-projection-count')?.textContent ?? 0
+    const farDecorationValue = Number(
+      mounted.container.querySelector('#far-decoration-count')?.textContent ?? 0
     );
 
     await mounted.dispose();
 
     return {
-      activeProjectionCount: activeProjectionValue,
-      activeProjectionRenders: delta.activeProjection ?? 0,
-      farProjectionCount: farProjectionValue,
-      farProjectionRenders: delta.farProjection ?? 0,
+      activeDecorationCount: activeDecorationValue,
+      activeDecorationRenders: delta.activeDecoration ?? 0,
+      decorationReadCount: decorationProbe.getReadCount() - readBaseline,
+      farDecorationCount: farDecorationValue,
+      farDecorationRenders: delta.farDecoration ?? 0,
       mountedTextAfter,
       mountedTextBefore,
       overlayToggleMs,
@@ -494,9 +478,6 @@ const measureOverlayToggle = async () =>
             renderTotalCount: renderProfile.total,
           }
         : {}),
-      projectionRecomputeCount:
-        getProjectionMetricCounts(projectionStore).recomputeCount -
-        recomputeBaseline,
       partialDOMCountAfter,
       partialDOMCountBefore,
     };
@@ -504,7 +485,7 @@ const measureOverlayToggle = async () =>
 
 const measureActiveEditAfterOverlay = async () =>
   measureLane(async () => {
-    const { counts, editor, mounted, projectionStore, toggle, view } =
+    const { counts, decorationProbe, editor, mounted, toggle, view } =
       await setupScenario();
 
     await act(async () => {
@@ -518,8 +499,7 @@ const measureActiveEditAfterOverlay = async () =>
     const partialDOMCountBefore = countShells(mounted.container);
     const mountedTextBefore = countMountedTextNodes(mounted.container);
     const baseline = cloneCounts(counts);
-    const recomputeBaseline =
-      getProjectionMetricCounts(projectionStore).recomputeCount;
+    const readBaseline = decorationProbe.getReadCount();
     const start = now();
 
     await act(async () => {
@@ -539,17 +519,15 @@ const measureActiveEditAfterOverlay = async () =>
 
     return {
       activeElementRenders: delta.activeElement ?? 0,
-      activeProjectionRenders: delta.activeProjection ?? 0,
+      activeDecorationRenders: delta.activeDecoration ?? 0,
       activeTextRenders: delta.activeText ?? 0,
+      decorationReadCount: decorationProbe.getReadCount() - readBaseline,
       editMs,
       farElementRenders: delta.farElement ?? 0,
-      farProjectionRenders: delta.farProjection ?? 0,
+      farDecorationRenders: delta.farDecoration ?? 0,
       farTextRenders: delta.farText ?? 0,
       mountedTextAfter,
       mountedTextBefore,
-      projectionRecomputeCount:
-        getProjectionMetricCounts(projectionStore).recomputeCount -
-        recomputeBaseline,
       partialDOMCountAfter,
       partialDOMCountBefore,
     };
@@ -557,7 +535,7 @@ const measureActiveEditAfterOverlay = async () =>
 
 const measurePartialDOMPromotion = async () =>
   measureLane(async () => {
-    const { editor, mounted, projectionStore, toggle, view } =
+    const { decorationProbe, editor, mounted, toggle, view } =
       await setupScenario();
     const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     const renderCounter = createPliteReactRenderCounter();
@@ -585,8 +563,7 @@ const measurePartialDOMPromotion = async () =>
     const partialDOMCountBefore = countShells(mounted.container);
     const mountedTextBefore = countMountedTextNodes(mounted.container);
 
-    const recomputeBaseline =
-      getProjectionMetricCounts(projectionStore).recomputeCount;
+    const readBaseline = decorationProbe.getReadCount();
     renderCounter.reset();
     const promotionMs = await promoteSegment({
       mounted,
@@ -633,11 +610,9 @@ const measurePartialDOMPromotion = async () =>
 
     return {
       coldPromotionMs,
+      decorationReadCount: decorationProbe.getReadCount() - readBaseline,
       mountedTextAfter,
       mountedTextBefore,
-      projectionRecomputeCount:
-        getProjectionMetricCounts(projectionStore).recomputeCount -
-        recomputeBaseline,
       promotionMs,
       renderElementCount: renderProfile.byKind.element ?? 0,
       renderLeafCount: renderProfile.byKind.leaf ?? 0,

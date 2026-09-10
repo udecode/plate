@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -21,7 +22,7 @@ const sourceTaskIds = new Set(
   )
 );
 
-const readDryGraph = () => {
+const readDryGraph = (cwd = repoRoot) => {
   const result = spawnSync(
     packageManager,
     [
@@ -31,10 +32,11 @@ const readDryGraph = () => {
       'typecheck',
       '--filter=plitejs',
       '--filter=platejs',
+      '--filter=@platejs/cli',
       '--dry=json',
     ],
     {
-      cwd: repoRoot,
+      cwd,
       encoding: 'utf-8',
       env: { ...process.env, TURBO_TELEMETRY_DISABLED: '1' },
     }
@@ -43,6 +45,73 @@ const readDryGraph = () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 
   return JSON.parse(result.stdout);
+};
+
+const createGraphFixture = (context) => {
+  const graph = readDryGraph();
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'plate-turbo-graph-')
+  );
+
+  context.after(() => fs.rmSync(directory, { force: true, recursive: true }));
+
+  const files = new Set([
+    '.gitignore',
+    '.npmrc',
+    'package.json',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+    'turbo.json',
+  ]);
+
+  for (const task of graph.tasks) {
+    for (const filename of Object.keys(task.inputs)) {
+      files.add(path.normalize(path.join(task.directory, filename)));
+    }
+  }
+  for (const workspaceRoot of ['apps', 'packages']) {
+    for (const entry of fs.readdirSync(path.join(repoRoot, workspaceRoot), {
+      withFileTypes: true,
+    })) {
+      if (!entry.isDirectory()) continue;
+
+      for (const filename of ['package.json', 'turbo.json']) {
+        const relative = path.join(workspaceRoot, entry.name, filename);
+
+        if (fs.existsSync(path.join(repoRoot, relative))) files.add(relative);
+      }
+    }
+  }
+  for (const filename of files) {
+    const destination = path.join(directory, filename);
+
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, filename), destination);
+  }
+
+  fs.symlinkSync(
+    path.join(repoRoot, 'node_modules'),
+    path.join(directory, 'node_modules'),
+    'junction'
+  );
+
+  // Turbo includes cross-package root inputs only with a Git workspace boundary.
+  const init = spawnSync('git', ['init', '--quiet'], {
+    cwd: directory,
+    encoding: 'utf-8',
+  });
+
+  assert.equal(init.status, 0, init.stderr || init.stdout);
+
+  const fixtureGraph = readDryGraph(directory);
+
+  assert.deepEqual(
+    sourceHashes(fixtureGraph),
+    sourceHashes(graph),
+    'the temporary workspace must preserve every current source task hash'
+  );
+
+  return directory;
 };
 
 const sourceHashes = (graph) =>
@@ -100,6 +169,21 @@ const assertSameSet = (actual, expected, label) => {
   );
 };
 
+test('package typechecking schedules source proof without release builds', () => {
+  const graph = readDryGraph();
+
+  assert.ok(
+    graph.tasks.some(({ taskId }) => taskId === '@platejs/cli#typecheck')
+  );
+  assert.ok(
+    graph.tasks.some(({ taskId }) => taskId === 'plitejs#typecheck:contracts')
+  );
+  assert.deepEqual(
+    graph.tasks.filter(({ task }) => task === 'build'),
+    []
+  );
+});
+
 test('benchmark runners resolve workspace packages without root dependencies', async () => {
   const result = await benchmarkRepo({
     benchmarkSource: `
@@ -115,127 +199,106 @@ test('benchmark runners resolve workspace packages without root dependencies', a
   assert.deepEqual(result, { plate: 'platejs', plite: 'plitejs' });
 });
 
-test('aggregate tasks reject --only execution with uncached partitions', () => {
+test('aggregate tasks reject --only execution with uncached partitions', (context) => {
+  const fixture = createGraphFixture(context);
   const probe = path.join(
-    repoRoot,
+    fixture,
     'packages/plitejs/src/diff',
     `__entrypoint_turbo_uncached_${process.pid}_${Date.now()}.ts`
   );
 
-  try {
-    fs.writeFileSync(probe, 'export const uncachedPartitionProbe = true;\n');
+  fs.writeFileSync(probe, 'export const uncachedPartitionProbe = true;\n');
 
-    const result = spawnSync(
-      process.execPath,
-      [
-        'tooling/scripts/run-entrypoint-package-task.mjs',
-        'plitejs',
-        'typecheck',
-      ],
-      {
-        cwd: repoRoot,
-        encoding: 'utf-8',
-        env: { ...process.env, TURBO_HASH: 'uncached-partition-proof' },
-      }
-    );
+  const result = spawnSync(
+    process.execPath,
+    ['tooling/scripts/run-entrypoint-package-task.mjs', 'plitejs', 'typecheck'],
+    {
+      cwd: fixture,
+      encoding: 'utf-8',
+      env: { ...process.env, TURBO_HASH: 'uncached-partition-proof' },
+    }
+  );
 
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /cannot run without its partition tasks/u);
-  } finally {
-    fs.rmSync(probe, { force: true });
-  }
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /cannot run without its partition tasks/u);
 });
 
 test(
   'Turbo hashes exactly the owning source entrypoint and reverse dependents',
   { timeout: 30_000 },
-  () => {
+  (context) => {
+    const fixture = createGraphFixture(context);
     const probeId = `${process.pid}-${Date.now()}`;
     const probes = {
       pliteDiff: path.join(
-        repoRoot,
+        fixture,
         'packages/plitejs/src/diff',
         `__entrypoint_turbo_probe_${probeId}.ts`
       ),
       pliteDiffRenamed: path.join(
-        repoRoot,
+        fixture,
         'packages/plitejs/src/diff',
         `__entrypoint_turbo_probe_${probeId}_renamed.ts`
       ),
       pliteRoot: path.join(
-        repoRoot,
+        fixture,
         'packages/plitejs/src',
         `__entrypoint_turbo_probe_${probeId}.ts`
       ),
       plateStatic: path.join(
-        repoRoot,
+        fixture,
         'packages/platejs/src/static',
         `__entrypoint_turbo_probe_${probeId}.ts`
       ),
     };
-    const cleanup = () => {
-      for (const filename of Object.values(probes)) {
-        fs.rmSync(filename, { force: true });
-      }
+    const baselineGraph = readDryGraph(fixture);
+
+    assert.equal(
+      baselineGraph.globalCacheInputs.hashOfInternalDependencies,
+      '',
+      'root workspace dependencies globally invalidate every Turbo task'
+    );
+    const baselineHashes = sourceHashes(baselineGraph);
+    const assertMutation = (filename, ownerTaskId) => {
+      fs.writeFileSync(filename, 'export const entrypointTurboProbe = true;\n');
+
+      const candidateGraph = readDryGraph(fixture);
+      const candidateHashes = sourceHashes(candidateGraph);
+
+      assertSameSet(
+        changedSourceTasks(baselineHashes, candidateHashes),
+        reverseClosure(baselineGraph, ownerTaskId),
+        ownerTaskId
+      );
+
+      return candidateHashes;
     };
 
-    cleanup();
+    const leafOwner = 'plitejs#typecheck:partition:diff';
+    const leafHashes = assertMutation(probes.pliteDiff, leafOwner);
 
-    try {
-      const baselineGraph = readDryGraph();
+    fs.renameSync(probes.pliteDiff, probes.pliteDiffRenamed);
 
-      assert.equal(
-        baselineGraph.globalCacheInputs.hashOfInternalDependencies,
-        '',
-        'root workspace dependencies globally invalidate every Turbo task'
-      );
-      const baselineHashes = sourceHashes(baselineGraph);
-      const assertMutation = (filename, ownerTaskId) => {
-        fs.writeFileSync(
-          filename,
-          'export const entrypointTurboProbe = true;\n'
-        );
+    const renamedHashes = sourceHashes(readDryGraph(fixture));
 
-        const candidateGraph = readDryGraph();
-        const candidateHashes = sourceHashes(candidateGraph);
+    assertSameSet(
+      changedSourceTasks(baselineHashes, renamedHashes),
+      reverseClosure(baselineGraph, leafOwner),
+      'rename closure'
+    );
+    assert.notDeepEqual([...leafHashes], [...renamedHashes]);
 
-        assertSameSet(
-          changedSourceTasks(baselineHashes, candidateHashes),
-          reverseClosure(baselineGraph, ownerTaskId),
-          ownerTaskId
-        );
+    fs.rmSync(probes.pliteDiffRenamed);
+    assertMutation(probes.pliteRoot, 'plitejs#typecheck:partition:core');
+    fs.rmSync(probes.pliteRoot);
 
-        return candidateHashes;
-      };
+    assertMutation(probes.plateStatic, 'platejs#typecheck:partition:static');
+    fs.rmSync(probes.plateStatic);
 
-      const leafOwner = 'plitejs#typecheck:partition:diff';
-      const leafHashes = assertMutation(probes.pliteDiff, leafOwner);
-
-      fs.renameSync(probes.pliteDiff, probes.pliteDiffRenamed);
-
-      const renamedHashes = sourceHashes(readDryGraph());
-
-      assertSameSet(
-        changedSourceTasks(baselineHashes, renamedHashes),
-        reverseClosure(baselineGraph, leafOwner),
-        'rename closure'
-      );
-      assert.notDeepEqual([...leafHashes], [...renamedHashes]);
-
-      fs.rmSync(probes.pliteDiffRenamed);
-      assertMutation(probes.pliteRoot, 'plitejs#typecheck:partition:core');
-      fs.rmSync(probes.pliteRoot);
-
-      assertMutation(probes.plateStatic, 'platejs#typecheck:partition:static');
-      fs.rmSync(probes.plateStatic);
-
-      assertSameSet(
-        changedSourceTasks(baselineHashes, sourceHashes(readDryGraph())),
-        new Set(),
-        'all probes cleaned up'
-      );
-    } finally {
-      cleanup();
-    }
+    assertSameSet(
+      changedSourceTasks(baselineHashes, sourceHashes(readDryGraph(fixture))),
+      new Set(),
+      'all probes cleaned up'
+    );
   }
 );

@@ -98,18 +98,6 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
-        path: 'components/editor/comment-static.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'comment-static',
-    registryDependencies: [],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
         path: 'components/editor/date-static.tsx',
         type: 'registry:component',
       },
@@ -315,7 +303,6 @@ export const registryStaticFeatures: Registry['items'] = [
       '@plate/code-block-static',
       '@plate/code-drawing-static',
       '@plate/column-static',
-      '@plate/comment-static',
       '@plate/date-static',
       '@plate/font-static',
       '@plate/footnote-static',
@@ -338,8 +325,7 @@ export const registryStaticFeatures: Registry['items'] = [
 export const registryFeatures: Registry['items'] = [
   ...registryStaticFeatures,
   {
-    dependencies: ['platejs', 'lodash'],
-    devDependencies: ['@types/lodash'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/ai.tsx',
@@ -354,7 +340,7 @@ export const registryFeatures: Registry['items'] = [
       '@plate/use-chat',
     ],
     type: 'registry:component',
-    description: 'A text highlighter for AI-generated content.',
+    description: 'Streaming edits, command menu, and text highlighting.',
     title: 'AI',
     meta: {
       docs: [
@@ -510,7 +496,39 @@ export const registryFeatures: Registry['items'] = [
         { route: '/docs/code-block' },
         { route: 'https://pro.platejs.org/docs/components/code-block' },
       ],
-      examples: ['code-block-demo'],
+      examples: [
+        'code-block-demo',
+        'code-block-huge-demo',
+        'code-block-codemirror-demo',
+      ],
+    },
+  },
+  {
+    dependencies: [
+      '@codemirror/language',
+      '@codemirror/language-data',
+      '@codemirror/commands',
+      '@lezer/highlight',
+      '@codemirror/search',
+      '@codemirror/state',
+      '@codemirror/view',
+      'platejs',
+    ],
+    files: [
+      {
+        path: 'components/editor/code-block-codemirror.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-block-codemirror',
+    registryDependencies: ['@plate/code-block'],
+    type: 'registry:component',
+    description:
+      'A CodeMirror projection for explicitly high-scale code block editors.',
+    title: 'Code Block CodeMirror',
+    meta: {
+      docs: [{ route: '/docs/code-block' }],
+      examples: ['code-block-codemirror-demo', 'code-block-views-demo'],
     },
   },
   {
@@ -571,7 +589,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'date-fns'],
+    dependencies: ['platejs', 'date-fns', 'lucide-react'],
     files: [
       {
         path: 'components/editor/comment.tsx',
@@ -579,28 +597,70 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'comment',
+    description:
+      'Rich comment cards, forms, and styling for package-owned thread records and mapped editor ranges.',
     meta: {
       docs: [
         { route: '/docs/comment' },
         { route: 'https://pro.platejs.org/docs/components/comment-node' },
       ],
-      examples: ['discussion-demo', 'discussion-pro'],
+      examples: ['discussion-demo'],
     },
     registryDependencies: [
-      '@plate/comment-toolbar-button',
-      '@plate/discussion',
-      '@plate/highlight-style',
-      '@plate/basic-marks',
       'avatar',
       'button',
+      '@plate/basic-marks',
+      '@plate/basic-marks-static',
       '@plate/editor-dropdown-menu',
       '@plate/editor',
+      '@plate/highlight-style',
     ],
-    title: 'Comment',
+    title: 'Comment Threads',
     type: 'registry:component',
   },
   {
-    dependencies: ['@faker-js/faker', 'platejs'],
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/comment-static.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'comment-static',
+    description:
+      'Decoration attributes for static comment ranges and overlaps.',
+    registryDependencies: ['@plate/highlight-style'],
+    title: 'Static Comment Styling',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs', 'lucide-react'],
+    files: [
+      {
+        path: 'components/editor/discussion.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'discussion',
+    description:
+      "A Floating Discussion surface that combines each block's comment threads and document suggestions.",
+    meta: {
+      docs: [{ route: '/docs/discussion' }],
+      examples: ['discussion-demo'],
+    },
+    registryDependencies: [
+      'avatar',
+      'button',
+      'separator',
+      '@plate/comment',
+      '@plate/floating-popover',
+      '@plate/suggestion',
+    ],
+    title: 'Discussion',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@ai-sdk/react@3', 'ai@6', 'platejs'],
     files: [
       {
         path: 'components/editor/copilot.tsx',
@@ -635,9 +695,9 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'find',
-    registryDependencies: ['input-group', 'tooltip'],
+    registryDependencies: ['input-group', 'tooltip', '@plate/editor'],
     type: 'registry:component',
-    description: 'A document find controller with transient match highlights.',
+    description: 'A search bar over the editor’s current text matches.',
     title: 'Find',
     meta: {
       docs: [{ route: '/docs/find' }],
@@ -666,18 +726,6 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: [],
-    files: [
-      {
-        path: 'components/editor/discussion.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'discussion',
-    registryDependencies: ['@plate/block-discussion', '@plate/comment'],
-    type: 'registry:component',
-  },
-  {
     dependencies: ['platejs', 'react-dnd', 'react-dnd-html5-backend'],
     files: [
       {
@@ -688,7 +736,7 @@ export const registryFeatures: Registry['items'] = [
     name: 'dnd',
     registryDependencies: ['button', 'tooltip'],
     type: 'registry:component',
-    description: 'A block wrapper with a drag handle for moving editor blocks.',
+    description: 'Block drag handles and drop indicators.',
     title: 'Drag and Drop',
     meta: {
       docs: [
@@ -696,18 +744,12 @@ export const registryFeatures: Registry['items'] = [
         { route: 'https://pro.platejs.org/docs/components/dnd' },
       ],
       examples: ['dnd-demo', 'dnd-pro'],
-      usage: [
-        `DndPlugin.configure({
-  render: {
-    aboveNodes: BlockDraggable,
-  },
-})`,
-      ],
+      usage: [`createEditor({ plugins: DndKit })`],
       // Click the plus button next to the drag button to insert blocks
     },
   },
   {
-    dependencies: ['platejs'],
+    dependencies: ['platejs', 'juice', 'validator'],
     files: [
       {
         path: 'components/editor/docx.tsx',
@@ -759,7 +801,6 @@ export const registryFeatures: Registry['items'] = [
       '@plate/column',
       '@plate/comment',
       '@plate/date',
-      '@plate/discussion',
       '@plate/dnd',
       '@plate/emoji',
       '@plate/exit-break',
@@ -868,7 +909,6 @@ export const registryFeatures: Registry['items'] = [
     registryDependencies: [
       '@plate/link',
       '@plate/toolbar',
-      '@plate/use-on-click-outside',
       '@plate/use-widget-floating',
       '@plate/tailwind-scrollbar-hide',
       '@plate/ai-toolbar-button',
@@ -906,6 +946,7 @@ export const registryFeatures: Registry['items'] = [
       'command',
       'hover-card',
       '@plate/floating-popover',
+      '@plate/highlight-style',
       '@plate/inline-combobox',
     ],
     type: 'registry:component',
@@ -975,11 +1016,8 @@ export const registryFeatures: Registry['items'] = [
       'button',
       'input',
       'separator',
-      '@plate/comment',
       '@plate/link-toolbar-button',
-      '@plate/suggestion',
       '@plate/suggestion-style',
-      '@plate/use-on-click-outside',
       '@plate/use-widget-floating',
     ],
     title: 'Link',
@@ -1043,9 +1081,14 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'sonner'],
+    dependencies: [
+      'platejs',
+      '@uploadthing/react@7.3.3',
+      'sonner',
+      'uploadthing@7.7.4',
+    ],
     description:
-      'Media kit without API (see media-uploadthing-api for reference)',
+      'Media kit with an UploadThing client transport (see media-uploadthing-api for the server route).',
     files: [
       {
         path: 'components/editor/media.tsx',
@@ -1054,6 +1097,7 @@ export const registryFeatures: Registry['items'] = [
     ],
     name: 'media',
     registryDependencies: [
+      '@plate/uploadthing',
       '@plate/media-audio',
       '@plate/media-embed',
       '@plate/media-file',
@@ -1137,16 +1181,13 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'suggestion',
-    registryDependencies: [
-      '@plate/suggestion-toolbar-button',
-      '@plate/discussion',
-    ],
+    registryDependencies: ['@plate/suggestion-toolbar-button'],
     type: 'registry:component',
     description: 'A text component for suggestion.',
     title: 'Suggestion',
     meta: {
       docs: [{ route: '/docs/suggestion' }],
-      examples: ['discussion-demo', 'discussion-pro'],
+      examples: ['discussion-demo'],
     },
   },
   {
@@ -1198,7 +1239,7 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'toc',
-    registryDependencies: ['button'],
+    registryDependencies: ['button', '@plate/highlight-style'],
     type: 'registry:component',
     description:
       'A table of contents component with links to document headings.',

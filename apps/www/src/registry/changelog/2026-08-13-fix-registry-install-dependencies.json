@@ -88,12 +88,15 @@
     },
     {
       "name": "block-discussion",
-      "files": [
-        "apps/www/src/registry/components/editor/block-discussion.tsx",
-        "apps/www/src/registry/lib/block-discussion-index.ts"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for block-discussion."
+        }
+      ]
     },
     {
       "name": "block-draggable",
@@ -673,7 +676,6 @@
         "apps/www/src/registry/examples/values/basic-marks-value.tsx",
         "apps/www/src/registry/examples/values/column-value.tsx",
         "apps/www/src/registry/examples/values/date-value.tsx",
-        "apps/www/src/registry/examples/values/discussion-value.tsx",
         "apps/www/src/registry/examples/values/equation-value.tsx",
         "apps/www/src/registry/examples/values/font-value.tsx",
         "apps/www/src/registry/examples/values/indent-value.tsx",
@@ -682,6 +684,7 @@
         "apps/www/src/registry/examples/values/list-value.tsx",
         "apps/www/src/registry/examples/values/media-value.tsx",
         "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
         "apps/www/src/registry/examples/values/table-value.tsx",
         "apps/www/src/registry/examples/values/toc-value.tsx"
       ],
@@ -718,7 +721,6 @@
     {
       "name": "select-editor",
       "files": [
-        "apps/www/src/registry/components/editor/select-command-score.ts",
         "apps/www/src/registry/components/editor/select-command.tsx",
         "apps/www/src/registry/components/editor/select-editor.tsx"
       ],

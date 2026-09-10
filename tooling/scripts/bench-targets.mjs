@@ -298,13 +298,13 @@ function artifactKey(targetId, artifactPath) {
   return `${targetId}\0${artifactPath}`;
 }
 
-function previousExistingArtifacts(histories) {
+function previousRecordedArtifacts(histories) {
   const existing = new Set();
 
   for (const history of histories) {
     for (const target of history?.targets ?? []) {
       for (const artifact of target.artifacts ?? []) {
-        if (artifact.exists === true) {
+        if (artifact.recorded === true || artifact.exists === true) {
           existing.add(artifactKey(target.id, artifact.path));
         }
       }
@@ -320,30 +320,30 @@ function loadTargetHistoryInputs() {
   );
 }
 
-function artifactState(targetId, artifact, previousExisting) {
+function artifactState(targetId, artifact, previousRecorded) {
   const absolutePath = path.resolve(root, artifact.path);
-  const exists =
+  const recorded =
     fs.existsSync(absolutePath) ||
-    previousExisting.has(artifactKey(targetId, artifact.path));
+    previousRecorded.has(artifactKey(targetId, artifact.path));
 
   return {
     path: artifact.path,
     required: artifact.required !== false,
-    exists,
+    recorded,
   };
 }
 
 function buildTargetHistory(registry, histories = loadTargetHistoryInputs()) {
-  const previousExisting = previousExistingArtifacts(histories);
+  const previousRecorded = previousRecordedArtifacts(histories);
   const targets = sortedTargets(registry).map((target) => {
     const artifacts = target.artifacts.map((artifact) =>
-      artifactState(target.id, artifact, previousExisting)
+      artifactState(target.id, artifact, previousRecorded)
     );
     const missingArtifacts = artifacts.filter(
-      (artifact) => artifact.required && !artifact.exists
+      (artifact) => artifact.required && !artifact.recorded
     );
     const missingOptionalArtifacts = artifacts.filter(
-      (artifact) => !artifact.required && !artifact.exists
+      (artifact) => !artifact.required && !artifact.recorded
     );
 
     return {
@@ -364,7 +364,7 @@ function buildTargetHistory(registry, histories = loadTargetHistoryInputs()) {
           ? 'missing-required-artifact'
           : missingOptionalArtifacts.length > 0
             ? 'missing-optional-artifact'
-            : 'ok',
+            : 'recorded',
       migration: target.migration ?? null,
     };
   });
@@ -372,7 +372,7 @@ function buildTargetHistory(registry, histories = loadTargetHistoryInputs()) {
   const artifactCounts = countArtifacts(targets);
 
   return {
-    version: 1,
+    version: 2,
     registryPath: path.relative(root, registryPath),
     policy: registry.policy,
     counts: {
@@ -386,7 +386,7 @@ function buildTargetHistory(registry, histories = loadTargetHistoryInputs()) {
 
 function countArtifacts(targets) {
   let artifacts = 0;
-  let existingArtifacts = 0;
+  let recordedArtifacts = 0;
   let missingOptionalArtifacts = 0;
   let missingRequiredArtifacts = 0;
   let requiredArtifacts = 0;
@@ -395,15 +395,19 @@ function countArtifacts(targets) {
     for (const artifact of target.artifacts) {
       artifacts += 1;
       if (artifact.required) requiredArtifacts += 1;
-      if (artifact.exists) existingArtifacts += 1;
-      if (!artifact.required && !artifact.exists) missingOptionalArtifacts += 1;
-      if (artifact.required && !artifact.exists) missingRequiredArtifacts += 1;
+      if (artifact.recorded) recordedArtifacts += 1;
+      if (!artifact.required && !artifact.recorded) {
+        missingOptionalArtifacts += 1;
+      }
+      if (artifact.required && !artifact.recorded) {
+        missingRequiredArtifacts += 1;
+      }
     }
   }
 
   return {
     artifacts,
-    existingArtifacts,
+    recordedArtifacts,
     missingOptionalArtifacts,
     missingRequiredArtifacts,
     requiredArtifacts,
@@ -424,7 +428,7 @@ function countBy(items, getKey) {
 function renderMarkdownReport(history) {
   const rows = history.targets
     .map((target) => {
-      const artifactSummary = `${target.artifacts.filter((artifact) => artifact.exists).length}/${target.artifacts.length}`;
+      const artifactSummary = `${target.artifacts.filter((artifact) => artifact.recorded).length}/${target.artifacts.length}`;
       return [
         target.id,
         target.family,
@@ -442,15 +446,15 @@ function renderMarkdownReport(history) {
 
 This report is generated from \`${history.registryPath}\`.
 
-Evidence Kit is legacy input during migration. Active benchmark decisions should
-use target ids from this registry, then feed those targets into benchmark
-runners, Autoresearch, and report generation.
+Evidence Kit is legacy input during migration. Active benchmark decisions should use target ids from this registry, then feed those targets into benchmark runners, Autoresearch, and report generation.
+
+A recorded artifact was observed locally or retained in earlier history. This does not establish current availability, source freshness, or passing budgets.
 
 ## Summary
 
 - Targets: ${history.counts.targets}
 - Required artifacts: ${history.counts.requiredArtifacts}
-- Existing artifacts: ${history.counts.existingArtifacts}
+- Recorded artifacts: ${history.counts.recordedArtifacts}
 - Missing optional artifacts: ${history.counts.missingOptionalArtifacts}
 - Missing required artifacts: ${history.counts.missingRequiredArtifacts}
 - Status counts: ${Object.entries(history.counts.statusCounts)
@@ -460,7 +464,7 @@ runners, Autoresearch, and report generation.
 ## Targets
 
 | Target | Family | Metric | Status | Artifacts | Metric output |
-|--------|--------|--------|--------|-----------|---------------|
+| --- | --- | --- | --- | --- | --- |
 ${rows
   .split('\n')
   .map((row) => `| ${row} |`)

@@ -1,16 +1,20 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "comment-static",
+  "title": "Static Comment Styling",
+  "description": "Decoration attributes for static comment ranges and overlaps.",
   "dependencies": [
     "platejs"
   ],
-  "registryDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style.json"
+  ],
   "files": [
     {
-      "path": "src/registry/components/editor/comment-static.tsx",
-      "content": "import { BaseCommentPlugin } from 'platejs/comment';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function CommentLeafStatic(\n  props: PliteLeafProps<typeof BaseCommentPlugin>\n) {\n  return (\n    <PliteLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </PliteLeaf>\n  );\n}\n\nexport const BaseCommentKit = [\n  BaseCommentPlugin.configure({ component: CommentLeafStatic }),\n];\n",
+      "path": "src/registry/components/editor/comment-static.ts",
+      "content": "import type { PliteDecorationAttributes } from 'platejs';\n\nexport const commentDecorationAttributes: PliteDecorationAttributes = {\n  className:\n    'border-b-2 border-b-highlight/40 bg-highlight/15 [&_[data-comment-id]]:border-b-highlight/80 [&_[data-comment-id]]:bg-highlight/25',\n};\n",
       "type": "registry:component",
-      "target": "@components/editor/comment-static.tsx"
+      "target": "@components/editor/comment-static.ts"
     }
   ],
   "type": "registry:component"

@@ -99,18 +99,21 @@ describe('ListKit unordered list rendering', () => {
   });
 
   it('injects root list-item props without wiping indent margin', () => {
-    const interactiveNodeProps = getListNodeProps(
-      createReactEditor({
-        plugins: [...ListTargetSchemaKit, ...ListKit],
-      })
-    );
-    const staticNodeProps = getListNodeProps(
-      createEditor({
-        plugins: [...ListTargetSchemaKit, ...BaseListKit],
-      })
-    );
+    const interactiveEditor = createReactEditor({
+      plugins: [...ListTargetSchemaKit, ...ListKit],
+    });
+    const staticEditor = createEditor({
+      plugins: [...ListTargetSchemaKit, ...BaseListKit],
+    });
 
-    for (const nodeProps of [interactiveNodeProps, staticNodeProps]) {
+    for (const editor of [interactiveEditor, staticEditor]) {
+      expect(editor.plugin(PLUGINS.list).inject.isElement).toBe(true);
+    }
+
+    for (const nodeProps of [
+      getListNodeProps(interactiveEditor),
+      getListNodeProps(staticEditor),
+    ]) {
       const { query } = nodeProps;
       const { transformProps } = nodeProps;
 

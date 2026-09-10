@@ -10,7 +10,10 @@ import type {
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import {
+  profilePliteReactDuration,
+  recordPliteReactRender,
+} from '../render-profiler';
 import { getInputEventTargetRanges } from './dom-input-event';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
 import {
@@ -66,24 +69,6 @@ type ReactBeforeInputHandler = (
 ) => boolean | void;
 
 const now = () => globalThis.performance?.now?.() ?? Date.now();
-
-const profileBeforeInputDuration = <T>(id: string, callback: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return callback();
-  }
-
-  const start = now();
-
-  try {
-    return callback();
-  } finally {
-    recordPliteReactRender({
-      duration: now() - start,
-      id,
-      kind: 'runtime-time',
-    });
-  }
-};
 
 const isDOMBeforeInputHandled = (
   event: InputEvent,
@@ -432,7 +417,7 @@ export const useRuntimeBeforeInputEvents = ({
   const pliteRuntimeContext = useOptionalPliteRuntimeContext();
   const handleDOMBeforeInput = useCallback(
     (event: InputEvent) => {
-      profileBeforeInputDuration('beforeinput-total', () => {
+      profilePliteReactDuration('beforeinput-total', () => {
         const shouldFlushPendingTextInput =
           deferNativeTextInputRepair &&
           shouldFlushPendingNativeTextInputBeforeDOMBeforeInput({
@@ -445,7 +430,7 @@ export const useRuntimeBeforeInputEvents = ({
           flushPendingNativeTextInput?.();
         }
 
-        const decision = profileBeforeInputDuration('beforeinput-prepare', () =>
+        const decision = profilePliteReactDuration('beforeinput-prepare', () =>
           prepareEditableBeforeInputKernel({
             editor,
             event,
@@ -453,7 +438,7 @@ export const useRuntimeBeforeInputEvents = ({
           })
         );
         inputController.state.activeIntent = decision.intent;
-        profileBeforeInputDuration('beforeinput-trace', () =>
+        profilePliteReactDuration('beforeinput-trace', () =>
           trace.recordKernelEventTrace({
             command: decision.command,
             family: 'beforeinput',
@@ -463,7 +448,7 @@ export const useRuntimeBeforeInputEvents = ({
           })
         );
         if (
-          profileBeforeInputDuration('beforeinput-native-history', () =>
+          profilePliteReactDuration('beforeinput-native-history', () =>
             applyModelOwnedNativeHistoryEvent({ editor, event, readOnly })
           )
         ) {
@@ -491,7 +476,7 @@ export const useRuntimeBeforeInputEvents = ({
         }
 
         if (
-          profileBeforeInputDuration(
+          profilePliteReactDuration(
             'beforeinput-complete-duplicate-command',
             () =>
               completeDuplicateEditableEditingEpochCommand(
@@ -510,11 +495,11 @@ export const useRuntimeBeforeInputEvents = ({
           event.stopImmediatePropagation();
           return;
         }
-        const el = profileBeforeInputDuration('beforeinput-root-node', () =>
+        const el = profilePliteReactDuration('beforeinput-root-node', () =>
           ReactEditor.assertDOMNode(editor, editor)
         );
         if (
-          profileBeforeInputDuration('beforeinput-nested-editable-target', () =>
+          profilePliteReactDuration('beforeinput-nested-editable-target', () =>
             isNestedEditableDOMTarget(el, event.target)
           )
         ) {
@@ -528,7 +513,7 @@ export const useRuntimeBeforeInputEvents = ({
           return;
         }
 
-        const root = profileBeforeInputDuration(
+        const root = profilePliteReactDuration(
           'beforeinput-root-owner',
           () => el.getRootNode() as Document | ShadowRoot
         );
@@ -540,7 +525,7 @@ export const useRuntimeBeforeInputEvents = ({
           ReactEditor.hasEditableTarget(editor, event.target) &&
           SelectionApi.isNode(modelSelection)
         ) {
-          profileBeforeInputDuration('beforeinput-on-user-input', onUserInput);
+          profilePliteReactDuration('beforeinput-on-user-input', onUserInput);
 
           if (modelSelectionCommand?.kind === 'insert-text') {
             event.preventDefault();
@@ -587,7 +572,7 @@ export const useRuntimeBeforeInputEvents = ({
         }
 
         if (
-          profileBeforeInputDuration('beforeinput-webkit-shadow', () =>
+          profilePliteReactDuration('beforeinput-webkit-shadow', () =>
             handleWebKitShadowDOMBeforeInput({
               editor,
               event,
@@ -599,16 +584,16 @@ export const useRuntimeBeforeInputEvents = ({
         ) {
           return;
         }
-        profileBeforeInputDuration('beforeinput-on-user-input', onUserInput);
+        profilePliteReactDuration('beforeinput-on-user-input', onUserInput);
 
-        const editableTarget = profileBeforeInputDuration(
+        const editableTarget = profilePliteReactDuration(
           'beforeinput-has-editable-target',
           () => ReactEditor.hasEditableTarget(editor, event.target)
         );
 
         if (!readOnly && editableTarget) {
           if (
-            profileBeforeInputDuration('beforeinput-without-selection', () =>
+            profilePliteReactDuration('beforeinput-without-selection', () =>
               shouldIgnoreDOMBeforeInputWithoutSelection({
                 event,
                 nativeRangeCount: getSelection(root)?.rangeCount ?? null,
@@ -619,7 +604,7 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           handledDOMBeforeInputRef.current = true;
-          const shouldFlushSelectionChange = profileBeforeInputDuration(
+          const shouldFlushSelectionChange = profilePliteReactDuration(
             'beforeinput-should-flush-selection',
             () =>
               shouldFlushSelectionChangeBeforeDOMBeforeInput({
@@ -629,18 +614,18 @@ export const useRuntimeBeforeInputEvents = ({
           );
 
           if (shouldFlushSelectionChange) {
-            profileBeforeInputDuration('beforeinput-flush-selection', () =>
+            profilePliteReactDuration('beforeinput-flush-selection', () =>
               selection.flushSelectionChange()
             );
           }
 
-          let currentSelection = profileBeforeInputDuration(
+          let currentSelection = profilePliteReactDuration(
             'beforeinput-read-selection',
             () => readRuntimeSelectionRange(editor)
           );
 
           if (
-            !profileBeforeInputDuration('beforeinput-is-editor-view', () =>
+            !profilePliteReactDuration('beforeinput-is-editor-view', () =>
               isSelectionInEditorView(editor, currentSelection)
             )
           ) {
@@ -653,13 +638,13 @@ export const useRuntimeBeforeInputEvents = ({
 
           if (hasAppDOMInputPolicy) {
             flushPendingNativeTextInput?.();
-            currentSelection = profileBeforeInputDuration(
+            currentSelection = profilePliteReactDuration(
               'beforeinput-reread-selection-after-native-text-flush',
               () => readRuntimeSelectionRange(editor)
             );
           }
 
-          const beforeInputDecision = profileBeforeInputDuration(
+          const beforeInputDecision = profilePliteReactDuration(
             'beforeinput-native-decision',
             () =>
               getNativeBeforeInputDecision({
@@ -706,7 +691,7 @@ export const useRuntimeBeforeInputEvents = ({
           const selectionRoot =
             getSelectionRoot(currentSelection) ??
             getNestedEditableDOMSelectionRoot(el);
-          const viewRoot = profileBeforeInputDuration(
+          const viewRoot = profilePliteReactDuration(
             'beforeinput-read-view-root',
             () => toInternalRoot(editor.read((state) => state.view.root()))
           );
@@ -770,7 +755,7 @@ export const useRuntimeBeforeInputEvents = ({
               return;
             }
 
-            const request = profileBeforeInputDuration(
+            const request = profilePliteReactDuration(
               'beforeinput-redirect-root',
               () => {
                 const applyMutation = () =>
@@ -822,7 +807,7 @@ export const useRuntimeBeforeInputEvents = ({
               onDOMBeforeInput,
               domBeforeInputContext
             );
-          const domBeforeInputHandled = profileBeforeInputDuration(
+          const domBeforeInputHandled = profilePliteReactDuration(
             'beforeinput-dom-handler',
             () =>
               isCompositionFinalInputType(type)
@@ -847,7 +832,7 @@ export const useRuntimeBeforeInputEvents = ({
             return;
           }
 
-          profileBeforeInputDuration('beforeinput-run-deferred-intents', () =>
+          profilePliteReactDuration('beforeinput-run-deferred-intents', () =>
             runTrackedEditableCompositionMutation({
               callback: () => {
                 for (const intent of deferredMutations.current) {
@@ -861,7 +846,7 @@ export const useRuntimeBeforeInputEvents = ({
           );
 
           let { native } = beforeInputDecision;
-          const forceModelOwnedTextInput = profileBeforeInputDuration(
+          const forceModelOwnedTextInput = profilePliteReactDuration(
             'beforeinput-force-model-owned-text-input',
             () =>
               shouldForceModelOwnedTextInput({
@@ -870,7 +855,7 @@ export const useRuntimeBeforeInputEvents = ({
               })
           );
 
-          const beforeInputSelection = profileBeforeInputDuration(
+          const beforeInputSelection = profilePliteReactDuration(
             'beforeinput-sync-selection',
             () => {
               const selectionPolicyAllowsDOMImport =
@@ -950,13 +935,13 @@ export const useRuntimeBeforeInputEvents = ({
             RangeApi.isCollapsed(currentSelection)
           ) {
             flushPendingNativeTextInput?.();
-            currentSelection = profileBeforeInputDuration(
+            currentSelection = profilePliteReactDuration(
               'beforeinput-reread-selection-for-dom-repair',
               () => readRuntimeSelectionRange(editor)
             );
 
             if (currentSelection && RangeApi.isCollapsed(currentSelection)) {
-              const commandProbe = profileBeforeInputDuration(
+              const commandProbe = profilePliteReactDuration(
                 'beforeinput-dom-repair-command-probe',
                 () =>
                   probeBeforeInputInsertTextCommand({
@@ -967,7 +952,7 @@ export const useRuntimeBeforeInputEvents = ({
               );
 
               if (commandProbe.nativeEquivalent) {
-                const pendingTarget = profileBeforeInputDuration(
+                const pendingTarget = profilePliteReactDuration(
                   'beforeinput-dom-repair-target',
                   () =>
                     getDOMInputRepairTarget(
@@ -990,7 +975,7 @@ export const useRuntimeBeforeInputEvents = ({
                     currentSelection.anchor.path
                   )
                 ) {
-                  profileBeforeInputDuration(
+                  profilePliteReactDuration(
                     'beforeinput-repair-dom-input',
                     () =>
                       runTrackedEditableCompositionMutation({
@@ -1015,7 +1000,7 @@ export const useRuntimeBeforeInputEvents = ({
                   });
                   armModelOwnedTextInputGuard({ inputController });
                   didRepairNonNativeDOMTextInput = true;
-                  currentSelection = profileBeforeInputDuration(
+                  currentSelection = profilePliteReactDuration(
                     'beforeinput-reread-selection-after-dom-repair',
                     () => readRuntimeSelectionRange(editor)
                   );
@@ -1024,7 +1009,7 @@ export const useRuntimeBeforeInputEvents = ({
             }
           }
 
-          profileBeforeInputDuration(
+          profilePliteReactDuration(
             'beforeinput-set-pending-repair-path',
             () => {
               inputController.state.pendingNativeTextInputRepairPathKey =
@@ -1069,7 +1054,7 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (!native) {
-            profileBeforeInputDuration('beforeinput-prevent-default', () =>
+            profilePliteReactDuration('beforeinput-prevent-default', () =>
               event.preventDefault()
             );
           }
@@ -1080,7 +1065,7 @@ export const useRuntimeBeforeInputEvents = ({
             type === 'insertText' &&
             typeof data === 'string' &&
             data.length > 0
-              ? profileBeforeInputDuration(
+              ? profilePliteReactDuration(
                   'beforeinput-queue-native-text-repair',
                   () =>
                     queuePendingNativeTextInput?.({
@@ -1094,7 +1079,7 @@ export const useRuntimeBeforeInputEvents = ({
 
           const request = didRepairNonNativeDOMTextInput
             ? null
-            : profileBeforeInputDuration('beforeinput-apply-model', () => {
+            : profilePliteReactDuration('beforeinput-apply-model', () => {
                 const applyMutation = () =>
                   applyModelOwnedBeforeInputMutation({
                     command: decision.command,
@@ -1128,14 +1113,14 @@ export const useRuntimeBeforeInputEvents = ({
               request.kind === 'repair-caret-after-text-insert';
 
             if (!shouldDeferNativeTextRepair) {
-              profileBeforeInputDuration('beforeinput-request-repair', () =>
+              profilePliteReactDuration('beforeinput-request-repair', () =>
                 repair.requestEditableRepair(request)
               );
             }
           }
 
           if (!decision.command) {
-            profileBeforeInputDuration(
+            profilePliteReactDuration(
               'beforeinput-restore-user-selection',
               () => restoreUserSelectionAfterBeforeInput({ editor })
             );

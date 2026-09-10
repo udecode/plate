@@ -300,7 +300,11 @@ export const useRuntimeFocusMouseEvents = ({
       clearVerticalGoal();
       markNativePointerFocus(event);
 
-      if (readOnly || isNativeDraggableTarget(editor, event.target)) {
+      if (
+        readOnly ||
+        isInteractiveInternalTarget(editor, event.target) ||
+        isNativeDraggableTarget(editor, event.target)
+      ) {
         return;
       }
 

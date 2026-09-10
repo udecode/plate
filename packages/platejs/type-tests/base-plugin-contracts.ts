@@ -31,6 +31,26 @@ const baseReadExtension = defineExtension('baseReadExtensionOwner', {
 defineBasePlugin('baseReadExtensionOwner', {}).extend(baseReadExtension);
 
 const MinimalDefinitionPlugin = defineBasePlugin('minimalDefinition', {});
+const ScopedUpdatePolicyPlugin = defineBasePlugin('scopedUpdatePolicy', {
+  update: ({ tx }) => ({
+    write: (text: string) => tx.text.insert(text),
+  }),
+}).extend(({ update }) => ({
+  api: () => ({
+    write: (text: string) => update({ history: 'skip' }).write(text),
+    validatePolicyArgs: () => {
+      // @ts-expect-error Policy selection preserves the operation's argument type.
+      update({ history: 'skip' }).write(1);
+      // @ts-expect-error An unknown history policy is rejected.
+      update({ history: 'discard-everything' }).write('text');
+    },
+  }),
+}));
+toPlatePlugin(ScopedUpdatePolicyPlugin).extend(({ update }) => ({
+  api: () => ({
+    writeMerged: (text: string) => update({ history: 'merge' }).write(text),
+  }),
+}));
 type MinimalDefinition = DefinitionOf<typeof MinimalDefinitionPlugin>;
 declare const minimalDefinition: MinimalDefinition;
 const minimalDefinitionName: 'minimalDefinition' = minimalDefinition.name;
@@ -459,14 +479,14 @@ const HtmlParagraphContractPlugin = defineBasePlugin('htmlParagraphContract', {
 });
 
 type StaticWrapperPluginState = {
-  label?: string;
+  label: string | null;
 };
 
 const erasedStaticWrapper: RenderStaticNodeWrapper = ({ element }) =>
   element ? ({ children }) => children : null;
 
 const StaticWrapperPlugin = defineBasePlugin('staticWrapper', {
-  initialState: (): StaticWrapperPluginState => ({}),
+  initialState: (): StaticWrapperPluginState => ({ label: null }),
   schema: () => ({
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -475,8 +495,8 @@ const StaticWrapperPlugin = defineBasePlugin('staticWrapper', {
 });
 
 StaticWrapperPlugin.configure({
-  render: {
-    belowNodes: erasedStaticWrapper,
+  slots: {
+    wrapNodeChildren: erasedStaticWrapper,
   },
 });
 
@@ -979,7 +999,7 @@ void unifiedListRead;
 void unifiedListUpdate;
 
 type CalloutPluginState = {
-  dismissible?: boolean;
+  dismissible: boolean;
   variant: 'info' | 'warning';
 };
 
@@ -1213,13 +1233,10 @@ const ResolvedOverrideContextPlugin = defineBasePlugin(
   {}
 ).extend(({ plugin }) => {
   const overrideIsAny: IsAny<typeof plugin.override> = false;
-  const components: object | undefined = plugin.override.components;
-  const pluginOverrides: Record<string, { enabled?: boolean }> | undefined =
-    plugin.override.plugins;
+  const targetOverride = plugin.override.someTarget;
 
-  void components;
   void overrideIsAny;
-  void pluginOverrides;
+  void targetOverride;
 
   return {};
 });

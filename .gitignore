@@ -1,4 +1,5 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
+**/.registry-build
 **/test-results
 
 # Allow claude to read these files
@@ -17,14 +18,12 @@ templates/my-app
 .netrc
 
 # Generated files
+/docs/plans/artifacts/
+/.audit/
 .history
 apps/www/next-env.d.ts
 **/out/
 node_modules/
-report.*
-!docs/editor-test-harvester/**/report.md
-*.tsv
-!docs/editor-issue-harvester/**/*.tsv
 
 # Dependency directories
 jspm_packages/
@@ -33,7 +32,8 @@ jspm_packages/
 
 # compiled output
 /dist
-**/tmp*
+**/tmp/
+**/tmp-cli-*/
 /out-tsc
 **/build
 
@@ -128,12 +128,13 @@ packages/platejs/docs/
 # Local Netlify folder
 .netlify
 /test-results/
-/playwright-report/
+**/playwright-report/
+**/blob-report/
 /playwright/.cache/
 .turbo
 .vercel
 
-*.local*
+*.local
 
 .omx/
 

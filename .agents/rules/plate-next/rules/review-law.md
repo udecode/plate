@@ -288,8 +288,8 @@ editor.read.selection.nodes()` is a regression: it
   factory return type, never inferred object shape, `as`, or `satisfies`;
   descriptor overrides stay inline and partial in
   `.configure({ initialState })`; callbacks use inferred `store`; consumers use
-  `editor.plugin(Plugin).store`; and React uses `usePluginStore` or
-  `useEditorPluginStore`. Reject deleted option accessors and parallel top-level
+  `editor.plugin(Plugin).store`; and React uses `usePluginStore` with an installed
+  typed descriptor. Reject deleted option accessors and parallel top-level
   `options` / immutable `config` channels. Plite extensions have no `config`;
   immutable construction inputs and runtime resources stay in their factory
   closure or honest host owner. Operation parameters may still be named
@@ -443,10 +443,11 @@ editor.read.selection.nodes()` is a regression: it
   defaults belong in the constructor. Use `toPlatePlugin()` at the owning React
   adapter to publish a reusable Plate-layer descriptor or add real Plate-only
   authoring. A terminal consumer never inserts conversion merely to set
-  `component`. Static/base owners bind a server-safe component without
+  `component`, including an intrinsic HTML tag. Static/base owners bind a server-safe component without
   importing a Plate React entrypoint. `.configure()` never widens.
-  Hard-delete `.withComponent()` and do not author, document, or preserve
-  direct public `render.node` assignment.
+  Hard-delete `.withComponent()` and any second node-component channel.
+  Keep renderer attributes and mark placement under `render`; keep structural
+  composition under `slots`.
 - Hard-delete `extendApi`, `extendEditorApi`, `extendSelectors`, `extendTx`,
   `extendTxGroup`, `extendExtension`, `extendCodecs`, and `extendHtmlCodec`.
   Do not keep aliases, shims, deprecations, forwarding wrappers, or old
@@ -618,6 +619,11 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   `useElementSelector(FooPlugin, selector)`. A manual `DefinitionOf`, local
   node mirror, `Reflect.get`, or cast used only to recover descriptor-owned
   fields is a Plate foundation typing bug, not acceptable consumer code.
+- Element selectors derive from the node payload, independently of position.
+  Use `usePath(path => path.at(-1))` for a local index and a full `usePath()`
+  only when the complete path affects output. Preserve equal derived path
+  values across ancestor movement; deleting a global subscription does not
+  justify adding repeated component renders elsewhere.
 - Do not add local fixture-shape aliases in tests, such as
   `type EditorFixture = { children; selection }`, to hide weak hyperscript
   typing. If many tests need the same JSX/editor fixture shape, repair or
@@ -633,8 +639,8 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   root or scoped `getOption`, `getOptions`, `setOption`, or `setOptions`.
   Package code should use
   `editor.plugin(FooPlugin).store.get/set/subscribe`; React code uses
-  `usePluginStore(FooPlugin, selector)` or
-  `useEditorPluginStore(FooPlugin, selector)`. A fallback like
+  `usePluginStore(FooPlugin, selector)`. Its `{ id }` option selects another
+  registered editor. A fallback like
   `editor.plugin(PLUGINS.foo)` needs a concrete owner reason: plugin self-definition
   cycle, React hook/component imported by the plugin itself, non-React layer
   that must not import a React plugin, or intentionally decoupled cross-package

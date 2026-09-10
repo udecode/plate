@@ -5,7 +5,7 @@ description: Install and configure Plate for Node.js.
 
 Use Plate in Node.js when you need to read, validate, transform, or serialize editor values outside the browser. Node scripts use the base runtime imports, while React editors use `/react` subpaths. This guide walks through a server-safe editor, Markdown IO, and a content transform.
 
-## Node.js Setup
+## Node.js setup
 
 <Callout type="warning" title="Use base imports">
   Do not import from `platejs/react` or another `/react` subpath in Node.js
@@ -15,7 +15,7 @@ Use Plate in Node.js when you need to read, validate, transform, or serialize ed
 
 <Steps>
 
-### Install Packages
+### Install packages
 
 Install the core runtime and the packages your pipeline needs.
 
@@ -29,7 +29,7 @@ npm install platejs marked remark-mdx remark-parse remark-stringify unified
 | `platejs` | Base headings, blockquotes, horizontal rules, and text marks. |
 | `platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
 
-### Create a Server Editor
+### Create a server editor
 
 Create the editor with base plugins only. The editor exposes `editor.read(...)`
 for committed state and `editor.update(...)` for writes without mounting a
@@ -66,7 +66,7 @@ const plainText = editor.read.text.string([]);
 console.info(plainText);
 ```
 
-### Read and Write Markdown
+### Read and write Markdown
 
 Add `MarkdownPlugin` when the script needs Markdown conversion. Use the
 editor's `markdown` API for both directions.
@@ -93,7 +93,7 @@ const markdown = editor.api.markdown.serialize({ value });
 console.info(markdown);
 ```
 
-### Transform Content
+### Transform content
 
 Use transaction groups for migrations and bulk cleanup. Pass `at: []` when the
 operation should scan the whole document.
@@ -114,14 +114,14 @@ export function normalizeHeadings(value: Value) {
     initialValue: value,
   });
 
-  const insertAt = editor.read((state) => [state.value.root().length]);
+  const insertAt = editor.read((state) => [state.children().length]);
 
   editor.update((tx) => {
     tx.nodes.set(
       { type: 'heading', level: 2 },
       {
         at: [],
-        match: (node) => 'type' in node && node.type === 'h1',
+        match: (node) => 'type' in node && node.type === 'heading' && node.level === 1,
       }
     );
 
@@ -134,14 +134,14 @@ export function normalizeHeadings(value: Value) {
   return {
     markdown: editor.api.markdown.serialize(),
     text: editor.read((state) => state.text.string([])),
-    value: editor.read((state) => state.value.root()),
+    value: editor.read((state) => state.children()),
   };
 }
 ```
 
 </Steps>
 
-## Runtime Boundaries
+## Runtime boundaries
 
 | Runtime | Import from | Use for |
 | --- | --- | --- |
@@ -166,7 +166,7 @@ export function normalizeHeadings(value: Value) {
 | `editor.api.markdown.deserialize` | `platejs/markdown` | Converts Markdown into a Plate value. |
 | `editor.api.markdown.serialize` | `platejs/markdown` | Converts the editor value or an explicit `value` option to Markdown. |
 
-## Next Steps
+## Next steps
 
 | Task | Guide |
 | --- | --- |

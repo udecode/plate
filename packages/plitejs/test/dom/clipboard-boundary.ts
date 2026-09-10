@@ -21,7 +21,6 @@ import { history } from 'plitejs/history';
 
 import {
   clipboardHandler,
-  defineHostCodec,
   dom,
   hostCodecs,
   writeDOMFragmentData,
@@ -1111,11 +1110,11 @@ describe('plite-dom clipboard boundary', () => {
     expect(editorGetLastCommit(exactTarget)?.tags).toContain('paste');
 
     const HostCodec = hostCodecs('content-property-paste', [
-      defineHostCodec({
+      {
         format: 'application/x-content-property',
         key: 'content-property-paste',
         parse: () => fragment,
-      }),
+      },
     ]);
     const hostTarget = createTarget([HostCodec]);
     const host = new FakeDataTransfer();
@@ -1229,12 +1228,12 @@ describe('plite-dom clipboard boundary', () => {
         undefined,
         [
           hostCodecs('host-html-copy', [
-            defineHostCodec({
+            {
               format: 'text/html',
               key: 'host-html-copy',
               serialize: () =>
                 '<strong data-plite-fragment="stale">host-alpha</strong>',
-            }),
+            },
           ]),
         ]
       );
@@ -1295,7 +1294,7 @@ describe('plite-dom clipboard boundary', () => {
           undefined,
           [
             hostCodecs('host-html-paste', [
-              defineHostCodec({
+              {
                 format: 'text/html',
                 key: 'host-html-paste',
                 parse: ({ data }) =>
@@ -1307,7 +1306,7 @@ describe('plite-dom clipboard boundary', () => {
                         },
                       ])
                     : null,
-              }),
+              },
             ]),
           ]
         );
@@ -1495,9 +1494,10 @@ describe('plite-dom clipboard boundary', () => {
         focus: { path: [0, 0], offset: 5 },
       });
       const clipboard = new FakeDataTransfer();
+      const coverage = DOMCoverage.create(source);
 
       mountSimpleEditorDOM(source, document);
-      DOMCoverage.registerBoundary(source, {
+      coverage.registerBoundary({
         boundaryId: 'summary-alpha',
         anchor: { type: 'placeholder', nodeKey: getNodeKey(source, [0]) },
         copyPolicy: 'summary',
@@ -1512,7 +1512,16 @@ describe('plite-dom clipboard boundary', () => {
         version: 1,
       });
 
-      source.api.dom.clipboard.writeSelection(clipboard);
+      writeDOMRangeData(
+        source,
+        clipboard as unknown as DataTransfer,
+        {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+        { coverage }
+      );
 
       expect(clipboard.getData('text/plain')).toBe('alpha');
       expect(clipboard.getData('text/html')).not.toContain(

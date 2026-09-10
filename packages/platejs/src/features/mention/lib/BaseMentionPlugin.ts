@@ -7,6 +7,7 @@ import {
   property,
 } from '../../../core';
 import {
+  BaseComboboxPlugin,
   triggerCombobox,
   type TriggerComboboxPluginState,
 } from '../../combobox';
@@ -24,7 +25,7 @@ export type MentionPluginState = {
   createComboboxInput: NonNullable<
     TriggerComboboxPluginState['createComboboxInput']
   >;
-  insertSpaceAfterMention?: boolean;
+  insertSpaceAfterMention: boolean;
   trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
   triggerPreviousCharPattern: NonNullable<
     TriggerComboboxPluginState['triggerPreviousCharPattern']
@@ -32,6 +33,7 @@ export type MentionPluginState = {
 } & TriggerComboboxPluginState;
 
 export const BaseMentionInputPlugin = defineBasePlugin(PLUGINS.mentionInput, {
+  dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
       properties: {
@@ -70,6 +72,7 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
     }),
     insertSpaceAfterMention: false,
     trigger: '@',
+    triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
   codecs: ({ defineCodecs, schema: { type } }) =>

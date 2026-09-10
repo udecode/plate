@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
@@ -20,19 +21,10 @@ import {
 
 jsxt;
 
-const CodeLinePlugin = defineBasePlugin(PLUGINS.codeLine, {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-});
-
 const CodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
-  dependencies: [CodeLinePlugin],
   schema: {
     element: {
-      content: schema.content.element(CodeLinePlugin, { min: 1 }),
+      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
     },
   },
 });
@@ -431,10 +423,8 @@ describe('math input rules', () => {
     const input = (
       <editor>
         <hcodeblock>
-          <hcodeline>
-            $x
-            <cursor />
-          </hcodeline>
+          $x
+          <cursor />
         </hcodeblock>
       </editor>
     ) as TestEditor;
@@ -446,9 +436,7 @@ describe('math input rules', () => {
     expect(editor.read.value().children).toEqual(
       (
         <editor>
-          <hcodeblock>
-            <hcodeline>$x$</hcodeline>
-          </hcodeblock>
+          <hcodeblock>$x$</hcodeblock>
         </editor>
       ).children
     );
@@ -457,9 +445,7 @@ describe('math input rules', () => {
   it('converts inline math when an unrelated code block exists', () => {
     const input = (
       <editor>
-        <hcodeblock>
-          <hcodeline>const value = 1;</hcodeline>
-        </hcodeblock>
+        <hcodeblock>const value = 1;</hcodeblock>
         <hp>
           Math: $x
           <cursor />

@@ -1,0 +1,15 @@
+---
+id: 2026-09-08-toolbar-control-values
+date: 2026-09-08
+status: draft
+kind: fix
+summary: 'Display the current heading size and editing mode accurately.'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-08-toolbar-control-values-local-4a3c1d76","kind":"fix","migrationNotes":[]} -->
+
+- **`font-size-toolbar-button`**: Derive the default size from the heading level and keep input, presets and step buttons within 1–100 pixels. Reject empty and nonnumeric input.
+- **`mode-toolbar-button`**: Display Viewing and select its menu option whenever the editor is read-only, including when the suggestion preference is enabled.

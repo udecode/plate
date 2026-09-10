@@ -3,14 +3,20 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 name 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、标识或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
+Plate 插件是传入 `createEditor` 或 `useCreateEditor` 的 `plugins` 数组的描述符。
+已安装插件的 API 会按插件名称推断到 `editor.api`。将描述符传给
+`editor.plugin(MyPlugin)`，即可访问精确的 API、read、update 命令、schema 标识
+和编辑器内状态。React 组件通过 `useEditorPlugin(MyPlugin)` 获取 portal，
+通过 `usePluginStore` 订阅状态。
 
-## Authoring Context
+## 编写插件的上下文
 
 插件 constructor、extension、configuration、event、codec 和 injection
 callback 在其契约支持时会接收当前插件的 context：
 
 ```ts
+import { definePlatePlugin, schema } from 'platejs/react';
+
 export type UploadPluginState = {
   active: boolean;
 };
@@ -27,25 +33,15 @@ export const UploadPlugin = definePlatePlugin("upload", {
   },
   initialState: uploadInitialState,
   api: ({ store }) => ({
-    start: () => store.set({ active: true }),
+    isActive: () => store.get('active'),
   }),
   read: ({ state }) => ({
     isReady: () => !!state.selection(),
   }),
-  update: ({ tx, type }) => ({
-    insert: () => tx.nodes.insert({ children: [{ text: "" }], type }),
+  update: ({ tx, schema }) => ({
+    insert: () => tx.nodes.insert({ children: [{ text: "" }], type: schema.type }),
   }),
-}).extend(({ api, read, store, update }) => ({
-  on: {
-    focus: () => {
-      if (!read.isReady()) return;
-
-      store.set({ active: true });
-      api.start();
-      update.insert();
-    },
-  },
-}));
+});
 ```
 
 当前插件直接使用 `store`、`api`、`read`、`update`、`name`、`plugin` 和
@@ -109,8 +105,8 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 `editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
 </APIItem>
 
-<APIItem name="component" type="NodeComponent" optional>
-  插件普通节点使用的组件。在 `defineBasePlugin(name, { component })` 或
+<APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
+  插件普通节点使用的组件或原生 HTML 标签。在 `defineBasePlugin(name, { component })` 或
   `definePlatePlugin(name, { component })` 中声明，可用于 static/RSC 和 live rendering；
   使用一次最终 `.configure({component})` 替换。Base `.extend()` 不接受该字段。
   `toPlatePlugin()` 只在所属 React adapter 中发布可复用 Plate-layer descriptor
@@ -324,20 +320,11 @@ update method。
 </APISubList>
 </APIItem>
 
-<APIItem name="override" type="object">
-提供组件替换和弱跨包插件适配。
-
-<APISubList>
-<APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
-按 name 替换插件 `NodeComponent`。
-</APISubListItem>
-<APISubListItem parent="override" name="plugins" type="Record<string, BasePluginOverride>" optional>
-按 name 弱适配已安装的外部插件。目标不存在时忽略。值不能定义 `name`、
-`dependencies` 或另一个 `override`。贡献者按 priority 和源顺序解析，目标的直接
-`.configure()` 值优先。当包插件必须禁用已安装的可选对等插件时，使用
-`{ enabled: false }`。
-</APISubListItem>
-</APISubList>
+<APIItem name="override" type="Record<string, BasePluginOverride>">
+按 name 弱适配已安装的外部插件。每个 key 都是目标插件 name。目标不存在时忽略。
+值不能定义 `name`、`dependencies`、`schema` 或另一个 `override`。贡献者按 priority
+和源顺序解析，目标的直接 `.configure()` 值优先。对等插件可以替换目标
+`component`；需要禁用已安装的可选目标时使用 `{ enabled: false }`。
 </APIItem>
 
 <APIItem name="parsers" type="object">
@@ -353,56 +340,83 @@ update method。
 </APIItem>
 
 <APIItem name="render" type="object">
-定义插件如何渲染组件。
+定义主 `component` 和 mounted view 的渲染行为。
 
 <APISubList>
-<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-在 Editable 组件上方但在 Plite 包装器内部渲染的组件。
+<APISubListItem parent="render" name="attributes" type="NodeProps" optional>
+在交互和静态渲染中，为主 element、leaf 或 text renderer 添加可信 DOM attribute。
+函数值是纯 per-node render callback，不能调用 React hook。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
-创建一个函数，为所有其他插件的节点组件生成父 React 节点。
-</APISubListItem>
-<APISubListItem parent="render" name="abovePlite" type="Component" optional>
-在 Plite 包装器上方渲染的组件。
-</APISubListItem>
-<APISubListItem parent="render" name="afterContainer" type="ContainerSiblingComponent" optional>
-在 `PlateContainer` 之后渲染组件。组件只接收 `{ containerRef }`，即已挂载容器的精确 ref。
-</APISubListItem>
-<APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
-在 Editable 组件之后渲染组件。组件只接收 `{ editableRef }`，即已挂载 Editable 的精确 ref。
-</APISubListItem>
-<APISubListItem parent="render" name="beforeContainer" type="ContainerSiblingComponent" optional>
-在 `PlateContainer` 之前渲染组件。组件只接收 `{ containerRef }`，即已挂载容器的精确 ref。
-</APISubListItem>
-<APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
-在 Editable 组件之前渲染组件。组件只接收 `{ editableRef }`，即已挂载 Editable 的精确 ref。
-</APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
-创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。
-</APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
-在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
-</APISubListItem>
-<APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
-当插件声明 `schema.mark` 且 `render.isDecoration: false` 时，在 leaf
-节点下方渲染组件。普通节点组件通过 `.configure({ component: Component })` 绑定。
-</APISubListItem>
-<APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
-在交互和静态渲染中，将模型值显式映射为 element 或 leaf props。只返回当前插件拥有的
-可信 DOM props。
-</APISubListItem>
-<APISubListItem parent="render" name="isDecoration" type="boolean" optional>
-为 `true` 时将标记值渲染为 decorated leaves；为 `false` 时每个文本节点只渲染一次。
+<APISubListItem parent="render" name="useViewElementAttributes" type="UseViewElementAttributes<D>" optional>
+为每个 mounted Plate content view 中启用的当前 plugin 创建一个 React hook host。
+callback 通过 `view` 获取当前 Plite root，并返回作用于整个 element host 的稀疏
+`{ key, attributes }[]`。没有目标 element 时返回空数组。
 
-- **默认值:** `true`
+```tsx
+import { definePlatePlugin, usePluginStore } from "platejs/react";
 
+const ActiveFirstBlockPlugin = definePlatePlugin("activeFirstBlock", {
+  initialState: { active: false },
+  render: {
+    useViewElementAttributes({ editor, plugin, view }) {
+      const active = usePluginStore(plugin, (state) => state.active, {
+        id: editor.id,
+      });
+      const key = view.key([0]);
+
+      return active && key
+        ? [{ attributes: { "data-active": "true" }, key }]
+        : [];
+    },
+  },
+});
+```
+
+attribute 仅支持 `className`、`placeholder`、`style`，以及 primitive
+`aria-*` 或 `data-*` 值；ref 和 event handler 会被拒绝。Plate 按 compiled
+plugin order 合并 source，随 mounted view 清理，并把 publication 与 per-key
+subscription 保持为私有实现。inline text range 使用 `decorate`，结构使用
+component 或 slot。
 </APISubListItem>
+<APISubListItem parent="render" name="mark" type="object" optional>
+控制 schema mark 的主 `component` 渲染位置。`placement: 'leaf'` 包裹每个 active leaf，
+也是默认值。`placement: 'text'` 只包裹一次 text node，并允许使用 `leafComponent`
+作为第二个 active-leaf renderer。`leafAttributes` 和 `textAttributes` 为对应 host
+添加可信 attribute。
+</APISubListItem>
+</APISubList>
+</APIItem>
 
-<APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
-没有通过 `.configure({ component })` 绑定组件时，指定渲染节点使用的 HTML 标签名。
+<APIItem name="slots" type="object">
+定义 Plate surface 和 rendered node 周围的结构组合。
 
-- **默认值:** elements 为 `'div'`，leaves 为 `'span'`
-
+<APISubList>
+<APISubListItem parent="slots" name="wrapRoot" type="({ children, editableRef }) => ReactNode" optional>
+包裹当前 Plate 视图的整个 Plite root，并接收 `{ children, editableRef }`。`editableRef` 指向该视图的实际 Editable；挂载前和卸载后为 `null`。
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapContent" type="NodeComponent" optional>
+在 Plite root 内包裹 Editable content 和 Plate lifecycle effect。
+</APISubListItem>
+<APISubListItem parent="slots" name="beforeEditable" type="EditableSiblingComponent" optional>
+在 Editable 前渲染并接收 `{ editableRef }`。
+</APISubListItem>
+<APISubListItem parent="slots" name="afterEditable" type="EditableSiblingComponent" optional>
+在 Editable 后渲染并接收 `{ editableRef }`。
+</APISubListItem>
+<APISubListItem parent="slots" name="beforeContainer" type="ContainerSiblingComponent" optional>
+在 `PlateContainer` 前渲染并接收 `{ containerRef }`。
+</APISubListItem>
+<APISubListItem parent="slots" name="afterContainer" type="ContainerSiblingComponent" optional>
+在 `PlateContainer` 后渲染并接收 `{ containerRef }`。
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapNode" type="RenderNodeWrapperConfig<D>" optional>
+包裹完整的 rendered node。
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapNodeChildren" type="RenderNodeWrapper<D>" optional>
+在主 component 内包裹 rendered node 的 children。
+</APISubListItem>
+<APISubListItem parent="slots" name="afterNodeChildren" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
+在主 component 内、node children 之后渲染。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -424,7 +438,7 @@ update method。
 <APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
   不能与当前插件同时安装的 Plate plugin 或 raw Plite extension descriptor。两种
   reference type 都可以从 `platejs` 导入；Plite-only library 也可以从
-  `platejs` 导入 `EditorExtensionReference`。
+  `plitejs` 导入 `EditorExtensionReference`。
 </APIItem>
 
 <APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
@@ -471,8 +485,17 @@ update method。
   启用或禁用插件。Plate 使用此属性决定是否使用该插件。
 </APIItem>
 
-<APIItem name="decorate" type="Decorate<WithAnyName<D>>" optional>
-  Plate 用于装饰编辑器范围的属性。
+<APIItem name="decorate" type="Decorate<D>" optional>
+  `read({ entry, ...context })` 返回带 key 的临时范围。
+  `observe({ refresh, ...context })` 管理失效通知与清理；静态渲染只读取来源，不订阅。
+
+  `attributes` 接受 `PliteDecorationAttributes` 对象、纯函数，或用于清除继承样式的
+  `null`。回调接收推断的插件上下文，以及 `entry` 和 `decoration`。
+  已有装饰来源可单独配置 `attributes`，无需重复 `read` 或 `observe`；新来源必须提供 `read`。
+
+  展示类名与语义类名拼接，style 浅合并，其他提供的属性覆盖 reader 的对应属性。
+  使用 `className`、`style`、`data-*` 和 `aria-*`；行内结构与事件处理器属于组件。
+  回调在每次来源读取后运行，不增加订阅。外部输入的变化由来源的 `observe` 负责通知。
 </APIItem>
 
 <APIItem
@@ -485,9 +508,6 @@ update method。
   不变量，不用于源版本迁移。
 </APIItem>
 
-<APIItem name="useHooks" type="() => void" optional>
-  编辑器初始化时调用的钩子。
-</APIItem>
 
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
 配置哪些插件功能仅在编辑器非只读时激活。
@@ -594,8 +614,9 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
     <APIItem name="editor" type="Editor">
       当前编辑器实例。
     </APIItem>
-    <APIItem name="plugin" type="ResolvedPlatePlugin<D>">
-      当前插件实例。
+    <APIItem name="plugin" type="PlatePluginContext<D>['plugin']">
+      回调提供的当前插件。让构造器或扩展推断其类型。消费方将描述符传给
+      `editor.plugin(MyPlugin)` 或 `useEditorPlugin(MyPlugin)` 获取 portal。
     </APIItem>
     <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
       在 constructor 的 `codecs` callback 中创建 schema-checked codec

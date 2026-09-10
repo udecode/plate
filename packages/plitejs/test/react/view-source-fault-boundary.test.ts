@@ -1,9 +1,12 @@
 import { createEditor, type Range } from 'plitejs';
 
+import { createPliteAnnotationStore } from '../../src/annotations';
 import { getNodeKey, replace } from '../../src/internal';
-import { createPliteAnnotationStore } from '../../src/react/annotation-store';
-import { createDecorationSource } from '../../src/react/decoration-source';
-import type { PliteViewSourceError } from '../../src/react/view-source';
+import type { PliteViewSourceError } from '../../src/internal/view/view-source';
+import {
+  createPliteDecorationManager,
+  type PliteDecorationSource,
+} from '../../src/react/decoration-source';
 import { createPliteWidgetStore } from '../../src/react/widget-store';
 
 const range: Range = {
@@ -22,26 +25,36 @@ const createViewEditor = () => {
   return editor;
 };
 
-test('optional view sources isolate failures and retry from the last good snapshot', () => {
+test('optional view sources isolate failures and recover on refresh', () => {
   const editor = createViewEditor();
   const failures: PliteViewSourceError[] = [];
   let decorationFails = true;
   let annotationFails = true;
   let widgetFails = true;
+  let refreshDecoration = () => {};
   const nodeKey = getNodeKey(editor, [0, 0])!;
-  const healthy = createDecorationSource(editor, {
+  const healthy: PliteDecorationSource<typeof editor> = {
     id: 'healthy',
-    read: () => [{ key: 'healthy', range }],
-  });
-  const decoration = createDecorationSource(editor, {
+    read: ({ entry: [, path] }) =>
+      path.length === 2 ? [{ attributes: {}, key: 'healthy', range }] : [],
+  };
+  const flaky: PliteDecorationSource<typeof editor> = {
     id: 'flaky-decoration',
-    onError: (error) => failures.push(error),
-    read: () => {
+    observe: ({ refresh }) => {
+      refreshDecoration = () => refresh({ nodeKeys: 'all' });
+
+      return () => {};
+    },
+    read: ({ entry: [, path] }) => {
       if (decorationFails) throw new Error('decoration failed');
 
-      return [{ key: 'flaky', range }];
+      return path.length === 2 ? [{ attributes: {}, key: 'flaky', range }] : [];
     },
+  };
+  const decorations = createPliteDecorationManager(editor, [healthy, flaky], {
+    onError: (error) => failures.push(error),
   });
+  const unmountDecorations = decorations.mount();
   const anchor = editor.anchor(range, {
     association: 'inward',
     deletion: 'drop',
@@ -72,8 +85,7 @@ test('optional view sources isolate failures and retry from the last good snapsh
     }
   );
 
-  expect(healthy.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
-  expect(decoration.getRuntimeSnapshot(nodeKey)).toHaveLength(0);
+  expect(decorations.getNodeSnapshot(nodeKey)).toHaveLength(1);
   expect(annotations.getSnapshot().allIds).toEqual([]);
   expect(widgets.getSnapshot().allIds).toEqual([]);
   expect(failures.map(({ phase, sourceId }) => ({ phase, sourceId }))).toEqual([
@@ -85,74 +97,78 @@ test('optional view sources isolate failures and retry from the last good snapsh
   decorationFails = false;
   annotationFails = false;
   widgetFails = false;
-  decoration.retry();
+  refreshDecoration();
   annotations.retry();
   widgets.retry();
 
-  expect(decoration.getSourceStatus()).toEqual({
-    active: true,
-    failureCount: 1,
-  });
-  expect(decoration.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
+  expect(decorations.getNodeSnapshot(nodeKey)).toHaveLength(2);
+  expect(decorations.getMetrics().failureCount).toBe(1);
   expect(annotations.getAnnotation('comment')?.range).toEqual(range);
   expect(widgets.getWidget('toolbar')?.available).toBe(true);
 
-  healthy.destroy();
-  decoration.destroy();
+  unmountDecorations();
+  decorations.destroy();
   annotations.destroy();
   widgets.destroy();
   anchor.release();
 });
 
-test('destroying a failed view source does not poison a same-id remount', () => {
+test('destroying a failed manager does not poison a same-id remount', () => {
   const editor = createViewEditor();
-  const failed = createDecorationSource(editor, {
-    id: 'remountable',
-    onError: () => {},
-    read: () => {
-      throw new Error('failed mount');
-    },
-  });
+  const failed = createPliteDecorationManager(
+    editor,
+    [
+      {
+        id: 'remountable',
+        read: () => {
+          throw new Error('failed mount');
+        },
+      },
+    ],
+    { onError: () => {} }
+  );
 
   failed.destroy();
-
-  const remounted = createDecorationSource(editor, {
-    id: 'remountable',
-    read: () => [{ key: 'ready', range }],
-  });
+  const remounted = createPliteDecorationManager(editor, [
+    {
+      id: 'remountable',
+      read: ({ entry: [, path] }) =>
+        path.length === 2 ? [{ attributes: {}, key: 'ready', range }] : [],
+    },
+  ]);
   const nodeKey = getNodeKey(editor, [0, 0])!;
 
-  expect(remounted.getSourceStatus()).toEqual({
-    active: true,
-    failureCount: 0,
-  });
-  expect(remounted.getRuntimeSnapshot(nodeKey)).toHaveLength(1);
-
+  expect(remounted.getMetrics().failureCount).toBe(0);
+  expect(remounted.getNodeSnapshot(nodeKey)).toHaveLength(1);
   remounted.destroy();
 });
 
 test('a throwing error sink cannot escape the optional source boundary', () => {
   const editor = createViewEditor();
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-  let source!: ReturnType<typeof createDecorationSource>;
+  let manager!: ReturnType<typeof createPliteDecorationManager>;
 
   expect(() => {
-    source = createDecorationSource(editor, {
-      id: 'throwing-error-sink',
-      onError: () => {
-        throw new Error('sink failed');
-      },
-      read: () => {
-        throw new Error('source failed');
-      },
-    });
+    manager = createPliteDecorationManager(
+      editor,
+      [
+        {
+          id: 'throwing-error-sink',
+          read: () => {
+            throw new Error('source failed');
+          },
+        },
+      ],
+      {
+        onError: () => {
+          throw new Error('sink failed');
+        },
+      }
+    );
   }).not.toThrow();
-  expect(source.getSourceStatus()).toEqual({
-    active: false,
-    failureCount: 1,
-  });
+  expect(manager.getMetrics().failureCount).toBe(1);
   expect(consoleError).toHaveBeenCalledTimes(1);
 
-  source.destroy();
+  manager.destroy();
   consoleError.mockRestore();
 });

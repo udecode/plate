@@ -4,6 +4,9 @@ description: Sync Plate UI registry components into downstream apps with fork-aw
 
 # Sync Plate UI
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Goal: sync Plate UI registry components from this repo into a downstream app
@@ -18,7 +21,7 @@ that copied and customized Plate UI, such as `../potion`.
 
 This skill is consumer-side only. It reads generated Plate UI changelog JSON;
 it does not create upstream Plate changelog entries. Upstream Plate devs author
-those through the `changeset` skill and
+those through `registry-changelog` and
 `apps/www/src/registry/changelog/entries/*.mdx`.
 
 ## Core Take
@@ -37,12 +40,9 @@ The right model is a three-way sync:
 If the base is unknown, run bootstrap planning and stop. Do not pretend an LLM
 can safely reconstruct fork ownership from vibes.
 
-## Autogoal Dependency
+## File-plan contract
 
-This skill depends on
-[$autogoal](/Users/zbeyens/git/plate/.agents/skills/autogoal/SKILL.md). Load
-`autogoal` before writing target sync state, run artifacts, dashboards, or
-implementation changes.
+Task owns the file plan and lifecycle. Apply the project's standing Autogoal request for long-running work. Read the existing plan and mode before mutation.
 
 Default goal template:
 
@@ -52,8 +52,8 @@ node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
   --title "sync plate ui <target> <scope>"
 ```
 
-`autogoal` owns lifecycle, completion, blocked semantics, and final
-`check-complete.mjs`. `sync-plate-ui` owns downstream sync policy, target repo
+Task owns lifecycle, completion and blockers. `check-complete.mjs` validates
+the file plan; it does not create or complete a native goal. `sync-plate-ui` owns downstream sync policy, target repo
 mapping, fork classification, hunk decisions, and apply semantics.
 
 ## Flow Modes
@@ -61,8 +61,9 @@ mapping, fork classification, hunk decisions, and apply semantics.
 Planning mode is the default. It may read the target repo and write artifacts
 under the target's `.plate-ui-sync/**`, but it must not mutate target source.
 
-Apply mode starts only when a later user message accepts a named plan, dashboard
-payload, component, or row. Then apply only the accepted rows.
+Apply mode needs current user authorization for the named plan, dashboard
+payload, component or rows. Existing authorization is sufficient; do not
+require a later message or reinvocation. Apply only the accepted rows.
 
 Collaborative planning is for policy decisions, such as whether a downstream
 app should keep a local UX fork or follow Plate.
@@ -249,7 +250,7 @@ Planning mode may:
 - create or update target `.plate-ui-sync/**` artifacts
 - write a plan under `.plate-ui-sync/runs/**`
 - write dashboard JSON/Markdown
-- update this goal plan
+- update this Task plan
 
 Planning mode must not:
 
@@ -464,7 +465,7 @@ agent-native sync and fall back to source diffs plus explicit user acceptance.
 
 Resolve these before broad planning:
 
-- `autogoal` loaded and active goal checked or created.
+- Task scope and file plan read; standing Autogoal request applied or explicit opt-out recorded.
 - Target repo path resolved.
 - Plate source ref recorded, or current checkout recorded as uncommitted source.
 - Target `components.json` and package manager read.
@@ -485,8 +486,8 @@ Planning completion requires:
 - every row has a decision
 - real questions are isolated
 - dashboard artifacts written when requested
-- final handoff asks the user to accept rows before apply
-- `check-complete.mjs` passes for the active goal plan
+- final handoff identifies pending row decisions; existing apply authority carries through readiness
+- `check-complete.mjs` passes for the active Task plan
 
 Apply completion requires:
 
@@ -495,7 +496,7 @@ Apply completion requires:
 - target-owned verification command run or blocked with evidence
 - package manager and cwd named for every command
 - remaining open decisions recorded
-- `check-complete.mjs` passes for the active goal plan
+- `check-complete.mjs` passes for the active Task plan
 
 ## Final Output
 

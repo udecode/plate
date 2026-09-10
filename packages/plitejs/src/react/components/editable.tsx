@@ -1,18 +1,18 @@
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-} from 'react';
+import React, { useCallback, useRef, useSyncExternalStore } from 'react';
 
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
-import { createDOMGeometryKernel, DOMCoverage } from '../../dom/internal';
+import {
+  createDOMGeometryKernel,
+  type DOMCoverageSession,
+} from '../../dom/internal';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
+import type { ExternalTextRuntime } from '../editable/external-text-runtime';
 import type {
   EditableRepairRequest,
   InputIntent,
 } from '../editable/input-controller';
+import { guardExternalTextEvents } from '../editable/interaction-owner';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
   isVoid as editorIsVoid,
@@ -92,6 +92,8 @@ export type EditableDOMStrategyMetricsBase = {
 };
 
 export type EditableDOMStrategyMetrics = EditableDOMStrategyMetricsBase & {
+  /** Anonymous delegated-view counters; never includes text, keys, or config. */
+  externalText: ReturnType<ExternalTextRuntime['metrics']>;
   domCoverageBoundaryCount: number;
   domCoverageBoundaryElementCount: number;
   domNodeCount: number;
@@ -102,18 +104,23 @@ export type EditableDOMStrategyMetrics = EditableDOMStrategyMetricsBase & {
 };
 
 const getEditableDOMStrategyMetrics = ({
-  editor,
+  coverage,
+  externalText,
   metrics,
   rootElement,
 }: {
-  editor: ReactRuntimeEditor;
+  coverage: DOMCoverageSession;
+  externalText: EditableDOMStrategyMetrics['externalText'];
   metrics: EditableDOMStrategyMetricsBase;
   rootElement: HTMLElement;
 }): EditableDOMStrategyMetrics => {
-  const boundaries = DOMCoverage.getBoundaries(editor);
+  const boundaries = coverage.getBoundaries();
 
   return {
     ...metrics,
+    externalText,
+    nativeSurfaceComplete:
+      externalText.viewCount > 0 ? false : metrics.nativeSurfaceComplete,
     domCoverageBoundaryCount: boundaries.length,
     domCoverageBoundaryElementCount: rootElement.querySelectorAll(
       '[data-plite-dom-coverage-boundary]'
@@ -139,6 +146,11 @@ const areEditableDOMStrategyMetricsEqual = (
   right: EditableDOMStrategyMetrics
 ) =>
   left != null &&
+  Object.keys(right.externalText).every(
+    (key) =>
+      left.externalText[key as keyof typeof right.externalText] ===
+      right.externalText[key as keyof typeof right.externalText]
+  ) &&
   left.activeSegmentIndex === right.activeSegmentIndex &&
   left.aggressiveDomCoverageBoundaryCount ===
     right.aggressiveDomCoverageBoundaryCount &&
@@ -417,7 +429,7 @@ export const EditableDOMRoot = (
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onDOMStrategyMetrics,
-    readOnly = false,
+    readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
     style: userStyle = {},
     as: Component = 'div',
@@ -446,7 +458,7 @@ export const EditableDOMRoot = (
     domStrategyRuntime,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onKeyDown: propsOnKeyDown,
-    readOnly,
+    readOnly: readOnlyProp,
     scrollSelectionIntoView,
   });
   const {
@@ -455,6 +467,7 @@ export const EditableDOMRoot = (
     isComposing,
     rootRef: ref,
     rootInteractionSelectionBridge,
+    readOnly,
     runtime,
     partialDOMBackedSelection,
   } = rootRuntime;
@@ -488,111 +501,107 @@ export const EditableDOMRoot = (
   } = rootInteraction;
   const { onMouseDownCapture: onRuntimeMouseDownCapture } =
     editableEventBindings;
-  const editableEventBindingsWithDropCursor = useMemo(
-    () => ({
-      ...editableEventBindings,
-      onDragEnd: (event: React.DragEvent<HTMLDivElement>) => {
-        editableEventBindings.onDragEnd?.(event);
+  const editableEventBindingsWithDropCursor = {
+    ...editableEventBindings,
+    onDragEnd: (event: React.DragEvent<HTMLDivElement>) => {
+      editableEventBindings.onDragEnd?.(event);
+      clearEditableDropCursor(event.currentTarget);
+    },
+    onDragLeave: (event: React.DragEvent<HTMLDivElement>) => {
+      const { relatedTarget } = event;
+
+      if (
+        !isDOMNode(relatedTarget) ||
+        !event.currentTarget.contains(relatedTarget)
+      ) {
         clearEditableDropCursor(event.currentTarget);
-      },
-      onDragLeave: (event: React.DragEvent<HTMLDivElement>) => {
-        const { relatedTarget } = event;
+      }
+      propsOnDragLeave?.(event);
+    },
+    onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
+      const shouldHandleDragOver = editableEventBindings.onDragOver?.(event);
 
-        if (
-          !isDOMNode(relatedTarget) ||
-          !event.currentTarget.contains(relatedTarget)
-        ) {
-          clearEditableDropCursor(event.currentTarget);
-        }
-        propsOnDragLeave?.(event);
-      },
-      onDragOver: (event: React.DragEvent<HTMLDivElement>) => {
-        const shouldHandleDragOver = editableEventBindings.onDragOver?.(event);
-
-        if (shouldHandleDragOver === false) {
-          clearEditableDropCursor(event.currentTarget);
-          return;
-        }
-
-        updateEditableDropCursor(
-          event.currentTarget,
-          getEditableDropCursorRect({
-            editor,
-            event,
-            rootElement: event.currentTarget,
-          })
-        );
-      },
-      onDrop: (event: React.DragEvent<HTMLDivElement>) => {
-        editableEventBindings.onDrop?.(event);
+      if (shouldHandleDragOver === false) {
         clearEditableDropCursor(event.currentTarget);
-      },
-    }),
-    [editableEventBindings, editor, propsOnDragLeave]
-  );
+        return;
+      }
+
+      updateEditableDropCursor(
+        event.currentTarget,
+        getEditableDropCursorRect({
+          editor,
+          event,
+          rootElement: event.currentTarget,
+        })
+      );
+    },
+    onDrop: (event: React.DragEvent<HTMLDivElement>) => {
+      editableEventBindings.onDrop?.(event);
+      clearEditableDropCursor(event.currentTarget);
+    },
+  };
   const lastDOMStrategyMetricsRef = useRef<EditableDOMStrategyMetrics | null>(
     null
   );
-  const externalMouseGestureRef = useRef(false);
-  const rootInteractionEventBindings = useMemo(
-    () => ({
-      onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
+  const rootInteractionEventBindings = {
+    onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
+      activateRootView();
+      propsOnFocusCapture?.(event);
+    },
+    onMouseDownCapture: (event: React.MouseEvent<HTMLDivElement>) => {
+      runtime.setExternalMouseGesture(event.defaultPrevented);
+
+      if (!runtime.externalMouseGestureActive) {
         activateRootView();
-        propsOnFocusCapture?.(event);
-      },
-      onMouseDownCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        externalMouseGestureRef.current = event.defaultPrevented;
+      }
+      const voidTarget = getDropCursorTargetElement(event.target)?.closest(
+        '[data-plite-node][data-plite-void="true"]'
+      );
+      const inlineVoidTarget =
+        voidTarget?.getAttribute('data-plite-inline') === 'true';
+      const draggableInlineVoidTarget =
+        inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
 
-        if (!externalMouseGestureRef.current) {
-          activateRootView();
-        }
-        const voidTarget = getDropCursorTargetElement(event.target)?.closest(
-          '[data-plite-node][data-plite-void="true"]'
-        );
-        const inlineVoidTarget =
-          voidTarget?.getAttribute('data-plite-inline') === 'true';
-        const draggableInlineVoidTarget =
-          inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
-
-        if (externalMouseGestureRef.current) {
-          onRuntimeMouseDownCapture?.(event);
-        } else if (draggableInlineVoidTarget) {
-          onRuntimeMouseDownCapture?.(event);
-        } else if (inlineVoidTarget) {
-          onRootMouseDownCapture(event);
-          onRuntimeMouseDownCapture?.(event);
-        } else {
-          onRuntimeMouseDownCapture?.(event);
-          onRootMouseDownCapture(event);
-        }
-        propsOnMouseDownCapture?.(event);
-      },
-      onMouseMoveCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!externalMouseGestureRef.current) {
-          onRootMouseMoveCapture(event);
-        }
-        propsOnMouseMoveCapture?.(event);
-      },
-      onMouseUpCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!externalMouseGestureRef.current) {
-          activateRootView();
-          onRootMouseUpCapture(event);
-        }
-        propsOnMouseUpCapture?.(event);
-        externalMouseGestureRef.current = false;
-      },
-    }),
-    [
-      activateRootView,
-      onRootMouseDownCapture,
-      onRootMouseMoveCapture,
-      onRootMouseUpCapture,
-      onRuntimeMouseDownCapture,
-      propsOnFocusCapture,
-      propsOnMouseDownCapture,
-      propsOnMouseMoveCapture,
-      propsOnMouseUpCapture,
-    ]
+      if (runtime.externalMouseGestureActive) {
+        onRuntimeMouseDownCapture?.(event);
+      } else if (draggableInlineVoidTarget) {
+        onRuntimeMouseDownCapture?.(event);
+      } else if (inlineVoidTarget) {
+        onRootMouseDownCapture(event);
+        onRuntimeMouseDownCapture?.(event);
+      } else {
+        onRuntimeMouseDownCapture?.(event);
+        onRootMouseDownCapture(event);
+      }
+      propsOnMouseDownCapture?.(event);
+    },
+    onMouseMoveCapture: (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!runtime.externalMouseGestureActive) {
+        onRootMouseMoveCapture(event);
+      }
+      propsOnMouseMoveCapture?.(event);
+    },
+    onMouseUpCapture: (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!runtime.externalMouseGestureActive) {
+        activateRootView();
+        onRootMouseUpCapture(event);
+      }
+      propsOnMouseUpCapture?.(event);
+      runtime.setExternalMouseGesture(false);
+    },
+  };
+  const guardedAttributes = guardExternalTextEvents(
+    attributes,
+    activateRootView
+  );
+  const ownedEventBindings = guardExternalTextEvents(
+    {
+      ...editableEventBindingsWithDropCursor,
+      ...rootInteractionEventBindings,
+      onBlurCapture: (event: React.FocusEvent<HTMLDivElement>) =>
+        attributes.onBlurCapture?.(event),
+    },
+    activateRootView
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -608,7 +617,8 @@ export const EditableDOMRoot = (
       'read-dom-strategy-metrics',
       () => {
         const nextMetrics = getEditableDOMStrategyMetrics({
-          editor,
+          coverage: runtime.domCoverage,
+          externalText: runtime.externalText.metrics(),
           metrics: domStrategyMetrics,
           rootElement,
         });
@@ -657,15 +667,15 @@ export const EditableDOMRoot = (
               aria-readonly={readOnly ? true : undefined}
               role="textbox"
               translate="no"
-              {...attributes}
+              {...guardedAttributes}
               autoCapitalize={
                 replacementInputFeaturesAllowed
-                  ? attributes.autoCapitalize
+                  ? guardedAttributes.autoCapitalize
                   : 'false'
               }
               autoCorrect={
                 replacementInputFeaturesAllowed
-                  ? attributes.autoCorrect
+                  ? guardedAttributes.autoCorrect
                   : 'false'
               }
               // explicitly set this
@@ -676,13 +686,14 @@ export const EditableDOMRoot = (
               data-plite-editor
               data-plite-node="value"
               data-plite-root={editorRoot}
-              {...editableEventBindingsWithDropCursor}
-              {...rootInteractionEventBindings}
+              {...ownedEventBindings}
               // Keep server markup and the first client render identical. Once
               // hydration completes, mounted-root facts can disable replacement
               // features in browsers without `beforeinput`.
               spellCheck={
-                replacementInputFeaturesAllowed ? attributes.spellCheck : false
+                replacementInputFeaturesAllowed
+                  ? guardedAttributes.spellCheck
+                  : false
               }
               style={{
                 ...(disableDefaultStyles

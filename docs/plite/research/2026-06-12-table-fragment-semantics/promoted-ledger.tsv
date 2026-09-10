@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	proof_kind	proof_command	decision
+table-fragment:rectangle-algebra:core-browser-proof	table-fragment-contract-001	slate-plan -> slate core fixtures -> browser table proof	`docs/slate-v2/table-fragment-semantics.md`; plan plus core fixture proof, then browser selected-cell fragment proof	`cd .tmp/slate-v2 && SLATE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/slate/test/index.spec.ts`	kept-docs; implementation deferred until core table-area contract work starts

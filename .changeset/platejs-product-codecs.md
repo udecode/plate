@@ -23,20 +23,15 @@ Require React and React DOM 19.2 or newer.
 
 Replace `KEYS`, `NODES`, and `STYLE_KEYS` plugin references with `PLUGINS`. Resolve persisted identity through `.type` / `.key` or explicit document literals, and remove every public reverse name/type lookup.
 
-Persist schema identity beside each durable document. Configure the v54 release step and v55 AST-contract step through the application schema migration chain:
+Persist schema identity beside each durable document. Configure the v54 release step through the application schema migration chain:
 
 ```tsx
-import {
-  defineDocumentMigrations,
-  migratePlateV54,
-  migratePlateV55,
-} from 'platejs/migrations';
+import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
-import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
 
 const migrations = defineDocumentMigrations(EditorSchema, {
-  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
-  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  sourceFingerprints: { 53: v53Fingerprint },
+  steps: { 54: migratePlateV54 },
   unversioned: 53,
 });
 ```
@@ -57,4 +52,4 @@ const persisted = await loadDocument();
 editor.update.value.replace(persisted);
 ```
 
-Migrate frozen Plate v53 documents through v54 and v55. Existing v54 documents run only the v55 AST-contract step.
+Migrate frozen Plate v53 documents through the complete v54 AST contract.

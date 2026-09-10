@@ -177,8 +177,8 @@ describe('BaseFootnotePlugins', () => {
 
     expect(typeof editor.update.footnote.insert).toBe('function');
     expect(typeof footnote.createDefinition).toBe('function');
-    expect(typeof footnote.focusDefinition).toBe('function');
-    expect(typeof footnote.focusReference).toBe('function');
+    expect(typeof footnote.selectDefinition).toBe('function');
+    expect(typeof footnote.selectReference).toBe('function');
     expect(typeof footnote.normalizeDuplicateDefinition).toBe('function');
   });
 
@@ -964,21 +964,27 @@ describe('BaseFootnotePlugin updates', () => {
           },
         ],
       });
-      const didFocusDefinition = editor.update.footnote.focusDefinition({
+      const definition = editor.update.footnote.selectDefinition({
         ref: '1',
       });
 
-      expect(didFocusDefinition).toBe(true);
+      expect(definition).toEqual({
+        point: { offset: 0, path: [1, 0, 0] },
+        targetPath: [1],
+      });
       expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [1, 0, 0] },
         focus: { offset: 0, path: [1, 0, 0] },
       });
 
-      const didFocusReference = editor.update.footnote.focusReference({
+      const reference = editor.update.footnote.selectReference({
         ref: '1',
       });
 
-      expect(didFocusReference).toBe(true);
+      expect(reference).toEqual({
+        point: { offset: 0, path: [0, 2] },
+        targetPath: [0, 1],
+      });
       expect(editor.read.selection()).toEqual({
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },

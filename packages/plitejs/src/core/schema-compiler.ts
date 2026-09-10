@@ -23,6 +23,7 @@ import type {
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
+import { cloneFrozen } from './clone';
 import { profileCoreDuration } from './profiling';
 
 const BUILT_IN_GROUPS = [
@@ -308,7 +309,6 @@ export type CompiledSchemaContentRoot = Readonly<{
 
 export type CompiledSchemaElementBehavior = Readonly<{
   atom: boolean;
-  editableIsland: boolean;
   inline: boolean;
   isolating: boolean;
   keyboardSelectable: boolean;
@@ -1306,6 +1306,12 @@ const canonicalJson = (
 const stableStringify = (value: unknown): string =>
   JSON.stringify(canonicalJson(value));
 
+// Keep the reserved false bit in persisted fingerprints after removing the
+// editable-island feature; ordinary element semantics did not change.
+const canonicalSchemaElementBehavior = (
+  behavior: CompiledSchemaElementBehavior
+) => ({ ...behavior, editableIsland: false });
+
 /**
  * Exact 64-bit FNV-1a over JavaScript UTF-16 code units.
  *
@@ -1910,10 +1916,7 @@ const isInlineVoid = (kind: SchemaElement['void']) =>
   kind === 'inline' || kind === 'markable-inline';
 
 const isVoid = (kind: SchemaElement['void']) =>
-  kind === 'block' ||
-  kind === 'editable-island' ||
-  kind === 'inline' ||
-  kind === 'markable-inline';
+  kind === 'block' || kind === 'inline' || kind === 'markable-inline';
 
 const compileElementBehavior = (
   source: Source<SchemaElement>
@@ -1923,9 +1926,7 @@ const compileElementBehavior = (
 
   if (
     voidKind !== null &&
-    !['block', 'editable-island', 'inline', 'markable-inline'].includes(
-      voidKind
-    )
+    !['block', 'inline', 'markable-inline'].includes(voidKind)
   ) {
     compileFailure(
       'invalid-element-behavior',
@@ -1948,13 +1949,10 @@ const compileElementBehavior = (
 
   const inline = input.inline ?? inlineFromVoid;
   const selectable = input.selectable ?? true;
-  const atom =
-    input.atom ??
-    (isVoid(voidKind ?? undefined) && voidKind !== 'editable-island');
+  const atom = input.atom ?? isVoid(voidKind ?? undefined);
 
   return Object.freeze({
     atom,
-    editableIsland: voidKind === 'editable-island',
     inline,
     isolating: input.isolating ?? false,
     keyboardSelectable: input.keyboardSelectable ?? (selectable && atom),
@@ -3141,14 +3139,7 @@ export const resolveCompiledSchemaProperty = (
   context: CompiledSchemaTargetContext
 ): CompiledSchemaProperty | null => {
   const lookup = schema.properties.lookup[placement];
-  const candidateIds = [
-    ...(lookup.exact.get(key) ?? []),
-    ...lookup.prefixes.flatMap(({ prefix, propertyIds }) =>
-      key.startsWith(prefix) ? propertyIds : []
-    ),
-  ];
-
-  for (const id of candidateIds) {
+  for (const id of lookup.exact.get(key) ?? []) {
     const property = schema.properties.byId.get(id);
 
     if (
@@ -3156,6 +3147,21 @@ export const resolveCompiledSchemaProperty = (
       matchesCompiledSchemaTarget(schema, property.target, context)
     ) {
       return property;
+    }
+  }
+
+  for (const { prefix, propertyIds } of lookup.prefixes) {
+    if (!key.startsWith(prefix)) continue;
+
+    for (const id of propertyIds) {
+      const property = schema.properties.byId.get(id);
+
+      if (
+        property &&
+        matchesCompiledSchemaTarget(schema, property.target, context)
+      ) {
+        return property;
+      }
     }
   }
 
@@ -3349,7 +3355,7 @@ const compileEditorSchemaInternal = (
       }
 
       const behavior = compileElementBehavior(source);
-      const derivesVoidContent = behavior.void && !behavior.editableIsland;
+      const derivesVoidContent = behavior.void;
 
       if (derivesVoidContent && input.content) {
         compileFailure(
@@ -3492,10 +3498,7 @@ const compileEditorSchemaInternal = (
         unknownPolicy
       );
 
-      if (
-        program.allowsText &&
-        (!element.behavior.void || element.behavior.editableIsland)
-      ) {
+      if (program.allowsText && !element.behavior.void) {
         element.directGroups.add('textBlock');
       }
     }
@@ -4105,7 +4108,21 @@ const compileEditorSchemaInternal = (
   for (const property of compiledProperties) {
     const destination =
       property.placement === 'element' ? propertyIdsByElement : textIdsByParent;
+    const { target } = property;
+    const directTypes = !target
+      ? elementTypes
+      : target.kind === 'type'
+        ? [target.type]
+        : target.kind === 'types'
+          ? target.types
+          : target.kind === 'group'
+            ? (targetSchema.elements.groups.get(target.group) ?? [])
+            : null;
 
+    if (directTypes) {
+      for (const type of directTypes) destination.get(type)?.add(property.id);
+      continue;
+    }
     for (const type of elementTypes) {
       if (
         targetCombinationIsSatisfiable(
@@ -4162,8 +4179,7 @@ const compileEditorSchemaInternal = (
 
     if (
       explicitPreserveContext &&
-      (element.behavior.atom ||
-        (element.behavior.void && !element.behavior.editableIsland))
+      (element.behavior.atom || element.behavior.void)
     ) {
       compileFailure(
         'invalid-slice-policy',
@@ -4248,7 +4264,7 @@ const compileEditorSchemaInternal = (
   );
   const canonicalModel = {
     elements: [...compiledElements].map(([type, element]) => ({
-      behavior: element.behavior,
+      behavior: canonicalSchemaElementBehavior(element.behavior),
       content: element.content
         ? {
             allowedElementTypes: sortedStrings(
@@ -4864,7 +4880,7 @@ export const createEditorSchemaContract = (
 ): EditorSchemaContract => {
   const structural = stripCompiledEditorSchemaRuntimeValidations(schema);
 
-  return Object.freeze({
+  return cloneFrozen({
     diagnostics: structural.diagnostics,
     elements: Object.freeze({
       allowedChildren: contractStringSets(structural.elements.allowedChildren),
@@ -4990,7 +5006,6 @@ const isContractElementBehavior = (value: unknown) =>
   isRecord(value) &&
   [
     'atom',
-    'editableIsland',
     'inline',
     'isolating',
     'keyboardSelectable',
@@ -5247,7 +5262,7 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
     elements: [...contract.elements.byType]
       .sort((left, right) => left.type.localeCompare(right.type))
       .map((element) => ({
-        behavior: element.behavior,
+        behavior: canonicalSchemaElementBehavior(element.behavior),
         content: element.content ? content(element.content) : null,
         contentRoots: [...element.contentRoots]
           .sort(([left], [right]) => left.localeCompare(right))

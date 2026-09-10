@@ -4,7 +4,7 @@
 
 Add Plite React integration with strict editor and element hooks, typed `usePliteCommand` dispatch, latest-value selectors, revision-based external view data, provider-lifetime `onCommit` observation, and read-only state for shell components outside a `<Plite>` root.
 
-- Preserve focused-root selection across child editors and lifecycle target changes
+- Preserve focused-root selection across child editors, read-only sibling views, and lifecycle target changes
 - Coordinate DOM reads, writes, selection repair, Android input latency, and external mutation recovery through one bounded scheduler per mounted root
 - Keep printable single-character typing native for internally proven live leaf pipelines and pass-through command middleware; use model input for unknown custom renderers and material commands
 - Invalidate explicit runtime-state chrome selectors synchronously while preserving equality and commit-filter suppression

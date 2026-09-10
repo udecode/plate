@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import {
-  EditableElement,
   PliteElement,
   PliteLeaf,
   PlitePlaceholder,
@@ -155,15 +154,5 @@ describe('plite-react primitives contract', () => {
     expect(element?.getAttribute('data-plite-void')).toBe('true');
     expect(spacer).toHaveStyle({ caretColor: 'transparent' });
     expect(spacer?.textContent).toBe('\uFEFF');
-  });
-
-  test('EditableElement exposes the minimal public wrapper shape', () => {
-    const rendered = render(
-      <EditableElement as="section" id="editable-element">
-        child
-      </EditableElement>
-    );
-
-    expect(rendered.container.querySelector('#editable-element')).toBeTruthy();
   });
 });

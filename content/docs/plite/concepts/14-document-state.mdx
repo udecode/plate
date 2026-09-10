@@ -11,7 +11,7 @@ should share the editor runtime.
 Use external stores for comment bodies, permissions, and audit events; Plite can
 render their anchors through annotations.
 
-## Value Shape
+## Value shape
 
 The full persisted value is `EditorDocumentValue`.
 
@@ -31,7 +31,7 @@ same editor.
 Plite encodes those fields in `editor.read.value()` and validates their codec
 version when loading `initialValue`.
 
-## Save The Document
+## Save the document
 
 Read the full document value from `editor.read.value()`.
 
@@ -65,7 +65,7 @@ observed.
 </Plite>
 ```
 
-## Load The Document
+## Load the document
 
 Pass the saved document value back as `initialValue` when the editor is created.
 
@@ -91,7 +91,7 @@ Unknown element types, roots, properties, invalid property values, and illegal
 content relationships fail closed. See [Schema](19-schema#external-validation)
 for explicit validation and canonicalization APIs.
 
-## Schema Identity
+## Schema identity
 
 The document value does not embed its schema. Read the compiled identity when
 documents can move between schema deployments.
@@ -114,7 +114,7 @@ semantics.
 rejects mismatches in `History.fromJSON(editor, json)` before decoding any
 batch. Application document storage owns its own envelope and migration policy.
 
-## State Fields
+## State fields
 
 Use `defineStateField` for document metadata and settings that belong to the
 editor model.
@@ -169,7 +169,7 @@ Use state fields for title, layout settings, spellcheck, page settings, or
 document-level mode flags. Do not store ephemeral UI state there unless it
 should persist with the document.
 
-## Persistent And Local Fields
+## Persistent and local fields
 
 Omit `persist` for local runtime fields. Plite keeps the value available
 through `state.getField(field)` and omits it from `editor.read.value()`.
@@ -199,7 +199,7 @@ const commit = editor.read.lastCommit();
 ```
 
 Replay decoded shared effects through `tx.effects.emit(...)`. The field's
-`persist` codec also versions the generated transition effect; `platejs/yjs`
+`persist` codec also versions the generated transition effect; `plitejs/yjs`
 owns the registry and remote policy for Yjs documents.
 
 ```tsx

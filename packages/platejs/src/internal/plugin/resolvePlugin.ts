@@ -37,6 +37,7 @@ type ResolvedPluginApiContribution =
       kind: 'native';
     }>
   | Readonly<{
+      factory: (context: object) => object;
       kind: 'plate';
       value: Readonly<Record<PropertyKey, unknown>>;
     }>;
@@ -415,7 +416,11 @@ const applyStage = (
 
       apiContributions = Object.freeze([
         ...apiContributions,
-        Object.freeze({ kind: 'plate' as const, value: snapshot }),
+        Object.freeze({
+          factory: api,
+          kind: 'plate' as const,
+          value: snapshot,
+        }),
       ]);
       Reflect.set(
         next,

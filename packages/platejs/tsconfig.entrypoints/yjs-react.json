@@ -22,6 +22,9 @@
   "include": ["../src/yjs/react/**/*"],
   "references": [
     {
+      "path": "../../plitejs/tsconfig.entrypoints/yjs.json"
+    },
+    {
       "path": "./core.json"
     },
     {

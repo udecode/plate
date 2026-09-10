@@ -1,36 +1,24 @@
-// Test-local source assertion.
 import { act, render } from '@testing-library/react';
 import {
+  TextApi,
   defineExtension,
   type Descendant,
   type EditorUpdateTransaction,
-  NodeApi,
 } from 'plitejs';
 import type React from 'react';
-import { StrictMode } from 'react';
 
 import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
   Editable,
-  EditableElement,
+  PliteElement,
   Plite,
-  type PliteDecorationSource,
   PliteReactUpdatePolicy,
-  usePliteDecorationSource,
-  usePliteRangeDecorationSource,
 } from '../../src/react';
-import { createDecorationSource } from '../../src/react/decoration-source';
 
 const createChildren = (left = 'alpha', right = 'beta'): Descendant[] => [
-  {
-    type: 'paragraph',
-    children: [{ text: left }],
-  },
-  {
-    type: 'paragraph',
-    children: [{ text: right }],
-  },
+  { type: 'paragraph', children: [{ text: left }] },
+  { type: 'paragraph', children: [{ text: right }] },
 ];
 
 const TestEditorSurface = ({
@@ -45,328 +33,6 @@ const TestEditorSurface = ({
 );
 
 describe('plite-react app-owned customization', () => {
-  test('usePliteDecorationSource owns source lifecycle while reading latest options', async () => {
-    const editor = createEditor({ initialValue: createChildren() });
-    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
-
-    const Probe = ({ token }: { token: string }) => {
-      const source = usePliteDecorationSource(editor, {
-        id: 'hook-source',
-        read: () => [
-          {
-            data: { token },
-            key: 'hook-source-token',
-            range: {
-              kind: 'text',
-              anchor: { path: [0, 0], offset: 0 },
-              focus: { path: [0, 0], offset: 5 },
-            },
-          },
-        ],
-      });
-
-      sources.push(source);
-
-      return (
-        <Plite decorationSources={[source]} editor={editor}>
-          <Editable
-            renderSegment={(segment, children) => {
-              const innerToken = segment.slices[0]?.data?.token;
-
-              return innerToken ? (
-                <span data-hook-token={innerToken}>{children}</span>
-              ) : (
-                children
-              );
-            }}
-          />
-        </Plite>
-      );
-    };
-
-    const rendered = render(<Probe token="one" />);
-
-    expect(
-      rendered.container.querySelector('[data-hook-token="one"]')?.textContent
-    ).toBe('alpha');
-
-    rendered.rerender(<Probe token="two" />);
-    expect(sources[0]).toBe(sources[1]);
-
-    await act(async () => {
-      sources[0]?.refresh({ forceInvalidate: true });
-    });
-
-    expect(
-      rendered.container.querySelector('[data-hook-token="two"]')?.textContent
-    ).toBe('alpha');
-  });
-
-  test('usePliteDecorationSource refreshes from an explicit revision', async () => {
-    const editor = createEditor({ initialValue: createChildren() });
-    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
-
-    const Probe = ({ token }: { token: string }) => {
-      const source = usePliteDecorationSource(editor, {
-        dirtiness: ['text', 'node'],
-        id: 'hook-deps-source',
-        read: () => [
-          {
-            data: { token },
-            key: 'hook-deps-token',
-            range: {
-              kind: 'text',
-              anchor: { path: [0, 0], offset: 0 },
-              focus: { path: [0, 0], offset: 5 },
-            },
-          },
-        ],
-        revision: token,
-      });
-
-      sources.push(source);
-
-      return (
-        <Plite decorationSources={[source]} editor={editor}>
-          <Editable
-            renderSegment={(segment, children) => {
-              const innerToken2 = segment.slices[0]?.data?.token;
-
-              return innerToken2 ? (
-                <span data-deps-token={innerToken2}>{children}</span>
-              ) : (
-                children
-              );
-            }}
-          />
-        </Plite>
-      );
-    };
-
-    const rendered = render(<Probe token="one" />);
-
-    expect(
-      rendered.container.querySelector('[data-deps-token="one"]')?.textContent
-    ).toBe('alpha');
-
-    await act(async () => {
-      rendered.rerender(<Probe token="two" />);
-    });
-
-    expect(sources[0]).toBe(sources[1]);
-    expect(
-      rendered.container.querySelector('[data-deps-token="two"]')?.textContent
-    ).toBe('alpha');
-  });
-
-  test('usePliteRangeDecorationSource maps ranges and refreshes from a revision', async () => {
-    const editor = createEditor({ initialValue: createChildren() });
-    const sources: Array<PliteDecorationSource<{ token: string }>> = [];
-
-    const Probe = ({ token }: { token: string }) => {
-      const source = usePliteRangeDecorationSource(editor, {
-        data: { token },
-        dirtiness: ['text', 'node'],
-        id: 'range-hook-source',
-        read: ({ snapshot }) =>
-          NodeApi.findTextRanges({ children: snapshot.children }, 'alpha'),
-        revision: token,
-      });
-
-      sources.push(source);
-
-      return (
-        <Plite decorationSources={[source]} editor={editor}>
-          <Editable
-            renderSegment={(segment, children) => {
-              const innerToken3 = segment.slices[0]?.data?.token;
-
-              return innerToken3 ? (
-                <span data-range-token={innerToken3}>{children}</span>
-              ) : (
-                children
-              );
-            }}
-          />
-        </Plite>
-      );
-    };
-
-    const rendered = render(<Probe token="one" />);
-
-    expect(
-      rendered.container.querySelector('[data-range-token="one"]')?.textContent
-    ).toBe('alpha');
-
-    await act(async () => {
-      rendered.rerender(<Probe token="two" />);
-    });
-
-    expect(sources[0]).toBe(sources[1]);
-    expect(
-      rendered.container.querySelector('[data-range-token="two"]')?.textContent
-    ).toBe('alpha');
-  });
-
-  test('usePliteRangeDecorationSource stays subscribed after StrictMode effect replay', async () => {
-    const editor = createEditor({ initialValue: createChildren('alpha') });
-
-    const Probe = () => {
-      const source = usePliteRangeDecorationSource(editor, {
-        data: { token: 'alpha' },
-        dirtiness: 'text',
-        id: 'strict-range-hook-source',
-        read: ({ snapshot }) =>
-          NodeApi.findTextRanges({ children: snapshot.children }, 'alpha'),
-      });
-
-      return (
-        <Plite decorationSources={[source]} editor={editor}>
-          <Editable
-            renderSegment={(segment, children) => {
-              const token = segment.slices[0]?.data?.token;
-
-              return token ? (
-                <span data-strict-range={token}>{children}</span>
-              ) : (
-                children
-              );
-            }}
-          />
-        </Plite>
-      );
-    };
-
-    const rendered = render(
-      <StrictMode>
-        <Probe />
-      </StrictMode>
-    );
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    await act(async () => {
-      editor.update((tx) => {
-        tx.selection.set({
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        });
-        tx.text.insert('x');
-      });
-    });
-
-    const highlighted = rendered.container.querySelector(
-      '[data-strict-range="alpha"]'
-    );
-
-    expect(highlighted?.textContent).toBe('alpha');
-  });
-
-  test('Editable supports app-owned markdown preview projections', async () => {
-    const editor = createEditor();
-
-    const collectMarkdownProjections = (text: string, path: number[]) => {
-      const projections: Array<{
-        key: string;
-        range: {
-          anchor: { path: number[]; offset: number };
-          focus: { path: number[]; offset: number };
-        };
-        data: { type: string };
-      }> = [];
-
-      const pushProjection = (type: string, start: number, end: number) => {
-        if (start === end) {
-          return;
-        }
-
-        projections.push({
-          data: { type },
-          key: `${path.join('.')}:${type}:${start}:${end}`,
-          range: {
-            kind: 'text',
-            anchor: { path, offset: start },
-            focus: { path, offset: end },
-          },
-        });
-      };
-
-      if (/^#{1,6}\s.+/.test(text)) {
-        pushProjection('title', 0, text.length);
-      }
-
-      for (const match of text.matchAll(/\*\*[^*]+\*\*/g)) {
-        if (match.index != null) {
-          pushProjection('bold', match.index, match.index + match[0].length);
-        }
-      }
-
-      return projections;
-    };
-
-    editorReplace(editor, {
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'Hello **bold**' }],
-        },
-      ],
-      selection: null,
-    });
-
-    const markdownSource = createDecorationSource(editor, {
-      id: 'markdown-preview',
-      read: ({ snapshot }) =>
-        (snapshot.children[0] &&
-        'children' in snapshot.children[0] &&
-        snapshot.children[0].children[0] &&
-        'text' in snapshot.children[0].children[0]
-          ? collectMarkdownProjections(
-              snapshot.children[0].children[0].text,
-              [0, 0]
-            )
-          : []) as any,
-    });
-
-    const rendered = render(
-      <Plite decorationSources={[markdownSource]} editor={editor}>
-        <Editable
-          id="markdown-preview-runtime"
-          renderSegment={(segment, children) => {
-            const type = segment.slices[0]?.data?.type;
-
-            return type ? <span data-token={type}>{children}</span> : children;
-          }}
-        />
-      </Plite>
-    );
-
-    expect(
-      rendered.container.querySelector('[data-token="bold"]')?.textContent
-    ).toBe('**bold**');
-
-    await act(async () => {
-      editorReplace(editor, {
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: '## Heading' }],
-          },
-        ],
-        selection: null,
-      });
-    });
-
-    expect(
-      rendered.container.querySelector('[data-token="title"]')?.textContent
-    ).toBe('## Heading');
-
-    markdownSource.destroy();
-  });
-
   test('Editable supports app-owned markdown shortcuts', async () => {
     const editor = createEditor();
     const applyShortcut = (
@@ -376,10 +42,7 @@ describe('plite-react app-owned customization', () => {
     ) => {
       if (type === 'list-item') {
         tx.nodes.set({ type: 'list-item' }, { at });
-        tx.nodes.wrap({
-          type: 'bulleted-list',
-          children: [],
-        });
+        tx.nodes.wrap({ type: 'bulleted-list', children: [] });
         return;
       }
 
@@ -388,14 +51,8 @@ describe('plite-react app-owned customization', () => {
 
     editorReplace(editor, {
       children: [
-        {
-          type: 'paragraph',
-          children: [{ text: '>' }],
-        },
-        {
-          type: 'paragraph',
-          children: [{ text: '-' }],
-        },
+        { type: 'paragraph', children: [{ text: '>' }] },
+        { type: 'paragraph', children: [{ text: '-' }] },
       ],
       selection: {
         kind: 'text',
@@ -420,7 +77,11 @@ describe('plite-react app-owned customization', () => {
               return <li>{children}</li>;
             }
             default: {
-              return <EditableElement>{children}</EditableElement>;
+              return (
+                <PliteElement style={{ position: 'relative' }}>
+                  {children}
+                </PliteElement>
+              );
             }
           }
         }}
@@ -439,16 +100,11 @@ describe('plite-react app-owned customization', () => {
       });
     });
 
-    expect(rendered.container.querySelectorAll('blockquote').length).toBe(1);
+    expect(rendered.container.querySelectorAll('blockquote')).toHaveLength(1);
 
     await act(async () => {
       editorReplace(editor, {
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: '-' }],
-          },
-        ],
+        children: [{ type: 'paragraph', children: [{ text: '-' }] }],
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
@@ -466,26 +122,17 @@ describe('plite-react app-owned customization', () => {
       });
     });
 
-    expect(rendered.container.querySelectorAll('ul li').length).toBe(1);
+    expect(rendered.container.querySelectorAll('ul li')).toHaveLength(1);
   });
 
   test('Editable supports app-owned forced layout enforcement', async () => {
     const editor = createEditor();
-
     const createTitle = () =>
-      ({
-        type: 'title',
-        children: [{ text: 'Untitled' }],
-      }) as Descendant;
-
+      ({ type: 'title', children: [{ text: 'Untitled' }] }) as Descendant;
     const createParagraph = () =>
-      ({
-        type: 'paragraph',
-        children: [{ text: '' }],
-      }) as Descendant;
-
+      ({ type: 'paragraph', children: [{ text: '' }] }) as Descendant;
     const getNodeText = (node: Descendant): string =>
-      'text' in node
+      TextApi.isText(node)
         ? node.text.replace(/\uFEFF/g, '')
         : node.children.map(getNodeText).join('');
 
@@ -493,7 +140,6 @@ describe('plite-react app-owned customization', () => {
       children: [createTitle(), createParagraph()],
       selection: null,
     });
-
     editor.install(
       defineExtension('forced-layout', {
         corrections: [
@@ -525,20 +171,19 @@ describe('plite-react app-owned customization', () => {
       <TestEditorSurface
         editor={editor}
         id="forced-layout-runtime"
-        renderElement={({ children, element }) => {
-          switch (element.type) {
-            case 'title': {
-              return <h2>{children}</h2>;
-            }
-            default: {
-              return <EditableElement>{children}</EditableElement>;
-            }
-          }
-        }}
+        renderElement={({ children, element }) =>
+          element.type === 'title' ? (
+            <h2>{children}</h2>
+          ) : (
+            <PliteElement style={{ position: 'relative' }}>
+              {children}
+            </PliteElement>
+          )
+        }
       />
     );
 
-    expect(rendered.container.querySelectorAll('h2').length).toBe(1);
+    expect(rendered.container.querySelectorAll('h2')).toHaveLength(1);
     expect(
       rendered.container.querySelectorAll('div[data-plite-node="element"]')
         .length
@@ -547,31 +192,21 @@ describe('plite-react app-owned customization', () => {
     await act(async () => {
       editorReplace(editor, {
         children: [
-          {
-            type: 'title',
-            children: [{ text: '' }],
-          },
-          {
-            type: 'paragraph',
-            children: [{ text: '' }],
-          },
+          { type: 'title', children: [{ text: '' }] },
+          { type: 'paragraph', children: [{ text: '' }] },
         ],
         selection: null,
       });
     });
 
-    expect(rendered.container.querySelectorAll('h2').length).toBe(1);
+    expect(rendered.container.querySelectorAll('h2')).toHaveLength(1);
   });
 
   test('Editable forwards scrollSelectionIntoView to app-owned code', async () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editorReplace(editor, {
-      children: createChildren(),
-      selection: null,
-    });
-
+    editorReplace(editor, { children: createChildren(), selection: null });
     render(
       <TestEditorSurface
         editor={editor}
@@ -595,15 +230,11 @@ describe('plite-react app-owned customization', () => {
     expect(seen).toEqual(['eta']);
   });
 
-  test('Editable skips scrollSelectionIntoView for remote collaboration selection updates', async () => {
+  test('Editable skips scrolling for remote selection updates', async () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editorReplace(editor, {
-      children: createChildren(),
-      selection: null,
-    });
-
+    editorReplace(editor, { children: createChildren(), selection: null });
     render(
       <TestEditorSurface
         editor={editor}

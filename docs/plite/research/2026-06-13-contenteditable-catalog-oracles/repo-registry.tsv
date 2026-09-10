@@ -1,0 +1,2 @@
+repo_key	local_path	remote	license_or_status	why_used
+github/easylogic/contenteditable	../contenteditable	https://github.com/easylogic/contenteditable	unknown-local-source	Living catalog of browser/contenteditable/IME cases with concrete reproduction notes.

@@ -7,19 +7,22 @@ type ExpectedEditorApiKeys =
   | 'ai'
   | 'aiChat'
   | 'audio'
-  | 'comment'
+  | 'combobox'
   | 'csv'
   | 'debug'
   | 'details'
+  | 'dnd'
   | 'dom'
   | 'elementState'
   | 'file'
+  | 'footnote'
   | 'html'
   | 'image'
   | 'link'
   | 'list'
   | 'markdown'
   | 'mediaEmbed'
+  | 'navigation'
   | 'placeholder'
   | 'react'
   | 'suggestion'
@@ -39,6 +42,12 @@ type _SerializedLinkTypeIsNotAnApiKey = AssertNever<
 type _TableApiKeepsItsMethods = Assert<
   'getColumnCount' extends keyof Editor['api']['table'] ? true : false
 >;
+type _DndApiKeepsItsMethods = Assert<
+  'prepareDrag' extends keyof Editor['api']['dnd'] ? true : false
+>;
+type _ComboboxApiKeepsItsMethods = Assert<
+  'cancel' | 'commit' extends keyof Editor['api']['combobox'] ? true : false
+>;
 type _LinkApiKeepsItsMethods = Assert<
   'validateUrl' extends keyof Editor['api']['link'] ? true : false
 >;
@@ -53,4 +62,14 @@ type _DomApiKeepsClipboardMethods = Assert<
 >;
 type _SuggestionApiKeepsItsMethods = Assert<
   'untracked' extends keyof Editor['api']['suggestion'] ? true : false
+>;
+type _NavigationApiKeepsItsMethods = Assert<
+  'flashTarget' | 'clear' extends keyof Editor['api']['navigation']
+    ? true
+    : false
+>;
+type _FootnoteApiKeepsItsMethods = Assert<
+  'focusDefinition' | 'focusReference' extends keyof Editor['api']['footnote']
+    ? true
+    : false
 >;

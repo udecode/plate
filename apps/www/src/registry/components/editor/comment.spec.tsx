@@ -1,23 +1,51 @@
-import { afterAll, describe, expect, it } from 'bun:test';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import { render, waitFor, within } from '@testing-library/react';
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createEditor, Plate, usePluginStore } from 'platejs/react';
+import { CommentsPlugin } from 'platejs/comments/react';
+import { createEditor, Plate } from 'platejs/react';
 import * as React from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-import { discussionValue } from '../../examples/values/discussion-value';
-import { commentPlugin } from './comment';
-import { discussionPlugin } from './discussion';
-import { Editor } from './editor';
+import {
+  CommentComposer,
+  useDraftCommentThreadIds,
+  useVisibleCommentThreadIds,
+} from './comment';
+
+declare module 'bun:test' {
+  interface Matchers<T> extends Pick<
+    TestingLibraryMatchers<unknown, T>,
+    'toBeVisible' | 'toHaveAttribute'
+  > {}
+}
 
 const originalOrigin = Object.getOwnPropertyDescriptor(
   window.location,
   'origin'
 );
+const originalReact = Object.getOwnPropertyDescriptor(globalThis, 'React');
+
+// Bun's classic JSX transform expects React on the copied demo's global scope.
+Object.defineProperty(globalThis, 'React', {
+  configurable: true,
+  value: React,
+});
 
 afterAll(() => {
+  if (originalReact) {
+    Object.defineProperty(globalThis, 'React', originalReact);
+  } else {
+    Reflect.deleteProperty(globalThis, 'React');
+  }
   if (originalOrigin) {
     Object.defineProperty(window.location, 'origin', originalOrigin);
   } else {
@@ -25,15 +53,105 @@ afterAll(() => {
   }
 });
 
-function ActiveDiscussion() {
-  const activeId = usePluginStore(commentPlugin, 'activeId');
-  const discussions = usePluginStore(discussionPlugin, 'discussions');
-  const discussion = discussions.find((entry) => entry.id === activeId);
+it('renders optional comment subscribers without installing comments', () => {
+  const editor = createEditor();
+  const Inspector = () => {
+    const drafts = useDraftCommentThreadIds();
+    const visible = useVisibleCommentThreadIds();
 
-  return (
-    <output aria-label="Active discussion">{discussion?.id ?? 'closed'}</output>
+    return <output>{JSON.stringify({ drafts, visible })}</output>;
+  };
+  const view = render(
+    <Plate editor={editor}>
+      <Inspector />
+    </Plate>
   );
-}
+
+  expect(view.container.textContent).toBe('{"drafts":[],"visible":[]}');
+  view.unmount();
+});
+
+it.each(['empty', 'rejected', 'pending'] as const)(
+  'keeps the paragraph intact when Enter submits a comment (%s)',
+  async (outcome) => {
+    const editor = createEditor({
+      plugins: [
+        CommentsPlugin.configure({
+          initialState: {
+            currentUserId: 'alice',
+            users: { alice: { id: 'alice', name: 'Alice' } },
+          },
+        }),
+      ],
+    });
+    let complete!: (saved: boolean) => void;
+    const pending = new Promise<boolean>((resolve) => {
+      complete = resolve;
+    });
+    const submit = mock<
+      React.ComponentProps<typeof CommentComposer>['onSubmit']
+    >(() => (outcome === 'pending' ? pending : false));
+    const body = [
+      {
+        type: 'paragraph',
+        children: [
+          { bold: true, text: outcome === 'empty' ? '' : 'Keep this draft' },
+        ],
+      },
+    ];
+    const view = render(
+      <Plate editor={editor}>
+        <CommentComposer
+          ariaLabel="Reply"
+          initialBody={body}
+          onSubmit={submit}
+          placeholder="Reply"
+        />
+      </Plate>
+    );
+    const textbox = view.getByRole('textbox', { name: 'Reply' });
+    const initialText = textbox.textContent;
+    try {
+      await act(async () => {
+        textbox.focus();
+        const selection = document.createRange();
+        selection.selectNodeContents(
+          textbox.querySelector('[data-plite-node="text"]')!
+        );
+        selection.collapse(false);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(selection);
+        document.dispatchEvent(new Event('selectionchange'));
+      });
+      await act(async () => {
+        fireEvent.keyDown(textbox, {
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+        });
+      });
+      expect(
+        textbox.querySelectorAll('[data-plite-node="element"]')
+      ).toHaveLength(1);
+      expect(textbox.textContent).toBe(initialText);
+      expect(submit).toHaveBeenCalledTimes(outcome === 'empty' ? 0 : 1);
+      if (outcome !== 'empty') expect(submit.mock.calls[0]).toEqual([body]);
+      if (outcome === 'rejected') {
+        expect(view.getByRole('alert')).not.toBeNull();
+      }
+      if (outcome === 'pending') {
+        expect(textbox.getAttribute('aria-readonly')).toBe('true');
+        fireEvent.submit(view.container.querySelector('form')!);
+        expect(submit).toHaveBeenCalledTimes(1);
+        await act(async () => complete(true));
+        expect(textbox.textContent).not.toContain('Keep this draft');
+      }
+    } finally {
+      await act(async () => complete(false));
+      view.unmount();
+    }
+  }
+);
 
 describe('existing comment activation (#5126)', () => {
   for (const targetText of ['comments', ' on many text segments']) {
@@ -42,28 +160,21 @@ describe('existing comment activation (#5126)', () => {
         configurable: true,
         value: 'http://localhost:3000',
       });
-      const { EditorKit } = await import('./plugins');
-      const editor = createEditor({
-        plugins: EditorKit,
-        initialValue: discussionValue,
-      });
+      const { default: DiscussionDemo } =
+        await import('../../examples/discussion-demo');
       const view = render(
         <TooltipProvider>
-          <Plate editor={editor}>
-            <Editor aria-label="Discussion editor" />
-            <ActiveDiscussion />
-          </Plate>
+          <DiscussionDemo />
         </TooltipProvider>
       );
       const user = userEvent.setup({ document: globalThis.document });
-      const root = view.getByRole('textbox', { name: 'Discussion editor' });
-      const target = [...root.querySelectorAll('.plite-comment')].find(
+      const root = view.getByRole('textbox', { name: '' });
+      const target = [...root.querySelectorAll('[data-comment-id]')].find(
         (element) => element.textContent === targetText
       );
       const plainText = view.getByText('Discuss changes using', {
         exact: false,
       });
-      const activeDiscussion = view.getByLabelText('Active discussion');
       const events: string[] = [];
       const recordEvent = (event: Event) => {
         if (event.target instanceof Node && root.contains(event.target)) {
@@ -73,8 +184,8 @@ describe('existing comment activation (#5126)', () => {
 
       expect(target).toBeDefined();
       expect(document.activeElement).toBe(document.body);
-      expect(editor.read.selection()).toBeNull();
-      expect(activeDiscussion).toHaveTextContent('closed');
+      expect(root.querySelector('[data-comment-active]')).toBeNull();
+      expect(view.queryByRole('dialog')).toBeNull();
 
       for (const event of ['pointerdown', 'mousedown', 'focus', 'click']) {
         document.addEventListener(event, recordEvent, true);
@@ -84,7 +195,7 @@ describe('existing comment activation (#5126)', () => {
         await user.click(target!);
 
         expect(events).toEqual(['pointerdown', 'mousedown', 'focus', 'click']);
-        expect(activeDiscussion).toHaveTextContent('discussion1');
+        expect(target).toHaveAttribute('data-comment-active');
         expect(
           within(await view.findByRole('dialog')).getByText(
             'Comments are a great way to provide feedback and discuss changes.'
@@ -92,7 +203,7 @@ describe('existing comment activation (#5126)', () => {
         ).toBeVisible();
 
         await user.click(plainText);
-        expect(activeDiscussion).toHaveTextContent('closed');
+        expect(root.querySelector('[data-comment-active]')).toBeNull();
         await waitFor(() => expect(view.queryByRole('dialog')).toBeNull());
 
         events.length = 0;
@@ -105,7 +216,7 @@ describe('existing comment activation (#5126)', () => {
         if (events.includes('focus')) {
           expect(events.indexOf('focus')).toBe(2);
         }
-        expect(activeDiscussion).toHaveTextContent('discussion1');
+        expect(target).toHaveAttribute('data-comment-active');
         expect(
           within(await view.findByRole('dialog')).getByText(
             'Comments are a great way to provide feedback and discuss changes.'
@@ -115,7 +226,8 @@ describe('existing comment activation (#5126)', () => {
         for (const event of ['pointerdown', 'mousedown', 'focus', 'click']) {
           document.removeEventListener(event, recordEvent, true);
         }
+        view.unmount();
       }
-    });
+    }, 20_000);
   }
 });

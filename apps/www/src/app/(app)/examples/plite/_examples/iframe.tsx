@@ -14,7 +14,6 @@ import { createPortal } from 'react-dom';
 
 import { Button, Icon, Toolbar } from './components';
 import type {
-  CustomText,
   CustomTextKey,
   CustomValue,
   ParagraphElement as ParagraphElementType,
@@ -117,7 +116,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CustomText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

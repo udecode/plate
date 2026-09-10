@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "how",
+  "files": [
+    {
+      "upstream": "skills/how/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "3a554ff564d66a4200a07e20164558e820ea7a9795beb98a4a06546146c98f5f",
+      "destinationSha256": "a97872eb9e0ee266231058855dc40a5c9a61a0365ad0a8bc8385affdee657d89",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/how/SKILL.md\n+++ skills/how/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: how\n description: \"Use for \\\"how does X work\\\", code walkthroughs before changing something, and placement / ownership / layering questions (\\\"where should this live\\\", \\\"which package owns this\\\", \\\"is this the right layer\\\"). Explains subsystem architecture, runtime flow, onboarding mental models. Can critique architecture. Use why for motivation.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # How\n \n@@ -45,9 +46,9 @@\n \n Spawn all explorers in a single message:\n \n-- `subagent_type`: `generalPurpose`\n-- `model`: your configured how-explorer model (default `grok-4.6-fast-xhigh`)\n-- `readonly`: `true`\n+- native worker role: source exploration or explanation\n+- `model`: your configured how-explorer model (default `inherit-parent`)\n+- permitted operations: read-only source inspection\n \n Each explorer gets the same base prompt from `references/explorer-prompt.md` plus a specific exploration angle naming its slice. Each explorer should:\n - Start broad: Glob for relevant directories, Grep for key types/interfaces/class names\n@@ -62,13 +63,7 @@\n \n ### Step 2b. Direct Explain (simple questions)\n \n-Spawn a single Task subagent that explores and explains in one pass:\n-\n-- `subagent_type`: `generalPurpose`\n-- `model`: your configured how-explainer model (default `claude-fable-5-1-thinking-max`)\n-- `readonly`: `true`\n-\n-The agent does its own exploration (Glob, Grep, Read) and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.\n+Explore and explain directly in the current task. Read `references/explainer-prompt.md` for its full communication method; trace the actual source and cite the relevant owners. No worker or panel is needed for a straightforward question.\n \n Proceed to Step 4.\n \n@@ -76,9 +71,9 @@\n \n Once all explorers return, spawn a single Task subagent to synthesize their findings into one coherent explanation:\n \n-- `subagent_type`: `generalPurpose`\n-- `model`: your configured how-explainer model (default `claude-fable-5-1-thinking-max`)\n-- `readonly`: `true`\n+- native worker role: source exploration or explanation\n+- `model`: your configured how-explainer model (default `inherit-parent`)\n+- permitted operations: read-only source inspection\n \n The explainer gets all explorers' findings and writes the human-facing explanation (output format below). Read `references/explainer-prompt.md` for the full prompt template. The explainer reconciles overlapping findings, resolves contradictions, and weaves the slices into a unified picture.\n \n@@ -110,12 +105,12 @@\n \n ### Step 2. Spawn Critics\n \n-After the explanation is complete, spawn one architectural critic per model in your configured how-critics list (defaults `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`), all in a single message.\n+After the explanation is complete, spawn one architectural critic per model in your configured how-critics list (defaults `inherit-parent`, `inherit-parent`, `inherit-parent`, `inherit-parent`), all in a single message.\n \n For each critic:\n-- `subagent_type`: `generalPurpose`\n+- native worker role: source exploration or explanation\n - `model`: one model from the configured how-critics list. These are minimum reasoning levels. The lead should escalate any model when the architecture warrants deeper analysis.\n-- `readonly`: `true`\n+- permitted operations: read-only source inspection\n \n Read `references/critic-prompt.md` for the prompt template. Each critic gets:\n 1. The explanation from Step 1 (so they don't re-explore)\n"
+    },
+    {
+      "upstream": "skills/how/references/critic-prompt.md",
+      "destination": "references/critic-prompt.md",
+      "upstreamSha256": "aa77a15590814c814bd5cb074842029ab7b790c2e8379050525bdbc20739d1bb",
+      "destinationSha256": "aa77a15590814c814bd5cb074842029ab7b790c2e8379050525bdbc20739d1bb",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/how/references/critique-rubric.md",
+      "destination": "references/critique-rubric.md",
+      "upstreamSha256": "5774ff2caf51796e54c4a61b63620a165de5801f23c8f47406e527abfbe9addc",
+      "destinationSha256": "5774ff2caf51796e54c4a61b63620a165de5801f23c8f47406e527abfbe9addc",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/how/references/explainer-prompt.md",
+      "destination": "references/explainer-prompt.md",
+      "upstreamSha256": "04336086e7c415394459ca2f461717d920e15339517dbf5a56ca042f8b4fead3",
+      "destinationSha256": "04336086e7c415394459ca2f461717d920e15339517dbf5a56ca042f8b4fead3",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/how/references/explorer-prompt.md",
+      "destination": "references/explorer-prompt.md",
+      "upstreamSha256": "fd1218b8cf1f467c644d4ce6fa5e54e6089ede65a28fbbae61f6ee7a2d462f85",
+      "destinationSha256": "fd1218b8cf1f467c644d4ce6fa5e54e6089ede65a28fbbae61f6ee7a2d462f85",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

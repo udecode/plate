@@ -8,7 +8,7 @@ Translate canonical Plite document changes and shared effects through Yjs with a
 
 Transport registered shared effects exactly once through versioned records, retry unknown effect codecs after registration, compact acknowledged events safely, and preserve fitted slice changes through reconnect and concurrent edits.
 
-**Migration:** Import `BaseYjsPlugin` from `platejs/yjs` or `YjsPlugin` from `platejs/yjs/react`, then configure it with the Yjs document and provider adapter from application code. Raw Plite editors import `yjs` from `platejs/yjs` and install `yjs(options)` through `editor.install(...)`. Import React cursor and provider-state hooks from `platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
+**Migration:** Import `BaseYjsPlugin` from `platejs/yjs` or `YjsPlugin` from `platejs/yjs/react`, then configure it with the Yjs document and provider adapter from application code. Raw Plite editors import `yjs` from `plitejs/yjs` and install `yjs(options)` through `editor.install(...)`. Import raw React cursor and provider-state hooks from `plitejs/yjs/react`; Plate consumers use `platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
 
 Encode exact derived or named schema identities in Yjs schema metadata format 2, require every claimed room to carry that identity, and reject older room metadata envelopes.
 

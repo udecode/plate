@@ -1,8 +1,7 @@
 import { useContext, useMemo } from 'react';
 
 import type { Element, NamedRootKey, RootKey } from '../..';
-import { NodeKeyContext } from '../context';
-import { useOptionalElement } from './use-element';
+import { ElementContext } from '../context';
 
 const DEFAULT_CHILD_ROOT_SLOT = 'default';
 
@@ -41,9 +40,9 @@ export function usePliteChildRoot(
   element?: Element | null,
   slot: string = DEFAULT_CHILD_ROOT_SLOT
 ): NamedRootKey {
-  const contextElement = useOptionalElement();
-  const nodeKey = useContext(NodeKeyContext);
-  const targetElement = element ?? contextElement;
+  const context = useContext(ElementContext);
+  const nodeKey = context?.nodeKey ?? null;
+  const targetElement = element ?? context?.element;
 
   return useMemo(() => {
     if (!targetElement) {

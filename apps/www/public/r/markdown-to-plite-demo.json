@@ -10,7 +10,9 @@
   "registryDependencies": [
     "https://platejs.org/r/editor.json",
     "https://platejs.org/r/use-debounce.json",
-    "https://platejs.org/r/editor-plugins.json"
+    "https://platejs.org/r/editor-plugins.json",
+    "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/dnd.json"
   ],
   "files": [
     {

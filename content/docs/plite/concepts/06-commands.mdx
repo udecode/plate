@@ -7,7 +7,7 @@ Commands are high-level actions that represent user or product intent. In
 Plite, command helpers are ordinary functions that run related transaction
 writes inside `editor.update(...)`.
 
-## Command Shape
+## Command shape
 
 For example, here are some of the built-in commands:
 
@@ -26,7 +26,7 @@ only when the command is intentionally targeting another part of the document.
 Plite composes transaction writes into one canonical `DocumentChange` during
 the update. That is the boundary used by history, collaboration, and tests.
 
-## Custom Commands
+## Custom commands
 
 When defining custom commands, pass the editor into a function and keep the writes grouped:
 

@@ -50,10 +50,6 @@ const changesetAutoReleaseWorkflowPath = new URL(
 const packageJsonPath = new URL('../../package.json', import.meta.url);
 const releasePackagesPath = new URL('release-packages.mjs', import.meta.url);
 const releaseBranchPrsPath = new URL('release-branch-prs.mjs', import.meta.url);
-const nextConfigPath = new URL(
-  '../../apps/www/next.config.ts',
-  import.meta.url
-);
 const changesetConfigPath = new URL(
   '../../.changeset/config.json',
   import.meta.url
@@ -1091,17 +1087,4 @@ test('beta pre-release guard requires active beta pre mode', () => {
   assert.throws(() => {
     validateBetaPreState({ mode: 'pre' });
   }, /beta pre-release tag/);
-});
-
-test('release docs keep old migration route redirects', async () => {
-  const nextConfig = await readFile(nextConfigPath, 'utf-8');
-
-  assert.match(
-    nextConfig,
-    /source:\s*'\/docs\/migration'[\s\S]*destination:\s*'\/docs\/releases'|destination:\s*'\/docs\/releases'[\s\S]*source:\s*'\/docs\/migration'/
-  );
-  assert.match(
-    nextConfig,
-    /source:\s*'\/cn\/docs\/migration'[\s\S]*destination:\s*'\/cn\/docs\/releases'|destination:\s*'\/cn\/docs\/releases'[\s\S]*source:\s*'\/cn\/docs\/migration'/
-  );
 });

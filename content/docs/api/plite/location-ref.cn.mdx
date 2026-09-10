@@ -7,4 +7,7 @@ description: Plite 中可随文档变更映射的路径、点和范围。
 `DocumentChange` 时，锚点都会映射其路径、点或范围；调用 `release()`
 后停止跟踪。
 
+使用 `deletion: "nearest"` 的持久锚点会在已保存历史的撤销和重做中，
+恢复操作前后的精确位置。
+
 完整参考见 [Anchor API](/docs/plite/api/locations/anchor)。

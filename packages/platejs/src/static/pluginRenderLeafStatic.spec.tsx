@@ -6,15 +6,17 @@ import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderLeafStatic,
   pluginRenderLeafStatic,
-} from './pluginRenderLeafStatic';
+} from './pluginRenderLeafStatic.internal';
 
 describe('pluginRenderLeafStatic', () => {
   const HighlightPlugin = defineBasePlugin('highlight', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
-      leafProps: {
-        className: 'highlight-leaf',
-        'data-tone': 'warm',
+      mark: {
+        leafAttributes: {
+          className: 'highlight-leaf',
+          'data-tone': 'warm',
+        },
       },
     },
   });
@@ -37,11 +39,11 @@ describe('pluginRenderLeafStatic', () => {
     ).toBe('plain');
   });
 
-  it('uses render.leaf when the leaf matches the plugin', () => {
-    const CustomLeafPlugin = HighlightPlugin.extend({
-      render: {
-        leaf: ({ children }) => <mark data-kind="custom-leaf">{children}</mark>,
-      },
+  it('uses the plugin component when the leaf matches the plugin', () => {
+    const CustomLeafPlugin = HighlightPlugin.configure({
+      component: ({ children }) => (
+        <mark data-kind="custom-leaf">{children}</mark>
+      ),
     });
     const editor = createStaticEditor({
       plugins: [CustomLeafPlugin],
@@ -59,7 +61,7 @@ describe('pluginRenderLeafStatic', () => {
     expect(result).toEqual(
       expect.objectContaining({
         props: expect.objectContaining({ children: 'hi' }),
-        type: editor.plugin(CustomLeafPlugin).render.leaf,
+        type: editor.plugin(CustomLeafPlugin).component,
       })
     );
   });
@@ -72,11 +74,9 @@ describe('pluginRenderLeafStatic', () => {
           property: property.boolean({ default: false, omitDefault: true }),
         },
       },
-      render: {
-        leaf: ({ children }) => (
-          <mark data-kind="persisted-mark">{children}</mark>
-        ),
-      },
+      component: ({ children }) => (
+        <mark data-kind="persisted-mark">{children}</mark>
+      ),
     });
     const editor = createStaticEditor({ plugins: [MarkPlugin] });
     const result = pluginRenderLeafStatic(
@@ -94,7 +94,7 @@ describe('pluginRenderLeafStatic', () => {
     expect(result).toEqual(
       expect.objectContaining({
         props: expect.objectContaining({ children: 'hi' }),
-        type: MarkPlugin.render.leaf,
+        type: MarkPlugin.component,
       })
     );
   });

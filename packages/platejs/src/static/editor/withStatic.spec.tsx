@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 import type { Value } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';

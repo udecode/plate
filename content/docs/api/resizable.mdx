@@ -1,9 +1,9 @@
 ---
 title: Resizable
-description: API reference for platejs/react.
+description: API reference for platejs/resizable/react.
 ---
 
-`platejs/react` exports two headless React components and length utilities.
+`platejs/resizable/react` exports two headless React components and their types.
 The package owns pointer, touch, keyboard, RTL, ARIA, and transient resize
 behavior. Registry components own styling and editor persistence.
 
@@ -17,31 +17,34 @@ npm install platejs @tanstack/react-virtual
 
 ```tsx
 import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useEditor } from 'platejs/react';
-import { Image } from 'platejs/react';
+import { PlateElement, useEditor, usePath } from 'platejs/react';
 import { ImagePlugin } from 'platejs/media/react';
 import { Resizable, ResizeHandle } from 'platejs/resizable/react';
 
 export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
   const editor = useEditor();
+  const path = usePath();
 
   return (
     <PlateElement {...props}>
-      <Resizable
-        align="center"
-        minWidth={120}
-        width={props.element.width}
-        onResizeEnd={(width) =>
-          editor.plugin(ImagePlugin).update.set(
-            { width },
-            { at: props.element }
-          )
-        }
-      >
-        <ResizeHandle direction="left" />
-        <Image alt={props.element.alt} />
-        <ResizeHandle direction="right" />
-      </Resizable>
+      <div contentEditable={false}>
+        <Resizable
+          align="center"
+          minWidth={120}
+          width={props.element.width}
+          onResizeEnd={(width) =>
+            editor.plugin(ImagePlugin).update.set({ width }, { at: path })
+          }
+        >
+          <ResizeHandle direction="left" />
+          <img
+            alt={props.element.alt}
+            src={props.element.url}
+            style={{ width: '100%' }}
+          />
+          <ResizeHandle direction="right" />
+        </Resizable>
+      </div>
       {props.children}
     </PlateElement>
   );
@@ -62,7 +65,7 @@ provider or raw resize store is part of the public API.
     Maximum width. Defaults to `100%`.
   </APIItem>
   <APIItem name="minWidth" type="ResizeLength" optional>
-    Minimum width. Defaults to `92`.
+    Minimum width. Defaults to `0`.
   </APIItem>
   <APIItem name="onResizeEnd" type="(width: ResizeLength) => void" optional>
     Commits the finished width to the owning feature.
@@ -98,22 +101,21 @@ provider or raw resize store is part of the public API.
 </APIOptions>
 </API>
 
-The handle renders a `slider`, disappears in read-only mode, listens on
-`window` while dragging, and supports arrow keys. Hold Shift for a larger
-keyboard step.
+The handle renders a `slider`, disappears in read-only mode, and supports arrow
+keys. Hold Shift for a larger keyboard step. Pointer gestures listen on the
+handle's owning window. Pointer cancellation, window blur, unmount, read-only
+changes, and external width changes discard the preview. ARIA values and bounds
+use pixels; the value text preserves the configured unit.
 
-## Types And Length Utilities
+## Types
 
 | API | Contract |
 | --- | --- |
-| `ResizeDirection` | `'bottom' | 'left' | 'right' | 'top'` |
-| `ResizeLength` | `number | \`${number}%\`` |
+| `ResizeDirection` | `'bottom'`, `'left'`, `'right'`, or `'top'`. |
+| `ResizeLength` | `number` or `string`; pixel values such as `120` or `"120px"`, or percentages such as `"50%"`. |
 | `ResizeEvent` | `{ delta; direction; finished; initialSize }` |
-| `resizeLengthClamp` | Clamps a pixel or percentage length against mixed constraints. |
-| `resizeLengthToRelative` | Converts pixels to a percentage. |
-| `resizeLengthToStatic` | Converts a percentage to pixels. |
 
-## Related Components
+## Related components
 
 - [Media](/docs/media) covers media elements that consume these primitives.
 - [Resize Handle](/docs/components/resize-handle) covers the styled registry

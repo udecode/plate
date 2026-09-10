@@ -5,7 +5,7 @@ import { createEditor } from '../../lib';
 import { definePlatePlugin } from './definePlatePlugin';
 
 describe('definePlatePlugin', () => {
-  it('binds the root component to the private render slot', () => {
+  it('binds the root component', () => {
     const Component: NodeComponent = () => null;
     const resolved = resolvePluginTest(
       definePlatePlugin('component', {
@@ -13,7 +13,7 @@ describe('definePlatePlugin', () => {
       })
     );
 
-    expect(resolved.render.node).toBe(Component);
+    expect(resolved.component).toBe(Component);
   });
 
   it('lets terminal configuration replace the component', () => {
@@ -25,7 +25,7 @@ describe('definePlatePlugin', () => {
       }).configure({ component: Replacement })
     );
 
-    expect(resolved.render.node).toBe(Replacement);
+    expect(resolved.component).toBe(Replacement);
   });
 
   it('keeps React configuration after an inferred extension stage', () => {
@@ -36,7 +36,7 @@ describe('definePlatePlugin', () => {
         .configure({ component: Component })
     );
 
-    expect(resolved.render.node).toBe(Component);
+    expect(resolved.component).toBe(Component);
   });
 
   it('publishes flat plugin API and update capabilities', () => {

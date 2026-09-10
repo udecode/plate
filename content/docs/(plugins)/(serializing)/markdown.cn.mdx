@@ -531,46 +531,37 @@ const markdownOutput = editor.api.markdown.serialize();
 // markdownOutput 将包含 GFM 语法
 ```
 
-### 自定义渲染（语法高亮）
+### 渲染带语法高亮的代码块
 
-本例展示两种方式：一种是自定义渲染组件（适合 UI 层变更），另一种是单次转换覆盖（适合一次性改变 Plate 数据结构）。
+UI 使用代码块组件；只有单次转换需要不同文档结构时，才覆盖 Markdown 规则。
 
 **背景说明：**
 
-- `platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Plate 的 `codeBlock` 元素，子元素为 `codeLine`。
-- Plate 的 `CodeBlockElement`（通常来自 `platejs/react`）负责渲染这一结构。
-- 语法高亮由 `CodeHighlightPlugin` 和 `lowlight` 提供。详见 [代码块插件文档](/docs/plugins/code-block)。
+- `platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Plate 的 `codeBlock` 元素，其中只有一个带换行符的文本子节点。
+- 复制到应用中的 `CodeBlockElement` 负责渲染这段多行文本。
+- 语法高亮由 `CodeHighlightPlugin` 和 `lowlight` 提供。详见 [代码块插件文档](/docs/code-block)。
 
-**方式一：自定义渲染组件（推荐 UI 层改动时使用）**
+**方式一：配置渲染组件**
 
 自定义 `codeBlock` 插件的渲染组件即可更改代码块的外观。
 
 ```tsx title="components/my-editor.tsx"
 import { createEditor } from 'platejs/react';
-import {
-  CodeBlockPlugin,
-  CodeHighlightPlugin,
-  CodeLinePlugin,
-  } from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
+import { CodeBlockElement } from '@/components/editor/code-block';
 
 const editor = createEditor({
   plugins: [
-    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }),
-  // 基础插件 + 自定义渲染
-    CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
-  CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
-  MarkdownPlugin,
-  // 用于 Markdown 转换
+    CodeBlockPlugin.configure({ component: CodeBlockElement }),
+    CodeHighlightPlugin,
+    MarkdownPlugin,
     // ... 其他插件
   ],
-  });
-
-// MyCustomCodeBlockElement.tsx 内实现自定义渲染（如用 react-syntax-highlighter），并消费 PlateElement 的 props。
+});
 ```
 
-完整用法详见 [代码块插件文档](/docs/plugins/code-block)。
+完整用法详见 [代码块插件文档](/docs/code-block)。
 
 **方式二：单次转换覆盖（高级用法）**
 
@@ -846,7 +837,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
     - Plate：
       - 功能插件 `codecs`：定义可复用的 mdast ↔ Plate JSON 转换
       - 操作 `rules`：只覆盖一次 API 调用的转换
-      - `createEditor` 的 `components` 配置 Plate 节点的渲染组件（详见[附录C](#appendix-c-components)）
+      - 插件 `component` 在所属描述符上配置 React 组件（详见[附录C](#附录c渲染-plate-节点的组件配置)）
 3.  **插件生态系统：** `platejs/markdown` 使用 `remarkPlugins`；`rehypePlugins` 不属于其转换管线
 
 **对照表：**
@@ -858,8 +849,8 @@ Options 示例使用 `import { MarkdownPlugin } from 'platejs/markdown'`。
 | `children` (字符串)             | 传递给 `editor.api.markdown.deserialize(string)`                                                      | 通常在 `createEditor` 的 `initialValue` 配置                   |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | 在 mdast 层操作                                                      |
 | `rehypePlugins`                 | 不属于 `MarkdownPlugin` 转换管线                                                                     | 将 Markdown 或 Plate 节点交给 Plate 前，单独运行 HTML 管线            |
-| `components={{ h1: MyH1 }}`     | `createEditor({ components: { h1: MyH1 } })`                                                    | 设置已安装 `HeadingPlugin` 键对应的渲染组件                               |
-| `components={{ code: MyCode }}` | 功能插件的 `text/markdown` codec 加 `components: { ['codeBlock']: MyCode }` | codec 负责 mdast ↔ Plate；component 负责渲染 |
+| `components={{ h1: MyH1 }}`     | `HeadingPlugin.configure({ component: MyH1 })`                              | 把 heading 组件绑定到所属插件                                             |
+| `components={{ code: MyCode }}` | 功能插件的 `text/markdown` codec 加 `CodeBlockPlugin.configure({ component: MyCode })` | codec 负责 mdast ↔ Plate；component 负责渲染 |
 | `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | 转换时过滤 mdast/Plate 节点                                          |
 | `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | 转换时过滤不支持节点                                                 |
 | `unwrapDisallowed`              | 无直接等价项，默认过滤节点                                      | 可通过单次 `rules` 覆盖实现展开逻辑                                 |
@@ -966,8 +957,7 @@ editor.api.markdown.deserialize(markdown, {
 
 ## 附录C：渲染 Plate 节点的组件配置
 
-功能 codec 负责 MD ↔ Plate 数据转换；Plate 使用 React 组件渲染节点。可通过
-`createEditor` 的 `components` 选项或插件的 `component` 方法配置。
+功能 codec 负责 MD ↔ Plate 数据转换；Plate 使用 React 组件渲染节点。把每个组件绑定到所属插件描述符。
 
 **示例：**
 
@@ -1004,14 +994,12 @@ import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... 以及粗体、斜体等标记插件
 
 export interface PlateMarkdownProps {
-  children: string; // Markdown 内容
-  components?: Record<string, React.ComponentType<any>>; // Plate 渲染组件（可选）
+  children: string;
   className?: string;
 }
 
 export function PlateMarkdown({
   children,
-  components = {},
   className,
 }: PlateMarkdownProps) {
   const editor = useCreateEditor({
@@ -1020,7 +1008,6 @@ export function PlateMarkdown({
       ...BasicBlocksKit,
       MarkdownPlugin,
     ],
-    components, // 传递自定义渲染组件
   });
 
   useEffect(() => {
@@ -1054,7 +1041,7 @@ export function PlateMarkdown({
 - **功能 codec 和操作覆盖：** 保证自定义 `decode` 或 `deserialize` 不会引入不安全数据。
 - **`remarkPlugins`：** 谨慎甄别使用的第三方 remark 插件，注意其安全性隐患。
 - **原始 HTML 处理：** 如使用 `rehype-raw`，必须在来源不可信时联合 [`rehype-sanitize`][github-rehype-sanitize] 进行清洗。
-- **插件安全责任：** 如链接元素需进行有效性验证，可参见 LinkPlugin 的 [`isUrl`](/docs/plugins/link#linkplugin) 说明，或媒体插件的 [`parseMediaUrl`](/docs/plugins/media#parsemediaurl)。
+- **插件安全责任：** 如链接元素需进行有效性验证，可参见 LinkPlugin 的 [`isUrl`](/docs/link#linkplugin) 说明，或媒体插件的 [`parseMediaUrl`](/docs/media#parsemediaurl)。
 
 **建议：** 对于不可信的 Markdown 输入务必格外谨慎。如果开放复杂扩展或原始 HTML 功能，请做好输入清洗。
 

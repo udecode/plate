@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-05-comment-keyboard-submit",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-05-comment-keyboard-submit.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep comment drafts intact when submitting with the keyboard",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-05-comment-keep-drafts-intact-when-29c6e12a",
+      "kind": "fix",
+      "summary": "Keep comment drafts intact when submitting with the keyboard",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-05",
+          "entry": "2026-09-05-comment-keyboard-submit",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

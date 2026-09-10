@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import type { Path, RootKey, NodeKey } from '..';
+import type { Path, RootKey } from '..';
 
 export { EditorContext } from './hooks/use-editor-context';
 export { ComposingContext } from './hooks/use-editor-composing';
@@ -8,8 +8,6 @@ export { FocusedContext } from './hooks/use-editor-focused';
 export { ReadOnlyContext } from './hooks/use-editor-read-only';
 export { ElementContext } from './hooks/use-element';
 
-export const ElementPathContext = createContext<Path | null>(null);
-export const NodeKeyContext = createContext<NodeKey | null>(null);
 export const PliteEditableRootContext = createContext<RootKey | null>(null);
 export const PliteContentRootOwnerContext = createContext<{
   childRoot: RootKey;

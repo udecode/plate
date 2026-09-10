@@ -106,7 +106,7 @@ type DOMInputSelectionSourceTransition = Readonly<{
     | 'internal-control'
     | 'model-command'
     | 'native-selection-move'
-    | 'projection-refresh'
+    | 'decoration-refresh'
     | 'repair-induced'
     | 'unknown-selection';
   selectionSource: DOMInputSelectionSource;

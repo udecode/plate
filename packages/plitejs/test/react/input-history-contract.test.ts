@@ -1,3 +1,5 @@
+import { createEditor } from 'plitejs';
+
 import {
   getNativeTextInputUpdateTags,
   NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS,
@@ -20,7 +22,7 @@ afterEach(() => {
 });
 
 test('native text input tags merge rapid repair batches and push after idle', () => {
-  const editor = {};
+  const editor = createEditor();
   const location = { path: [0, 0] };
 
   setNow(100);
@@ -42,8 +44,8 @@ test('native text input tags merge rapid repair batches and push after idle', ()
 });
 
 test('native text input tags are scoped per editor instance', () => {
-  const firstEditor = {};
-  const secondEditor = {};
+  const firstEditor = createEditor();
+  const secondEditor = createEditor();
   const location = { path: [0, 0] };
 
   setNow(100);
@@ -64,7 +66,7 @@ test('native text input tags are scoped per editor instance', () => {
 });
 
 test('native text input tags push when rapid input moves to another path', () => {
-  const editor = {};
+  const editor = createEditor();
 
   setNow(100);
   expect(getNativeTextInputUpdateTags(editor, { path: [0, 0] })).toEqual([
@@ -79,7 +81,7 @@ test('native text input tags push when rapid input moves to another path', () =>
 });
 
 test('native text input tags push when rapid input moves to another root', () => {
-  const editor = {};
+  const editor = createEditor();
 
   setNow(100);
   expect(

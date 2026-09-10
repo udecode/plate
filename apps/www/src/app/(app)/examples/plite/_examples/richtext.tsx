@@ -553,7 +553,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<RichTextText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

@@ -14,10 +14,7 @@ export type RenderLeafProps<N extends Text = Text, L extends Text = N> = {
   /** Stable path for the live text node. */
   path?: Path;
   text: Omit<N, 'text'>;
-  /**
-   * The position of the leaf within the Text node, only present when the text
-   * node is split by decorations.
-   */
+  /** Position of this rendered segment when Decorations split the text node. */
   leafPosition?: LeafPosition;
 };
 

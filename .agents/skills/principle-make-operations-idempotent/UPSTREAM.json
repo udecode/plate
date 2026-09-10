@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-make-operations-idempotent",
+  "files": [
+    {
+      "upstream": "skills/principle-make-operations-idempotent/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "540738217c3da7bf513b9886924ad6a2bc77e58be867f5bd2e1831c74bf2ce70",
+      "destinationSha256": "8b5160045ee301b53ae5ef6d8ba494fbad8cd76935eb2276de9e119988d3fa51",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-make-operations-idempotent/SKILL.md\n+++ skills/principle-make-operations-idempotent/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-make-operations-idempotent\n description: \"Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Make Operations Idempotent\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

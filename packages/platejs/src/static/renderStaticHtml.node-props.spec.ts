@@ -34,7 +34,7 @@ const plugins = [
       },
     },
     render: {
-      nodeProps: ({ element }) =>
+      attributes: ({ element }) =>
         /^https?:\/\/platejs.org\/?/.test(getStringProp(element, 'url'))
           ? {}
           : { target: '_blank' },
@@ -53,7 +53,7 @@ const plugins = [
       },
     },
     render: {
-      nodeProps: ({ element }) => ({
+      attributes: ({ element }) => ({
         alt: getObjectProp(element, 'attributes').alt,
         width: getStringProp(element, 'url').split('/').pop(),
       }),
@@ -76,7 +76,7 @@ describe('static HTML plugin node props', () => {
               children
             ),
           render: {
-            nodeProps: () => ({ 'data-static-plugin-prop': 'preserved' }),
+            attributes: () => ({ 'data-static-plugin-prop': 'preserved' }),
           },
           schema: { element: { void: 'block' } },
         }),

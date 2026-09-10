@@ -2,7 +2,6 @@
 
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createEditor } from 'platejs';
-import { exportToDocx } from 'platejs/docx';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
@@ -15,7 +14,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DocxExportKit } from '@/registry/components/editor/docx-export';
+import {
+  DOCX_EXPORT_STYLES,
+  DocxExportKit,
+} from '@/registry/components/editor/docx-export';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
@@ -44,12 +46,9 @@ export function ExportToolbarButton() {
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas-pro');
 
-    const style = document.createElement('style');
-    document.head.append(style);
     const editorElement = editor.api.dom.resolveDOMNode(editor);
 
     if (!editorElement) {
-      style.remove();
       throw new Error('Cannot resolve editor DOM node for export.');
     }
 
@@ -71,7 +70,6 @@ export function ExportToolbarButton() {
         }
       },
     });
-    style.remove();
 
     return canvas;
   };
@@ -153,8 +151,10 @@ export function ExportToolbarButton() {
   };
 
   const exportToWord = async () => {
+    const { exportToDocx } = await import('platejs/docx/export');
     const blob = await exportToDocx(editor.read.value().children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+      stylesheet: DOCX_EXPORT_STYLES,
     });
 
     const url = URL.createObjectURL(blob);

@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short architecture-cleanup objective, under 240 characters.
 
@@ -30,7 +32,7 @@ Timed checkpoint:
 - semantics: pending
 - initial confidence / cleanliness score: pending
 - improvement loop: pending
-- final score / loop closure: pending
+- final evidence / loop closure: pending
 
 Completion threshold:
 - TODO: Define the exact cleanup done state.
@@ -98,7 +100,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | `architecture-cleanup` loaded | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Source of truth read before analysis | pending | pending |
 | VISION fit gate read | pending | pending |
 | Plite / Plate boundary selected | pending | pending |
@@ -128,7 +130,7 @@ Work Checklist:
 - [ ] Anti-confetti rule applied: no split is accepted without durable owner,
       stable name, focused proof, and lower future navigation cost.
 - [ ] Merge/delete/inline are considered as seriously as extraction.
-- [ ] VISION fit is recorded; missing reusable taste routes to `vision` or
+- [ ] VISION fit is recorded; missing reusable taste routes to `VISION.md` or
       `sync-vision`.
 - [ ] Implementation packets are behavior-neutral, public-API-neutral, narrow,
       reversible, and have focused proof.

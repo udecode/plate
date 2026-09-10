@@ -2,36 +2,20 @@
 
 import * as React from 'react';
 
-const getServerSnapshot = () => null;
-
-function createObjectUrlStore(source: Blob | null) {
-  let snapshot: string | null = null;
-
-  return {
-    getSnapshot: () => snapshot,
-    subscribe: (onStoreChange: () => void) => {
-      if (!source) return () => {};
-
-      const url = URL.createObjectURL(source);
-
-      snapshot = url;
-      onStoreChange();
-
-      return () => {
-        URL.revokeObjectURL(url);
-
-        if (snapshot === url) snapshot = null;
-      };
-    },
-  };
-}
-
 export function useObjectUrl(source: Blob | null) {
-  const store = React.useMemo(() => createObjectUrlStore(source), [source]);
+  const [resource, setResource] = React.useState<{
+    source: Blob;
+    url: string;
+  } | null>(null);
 
-  return React.useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    getServerSnapshot
-  );
+  React.useEffect(() => {
+    const url = source ? URL.createObjectURL(source) : null;
+
+    // oxlint-disable-next-line react/set-state-in-effect -- Allocate after commit so abandoned renders cannot leak browser URLs.
+    setResource(source && url ? { source, url } : null);
+
+    return url ? () => URL.revokeObjectURL(url) : undefined;
+  }, [source]);
+
+  return resource?.source === source ? resource.url : null;
 }

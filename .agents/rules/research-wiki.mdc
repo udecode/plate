@@ -6,6 +6,9 @@ disable-model-invocation: true
 
 # Research Wiki
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS. This is the reusable workflow for operating the
 `docs/research` compiled layer without turning research into one-off chat mush.
 
@@ -20,10 +23,12 @@ This skill should decide whether the job is:
 - a **full** ingest-and-compile pass
 - a **maintain** pass over an existing research lane
 
-The support docs remain canonical detail:
+Resolve every `docs/` path below from the current repository root and `../raw`
+from its parent; these are repository sources, not files bundled beside the
+generated skill. The support docs remain canonical detail:
 
-- [docs/research/commands/full-pipeline.md](docs/research/commands/full-pipeline.md)
-- [docs/research/commands/maintain.md](docs/research/commands/maintain.md)
+- [docs/research/commands/full-pipeline.md](../../../docs/research/commands/full-pipeline.md)
+- [docs/research/commands/maintain.md](../../../docs/research/commands/maintain.md)
 
 Use them as sub-workflows, not as dead docs.
 
@@ -62,15 +67,15 @@ Use them as sub-workflows, not as dead docs.
 
 Always read:
 
-1. [docs/research/README.md](docs/research/README.md)
-2. [docs/research/index.md](docs/research/index.md)
-3. [docs/research/log.md](docs/research/log.md)
+1. [docs/research/README.md](../../../docs/research/README.md)
+2. [docs/research/index.md](../../../docs/research/index.md)
+3. [docs/research/log.md](../../../docs/research/log.md)
 
 Then choose one support doc:
 
-- [docs/research/commands/full-pipeline.md](docs/research/commands/full-pipeline.md)
+- [docs/research/commands/full-pipeline.md](../../../docs/research/commands/full-pipeline.md)
   for `full`
-- [docs/research/commands/maintain.md](docs/research/commands/maintain.md)
+- [docs/research/commands/maintain.md](../../../docs/research/commands/maintain.md)
   for `maintain`
 
 ## Mode Selection
@@ -198,3 +203,5 @@ A successful pass should leave behind durable artifacts such as:
 - Do not bypass the compiled layer and patch law straight from raw evidence
   unless the task is tiny and the evidence is already obvious.
 - Do not leave `index.md` or `log.md` stale after adding research pages.
+
+For backlog or closure status queries, read [ledger query mechanics](./references/ledger-queries.md).

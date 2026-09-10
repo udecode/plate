@@ -4,6 +4,7 @@ import { SelectionApi, type Selection } from '../..';
 import { EDITOR_TO_FORCE_RENDER } from '../../dom/internal';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { recordPliteReactRender } from '../render-profiler';
 import { createDOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
@@ -11,6 +12,7 @@ import {
   type EditableRepairRequest,
   focusEditableRepairTarget,
 } from './mutation-controller';
+import { readRuntimeText } from './runtime-live-state';
 
 type PendingModelSelectionExport = {
   selection: Selection;
@@ -104,7 +106,20 @@ export const useRuntimeRepairEngine = ({
 
   runtime.publishDOMRepairQueue(domRepairQueue);
 
-  runtime.updateDOMIntegrityRepairHandler(() => {
+  runtime.updateDOMIntegrityRepairHandler((evidence) => {
+    const textPath = evidence.mutations[0]?.path?.split(',').map(Number);
+    const modelText = textPath ? readRuntimeText(editor, textPath)?.text : null;
+    const domText = evidence.root.querySelector<HTMLElement>(
+      `[data-plite-path="${evidence.mutations[0]?.path ?? ''}"]`
+    )?.textContent;
+    recordPliteReactRender({
+      id: `dom-integrity-force-render:${evidence.mutations
+        .map(({ path, type }) => `${type}:${path ?? 'unknown'}`)
+        .join(
+          ','
+        )}:dom-${domText?.length ?? -1}:model-${modelText?.length ?? -1}`,
+      kind: 'runtime-time',
+    });
     forceRender();
     domPhaseScheduler.schedule(
       'selection-repair',

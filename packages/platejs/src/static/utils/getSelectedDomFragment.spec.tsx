@@ -1,5 +1,5 @@
 import { createEditor } from '../../lib/editor';
-import { getSelectedDomFragment } from './getSelectedDomFragment';
+import { getSelectedDomFragment } from './getSelectedDomFragment.internal';
 
 const selectText = (node: Text, start: number, end: number) => {
   const range = document.createRange();

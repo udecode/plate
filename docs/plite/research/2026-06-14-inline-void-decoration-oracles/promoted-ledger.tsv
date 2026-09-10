@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+pm-inline-decoration-boundary	P106/P116	slate-react	.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx `projects decorations across inline element boundaries`	bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t "projects decorations across inline element boundaries"; bun test ./packages/slate-react/test/projections-and-selection-contract.tsx	promoted-kept; P116 focused rerun passed 1/1

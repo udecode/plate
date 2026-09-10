@@ -109,10 +109,18 @@ const selectAsset = async (
 
 describe('keyboard-selectable element selection', () => {
   test('keeps node focus DOM-less and moves between owner and direct text', async () => {
+    const getTextNodeAtPath = (path: string) => {
+      const host = document.querySelector<HTMLElement>(
+        `[data-plite-path="${path}"]`
+      );
+      const string = host?.matches('[data-plite-string]')
+        ? host
+        : host?.querySelector<HTMLElement>('[data-plite-string]');
+
+      return string?.firstChild;
+    };
     const writeStaleDOMSelection = () => {
-      const text = document.querySelector<HTMLElement>(
-        '[data-plite-path="0,0"] [data-plite-string]'
-      )?.firstChild;
+      const text = getTextNodeAtPath('0,0');
 
       expect(text).toBeTruthy();
       document.getSelection()?.setBaseAndExtent(text!, 0, text!, 0);
@@ -141,9 +149,7 @@ describe('keyboard-selectable element selection', () => {
     expect(document.activeElement).toBe(editable);
     expect(document.getSelection()?.rangeCount).toBe(0);
 
-    const staleDOMPoint = rendered.container.querySelector<HTMLElement>(
-      '[data-plite-path="1,0"] [data-plite-string]'
-    )?.firstChild;
+    const staleDOMPoint = getTextNodeAtPath('1,0');
 
     expect(staleDOMPoint).toBeTruthy();
     writeCollapsedModelSelectionDOMPreference(

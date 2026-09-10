@@ -32,7 +32,7 @@ type StaticEditorSchemaPlugins<P extends readonly unknown[] = readonly []> =
 
 type CreateStaticEditorOptionsForValue<
   V extends Value,
-  P extends readonly unknown[] = readonly [],
+  P extends readonly BasePluginInput[] = readonly [],
 > = Omit<
   CreateEditorOptions<Value, readonly [], StaticPluginTuple<P>>,
   'initialValue' | 'plugins'
@@ -50,7 +50,7 @@ type CreateStaticEditorOptionsForValue<
 };
 
 export type CreateStaticEditorOptions<
-  P extends readonly unknown[] = readonly [],
+  P extends readonly BasePluginInput[] = readonly [],
 > = CreateStaticEditorOptionsForValue<Value, P>;
 
 export type StaticEditor<P extends readonly unknown[] = readonly []> = Editor<
@@ -60,7 +60,7 @@ export type StaticEditor<P extends readonly unknown[] = readonly []> = Editor<
 >;
 
 export function createStaticEditor<
-  const P extends readonly unknown[] = readonly [],
+  const P extends readonly BasePluginInput[] = readonly [],
 >(options?: CreateStaticEditorOptions<P>): StaticEditor<P>;
 export function createStaticEditor<
   V extends Value = Value,

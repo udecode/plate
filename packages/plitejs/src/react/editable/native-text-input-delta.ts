@@ -3,6 +3,37 @@ export type NativeTextInsertDelta = {
   text: string;
 };
 
+export const getPureTextInsertion = (
+  previousText: string,
+  nextText: string
+): NativeTextInsertDelta | null => {
+  if (nextText.length <= previousText.length) return null;
+
+  let offset = 0;
+
+  // Native string equality handles large equal prefixes far faster than a
+  // JavaScript loop over every code unit.
+  while (
+    offset + 4096 <= previousText.length &&
+    previousText.slice(offset, offset + 4096) ===
+      nextText.slice(offset, offset + 4096)
+  ) {
+    offset += 4096;
+  }
+  while (
+    offset < previousText.length &&
+    previousText[offset] === nextText[offset]
+  ) {
+    offset += 1;
+  }
+
+  const length = nextText.length - previousText.length;
+
+  return previousText.slice(offset) === nextText.slice(offset + length)
+    ? { offset, text: nextText.slice(offset, offset + length) }
+    : null;
+};
+
 const getPureInsertDelta = ({
   inputText,
   pliteText,
@@ -12,43 +43,10 @@ const getPureInsertDelta = ({
   pliteText: string;
   textHostText: string;
 }): NativeTextInsertDelta | null => {
-  if (textHostText.length <= pliteText.length) {
-    return null;
-  }
+  const insertion = getPureTextInsertion(pliteText, textHostText);
 
-  let start = 0;
-
-  while (
-    start < pliteText.length &&
-    start < textHostText.length &&
-    pliteText[start] === textHostText[start]
-  ) {
-    start += 1;
-  }
-
-  let pliteEnd = pliteText.length;
-  let textHostEnd = textHostText.length;
-
-  while (
-    pliteEnd > start &&
-    textHostEnd > start &&
-    pliteText[pliteEnd - 1] === textHostText[textHostEnd - 1]
-  ) {
-    pliteEnd -= 1;
-    textHostEnd -= 1;
-  }
-
-  const insertedText = textHostText.slice(start, textHostEnd);
-
-  if (
-    pliteEnd === start &&
-    insertedText.length > 0 &&
-    insertedText === inputText
-  ) {
-    return {
-      offset: start,
-      text: insertedText,
-    };
+  if (insertion && insertion.text === inputText) {
+    return insertion;
   }
 
   return null;

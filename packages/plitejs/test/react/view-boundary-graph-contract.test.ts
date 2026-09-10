@@ -1,16 +1,15 @@
-import type { Descendant, Point, RootKey } from 'plitejs';
+import type { Point } from 'plitejs';
 import { describe, expect, it } from 'vitest';
 
 import {
   createPliteViewBoundaryGraph,
-  createPliteViewBoundarySelectionTarget,
-  getPliteRootBoundaryPoint,
-  hasAmbiguousPliteViewBoundarySegments,
+  getPliteViewBoundaryOwnerKey,
+  PliteViewBoundaryGraph,
   type PliteViewBoundaryOwner,
 } from '../../src/react/view-boundary-graph';
-import { createPliteViewSelection } from '../../src/react/view-selection';
 
-const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
+const SHARED_ROOT = 'synced-block:shared:body';
+const SEPARATE_ROOT = 'synced-block:separate:body';
 
 const firstSharedOwner = {
   childRoot: SHARED_ROOT,
@@ -18,116 +17,162 @@ const firstSharedOwner = {
   ownerRoot: 'main',
 } satisfies PliteViewBoundaryOwner;
 
-const secondSharedOwner = {
-  childRoot: SHARED_ROOT,
+const separateOwner = {
+  childRoot: SEPARATE_ROOT,
   ownerPath: [3],
   ownerRoot: 'main',
 } satisfies PliteViewBoundaryOwner;
 
-const paragraph = (text: string): Descendant => ({
-  type: 'paragraph',
-  children: [{ text }],
-});
-
-const contentCard = (): Descendant => ({
-  type: 'content-card',
-  childRoots: { body: SHARED_ROOT },
-  children: [{ text: '' }],
-});
+const secondSharedOwner = {
+  childRoot: SHARED_ROOT,
+  ownerPath: [5],
+  ownerRoot: 'main',
+} satisfies PliteViewBoundaryOwner;
 
 const point = (
-  root: RootKey | undefined,
+  root: string | undefined,
   path: readonly number[],
   offset: number
 ): Point => ({
   ...(root ? { root } : {}),
-  offset,
   path: [...path],
+  offset,
 });
 
-describe('plite view boundary graph', () => {
-  it('creates command targets from visible graph segments across roots', () => {
-    const roots = {
-      [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')],
-      main: [paragraph('Before'), contentCard(), paragraph('After')],
-    };
-    const graph = createPliteViewBoundaryGraph([
-      { path: [0], root: 'main' },
-      { owner: firstSharedOwner, path: [0], root: SHARED_ROOT },
-      { owner: firstSharedOwner, path: [1], root: SHARED_ROOT },
-      { path: [2], root: 'main' },
+const createSyncedBlocksViewBoundaryGraph = () =>
+  createPliteViewBoundaryGraph([
+    { path: [0], root: 'main' },
+    { owner: firstSharedOwner, path: [0], root: SHARED_ROOT },
+    { owner: firstSharedOwner, path: [1], root: SHARED_ROOT },
+    { path: [2], root: 'main' },
+    { owner: separateOwner, path: [0], root: SEPARATE_ROOT },
+    { owner: separateOwner, path: [1], root: SEPARATE_ROOT },
+    { path: [4], root: 'main' },
+    { owner: secondSharedOwner, path: [0], root: SHARED_ROOT },
+    { owner: secondSharedOwner, path: [1], root: SHARED_ROOT },
+    { path: [6], root: 'main' },
+  ]);
+
+describe('plite projection graph', () => {
+  it('walks visible order and keeps repeated root copies distinct', () => {
+    const graph = createSyncedBlocksViewBoundaryGraph();
+    const firstSharedKey = getPliteViewBoundaryOwnerKey(firstSharedOwner);
+    const secondSharedKey = getPliteViewBoundaryOwnerKey(secondSharedOwner);
+
+    expect(graph.nodes.map((node) => node.ownerKey)).toEqual([
+      null,
+      firstSharedKey,
+      firstSharedKey,
+      null,
+      getPliteViewBoundaryOwnerKey(separateOwner),
+      getPliteViewBoundaryOwnerKey(separateOwner),
+      null,
+      secondSharedKey,
+      secondSharedKey,
+      null,
     ]);
-    const selection = createPliteViewSelection(graph, {
-      anchor: { point: point(undefined, [0, 0], 'Bef'.length) },
-      focus: {
-        owner: firstSharedOwner,
-        point: point(SHARED_ROOT, [0, 0], 'In'.length),
-      },
-    });
-
-    expect(createPliteViewBoundarySelectionTarget(roots, selection)).toEqual({
-      ranges: [
-        {
-          anchor: { offset: 'Bef'.length, path: [0, 0] },
-          focus: { offset: 'Before'.length, path: [0, 0] },
-        },
-        {
-          anchor: { offset: 0, path: [0, 0], root: SHARED_ROOT },
-          focus: { offset: 'In'.length, path: [0, 0], root: SHARED_ROOT },
-        },
-      ],
-      start: { offset: 'Bef'.length, path: [0, 0] },
-    });
-  });
-
-  it('rejects command targets when a repeated root selection has multiple owners', () => {
-    const graph = createPliteViewBoundaryGraph([
-      { owner: firstSharedOwner, path: [0], root: SHARED_ROOT },
-      { path: [2], root: 'main' },
-      { owner: secondSharedOwner, path: [0], root: SHARED_ROOT },
-    ]);
-    const selection = createPliteViewSelection(graph, {
-      anchor: {
-        owner: firstSharedOwner,
-        point: point(SHARED_ROOT, [0, 0], 1),
-      },
-      focus: {
-        owner: secondSharedOwner,
-        point: point(SHARED_ROOT, [0, 0], 3),
-      },
-    });
-
-    expect(hasAmbiguousPliteViewBoundarySegments(selection.segments)).toBe(
-      true
-    );
     expect(
-      createPliteViewBoundarySelectionTarget(
+      PliteViewBoundaryGraph.nextNode(graph, graph.nodes[0])?.ownerKey
+    ).toBe(firstSharedKey);
+    expect(
+      PliteViewBoundaryGraph.previousNode(graph, graph.nodes[9])?.ownerKey
+    ).toBe(secondSharedKey);
+    expect(
+      PliteViewBoundaryGraph.comparePoints(
+        graph,
         {
-          [SHARED_ROOT]: [paragraph('Inside')],
-          main: [paragraph('Before'), contentCard(), paragraph('After')],
+          owner: firstSharedOwner,
+          point: point(SHARED_ROOT, [0, 0], 0),
         },
-        selection
+        {
+          owner: secondSharedOwner,
+          point: point(SHARED_ROOT, [0, 0], 0),
+        }
       )
-    ).toBe(null);
+    ).toBe(-1);
   });
 
-  it('shares descendant boundary point traversal for hidden ranges and roots', () => {
-    const children: Descendant[] = [
-      {
-        type: 'section',
-        children: [paragraph('Summary'), paragraph('Hidden alpha')],
-      },
-      paragraph('Visible beta'),
-    ];
+  it('segments a visible range through a repeated shared root into a separate root', () => {
+    const graph = createSyncedBlocksViewBoundaryGraph();
+    const firstSharedKey = getPliteViewBoundaryOwnerKey(firstSharedOwner);
+    const separateKey = getPliteViewBoundaryOwnerKey(separateOwner);
 
-    expect(getPliteRootBoundaryPoint(children, 'start')).toEqual({
-      offset: 0,
-      path: [0, 0, 0],
+    const segments = PliteViewBoundaryGraph.segmentRange(graph, {
+      anchor: {
+        point: point(undefined, [0, 0], 1),
+      },
+      focus: {
+        owner: separateOwner,
+        point: point(SEPARATE_ROOT, [0, 0], 8),
+      },
     });
-    expect(getPliteRootBoundaryPoint(children, 'end')).toEqual({
-      offset: 'Visible beta'.length,
-      path: [1, 0],
+
+    expect(segments.backward).toBe(false);
+    expect(
+      segments.parts.map((part) => ({
+        end: part.end.kind,
+        nodeKeys: part.nodes.map((node) => node.key),
+        ownerKey: part.ownerKey,
+        root: part.root,
+        start: part.start.kind,
+      }))
+    ).toEqual([
+      {
+        end: 'boundary',
+        nodeKeys: ['main:0'],
+        ownerKey: null,
+        root: 'main',
+        start: 'point',
+      },
+      {
+        end: 'boundary',
+        nodeKeys: [
+          `${firstSharedKey}:${SHARED_ROOT}:0`,
+          `${firstSharedKey}:${SHARED_ROOT}:1`,
+        ],
+        ownerKey: firstSharedKey,
+        root: SHARED_ROOT,
+        start: 'boundary',
+      },
+      {
+        end: 'boundary',
+        nodeKeys: ['main:2'],
+        ownerKey: null,
+        root: 'main',
+        start: 'boundary',
+      },
+      {
+        end: 'point',
+        nodeKeys: [`${separateKey}:${SEPARATE_ROOT}:0`],
+        ownerKey: separateKey,
+        root: SEPARATE_ROOT,
+        start: 'boundary',
+      },
+    ]);
+  });
+
+  it('keeps projection owner metadata outside serialized Plite points', () => {
+    const graph = createSyncedBlocksViewBoundaryGraph();
+    const segments = PliteViewBoundaryGraph.segmentRange(graph, {
+      anchor: {
+        point: point(undefined, [0, 0], 1),
+      },
+      focus: {
+        owner: separateOwner,
+        point: point(SEPARATE_ROOT, [0, 0], 8),
+      },
     });
-    expect(getPliteRootBoundaryPoint([], 'start')).toBe(null);
+    const pointEndpoints = segments.parts.flatMap((part) =>
+      [part.start, part.end].flatMap((endpoint) =>
+        endpoint.kind === 'point' ? [endpoint.point] : []
+      )
+    );
+
+    expect(pointEndpoints).toEqual([
+      { path: [0, 0], offset: 1 },
+      { root: SEPARATE_ROOT, path: [0, 0], offset: 8 },
+    ]);
+    expect(JSON.stringify(pointEndpoints)).not.toContain('owner');
+    expect(JSON.stringify(pointEndpoints)).not.toContain('ownerKey');
   });
 });

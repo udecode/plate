@@ -1,13 +1,11 @@
 import {
   ContentSlice,
   DebugPlugin,
-  type DecoratedRange,
   defineBasePlugin,
   type DefinitionOf,
   editorCommands,
   type Element,
   ElementApi,
-  type ElementEntry,
   type ElementOf,
   type Location,
   NodeApi,
@@ -17,18 +15,16 @@ import {
   type PlateNodeInsertOptions,
   PLUGINS,
   property,
+  type Range,
   RangeApi,
   schema,
-  type TextOf,
 } from '../../../core';
 import { clipboardHandler } from '../../../dom/plite-dom.internal';
-import { failInvariant } from '../internal/failInvariant';
-import { findCodeBlockLanguageChange } from './codeHighlight.internal';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
 const NON_WHITESPACE_OR_END = /\S|$/;
-const WHITESPACE = /\s/;
+const TRAILING_NEWLINES = /\n+$/;
 const patchedLowlights = new WeakSet<object>();
 
 type HighlightMode = {
@@ -102,52 +98,85 @@ const isCodeHighlightRegistry = (
     typeof registry.registerAlias === 'function'
   );
 };
-type CodeBlockDecoration = DecoratedRange & {
-  className: string;
-  codeSyntax: true;
-};
+type CodeBlockDecoration = Readonly<{
+  attributes: Readonly<{ className: string; 'data-code-block-syntax': '' }>;
+  key: string;
+  range: Range;
+}>;
 type CodeHighlightWarning =
   | { error: unknown; kind: 'highlight'; language: string }
   | { kind: 'missing-language'; language: string };
-type CodeHighlightRuntime = {
-  decorateBlock: (
-    entry: NodeEntry<Element>,
-    options: {
-      defaultLanguage: string | null;
-      lowlight: CodeHighlightLowlight;
-    }
-  ) => {
-    decorations: Map<Element, CodeBlockDecoration[]>;
-    warning?: CodeHighlightWarning;
-  };
-  lineDecorations: WeakMap<Element, CodeBlockDecoration[]>;
+type CodeHighlightCache = {
+  attributes: ReadonlyMap<string, CodeBlockDecoration['attributes']>;
+  decorations: readonly CodeBlockDecoration[];
+  language: string | null;
+  lowlight: CodeHighlightLowlight;
+  text: string;
 };
-const codeHighlightRuntimes = new WeakMap<object, CodeHighlightRuntime>();
-export const BaseCodeLinePlugin = defineBasePlugin(PLUGINS.codeLine, {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      slice: { preserveContext: true },
-      blockContent: false,
-    },
-  },
-  codecs: ({ defineCodecs }) =>
-    defineCodecs({
-      'text/html': {
-        decode: () => ({}),
-        encode: ({ content }) => ({
-          attributes: { 'data-code-line': true },
-          children: content,
-          style: { display: 'block', minHeight: '1em' },
-          tag: 'span',
-        }),
-        match: [{ attributes: { 'data-code-line': true }, tag: 'span' }],
-      },
-    }),
-});
+
+const getLineStartOffset = (text: string, offset: number) =>
+  offset === 0 ? 0 : text.lastIndexOf('\n', offset - 1) + 1;
+
+const getLineEndOffset = (text: string, offset: number) => {
+  const nextBreak = text.indexOf('\n', offset);
+
+  return nextBreak === -1 ? text.length : nextBreak;
+};
+
+const getIndentDepth = (text: string, offset: number) => {
+  const lineStart = getLineStartOffset(text, offset);
+  const lineEnd = getLineEndOffset(text, offset);
+
+  return text.slice(lineStart, lineEnd).search(NON_WHITESPACE_OR_END);
+};
+
+const countTrailingNewlines = (text: string) =>
+  text.match(TRAILING_NEWLINES)?.[0].length ?? 0;
+
+const readCodeDomText = (node: Node): string => {
+  if (node.nodeName === 'SELECT') return '';
+  if (node.nodeName === 'BR') return '\n';
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+
+  return Array.from(node.childNodes).map(readCodeDomText).join('');
+};
+
+const restoreTrailingNewlines = (text: string, element: HTMLElement) => {
+  const encoded = element.dataset.codeTrailingNewlines;
+
+  if (!encoded || !/^\d+$/.test(encoded)) return text;
+
+  const expected = Number(encoded);
+  const current = countTrailingNewlines(text);
+
+  if (!Number.isSafeInteger(expected) || expected > text.length + 1) {
+    return text;
+  }
+
+  return current < expected ? text + '\n'.repeat(expected - current) : text;
+};
+
+const getSelectedLineStarts = (text: string, start: number, end: number) => {
+  const starts = [getLineStartOffset(text, start)];
+  let nextBreak = text.indexOf('\n', starts[0]);
+
+  while (nextBreak !== -1 && nextBreak < end) {
+    starts.push(nextBreak + 1);
+    nextBreak = text.indexOf('\n', nextBreak + 1);
+  }
+
+  return starts;
+};
+
+const offsetToLinePoint = (text: string, offset: number) => {
+  const before = text.slice(0, offset);
+  const line = before.split('\n').length - 1;
+  const lineStart = before.lastIndexOf('\n') + 1;
+
+  return { line, offset: offset - lineStart };
+};
 
 export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
-  dependencies: [BaseCodeLinePlugin],
   read: ({ plugin, state }) => {
     const entry = ({
       at,
@@ -159,28 +188,28 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
       if (!target) return undefined;
 
-      const codeLine = state.nodes.above({
+      const codeBlock = state.nodes.above({
         at: target,
-        type: BaseCodeLinePlugin,
+        type: plugin,
       });
-
-      if (!codeLine) return undefined;
-
-      const codeBlock = state.nodes.parent(codeLine[1], { type: plugin });
 
       if (!codeBlock) return undefined;
 
-      return { codeBlock, codeLine };
+      return { codeBlock };
     };
 
     return {
       entry,
       indentDepth: () => {
-        const codeLine = entry()?.codeLine;
+        const selection = state.selection();
+        const codeBlock = entry()?.codeBlock;
 
-        return codeLine
-          ? state.text.string(codeLine[1]).search(NON_WHITESPACE_OR_END)
-          : 0;
+        if (!selection || !codeBlock) return 0;
+
+        return getIndentDepth(
+          NodeApi.string(codeBlock[0]),
+          selection.anchor.offset
+        );
       },
       isEmpty: () => {
         const codeBlock = entry()?.codeBlock[0];
@@ -195,52 +224,46 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
   },
   schema: {
     element: {
-      content: schema.content.element(BaseCodeLinePlugin, { min: 1 }),
+      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
       properties: { language: property.string() },
       slice: { preserveContext: true },
     },
   },
 
-  render: { as: 'pre' },
-  codecs: ({ defineCodecs, editor, schema: { type } }) => {
-    const codeLineType = editor.plugin(BaseCodeLinePlugin).schema.type;
-
-    return defineCodecs({
+  component: 'pre',
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const encodedLines = Array.from(
-            element.querySelectorAll(':scope > code > span[data-code-line]')
-          );
-          const languageSelectorText =
-            Array.from(element.childNodes).find(
-              (node) => node.nodeName === 'SELECT'
-            )?.textContent ?? '';
           const languageClass = element
             .querySelector(':scope > code')
             ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];
           const language =
             element.dataset.language || languageClass || undefined;
-          const lines =
-            encodedLines.length > 0
-              ? encodedLines.map((line) => line.textContent ?? '')
-              : (element.textContent ?? '')
-                  .replace(languageSelectorText, '')
-                  .split('\n');
+          const text = restoreTrailingNewlines(
+            readCodeDomText(element),
+            element
+          );
+
           return {
-            children: lines.map((line) => ({
-              children: [{ text: line }],
-              type: codeLineType,
-            })),
+            children: [{ text }],
             ...(language ? { language } : {}),
           };
         },
-        encode: ({ content, node }) => ({
-          attributes: {
-            'data-language': node.language,
-          },
-          children: [{ children: content, tag: 'code' }],
-          tag: 'pre',
-        }),
+        encode: ({ content, node }) => {
+          const trailingNewlines = countTrailingNewlines(NodeApi.string(node));
+
+          return {
+            attributes: {
+              ...(trailingNewlines > 0
+                ? { 'data-code-trailing-newlines': trailingNewlines }
+                : {}),
+              'data-language': node.language,
+            },
+            children: [{ children: content, tag: 'code' }],
+            tag: 'pre',
+          };
+        },
         match: [
           { tag: 'pre' },
           { style: { fontFamily: 'Consolas' }, tag: 'p' },
@@ -249,13 +272,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         query: ({ state }) => {
           const selection = state.selection();
 
-          return (
-            !selection ||
-            !state.nodes.some({
-              at: selection,
-              type: codeLineType,
-            })
-          );
+          return !selection || !state.nodes.some({ at: selection, type });
         },
       },
       'text/markdown': {
@@ -263,20 +280,16 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         kind: 'node',
         decode: ({ node }) => ({
           ...(node.lang ? { language: node.lang } : {}),
-          children: (node.value || '').split('\n').map((line) => ({
-            children: [{ text: line }],
-            type: codeLineType,
-          })),
+          children: [{ text: node.value || '' }],
           type,
         }),
         encode: ({ node }) => ({
           lang: node.language,
           type: 'code',
-          value: node.children.map((child) => NodeApi.string(child)).join('\n'),
+          value: NodeApi.string(node),
         }),
       },
-    });
-  },
+    }),
   shortcuts: {
     selectAll: { keys: 'mod+a' },
     tab: { keys: 'tab' },
@@ -288,6 +301,33 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
     return {
       update: ({ tx }) => {
+        const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
+        const codeBlockTextPath = (path: readonly number[]) => [...path, 0];
+        const createParagraphs = (code: string) =>
+          code.split('\n').map((text) => ({
+            children: [{ text }],
+            type: paragraphType,
+          }));
+        const pointInBlock = (
+          blockPath: readonly number[],
+          point: { path: readonly number[] }
+        ) => PathApi.isAncestor(blockPath, point.path);
+        const mapPointToParagraph = (
+          blockPath: readonly number[],
+          code: string,
+          point: { offset: number; path: readonly number[]; root?: string }
+        ) => {
+          const mapped = offsetToLinePoint(code, point.offset);
+          const blockIndex = blockPath.at(-1);
+
+          if (blockIndex === undefined) return point;
+
+          return {
+            offset: mapped.offset,
+            path: [...blockPath.slice(0, -1), blockIndex + mapped.line, 0],
+            ...(point.root ? { root: point.root } : {}),
+          };
+        };
         const unwrap = ({
           at,
         }: {
@@ -303,18 +343,29 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           ).reverse();
 
           for (const [codeBlock, codeBlockPath] of codeBlockEntries) {
-            codeBlock.children.forEach((child, index) => {
-              if (!ElementApi.isElement(child)) return;
+            const code = NodeApi.string(codeBlock);
+            const selection = tx.selection();
+            const mappedSelection =
+              selection &&
+              pointInBlock(codeBlockPath, selection.anchor) &&
+              pointInBlock(codeBlockPath, selection.focus)
+                ? {
+                    anchor: mapPointToParagraph(
+                      codeBlockPath,
+                      code,
+                      selection.anchor
+                    ),
+                    focus: mapPointToParagraph(
+                      codeBlockPath,
+                      code,
+                      selection.focus
+                    ),
+                  }
+                : undefined;
 
-              tx.nodes.set(
-                { type: editor.plugin(PLUGINS.paragraph).schema.type },
-                { at: codeBlockPath.concat(index) }
-              );
-            });
-            tx.nodes.unwrap({
-              at: codeBlockPath,
-              type: plugin,
-            });
+            tx.nodes.replace(createParagraphs(code), { at: codeBlockPath });
+
+            if (mappedSelection) tx.selection.set(mappedSelection);
           }
         };
         const insertBlock = (
@@ -324,9 +375,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           if (!selection || tx.selection.isExpanded()) return;
 
-          const codeLineType = editor.plugin(PLUGINS.codeLine).schema.type;
-
-          if (tx.nodes.some({ type: [plugin, BaseCodeLinePlugin] })) return;
+          if (tx.nodes.some({ type: plugin })) return;
           if (!tx.selection.isAtBlockStart()) tx.break.insert();
 
           const mutationOptions = {
@@ -337,64 +386,10 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
           tx.nodes.set(
             {
-              children: [{ text: '' }],
-              type: codeLineType,
-            },
-            mutationOptions
-          );
-          tx.nodes.wrap(
-            {
-              children: [],
               type,
             },
             mutationOptions
           );
-        };
-        const indent = ({
-          codeLine,
-          indentDepth = 2,
-        }: {
-          codeLine: ElementEntry;
-          indentDepth?: number;
-        }) => {
-          const codeLineStart = tx.points.start(codeLine[0]);
-
-          if (!codeLineStart) return;
-
-          const value = ' '.repeat(indentDepth);
-
-          if (!tx.selection.isExpanded()) {
-            const selection = tx.selection();
-            const cursor = selection?.anchor;
-            const range = cursor && tx.ranges.get(codeLineStart, cursor);
-            const text = range ? tx.text.string(range) : '';
-
-            if (NON_WHITESPACE.test(text)) {
-              if (selection) {
-                tx.text.insert(value, { at: selection });
-              }
-
-              return;
-            }
-          }
-
-          tx.text.insert(value, { at: codeLineStart });
-        };
-        const deleteStartSpace = (codeLine: ElementEntry) => {
-          const codeLineStart = tx.points.start(codeLine[1]);
-          const codeLineEnd = codeLineStart && tx.points.after(codeLineStart);
-          const spaceRange =
-            codeLineEnd && tx.ranges.get(codeLineStart, codeLineEnd);
-          const spaceText = spaceRange ? tx.text.string(spaceRange) : '';
-
-          if (!WHITESPACE.test(spaceText)) return false;
-
-          tx.text.delete({ at: spaceRange });
-
-          return true;
-        };
-        const outdent = ({ codeLine }: { codeLine: ElementEntry }) => {
-          if (deleteStartSpace(codeLine)) deleteStartSpace(codeLine);
         };
         const setContent = ({
           code,
@@ -403,42 +398,78 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           code: string;
           element: CodeBlock;
         }) => {
-          tx.nodes.replaceChildren(
-            code.split('\n').map((line) => ({
-              children: [{ text: line }],
-              type: editor.plugin(PLUGINS.codeLine).schema.type,
-            })),
-            { at: element }
-          );
+          tx.nodes.replaceChildren([{ text: code }], { at: element });
         };
         const tab = (reverse = false) => {
-          const codeLines = tx.nodes.toArray({
-            type: BaseCodeLinePlugin,
+          const selection = tx.selection();
+
+          if (!selection) return false;
+
+          const codeBlock = tx.nodes.above({
+            at: selection.anchor,
+            type: plugin,
           });
 
-          if (codeLines.length === 0) return false;
+          if (!codeBlock || !pointInBlock(codeBlock[1], selection.focus)) {
+            return false;
+          }
 
-          const codeLineAnchors = codeLines.map(([, path]) =>
-            tx.anchor(path, {
-              association: 'forward',
-              deletion: 'drop',
-            })
-          );
+          const text = NodeApi.string(codeBlock[0]);
+          const textPath = codeBlockTextPath(codeBlock[1]);
+          const value = '  ';
 
-          for (const codeLineAnchor of codeLineAnchors) {
-            const path = codeLineAnchor.resolve();
-            const codeLine = path
-              ? tx.nodes.get(path, { type: BaseCodeLinePlugin })
-              : undefined;
-
-            if (!codeLine || !tx.nodes.parent(codeLine[1], { type: plugin })) {
-              continue;
-            }
+          if (!tx.selection.isExpanded()) {
+            const lineStart = getLineStartOffset(text, selection.anchor.offset);
+            const beforeCursor = text.slice(lineStart, selection.anchor.offset);
+            const offset = NON_WHITESPACE.test(beforeCursor)
+              ? selection.anchor.offset
+              : lineStart;
 
             if (reverse) {
-              outdent({ codeLine });
+              const removable = text
+                .slice(lineStart, lineStart + value.length)
+                .match(/^[ \t]{1,2}/)?.[0].length;
+
+              if (!removable) return true;
+
+              tx.text.delete({
+                at: {
+                  anchor: { offset: lineStart, path: textPath },
+                  focus: { offset: lineStart + removable, path: textPath },
+                },
+              });
             } else {
-              indent({ codeLine });
+              tx.text.insert(value, { at: { offset, path: textPath } });
+            }
+
+            return true;
+          }
+
+          const [start, end] = RangeApi.edges(selection);
+          const lineStarts = getSelectedLineStarts(
+            text,
+            start.offset,
+            end.offset
+          ).reverse();
+
+          for (const lineStart of lineStarts) {
+            if (reverse) {
+              const removable = text
+                .slice(lineStart, lineStart + value.length)
+                .match(/^[ \t]{1,2}/)?.[0].length;
+
+              if (!removable) continue;
+
+              tx.text.delete({
+                at: {
+                  anchor: { offset: lineStart, path: textPath },
+                  focus: { offset: lineStart + removable, path: textPath },
+                },
+              });
+            } else {
+              tx.text.insert(value, {
+                at: { offset: lineStart, path: textPath },
+              });
             }
           }
 
@@ -540,13 +571,82 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
             unwrap();
 
             if (!isActive) {
-              tx.nodes.set({
-                type: editor.plugin(PLUGINS.codeLine).schema.type,
-              });
-              tx.nodes.wrap({
-                children: [],
-                type,
-              });
+              const [start, end] = RangeApi.edges(selection);
+              const startBlock = tx.nodes.block({ at: start });
+              const endBlock = tx.nodes.block({ at: end });
+
+              if (!startBlock || !endBlock) return;
+
+              const startParent = startBlock[1].slice(0, -1);
+              const endParent = endBlock[1].slice(0, -1);
+              const startIndex = startBlock[1].at(-1);
+              const endIndex = endBlock[1].at(-1);
+
+              if (
+                startIndex === undefined ||
+                endIndex === undefined ||
+                !PathApi.equals(startParent, endParent)
+              ) {
+                tx.nodes.set({ type }, { at: startBlock[1] });
+
+                return;
+              }
+
+              const blocks: Array<NodeEntry<Element>> = [];
+
+              for (let index = startIndex; index <= endIndex; index++) {
+                const block = tx.nodes.get([...startParent, index], {
+                  match: ElementApi.isElement,
+                });
+
+                if (block) blocks.push(block);
+              }
+
+              if (blocks.length === 0) return;
+
+              const values = blocks.map(([block]) => NodeApi.string(block));
+              const mapSelectionPoint = (point: typeof selection.anchor) => {
+                let offset = 0;
+
+                for (let index = 0; index < blocks.length; index++) {
+                  const [, blockPath] = blocks[index];
+
+                  if (pointInBlock(blockPath, point)) {
+                    const blockStart = tx.points.start(blockPath);
+                    const range =
+                      blockStart && tx.ranges.get(blockStart, point);
+
+                    offset += range ? tx.text.string(range).length : 0;
+
+                    return {
+                      offset,
+                      path: codeBlockTextPath(blocks[0][1]),
+                      ...(point.root ? { root: point.root } : {}),
+                    };
+                  }
+
+                  offset += values[index].length + 1;
+                }
+
+                return point;
+              };
+              const mappedSelection = {
+                anchor: mapSelectionPoint(selection.anchor),
+                focus: mapSelectionPoint(selection.focus),
+              };
+
+              for (const [, blockPath] of blocks.slice(1).reverse()) {
+                tx.nodes.remove({ at: blockPath });
+              }
+
+              tx.nodes.replace(
+                {
+                  children: [{ text: values.join('\n') }],
+                  type,
+                },
+                { at: blocks[0][1] }
+              );
+              tx.selection.set(mappedSelection);
             }
           },
           untab: () => tab(true),
@@ -554,262 +654,165 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
       },
     };
   })
-  .extend((context) => {
-    const createCodeLine = (text: string) => ({
-      children: [{ text }],
-      type: context.editor.plugin(PLUGINS.codeLine).schema.type,
-    });
+  .extend((context) => ({
+    contributions: [
+      clipboardHandler({
+        insertData(data, { next, tx }) {
+          const text = data.getData('text/plain');
+          const vscodeDataString = data.getData('vscode-editor-data');
+          const block = tx.nodes.block();
+          const isInCodeBlock = block?.[0].type === context.schema.type;
 
-    return {
-      contributions: [
-        clipboardHandler({
-          insertData(data, { next, tx }) {
-            const text = data.getData('text/plain');
-            const vscodeDataString = data.getData('vscode-editor-data');
-            const codeLineType = context.editor.plugin(PLUGINS.codeLine).schema
-              .type;
-            const block = tx.nodes.block();
-            const isInCodeBlock =
-              !!block &&
-              [context.schema.type, codeLineType].includes(block[0].type);
-
-            if (vscodeDataString) {
-              try {
-                const vscodeData: unknown = JSON.parse(vscodeDataString);
-                const language =
-                  typeof vscodeData === 'object' &&
-                  vscodeData !== null &&
-                  'mode' in vscodeData &&
-                  typeof vscodeData.mode === 'string'
-                    ? vscodeData.mode
-                    : undefined;
-                const lines = text.split('\n');
-
-                if (isInCodeBlock) {
-                  tx.fragment.replace(lines.map(createCodeLine));
-
-                  return true;
-                }
-
-                if (!block) return next(data);
-
-                tx.fragment.replace(
-                  [
-                    {
-                      children: lines.map(createCodeLine),
-                      language,
-                      type: context.schema.type,
-                    },
-                  ],
-                  {
-                    at: PathApi.next(block[1]),
-                  }
-                );
+          if (vscodeDataString) {
+            try {
+              const vscodeData: unknown = JSON.parse(vscodeDataString);
+              const language =
+                typeof vscodeData === 'object' &&
+                vscodeData !== null &&
+                'mode' in vscodeData &&
+                typeof vscodeData.mode === 'string'
+                  ? vscodeData.mode
+                  : undefined;
+              if (isInCodeBlock) {
+                tx.text.insert(text);
 
                 return true;
-              } catch {
-                // Ignore malformed syntax nodes and keep scanning candidates.
               }
-            }
 
-            if (isInCodeBlock && text?.includes('\n')) {
-              tx.fragment.replace(text.split('\n').map(createCodeLine));
+              if (!block) return next(data);
+
+              tx.fragment.replace(
+                [
+                  {
+                    children: [{ text }],
+                    language,
+                    type: context.schema.type,
+                  },
+                ],
+                {
+                  at: PathApi.next(block[1]),
+                }
+              );
 
               return true;
+            } catch {
+              // Ignore malformed syntax nodes and keep scanning candidates.
             }
-
-            return next(data);
-          },
-        }),
-      ],
-      commands: ({ around, handle }) => [
-        handle(editorCommands.delete, ({ input, state }) => {
-          if (input.direction !== 'backward') return false;
-
-          const selection = state.selection();
-
-          if (!selection || state.selection.isExpanded()) {
-            return false;
           }
 
-          const codeLine = state.nodes.above({
-            type: BaseCodeLinePlugin,
-          });
-          const codeBlock = codeLine
-            ? state.nodes.parent(codeLine[1], { type: context.plugin })
-            : undefined;
+          if (isInCodeBlock && text?.includes('\n')) {
+            tx.text.insert(text);
 
-          if (
-            !codeLine ||
-            !codeBlock ||
-            codeBlock[0].type !== context.schema.type ||
-            !state.selection.isAtBlockStart({
-              type: BaseCodeLinePlugin,
+            return true;
+          }
+
+          return next(data);
+        },
+      }),
+    ],
+    commands: ({ around, handle }) => [
+      handle(editorCommands.delete, ({ input, state }) => {
+        if (input.direction !== 'backward') return false;
+
+        const selection = state.selection();
+
+        if (!selection || state.selection.isExpanded()) {
+          return false;
+        }
+
+        const codeBlock = state.nodes.above({ type: context.plugin });
+
+        if (
+          !codeBlock ||
+          codeBlock[0].type !== context.schema.type ||
+          selection.anchor.offset !== 0
+        ) {
+          return false;
+        }
+
+        if (NodeApi.string(codeBlock[0]).length > 0) {
+          return state.transaction(() => {});
+        }
+
+        return state.transaction((tx) => {
+          tx.nodes.set(
+            {
+              type: context.editor.plugin(PLUGINS.paragraph).schema.type,
+            },
+            { at: codeBlock[1] }
+          );
+        });
+      }),
+      around(editorCommands.insertBreak, ({ state }) => {
+        const selection = state.selection();
+        const codeBlock = selection
+          ? state.nodes.above({
+              at: selection,
+              type: context.plugin,
             })
-          ) {
-            return false;
-          }
+          : undefined;
 
-          const previousCodeLine = state.nodes.previous({
-            at: codeLine[1],
-            type: BaseCodeLinePlugin,
-          });
-          const codeLineText = NodeApi.string(codeLine[0]);
+        if (
+          !selection ||
+          !codeBlock ||
+          codeBlock[0].type !== context.schema.type ||
+          !PathApi.isAncestor(codeBlock[1], selection.focus.path)
+        ) {
+          return false;
+        }
 
-          if (!previousCodeLine) {
-            if (codeLineText.length > 0) return state.transaction(() => {});
+        const code = NodeApi.string(codeBlock[0]);
+        const [start, end] = RangeApi.edges(selection);
+        const indentDepth = getIndentDepth(code, start.offset);
+        const suffixIndent =
+          code.slice(end.offset).match(/^[ \t]*/)?.[0].length ?? 0;
+        const indent = ' '.repeat(Math.max(0, indentDepth - suffixIndent));
 
-            return state.transaction((tx) => {
-              tx.nodes.replace(
-                codeBlock[0].children.flatMap((child) =>
-                  ElementApi.isElement(child)
-                    ? [
-                        {
-                          ...child,
-                          type: context.editor.plugin(PLUGINS.paragraph).schema
-                            .type,
-                        },
-                      ]
-                    : []
-                ),
-                {
-                  at: codeBlock[1],
-                }
-              );
-            });
-          }
+        return state.transaction((tx) => {
+          tx.text.insert(`\n${indent}`, { at: selection });
+        });
+      }),
+      around(editorCommands.replaceSlice, ({ input, state, next }) => {
+        const { options, slice } = input;
+        const fragment = [...slice.content];
+        const target = options?.at;
+        const currentSelection = state.selection();
 
-          if (codeLineText.length > 0) return false;
+        if (target === undefined && !currentSelection) {
+          return next();
+        }
 
-          const previousLineEnd = state.points.end(previousCodeLine[1]);
+        const at =
+          target === undefined
+            ? (currentSelection ?? undefined)
+            : NodeApi.isNode(target)
+              ? state.nodes.path(target)
+              : target;
 
-          return state.transaction((tx) => {
-            tx.nodes.remove({ at: codeLine[1] });
+        if (target !== undefined && at === undefined) {
+          return next();
+        }
 
-            if (previousLineEnd) {
-              tx.selection.set(previousLineEnd);
-            }
-          });
-        }),
-        around(editorCommands.insertBreak, ({ state, next }) => {
-          const selection = state.selection();
-          const codeLine = selection
-            ? state.nodes.above({
-                at: selection,
-                type: BaseCodeLinePlugin,
-              })
-            : undefined;
-          const codeBlock = codeLine
-            ? state.nodes.parent(codeLine[1], { type: context.plugin })
-            : undefined;
+        if (!state.nodes.block({ at, type: context.schema.type })) {
+          return next();
+        }
 
-          if (
-            !selection ||
-            !codeLine ||
-            !codeBlock ||
-            codeBlock[0].type !== context.schema.type
-          ) {
-            return false;
-          }
+        const separator = fragment.every((node) => !ElementApi.isElement(node))
+          ? ''
+          : '\n';
+        const text = fragment
+          .map((node) => NodeApi.string(node))
+          .join(separator);
 
-          const indentDepth = state.text
-            .string(codeLine[1])
-            .search(NON_WHITESPACE_OR_END);
-          const result = next();
-
-          if (result === false) return false;
-
-          return state.transaction.extend(result, (tx) => {
-            const insertedCodeLine = tx.nodes.above({
-              type: BaseCodeLinePlugin,
-            });
-
-            if (!insertedCodeLine) return;
-
-            const start = tx.points.start(insertedCodeLine[1]);
-
-            if (!start) return;
-
-            const currentIndentDepth = tx.text
-              .string(insertedCodeLine[1])
-              .search(NON_WHITESPACE_OR_END);
-            const indent = ' '.repeat(
-              Math.max(0, indentDepth - currentIndentDepth)
-            );
-
-            if (!tx.selection.isExpanded()) {
-              const nextSelection = tx.selection();
-              const cursor = nextSelection?.anchor;
-              const range = cursor && tx.ranges.get(start, cursor);
-              const text = range ? tx.text.string(range) : '';
-
-              if (NON_WHITESPACE.test(text)) {
-                if (nextSelection) {
-                  tx.text.insert(indent, { at: nextSelection });
-                }
-
-                return;
-              }
-            }
-
-            tx.text.insert(indent, { at: start });
-          });
-        }),
-        around(editorCommands.replaceSlice, ({ input, state, next }) => {
-          const { options, slice } = input;
-          const fragment = [...slice.content];
-          const target = options?.at;
-          const currentSelection = state.selection();
-
-          if (target === undefined && !currentSelection) {
-            return next();
-          }
-
-          const at =
-            target === undefined
-              ? (currentSelection ?? undefined)
-              : NodeApi.isNode(target)
-                ? state.nodes.path(target)
-                : target;
-          const codeLineType = context.editor.plugin(PLUGINS.codeLine).schema
-            .type;
-
-          if (target !== undefined && at === undefined) {
-            return next();
-          }
-
-          if (
-            !state.nodes.block({
-              at,
-              type: [context.schema.type, codeLineType],
-            })
-          ) {
-            return next();
-          }
-
-          const codeLines = fragment.flatMap((node) => {
-            if (
-              ElementApi.isElement(node) &&
-              node.type === context.schema.type
-            ) {
-              return node.children.filter((child): child is Element =>
-                ElementApi.isElement(child)
-              );
-            }
-
-            return [createCodeLine(NodeApi.string(node))];
-          });
-
-          return next({
-            ...input,
-            slice: ContentSlice.withContent(slice, codeLines, {
-              open: 'closed',
-            }),
-          });
-        }),
-      ],
-    };
-  });
+        return next({
+          ...input,
+          slice: ContentSlice.withContent(slice, [{ text }], {
+            open: 'closed',
+          }),
+        });
+      }),
+    ],
+  }));
 
 export type CodeBlockElement = ElementOf<typeof BaseCodeBlockPlugin>;
 
@@ -824,57 +827,6 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
     defaultLanguage: null,
     lowlight: null,
   }),
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-  decorate: ({ editor, entry: [node, path], store }): CodeBlockDecoration[] => {
-    const { defaultLanguage, lowlight } = store.get();
-
-    if (!lowlight) return [];
-
-    const runtime = codeHighlightRuntimes.get(editor);
-
-    if (!runtime) return [];
-
-    const codeBlockType = editor.plugin(PLUGINS.codeBlock).schema.type;
-    const codeLineType = editor.plugin(PLUGINS.codeLine).schema.type;
-
-    if (
-      ElementApi.isElement(node) &&
-      node.type === codeBlockType &&
-      ElementApi.isElement(node.children[0]) &&
-      !runtime.lineDecorations.has(node.children[0])
-    ) {
-      const result = runtime.decorateBlock([node, path], {
-        defaultLanguage,
-        lowlight,
-      });
-
-      for (const [line, values] of result.decorations) {
-        runtime.lineDecorations.set(line, values);
-      }
-
-      if (result.warning?.kind === 'highlight') {
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            `Could not highlight with Highlight.js for language "${result.warning.language}". Falling back to plaintext`,
-            'CODE_HIGHLIGHT',
-            result.warning.error
-          );
-      } else if (result.warning) {
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            `Language "${result.warning.language}" is not registered. Falling back to plaintext`
-          );
-      }
-    }
-
-    return ElementApi.isElement(node) && node.type === codeLineType
-      ? (runtime.lineDecorations.get(node) ?? [])
-      : [];
-  },
 }).extend(({ editor, store }) => {
   const stablePythonAliases = ['py', 'gyp', 'ipython'] as const;
   const source = (value: RegExp | string | null | undefined) => {
@@ -1234,12 +1186,15 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
     lowlight.registerAlias('python', stablePythonAliases);
     patchedLowlights.add(lowlight);
   };
-  const lineDecorations = new WeakMap<Element, CodeBlockDecoration[]>();
+  const blockDecorations = new Map<string, CodeHighlightCache>();
+  let nextSyntaxKey = 0;
+  let observers = 0;
   const parseNodes = (
     nodes: HighlightNode[],
-    className: string[] = []
-  ): Array<{ classes: string[]; text: string }> =>
-    nodes.flatMap((node) => {
+    className: string[] = [],
+    result: Array<{ classes: string[]; text: string }> = []
+  ) => {
+    for (const node of nodes) {
       if (node.type === 'element') {
         const nodeClassName = node.properties?.className;
         const classes = [
@@ -1251,169 +1206,238 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
               : []),
         ];
 
-        return parseNodes(node.children ?? [], classes);
-      }
-
-      return node.type === 'text' && typeof node.value === 'string'
-        ? [{ classes: className, text: node.value }]
-        : [];
-    });
-  const normalizeTokens = (
-    tokens: Array<{ classes: string[]; text: string }>
-  ) => {
-    const lines: Array<Array<{ classes: string[]; content: string }>> = [[]];
-    let currentLine = lines[0];
-
-    for (const token of tokens) {
-      const tokenLines = token.text.split('\n');
-
-      tokenLines.forEach((content, index) => {
-        if (content) currentLine.push({ classes: token.classes, content });
-
-        if (index < tokenLines.length - 1) {
-          lines.push([]);
-          currentLine =
-            lines.at(-1) ?? failInvariant('Expected value to be defined');
-        }
-      });
-    }
-
-    return lines;
-  };
-  const decorateBlock: CodeHighlightRuntime['decorateBlock'] = (
-    [block, blockPath],
-    { defaultLanguage, lowlight }
-  ) => {
-    const decorations = new Map<Element, CodeBlockDecoration[]>();
-    const text = block.children.map((line) => NodeApi.string(line)).join('\n');
-    const language =
-      typeof block.language === 'string' ? block.language : undefined;
-    const effectiveLanguage = language || defaultLanguage;
-
-    ensureStablePythonGrammar(lowlight, effectiveLanguage);
-
-    let highlighted: HighlightResult;
-    let warning: CodeHighlightWarning | undefined;
-
-    try {
-      if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
-        highlighted = { children: [], type: 'root' };
-      } else if (effectiveLanguage === 'auto') {
-        highlighted = lowlight.highlightAuto(text);
-      } else {
-        highlighted = lowlight.highlight(effectiveLanguage, text);
-      }
-    } catch (error) {
-      const languageName = effectiveLanguage ?? 'unknown';
-
-      warning =
-        effectiveLanguage &&
-        lowlight.listLanguages().includes(effectiveLanguage)
-          ? {
-              error,
-              kind: 'highlight',
-              language: languageName,
-            }
-          : {
-              kind: 'missing-language',
-              language: languageName,
-            };
-      highlighted = { children: [], type: 'root' };
-    }
-
-    const normalizedTokens = normalizeTokens(parseNodes(highlighted.children));
-    const lineCount = Math.min(normalizedTokens.length, block.children.length);
-
-    for (let index = 0; index < lineCount; index++) {
-      const element = block.children[index];
-
-      if (!ElementApi.isElement(element)) continue;
-
-      const values: CodeBlockDecoration[] = [];
-      let start = 0;
-
-      decorations.set(element, values);
-
-      for (const token of normalizedTokens[index]) {
-        const end = start + token.content.length;
-
-        if (end === start) continue;
-
-        const decoration: CodeBlockDecoration = {
-          anchor: {
-            offset: start,
-            path: [...blockPath, index, 0],
-          },
-          className: token.classes.join(' '),
-          focus: {
-            offset: end,
-            path: [...blockPath, index, 0],
-          },
-          codeSyntax: true,
-        };
-
-        values.push(decoration);
-        start = end;
+        parseNodes(node.children ?? [], classes, result);
+      } else if (node.type === 'text' && typeof node.value === 'string') {
+        result.push({ classes: className, text: node.value });
       }
     }
-
-    return {
-      decorations,
-      ...(warning ? { warning } : {}),
-    };
+    return result;
   };
-
-  const runtime = {
-    decorateBlock,
-    lineDecorations,
-  };
-
-  codeHighlightRuntimes.set(editor, runtime);
 
   return {
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry: [node] }) {
-          if (
-            !ElementApi.isElement(node) ||
-            node.type !== editor.plugin(PLUGINS.codeBlock).schema.type ||
-            !store.get().lowlight
-          ) {
-            return;
-          }
-
-          node.children.forEach((line) => {
-            if (ElementApi.isElement(line)) {
-              runtime.lineDecorations.delete(line);
-            }
-          });
-        },
-      },
-    ],
-    on: {
-      transactionChange(context) {
-        if (!store.get().lowlight) return;
-
-        const codeBlock = findCodeBlockLanguageChange(
-          context,
-          editor.plugin(PLUGINS.codeBlock).schema.type
-        )?.before;
-
-        if (!codeBlock) return;
-
-        codeBlock.children.forEach((line) => {
-          if (ElementApi.isElement(line)) {
-            runtime.lineDecorations.delete(line);
-          }
+    decorate: {
+      observe: ({ refresh }) => {
+        observers += 1;
+        const unsubscribe = store.subscribe(() => {
+          blockDecorations.clear();
+          refresh({ nodeKeys: 'all' });
         });
+
+        return () => {
+          unsubscribe();
+          observers -= 1;
+          if (observers === 0) blockDecorations.clear();
+        };
+      },
+      read: ({ entry: [node, path] }): readonly CodeBlockDecoration[] => {
+        const { defaultLanguage, lowlight } = store.get();
+
+        if (!lowlight || !NodeApi.isText(node)) return [];
+        const codeBlockType = editor.plugin(PLUGINS.codeBlock).schema.type;
+        const entry = editor.read.nodes.parent(path, { type: codeBlockType });
+
+        if (!entry) return [];
+        const [block, blockPath] = entry;
+        const blockKey = editor.key(block);
+        const text = NodeApi.string(block);
+        const language =
+          (typeof block.language === 'string' ? block.language : undefined) ||
+          defaultLanguage;
+        const previous = blockDecorations.get(blockKey);
+
+        if (
+          previous?.language === language &&
+          previous.text === text &&
+          previous.lowlight === lowlight
+        ) {
+          const previousPath = previous.decorations[0]?.range.anchor.path;
+
+          if (previousPath && !PathApi.isParent(blockPath, previousPath)) {
+            const textPath = Object.freeze([...blockPath, 0]);
+
+            previous.decorations = Object.freeze(
+              previous.decorations.map((decoration) =>
+                Object.freeze({
+                  ...decoration,
+                  range: Object.freeze({
+                    anchor: Object.freeze({
+                      ...decoration.range.anchor,
+                      path: textPath,
+                    }),
+                    focus: Object.freeze({
+                      ...decoration.range.focus,
+                      path: textPath,
+                    }),
+                  }),
+                })
+              )
+            );
+          }
+          return previous.decorations;
+        }
+
+        ensureStablePythonGrammar(lowlight, language);
+        let highlighted: HighlightResult;
+        let warning: CodeHighlightWarning | undefined;
+
+        try {
+          if (!language || language === 'plaintext') {
+            highlighted = { children: [], type: 'root' };
+          } else if (language === 'auto') {
+            highlighted = lowlight.highlightAuto(text);
+          } else highlighted = lowlight.highlight(language, text);
+        } catch (error) {
+          const languageName = language ?? 'unknown';
+
+          warning =
+            language && lowlight.listLanguages().includes(language)
+              ? { error, kind: 'highlight', language: languageName }
+              : { kind: 'missing-language', language: languageName };
+          highlighted = { children: [], type: 'root' };
+        }
+
+        const decorations: CodeBlockDecoration[] = [];
+        const attributesByClass = new Map<
+          string,
+          CodeBlockDecoration['attributes']
+        >();
+        const textPath = Object.freeze([...blockPath, 0]);
+        const previousTokens = previous?.decorations ?? [];
+        let retainedPrefix = 0;
+        let matchingPrefix = true;
+        let start = 0;
+
+        for (const token of parseNodes(highlighted.children)) {
+          const end = start + token.text.length;
+
+          if (end > start && token.classes.length > 0) {
+            const className = token.classes.join(' ');
+            let attributes = attributesByClass.get(className);
+
+            if (!attributes) {
+              attributes =
+                previous?.attributes.get(className) ??
+                Object.freeze({ className, 'data-code-block-syntax': '' });
+              attributesByClass.set(className, attributes);
+            }
+            const before = previousTokens[decorations.length];
+
+            if (
+              matchingPrefix &&
+              before &&
+              before.attributes === attributes &&
+              before.range.anchor.offset === start &&
+              before.range.focus.offset === end &&
+              PathApi.equals(before.range.anchor.path, textPath)
+            ) {
+              decorations.push(before);
+              retainedPrefix += 1;
+            } else {
+              matchingPrefix = false;
+              decorations.push({
+                attributes,
+                key: '',
+                range: {
+                  anchor: { offset: start, path: textPath },
+                  focus: { offset: end, path: textPath },
+                },
+              });
+            }
+          }
+          start = end;
+        }
+
+        const delta = text.length - (previous?.text.length ?? 0);
+        let beforeEnd = previousTokens.length;
+        let afterEnd = decorations.length;
+
+        while (beforeEnd > retainedPrefix && afterEnd > retainedPrefix) {
+          const before = previousTokens[beforeEnd - 1];
+          const after = decorations[afterEnd - 1];
+
+          if (
+            before.attributes !== after.attributes ||
+            before.range.anchor.offset + delta !== after.range.anchor.offset ||
+            before.range.focus.offset + delta !== after.range.focus.offset
+          ) {
+            break;
+          }
+          decorations[afterEnd - 1] =
+            delta === 0 && PathApi.equals(before.range.anchor.path, textPath)
+              ? before
+              : { ...after, key: before.key };
+          beforeEnd -= 1;
+          afterEnd -= 1;
+        }
+        for (let index = retainedPrefix; index < afterEnd; index++) {
+          decorations[index] = {
+            ...decorations[index],
+            key: `${blockKey}:${nextSyntaxKey}`,
+          };
+          nextSyntaxKey += 1;
+        }
+        for (let index = retainedPrefix; index < decorations.length; index++) {
+          const decoration = decorations[index];
+
+          if (Object.isFrozen(decoration)) continue;
+          Object.freeze(decoration.range.anchor);
+          Object.freeze(decoration.range.focus);
+          Object.freeze(decoration.range);
+          Object.freeze(decoration);
+        }
+        Object.freeze(decorations);
+        blockDecorations.set(blockKey, {
+          attributes: attributesByClass,
+          decorations,
+          language,
+          lowlight,
+          text,
+        });
+
+        if (warning?.kind === 'highlight') {
+          editor
+            .plugin(DebugPlugin)
+            .api.warn(
+              `Could not highlight with Highlight.js for language "${warning.language}". Falling back to plaintext`,
+              'CODE_HIGHLIGHT',
+              warning.error
+            );
+        } else if (warning) {
+          editor
+            .plugin(DebugPlugin)
+            .api.warn(
+              `Language "${warning.language}" is not registered. Falling back to plaintext`
+            );
+        }
+        return decorations;
+      },
+    },
+    on: {
+      commit({ commit }) {
+        if (blockDecorations.size === 0) return;
+        const structure =
+          commit.changed.hasAny('structure') ||
+          commit.changed.hasAny('replace');
+
+        if (!structure && !commit.changed.hasAny('properties')) return;
+        const codeBlockType = editor.plugin(PLUGINS.codeBlock).schema.type;
+        const keys = new Set([
+          ...commit.changed.nodeKeysAll('node'),
+          ...(structure ? commit.changed.nodeKeysAll('presence') : []),
+        ]);
+
+        for (const key of keys) {
+          if (!blockDecorations.has(key)) continue;
+          const entry = editor.read.nodes.get(key);
+
+          if (!entry || !ElementApi.isElementType(entry[0], codeBlockType)) {
+            blockDecorations.delete(key);
+          }
+        }
       },
     },
   };
 });
-
-/** Schema-owned code-syntax text leaf. Highlight classes are decorations. */
-export type CodeSyntaxText = TextOf<typeof BaseCodeHighlightPlugin>;
 
 export type CodeBlockDefinition = DefinitionOf<typeof BaseCodeBlockPlugin>;
 

@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  tailwindcss@4.1.8:
+    hash: nd7hnzpwve2pctbexspa7zcdri
+    path: patches/tailwindcss@4.1.8.patch
+
 importers:
 
   .:
@@ -158,6 +163,9 @@ importers:
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
+      rolldown:
+        specifier: 1.2.0
+        version: 1.2.0
       serve-handler:
         specifier: 6.1.6
         version: 6.1.6
@@ -166,7 +174,7 @@ importers:
         version: 3.3.1
       tailwindcss:
         specifier: 4.1.8
-        version: 4.1.8
+        version: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
       tinyglobby:
         specifier: 0.2.14
         version: 0.2.14
@@ -243,6 +251,24 @@ importers:
       '@ariakit/react':
         specifier: 0.4.17
         version: 0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@codemirror/commands':
+        specifier: 6.10.3
+        version: 6.10.3
+      '@codemirror/language':
+        specifier: 6.12.4
+        version: 6.12.4
+      '@codemirror/language-data':
+        specifier: 6.5.2
+        version: 6.5.2
+      '@codemirror/search':
+        specifier: 6.7.2
+        version: 6.7.2
+      '@codemirror/state':
+        specifier: 6.7.2
+        version: 6.7.2
+      '@codemirror/view':
+        specifier: 6.41.0
+        version: 6.41.0
       '@emoji-mart/data':
         specifier: 1.2.1
         version: 1.2.1
@@ -261,6 +287,9 @@ importers:
       '@hookform/resolvers':
         specifier: 5.1.1
         version: 5.1.1(react-hook-form@7.57.0(react@19.2.8))
+      '@lezer/highlight':
+        specifier: 1.2.3
+        version: 1.2.3
       '@next/third-parties':
         specifier: 16.3.2
         version: 16.3.2(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)
@@ -353,7 +382,7 @@ importers:
         version: 3.34.0(react@19.2.8)
       '@uploadthing/react':
         specifier: 7.3.1
-        version: 7.3.1(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8))
+        version: 7.3.1(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)))
       agentation:
         specifier: ^3.0.2
         version: 3.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -395,10 +424,10 @@ importers:
         version: 15.0.10(@types/mdast@4.0.4)(@types/mdx@2.0.13)(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(rolldown@1.2.0)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
       fumadocs-typescript:
         specifier: 5.2.6
-        version: 5.2.6(vt6xpvv73ca4t5hhsomdoapv54)
+        version: 5.2.6(fyn3mqhtyefc5k53uws5kc4bh4)
       fumadocs-ui:
         specifier: 16.9.3
-        version: 16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8)
+        version: 16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
       fzf:
         specifier: 0.5.2
         version: 0.5.2
@@ -414,6 +443,9 @@ importers:
       jotai:
         specifier: 2.8.4
         version: 2.8.4(@types/react@19.2.7)(react@19.2.8)
+      jotai-x:
+        specifier: 2.3.4
+        version: 2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.8))(react@19.2.8)
       katex:
         specifier: 0.16.22
         version: 0.16.22
@@ -495,6 +527,12 @@ importers:
       react-tweet:
         specifier: 3.2.2
         version: 3.2.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      rehype-raw:
+        specifier: 7.0.0
+        version: 7.0.0
+      rehype-sanitize:
+        specifier: 6.0.0
+        version: 6.0.0
       remark-emoji:
         specifier: 5.0.1
         version: 5.0.1
@@ -536,7 +574,7 @@ importers:
         version: 22.0.0
       uploadthing:
         specifier: 7.7.2
-        version: 7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8)
+        version: 7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
       use-file-picker:
         specifier: 2.1.2
         version: 2.1.2(react@19.2.8)
@@ -639,10 +677,10 @@ importers:
         version: 1.10.1
       tailwind-scrollbar-hide:
         specifier: 4.0.0
-        version: 4.0.0(tailwindcss@4.1.8)
+        version: 4.0.0(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
       tailwindcss:
         specifier: 4.1.8
-        version: 4.1.8
+        version: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
       ts-node:
         specifier: 10.9.2
         version: 10.9.2(@swc/core@1.12.0(@swc/helpers@0.5.23))(@types/node@24.12.0)(typescript@6.0.2)
@@ -719,6 +757,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      csstype:
+        specifier: 3.2.3
+        version: 3.2.3
       dequal:
         specifier: 2.0.3
         version: 2.0.3
@@ -771,6 +812,15 @@ importers:
       '@chenglou/pretext':
         specifier: ^0.0.7
         version: 0.0.7
+      '@codemirror/language':
+        specifier: 6.12.4
+        version: 6.12.4
+      '@codemirror/state':
+        specifier: 6.7.2
+        version: 6.7.2
+      '@codemirror/view':
+        specifier: 6.41.0
+        version: 6.41.0
       '@emoji-mart/data':
         specifier: ^1.2.0
         version: 1.2.1
@@ -798,6 +848,9 @@ importers:
       '@types/react':
         specifier: 19.2.7
         version: 19.2.7
+      '@types/use-sync-external-store':
+        specifier: 1.5.0
+        version: 1.5.0
       '@types/viz.js':
         specifier: ^2.1.5
         version: 2.1.5
@@ -891,6 +944,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      use-sync-external-store:
+        specifier: 1.6.0
+        version: 1.6.0(react@19.2.8)
       validator:
         specifier: ^13.15.15
         version: 13.15.26
@@ -909,6 +965,9 @@ importers:
 
   packages/plitejs:
     dependencies:
+      csstype:
+        specifier: 3.2.3
+        version: 3.2.3
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -916,6 +975,9 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
     devDependencies:
+      '@babel/core':
+        specifier: 7.29.0
+        version: 7.29.0
       '@chenglou/pretext':
         specifier: ^0.0.7
         version: 0.0.7
@@ -949,6 +1011,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.7)
+      babel-plugin-react-compiler:
+        specifier: 1.0.0
+        version: 1.0.0
       diff-match-patch-ts:
         specifier: ^0.6.0
         version: 0.6.0
@@ -967,6 +1032,9 @@ importers:
       vitest:
         specifier: ^4.1.0
         version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+      yjs:
+        specifier: 13.6.30
+        version: 13.6.30
 
   packages/test:
     dependencies:
@@ -1410,6 +1478,99 @@ packages:
   '@clack/prompts@1.5.1':
     resolution: {integrity: sha512-zccHj2z2oCCO4yrDiRSlFOxWerGqRiysP7a5jPK6uoI9URKAquwY42Dd/iUP8JWHxEzdRe4TlbvZCo8z1/mhrw==}
     engines: {node: '>= 20.12.0'}
+
+  '@codemirror/autocomplete@6.20.3':
+    resolution: {integrity: sha512-tlosUqb+3BbxCxZdu4tKeRghPFC+QM7q4X5YhKV2eCmPG+1r2F3f4AaSz5sCrFqUtX4Jh20VFTKecl16MgiV9g==}
+
+  '@codemirror/commands@6.10.3':
+    resolution: {integrity: sha512-JFRiqhKu+bvSkDLI+rUhJwSxQxYb759W5GBezE8Uc8mHLqC9aV/9aTC7yJSqCtB3F00pylrLCwnyS91Ap5ej4Q==}
+
+  '@codemirror/lang-angular@0.1.4':
+    resolution: {integrity: sha512-oap+gsltb/fzdlTQWD6BFF4bSLKcDnlxDsLdePiJpCVNKWXSTAbiiQeYI3UmES+BLAdkmIC1WjyztC1pi/bX4g==}
+
+  '@codemirror/lang-cpp@6.0.3':
+    resolution: {integrity: sha512-URM26M3vunFFn9/sm6rzqrBzDgfWuDixp85uTY49wKudToc2jTHUrKIGGKs+QWND+YLofNNZpxcNGRynFJfvgA==}
+
+  '@codemirror/lang-css@6.3.1':
+    resolution: {integrity: sha512-kr5fwBGiGtmz6l0LSJIbno9QrifNMUusivHbnA1H6Dmqy4HZFte3UAICix1VuKo0lMPKQr2rqB+0BkKi/S3Ejg==}
+
+  '@codemirror/lang-go@6.0.1':
+    resolution: {integrity: sha512-7fNvbyNylvqCphW9HD6WFnRpcDjr+KXX/FgqXy5H5ZS0eC5edDljukm/yNgYkwTsgp2busdod50AOTIy6Jikfg==}
+
+  '@codemirror/lang-html@6.4.12':
+    resolution: {integrity: sha512-pw2ReWKUqSkbvh76RAT4NYxiogRu+PWkR2ukAwO9uOgrm8uipkzjtKKtNpyeAQwHOqxEeSvAXZ6vr3AfyB9y/w==}
+
+  '@codemirror/lang-java@6.0.2':
+    resolution: {integrity: sha512-m5Nt1mQ/cznJY7tMfQTJchmrjdjQ71IDs+55d1GAa8DGaB8JXWsVCkVT284C3RTASaY43YknrK2X3hPO/J3MOQ==}
+
+  '@codemirror/lang-javascript@6.2.5':
+    resolution: {integrity: sha512-zD4e5mS+50htS7F+TYjBPsiIFGanfVqg4HyUz6WNFikgOPf2BgKlx+TQedI1w6n/IqRBVBbBWmGFdLB/7uxO4A==}
+
+  '@codemirror/lang-jinja@6.0.1':
+    resolution: {integrity: sha512-P5kyHLObzjtbGj16h+hyvZTxJhSjBEeSx4wMjbnAf3b0uwTy2+F0zGjMZL4PQOm/mh2eGZ5xUDVZXgwP783Nsw==}
+
+  '@codemirror/lang-json@6.0.2':
+    resolution: {integrity: sha512-x2OtO+AvwEHrEwR0FyyPtfDUiloG3rnVTSZV1W8UteaLL8/MajQd8DpvUb2YVzC+/T18aSDv0H9mu+xw0EStoQ==}
+
+  '@codemirror/lang-less@6.0.2':
+    resolution: {integrity: sha512-EYdQTG22V+KUUk8Qq582g7FMnCZeEHsyuOJisHRft/mQ+ZSZ2w51NupvDUHiqtsOy7It5cHLPGfHQLpMh9bqpQ==}
+
+  '@codemirror/lang-liquid@6.3.2':
+    resolution: {integrity: sha512-6PDVU3ZnfeYyz1at1E/ttorErZvZFXXt1OPhtfe1EZJ2V2iDFa0CwPqPgG5F7NXN0yONGoBogKmFAafKTqlwIw==}
+
+  '@codemirror/lang-markdown@6.5.2':
+    resolution: {integrity: sha512-AwBOdkWYuA//WcM0xO5PfHPUcmz/O2i5o0Nsg1U69SII/loCJlFI1Romd9xp2HYb1kYJRGZotyqRghuHH5n8Kw==}
+
+  '@codemirror/lang-php@6.0.2':
+    resolution: {integrity: sha512-ZKy2v1n8Fc8oEXj0Th0PUMXzQJ0AIR6TaZU+PbDHExFwdu+guzOA4jmCHS1Nz4vbFezwD7LyBdDnddSJeScMCA==}
+
+  '@codemirror/lang-python@6.2.1':
+    resolution: {integrity: sha512-IRjC8RUBhn9mGR9ywecNhB51yePWCGgvHfY1lWN/Mrp3cKuHr0isDKia+9HnvhiWNnMpbGhWrkhuWOc09exRyw==}
+
+  '@codemirror/lang-rust@6.0.2':
+    resolution: {integrity: sha512-EZaGjCUegtiU7kSMvOfEZpaCReowEf3yNidYu7+vfuGTm9ow4mthAparY5hisJqOHmJowVH3Upu+eJlUji6qqA==}
+
+  '@codemirror/lang-sass@6.0.2':
+    resolution: {integrity: sha512-l/bdzIABvnTo1nzdY6U+kPAC51czYQcOErfzQ9zSm9D8GmNPD0WTW8st/CJwBTPLO8jlrbyvlSEcN20dc4iL0Q==}
+
+  '@codemirror/lang-sql@6.10.0':
+    resolution: {integrity: sha512-6ayPkEd/yRw0XKBx5uAiToSgGECo/GY2NoJIHXIIQh1EVwLuKoU8BP/qK0qH5NLXAbtJRLuT73hx7P9X34iO4w==}
+
+  '@codemirror/lang-vue@0.1.3':
+    resolution: {integrity: sha512-QSKdtYTDRhEHCfo5zOShzxCmqKJvgGrZwDQSdbvCRJ5pRLWBS7pD/8e/tH44aVQT6FKm0t6RVNoSUWHOI5vNug==}
+
+  '@codemirror/lang-wast@6.0.2':
+    resolution: {integrity: sha512-Imi2KTpVGm7TKuUkqyJ5NRmeFWF7aMpNiwHnLQe0x9kmrxElndyH0K6H/gXtWwY6UshMRAhpENsgfpSwsgmC6Q==}
+
+  '@codemirror/lang-xml@6.1.0':
+    resolution: {integrity: sha512-3z0blhicHLfwi2UgkZYRPioSgVTo9PV5GP5ducFH6FaHy0IAJRg+ixj5gTR1gnT/glAIC8xv4w2VL1LoZfs+Jg==}
+
+  '@codemirror/lang-yaml@6.1.3':
+    resolution: {integrity: sha512-AZ8DJBuXGVHybpBQhmZtgew5//4hv3tdkXnr3vDmOUMJRuB6vn/uuwtmTOTlqEaQFg3hQSVeA90NmvIQyUV6FQ==}
+
+  '@codemirror/language-data@6.5.2':
+    resolution: {integrity: sha512-CPkWBKrNS8stYbEU5kwBwTf3JB1kghlbh4FSAwzGW2TEscdeHHH4FGysREW86Mqnj3Qn09s0/6Ea/TutmoTobg==}
+
+  '@codemirror/language@6.12.4':
+    resolution: {integrity: sha512-1q4PaT+o6PbgpkJt4Q8Fv5XJxTy4FUZ4MWETtyiDw3J0Pyr9E2vqcKL+k9wcvjNTIsauxvE7OfmWj3FRPHQ76A==}
+
+  '@codemirror/legacy-modes@6.5.4':
+    resolution: {integrity: sha512-/cZr6qZyl08iYNLGsJ862CXXNI51LryRFRE40ejgoIjXZz0C1rGkD3/Ek5jM/8w1ceRjqtt4qx/KLMh4zBTgew==}
+
+  '@codemirror/lint@6.9.7':
+    resolution: {integrity: sha512-28/+iWLYxKxsvGYhSYL7zaCZqLz5+FFFDq9tVsvGv9kv8RY4fFAchJ5WX9M3YrrRlTIsECjsXPqeNgnSmNP2dg==}
+
+  '@codemirror/search@6.7.2':
+    resolution: {integrity: sha512-gUYkYhT2+n/+VGZ+8EzE5WFkYZUZYm1VOKDudIsNqh42uRVQJ0a6Yss9sdKT3MeOYfuL1N6AZA57oza0Oyr0LA==}
+
+  '@codemirror/state@6.7.2':
+    resolution: {integrity: sha512-U3RiPX62Wl/Gx4ftQ7UxLlloSfsFTQqKa+7vFBYteZGCzkp6oBqcsD7iSwniWRGobCAmDcwZSY+Six3+3ztdfg==}
+
+  '@codemirror/view@6.41.0':
+    resolution: {integrity: sha512-6H/qadXsVuDY219Yljhohglve8xf4B8xJkVOEWfA5uiYKiTFppjqsvsfR5iPA0RbvRBoOyTZpbLIxe9+0UR8xA==}
+
+  '@codemirror/view@6.43.11':
+    resolution: {integrity: sha512-2+esucbQX6wB2JYi1eDvdCPFTA31BN8oSy6xCmk3G6CloV11yOvEjYk+gH7kLrP0MuHG94E8WDhjs5oMiu3+Wg==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -2201,6 +2362,57 @@ packages:
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
 
+  '@lezer/common@1.5.2':
+    resolution: {integrity: sha512-sxQE460fPZyU3sdc8lafxiPwJHBzZRy/udNFynGQky1SePYBdhkBl1kOagA9uT3pxR8K09bOrmTUqA9wb/PjSQ==}
+
+  '@lezer/cpp@1.1.6':
+    resolution: {integrity: sha512-vh9gWWJOXFVY8HBHK3Twzq8MgwG2iN4GSyzBP9sCGTe37P15x2R14VaBQk0VA0ezTRN1KHYBBsHhvpGZ2Xy/pA==}
+
+  '@lezer/css@1.3.6':
+    resolution: {integrity: sha512-YJE78Wcg+zX8f10hiHWQ4Az48Qr/c13eId0VtRQYLBpxHDmDeSrXIlkbl+fJGW42rWC/uoUco9mhBZeVWP/A1g==}
+
+  '@lezer/go@1.0.1':
+    resolution: {integrity: sha512-xToRsYxwsgJNHTgNdStpcvmbVuKxTapV0dM0wey1geMMRc9aggoVyKgzYp41D2/vVOx+Ii4hmE206kvxIXBVXQ==}
+
+  '@lezer/highlight@1.2.3':
+    resolution: {integrity: sha512-qXdH7UqTvGfdVBINrgKhDsVTJTxactNNxLk7+UMwZhU13lMHaOBlJe9Vqp907ya56Y3+ed2tlqzys7jDkTmW0g==}
+
+  '@lezer/html@1.3.13':
+    resolution: {integrity: sha512-oI7n6NJml729m7pjm9lvLvmXbdoMoi2f+1pwSDJkl9d68zGr7a9Btz8NdHTGQZtW2DA25ybeuv/SyDb9D5tseg==}
+
+  '@lezer/java@1.1.3':
+    resolution: {integrity: sha512-yHquUfujwg6Yu4Fd1GNHCvidIvJwi/1Xu2DaKl/pfWIA2c1oXkVvawH3NyXhCaFx4OdlYBVX5wvz2f7Aoa/4Xw==}
+
+  '@lezer/javascript@1.5.4':
+    resolution: {integrity: sha512-vvYx3MhWqeZtGPwDStM2dwgljd5smolYD2lR2UyFcHfxbBQebqx8yjmFmxtJ/E6nN6u1D9srOiVWm3Rb4tmcUA==}
+
+  '@lezer/json@1.0.3':
+    resolution: {integrity: sha512-BP9KzdF9Y35PDpv04r0VeSTKDeox5vVr3efE7eBbx3r4s3oNLfunchejZhjArmeieBH+nVOpgIiBJpEAv8ilqQ==}
+
+  '@lezer/lr@1.4.10':
+    resolution: {integrity: sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A==}
+
+  '@lezer/markdown@1.7.2':
+    resolution: {integrity: sha512-iTkYvoVcKt3WkeL7qUDyXHONZEwLio4wj8KTNi2dnjQEXBZKMV63BpQrPqfsM+OkvuRbiSTAcycYAsQzLhRNoQ==}
+
+  '@lezer/php@1.0.6':
+    resolution: {integrity: sha512-QJ2xNXPmsm/Z3IpThq8fnJrEIVpxhsIoj6GZBW0JYEd/l9zxpJZW216X4fzqQY4vgpdGIumypvI4uQjd4tnYtw==}
+
+  '@lezer/python@1.1.19':
+    resolution: {integrity: sha512-MhQIURHRytsNzP/YXnqpYKW6la6voAH3kyplTOOiCdjyFY6cWWGFVmYVdHIPrElqSDf4iCDktQCockB9FxuhzQ==}
+
+  '@lezer/rust@1.0.2':
+    resolution: {integrity: sha512-Lz5sIPBdF2FUXcWeCu1//ojFAZqzTQNRga0aYv6dYXqJqPfMdCAI0NzajWUd4Xijj1IKJLtjoXRPMvTKWBcqKg==}
+
+  '@lezer/sass@1.1.0':
+    resolution: {integrity: sha512-3mMGdCTUZ/84ArHOuXWQr37pnf7f+Nw9ycPUeKX+wu19b7pSMcZGLbaXwvD2APMBDOGxPmpK/O6S1v1EvLoqgQ==}
+
+  '@lezer/xml@1.0.6':
+    resolution: {integrity: sha512-CdDwirL0OEaStFue/66ZmFSeppuL6Dwjlk8qk153mSQwiSH/Dlri4GNymrNWnUmPl2Um7QfV1FO9KFUyX3Twww==}
+
+  '@lezer/yaml@1.0.4':
+    resolution: {integrity: sha512-2lrrHqxalACEbxIbsjhqGpSW8kWpUKuY6RHgnSAFZa6qK62wvnPxA8hGOwOoDbwHcOFs5M4o27mjGu+P7TvBmw==}
+
   '@lifeomic/attempt@3.1.0':
     resolution: {integrity: sha512-QZqem4QuAnAyzfz+Gj5/+SLxqwCAw2qmt7732ZXodr6VDWGeYLG6w1i/vYLa55JQM9wRuBKLmXmiZ2P0LtE5rw==}
 
@@ -2209,6 +2421,9 @@ packages:
 
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
+
+  '@marijn/find-cluster-break@1.0.4':
+    resolution: {integrity: sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ==}
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
@@ -5458,6 +5673,9 @@ packages:
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
+  '@types/use-sync-external-store@1.5.0':
+    resolution: {integrity: sha512-5dyB8nLC/qogMrlCizZnYWQTA4lnb/v+It+sqNl5YnSRAPMlIqY/X0Xn+gZw8vOL+TgTTr28VEbn3uf8fUtAkw==}
+
   '@types/validate-npm-package-name@4.0.2':
     resolution: {integrity: sha512-lrpDziQipxCEeK5kWxvljWYhUvOiB2A9izZd9B2AFarYAkqZshb4lPbRs7zKEic6eGtH8V/2qJW+dPp9OtF6bw==}
 
@@ -6498,6 +6716,9 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+
+  crelt@1.0.7:
+    resolution: {integrity: sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA==}
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -7743,6 +7964,9 @@ packages:
 
   hast-util-raw@9.1.0:
     resolution: {integrity: sha512-Y8/SBAHkZGoNkpzqqfCldijcuUKh7/su31kEBp67cFY09Wy0mTRgtsLYsiIxMJxlu0f6AA5SUTbDR8K0rxnbUw==}
+
+  hast-util-sanitize@5.0.2:
+    resolution: {integrity: sha512-3yTWghByc50aGS7JlGhk61SPenfE/p1oaFeNwkOOyrscaOkMGrcW9+Cy/QAIOBpZxP1yqDIzFMR0+Np0i0+usg==}
 
   hast-util-to-estree@3.1.3:
     resolution: {integrity: sha512-48+B/rJWAp0jamNbAAf9M7Uf//UVqAoMmgXhBdxTDJLGKY+LRnZ99qcG+Qjl5HfMpYNzS5v4EAwVEF34LeAj7w==}
@@ -9913,6 +10137,9 @@ packages:
   rehype-recma@1.0.0:
     resolution: {integrity: sha512-lqA4rGUf1JmacCNWWZx0Wv1dHqMwxzsDWYMTowuplHF3xH0N/MmrZ/G3BDZnzAkRmxDadujCjaKM2hqYdCBOGw==}
 
+  rehype-sanitize@6.0.0:
+    resolution: {integrity: sha512-CsnhKNsyI8Tub6L4sm5ZFsme4puGfc6pYylvXo1AeqaGbjOYyzNv3qZPwvs0oMJ39eryyeOdmxwUIo94IpEhqg==}
+
   rehype-slug@5.1.0:
     resolution: {integrity: sha512-Gf91dJoXneiorNEnn+Phx97CO7oRMrpi+6r155tTxzGuLtm+QrI4cTwCa9e1rtePdL4i9tSO58PeSS6HWfgsiw==}
 
@@ -10455,6 +10682,9 @@ packages:
     resolution: {integrity: sha512-SlyRoSkdh1dYP0PzclLE7r0M9sgbFKKMFXpFRUMNuKhQSbC6VQIGzq3E0qsfvGJaUFJPGv6Ws1NZ/haTAjfbMA==}
     engines: {node: '>=12'}
 
+  style-mod@4.1.3:
+    resolution: {integrity: sha512-i/n8VsZydrugj3Iuzll8+x/00GH2vnYsk1eomD8QiRrSAeW6ItbCQDtfXCeJHd0iwiNagqjQkvpvREEPtW3IoQ==}
+
   style-to-js@1.1.21:
     resolution: {integrity: sha512-RjQetxJrrUJLQPHbLku6U/ocGtzyjbJMP9lCNK7Ag0CNh690nSH8woqWH9u16nMjYBAok+i7JO1NP2pOy8IsPQ==}
 
@@ -10977,11 +11207,6 @@ packages:
       '@types/react':
         optional: true
 
-  use-sync-external-store@1.5.0:
-    resolution: {integrity: sha512-Rb46I4cGGVBmjamjphe8L/UnvJD+uPPtTkNvX5mZgqdbavhI4EbgIWJiIHXJ8bc/i9EQGPRh4DwEURJ552Do0A==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
     peerDependencies:
@@ -11160,6 +11385,9 @@ packages:
 
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
+
+  w3c-keyname@2.2.8:
+    resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
 
   w3c-xmlserializer@4.0.0:
     resolution: {integrity: sha512-d+BFHzbiCx6zGfz0HyQ6Rg69w9k19nviJspaj4yNscGjrHu94sVP+aRm75yEbCh+r2/yR+7q6hux9LVtbuTGBw==}
@@ -11539,7 +11767,7 @@ snapshots:
       '@floating-ui/dom': 1.7.6
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
-      use-sync-external-store: 1.5.0(react@19.2.8)
+      use-sync-external-store: 1.6.0(react@19.2.8)
 
   '@ariakit/react@0.4.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
@@ -12042,6 +12270,264 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
+  '@codemirror/autocomplete@6.20.3':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+
+  '@codemirror/commands@6.10.3':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+
+  '@codemirror/lang-angular@0.1.4':
+    dependencies:
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/lang-javascript': 6.2.5
+      '@codemirror/language': 6.12.4
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-cpp@6.0.3':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@lezer/cpp': 1.1.6
+
+  '@codemirror/lang-css@6.3.1':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/css': 1.3.6
+
+  '@codemirror/lang-go@6.0.1':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/go': 1.0.1
+
+  '@codemirror/lang-html@6.4.12':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/lang-css': 6.3.1
+      '@codemirror/lang-javascript': 6.2.5
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/css': 1.3.6
+      '@lezer/html': 1.3.13
+
+  '@codemirror/lang-java@6.0.2':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@lezer/java': 1.1.3
+
+  '@codemirror/lang-javascript@6.2.5':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/lint': 6.9.7
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/javascript': 1.5.4
+
+  '@codemirror/lang-jinja@6.0.1':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-json@6.0.2':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@lezer/json': 1.0.3
+
+  '@codemirror/lang-less@6.0.2':
+    dependencies:
+      '@codemirror/lang-css': 6.3.1
+      '@codemirror/language': 6.12.4
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-liquid@6.3.2':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-markdown@6.5.2':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/markdown': 1.7.2
+
+  '@codemirror/lang-php@6.0.2':
+    dependencies:
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/php': 1.0.6
+
+  '@codemirror/lang-python@6.2.1':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/python': 1.1.19
+
+  '@codemirror/lang-rust@6.0.2':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@lezer/rust': 1.0.2
+
+  '@codemirror/lang-sass@6.0.2':
+    dependencies:
+      '@codemirror/lang-css': 6.3.1
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/sass': 1.1.0
+
+  '@codemirror/lang-sql@6.10.0':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-vue@0.1.3':
+    dependencies:
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/lang-javascript': 6.2.5
+      '@codemirror/language': 6.12.4
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-wast@6.0.2':
+    dependencies:
+      '@codemirror/language': 6.12.4
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@codemirror/lang-xml@6.1.0':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/xml': 1.0.6
+
+  '@codemirror/lang-yaml@6.1.3':
+    dependencies:
+      '@codemirror/autocomplete': 6.20.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/state': 6.7.2
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+      '@lezer/yaml': 1.0.4
+
+  '@codemirror/language-data@6.5.2':
+    dependencies:
+      '@codemirror/lang-angular': 0.1.4
+      '@codemirror/lang-cpp': 6.0.3
+      '@codemirror/lang-css': 6.3.1
+      '@codemirror/lang-go': 6.0.1
+      '@codemirror/lang-html': 6.4.12
+      '@codemirror/lang-java': 6.0.2
+      '@codemirror/lang-javascript': 6.2.5
+      '@codemirror/lang-jinja': 6.0.1
+      '@codemirror/lang-json': 6.0.2
+      '@codemirror/lang-less': 6.0.2
+      '@codemirror/lang-liquid': 6.3.2
+      '@codemirror/lang-markdown': 6.5.2
+      '@codemirror/lang-php': 6.0.2
+      '@codemirror/lang-python': 6.2.1
+      '@codemirror/lang-rust': 6.0.2
+      '@codemirror/lang-sass': 6.0.2
+      '@codemirror/lang-sql': 6.10.0
+      '@codemirror/lang-vue': 0.1.3
+      '@codemirror/lang-wast': 6.0.2
+      '@codemirror/lang-xml': 6.1.0
+      '@codemirror/lang-yaml': 6.1.3
+      '@codemirror/language': 6.12.4
+      '@codemirror/legacy-modes': 6.5.4
+
+  '@codemirror/language@6.12.4':
+    dependencies:
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+      style-mod: 4.1.3
+
+  '@codemirror/legacy-modes@6.5.4':
+    dependencies:
+      '@codemirror/language': 6.12.4
+
+  '@codemirror/lint@6.9.7':
+    dependencies:
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.43.11
+      crelt: 1.0.7
+
+  '@codemirror/search@6.7.2':
+    dependencies:
+      '@codemirror/state': 6.7.2
+      '@codemirror/view': 6.41.0
+      crelt: 1.0.7
+
+  '@codemirror/state@6.7.2':
+    dependencies:
+      '@marijn/find-cluster-break': 1.0.4
+
+  '@codemirror/view@6.41.0':
+    dependencies:
+      '@codemirror/state': 6.7.2
+      crelt: 1.0.7
+      style-mod: 4.1.3
+      w3c-keyname: 2.2.8
+
+  '@codemirror/view@6.43.11':
+    dependencies:
+      '@codemirror/state': 6.7.2
+      crelt: 1.0.7
+      style-mod: 4.1.3
+      w3c-keyname: 2.2.8
+
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
@@ -12405,10 +12891,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fumadocs/tailwind@0.0.5(@tailwindcss/oxide@4.1.8)(tailwindcss@4.1.8)':
+  '@fumadocs/tailwind@0.0.5(@tailwindcss/oxide@4.1.8)(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))':
     optionalDependencies:
       '@tailwindcss/oxide': 4.1.8
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
   '@happy-dom/global-registrator@20.0.10':
     dependencies:
@@ -12630,6 +13116,99 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
+  '@lezer/common@1.5.2': {}
+
+  '@lezer/cpp@1.1.6':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/css@1.3.6':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/go@1.0.1':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/highlight@1.2.3':
+    dependencies:
+      '@lezer/common': 1.5.2
+
+  '@lezer/html@1.3.13':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/java@1.1.3':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/javascript@1.5.4':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/json@1.0.3':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/lr@1.4.10':
+    dependencies:
+      '@lezer/common': 1.5.2
+
+  '@lezer/markdown@1.7.2':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+
+  '@lezer/php@1.0.6':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/python@1.1.19':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/rust@1.0.2':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/sass@1.1.0':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/xml@1.0.6':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
+  '@lezer/yaml@1.0.4':
+    dependencies:
+      '@lezer/common': 1.5.2
+      '@lezer/highlight': 1.2.3
+      '@lezer/lr': 1.4.10
+
   '@lifeomic/attempt@3.1.0': {}
 
   '@manypkg/find-root@1.1.0':
@@ -12647,6 +13226,8 @@ snapshots:
       fs-extra: 8.1.0
       globby: 11.1.0
       read-yaml-file: 1.1.0
+
+  '@marijn/find-cluster-break@1.0.4': {}
 
   '@mdx-js/mdx@3.1.1':
     dependencies:
@@ -14864,7 +15445,7 @@ snapshots:
   '@radix-ui/react-use-is-hydrated@0.1.0(@types/react@19.2.7)(react@19.2.8)':
     dependencies:
       react: 19.2.8
-      use-sync-external-store: 1.5.0(react@19.2.8)
+      use-sync-external-store: 1.6.0(react@19.2.8)
     optionalDependencies:
       '@types/react': 19.2.7
 
@@ -15292,7 +15873,7 @@ snapshots:
       enhanced-resolve: 5.20.0
       mri: 1.2.0
       picocolors: 1.1.1
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
   '@tailwindcss/node@4.1.8':
     dependencies:
@@ -15302,7 +15883,7 @@ snapshots:
       lightningcss: 1.30.1
       magic-string: 0.30.21
       source-map-js: 1.2.1
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
   '@tailwindcss/oxide-android-arm64@4.1.8':
     optional: true
@@ -15364,7 +15945,7 @@ snapshots:
       '@tailwindcss/node': 4.1.8
       '@tailwindcss/oxide': 4.1.8
       postcss: 8.5.4
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
   '@tanstack/react-virtual@3.14.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
@@ -15721,6 +16302,8 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@types/use-sync-external-store@1.5.0': {}
+
   '@types/validate-npm-package-name@4.0.2': {}
 
   '@types/validator@13.15.1': {}
@@ -15843,12 +16426,12 @@ snapshots:
 
   '@uploadthing/mime-types@0.3.5': {}
 
-  '@uploadthing/react@7.3.1(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8))':
+  '@uploadthing/react@7.3.1(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)(uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)))':
     dependencies:
       '@uploadthing/shared': 7.1.8
       file-selector: 0.6.0
       react: 19.2.8
-      uploadthing: 7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8)
+      uploadthing: 7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
     optionalDependencies:
       next: 16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2)
 
@@ -16168,7 +16751,7 @@ snapshots:
 
   babel-plugin-react-compiler@1.0.0:
     dependencies:
-      '@babel/types': 7.29.0
+      '@babel/types': 7.29.8
 
   bail@2.0.2: {}
 
@@ -16672,6 +17255,8 @@ snapshots:
       sha.js: 2.4.12
 
   create-require@1.1.1: {}
+
+  crelt@1.0.7: {}
 
   cross-env@7.0.3:
     dependencies:
@@ -17811,7 +18396,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-typescript@5.2.6(vt6xpvv73ca4t5hhsomdoapv54):
+  fumadocs-typescript@5.2.6(fyn3mqhtyefc5k53uws5kc4bh4):
     dependencies:
       estree-util-value-to-estree: 3.5.0
       fumadocs-core: 16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61)
@@ -17830,13 +18415,13 @@ snapshots:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       '@types/react': 19.2.7
-      fumadocs-ui: 16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8)
+      fumadocs-ui: 16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-ui@16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8):
+  fumadocs-ui@16.9.3(@tailwindcss/oxide@4.1.8)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(fumadocs-core@16.9.3(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.7)(lucide-react@0.514.0(react@19.2.8))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61))(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)):
     dependencies:
-      '@fumadocs/tailwind': 0.0.5(@tailwindcss/oxide@4.1.8)(tailwindcss@4.1.8)
+      '@fumadocs/tailwind': 0.0.5(@tailwindcss/oxide@4.1.8)(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri))
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-collapsible': 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -18120,6 +18705,12 @@ snapshots:
       vfile: 6.0.3
       web-namespaces: 2.0.1
       zwitch: 2.0.4
+
+  hast-util-sanitize@5.0.2:
+    dependencies:
+      '@types/hast': 3.0.4
+      '@ungap/structured-clone': 1.3.0
+      unist-util-position: 5.0.0
 
   hast-util-to-estree@3.1.3:
     dependencies:
@@ -20861,6 +21452,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  rehype-sanitize@6.0.0:
+    dependencies:
+      '@types/hast': 3.0.4
+      hast-util-sanitize: 5.0.2
+
   rehype-slug@5.1.0:
     dependencies:
       '@types/hast': 2.3.10
@@ -21629,6 +22225,8 @@ snapshots:
 
   strip-indent@4.1.1: {}
 
+  style-mod@4.1.3: {}
+
   style-to-js@1.1.21:
     dependencies:
       style-to-object: 1.0.14
@@ -21672,11 +22270,11 @@ snapshots:
 
   tailwind-merge@3.6.0: {}
 
-  tailwind-scrollbar-hide@4.0.0(tailwindcss@4.1.8):
+  tailwind-scrollbar-hide@4.0.0(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)):
     dependencies:
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
-  tailwindcss@4.1.8: {}
+  tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri): {}
 
   tapable@2.3.0: {}
 
@@ -22130,7 +22728,7 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8):
+  uploadthing@7.7.2(express@5.2.1)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(tailwindcss@4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)):
     dependencies:
       '@effect/platform': 0.81.0(effect@3.14.21)
       '@standard-schema/spec': 1.0.0-beta.4
@@ -22140,7 +22738,7 @@ snapshots:
     optionalDependencies:
       express: 5.2.1
       next: 16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2)
-      tailwindcss: 4.1.8
+      tailwindcss: 4.1.8(patch_hash=nd7hnzpwve2pctbexspa7zcdri)
 
   url-parse@1.5.10:
     dependencies:
@@ -22185,10 +22783,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.2.7
-
-  use-sync-external-store@1.5.0(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   use-sync-external-store@1.6.0(react@19.2.8):
     dependencies:
@@ -22354,6 +22948,8 @@ snapshots:
       vscode-languageserver-protocol: 3.17.5
 
   vscode-uri@3.1.0: {}
+
+  w3c-keyname@2.2.8: {}
 
   w3c-xmlserializer@4.0.0:
     dependencies:

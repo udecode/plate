@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+monaco-wrapper-selection	github.com/microsoft/monaco-editor	monaco:cursor-undo-wrapper	Sampled files were wrappers around core packages, not source-backed oracle logic for Slate v2.	Reopen only with direct core source/test file that maps to a Slate v2 behavior gap.
+tinymce-ckeditor-source-evidence	local-exclusion	tinymce-ckeditor:hidden-source-path	Per user direction, do not leave code-path evidence from TinyMCE or CKEditor in durable artifacts.	Reopen only for high-level public docs/release-neutral concepts, not source citations.

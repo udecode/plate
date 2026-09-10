@@ -16,6 +16,8 @@
 For node renderers already inside Plate element context:
 
 - use `useElement()` when you need the current element object
+- use `useElementSelector(FooPlugin, node => node.field)` for a derived payload
+  value; use `usePath(path => path.at(-1))` for a derived live position
 - element component and node-wrapper props do not expose `path`; position is
   live runtime state, not a stable render input
 - when a path is needed only inside an event handler or command, keep the
@@ -85,10 +87,8 @@ flatten it or rename it to a prop bag. Descriptor-owned public renderer types
 such as `PlateElementProps<typeof FooPlugin>` remain their existing exported
 contracts.
 
-Run `node tooling/scripts/check-inline-component-props.mjs` to audit every
-authored TSX source, including archived source snapshots. Generated registry
-output, templates, dependency trees, and build output are excluded because
-their source owners live elsewhere.
+Apply this convention during implementation and review. It does not need a
+dedicated whole-repository lint gate.
 
 ---
 
@@ -98,15 +98,14 @@ Prefer the repo’s direct patterns:
 
 ```tsx
 // Host-owned app code inferred from its local editor construction.
-const api = editor.api.comment;
-const update = editor.update.comment;
+const api = editor.api.comments;
 ```
 
 Copied registry UI and other generic code that owns or requires an exact
 descriptor use its portal:
 
 ```tsx
-const { api, editor } = useEditorPlugin(CommentPlugin);
+const { api, editor } = useEditorPlugin(SuggestionPlugin);
 ```
 
 If the generic component accepts a legitimately optional descriptor, keep the
@@ -114,10 +113,10 @@ portal and test availability before touching its API, updates, options, or
 installed descriptor:
 
 ```tsx
-const comment = editor.plugin(CommentPlugin);
+const suggestion = editor.plugin(SuggestionPlugin);
 
-if (comment.installed) {
-  comment.api.open();
+if (suggestion.installed) {
+  suggestion.api.createIdentity();
 }
 ```
 

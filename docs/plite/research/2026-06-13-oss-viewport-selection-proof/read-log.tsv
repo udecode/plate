@@ -1,0 +1,19 @@
+source	file	lines	finding
+codemirror-view	src/editorview.ts	90-103	Public API distinguishes drawn viewport from visible ranges; styling/decoration work should prefer visible ranges when viewport contains gaps.
+codemirror-view	src/viewstate.ts	157-163	Selection endpoints outside the main viewport create extra single-line viewports so DOM selection does not fall into a gap.
+codemirror-view	src/viewstate.ts	194-204	Viewport update explicitly adds anchor/head endpoint viewports when needed.
+codemirror-view	src/viewstate.ts	267-372	Measurement reads geometry, visible pixel viewport, line heights, scroll state, and retries viewport computation when geometry or height changes.
+codemirror-view	src/editorview.ts	421-483	Measure loop restarts until coherent, caps restarts, and only runs measure requests when viewport is stable.
+codemirror-view	src/editorview.ts	577-590	`requestMeasure` schedules a RAF read/write measurement request and deduplicates by key.
+codemirror-view	src/viewstate.ts	393-416	Viewport computation expands around visible pixels and explicitly includes the scroll target.
+codemirror-view	src/viewstate.ts	446-579	Long-line gap and visible range logic avoids hiding the selection endpoints and marks viewport movement separately from mapped changes.
+codemirror-view	src/viewstate.ts	692-736	Big documents scale regions outside active viewports while preserving viewport regions unscaled.
+codemirror-view	src/draw-selection.ts	33-49	Drawn selection intentionally hides native selection and accepts extra layout cost for editor-like selection visuals.
+codemirror-view	src/draw-selection.ts	102-122	Selection layer redraws on doc, selection, viewport, or config changes.
+codemirror-view	src/layer.ts	102-171	Selection rectangles clip to viewport/visible ranges and use bidi-aware coordinate spans.
+codemirror-view	test/webtest-draw.ts	120-137	Tests scroll ranges into view and assert endpoint coordinates are inside the scroll box.
+codemirror-view	test/webtest-draw.ts	155-161	Tests viewport DOM text equals the document slice after random changes.
+codemirror-view	test/webtest-draw.ts	287-296	Tests long wrapped lines have visible ranges smaller than viewport and update after scroll/selection.
+codemirror-view	test/webtest-extension.ts	7-31	Tests plugins observe viewport changes after scroll/measure.
+codemirror-reference	https://codemirror.net/docs/ref/	drawSelection reference	Public docs describe drawn selection as hiding native selection/cursor and drawing selection/cursor elements instead.
+codemirror-focused-widget-discussion	https://discuss.codemirror.net/t/inability-to-use-selector-with-an-input-widget-when-using-the-drawselection-plugin/8182	discussion + linked fix	Fresh source lead: drawn-selection systems need focused-widget/native-selection exceptions so focused widget selection remains usable.

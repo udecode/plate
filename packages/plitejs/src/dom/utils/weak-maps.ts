@@ -39,12 +39,9 @@ export const EDITOR_TO_DOM_EDITABLE = new WeakMap<
   AnyExtensionEditor,
   Map<RootKey, HTMLElement>
 >();
-export const EDITOR_TO_DOM_SCROLL = new WeakMap<
-  AnyExtensionEditor,
-  HTMLElement
->();
+export const EDITOR_TO_DOM_SCROLL = new WeakMap<object, HTMLElement>();
 export const EDITOR_TO_DOM_SCOPE_LISTENERS = new WeakMap<
-  AnyExtensionEditor,
+  object,
   Set<() => void>
 >();
 export const EDITOR_TO_PLACEHOLDER = new WeakMap<AnyExtensionEditor, string>();

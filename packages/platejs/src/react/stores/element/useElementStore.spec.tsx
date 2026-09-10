@@ -8,7 +8,7 @@ import { defineBasePlugin } from '../../../lib';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
-import { useElement, useOptionalElement } from './useElement';
+import { useElement } from './useElement';
 import {
   ElementProvider,
   useElementStore,
@@ -169,16 +169,10 @@ describe('ElementProvider', () => {
     return <div>{label + element.type}</div>;
   };
 
-  const OptionalTypeConsumer = ({ label = '' }: { label?: string }) => {
-    const element = useOptionalElement(MissingPlugin);
+  const MissingTypeConsumer = () => {
+    const element = useElement(MissingPlugin);
 
-    return <div>{label + (element?.type ?? 'none')}</div>;
-  };
-
-  const OptionalJsonConsumer = () => {
-    const element = useOptionalElement();
-
-    return <div>{JSON.stringify(element)}</div>;
+    return <div>{element.type}</div>;
   };
 
   const AgeStoreConsumer = ({ label = '' }: { label?: string }) => {
@@ -244,17 +238,19 @@ describe('ElementProvider', () => {
   });
 
   it('does not fall back when an explicit descriptor is absent', () => {
-    const { getByText } = render(
-      <PlateWrapper>
-        <NameElementProvider name="John">
-          <NameElementProvider name="Jane">
-            <OptionalTypeConsumer label="Type: " />
+    expect(() =>
+      render(
+        <PlateWrapper>
+          <NameElementProvider name="John">
+            <NameElementProvider name="Jane">
+              <MissingTypeConsumer />
+            </NameElementProvider>
           </NameElementProvider>
-        </NameElementProvider>
-      </PlateWrapper>
+        </PlateWrapper>
+      )
+    ).toThrow(
+      'useElement(missing) must be used inside the matching element provider.'
     );
-
-    (expect(getByText('Type: none')) as any).toBeInTheDocument();
   });
 
   it('does not let render-time element context shadow a matching provider scope', () => {
@@ -473,14 +469,5 @@ describe('ElementProvider', () => {
     act(() => getByText('updateAgeStore').click());
 
     (expect(getByText('Age store: 30')) as any).toBeInTheDocument();
-  });
-
-  it('returns null from the optional hook if no ancestor exists', () => {
-    const { getByText } = render(
-      <PlateWrapper>
-        <OptionalJsonConsumer />
-      </PlateWrapper>
-    );
-    (expect(getByText('null')) as any).toBeInTheDocument();
   });
 });

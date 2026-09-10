@@ -1,0 +1,5 @@
+id	lead	reason
+j001	Use Monaco local checkout as architecture evidence	Local checkout did not expose the editor controller/input internals needed for this lane.
+j002	Port CodeMirror drawn selection model to Slate v2	Wrong default for rich text; it trades native selection behavior for code-editor affordance and layout work.
+j003	Patch Slate runtime from CodeMirror composition state	Slate already has its own input/controller architecture; only source-inspected invariants should become tests or plans.
+

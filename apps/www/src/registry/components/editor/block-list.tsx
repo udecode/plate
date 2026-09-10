@@ -12,33 +12,6 @@ import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
-const config: Record<
-  string,
-  {
-    Li: React.FC<
-      Parameters<ListWrapper>[0] & {
-        lineBreakBadge?: React.ReactNode;
-        listStart?: number;
-        listStyle?: string;
-        listType: ListType;
-      }
-    >;
-    Marker: React.FC<
-      Parameters<ListWrapper>[0] & {
-        lineBreakBadge?: React.ReactNode;
-        listStart?: number;
-        listStyle?: string;
-        listType: ListType;
-      }
-    >;
-  }
-> = {
-  task: {
-    Li: TodoLi,
-    Marker: TodoMarker,
-  },
-};
-
 type ListWrapper = RenderNodeWrapper<typeof ListPlugin>;
 
 export const BlockList: ListWrapper = (props) => {
@@ -69,7 +42,7 @@ function List(
   }
 ) {
   const { listStart, listStyle, listType } = props;
-  const { Li, Marker } = config[listType] ?? {};
+  const isTask = listType === ListType.Task;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
@@ -80,15 +53,21 @@ function List(
       style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
-      {Marker && <Marker {...props} />}
-      {Li ? (
-        <Li {...props} />
-      ) : (
-        <li>
-          {props.children}
-          {props.lineBreakBadge}
-        </li>
-      )}
+      {isTask && <TodoMarker {...props} />}
+      <li
+        className={
+          isTask
+            ? cn(
+                'list-none',
+                props.element.checked === true &&
+                  'text-muted-foreground line-through'
+              )
+            : undefined
+        }
+      >
+        {props.children}
+        {props.lineBreakBadge}
+      </li>
     </InnerList>
   );
 }
@@ -122,26 +101,5 @@ function TodoMarker(
         }}
       />
     </div>
-  );
-}
-
-function TodoLi(
-  props: Parameters<ListWrapper>[0] & {
-    lineBreakBadge?: React.ReactNode;
-    listStart?: number;
-    listStyle?: string;
-    listType: ListType;
-  }
-) {
-  return (
-    <li
-      className={cn(
-        'list-none',
-        props.element.checked === true && 'text-muted-foreground line-through'
-      )}
-    >
-      {props.children}
-      {props.lineBreakBadge}
-    </li>
   );
 }

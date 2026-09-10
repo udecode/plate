@@ -9,7 +9,7 @@ the resolved editor, current plugin name and schema handles, `api`, and plugin s
 without reaching through global state. Use it inside plugin-owned code; use
 editor methods or React hooks when code runs outside a plugin callback.
 
-## Context Shape
+## Context shape
 
 `PlatePluginContext` extends the shared plugin context with a React
 `Editor`. The same helper names are available in headless Plate base plugins,
@@ -30,7 +30,7 @@ but the editor type is `Editor`.
 | `defineCodecs(map)` | Bind a self/product codec map to this plugin's inferred schema. |
 | `defineCodecs(TargetPlugin, map)` | Bind a foreign codec map to an exact descriptor and inject its target. |
 
-## Plugin Methods
+## Plugin methods
 
 Event callbacks receive context plus the event or lifecycle payload. Use the
 context helpers instead of closing over editor state.
@@ -65,7 +65,7 @@ export const CounterPlugin = definePlatePlugin('counter', {
 
 `store` is scoped to `CounterPlugin` in this example.
 
-## Extension Callbacks
+## Extension callbacks
 
 Configuration, native capability, selector, API, transaction, and editor override
 callbacks also receive plugin context.
@@ -94,7 +94,7 @@ Selectors are readable through `store.get` and subscribable through
 `usePluginStore`. They are pure state-first functions and cannot read the
 editor or another plugin.
 
-## Property Mutations
+## Property mutations
 
 Inside `update`, pass a property patch object. Plate infers each key and value
 from the current plugin and its required dependencies:
@@ -117,7 +117,7 @@ Use the property handle's exact key as a computed object key for an aliased
 property. Prefix families and cross-node behavior belong in a semantic plugin
 update method.
 
-## Native Capability Inference
+## Native capability inference
 
 Declare native Plite fields directly in the constructor or a staged
 `.extend()` callback. Their capability-specific helpers and Plate plugin
@@ -128,7 +128,7 @@ Use `defineExtension` from `platejs` only for independently
 reusable standalone Plite descriptors. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
-## Codec Inference
+## Codec inference
 
 Use `defineCodecs` in the constructor's `codecs` callback. It is the codec
 map's single inference anchor:
@@ -155,7 +155,7 @@ rule. Keep the map MIME-keyed, and use either one `'text/html'` rule or a
 non-empty ordered rule tuple. Do not author direct codec maps or annotate the
 callbacks.
 
-## Another Plugin
+## Another plugin
 
 Use `editor.plugin(Plugin)` when plugin-owned code needs another plugin's
 consumer portal.
@@ -182,7 +182,7 @@ Declare a dependency when the plugin cannot work without that capability. Plate
 installs dependencies before their dependents, so the portal is available in
 the handler. Keep cross-plugin writes rare; they couple two plugins tightly.
 
-## React Components
+## React components
 
 Use `useEditorPlugin` inside a component rendered under `<Plate>`. It returns
 the plugin's flat consumer portal. Call `useEditor()` separately when the
@@ -223,10 +223,24 @@ export function CounterStatus() {
 }
 ```
 
-For code outside the nearest `<Plate>` provider, pass an editor explicitly with
-`useEditorPluginStore`.
+To subscribe to another editor registered under the same `<PlateController>`,
+pass its ID to the selector overload:
 
-## Store State
+```tsx title="counter-badge.tsx" showLineNumbers
+import { usePluginStore } from 'platejs/react';
+
+import { CounterPlugin } from './counter-plugin';
+
+export function CounterBadge({ editorId }: { editorId: string }) {
+  const count = usePluginStore(CounterPlugin, (state) => state.count, {
+    id: editorId,
+  });
+
+  return <span>{count}</span>;
+}
+```
+
+## Store state
 
 Plugin state is stored per editor. Updating one editor's plugin store does not
 update another editor.
@@ -264,8 +278,8 @@ export function resetCounter(editor: Editor) {
 Plate throws when `store.get` or `usePluginStore` targets a missing state field
 or selector.
 
-Always pass the plugin descriptor to `usePluginStore` and
-`useEditorPluginStore`. A name-only object has no state contract for TypeScript
+Always pass the plugin descriptor to `usePluginStore`.
+A name-only object has no state contract for TypeScript
 to infer.
 
 ## API Reference
@@ -273,11 +287,9 @@ to infer.
 | Helper | Scope | Notes |
 | --- | --- | --- |
 | `editor.plugin(plugin)` | Any editor code. | Opens the installed plugin's typed consumer portal. |
-| `useEditorPlugin(plugin, id?)` | React under `<Plate>`. | Returns the installed plugin's flat consumer portal. |
+| `useEditorPlugin(plugin)` | React under `<Plate>`. | Returns the installed plugin's flat consumer portal. |
 | `usePluginStore(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one state field or named selector. |
-| `usePluginStore(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a value derived from plugin state. |
-| `useEditorPluginStore(editor, plugin, key, ...args)` | React with explicit editor. | Use outside the closest editor provider. |
-| `useEditorPluginStore(editor, plugin, selector, options?)` | React with explicit editor. | Explicit-editor variant of `usePluginStore`. |
+| `usePluginStore(plugin, selector, options?)` | React under `<Plate>` or a registered editor under `<PlateController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
 
 For plugin extension methods, see [Plugin Methods](/docs/plugin-methods). For
 plugin configuration, see [Plugin](/docs/plugin).

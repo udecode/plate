@@ -6,27 +6,23 @@ import type {
   EditorDocumentValue,
   EditorNodeChangeContext,
   EditorTextChangeContext,
-  NodeEntry,
-  Range,
   Selection,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
-import type { EditableProps } from '../../lib/types/EditableProps';
 import type { Editor } from '../editor/Editor';
+import { createPlateTargetScope } from '../internal/createPlateTargetScope';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
-import { PlatePluginDecorationSources } from '../internal/PlatePluginDecorationSources';
-import { PlateRuntimeContext } from '../internal/PlateRuntimeContext';
+import {
+  PlateModelContext,
+  PlateScopeProvider,
+  type PlateTarget,
+} from '../internal/plate-context';
 import { Plite } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
-import {
-  EditorReadOnlyProvider,
-  type PliteAnnotationStore,
-  type PliteDecorationSource,
-} from '../plite-react';
-import { PlateStoreProvider } from '../stores';
+import { EditorReadOnlyProvider, useEditorViewState } from '../plite-react';
 
 export type PlateSelectionChangeContext<E = Editor> = PlateCommitContext<E> & {
   selection: Selection;
@@ -52,13 +48,7 @@ export type PlateValueChangeContext<E = Editor> = PlateCommitContext<E> & {
 };
 
 export interface PlateProps<E = Editor> {
-  annotationStore?: PliteAnnotationStore<any, any> | null;
   children: React.ReactNode;
-
-  decorate?: ((options: { editor: E; entry: NodeEntry }) => Range[]) | null;
-
-  decorationSources?: ReadonlyArray<PliteDecorationSource<any>> | null;
-
   editor: E | null;
 
   /** Observe every published editor commit. */
@@ -81,24 +71,15 @@ export interface PlateProps<E = Editor> {
 
   readOnly?: boolean;
 
-  renderElement?: EditableProps['renderElement'];
-
-  renderLeaf?: EditableProps['renderLeaf'];
-
   suppressInstanceWarning?: boolean;
 }
 
 function PlateInner({
-  annotationStore,
   children,
   containerRef,
-  decorate,
-  decorationSources,
   editor,
   primary,
   readOnly,
-  renderElement,
-  renderLeaf,
   onCommit,
   onNodeChange,
   onSelectionChange,
@@ -108,13 +89,32 @@ function PlateInner({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
-  const modelRevision = usePlateModelRevision(currentEditor);
-  const decorationPluginNames =
-    getPlateRuntime(currentEditor).pluginCache.decorate;
-  const [initialReadOnly] = React.useState(() =>
-    currentEditor.read.view.isReadOnly()
+  const [scope] = React.useState(() => createPlateTargetScope<PlateTarget>());
+  const editableRef = React.useRef<HTMLDivElement>(null);
+  const fallback = React.useMemo(
+    () => ({ editor: currentEditor, containerRef, editableRef }),
+    [containerRef, currentEditor]
   );
-  const plateReadOnly = readOnly ?? initialReadOnly;
+  const modelRevision = usePlateModelRevision(currentEditor);
+  const decorations = React.useMemo(() => {
+    void modelRevision;
+
+    return getPlateDecorationSources(currentEditor);
+  }, [currentEditor, modelRevision]);
+  const editorReadOnly = useEditorViewState(currentEditor, (view) =>
+    view.isReadOnly()
+  );
+  const plateReadOnly = readOnly ?? editorReadOnly;
+  const model = React.useMemo(
+    () => ({
+      editor: currentEditor,
+      containerRef,
+      primary: primary ?? true,
+      readOnly: plateReadOnly,
+      scope,
+    }),
+    [containerRef, currentEditor, plateReadOnly, primary, scope]
+  );
   const observerBaselineVersion = React.useMemo(
     () => editor?.read.lastCommit()?.version ?? 0,
     [editor]
@@ -225,39 +225,23 @@ function PlateInner({
   }, [editor, observerBaselineVersion]);
 
   return (
-    <PlatePluginDecorationSources
+    <Plite
+      decorations={decorations}
       editor={currentEditor}
-      names={decorationPluginNames}
-      revision={modelRevision}
-      sources={decorationSources}
+      readOnly={plateReadOnly}
     >
-      {(compiledDecorationSources) => (
-        <PlateRuntimeContext value>
-          <Plite
-            annotationStore={annotationStore}
-            decorationSources={compiledDecorationSources}
-            editor={currentEditor}
-            readOnly={plateReadOnly}
+      <EditorReadOnlyProvider readOnly={plateReadOnly}>
+        <PlateModelContext value={model}>
+          <PlateScopeProvider
+            scope={scope}
+            fallback={fallback}
+            fallbackReadOnly={plateReadOnly}
           >
-            <EditorReadOnlyProvider readOnly={plateReadOnly}>
-              <PlateStoreProvider
-                annotationStore={annotationStore}
-                containerRef={containerRef}
-                decorate={decorate}
-                decorationSources={compiledDecorationSources}
-                editor={currentEditor}
-                primary={primary}
-                renderElement={renderElement}
-                renderLeaf={renderLeaf}
-                scope={currentEditor.id}
-              >
-                {children}
-              </PlateStoreProvider>
-            </EditorReadOnlyProvider>
-          </Plite>
-        </PlateRuntimeContext>
-      )}
-    </PlatePluginDecorationSources>
+            {children}
+          </PlateScopeProvider>
+        </PlateModelContext>
+      </EditorReadOnlyProvider>
+    </Plite>
   );
 }
 

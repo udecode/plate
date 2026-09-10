@@ -16,14 +16,20 @@ Extract to a package when the code owns a durable contract:
 - transforms
 - queries
 - serialization/deserialization
-- stable controllers reused across surfaces
-- public semantic controllers with an independent cross-family job
+- semantic algorithms that enforce domain invariants
+- stable controllers with a durable headless job
 - headless React primitives whose contract is reusable DOM behavior and
   accessibility
 
 If package cleanup would paste one of those bodies into registry JSX, stop.
 That is an ownership regression, not colocation. Keep or publish the package
 owner unless the behavior genuinely becomes renderer-specific.
+
+One current consumer is sufficient for a semantic algorithm or durable
+headless subsystem that works independently of its renderer. Count consumers
+after classifying the job. Use the existing feature's scoped API before
+adding a helper export or package; internal file boundaries do not require
+public visibility.
 
 An existing exported hook is evidence to audit, not proof that the extraction
 is correct. Apply the zero-or-one controller law from the `plate-ui` owner.
@@ -84,16 +90,18 @@ Do **not** extract when most of the return value is:
 - booleans used by one component
 - class decisions
 - one component's menu items
-- one component's event handlers
+- one component's presentation event wiring
 
 If the hook name means "private state/props for this one renderer", keep the
 logic in the direct component. Do not rename the prop bag into a controller.
 
 If the same hook also synchronizes reusable DOM state, do not keep the whole
 return bag. Split out the smallest lifecycle hook and make side-effect-only
-adapters return `void`; keep sizing, layout, transient previews, rounding, and
-mouse/keyboard handlers in the renderer. Do not export the remaining pure
-calculation unless another independent owner actually consumes it.
+adapters return `void`. Keep visual sizing, layout, transient rendering
+overrides, visual rounding and presentation event wiring in the renderer.
+Domain constraints, coordinated document mutations and neutral pointer/keyboard
+lifecycle belong to their semantic owner, even with one current consumer.
+Purity alone establishes neither package ownership nor a reason to stay local.
 
 For registry siblings like `*-node.tsx` and `*-node-static.tsx`, do not extract
 a third registry helper just to share labels, menu items, or display names.

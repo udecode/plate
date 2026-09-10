@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useCallback, useMemo } from 'react';
+import { type KeyboardEvent, useCallback, useMemo, useRef } from 'react';
 
 import {
   type EditorStateView,
@@ -19,6 +19,7 @@ import {
   runTrustedUpdate,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
+import type { Editor } from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
@@ -27,10 +28,12 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { focusPliteEditableAfterEventFrame } from './focus-plite-editable';
+import { useEditorRuntimeState } from './use-editor-runtime-state';
+import { useEditorViewState } from './use-editor-view-state';
+import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import {
-  useRequiredPliteRuntimeContext,
-  usePliteRootEditor,
-  usePliteRuntimeState,
+  createPliteRootEditor,
+  useOptionalPliteRuntimeContext,
 } from './use-plite-runtime';
 
 /** Focus behavior after undo or redo commands. */
@@ -39,8 +42,17 @@ export type PliteHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 /** Options for history commands and shortcut handling. */
 export type UsePliteHistoryOptions<TRoot extends RootKey = RootKey> = {
   focusPolicy?: PliteHistoryFocusPolicy;
-  root?: NamedRootKey<TRoot>;
-};
+} & (
+  | {
+      /** Bind commands and focus to this existing view, including outside Plite. */
+      editor: Editor<any, any>;
+      root?: never;
+    }
+  | {
+      editor?: undefined;
+      root?: NamedRootKey<TRoot>;
+    }
+);
 
 /** Undo/redo state and command handlers for one Plite root. */
 export type PliteHistoryController = {
@@ -92,8 +104,8 @@ const selectLastCommitSingleChangedRoot = (
   return roots.size === 1 ? (roots.values().next().value ?? null) : null;
 };
 
-const createHistoryRootSelector = () => {
-  let lastRoot: RootKey = MAIN_ROOT_KEY;
+const createHistoryRootSelector = (initialRoot: RootKey) => {
+  let lastRoot = initialRoot;
 
   return (state: EditorStateView<any, any>): RootKey => {
     const selectionRoot = selectSelectionRoot(state);
@@ -156,6 +168,7 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
  * based on whether undo/redo should restore editor focus.
  */
 export function usePliteHistory<const TRoot extends RootKey = RootKey>({
+  editor: providedEditor,
   focusPolicy = 'restore-root',
   root: fixedRoot,
 }: UsePliteHistoryOptions<TRoot> = {}): PliteHistoryController {
@@ -165,25 +178,63 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
     );
   }
 
-  const historyRootSelector = useMemo(() => createHistoryRootSelector(), []);
-  const historyRoot = usePliteRuntimeState(historyRootSelector, {
+  const context = useOptionalPliteRuntimeContext();
+  const source =
+    providedEditor ??
+    context?.runtime.editor ??
+    failInvariant('usePliteHistory requires an editor or Plite provider.');
+  const historyRootSelector = useMemo(
+    () => createHistoryRootSelector(toInternalRoot(source.read.view.root())),
+    [source]
+  );
+  const historyRoot = useEditorRuntimeState(source, historyRootSelector, {
     equalityFn: nullableRootKeyEquality,
     shouldUpdate: (change) => Boolean(change?.selectionChanged),
   });
-  const root = fixedRoot ?? historyRoot;
+  const root = providedEditor
+    ? toInternalRoot(providedEditor.read.view.root())
+    : (fixedRoot ?? historyRoot);
   const publicRoot = toPublicRootOption(root);
-  const editor = usePliteRootEditor(publicRoot);
+  const editor = useMemo(
+    () =>
+      providedEditor ??
+      createPliteRootEditor(
+        context ?? failInvariant('Expected a Plite runtime.'),
+        publicRoot
+      ),
+    [context, providedEditor, publicRoot]
+  );
   const {
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
-  } = useRequiredPliteRuntimeContext();
-  const availability = usePliteRuntimeState(selectHistoryAvailability, {
-    equalityFn: historyAvailabilityEquality,
-  });
+  } = context ?? {};
+  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const availability = useEditorRuntimeState(
+    source,
+    selectHistoryAvailability,
+    {
+      equalityFn: historyAvailabilityEquality,
+    }
+  );
+  const pendingRestore = useRef<(() => void) | null>(null);
+  useIsomorphicLayoutEffect(
+    () => () => {
+      const cancel = pendingRestore.current;
+      cancel?.();
+      const owner = getEditorRuntimeOwner(source);
+      if (PENDING_HISTORY_FOCUS_RESTORES.get(owner) === cancel) {
+        PENDING_HISTORY_FOCUS_RESTORES.delete(owner);
+      }
+      pendingRestore.current = null;
+    },
+    // Ambient undo can change roots without retiring the control's editor target.
+    [fixedRoot, source]
+  );
 
   const applyHistory = useCallback(
     (direction: HistoryDirection) => {
+      if (editor.read.view.isReadOnly()) return;
       if (direction === 'undo' && !availability.canUndo) {
         return;
       }
@@ -232,46 +283,47 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
 
       if (focusPolicy === 'restore-root') {
         const schedulerEditor =
-          getMountedViewEditor(MAIN_ROOT_KEY) ??
-          getMountedViewEditor(root) ??
-          editor;
+          (providedEditor
+            ? editor
+            : (getMountedViewEditor?.(MAIN_ROOT_KEY) ??
+              getMountedViewEditor?.(root))) ?? editor;
         const domPhaseScheduler =
           getMountedEditableDOMRuntime(schedulerEditor)?.domPhaseScheduler;
         const restoreFocus = () => {
-          const focusEditor = editor.read((state) => {
-            const selectionRoot = selectSelectionRoot(state);
-            const innerHistoryRoot =
-              fixedRoot ??
-              selectionRoot ??
-              (root !== MAIN_ROOT_KEY
-                ? root
-                : selectLastCommitSingleChangedRoot(state));
+          if (editor.read.view.isReadOnly()) return;
+          const focusEditor =
+            providedEditor ??
+            editor.read((state) => {
+              const selectionRoot = selectSelectionRoot(state);
+              const innerHistoryRoot =
+                fixedRoot ??
+                selectionRoot ??
+                (root !== MAIN_ROOT_KEY
+                  ? root
+                  : selectLastCommitSingleChangedRoot(state));
 
-            return resolveHistoryFocusEditor({
-              currentRoot: toInternalRoot(state.view.root()),
-              editor,
-              fallbackRoot: root,
-              getActiveContentRootOwner,
-              getContentRootOwnerViewEditor,
-              getMountedViewEditor,
-              historyRoot: innerHistoryRoot,
-              selectionRoot: fixedRoot ? null : selectionRoot,
+              return resolveHistoryFocusEditor({
+                currentRoot: toInternalRoot(state.view.root()),
+                editor,
+                fallbackRoot: root,
+                getActiveContentRootOwner,
+                getContentRootOwnerViewEditor,
+                getMountedViewEditor,
+                historyRoot: innerHistoryRoot,
+                selectionRoot: fixedRoot ? null : selectionRoot,
+              });
             });
-          });
 
           if (!focusEditor.read((state) => state.selection())) {
-            focusEditor.update((tx) => {
-              const point =
-                tx.points.start([]) ??
-                failInvariant('Expected a document start point after history');
-              tx.selection.set({ anchor: point, focus: point });
-            });
+            const point =
+              focusEditor.read.points.start([]) ??
+              failInvariant('Expected a document start point after history');
+            focusEditor.update.selection.set({ anchor: point, focus: point });
           }
 
-          PENDING_HISTORY_FOCUS_RESTORES.set(
-            runtimeOwner,
-            focusPliteEditableAfterEventFrame(focusEditor)
-          );
+          const cancel = focusPliteEditableAfterEventFrame(focusEditor);
+          pendingRestore.current = cancel;
+          PENDING_HISTORY_FOCUS_RESTORES.set(runtimeOwner, cancel);
         };
 
         if (!domPhaseScheduler) {
@@ -288,6 +340,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
         );
 
         PENDING_HISTORY_FOCUS_RESTORES.set(runtimeOwner, cancelRestore);
+        pendingRestore.current = cancelRestore;
       }
     },
     [
@@ -299,6 +352,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getMountedViewEditor,
+      providedEditor,
       root,
     ]
   );
@@ -328,8 +382,8 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
 
   return useMemo(
     () => ({
-      canRedo: availability.canRedo,
-      canUndo: availability.canUndo,
+      canRedo: !readOnly && availability.canRedo,
+      canUndo: !readOnly && availability.canUndo,
       onKeyDown,
       redo,
       root: publicRoot,
@@ -340,6 +394,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
       availability.canUndo,
       onKeyDown,
       publicRoot,
+      readOnly,
       redo,
       undo,
     ]

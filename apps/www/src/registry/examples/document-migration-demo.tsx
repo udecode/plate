@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  defineDocumentMigrations,
-  migratePlateV54,
-  migratePlateV55,
-} from 'platejs/migrations';
+import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
 import { Plate, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -97,12 +93,11 @@ const MigrationDemoKit = EditorKit.filter(
 
 const MigrationDemoSchema = {
   id: 'document-migration-demo',
-  version: 55,
+  version: 54,
 } as const;
 
 const MigrationDemoMigrations = defineDocumentMigrations(MigrationDemoSchema, {
-  sourceFingerprints: { 54: 'fnv1a64:145ae3a4240757a3' },
-  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  steps: { 54: migratePlateV54 },
   unversioned: 53,
 });
 

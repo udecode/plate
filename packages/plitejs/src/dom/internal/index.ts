@@ -23,6 +23,7 @@ export type {
   DOMCoverageReason,
   DOMCoverageRuntimeRange,
   DOMCoverageSelectionPolicy,
+  DOMCoverageSession,
   DOMCoveragePlitePointResult,
 } from '../plugin/dom-coverage';
 export { DOMCoverage } from '../plugin/dom-coverage';
@@ -44,6 +45,7 @@ export {
   getPliteStringLength,
   getPliteStringLineEdgeTextOffset,
   getPliteStringPlacementDOMPoint,
+  getPliteTextHostStrings,
   hasUsableDOMRect,
 } from '../plugin/dom-geometry';
 export {
@@ -87,6 +89,21 @@ export {
   isDOMSyncMutation,
   markDOMSyncMutationTarget,
 } from '../plugin/dom-sync-mutation-ownership';
+export {
+  releaseDOMTextFlowRecordIndex,
+  releaseDOMTextFlowIndex,
+  isDOMTextFlowSegmentSynchronized,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowInsertTarget,
+  resolveDOMTextFlowOffset,
+  resolveDOMTextFlowPoint,
+  resolveDOMTextFlowRecordDOMText,
+  resolveDOMTextFlowRecordText,
+  resolveDOMTextFlowStringOffset,
+  setDOMTextFlowRecordIndex,
+  setDOMTextFlowRecordIndexes,
+  setDOMTextFlowIndex,
+} from '../plugin/dom-text-flow-index';
 export { parseDOMClipboardHtml } from '../plugin/dom-html';
 export type {
   DOMPhase,

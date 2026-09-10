@@ -16,6 +16,7 @@ import {
   type EditorCommandDescriptor,
   type EditorCommandInput,
   type EditorCommit,
+  type EditorSnapshot,
   type Editor,
   type EditorStateView,
   type EditorView,
@@ -30,6 +31,7 @@ import {
   type Value,
   type ValueOf,
 } from '../..';
+import { createEditorViewExtensionApis } from '../../core/editor-extension';
 import type { DOMApi, DOMExtension } from '../../dom';
 import {
   createDOMEditorCapability,
@@ -38,7 +40,6 @@ import {
 } from '../../dom/internal';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
-import { refreshEditorDecorations } from '../decoration-refresh';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -60,7 +61,7 @@ import {
   type Editor as ReactEditorType,
   type ReactExtension,
 } from '../plugin/with-react';
-import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
+import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { setPliteViewSelectionStoreKey } from '../view-selection';
@@ -73,11 +74,75 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 import {
-  invalidateUnsyncedMountedTextDOM,
   syncChangedTextToDOM,
   syncPliteNodePathBindingsToDOM,
 } from './use-plite-node-ref';
 import { useRuntimeFocusState } from './use-runtime-focus-state';
+
+type PendingEditorCommit<V extends Value> = {
+  commit: EditorCommit;
+  snapshot: EditorSnapshot<V>;
+};
+
+type EditorCommitPublicationQueue<V extends Value> = {
+  lastVersion: number;
+  pending: Map<number, PendingEditorCommit<V>>;
+  publishing: boolean;
+};
+
+export const createEditorCommitPublicationQueue = <V extends Value>(
+  lastVersion: number
+): EditorCommitPublicationQueue<V> => ({
+  lastVersion,
+  pending: new Map(),
+  publishing: false,
+});
+
+export const resetEditorCommitPublicationQueue = <V extends Value>(
+  queue: EditorCommitPublicationQueue<V>,
+  lastVersion: number
+) => {
+  queue.lastVersion = lastVersion;
+  queue.pending.clear();
+  queue.publishing = false;
+};
+
+export const publishEditorCommitInVersionOrder = <V extends Value>(
+  queue: EditorCommitPublicationQueue<V>,
+  commit: EditorCommit,
+  snapshot: EditorSnapshot<V>,
+  publish: (commit: EditorCommit, snapshot: EditorSnapshot<V>) => void,
+  options: { allowVersionGap?: boolean } = {}
+) => {
+  if (commit.version <= queue.lastVersion) return;
+
+  queue.pending.set(commit.version, { commit, snapshot });
+  if (queue.publishing) return;
+
+  queue.publishing = true;
+
+  try {
+    let allowVersionGap = options.allowVersionGap ?? false;
+
+    while (queue.pending.size > 0) {
+      let nextVersion = queue.lastVersion + 1;
+      let next = queue.pending.get(nextVersion);
+
+      if (!next && allowVersionGap) {
+        nextVersion = Math.min(...queue.pending.keys());
+        next = queue.pending.get(nextVersion);
+      }
+      if (!next) break;
+
+      queue.pending.delete(nextVersion);
+      queue.lastVersion = nextVersion;
+      publish(next.commit, next.snapshot);
+      allowVersionGap = false;
+    }
+  } finally {
+    queue.publishing = false;
+  }
+};
 
 const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (
@@ -127,16 +192,8 @@ export const unregisterContentRootOwnerViewEditor = <TEditor,>(
   return ownerViewEditors.delete(ownerKey);
 };
 
-const createReactApi = (editor: object, domApi: DOMApi) =>
+const createReactApi = (domApi: DOMApi) =>
   Object.freeze({
-    refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => {
-      refreshEditorDecorations(editor, {
-        ...options,
-        reason: options?.reason ?? 'external',
-        requiresDOMSelectionExport:
-          options?.requiresDOMSelectionExport ?? domApi.isFocused(),
-      });
-    },
     isComposing: () => domApi.isComposing(),
     isFocused: () => domApi.isFocused(),
     isReadOnly: () => domApi.isReadOnly(),
@@ -311,16 +368,22 @@ export const createReactRuntimeViewEditor = <
   >;
 
   Object.defineProperties(editor, descriptors);
-  setEditorRuntime(editor as any, runtime, runtimeOwner);
+  setEditorRuntime(
+    editor as any,
+    runtime,
+    runtimeOwner,
+    view.read.view.root() ?? MAIN_ROOT_KEY
+  );
   inheritEditorExtensionRegistry(editor as any, view as any);
 
   const { clipboard, ...domApi } = createDOMEditorCapability(
     toReactRuntimeEditor(editor),
     getEditorExtensionContributions(editor as any, DOM_CLIPBOARD_HANDLERS)
   );
-  const reactApi = createReactApi(editor, domApi);
+  const reactApi = createReactApi(domApi);
   const scopedDomApi = Object.freeze({ ...domApi, clipboard });
-  const baseApi = view.api as Record<PropertyKey, unknown>;
+  const bound = createEditorViewExtensionApis(editor, view);
+  const baseApi = bound.api as Record<PropertyKey, unknown>;
   const viewApi = new Proxy(baseApi, {
     get(target, property, receiver) {
       if (property === 'dom') {
@@ -343,27 +406,25 @@ export const createReactRuntimeViewEditor = <
       enumerable: true,
       value: (extension: ExtensionLike) => {
         const portal = (
-          view.extension as unknown as (extension: ExtensionLike) => {
+          bound.extension as unknown as (extension: ExtensionLike) => {
             api: unknown;
             read: unknown;
             update: unknown;
           }
         )(extension);
-        const rebound = Reflect.get(viewApi, extension.name);
+        return Object.freeze({
+          get api() {
+            const capability = portal.api;
 
-        return rebound === undefined
-          ? portal
-          : Object.freeze({
-              get api() {
-                return rebound;
-              },
-              get read() {
-                return portal.read;
-              },
-              get update() {
-                return portal.update;
-              },
-            });
+            return Reflect.get(viewApi, extension.name) ?? capability;
+          },
+          get read() {
+            return portal.read;
+          },
+          get update() {
+            return portal.update;
+          },
+        });
       },
     },
   });
@@ -436,7 +497,7 @@ export function PliteRuntime<
     return <>{props.children}</>;
   }
 
-  return <OwnedPliteRuntime {...props} />;
+  return <PliteRuntimeProvider {...props} />;
 }
 
 export const useMountedEditorRuntimeOwner = (
@@ -453,14 +514,22 @@ export const useMountedEditorRuntimeOwner = (
   }
 };
 
-function OwnedPliteRuntime<
+export function PliteRuntimeProvider<
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
->({ children, runtime }: PliteRuntimeProps<V, TExtensions>) {
+>({
+  children,
+  runtime,
+  onCommit,
+}: PliteRuntimeProps<V, TExtensions> & {
+  onCommit?: (commit: EditorCommit, snapshot: EditorSnapshot<V>) => void;
+}) {
   const { selectorContext, onChange: handleSelectorChange } =
     useEditorSelectorContext();
-  const lastCommitVersionRef = useRef(
-    editorGetLastCommit(runtime.editor)?.version ?? 0
+  const [commitPublicationQueue] = useState(() =>
+    createEditorCommitPublicationQueue<V>(
+      editorGetLastCommit(runtime.editor)?.version ?? 0
+    )
   );
   const reactEditor = toReactRuntimeEditor(runtime.editor);
   const mountedViewEditorsRef = useRef(
@@ -641,27 +710,13 @@ function OwnedPliteRuntime<
       const publicRoot = toPublicRootOption(root);
       const changedTextNodeKeys = commit.changed.nodeKeys('text', publicRoot);
       const changedPathNodeKeys = commit.changed.nodeKeys('path', publicRoot);
-      const historyAffectedNodeKeys = [
-        ...changedTextNodeKeys,
-        ...changedPathNodeKeys,
-        ...commit.changed.nodeKeys('node', publicRoot),
-      ];
       let didSyncEveryView = changedTextNodeKeys.length > 0;
 
       for (const viewEditor of viewEditors) {
         const runtimeEditor = viewEditor as unknown as Editor;
-        if (commit.annotations['history.action'] !== undefined) {
-          invalidateUnsyncedMountedTextDOM(
-            runtimeEditor,
-            historyAffectedNodeKeys
-          ).forEach((nodeKey) => {
-            invalidatedNodeKeys.add(nodeKey);
-          });
-        }
         const textSync = syncChangedTextToDOM(
           runtimeEditor,
-          changedTextNodeKeys,
-          { allowProjected: changedPathNodeKeys.length === 0 }
+          changedTextNodeKeys
         );
         requiresGlobalRender ||= textSync.requiresGlobalRender;
         textSync.invalidatedNodeKeys.forEach((nodeKey) => {
@@ -696,20 +751,24 @@ function OwnedPliteRuntime<
             callback();
           };
 
-    const onContextChange: Parameters<typeof runtime.subscribeCommit>[0] = (
-      commit
+    const publishCommit: Parameters<typeof runtime.subscribeCommit>[0] = (
+      commit,
+      snapshot
     ) => {
       lastSelectionCache.record(
         commit.selectionAfter,
         commit.selectionAfterRoot
       );
 
-      lastCommitVersionRef.current = commit.version;
-
       maybeBatchUpdates(() => {
-        refreshFocused();
+        profilePliteReactDuration('focused-state', refreshFocused);
 
-        const textSync = syncRuntimeChangesToDOM(commit);
+        const textSync = profilePliteReactDuration('dom-text-sync', () =>
+          syncRuntimeChangesToDOM(commit)
+        );
+        profilePliteReactDuration('change-callbacks', () =>
+          onCommit?.(commit, snapshot)
+        );
         handleSelectorChange(
           textSync.requiresGlobalRender ? undefined : commit,
           [
@@ -724,15 +783,37 @@ function OwnedPliteRuntime<
       });
     };
 
+    const onContextChange: Parameters<typeof runtime.subscribeCommit>[0] = (
+      commit,
+      snapshot
+    ) => {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        commit,
+        snapshot,
+        publishCommit
+      );
+    };
     const unsubscribe = runtime.subscribeCommit(onContextChange);
     const latestCommit = editorGetLastCommit(runtime.editor);
 
-    if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
-      onContextChange(latestCommit, editorGetSnapshot(runtime.editor));
+    if (
+      latestCommit &&
+      latestCommit.version > commitPublicationQueue.lastVersion
+    ) {
+      publishEditorCommitInVersionOrder(
+        commitPublicationQueue,
+        latestCommit,
+        editorGetSnapshot(runtime.editor),
+        publishCommit,
+        { allowVersionGap: true }
+      );
     }
 
     return unsubscribe;
   }, [
+    commitPublicationQueue,
+    onCommit,
     handleSelectorChange,
     lastSelectionCache,
     reactEditor,
@@ -978,6 +1059,24 @@ export type PliteRootEditor<
   ReactRuntimeEditor<V, TExtensions> &
   Omit<EditorView<V, TExtensions>, 'api' | 'extension' | 'read' | 'update'>;
 
+export function createPliteRootEditor<
+  V extends Value = Value,
+  const TExtensions extends readonly unknown[] = readonly [],
+>(
+  {
+    getView,
+    runtime,
+  }: Pick<PliteRuntimeContextValue<any, any>, 'getView' | 'runtime'>,
+  root?: NamedRootKey,
+  readOnly?: boolean
+): PliteRootEditor<V, TExtensions> {
+  const editor = createReactRuntimeViewEditor(
+    getView({ readOnly, root }) as EditorView<V, TExtensions>
+  ) as PliteRootEditor<V, TExtensions>;
+  setPliteViewSelectionStoreKey(editor, runtime.editor);
+  return editor;
+}
+
 /**
  * Create a command-capable editor for one root.
  *
@@ -1001,18 +1100,15 @@ export function usePliteRootEditor<
 
   const { getView, runtime } = useRequiredPliteRuntimeContext();
 
-  return useMemo(() => {
-    const viewEditor = createReactRuntimeViewEditor(
-      getView({ readOnly: options.readOnly, root }) as EditorView<
-        V,
-        TExtensions
-      >
-    ) as PliteRootEditor<V, TExtensions>;
-
-    setPliteViewSelectionStoreKey(viewEditor, runtime.editor);
-
-    return viewEditor;
-  }, [getView, options.readOnly, root, runtime.editor]);
+  return useMemo(
+    () =>
+      createPliteRootEditor<V, TExtensions>(
+        { getView, runtime },
+        root,
+        options.readOnly
+      ),
+    [getView, options.readOnly, root, runtime]
+  );
 }
 
 /**

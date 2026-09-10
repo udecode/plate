@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import type { Descendant } from 'plitejs';
+import type { Element } from 'plitejs';
 
 import {
   createEditor,
@@ -8,14 +8,14 @@ import {
   usePliteRootChrome,
   usePliteRootEditor,
 } from '../../src/react';
-import { createPliteProjectionGraph } from '../../src/react/projection-graph';
+import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -320,12 +320,11 @@ describe('usePliteRootChrome', () => {
       });
     });
 
-    const graph = createPliteProjectionGraph([
+    const graph = createPliteViewBoundaryGraph([
       { path: [0], root: 'header' },
       { path: [0], root: 'main' },
     ]);
     const staleSelection = createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: { point: { path: [0, 0], root: 'header', offset: 1 } },
       focus: { point: { path: [0, 0], offset: 1 } },
     });

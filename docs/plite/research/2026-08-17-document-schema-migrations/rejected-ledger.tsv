@@ -1,0 +1,5 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+migration:distributed-node-version	facebook/lexical	migration:per-node-version:negative	Permanent per-node import branches do not compose and invert whole-document release ownership	Reopen only if Plate adopts independent nested serialization owners with separate lineage
+migration:strict-parser-only	prosemirror/prosemirror-model	migration:current-schema-parser:negative	Validation is necessary after migration but cannot select or sequence source-version transforms	Never as the migration owner; retain as final assertion
+migration:manual-feature-utility	ueberdosis/tiptap	migration:feature-utility:negative	Repeats Plate's current fragmented feature migration problem	Reopen only for a genuinely package-local format outside whole-document lineage
+migration:single-callback-only	pmndrs/zustand	migration:version-envelope:storage	Excellent envelope, but one callback forces v53-to-v55 branching/composition into application code	Retain envelope/writeback ideas; do not adopt as chain architecture

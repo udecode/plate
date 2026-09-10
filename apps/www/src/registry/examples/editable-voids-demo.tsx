@@ -17,7 +17,7 @@ import { EditorKit } from '@/registry/components/editor/plugins';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 
 export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
-  schema: { element: { void: 'editable-island' } },
+  schema: { element: { void: 'block' } },
 });
 
 export function EditableVoidElement({

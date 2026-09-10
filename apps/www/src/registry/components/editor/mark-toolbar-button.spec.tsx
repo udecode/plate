@@ -37,6 +37,9 @@ let mediaUrlOnChange: React.ChangeEventHandler<HTMLInputElement> | undefined;
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
   useEditor: () => currentEditor,
+  useOptionalEditor: () => currentEditor,
+  useEditorReadOnly: () => false,
+  useEditorHasSelection: () => currentEditor.read.selection?.() != null,
   useEditorPlugin: () => ({ name: currentPluginName }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(currentEditor),
@@ -210,6 +213,9 @@ mock.module(
 
 mock.module('@/registry/components/editor/floating-popover', () => ({
   FloatingPopover: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  FloatingPopoverAnchor: ({ element }: { element: React.ReactNode }) => (
+    <>{element}</>
+  ),
   FloatingPopoverContent: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
@@ -275,6 +281,7 @@ describe('feature toolbar plugin portals', () => {
       api: { dom: { focus: focusMock } },
       plugin: pluginMock,
       read: {
+        view: { isReadOnly: () => false },
         marks: () => ({ bold: true }),
         nodes: { block: () => undefined },
       },
@@ -287,6 +294,7 @@ describe('feature toolbar plugin portals', () => {
 
   it('uses the typed plugin portal for a decoupled bold control', async () => {
     pluginMock.mockReturnValue({
+      installed: true,
       name: 'bold',
       read: { isActive: () => true },
       update: { toggle: toggleMock },
@@ -335,6 +343,7 @@ describe('feature toolbar plugin portals', () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
+      installed: true,
       read: { value: () => '16px' },
       update: { set: setMock },
     });
@@ -353,10 +362,72 @@ describe('feature toolbar plugin portals', () => {
     expect(focusMock).not.toHaveBeenCalled();
   });
 
+  it('reads the default size from a heading level', async () => {
+    currentEditor.read.nodes.block = () => [
+      { type: 'heading', level: 2, children: [{ text: 'Heading' }] },
+      [0],
+    ];
+    pluginMock.mockImplementation((plugin) =>
+      plugin === actualCoreReact.HeadingPlugin
+        ? { installed: true, schema: { type: 'heading' } }
+        : {
+            installed: true,
+            read: { value: () => undefined },
+            update: { set: setMock },
+          }
+    );
+    const { FontSizeToolbarButton } = await import(
+      `./font-size-toolbar-button?heading=${Math.random().toString(36).slice(2)}`
+    );
+    const view = render(<FontSizeToolbarButton />);
+    expect((view.getByRole('textbox') as HTMLInputElement).value).toBe('24');
+  });
+
+  it.each(['', 'abc', '100.5'])(
+    'does not commit invalid font size %j',
+    async (value) => {
+      pluginMock.mockReturnValue({
+        installed: true,
+        read: { value: () => '16px' },
+        update: { set: setMock },
+      });
+      const { FontSizeToolbarButton } = await import(
+        `./font-size-toolbar-button?invalid=${Math.random().toString(36).slice(2)}`
+      );
+      const view = render(<FontSizeToolbarButton />);
+      const input = view.getByRole('textbox');
+      const user = userEvent.setup();
+      await user.click(input);
+      await user.clear(input);
+      if (value) await user.type(input, value);
+      await user.tab();
+      expect(setMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['1', '100'])(
+    'keeps font size steps within the input bounds at %s',
+    async (value) => {
+      pluginMock.mockReturnValue({
+        installed: true,
+        read: { value: () => `${value}px` },
+        update: { set: setMock },
+      });
+      const { FontSizeToolbarButton } = await import(
+        `./font-size-toolbar-button?bounds=${Math.random().toString(36).slice(2)}`
+      );
+      const view = render(<FontSizeToolbarButton />);
+      const buttons = view.getAllByRole('button');
+      fireEvent.click(value === '1' ? buttons[0] : buttons.at(-1)!);
+      expect(setMock).not.toHaveBeenCalled();
+    }
+  );
+
   it('changes font size without refocusing from the input', async () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
+      installed: true,
       read: { value: () => '16px' },
       update: { set: setMock },
     });
@@ -381,6 +452,7 @@ describe('feature toolbar plugin portals', () => {
     currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
+      installed: true,
       read: { value: () => '16px' },
       update: { set: setMock },
     });
@@ -410,6 +482,7 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
+      installed: true,
       name: 'color',
       read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
@@ -458,6 +531,7 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
+      installed: true,
       name: 'color',
       read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
@@ -499,6 +573,7 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
+      installed: true,
       name: 'color',
       read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
@@ -530,6 +605,7 @@ describe('feature toolbar plugin portals', () => {
       focus: { offset: 4, path: [0, 0] },
     });
     pluginMock.mockReturnValue({
+      installed: true,
       name: 'color',
       read: { value: () => currentEditor.read.marks().color },
       update: { clear: clearMock, set: setMock },
@@ -600,6 +676,7 @@ describe('feature toolbar plugin portals', () => {
 
   it('inserts URL media through the selected feature portal', async () => {
     pluginMock.mockReturnValue({
+      installed: true,
       update: { insert: insertMock },
     });
     const { MediaToolbarButton } = await import(

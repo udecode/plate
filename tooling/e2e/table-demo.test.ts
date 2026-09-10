@@ -1,5 +1,7 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
+import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+
 const TABLE_HTML = `
   <table>
     <tbody>
@@ -13,27 +15,6 @@ const TABLE_HTML = `
     </tbody>
   </table>
 `;
-
-const recordRuntimeErrors = (page: Page) => {
-  const errors: string[] = [];
-  const onConsole = (message: { text: () => string; type: () => string }) => {
-    if (message.type() === 'error') errors.push(message.text());
-  };
-  const onPageError = (error: Error) => {
-    errors.push(error.stack ?? error.message);
-  };
-
-  page.on('console', onConsole);
-  page.on('pageerror', onPageError);
-
-  return {
-    assertNone: () => expect(errors).toEqual([]),
-    stop: () => {
-      page.off('console', onConsole);
-      page.off('pageerror', onPageError);
-    },
-  };
-};
 
 const recordTableDiagnostics = (page: Page) => {
   const messages: string[] = [];
@@ -427,7 +408,9 @@ test.describe('table registry demo', () => {
   test('renders, selects, and resizes cells without runtime errors', async ({
     page,
   }) => {
-    const runtimeErrors = recordRuntimeErrors(page);
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      strict: true,
+    });
     const editor = getEditor(page);
     const table = getOriginalTable(page);
 
@@ -505,7 +488,9 @@ test.describe('table registry demo', () => {
   test('owns repeated plain vertical navigation before browser paint', async ({
     page,
   }) => {
-    const runtimeErrors = recordRuntimeErrors(page);
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      strict: true,
+    });
     const editor = getEditor(page);
     const table = getOriginalTable(page);
 
@@ -622,7 +607,9 @@ test.describe('table registry demo', () => {
   test('creates a sized body table from the keyboard picker', async ({
     page,
   }) => {
-    const runtimeErrors = recordRuntimeErrors(page);
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      strict: true,
+    });
     const editor = getEditor(page);
     const tables = editor.locator('table');
     const insertionPoint = editor.getByText(
@@ -704,7 +691,9 @@ test.describe('table registry demo', () => {
   test('preserves header, selection, and sizing through table commands', async ({
     page,
   }) => {
-    const runtimeErrors = recordRuntimeErrors(page);
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      strict: true,
+    });
     const editor = getEditor(page);
     const table = getOriginalTable(page);
     let pointerIsDown = false;
@@ -898,7 +887,9 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordRuntimeErrors(page);
+      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+        strict: true,
+      });
       const tableDiagnostics = recordTableDiagnostics(page);
       const editor = getEditor(page);
       const table = getOriginalTable(page);
@@ -953,7 +944,9 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordRuntimeErrors(page);
+      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+        strict: true,
+      });
       const editor = getEditor(page);
       const table = getOriginalTable(page);
 
@@ -991,7 +984,9 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordRuntimeErrors(page);
+      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+        strict: true,
+      });
       const editor = getEditor(page);
       const table = getOriginalTable(page);
 
@@ -1051,7 +1046,9 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordRuntimeErrors(page);
+      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+        strict: true,
+      });
       const editor = getEditor(page);
       const table = getOriginalTable(page);
 
@@ -1107,7 +1104,9 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordRuntimeErrors(page);
+      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+        strict: true,
+      });
       const editor = getEditor(page);
       const insertionPoint = editor.getByText(
         'Create customizable tables with resizable columns and rows, allowing you to design structured layouts.'

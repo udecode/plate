@@ -19,7 +19,7 @@ import {
   type NodeKey,
   type Path,
   PathApi,
-  type PlateNodeInsertOptions,
+  type PlateBlockInsertOptions,
   PLUGINS,
   PointApi,
   property,
@@ -84,6 +84,8 @@ import type {
   SetBorderWidthOptions,
   TableBorderStates,
   TableFindOptions,
+  TableResize,
+  TableResizeTarget,
   TableStoreSizeOverrides,
 } from './types';
 
@@ -214,15 +216,15 @@ const projectTableSelectionSlice = (
 
 export type TablePluginState = {
   /** Disable expanding the table when inserting cells. */
-  disableExpandOnInsert?: boolean;
+  disableExpandOnInsert: boolean;
   /** Disable first column left resizer. */
-  disableMarginLeft?: boolean;
+  disableMarginLeft: boolean;
   /** Disable cell merging functionality. */
   disableMerge: boolean;
   /** Preserve the first column width when the table has one column. */
-  enableUnsetSingleColSize?: boolean;
+  enableUnsetSingleColSize: boolean;
   /** Initial table width used to derive missing column sizes. */
-  initialTableWidth?: number;
+  initialTableWidth: number | null;
   /** Minimum column width. */
   minColumnWidth: number;
 };
@@ -294,7 +296,7 @@ const getFallbackColumnWidth = ({
   minColumnWidth,
 }: {
   columnCount: number;
-  initialTableWidth?: number;
+  initialTableWidth: number | null;
   minColumnWidth?: number;
 }) => {
   const minimum = isPositiveFiniteNumber(minColumnWidth) ? minColumnWidth : 1;
@@ -410,7 +412,7 @@ export const BaseTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
         kind: 'node',
       },
     }),
-  render: { nodeProps: ({ element }) => getTableCellHtmlProps(element) },
+  render: { attributes: ({ element }) => getTableCellHtmlProps(element) },
   rules: { merge: { removeEmpty: false } },
 });
 
@@ -471,7 +473,11 @@ const csvSpecialCharacterPattern = /[",\r\n]/;
 const tablePasteSources = new WeakMap<object, TablePasteSource[]>();
 
 const initialState: TablePluginState = {
+  disableExpandOnInsert: false,
+  disableMarginLeft: false,
   disableMerge: false,
+  enableUnsetSingleColSize: false,
+  initialTableWidth: null,
   minColumnWidth: 48,
 };
 
@@ -982,33 +988,26 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       }),
     }),
     read: ({ state }) => {
-      const getCellIndicesByKey = (key: NodeKey): CellIndices | undefined => {
-        const cellPath = state.nodes.path(key);
-
+      const getCellIndicesAtPath = (
+        cellPath: Path | undefined
+      ): CellIndices | undefined => {
         if (!cellPath) return undefined;
 
-        const anchor = createTableContext(
-          state,
-          cellPath.slice(0, -2)
-        )?.anchorAtPath(cellPath);
+        const table = state.nodes.get(cellPath.slice(0, -2), {
+          match: ElementApi.isElement,
+        })?.[0];
+        const anchor = table
+          ? compileTableGrid(table).byPath.get(cellPath.slice(-2).join(','))
+          : undefined;
 
         return anchor ? { col: anchor.col, row: anchor.row } : undefined;
       };
 
       return {
-        getCellIndicesByKey,
-        getCellIndices: (element: TableCellElement): CellIndices => {
-          const cellPath = state.nodes.path(element);
-          const context = cellPath
-            ? createTableContext(state, cellPath.slice(0, -2))
-            : null;
-          const anchor =
-            (cellPath ? context?.anchorAtPath(cellPath) : undefined) ??
-            context?.anchorOf(element);
-          return anchor
-            ? { col: anchor.col, row: anchor.row }
-            : { col: 0, row: 0 };
-        },
+        getCellIndicesByKey: (key: NodeKey): CellIndices | undefined =>
+          getCellIndicesAtPath(state.nodes.path(key)),
+        getCellIndices: (element: TableCellElement): CellIndices =>
+          getCellIndicesAtPath(state.nodes.path(element)) ?? { col: 0, row: 0 },
         selection: (at?: Location) =>
           readTableSelection(state, {
             at,
@@ -1018,6 +1017,97 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           }),
       };
     },
+  }))
+  .extend(({ api, plugin, store }) => ({
+    api: () => ({
+      /**
+       * Captures table sizes and returns a pure delta-to-preview calculation.
+       * Interior boundaries preserve the adjacent columns' combined width.
+       * The left boundary exchanges first-column width for table indentation.
+       * Commit the result with `update.resize`; previews never change the editor.
+       */
+      createResize: (
+        table: ElementOf<typeof plugin>,
+        target: TableResizeTarget
+      ) => {
+        const { minColumnWidth } = store.get();
+        const minimum = isPositiveFiniteNumber(minColumnWidth)
+          ? minColumnWidth
+          : 1;
+        const widths = api.getOverriddenColumnSizes(table);
+        const marginLeft = table.marginLeft ?? 0;
+        const index = target.edge === 'right' ? target.colIndex : 0;
+
+        if (target.edge === 'bottom') {
+          if (
+            !Number.isSafeInteger(target.rowIndex) ||
+            target.rowIndex < 0 ||
+            target.rowIndex >= table.children.length ||
+            !isPositiveFiniteNumber(target.height)
+          ) {
+            throw new TypeError(
+              'Table resize requires a valid row and positive height.'
+            );
+          }
+        } else if (
+          !Number.isSafeInteger(index) ||
+          index < 0 ||
+          index >= widths.length
+        ) {
+          throw new RangeError('Table resize requires an existing column.');
+        }
+
+        return (delta: number): TableResize => {
+          if (!Number.isFinite(delta)) {
+            throw new TypeError('Table resize delta must be finite.');
+          }
+          if (target.edge === 'bottom') {
+            return { ...target, height: Math.max(1, target.height + delta) };
+          }
+
+          const initial = widths[index];
+
+          if (target.edge === 'left') {
+            const nextMarginLeft = Math.max(
+              0,
+              Math.min(
+                marginLeft + delta,
+                marginLeft + initial - Math.min(minimum, initial)
+              )
+            );
+
+            return {
+              columns: [
+                { colIndex: 0, width: initial + marginLeft - nextMarginLeft },
+              ],
+              edge: 'left',
+              marginLeft: nextMarginLeft,
+            };
+          }
+
+          const adjacent = widths[index + 1];
+          const width = Math.max(
+            Math.min(minimum, initial),
+            Math.min(
+              initial + delta,
+              adjacent === undefined
+                ? Number.POSITIVE_INFINITY
+                : initial + adjacent - Math.min(minimum, adjacent)
+            )
+          );
+
+          return {
+            columns: [
+              { colIndex: index, width },
+              ...(adjacent === undefined
+                ? []
+                : [{ colIndex: index + 1, width: initial + adjacent - width }]),
+            ],
+            edge: 'right',
+          };
+        };
+      },
+    }),
   }))
   .extend(({ api, plugin }) => ({
     read: ({ state }) => ({
@@ -1677,54 +1767,23 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       return {
         insert: (
           { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-          options: PlateNodeInsertOptions = {}
+          options: PlateBlockInsertOptions = {}
         ): void => {
           const newTable = api.create({ colCount, header, rowCount });
-          let tablePath: Path | undefined;
-
-          if (options.at !== undefined) {
-            tablePath = PathApi.isPath(options.at)
-              ? options.at
-              : tx.nodes.path(options.at);
+          if (options.at !== undefined && options.after === undefined) {
+            tx.nodes.insert(newTable, options);
           } else {
-            const currentTable = tx.nodes.above({
-              type: plugin,
+            const currentTable = tx.nodes.above({ at: options.after, type });
+            tx.blocks.insertAfter(newTable, {
+              ...options,
+              at: currentTable?.[1] ?? options.after,
             });
-
-            if (currentTable) {
-              tablePath = PathApi.next(currentTable[1]);
-            } else {
-              const currentBlock = tx.nodes.block();
-
-              tablePath = currentBlock
-                ? PathApi.next(currentBlock[1])
-                : [tx.children().length];
-            }
           }
 
-          if (!tablePath) return;
-
-          const result = planTableMutation(
-            createDetachedTableContext(newTable, tablePath),
-            {
-              kind: 'insert-table',
-              options,
-            }
-          );
-
-          if (result.kind !== 'plan') {
-            editor
-              .plugin(DebugPlugin)
-              .api.warn(
-                `Table mutation rejected: ${result.kind}.`,
-                'TABLE_MUTATION_DIAGNOSTIC',
-                result
-              );
-
-            return;
-          }
-
-          applyTableMutationPlan(tx, result);
+          if (!options.select) return;
+          const tablePath = tx.nodes.path(newTable);
+          const point = tablePath && tx.points.start(tablePath.concat([0, 0]));
+          if (point) tx.selection.set(point);
         },
         insertColumn: (options: InsertTableColumnOptions = {}): void => {
           const { initialTableWidth, minColumnWidth } = store.get();
@@ -1780,7 +1839,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 row: sourceRow,
               }),
             header: options.header,
-            initialTableWidth,
+            initialTableWidth: initialTableWidth ?? undefined,
             kind: 'insert-column',
             minColumnWidth,
             select: options.select,
@@ -2447,6 +2506,72 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
                 tx.nodes.set({ backgroundColor: color }, { at: path });
               }
             });
+          },
+          /** Applies all sizes in a resize preview as one editor transaction. */
+          resize: (resize: TableResize, options: TableFindOptions = {}) => {
+            const table = tx.nodes.find({ ...options, type: context.plugin });
+
+            if (!table) return;
+
+            const [node, path] = table;
+
+            if (resize.edge === 'bottom') {
+              if (
+                !Number.isSafeInteger(resize.rowIndex) ||
+                resize.rowIndex < 0 ||
+                resize.rowIndex >= node.children.length ||
+                !isPositiveFiniteNumber(resize.height)
+              ) {
+                throw new TypeError(
+                  'Table resize requires a valid row and positive height.'
+                );
+              }
+              tx.nodes.set(
+                { height: resize.height },
+                { at: [...path, resize.rowIndex] }
+              );
+
+              return;
+            }
+
+            const columnCount = api.getColumnCount(node);
+            const current = getTableColumnSizes(node);
+            const columnWidths = Array.from(
+              { length: columnCount },
+              (_, index): number | null => current?.[index] ?? null
+            );
+
+            for (const { colIndex, width } of resize.columns) {
+              if (
+                !Number.isSafeInteger(colIndex) ||
+                colIndex < 0 ||
+                colIndex >= columnCount ||
+                !isPositiveFiniteNumber(width)
+              ) {
+                throw new TypeError(
+                  'Table resize requires existing columns and positive widths.'
+                );
+              }
+              columnWidths[colIndex] = width;
+            }
+            if (
+              resize.marginLeft !== undefined &&
+              (!Number.isFinite(resize.marginLeft) || resize.marginLeft < 0)
+            ) {
+              throw new TypeError(
+                'Table resize margin must be non-negative and finite.'
+              );
+            }
+
+            tx.nodes.set(
+              {
+                columnWidths,
+                ...(resize.marginLeft === undefined
+                  ? {}
+                  : { marginLeft: resize.marginLeft }),
+              },
+              { at: path }
+            );
           },
           setColumnWidth: (
             { colIndex, width }: { colIndex: number; width: number },

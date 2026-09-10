@@ -9,11 +9,13 @@ import {
 } from './runtime-selection-engine';
 
 export const useEditableRootSelectionImport = ({
+  readOnly,
   runtime,
 }: {
+  readOnly: boolean;
   runtime: EditableDOMRuntime;
 }) => {
-  const { editor, inputController, readOnly } = runtime;
+  const { editor, inputController } = runtime;
   const onDOMSelectionChange = useMemo(
     () =>
       createRuntimeSelectionChangeHandler({
@@ -23,6 +25,7 @@ export const useEditableRootSelectionImport = ({
         inputController,
         processing: runtime.processing,
         readOnly,
+        rootRef: runtime.rootRef,
       }),
     [editor, inputController, readOnly, runtime]
   );

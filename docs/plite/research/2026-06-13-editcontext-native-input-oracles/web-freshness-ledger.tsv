@@ -1,0 +1,4 @@
+source_key	url	date_checked	signal	decision
+mdn-editcontext-api	https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API	2026-06-13	MDN marks EditContext limited availability, experimental, and not Baseline.	Keep as future/experimental proof pressure, not current runtime rewrite.
+w3c-editcontext-working-draft	https://www.w3.org/TR/edit-context/	2026-06-13	W3C published a Working Draft dated 2026-06-10.	Treat API as active draft-stage standardization.
+chrome-editcontext-blog	https://developer.chrome.com/blog/introducing-editcontext-api	2026-06-13	Chrome guidance says Chromium/Edge 121 support and author-owned selection/caret/bounds responsibilities.	Keep current contenteditable lanes and require explicit adapter plan before EditContext work.

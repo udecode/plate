@@ -27,21 +27,18 @@ const TestHeadingPlugins = [
 ];
 
 describe('BaseTocPlugin', () => {
-  it('configures toc as a void element with the shipped defaults', () => {
+  it('configures toc as a block void element', () => {
     const editor = createEditor({
       plugins: [BaseTocPlugin],
     });
     const plugin = editor.plugin(BaseTocPlugin);
 
     expect(plugin.name).toBe(PLUGINS.toc);
+    expect(plugin.store.get('queryHeading')).toBeNull();
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.void).toBe(true);
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.voidKind).toBe(
       'block'
     );
-    expect(plugin.initialState).toMatchObject({
-      isScroll: true,
-      topOffset: 80,
-    });
     expect(
       editor.read.schema.getElementBehavior({
         children: [{ text: '' }],

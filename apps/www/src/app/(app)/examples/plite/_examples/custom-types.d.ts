@@ -130,12 +130,7 @@ export type VideoElement = {
 export type CodeBlockElement = {
   type: 'code-block';
   language: string;
-  children: Descendant[];
-};
-
-export type CodeLineElement = {
-  type: 'code-line';
-  children: Descendant[];
+  children: [CustomText];
 };
 
 export type CustomElementWithAlign =
@@ -175,8 +170,7 @@ export type CustomElement =
   | TableCellElement
   | TitleElement
   | VideoElement
-  | CodeBlockElement
-  | CodeLineElement;
+  | CodeBlockElement;
 
 export type CustomElementType = CustomElement['type'];
 

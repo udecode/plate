@@ -166,7 +166,12 @@ export type InternalEditorRuntime<V extends Value = Value> =
   InternalEditorExtensionRuntime<V> &
     InternalEditorReadRuntime &
     InternalEditorSnapshotRuntime<V> &
-    InternalEditorTransactionRuntime<V>;
+    InternalEditorTransactionRuntime<V> & {
+      setViewState?: (
+        key: 'composing' | 'focused' | 'readOnly',
+        value: boolean
+      ) => boolean;
+    };
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();
 const EDITOR_RUNTIME_OWNER = new WeakMap<Editor, Editor>();

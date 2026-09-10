@@ -109,8 +109,8 @@
     "[Overview](/docs/plugins)",
     "[Stream](/docs/ai)",
     "[Copilot](/docs/copilot)",
-    "[Discussion](/docs/discussion)",
     "[Comments](/docs/comment)",
+    "[Discussion](/docs/discussion)",
     "[Suggestion](/docs/suggestion)",
     "[Basic Blocks](/docs/basic-blocks)",
     "[Blockquote](/docs/blockquote)",
@@ -171,14 +171,11 @@
     "[Caption](/docs/components/caption)",
     "[Font Color Toolbar Button](/docs/components/font-color-toolbar-button)",
     "[Comment Toolbar Button](/docs/components/comment-toolbar-button)",
-    "[Block Discussion](/docs/components/block-discussion)",
     "[Block Draggable](/docs/components/dnd)",
     "[Editor](/docs/components/editor)",
     "[Select Editor](/docs/components/select-editor)",
     "[Emoji Toolbar Button](/docs/components/emoji-toolbar-button)",
-    "[Fixed Toolbar Buttons](/docs/components/fixed-toolbar)",
     "[Fixed Toolbar](/docs/components/fixed-toolbar)",
-    "[Floating Toolbar Buttons](/docs/components/floating-toolbar)",
     "[Floating Toolbar](/docs/components/floating-toolbar)",
     "[Ghost Text](/docs/components/copilot)",
     "[History Toolbar Button](/docs/components/history-toolbar-button)",
@@ -211,7 +208,7 @@
     "[Code Drawing Node](/docs/components/code-drawing)",
     "[Code Leaf](/docs/components/code)",
     "[Column Nodes](/docs/components/column)",
-    "[Comment Leaf](/docs/components/comment)",
+    "[Comments UI](/docs/components/comment)",
     "[Suggestion Leaf](/docs/components/suggestion)",
     "[Date Element](/docs/components/date)",
     "[Equation Element](/docs/components/math)",
@@ -312,7 +309,7 @@
     "[Plate Components](/docs/api/core/plate-components)",
     "[Plate Editor](/docs/api/core/plate-editor)",
     "[Plate Plugin](/docs/api/core/plate-plugin)",
-    "[Plate Store](/docs/api/core/plate-store)",
+    "[Editor Context](/docs/api/core/plate-store)",
     "[Plate Controller](/docs/api/core/plate-controller)",
     "[Plate Utils](/docs/api/utils)",
     "[Resizable](/docs/api/resizable)"
@@ -324,13 +321,11 @@
           "items": [
             {
               "description": "Plate API.",
-              "headings": [],
               "href": "/docs/api/plate",
               "title": "Plate"
             },
             {
               "description": "Plite API.",
-              "headings": [],
               "href": "/docs/api/plite",
               "items": [
                 {
@@ -379,234 +374,33 @@
                   "title": "Document Change"
                 }
               ],
-              "label": "v42",
               "title": "Plite"
             },
             {
               "description": "Core utilities for Plate.",
-              "headings": [
-                "createAtomStore",
-                "createDeserializeAstPlugin",
-                "createHtmlPlugin",
-                "createEditorProtocolPlugin",
-                "createEventEditorPlugin",
-                "createHistoryPlugin",
-                "createInlineVoidPlugin",
-                "createInsertDataPlugin",
-                "createEditor",
-                "defineBasePlugin",
-                "createPrevSelectionPlugin",
-                "definePlatePlugin",
-                "Hotkeys",
-                "toggleBlock",
-                "useOptionalEditorContext",
-                "useEditorContext",
-                "useEditorState",
-                "useElement",
-                "useEditorReadOnly",
-                "useEditorSelection",
-                "useEditorVersion",
-                "useSelectionVersion",
-                "withTReact"
-              ],
               "href": "/docs/api/core",
               "items": [
                 {
-                  "headings": [
-                    "Editable Editor",
-                    "Read-Only View",
-                    "Component Map",
-                    "Render Pipeline",
-                    "Node Primitives",
-                    "API Reference",
-                    "Plate",
-                    "PlateContent",
-                    "PlateView",
-                    "PlateContainer",
-                    "Render Primitives",
-                    "editor",
-                    "id",
-                    "children",
-                    "decorate",
-                    "readOnly",
-                    "primary",
-                    "renderEditable",
-                    "renderElement",
-                    "renderLeaf",
-                    "onCommit",
-                    "onValueChange",
-                    "onSelectionChange",
-                    "onNodeChange",
-                    "onTextChange",
-                    "suppressInstanceWarning",
-                    "autoFocusOnEditable",
-                    "disabled",
-                    "renderText",
-                    "renderPlaceholder",
-                    "placeholder",
-                    "scrollSelectionIntoView",
-                    "onDOMBeforeInput",
-                    "onKeyDown",
-                    "as",
-                    "disableDefaultStyles",
-                    "role",
-                    "style",
-                    "onCopy",
-                    "className",
-                    "...props"
-                  ],
                   "href": "/docs/api/core/plate-components",
                   "title": "Plate Components",
                   "titleCn": "Plate 组件"
                 },
                 {
-                  "headings": [
-                    "id",
-                    "children",
-                    "selection",
-                    "operations",
-                    "api",
-                    "update",
-                    "plugin",
-                    "dom",
-                    "runtime",
-                    "userId",
-                    "isNormalizing",
-                    "installed",
-                    "read",
-                    "store.get",
-                    "store.set",
-                    "log",
-                    "info",
-                    "warn",
-                    "error",
-                    "deserialize",
-                    "refreshDecorations",
-                    "activeTarget",
-                    "clear",
-                    "isTarget",
-                    "value.replace",
-                    "nodes.insert",
-                    "nodes.set",
-                    "marks.toggle",
-                    "selection.select",
-                    "navigation.clear",
-                    "flashTarget",
-                    "navigate",
-                    "Editor",
-                    "NameofPlugins"
-                  ],
                   "href": "/docs/api/core/plate-editor",
                   "title": "Plate Editor",
                   "titleCn": "Plate 编辑器"
                 },
                 {
-                  "headings": [
-                    "name",
-                    "targetPlugins",
-                    "api",
-                    "read",
-                    "selectors",
-                    "update",
-                    "initialState",
-                    "component",
-                    "codecs",
-                    "on",
-                    "commit",
-                    "nodeChange",
-                    "textChange",
-                    "keyDown",
-                    "paste",
-                    "clipboard",
-                    "inject",
-                    "nodeProps",
-                    "excludePlugins",
-                    "excludeBelowPlugins",
-                    "isBlock",
-                    "isElement",
-                    "isLeaf",
-                    "maxLevel",
-                    "type",
-                    "schema",
-                    "rules",
-                    "selection.affinity",
-                    "break.empty",
-                    "break.emptyLineEnd",
-                    "break.default",
-                    "break.splitReset",
-                    "delete.start",
-                    "delete.empty",
-                    "match",
-                    "merge.removeEmpty",
-                    "normalize.removeEmpty",
-                    "override",
-                    "components",
-                    "plugins",
-                    "parsers",
-                    "html",
-                    "render",
-                    "aboveEditable",
-                    "aboveNodes",
-                    "abovePlite",
-                    "afterEditable",
-                    "beforeEditable",
-                    "belowNodes",
-                    "belowRootNodes",
-                    "leaf",
-                    "node",
-                    "isDecoration",
-                    "as",
-                    "shortcuts",
-                    "inputRules",
-                    "dependencies",
-                    "conflicts",
-                    "readMiddleware",
-                    "commands",
-                    "corrections",
-                    "stateFields",
-                    "effectTypes",
-                    "facetProviders",
-                    "contributions",
-                    "activate",
-                    "validate",
-                    "enabled",
-                    "decorate",
-                    "prepareDocument",
-                    "useHooks",
-                    "editOnly",
-                    "configure",
-                    "extend",
-                    "editor",
-                    "plugin",
-                    "defineCodecs",
-                    "store",
-                    "D"
-                  ],
                   "href": "/docs/api/core/plate-plugin",
                   "title": "Plate Plugin",
                   "titleCn": "Plate 插件"
                 },
                 {
-                  "headings": [
-                    "useEventEditorSelectors",
-                    "useEventPlateId"
-                  ],
                   "href": "/docs/api/core/plate-store",
-                  "title": "Plate Store",
-                  "titleCn": "Plate 存储"
+                  "title": "Editor Context",
+                  "titleCn": "编辑器上下文"
                 },
                 {
-                  "headings": [
-                    "platecontroller-store",
-                    "state",
-                    "activeId",
-                    "primaryEditorIds",
-                    "editorStores",
-                    "usage-patterns",
-                    "specific-editor-by-id",
-                    "active-editor",
-                    "dealing-with-fallback-editors"
-                  ],
                   "href": "/docs/api/core/plate-controller",
                   "title": "Plate Controller",
                   "titleCn": "Plate 控制器"
@@ -617,14 +411,12 @@
             },
             {
               "description": "Additional utilities for Plate.",
-              "headings": [],
               "href": "/docs/api/utils",
               "title": "Plate Utils",
               "titleCn": "Plate 工具"
             },
             {
               "description": "API reference for platejs/react",
-              "headings": [],
               "href": "/docs/api/resizable",
               "title": "Resizable",
               "titleCn": "Resizable"
@@ -691,12 +483,6 @@
               "titleCn": "Comment Toolbar Button"
             },
             {
-              "description": "A popover interface for managing discussions: comments, replies, suggestions.",
-              "href": "/docs/components/block-discussion",
-              "title": "Block Discussion",
-              "titleCn": "Block Discussion"
-            },
-            {
               "description": "A block wrapper with a drag handle for moving editor blocks.",
               "href": "/docs/components/dnd",
               "title": "Drag and Drop",
@@ -721,22 +507,10 @@
               "titleCn": "Emoji Toolbar Button"
             },
             {
-              "description": "A set of commonly used formatting buttons.",
-              "href": "/docs/components/fixed-toolbar",
-              "title": "Fixed Toolbar Buttons",
-              "titleCn": "Fixed Toolbar Buttons"
-            },
-            {
               "description": "A fixed toolbar that stays at the top of the editor.",
               "href": "/docs/components/fixed-toolbar",
               "title": "Fixed Toolbar",
               "titleCn": "Fixed Toolbar"
-            },
-            {
-              "description": "A set of formatting buttons for the floating toolbar.",
-              "href": "/docs/components/floating-toolbar",
-              "title": "Floating Toolbar Buttons",
-              "titleCn": "Floating Toolbar Buttons"
             },
             {
               "description": "A contextual toolbar that appears over selected text.",
@@ -932,10 +706,10 @@
               "titleCn": "Column"
             },
             {
-              "description": "A text component for displaying comments with visual indicators.",
+              "description": "Application-owned comment threads attached to durable editor ranges.",
               "href": "/docs/components/comment",
-              "title": "Comment Leaf",
-              "titleCn": "Comment Leaf"
+              "title": "Comments UI",
+              "titleCn": "Comments UI"
             },
             {
               "description": "A text component for suggestion.",
@@ -1261,10 +1035,10 @@
               "titleCn": "Callout"
             },
             {
-              "description": "Adding and displaying comments within content.",
+              "description": "Review each block's comments and suggestions in Floating Discussion.",
               "href": "/docs/examples/discussion",
               "title": "Discussion Demo",
-              "titleCn": "Discussion"
+              "titleCn": "讨论演示"
             },
             {
               "description": "Inline date elements with calendar selection interface.",
@@ -1648,29 +1422,32 @@
               "title": "AI"
             },
             {
+              "description": "Attach application-owned comment threads to durable editor ranges.",
+              "href": "/docs/comment",
+              "keywords": [
+                "annotations"
+              ],
+              "title": "Comments",
+              "titleCn": "评论"
+            },
+            {
+              "description": "Review each block's comments and suggestions in Floating Discussion.",
               "href": "/docs/discussion",
-              "items": [
-                {
-                  "description": "Add comments to text as marks.",
-                  "href": "/docs/comment",
-                  "keywords": [
-                    "leaf"
-                  ],
-                  "title": "Comments",
-                  "titleCn": "Comments"
-                },
-                {
-                  "description": "Add suggestions to text as marks.",
-                  "href": "/docs/suggestion",
-                  "keywords": [
-                    "leaf"
-                  ],
-                  "title": "Suggestion",
-                  "titleCn": "Suggestion"
-                }
+              "keywords": [
+                "collaboration",
+                "review"
               ],
               "title": "Discussion",
-              "titleCn": "Discussion"
+              "titleCn": "讨论"
+            },
+            {
+              "description": "Record proposed document edits for review.",
+              "href": "/docs/suggestion",
+              "keywords": [
+                "editing"
+              ],
+              "title": "Suggestion",
+              "titleCn": "建议"
             },
             {
               "items": [
@@ -2294,25 +2071,30 @@
         "title": "Copilot",
         "titleCn": "Copilot"
       },
-      "/docs/discussion": {
-        "title": "Discussion",
-        "titleCn": "Discussion"
-      },
       "/docs/comment": {
-        "description": "Add comments to text as marks.",
+        "description": "Attach application-owned comment threads to durable editor ranges.",
         "keywords": [
-          "leaf"
+          "annotations"
         ],
         "title": "Comments",
-        "titleCn": "Comments"
+        "titleCn": "评论"
+      },
+      "/docs/discussion": {
+        "description": "Review each block's comments and suggestions in Floating Discussion.",
+        "keywords": [
+          "collaboration",
+          "review"
+        ],
+        "title": "Discussion",
+        "titleCn": "讨论"
       },
       "/docs/suggestion": {
-        "description": "Add suggestions to text as marks.",
+        "description": "Record proposed document edits for review.",
         "keywords": [
-          "leaf"
+          "editing"
         ],
         "title": "Suggestion",
-        "titleCn": "Suggestion"
+        "titleCn": "建议"
       },
       "/docs/basic-blocks": {
         "description": "Enhance your editor with essential formatting elements.",
@@ -2670,11 +2452,6 @@
         "title": "Comment Toolbar Button",
         "titleCn": "Comment Toolbar Button"
       },
-      "/docs/components/block-discussion": {
-        "description": "A popover interface for managing discussions: comments, replies, suggestions.",
-        "title": "Block Discussion",
-        "titleCn": "Block Discussion"
-      },
       "/docs/components/dnd": {
         "description": "A block wrapper with a drag handle for moving editor blocks.",
         "title": "Drag and Drop",
@@ -2860,9 +2637,9 @@
         "titleCn": "Column"
       },
       "/docs/components/comment": {
-        "description": "A text component for displaying comments with visual indicators.",
-        "title": "Comment Leaf",
-        "titleCn": "Comment Leaf"
+        "description": "Application-owned comment threads attached to durable editor ranges.",
+        "title": "Comments UI",
+        "titleCn": "Comments UI"
       },
       "/docs/components/suggestion": {
         "description": "A text component for suggestion.",
@@ -3126,9 +2903,9 @@
         "titleCn": "Callout"
       },
       "/docs/examples/discussion": {
-        "description": "Adding and displaying comments within content.",
+        "description": "Review each block's comments and suggestions in Floating Discussion.",
         "title": "Discussion Demo",
-        "titleCn": "Discussion"
+        "titleCn": "讨论演示"
       },
       "/docs/examples/date": {
         "description": "Inline date elements with calendar selection interface.",
@@ -3266,7 +3043,6 @@
       },
       "/docs/api/plite": {
         "description": "Plite API.",
-        "label": "v42",
         "title": "Plite"
       },
       "/docs/api/plite/editor-api": {
@@ -3321,8 +3097,8 @@
         "titleCn": "Plate 插件"
       },
       "/docs/api/core/plate-store": {
-        "title": "Plate Store",
-        "titleCn": "Plate 存储"
+        "title": "Editor Context",
+        "titleCn": "编辑器上下文"
       },
       "/docs/api/core/plate-controller": {
         "title": "Plate Controller",

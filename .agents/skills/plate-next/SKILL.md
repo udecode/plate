@@ -9,11 +9,21 @@ metadata:
 
 # Plate Next
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
+
+Apply [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
+as the governing `next` beta principle. Audit against current jobs and hard
+laws, then choose the strongest justified target. Plite is the substrate owner;
+its current implementation can still require replacement. Use the owning plan
+when that repair crosses layers, and keep adoption proof separate from target
+selection. Reuse valid accepted decisions rather than restarting each audit.
 
 ## Doctrine Version
 
-Current doctrine version: `135`.
+Current doctrine version: `182`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -42,15 +52,16 @@ Version law:
   `latestVersion` by one and appends one immutable `versions` entry with
   concrete `migrationChecks`.
 - The latest version entry stores a doctrine fingerprint over the Plate feature
-  coordinator, Best API, Plate Next, Plate Plugin Creator, Docs Creator, and
+  coordinator, Best API, Plate Next, Plate Plugin Creator, Plate Docs, and
   Plate UI source rules and required adjuncts; the shared resource sync owner;
   the Plate Next and feature templates/packs; and the feature checker/tests.
   `validate` fails when any source changes without a version bump. Treat any
   edit to those doctrine surfaces as a bump; generated mirror regeneration is
   not a bump.
-- `validate` also requires exact generated main-skill parity for Plate Feature,
-  Plate Next, Plate Plugin Creator, Best API, Docs Creator, and Plate UI, plus
-  exact parity for every resource owned by the shared sync script.
+- `validate` also requires exact generated main-skill parity for Architecture
+  Cleanup, Task, Editor Audit, Plate Docs, Plate Feature, Plate Next, Plate Plan, Plate
+  Plugin Creator, Best API, Plate UI, and Plite Plan, plus exact
+  parity for every resource owned by the shared sync script.
 - Never edit or reorder an older version entry. Correct a bad reusable rule by
   adding the next version. The current doctrine fingerprint hashes canonical
   version history, excluding only the latest entry's self-referential
@@ -70,9 +81,9 @@ Use this when the user wants Codex to do the review they keep doing manually:
 open a migrated Plate file/API, ask why every compatibility helper exists, and
 cut or move it until Plate is a clean product layer on top of Plite.
 
-This is a wrapper skill, not a new execution engine. It uses `autogoal` for
+This is a migration review method within Task. It uses Task's file plan for
 state, `best-api` for public call-shape forks, `plate-plan` for adoption and
-boundary plans, `architecture-cleanup` for source shape/deslop, and `auto` for
+boundary plans, `architecture-cleanup` for source shape/deslop, and `task autonomous` for
 implementation/proof loops. Its distinct job is the Plate Next review lens:
 make Plate Plite-perfect and stop old Slate/Plate compatibility from becoming
 the final API.
@@ -97,13 +108,13 @@ the final API.
 - The target is pure Plite substrate design: use `plite-plan`.
 - The target is public GitHub issue/PR/security queue: use `maintainer`.
 - The target is already-applied current-tree closure before commit: use
-  `autoclosure`.
+  `task closure`.
 - The task is one ordinary local patch with no Plate/Plite boundary question:
   use `task`.
 
 ## Invocation
 
-Same user-facing shape as `auto`:
+Same user-facing shape as `task autonomous`:
 
 - `plate-next`
 - `plate-next editor.api`
@@ -128,7 +139,7 @@ are reported but never queued.
 
 1. Run `version.mjs validate`, then `status`. Freeze the queue from the
    machine-readable result: oldest `appliedVersion` first, then package slug.
-2. Create one Plate Next autogoal plan with a row for every queued package.
+2. Reuse one Task-owned Plate Next file plan with a row for every queued package.
    Record starting version, latest version, fingerprint state, missing doctrine
    versions, required checks, proof, final fingerprint, and ledger update.
 3. Process one package at a time. Do not attest or start the next package while
@@ -138,7 +149,7 @@ are reported but never queued.
    source, run every `migrationChecks` row after its applied version plus the
    normal focused proof. Any source-fingerprint mismatch forces a full current
    package review.
-5. After package proof and package-local P1 autoreview close, run
+5. After full package review, proof and Task's applicable review gate close, run
    `fingerprint <package>`. Patch that package entry with the latest version,
    exact digest, local verification date, and evidence plan. Never pre-attest a
    package or copy another package's digest.
@@ -228,15 +239,15 @@ Then loop:
 14. For a completed package review, update the version registry from the final
     package fingerprint and prove that package reports `current`.
 15. Keep/revert/quarantine the packet in the plan.
-16. Pick the next packet. In timed mode, keep going until the minimum runtime
-    elapsed, then finish or quarantine the active packet.
+16. Pick the next in-scope packet. Honor the stated deadline or explicit minimum
+    under Task; reserve final proof and cleanup before the timebox ends.
 
 ## Autopilot Priority
 
 When no target is provided, inspect in this order:
 
 1. Plate foundation public API/runtime files touched by the Plate migration.
-2. `packages/platejs/src/react/editor/createPlateRuntimeEditor.ts`.
+2. `packages/platejs/src/react/editor/withPlate.ts` and `packages/platejs/src/react/editor/useCreateEditor.ts`.
 3. Plate foundation plugin API types and plugin resolver/installers.
 4. Old Slate compatibility surfaces in Plate foundation/package exports.
 5. First-party Plate plugins, features, components, specs, type tests, or
@@ -249,6 +260,8 @@ When no target is provided, inspect in this order:
    state.
 7. Docs/examples teaching old APIs.
 8. Tests with fake compatibility assertions instead of current behavior.
+9. Raw Plate component decoration props, paint callbacks, source registries, or
+   manual refresh APIs that bypass the owning plugin descriptor.
 
 ## Proof
 

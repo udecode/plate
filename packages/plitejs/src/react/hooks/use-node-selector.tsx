@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react';
+import { use, useCallback } from 'react';
 
 import {
   type EditorCommit,
@@ -8,7 +8,7 @@ import {
   type Text,
   TextApi,
 } from '../..';
-import { NodeKeyContext } from '../context';
+import { ElementContext } from '../context';
 import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { readNodeByKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -161,7 +161,8 @@ function useRuntimeNodeSelector<T>(
   }: InternalEditorRuntimeSelectorOptions = {}
 ): T {
   const editor = useEditorContext();
-  const contextNodeKey = useContext(NodeKeyContext);
+  const contextNodeKey =
+    nodeKeyProp == null ? (use(ElementContext)?.nodeKey ?? null) : null;
   const nodeKey = nodeKeyProp ?? contextNodeKey;
   const nodeSelector = useCallback(
     (innerEditor: ReactRuntimeEditor) => {

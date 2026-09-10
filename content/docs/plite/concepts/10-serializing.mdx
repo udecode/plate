@@ -9,7 +9,7 @@ your node shape.
 
 Read the full persisted document through `editor.read.value()`.
 
-## Read The Document
+## Read the document
 
 ```ts
 const documentValue = editor.read.value();
@@ -20,7 +20,7 @@ For single-root editors, `<Plite onValueChange>` gives the current mounted-root
 value in its callback context. Use `editor.read.value()` when you need extra
 roots or persistent meta fields. See [Document Meta](14-document-state).
 
-## Plain Text
+## Plain text
 
 Use `NodeApi.string` when plain text is enough.
 
@@ -158,7 +158,7 @@ A parser that preserves open structural boundaries returns a validated
 Generic slice validation rejects malformed JSON and impossible open depths;
 fitting rejects schema vocabulary, property, root, and grammar violations.
 
-## Clipboard And Persistence
+## Clipboard and persistence
 
 Clipboard serializers usually need a narrower policy than file export. A paste
 adapter might preserve links and marks while rejecting layout-only HTML or

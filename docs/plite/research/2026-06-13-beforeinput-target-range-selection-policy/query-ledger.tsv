@@ -1,0 +1,2 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+local-beforeinput-target-range	local-rg	beforeinput getTargetRanges targetRange InputEvent	../prosemirror ../lexical ../tiptap ../codemirror-view	4 repos	4	github/codemirror/view,github/facebook/lexical,github/prosemirror/prosemirror,github/ueberdosis/tiptap	beforeinput-target-range:event-owned-selection-import	none

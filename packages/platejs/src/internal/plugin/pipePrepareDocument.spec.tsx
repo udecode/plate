@@ -56,36 +56,6 @@ describe('pipePrepareDocument', () => {
     });
   });
 
-  describe('when value was already initialized', () => {
-    it('transforms the initial value once', () => {
-      const editor = createEditor({
-        plugins,
-        initialValue: [
-          { children: [{ text: '' }], count: 0, type: 'paragraph' },
-        ],
-      });
-
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'paragraph' },
-      ]);
-    });
-  });
-
-  describe('when value is provided with plugin transforms', () => {
-    it('uses the provided value and transforms it once', () => {
-      const editor = createEditor({
-        plugins,
-        initialValue: [
-          { children: [{ text: '' }], count: 0, type: 'paragraph' },
-        ],
-      });
-
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], count: 2, type: 'paragraph' },
-      ]);
-    });
-  });
-
   it('transforms deferred document replacement before schema fitting', () => {
     const editor = createEditor({
       plugins,

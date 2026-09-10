@@ -1,13 +1,13 @@
 import type { Node as UnistNode } from 'unist';
 
-import {
-  type Editor,
-  type MarkdownDecodeContext,
-  type MarkdownEncodeContext,
-  getPlateNodeCodecContributions,
-  type PlateNodeCodecContribution,
-  type Descendant,
+import type {
+  Editor,
+  MarkdownDecodeContext,
+  MarkdownEncodeContext,
+  Descendant,
 } from '../../../core';
+import { getPlateNodeCodecContributions } from '../../../internal/plugin/collectPlateNodeCodecs';
+import type { PlateNodeCodecContribution } from '../../../internal/plugin/collectPlateNodeCodecs';
 import { failInvariant } from '../../internal/failInvariant';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import {

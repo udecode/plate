@@ -41,10 +41,11 @@ test('external DOM corruption is repaired from the model without moving selectio
       text.replaceWith(wrapper);
       wrapper.append(text);
       text.replaceData(0, text.length, 'external corruption');
-      textHost.setAttribute('data-external-corruption', 'true');
+      textHost.setAttribute('data-app-presentation', 'retained');
+      textHost.setAttribute('data-plite-external-corruption', 'true');
       const rogue = root.ownerDocument.createElement('span');
 
-      rogue.dataset.externalCorruption = 'true';
+      rogue.dataset.externalRogue = 'true';
       rogue.textContent = 'rogue';
       root.append(rogue);
     });
@@ -52,18 +53,22 @@ test('external DOM corruption is repaired from the model without moving selectio
     await expect
       .poll(() =>
         editor.root.evaluate((root) => ({
-          corruptedAttribute: root
-            .querySelector('[data-plite-path="0,0"]')
-            ?.hasAttribute('data-external-corruption'),
-          hasRogue: !!root.querySelector('[data-external-corruption="true"]'),
+          hasRogue: !!root.querySelector('[data-external-rogue="true"]'),
           hasWrapper: !!root.querySelector('[data-external-wrapper="true"]'),
+          presentationAttribute: root
+            .querySelector('[data-plite-path="0,0"]')
+            ?.getAttribute('data-app-presentation'),
+          reservedCorruption: root
+            .querySelector('[data-plite-path="0,0"]')
+            ?.hasAttribute('data-plite-external-corruption'),
           text: root.textContent?.replaceAll('\uFEFF', '') ?? '',
         }))
       )
       .toEqual({
-        corruptedAttribute: false,
         hasRogue: false,
         hasWrapper: false,
+        presentationAttribute: 'retained',
+        reservedCorruption: false,
         text: domText,
       });
     expect(await editor.get.text()).toBe(modelText);

@@ -2,7 +2,8 @@
  * Regenerate with: pnpm exec plate generate -- src/registry/components/editor/plugins.ts
  * Do not edit.
  */
-import type { Element, GeneratedEditorTypeProvider, Text } from 'platejs';
+import type { Element, Text } from 'platejs';
+import type { GeneratedEditorTypeProvider } from 'platejs/compiler';
 import type { Editor as BaseEditor } from 'platejs/react';
 
 import type * as EditorModule from "./plugins";
@@ -13,10 +14,7 @@ export interface EditorText extends Text {
   readonly backgroundColor?: string;
   readonly bold?: boolean;
   readonly code?: boolean;
-  readonly codeSyntax?: boolean;
   readonly color?: string;
-  readonly comment?: boolean;
-  readonly commentTransient?: boolean;
   readonly fontFamily?: string;
   readonly fontSize?: string;
   readonly highlight?: boolean;
@@ -75,7 +73,7 @@ export interface CalloutElement extends Element {
 }
 
 export interface CodeBlockElement extends Element {
-  readonly children: readonly (CodeLineElement)[];
+  readonly children: readonly [EditorText];
   readonly type: "codeBlock";
   readonly aiPreview?: boolean;
   readonly checked?: boolean;
@@ -85,14 +83,6 @@ export interface CodeBlockElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
-}
-
-export interface CodeLineElement extends Element {
-  readonly children: readonly (EditorText)[];
-  readonly type: "codeLine";
-  readonly aiPreview?: boolean;
   readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
   readonly suggestionTransient?: boolean;
 }
@@ -393,7 +383,7 @@ export interface VideoElement extends Element {
   readonly width?: number | string;
 }
 
-export type EditorElement = AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | CodeLineElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | PlaceholderElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | VideoElement;
+export type EditorElement = AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnElement | ColumnGroupElement | DateElement | DetailsElement | EmojiInputElement | EquationElement | FileElement | FootnoteDefinitionElement | FootnoteInputElement | FootnoteElement | HeadingElement | HorizontalRuleElement | ImageElement | InlineEquationElement | LinkElement | MediaEmbedElement | MentionElement | MentionInputElement | ParagraphElement | PlaceholderElement | SlashInputElement | DetailsSummaryElement | TableElement | TableCellElement | TableRowElement | TocElement | VideoElement;
 export type Value = readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
@@ -404,9 +394,7 @@ export type Schema = Readonly<{
     readonly heading: Readonly<{ readonly type: "heading"; }>;
     readonly blockquote: Readonly<{ readonly type: "blockquote"; }>;
     readonly horizontalRule: Readonly<{ readonly type: "horizontalRule"; }>;
-    readonly codeLine: Readonly<{ readonly type: "codeLine"; }>;
     readonly codeBlock: Readonly<{ readonly type: "codeBlock"; }>;
-    readonly codeSyntax: Readonly<{ readonly key: "codeSyntax"; }>;
     readonly tableCell: Readonly<{ readonly type: "tableCell"; }>;
     readonly tableRow: Readonly<{ readonly type: "tableRow"; }>;
     readonly table: Readonly<{ readonly type: "table"; }>;
@@ -446,7 +434,6 @@ export type Schema = Readonly<{
     readonly indent: Readonly<{ readonly key: "indent"; }>;
     readonly textAlign: Readonly<{ readonly key: "textAlign"; }>;
     readonly lineHeight: Readonly<{ readonly key: "lineHeight"; }>;
-    readonly comment: Readonly<{ readonly key: "comment"; }>;
     readonly slashInput: Readonly<{ readonly type: "slashInput"; }>;
     readonly emojiInput: Readonly<{ readonly type: "emojiInput"; }>;
   }>;
@@ -557,19 +544,6 @@ export type Mutations = Readonly<{
       readonly suggestionTransient?: boolean;
     }>;
     readonly type: "codeBlock";
-  }>;
-  readonly codeLine: Readonly<{
-    readonly construction: Readonly<{
-      readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
-    }>;
-    readonly properties: Readonly<{
-      readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
-    }>;
-    readonly type: "codeLine";
   }>;
   readonly column: Readonly<{
     readonly construction: Readonly<{
@@ -1102,9 +1076,7 @@ export const schema = Object.freeze({
     heading: Object.freeze({ type: "heading" }),
     blockquote: Object.freeze({ type: "blockquote" }),
     horizontalRule: Object.freeze({ type: "horizontalRule" }),
-    codeLine: Object.freeze({ type: "codeLine" }),
     codeBlock: Object.freeze({ type: "codeBlock" }),
-    codeSyntax: Object.freeze({ key: "codeSyntax" }),
     tableCell: Object.freeze({ type: "tableCell" }),
     tableRow: Object.freeze({ type: "tableRow" }),
     table: Object.freeze({ type: "table" }),
@@ -1144,14 +1116,13 @@ export const schema = Object.freeze({
     indent: Object.freeze({ key: "indent" }),
     textAlign: Object.freeze({ key: "textAlign" }),
     lineHeight: Object.freeze({ key: "lineHeight" }),
-    comment: Object.freeze({ key: "comment" }),
     slashInput: Object.freeze({ type: "slashInput" }),
     emojiInput: Object.freeze({ type: "emojiInput" }),
   }),
   properties: Object.freeze({}),
 }) satisfies Schema;
 
-export const fingerprint = "fnv1a64:7b514f094be6c65e";
+export const fingerprint = "fnv1a64:5a791f5ba35945f9";
 
 type EditorPlugins = (typeof EditorModule)["EditorKit"] & GeneratedEditorTypeProvider<Types>;
 

@@ -1,5 +1,8 @@
 import {
   type Anchor,
+  type EditorCommit,
+  type NodeKey,
+  type Path,
   type Point,
   PointApi,
   type Range,
@@ -14,16 +17,23 @@ import {
   type DOMIntegrityMutationOwner,
   type DOMIntegrityRepairEvidence,
   findDOMRootRuntime,
+  findEditorDOMRootRuntime,
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
 import type { EditableDOMStrategyRuntime } from '../components/editable';
 import { isSelectionPartialDOMBacked } from '../dom-strategy/dom-strategy-commands';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
-import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
+import {
+  getPliteNodePathFromDOMElement,
+  isPliteNodeFlowRootBound,
+} from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
+import { ExternalTextRuntime } from './external-text-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -35,12 +45,14 @@ import {
   type EditableInputController,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
+import { getEditableInteractionOwner } from './interaction-owner';
 import type { DeferredMutation } from './model-input-strategy';
 import {
   getEditorRuntimeOwner,
   setEditorComposing,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
+import { attachEditableSelectionChangeListener } from './selection-change-listener';
 
 type MutableCell<T> = { current: T };
 
@@ -128,6 +140,21 @@ export const findMountedEditableDOMRuntime = (
   return adapter instanceof EditableDOMRuntime ? adapter : null;
 };
 
+export const isDOMTargetInAnotherSelectionView = (
+  editor: ReactRuntimeEditor,
+  element: HTMLElement,
+  target: Node | null
+): boolean => {
+  const runtime = target ? findMountedEditableDOMRuntime(target) : null;
+
+  return (
+    !!runtime &&
+    runtime.rootRef.current !== element &&
+    getEditorRuntimeOwner(runtime.editor) === getEditorRuntimeOwner(editor) &&
+    runtime.editor.read.view.root() === editor.read.view.root()
+  );
+};
+
 /** Resolve the connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntimes = <
   V extends Value,
@@ -144,9 +171,16 @@ export const getMountedEditableDOMRuntime = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
-): EditableDOMRuntime | null =>
-  getMountedEditableDOMRuntimes(editor)[0] ?? null;
+  editor: ReactRuntimeEditor<V, TExtensions>,
+  root?: Node
+): EditableDOMRuntime | null => {
+  const owner = root
+    ? findDOMRootRuntime(root)
+    : findEditorDOMRootRuntime(editor);
+  return owner?.adapter instanceof EditableDOMRuntime && owner.editor === editor
+    ? owner.adapter
+    : null;
+};
 
 export const hasMountedEditableCompositionOwner = (
   editor: ReactRuntimeEditor,
@@ -191,6 +225,7 @@ type EditableDOMRuntimeUpdate = {
 
 /** Private imperative owner for one mounted editable root. */
 export class EditableDOMRuntime {
+  readonly externalText = new ExternalTextRuntime(this);
   readonly androidInputManagerRef: MutableCell<
     AndroidInputManager | null | undefined
   > = { current: undefined };
@@ -229,6 +264,9 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  private historyFocusHandler: () => void = () => {};
+
+  private externalMouseGesture = false;
 
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
@@ -243,6 +281,8 @@ export class EditableDOMRuntime {
   private modelSelectionDOMPreference: ModelSelectionDOMPreference | null =
     null;
 
+  private compositionPathValue: Path | null = null;
+
   private onComposingChange: (nextValue: boolean) => void;
 
   private onDOMSelectionChange: CancelableCallback | null = null;
@@ -251,11 +291,17 @@ export class EditableDOMRuntime {
 
   private readOnlyValue: boolean;
 
-  private scheduleOnDOMSelectionChange: CancelableCallback | null = null;
+  private scheduleOnDOMSelectionChange:
+    | (CancelableCallback & (() => void))
+    | null = null;
 
   private readonly rootRuntime: DOMRootRuntime<HTMLDivElement>;
 
   private cancelUserInputFrameTask: (() => void) | null = null;
+
+  private cancelSelectionExportFrameTask: (() => void) | null = null;
+
+  private cancelSelectionExportMicrotask: (() => void) | null = null;
 
   private verticalGoalFocus: Point | null = null;
 
@@ -314,13 +360,36 @@ export class EditableDOMRuntime {
         const zeroWidth = targetElement?.closest<HTMLElement>(
           '[data-plite-zero-width]'
         );
-        const path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
+        const flowEntry = resolveDOMTextFlowEntry(mutation.target, 0);
+        const path = flowEntry
+          ? ([...flowEntry.path] as Path)
+          : textHost
+            ? getPliteNodePathFromDOMElement(textHost)
+            : null;
+
+        if (
+          textHost?.hasAttribute('data-plite-text-flow-host') &&
+          this.receivedUserInput.current &&
+          this.inputController.state.activeIntent === 'text-insert'
+        ) {
+          return true;
+        }
+
         const modelText = path
           ? readRuntimeText(this.editorValue, path)?.text
           : null;
 
         if (zeroWidth) {
           return modelText !== null && mutation.target.nodeValue === '\uFEFF';
+        }
+
+        if (flowEntry && modelText !== null) {
+          return (
+            resolveDOMTextFlowRecordDOMText(
+              flowEntry.host,
+              flowEntry.nodeKey
+            ) === modelText
+          );
         }
 
         return (
@@ -336,6 +405,7 @@ export class EditableDOMRuntime {
 
         this.browserHandleRangeAnchors.current.clear();
         runAllRuntimeSteps([
+          () => this.externalText.destroy(),
           () => {
             runAllRuntimeSteps(
               rangeAnchors.map((rangeAnchor) => () => rangeAnchor.release())
@@ -360,9 +430,12 @@ export class EditableDOMRuntime {
         const pliteElement = targetElement?.closest<HTMLElement>(
           '[data-plite-node], [data-plite-path]'
         );
-        const path = pliteElement
-          ? getPliteNodePathFromDOMElement(pliteElement)
-          : null;
+        const flowEntry = resolveDOMTextFlowEntry(mutation.target, 0);
+        const path = flowEntry
+          ? ([...flowEntry.path] as Path)
+          : pliteElement
+            ? getPliteNodePathFromDOMElement(pliteElement)
+            : null;
 
         if (path) return path.join(',');
 
@@ -392,6 +465,10 @@ export class EditableDOMRuntime {
     return this.domStrategyRuntimeValue;
   }
 
+  get domCoverage() {
+    return this.rootRuntime.domCoverage;
+  }
+
   get connected() {
     return this.rootRuntime.connected;
   }
@@ -402,6 +479,10 @@ export class EditableDOMRuntime {
 
   get readOnly() {
     return this.readOnlyValue;
+  }
+
+  get rootElement() {
+    return this.rootRef.current;
   }
 
   get state() {
@@ -561,6 +642,13 @@ export class EditableDOMRuntime {
   }
 
   readonly setComposing = (nextValue: boolean) => {
+    this.compositionPathValue = nextValue
+      ? (() => {
+          const selection = this.editorValue.read((state) => state.selection());
+
+          return selection ? [...RangeApi.edges(selection)[0].path] : null;
+        })()
+      : null;
     setEditableComposingState({
       editor: this.editorValue,
       inputController: this.inputController,
@@ -569,6 +657,10 @@ export class EditableDOMRuntime {
       setIsComposing: this.onComposingChange,
     });
   };
+
+  get compositionPath() {
+    return this.compositionPathValue;
+  }
 
   readonly setExplicitPartialDOMBackedSelection = (nextValue: boolean) => {
     this.onPartialDOMBackedSelectionChange(nextValue);
@@ -617,6 +709,31 @@ export class EditableDOMRuntime {
     this.rootRuntime.destroy();
   }
 
+  retainsEveryTextFlowNodeKey(nodeKeys: readonly NodeKey[]) {
+    return (
+      nodeKeys.length > 0 &&
+      nodeKeys.every(
+        (nodeKey) =>
+          this.externalText.retains(nodeKey) ||
+          isPliteNodeFlowRootBound(this.editorValue, nodeKey, this.rootElement)
+      )
+    );
+  }
+
+  requiresReactCommit(commit: EditorCommit) {
+    const textNodeKeys = commit.changed.nodeKeysAll('text');
+
+    return !(
+      this.retainsEveryTextFlowNodeKey(textNodeKeys) &&
+      !commit.changed.hasAny('structure') &&
+      !commit.changed.hasAny('properties') &&
+      !commit.changed.hasAny('root-order') &&
+      !commit.changed.hasAny('replace') &&
+      !commit.changed.hasAny('marks') &&
+      !commit.changed.hasAny('state')
+    );
+  }
+
   installDisposable(key: string, dispose: () => void) {
     return this.rootRuntime.installDisposable(key, dispose);
   }
@@ -634,29 +751,42 @@ export class EditableDOMRuntime {
     this.rootRuntime.claimHostCommit();
   }
 
-  requestSelectionExportAfterDOMCommit() {
-    const exportSelection = () => {
-      this.selectionExportAfterDOMCommitHandler();
-    };
+  get externalMouseGestureActive() {
+    return this.externalMouseGesture;
+  }
 
-    this.domPhaseScheduler.schedule(
-      'selection-repair',
-      'node-bind-selection-export-microtask',
-      exportSelection,
-      {
-        key: 'node-bind-selection-export-microtask',
-        timing: 'microtask',
-      }
-    );
-    this.domPhaseScheduler.schedule(
-      'selection-repair',
-      'node-bind-selection-export-frame',
-      exportSelection,
-      {
-        key: 'node-bind-selection-export-frame',
-        timing: 'animation-frame',
-      }
-    );
+  setExternalMouseGesture(active: boolean) {
+    this.externalMouseGesture = active;
+  }
+
+  requestSelectionExportAfterDOMCommit() {
+    if (!this.cancelSelectionExportMicrotask) {
+      this.cancelSelectionExportMicrotask = this.domPhaseScheduler.schedule(
+        'selection-repair',
+        'node-bind-selection-export-microtask',
+        () => {
+          this.cancelSelectionExportMicrotask = null;
+          this.cancelSelectionExportFrameTask?.();
+          this.cancelSelectionExportFrameTask = this.domPhaseScheduler.schedule(
+            'selection-repair',
+            'node-bind-selection-export-frame',
+            () => {
+              this.cancelSelectionExportFrameTask = null;
+              this.selectionExportAfterDOMCommitHandler();
+            },
+            {
+              key: 'node-bind-selection-export-frame',
+              timing: 'animation-frame',
+            }
+          );
+          this.selectionExportAfterDOMCommitHandler();
+        },
+        {
+          key: 'node-bind-selection-export-microtask',
+          timing: 'microtask',
+        }
+      );
+    }
   }
 
   runOwnedDOMMutation<T>(
@@ -664,6 +794,10 @@ export class EditableDOMRuntime {
     callback: () => T
   ): T {
     return this.rootRuntime.runOwnedDOMMutation(owner, callback);
+  }
+
+  runUnobservedDOMMutation<T>(callback: () => T): T {
+    return this.rootRuntime.runUnobservedDOMMutation(callback);
   }
 
   releaseDisposable(key: string) {
@@ -698,12 +832,22 @@ export class EditableDOMRuntime {
     this.selectionExportAfterDOMCommitHandler = handler;
   }
 
+  updateHistoryFocusHandler(handler: () => void) {
+    this.historyFocusHandler = handler;
+  }
+
+  repairHistoryFocus() {
+    this.historyFocusHandler();
+  }
+
   update(update: EditableDOMRuntimeUpdate) {
+    const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.domStrategyRuntimeValue = update.domStrategyRuntime;
     this.onComposingChange = update.onComposingChange;
     this.onPartialDOMBackedSelectionChange =
       update.onPartialDOMBackedSelectionChange;
     this.readOnlyValue = update.readOnly;
+    if (readOnlyChanged) this.externalText.refreshAll();
   }
 
   updateNativeInputHandlers({
@@ -722,7 +866,7 @@ export class EditableDOMRuntime {
     scheduleOnDOMSelectionChange,
   }: {
     onDOMSelectionChange: CancelableCallback;
-    scheduleOnDOMSelectionChange: CancelableCallback;
+    scheduleOnDOMSelectionChange: CancelableCallback & (() => void);
   }) {
     this.onDOMSelectionChange = onDOMSelectionChange;
     this.scheduleOnDOMSelectionChange = scheduleOnDOMSelectionChange;
@@ -740,15 +884,30 @@ export class EditableDOMRuntime {
     if (!this.connected || !node || this.nativeInputListenersCleanup) return;
 
     const handleBeforeInput = (event: InputEvent) => {
+      if (getEditableInteractionOwner(node, event.target) === 'external-text') {
+        return;
+      }
       this.nativeInputHandlers.beforeInput?.(event);
     };
     const handleInput = (event: Event) => {
+      if (getEditableInteractionOwner(node, event.target) === 'external-text') {
+        return;
+      }
       this.nativeInputHandlers.input?.(event);
     };
 
+    const detachSelectionChangeListener = attachEditableSelectionChangeListener(
+      {
+        root: node,
+        scheduleOnDOMSelectionChange: () =>
+          this.scheduleOnDOMSelectionChange?.(),
+        state: this.inputController.state,
+      }
+    );
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
     this.nativeInputListenersCleanup = () => {
+      detachSelectionChangeListener();
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
     };
@@ -802,6 +961,16 @@ export class EditableDOMRuntime {
     runAllRuntimeSteps([
       () => {
         this.cancelUserInputFrame();
+        this.externalMouseGesture = false;
+      },
+      () => {
+        const cancelMicrotask = this.cancelSelectionExportMicrotask;
+        const cancelFrame = this.cancelSelectionExportFrameTask;
+
+        this.cancelSelectionExportMicrotask = null;
+        this.cancelSelectionExportFrameTask = null;
+        cancelMicrotask?.();
+        cancelFrame?.();
       },
       () => {
         if (pendingCompositionEnd?.ownership === 'plite') {
@@ -812,6 +981,7 @@ export class EditableDOMRuntime {
       },
       () => this.inputController.state.pendingCompositionEnd?.cancel(),
       () => {
+        this.compositionPathValue = null;
         this.inputController.state.pendingCompositionEnd = null;
         this.inputController.state.compositionSession = null;
         this.inputController.state.isComposing = false;

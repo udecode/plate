@@ -183,10 +183,16 @@ export const clickTextOffset = async (
     (
       element: HTMLElement,
       target: {
+        key: string;
         offset: number;
         path: number[];
       }
     ) => {
+      const handle = (element as Record<string, any>)[target.key];
+      const resolvedPoint = handle?.resolveDOMPoint?.({
+        offset: target.offset,
+        path: target.path,
+      }) as readonly [Node, number] | null | undefined;
       const textElements = Array.from(
         element.querySelectorAll('[data-plite-node="text"]')
       );
@@ -202,16 +208,20 @@ export const clickTextOffset = async (
           '[data-plite-string], [data-plite-zero-width]'
         ) ?? []
       );
-      (stringElement ?? textElement)?.scrollIntoView({
+      const resolvedElement =
+        resolvedPoint?.[0].nodeType === Node.ELEMENT_NODE
+          ? (resolvedPoint[0] as Element)
+          : resolvedPoint?.[0].parentElement;
+      (resolvedElement ?? stringElement ?? textElement)?.scrollIntoView({
         block: 'center',
         inline: 'nearest',
       });
 
       let currentOffset = 0;
-      let targetNode: Node | null = null;
-      let targetOffset = 0;
+      let targetNode: Node | null = resolvedPoint?.[0] ?? null;
+      let targetOffset = resolvedPoint?.[1] ?? 0;
 
-      for (const string of strings) {
+      for (const string of targetNode ? [] : strings) {
         const textNode = Array.from(string.childNodes).find(
           (node) => node.nodeType === Node.TEXT_NODE
         );
@@ -300,7 +310,7 @@ export const clickTextOffset = async (
         y: rect.top + rect.height / 2,
       };
     },
-    { offset, path }
+    { key: PLITE_BROWSER_HANDLE_KEY, offset, path }
   );
 
   const { clickCount } = options;

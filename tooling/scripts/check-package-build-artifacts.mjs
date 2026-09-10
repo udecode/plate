@@ -150,12 +150,12 @@ export function getPackageRuntimeImportBoundaries(packageJson) {
     return [];
   }
 
-  return [...new Set(readRuntimeTargets(packageExports['.']))].map(
-    (target) => ({
+  return [...new Set(readRuntimeTargets(packageExports['.']))]
+    .filter((target) => runtimeExtensionPattern.test(target))
+    .map((target) => ({
       entry: target.startsWith('./') ? target.slice(2) : target,
       forbiddenPackages: [...reactRuntimePackages],
-    })
-  );
+    }));
 }
 
 function assertRuntimeImportBoundaries(
@@ -300,7 +300,9 @@ const isOutsidePackage = (filePath) =>
 
 function readRuntimeTargets(value) {
   if (typeof value === 'string') {
-    return runtimeExtensionPattern.test(value) ? [value] : [];
+    return runtimeExtensionPattern.test(value) || value.endsWith('.css')
+      ? [value]
+      : [];
   }
   if (!value || typeof value !== 'object') return [];
 
@@ -318,7 +320,9 @@ function readTypesTargets(value) {
 }
 
 const toTypesTarget = (runtimeTarget) =>
-  runtimeTarget?.replace(runtimeExtensionPattern, '.d.ts') ?? null;
+  runtimeExtensionPattern.test(runtimeTarget)
+    ? runtimeTarget.replace(runtimeExtensionPattern, '.d.ts')
+    : null;
 
 function isMainModule() {
   const entrypoint = process.argv[1];

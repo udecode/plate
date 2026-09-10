@@ -8,7 +8,6 @@ import * as React from 'react';
 const useEditorPluginMock = mock();
 const useEditorSelectorMock = mock();
 const useFocusedLastMock = mock();
-const useHotkeysMock = mock();
 const usePluginStoreMock = mock();
 const useEditorMock = mock();
 const toDOMNodeMock = mock();
@@ -20,13 +19,6 @@ const Icon = () => <div />;
 mock.module('platejs/ai/react', () => ({
   AIChatPlugin: {},
   AIPlugin: {},
-}));
-
-mock.module('platejs/comment', () => ({
-  getTransientCommentKey: () => 'comment',
-}));
-mock.module('platejs/comment/react', () => ({
-  CommentPlugin: {},
 }));
 
 mock.module('platejs/suggestion', () => ({
@@ -96,12 +88,15 @@ mock.module('platejs/react', () => ({
   useEditor: useEditorMock,
   useEditorRuntimeState: () => {},
   useFocusedLast: useFocusedLastMock,
-  useHotkeys: useHotkeysMock,
   usePluginStore: usePluginStoreMock,
 }));
 
 mock.module('@/registry/components/editor/plugins-static', () => ({
   BaseEditorKit: [],
+}));
+
+mock.module('@/registry/components/editor/comment', () => ({
+  useDraftCommentThreadIds: () => [],
 }));
 
 mock.module('./editor-static', () => ({
@@ -130,10 +125,6 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
-mock.module('@/registry/components/editor/comment', () => ({
-  commentPlugin: {},
-}));
-
 mock.module('./ai-menu', () => ({
   AIChatEditor: () => <div />,
 }));
@@ -146,7 +137,6 @@ describe('AIMenu slow contracts', () => {
     useEditorPluginMock.mockReset();
     useEditorSelectorMock.mockReset();
     useFocusedLastMock.mockReset();
-    useHotkeysMock.mockReset();
     usePluginStoreMock.mockReset();
     useEditorMock.mockReset();
     toDOMNodeMock.mockReset();
@@ -161,7 +151,6 @@ describe('AIMenu slow contracts', () => {
 
     chatOpen = false;
     useFocusedLastMock.mockReturnValue(false);
-    useHotkeysMock.mockImplementation(() => {});
     const editor = {
       api: {
         dom: {
@@ -247,6 +236,18 @@ describe('AIMenu slow contracts', () => {
 
     expect(() => render(<AIMenu />)).not.toThrow();
     expect(toDOMNodeMock).not.toHaveBeenCalled();
+  });
+
+  it('hides the Comment command when no Comments provider is mounted', async () => {
+    const { AIMenuItems } = await import(
+      `./ai-menu?test=${Math.random().toString(36).slice(2)}`
+    );
+    const result = render(
+      <AIMenuItems input="" setInput={() => {}} setValue={() => {}} />
+    );
+
+    expect(result.queryByText('Comment')).toBeNull();
+    expect(result.getByText('Continue writing')).toBeTruthy();
   });
 
   it('selects the current non-empty block when the cursor is not at its end', async () => {

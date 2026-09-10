@@ -11,6 +11,7 @@ Examples:
   generate_video_transcript.sh "/tmp/bug.mov" --title "Preview link leaves workflow"
   generate_video_transcript.sh "https://uploads.linear.app/.../recording.mov" --title "PDF preview hyperlink exits workflow"
   generate_video_transcript.sh "https://github.com/user-attachments/assets/..." --title "Slash menu loses selection"
+  generate_video_transcript.sh "https://app.screencastify.com/watch/..." --title "Bulk send expands filtered recipients"
 EOF
 }
 
@@ -142,6 +143,200 @@ download_to_path() {
   curl -L --fail --silent --show-error "$@" "$source" -o "$dest"
 }
 
+append_query() {
+  local url="$1"
+  local query="$2"
+
+  if [[ -z "$query" ]]; then
+    printf '%s\n' "$url"
+  elif [[ "$url" == *"?"* ]]; then
+    printf '%s&%s\n' "$url" "$query"
+  else
+    printf '%s?%s\n' "$url" "$query"
+  fi
+}
+
+screencastify_recording_id() {
+  local source="$1"
+
+  if [[ "$source" =~ screencastify\.com/watch/([^/?#]+) ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+
+  if [[ "$source" =~ screencastify\.com/v/([^/?#]+) ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+
+  return 1
+}
+
+rewrite_screencastify_child_playlist() {
+  local input_file="$1"
+  local output_file="$2"
+  local prefix="$3"
+  local query="$4"
+
+  python3 - "$input_file" "$output_file" "$prefix" "$query" <<'PY'
+import re
+import sys
+
+input_file, output_file, prefix, query = sys.argv[1:]
+prefix = prefix.rstrip("/") + "/"
+
+def signed(uri: str) -> str:
+    if uri.startswith(("data:", "file:")):
+        return uri
+    if uri.startswith(("http://", "https://")):
+        base = uri
+    else:
+        base = prefix + uri.lstrip("/")
+    if not query:
+        return base
+    separator = "&" if "?" in base else "?"
+    return f"{base}{separator}{query}"
+
+with open(input_file, encoding="utf-8") as source:
+    lines = source.read().splitlines()
+
+rewritten = []
+for line in lines:
+    stripped = line.strip()
+    if stripped.startswith("#EXT-X-MAP:"):
+        rewritten.append(
+            re.sub(r'URI="([^"]+)"', lambda match: f'URI="{signed(match.group(1))}"', line)
+        )
+    elif stripped.startswith("#") or not stripped:
+        rewritten.append(line)
+    else:
+        rewritten.append(signed(stripped))
+
+with open(output_file, "w", encoding="utf-8") as dest:
+    dest.write("\n".join(rewritten) + "\n")
+PY
+}
+
+rewrite_screencastify_master_playlist() {
+  local input_file="$1"
+  local output_file="$2"
+  local child_list_file="$3"
+
+  python3 - "$input_file" "$output_file" "$child_list_file" <<'PY'
+import os
+import re
+import sys
+
+input_file, output_file, child_list_file = sys.argv[1:]
+uri_pattern = re.compile(r'URI="([^"]+)"')
+
+with open(input_file, encoding="utf-8") as source:
+    lines = source.read().splitlines()
+
+children = []
+rewritten = []
+
+def local_child(uri: str) -> str:
+    name = os.path.basename(uri.split("?", 1)[0])
+    if name and name not in children:
+        children.append(uri)
+    return name
+
+for line in lines:
+    stripped = line.strip()
+    if stripped.startswith("#EXT-X-MEDIA:"):
+        rewritten.append(
+            uri_pattern.sub(lambda match: f'URI="{local_child(match.group(1))}"', line)
+        )
+    elif stripped.startswith("#") or not stripped:
+        rewritten.append(line)
+    elif stripped.endswith(".m3u8") or ".m3u8?" in stripped:
+        rewritten.append(local_child(stripped))
+    else:
+        rewritten.append(line)
+
+with open(output_file, "w", encoding="utf-8") as dest:
+    dest.write("\n".join(rewritten) + "\n")
+
+with open(child_list_file, "w", encoding="utf-8") as dest:
+    for child in children:
+        dest.write(child + "\n")
+PY
+}
+
+download_screencastify_watch() {
+  local source="$1"
+  local dest="$2"
+  local recording_id
+  recording_id="$(screencastify_recording_id "$source")"
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "Screencastify downloads require jq." >&2
+    return 1
+  fi
+
+  if ! command -v ffmpeg >/dev/null 2>&1; then
+    echo "Screencastify downloads require ffmpeg to remux the signed HLS stream." >&2
+    return 1
+  fi
+
+  local metadata_file="$WORK_DIR/screencastify.json"
+  download_to_path "https://umbrella.svc.screencastify.com/api/umbrellaService/watch/$recording_id" "$metadata_file"
+
+  local hls_url auth_query prefix
+  hls_url="$(jq -r '.manifest.hlsUrl // empty' "$metadata_file")"
+  auth_query="$(jq -r '.manifest.auth.query // empty' "$metadata_file")"
+  prefix="$(jq -r '.manifest.auth.prefix // empty' "$metadata_file")"
+
+  if [[ -z "$hls_url" ]]; then
+    echo "Screencastify watch metadata did not include an HLS manifest URL." >&2
+    return 1
+  fi
+
+  if [[ -z "$prefix" ]]; then
+    prefix="${hls_url%/*}/"
+  fi
+
+  local hls_dir="$WORK_DIR/screencastify-hls"
+  mkdir -p "$hls_dir"
+
+  local remote_master="$hls_dir/master.remote.m3u8"
+  local local_master="$hls_dir/master.m3u8"
+  local child_list="$hls_dir/children.txt"
+  download_to_path "$(append_query "$hls_url" "$auth_query")" "$remote_master"
+  rewrite_screencastify_master_playlist "$remote_master" "$local_master" "$child_list"
+
+  while IFS= read -r child_uri; do
+    [[ -z "$child_uri" ]] && continue
+
+    local child_name child_remote child_local child_url
+    child_name="$(basename "${child_uri%%\?*}")"
+    child_remote="$hls_dir/$child_name.remote"
+    child_local="$hls_dir/$child_name"
+
+    if [[ "$child_uri" =~ ^https?:// ]]; then
+      child_url="$(append_query "$child_uri" "$auth_query")"
+    else
+      child_url="$(append_query "$prefix$child_uri" "$auth_query")"
+    fi
+
+    download_to_path "$child_url" "$child_remote"
+    rewrite_screencastify_child_playlist "$child_remote" "$child_local" "$prefix" "$auth_query"
+  done < "$child_list"
+
+  ffmpeg -hide_banner -loglevel error -y \
+    -protocol_whitelist file,http,https,tcp,tls,crypto \
+    -allowed_extensions ALL \
+    -i "$local_master" \
+    -map 0:v:0 -map 0:a:0? \
+    -c copy "$dest"
+
+  if [[ -n "$DEBUG_DIR" ]]; then
+    cp "$metadata_file" "$DEBUG_DIR/screencastify.json"
+    cp -R "$hls_dir" "$DEBUG_DIR/screencastify-hls"
+  fi
+}
+
 download_input_if_needed() {
   local source="$1"
   if [[ "$source" =~ ^https?:// ]]; then
@@ -151,7 +346,10 @@ download_input_if_needed() {
     [[ "$ext" == "$source" ]] && ext="bin"
     local dest="$WORK_DIR/input.$ext"
 
-    if [[ "$source" == *"uploads.linear.app"* ]]; then
+    if screencastify_recording_id "$source" >/dev/null; then
+      dest="$WORK_DIR/input.mp4"
+      download_screencastify_watch "$source" "$dest"
+    elif [[ "$source" == *"uploads.linear.app"* ]]; then
       local cookie_header
       cookie_header="$(linear_cookie_header)"
       if [[ -n "$cookie_header" ]]; then

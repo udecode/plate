@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-06-editor-subscriptions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-06-editor-subscriptions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use FindPlugin for search state and install the huge-document hydration hook.",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "huge-document-demo",
+      "files": [
+        "apps/www/src/registry/examples/huge-document-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-document-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-06-find-keep-state-its-plugin-6758282d",
+      "kind": "wiring",
+      "summary": "Read search state and call search actions through `FindPlugin`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-subscriptions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-huge-document-mounted-hook",
+      "kind": "wiring",
+      "summary": "Include `use-mounted` in standalone installations.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["huge-document-demo"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-editor-subscriptions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,3 +1,4 @@
+import { NodeApi } from 'plitejs';
 import React from 'react';
 
 import { useEditorSelector } from '../../../src/react';
@@ -17,17 +18,11 @@ export function TextSlice({
   counts: RenderCounts;
   slot: 'left' | 'right';
 }) {
-  const value = useEditorSelector((snapshot) =>
-    snapshot?.children?.[slot === 'left' ? 0 : 1] &&
-    'children' in snapshot.children[slot === 'left' ? 0 : 1]
-      ? String(
-          (
-            snapshot.children[slot === 'left' ? 0 : 1] as {
-              children: Array<{ text: string }>;
-            }
-          ).children[0]?.text ?? ''
-        )
-      : ''
+  const value = useEditorSelector((editor) =>
+    editor.read((state) => {
+      const entry = state.nodes.get([slot === 'left' ? 0 : 1]);
+      return entry ? NodeApi.string(entry[0]) : '';
+    })
   );
 
   // This probe intentionally records renders without scheduling another render.

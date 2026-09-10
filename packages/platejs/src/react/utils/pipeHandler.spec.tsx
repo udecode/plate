@@ -2,7 +2,7 @@ import type React from 'react';
 
 import { createEditor } from '../editor';
 import { definePlatePlugin } from '../plugin';
-import { pipeHandler } from './pipeHandler';
+import { pipeHandler } from './pipeHandler.internal';
 
 describe('pipeHandler', () => {
   it('types and publishes root prefixless events', () => {

@@ -1,4 +1,3 @@
-import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import {
   type Ancestor,
   type Descendant,
@@ -8,23 +7,15 @@ import {
 } from 'plitejs';
 import {
   Editable,
-  type EditableDecorate,
   Plite,
   type PliteDecoration,
-  usePliteDecorationSource,
+  type PliteDecorationSource,
   useEditor,
 } from 'plitejs/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-
-import { replaceQueryOptions } from './query-controls';
-
-type AsyncHighlightData = {
-  asyncHighlight: true;
-};
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const INITIAL_TEXT = 'This is some text here about. there';
 const ASYNC_DECORATION_DELAY_MS = 500;
-const decorationModes = ['prop', 'hook'] as const;
 
 const getDocumentText = (value: readonly Descendant[]) =>
   NodeApi.string({ children: value } as Ancestor);
@@ -43,7 +34,7 @@ const collectAsyncHighlightDecorations = (
     return [];
   }
 
-  const decorations: Array<PliteDecoration<AsyncHighlightData>> = [];
+  const decorations: PliteDecoration[] = [];
   const pattern = /\b(?:here|there)\b/g;
   let match = pattern.exec(node.text);
 
@@ -53,7 +44,10 @@ const collectAsyncHighlightDecorations = (
 
     if (end <= decoratedLength) {
       decorations.push({
-        data: { asyncHighlight: true },
+        attributes: {
+          className: 'plite-decorations-async-highlight',
+          'data-cy': 'async-decoration-highlight',
+        },
         key: `async-highlight:${path.join('.')}:${start}:${end}`,
         range: createRange(path, start, end),
       });
@@ -66,12 +60,6 @@ const collectAsyncHighlightDecorations = (
 };
 
 const AsyncDecorationsExample = () => {
-  const [decorationMode] = useQueryState(
-    'source',
-    parseAsStringLiteral(decorationModes)
-      .withDefault('prop')
-      .withOptions(replaceQueryOptions)
-  );
   const editor = useEditor({
     initialValue: [
       {
@@ -83,35 +71,16 @@ const AsyncDecorationsExample = () => {
   const [decoratedLength, setDecoratedLength] = useState(INITIAL_TEXT.length);
   const timeoutRef = useRef<number | null>(null);
 
-  const decorate = useCallback<EditableDecorate<AsyncHighlightData>>(
-    ([node, path]) =>
-      collectAsyncHighlightDecorations(node, path, decoratedLength),
+  const decorationSource = useMemo<PliteDecorationSource<typeof editor>>(
+    () => ({
+      id: 'async-decoration',
+      read: ({ entry: [node, path] }) =>
+        NodeApi.isDescendant(node)
+          ? collectAsyncHighlightDecorations(node, path, decoratedLength)
+          : [],
+    }),
     [decoratedLength]
   );
-  const hookDecorationSource = usePliteDecorationSource(editor, {
-    id: 'async-decoration-hook',
-    revision: decoratedLength,
-    read: ({ snapshot }) => {
-      const root = { children: snapshot.children } as Ancestor;
-      const decorations: Array<PliteDecoration<AsyncHighlightData>> = [];
-
-      for (const [node, path] of NodeApi.nodes(root)) {
-        if (path.length === 0) {
-          continue;
-        }
-
-        decorations.push(
-          ...collectAsyncHighlightDecorations(
-            node as Descendant,
-            path,
-            decoratedLength
-          )
-        );
-      }
-
-      return decorations;
-    },
-  });
 
   const scheduleAsyncDecorations = useCallback(
     (value: readonly Descendant[]) => {
@@ -150,9 +119,7 @@ const AsyncDecorationsExample = () => {
         decorated-length:{decoratedLength}
       </div>
       <Plite
-        decorationSources={
-          decorationMode === 'hook' ? [hookDecorationSource] : undefined
-        }
+        decorations={[decorationSource]}
         editor={editor}
         onValueChange={({ value }) => {
           scheduleAsyncDecorations(value);
@@ -160,20 +127,7 @@ const AsyncDecorationsExample = () => {
       >
         <Editable
           className="plite-decorations-async-editor"
-          decorate={decorationMode === 'prop' ? decorate : undefined}
           id="decorations-async"
-          renderSegment={(segment, children) =>
-            segment.slices.some((slice) => slice.data?.asyncHighlight) ? (
-              <span
-                className="plite-decorations-async-highlight"
-                data-cy="async-decoration-highlight"
-              >
-                {children}
-              </span>
-            ) : (
-              children
-            )
-          }
         />
       </Plite>
     </div>

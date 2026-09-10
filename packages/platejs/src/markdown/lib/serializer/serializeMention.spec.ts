@@ -81,30 +81,6 @@ describe('editor.api.markdown.serialize - mention', () => {
     expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
-  it('use key for URL when both key and value are present', () => {
-    const editor = createTestEditor();
-    editor.update.value.replace({
-      children: [
-        {
-          children: [
-            { text: 'Hey ' },
-            {
-              ref: 'john_doe',
-              children: [{ text: '' }],
-              type: 'mention',
-              label: 'John Doe',
-            },
-            { text: ' check this out' },
-          ],
-          type: 'paragraph',
-        },
-      ],
-    });
-
-    const markdown = editor.api.markdown.serialize();
-    expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
-  });
-
   it('round-trip mentions correctly', () => {
     const editor = createTestEditor();
 

@@ -14,7 +14,7 @@ import {
   getSelectionDOMRange,
   readEditorSelection,
 } from '../../../facade';
-import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import { defineBasePlugin } from '../../plugin';
 import { plateDOMExtension } from './plateDOMExtension.internal';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
@@ -78,7 +78,7 @@ const initialState: DomPluginState = {
   },
 };
 
-export const DOMPluginBase = defineBasePlugin('dom', {
+const DOMPluginBase = defineBasePlugin('dom', {
   api: ({ editor }): PlateDomApi => ({
     isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
   }),
@@ -216,5 +216,3 @@ export const DOMPluginBase = defineBasePlugin('dom', {
  * Plate-owned auto-scroll state and transaction ergonomics.
  */
 export const DOMPlugin = DOMPluginBase.extend(plateDOMExtension);
-
-export type DomDefinition = DefinitionOf<typeof DOMPlugin>;

@@ -5,7 +5,7 @@ import {
   renderHook,
   screen,
 } from '@testing-library/react';
-import type { Descendant } from 'plitejs';
+import type { Element as PliteElement } from 'plitejs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import { createEditor, Editable, Plite } from '../../src/react';
@@ -17,7 +17,7 @@ import {
   useRootInteractionController,
 } from '../../src/react/editable/root-interaction-controller';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): PliteElement => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -146,7 +146,7 @@ describe('root interaction controller', () => {
     const previousElementFromPoint = document.elementFromPoint;
     const resolveEventRange = vi.fn(() => null);
     const startRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };
@@ -157,7 +157,7 @@ describe('root interaction controller', () => {
     });
 
     const continued = applyDragAutoScrollFrame({
-      animationFrame: null,
+      cancelScheduledFrame: null,
       clientX: 50,
       clientY: 130,
       currentRange: startRange,
@@ -198,17 +198,17 @@ describe('root interaction controller', () => {
     const scroller = createScrollableElement();
     const previousElementFromPoint = document.elementFromPoint;
     const staleRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };
     const startRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 4, path: [0, 0] },
     };
     const currentRange = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { offset: 4, path: [0, 0] },
       focus: { offset: 10, path: [4, 0] },
     };
@@ -220,7 +220,7 @@ describe('root interaction controller', () => {
     });
 
     const continued = applyDragAutoScrollFrame({
-      animationFrame: null,
+      cancelScheduledFrame: null,
       clientX: 50,
       clientY: 130,
       currentRange,

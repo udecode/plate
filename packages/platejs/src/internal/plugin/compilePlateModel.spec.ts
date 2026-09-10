@@ -1,4 +1,3 @@
-import { getEditorExtensionRegistry } from '../../core';
 import {
   createEditor as createPliteEditor,
   property,
@@ -394,7 +393,7 @@ describe('compilePlateModel', () => {
           split: 'preserve',
         },
       },
-      render: { isDecoration: false },
+      render: { mark: { placement: 'text' } },
     });
     const PropertyPlugin = defineBasePlugin('modelProperty', {
       initialState: { targets: [BlockPlugin] as const },
@@ -411,8 +410,7 @@ describe('compilePlateModel', () => {
       plugins: [BlockPlugin, MarkPlugin, PropertyPlugin],
     });
     const { model } = getPlateModelPublication(editor)!;
-    const schemaContributions =
-      getEditorExtensionRegistry(editor).schemaContributions.records;
+    const vocabulary = editor.read.schema.getVocabulary();
 
     expect(model.byName.modelBlock).toMatchObject({
       elementType: 'modelBlock',
@@ -436,25 +434,33 @@ describe('compilePlateModel', () => {
         (declaration) => declaration.key === 'modelProperty'
       )
     );
-    expect(schemaContributions.get(BlockPlugin.name)?.contribution).toEqual(
-      model.contributions[BlockPlugin.name]
-    );
-    expect(schemaContributions.get(MarkPlugin.name)?.contribution).toEqual(
-      model.contributions[MarkPlugin.name]
-    );
-    expect(schemaContributions.get(PropertyPlugin.name)?.contribution).toEqual(
-      model.contributions[PropertyPlugin.name]
-    );
+    expect(editor.read.schema.element(BlockPlugin)?.type).toBe('modelBlock');
     expect(
-      schemaContributions.get('schema:derived')?.contribution
+      editor.read.schema.property({ key: 'modelMark', placement: 'text' })
     ).toMatchObject({
-      elements: {},
-      groups: model.contribution.groups,
-      root: expect.any(Object),
+      key: 'modelMark',
+      placement: 'text',
     });
     expect(
-      schemaContributions.get('schema:derived')?.contribution.properties
-    ).toBeUndefined();
+      editor.read.schema.property({
+        key: 'modelProperty',
+        placement: 'element',
+      })
+    ).toMatchObject({
+      key: 'modelProperty',
+      placement: 'element',
+    });
+    for (const id of [
+      model.byName.modelMark!.textPropertyId!,
+      ...model.byName.modelProperty!.propertyIds,
+    ]) {
+      expect(
+        vocabulary.propertyIds.filter((candidate) => candidate === id)
+      ).toHaveLength(1);
+    }
+    expect(vocabulary.groupNames).toEqual(
+      expect.arrayContaining(Object.keys(model.contribution.groups ?? {}))
+    );
   });
 
   it('accepts installed plugin descriptors for element schema operations', () => {
@@ -635,9 +641,11 @@ describe('compilePlateModel', () => {
     const MarkPlugin = definePlatePlugin('renderMark', {
       component: MarkComponent,
       render: {
-        isDecoration: false,
-        leafProps: { 'data-leaf': 'mark' },
-        textProps: { 'data-text': 'mark' },
+        mark: {
+          leafAttributes: { 'data-leaf': 'mark' },
+          placement: 'text',
+          textAttributes: { 'data-text': 'mark' },
+        },
       },
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
@@ -650,16 +658,17 @@ describe('compilePlateModel', () => {
       plugins: [ElementPlugin, MarkPlugin, RuntimeOnlyPlugin],
     });
 
-    expect(getPlateRuntime(editor).components).toEqual({
-      renderElement: ElementComponent,
-      renderMark: MarkComponent,
-    });
-    expect(getPlateRuntime(editor).pluginCache.node.leafProps).toEqual([
-      'renderMark',
-    ]);
-    expect(getPlateRuntime(editor).pluginCache.node.textProps).toEqual([
-      'renderMark',
-    ]);
+    expect(editor.plugin(ElementPlugin).component).toBe(ElementComponent);
+    expect(editor.plugin(MarkPlugin).component).toBe(MarkComponent);
+    expect(editor.plugin(RuntimeOnlyPlugin).component).toBe(
+      RuntimeOnlyPlugin.component
+    );
+    expect(getPlateRuntime(editor).pluginCache.node.leafAttributeMarks).toEqual(
+      ['renderMark']
+    );
+    expect(getPlateRuntime(editor).pluginCache.node.textAttributeMarks).toEqual(
+      ['renderMark']
+    );
   });
 
   it('classifies block containers from compiled child relations', () => {

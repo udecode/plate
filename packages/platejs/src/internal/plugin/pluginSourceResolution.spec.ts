@@ -98,7 +98,7 @@ describe('plugin source resolution', () => {
     });
     const winner = editor.plugin(Shared);
 
-    expect(winner.render.node).toBe(Component);
+    expect(winner.component).toBe(Component);
     expect(winner.initialState).toEqual({ owner: 'latest', stable: 'kept' });
   });
 

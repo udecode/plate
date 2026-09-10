@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-media-upload-lifetime",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-media-upload-lifetime.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep media uploads active across placeholder remounts and report upload failures",
+  "targets": [
+    {
+      "name": "media",
+      "files": ["apps/www/src/registry/components/editor/media.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder",
+      "files": [
+        "apps/www/src/registry/components/editor/media-placeholder.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-media-keep-uploads-active-across-65d719f5",
+      "kind": "fix",
+      "summary": "Keep uploads active across placeholder remounts, cancel superseded requests and show upload failures. Configure the transport in `MediaKit`; image completion does not depend on the preview loading.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media", "media-placeholder"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-media-upload-lifetime",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

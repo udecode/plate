@@ -20,6 +20,12 @@ import {
   invertEffect,
 } from '..';
 import {
+  consumeAnchorHistoryCapture,
+  mapAnchorHistoryRecovery,
+  mergeAnchorHistoryRecovery,
+  stageAnchorHistoryRecovery,
+} from '../core/anchor-state';
+import {
   failInvariant,
   dispatchCommand,
   getEditorUpdateRoot,
@@ -449,6 +455,10 @@ const createHistoryExtension = <
         merge: createHistoryControl(tx, 'merge'),
         newBatch: createHistoryControl(tx, 'push'),
         redo() {
+          const entry = peekHistoryEntry(editor, 'redos');
+
+          if (!entry) return;
+          stageAnchorHistoryRecovery(editor, entry.recovery, 'after');
           dispatchCommand(editor, historyRedoCommand, {
             root: getEditorUpdateRoot(editor),
           });
@@ -464,6 +474,10 @@ const createHistoryExtension = <
         },
         skip: createHistoryControl(tx, 'skip'),
         undo() {
+          const entry = peekHistoryEntry(editor, 'undos');
+
+          if (!entry) return;
+          stageAnchorHistoryRecovery(editor, entry.recovery, 'before');
           dispatchCommand(editor, historyUndoCommand, {
             root: getEditorUpdateRoot(editor),
           });
@@ -525,6 +539,8 @@ const createHistoryExtension = <
     },
     on: {
       commit({ commit, editor }) {
+        const anchorCapture = consumeAnchorHistoryCapture(commit);
+
         if (
           synchronizeHistorySchema(editor) ||
           PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
@@ -648,15 +664,41 @@ const createHistoryExtension = <
             lastEntry.group,
             prepared.group
           );
+          const after = editor.read.value();
+          const previousRecovery = mapAnchorHistoryRecovery(
+            lastEntry.recovery,
+            'after',
+            changes,
+            lastEntry.base,
+            after
+          );
+          const currentRecovery = anchorCapture?.recovery
+            ? mapAnchorHistoryRecovery(
+                anchorCapture.recovery,
+                'before',
+                lastEntry.batch.change,
+                lastEntry.base,
+                lastEntry.batch.change.apply(toChangeValue(lastEntry.base))
+              )
+            : null;
+          const mergedRecovery = mergeAnchorHistoryRecovery(
+            previousRecovery,
+            currentRecovery,
+            lastEntry.anchorCeiling
+          );
 
           replaceHistoryHead(editor, 'undos', mergedBatch, {
+            anchorCeiling: lastEntry.anchorCeiling,
             clearRedos: true,
             group: mergedGroup,
+            recovery: mergedRecovery,
           });
         } else {
           writeHistory(editor, 'undos', preparedBatch, {
+            anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
             clearRedos: true,
             group: prepared.group,
+            recovery: anchorCapture?.recovery ?? null,
           });
         }
         if (explicitPush || preparedBatch.effects.length > 0) {

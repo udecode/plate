@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+ime-overlap-policy:overlap-cancels	ime-overlap-policy-001	slate-plan	Policy row only; no runtime/browser proof until taste accepted	N/A: research packet only	deferred-pending-policy

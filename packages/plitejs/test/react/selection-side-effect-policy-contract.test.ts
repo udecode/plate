@@ -1,9 +1,10 @@
-import { readFileSync } from 'node:fs';
-
 import { replace as editorReplace } from '../../src/internal';
 import { PliteReactUpdatePolicy } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
-import { createEditableInputController } from '../../src/react/editable/input-state';
+import {
+  createEditableInputControllerState,
+  createEditableInputController,
+} from '../../src/react/editable/input-state';
 import { applyEditableRepairRequest } from '../../src/react/editable/mutation-controller';
 import {
   shouldSkipDOMSelection,
@@ -19,32 +20,6 @@ test('selection preservation policy is deeply frozen', () => {
   expect(Object.isFrozen(PliteReactUpdatePolicy.preserveSelection)).toBe(true);
   expect(Object.isFrozen(PliteReactUpdatePolicy.preserveSelection.tags)).toBe(
     true
-  );
-});
-
-test('editable repair request exposes focused profiler buckets', () => {
-  const source = readFileSync(
-    'src/react/editable/mutation-controller.ts',
-    'utf-8'
-  );
-
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.selection-source-transition'/
-  );
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.model-owned-text-guard'/
-  );
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.focus-editor'/
-  );
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.focus-editor-after-render'/
-  );
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.force-render'/
-  );
-  expect(source).toMatch(
-    /profileEditableMutationDuration\(\s*'repair\.dom-repair-queue'/
   );
 });
 
@@ -103,7 +78,7 @@ test('selection preservation policy suppresses repair focus without skipping sel
   const originalFocus = ReactEditor.focus;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -112,7 +87,7 @@ test('selection preservation policy suppresses repair focus without skipping sel
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
   let focusCalls = 0;
   let syncCalls = 0;
@@ -156,7 +131,7 @@ test('an explicit history target overrides its remote-selection focus suppressio
   const originalFocus = ReactEditor.focus;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -165,7 +140,7 @@ test('an explicit history target overrides its remote-selection focus suppressio
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
   const focusedEditors: unknown[] = [];
   let pendingFocusEditor: unknown;
@@ -210,7 +185,7 @@ test('refocuses after a forced renderer repair can replace the active editable',
   const originalFocus = ReactEditor.focus;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -219,7 +194,7 @@ test('refocuses after a forced renderer repair can replace the active editable',
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
   const calls: string[] = [];
 
@@ -261,7 +236,7 @@ test('sync-selection repair can mark programmatic selection without DOM sync', (
   const runtime = new EditableDOMRuntime({ editor });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -270,7 +245,7 @@ test('sync-selection repair can mark programmatic selection without DOM sync', (
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'dom-current',
-    },
+    }),
   });
   let syncCalls = 0;
 

@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+proof-methodology:duplicate-native-event-trace-helper	local/slate-browser	proof-methodology:native-event-trace-helper:slate-browser	Rejected new helper work because the existing slate-browser helper, docs, and tests already close the lead.	Reopen only if a real route packet needs a trace field the helper cannot capture.
+proof-methodology:broad-rg-as-research	local-docs	broad-rg-miss	Rejected broad docs/raw research grep as a normal research primitive because it streamed huge output and hid the useful source signal.	Reopen only as an artifact-first command that writes raw output to docs/research/raw and inspects slices.

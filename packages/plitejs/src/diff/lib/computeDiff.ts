@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
+import { DiffMatchPatch } from 'diff-match-patch-ts';
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';
 
@@ -15,7 +15,6 @@ import {
   type Text,
   TextApi,
 } from '../..';
-import { failInvariant } from '../../internal';
 
 export type DiffDeletion = {
   type: 'delete';
@@ -70,13 +69,13 @@ export const computeDiff = (
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): Descendant[] => {
-  const stringCharMapping = new StringCharMapping();
+  const nodeTokens = new NodeTokens();
   const ignoredPropSet = ignoreProps ? new Set(ignoreProps) : null;
 
-  const m0 = stringCharMapping.nodesToString(doc0);
-  const m1 = stringCharMapping.nodesToString(doc1);
+  const m0 = nodeTokens.encode(doc0);
+  const m1 = nodeTokens.encode(doc1);
 
-  const diff = dmp.diff_main(m0, m1);
+  const diff = diffTokens(m0, m1);
 
   return transformDiffDescendants(diff, {
     elementsAreRelated,
@@ -84,7 +83,7 @@ export const computeDiff = (
     getInsertProps,
     ignoreProps,
     isInline,
-    stringCharMapping,
+    nodeTokens,
     getUpdateProps: (node, properties, newProperties) => {
       const changedKeys = new Set([
         ...Object.keys(properties),
@@ -132,62 +131,245 @@ export const defaultGetUpdateProps = (
   },
 });
 
-const dmp = new DiffMatchPatch();
+type TokenDiff = [-1 | 0 | 1, number[]];
 
+const dmp = new DiffMatchPatch();
 dmp.Diff_Timeout = 0.2;
 
-function* unusedCharGenerator({
-  skipChars = '',
-}: {
-  skipChars?: string;
-} = {}): Generator<string, never, void> {
-  const skipSet = new Set(skipChars);
+const diffTokens = (
+  source: readonly number[],
+  target: readonly number[],
+  semantic = false
+): TokenDiff[] => {
+  const allTokens = [...source, ...target];
+  const used = new Set(allTokens.filter((token) => token < 65_536));
+  const encoded = new Map<number, string>();
+  const decoded = new Map<string, number>();
+  let code = 65;
 
-  for (
-    let code =
-      'A'.codePointAt(0) ?? failInvariant('Expected value to be defined');
-    ;
-    code++
+  for (const token of allTokens) {
+    if (token < 65_536 || encoded.has(token)) continue;
+    while (code < 65_536 && used.has(code)) code += 1;
+    if (code === 65_536) {
+      code = 0;
+      while (code < 65 && used.has(code)) code += 1;
+      if (code === 65) return diffArrays(source, target, Date.now() + 200);
+    }
+    used.add(code);
+    const character = String.fromCharCode(code);
+    code += 1;
+    encoded.set(token, character);
+    decoded.set(character, token);
+  }
+
+  const encode = (tokens: readonly number[]) =>
+    tokens
+      .map((token) => encoded.get(token) ?? String.fromCharCode(token))
+      .join('');
+  const result = dmp.diff_main(encode(source), encode(target));
+  if (semantic) dmp.diff_cleanupSemantic(result);
+
+  return result.map(([operation, text]) => [
+    operation,
+    text
+      .split('')
+      .map((character) => decoded.get(character) ?? character.charCodeAt(0)),
+  ]);
+};
+
+// DMP operates on UTF-16 units; larger alphabets must compare whole tokens.
+const diffArrays = (
+  source: readonly number[],
+  target: readonly number[],
+  deadline: number
+): TokenDiff[] => {
+  let start = 0;
+  let sourceEnd = source.length;
+  let targetEnd = target.length;
+  while (
+    start < sourceEnd &&
+    start < targetEnd &&
+    source[start] === target[start]
   ) {
-    const char = String.fromCodePoint(code);
-
-    if (skipSet.has(char)) continue;
-
-    yield char;
+    start += 1;
   }
-}
+  while (
+    sourceEnd > start &&
+    targetEnd > start &&
+    source[sourceEnd - 1] === target[targetEnd - 1]
+  ) {
+    sourceEnd -= 1;
+    targetEnd -= 1;
+  }
+  const prefix = source.slice(0, start);
+  const suffix = source.slice(sourceEnd);
+  const left = source.slice(start, sourceEnd);
+  const right = target.slice(start, targetEnd);
+  let middle: TokenDiff[];
 
-class StringCharMapping {
-  private readonly charGenerator = unusedCharGenerator();
-  private readonly mappedNodes: Array<[Descendant, string]> = [];
+  if (left.length === 0) middle = right.length ? [[1, right]] : [];
+  else if (right.length === 0) middle = [[-1, left]];
+  else middle = bisect(left, right, deadline);
 
-  nodesToString(nodes: readonly Descendant[]): string {
-    return nodes.map((node) => this.nodeToChar(node)).join('');
+  return [
+    ...(prefix.length ? [[0, prefix] as TokenDiff] : []),
+    ...middle,
+    ...(suffix.length ? [[0, suffix] as TokenDiff] : []),
+  ];
+};
+
+const bisect = (
+  source: number[],
+  target: number[],
+  deadline: number
+): TokenDiff[] => {
+  const max = Math.ceil((source.length + target.length) / 2);
+  const offset = max + 1;
+  const forward = new Int32Array(2 * max + 3).fill(-1);
+  const reverse = new Int32Array(2 * max + 3).fill(-1);
+  forward[offset + 1] = 0;
+  reverse[offset + 1] = 0;
+  const delta = source.length - target.length;
+  const odd = delta % 2 !== 0;
+
+  const split = (x: number, y: number): TokenDiff[] => [
+    ...diffArrays(source.slice(0, x), target.slice(0, y), deadline),
+    ...diffArrays(source.slice(x), target.slice(y), deadline),
+  ];
+
+  for (let distance = 0; distance < max && Date.now() <= deadline; distance++) {
+    for (let diagonal = -distance; diagonal <= distance; diagonal += 2) {
+      const index = offset + diagonal;
+      let x =
+        diagonal === -distance ||
+        (diagonal !== distance && forward[index - 1] < forward[index + 1])
+          ? forward[index + 1]
+          : forward[index - 1] + 1;
+      let y = x - diagonal;
+      while (
+        x < source.length &&
+        y < target.length &&
+        source[x] === target[y]
+      ) {
+        x += 1;
+        y += 1;
+      }
+      forward[index] = x;
+      const opposite = offset + delta - diagonal;
+      if (
+        odd &&
+        opposite >= 0 &&
+        opposite < reverse.length &&
+        reverse[opposite] !== -1 &&
+        x >= source.length - reverse[opposite]
+      ) {
+        return split(x, y);
+      }
+    }
+    for (let diagonal = -distance; diagonal <= distance; diagonal += 2) {
+      const index = offset + diagonal;
+      let x =
+        diagonal === -distance ||
+        (diagonal !== distance && reverse[index - 1] < reverse[index + 1])
+          ? reverse[index + 1]
+          : reverse[index - 1] + 1;
+      let y = x - diagonal;
+      while (
+        x < source.length &&
+        y < target.length &&
+        source[source.length - x - 1] === target[target.length - y - 1]
+      ) {
+        x += 1;
+        y += 1;
+      }
+      reverse[index] = x;
+      const opposite = offset + delta - diagonal;
+      if (
+        !odd &&
+        opposite >= 0 &&
+        opposite < forward.length &&
+        forward[opposite] !== -1 &&
+        forward[opposite] >= source.length - x
+      ) {
+        const splitX = forward[opposite];
+        return split(splitX, splitX - delta + diagonal);
+      }
+    }
   }
 
-  stringToNodes(value: string): Descendant[] {
-    return value.split('').map((char) => {
-      const entry = this.mappedNodes.find(
-        ([_node, mappedChar]) => mappedChar === char
-      );
+  return [
+    [-1, source],
+    [1, target],
+  ];
+};
 
-      if (!entry) throw new Error(`No node found for char ${char}`);
+const nodeBucket = (node: Descendant): string | undefined => {
+  const ancestors = new Set<object>();
+  const visit = (value: unknown): unknown => {
+    if (typeof value !== 'object' || value === null) {
+      if (
+        typeof value === 'function' ||
+        typeof value === 'symbol' ||
+        typeof value === 'bigint'
+      ) {
+        throw new Error('Node requires exact comparison.');
+      }
+      return value;
+    }
+    if (
+      ancestors.has(value) ||
+      (!Array.isArray(value) && !isPlainObject(value))
+    ) {
+      throw new Error('Node requires exact comparison.');
+    }
+    ancestors.add(value);
+    const result = Array.isArray(value)
+      ? value.map(visit)
+      : Object.fromEntries(
+          Object.keys(value)
+            .sort()
+            .map((key) => [key, visit((value as Record<string, unknown>)[key])])
+        );
+    ancestors.delete(value);
+    return result;
+  };
+  try {
+    return JSON.stringify(visit(node));
+  } catch {
+    return undefined;
+  }
+};
 
-      return entry[0];
+class NodeTokens {
+  private readonly nodes: Descendant[] = [];
+  private readonly buckets = new Map<string, number[]>();
+  private readonly fallback: number[] = [];
+
+  encode(nodes: readonly Descendant[]): number[] {
+    return nodes.map((node) => {
+      const key = nodeBucket(node);
+      // Non-plain values may equal plain ones, so both directions share the fallback.
+      const candidates =
+        key === undefined
+          ? this.nodes.keys()
+          : [...(this.buckets.get(key) ?? []), ...this.fallback];
+      for (const token of candidates) {
+        if (baseIsEqual(this.nodes[token], node)) return token + 65_536;
+      }
+      const token = this.nodes.length;
+      this.nodes.push(node);
+      if (key === undefined) this.fallback.push(token);
+      else {
+        const bucket = this.buckets.get(key);
+        if (bucket) bucket.push(token);
+        else this.buckets.set(key, [token]);
+      }
+      return token + 65_536;
     });
   }
 
-  private nodeToChar(node: Descendant): string {
-    const entry = this.mappedNodes.find(([mappedNode]) =>
-      baseIsEqual(mappedNode, node)
-    );
-
-    if (entry) return entry[1];
-
-    const char = this.charGenerator.next().value;
-    this.mappedNodes.push([node, char]);
-
-    return char;
+  decode(tokens: readonly number[]): Descendant[] {
+    return tokens.map((token) => this.nodes[token - 65_536]);
   }
 }
 
@@ -243,53 +425,64 @@ const isEqual = (value: unknown, other: unknown, options?: IsEqualOptions) =>
     withoutIgnoredProperties(other, options)
   );
 
-class InlineNodeCharMap {
-  private readonly charGenerator: Generator<string, never, void>;
-  private readonly charToNode = new Map<string, Descendant>();
+type TokenText = { node: Text; tokens: number[] };
 
-  constructor(charGenerator: Generator<string, never, void>) {
-    this.charGenerator = charGenerator;
-  }
+class InlineTokens {
+  private nextToken = 65_536;
+  private readonly nodes = new Map<number, Descendant>();
+  private readonly insertedBreak: number | undefined;
+  private readonly deletedBreak: number | undefined;
 
-  nodeToText(node: Descendant): Text {
-    if (TextApi.isText(node)) return node;
+  private readonly lineBreakChar: string | undefined;
 
-    const char = this.charGenerator.next().value;
-    this.charToNode.set(char, node);
-
-    return { text: char };
-  }
-
-  textToNodes(initialTextNode: Text): Descendant[] {
-    let outputNodes: Descendant[] = [initialTextNode];
-
-    for (const [char, originalNode] of this.charToNode) {
-      outputNodes = outputNodes.flatMap((node) => {
-        if (!TextApi.isText(node)) return [node];
-
-        const splitText = node.text.split(char);
-
-        if (splitText.length === 1) return [node];
-
-        const replacementNode = {
-          ...originalNode,
-          ...NodeApi.extractProps(node),
-        };
-
-        return splitText
-          .flatMap((text, index) =>
-            index === splitText.length - 1
-              ? [{ ...node, text }]
-              : [{ ...node, text }, replacementNode]
-          )
-          .filter(
-            (splitNode) =>
-              !TextApi.isText(splitNode) || splitNode.text.length > 0
-          );
-      });
+  constructor(lineBreakChar?: string) {
+    this.lineBreakChar = lineBreakChar;
+    if (lineBreakChar !== undefined) {
+      this.insertedBreak = this.nextToken;
+      this.nextToken += 1;
+      this.deletedBreak = this.nextToken;
+      this.nextToken += 1;
     }
+  }
 
-    return outputNodes;
+  encode(nodes: readonly Descendant[], inserted: boolean): TokenText[] {
+    return nodes.map((node) => {
+      if (!TextApi.isText(node)) {
+        const token = this.nextToken;
+        this.nextToken += 1;
+        this.nodes.set(token, node);
+        return { node: { text: '' }, tokens: [token] };
+      }
+      const lineBreak = inserted ? this.insertedBreak : this.deletedBreak;
+      return {
+        node,
+        tokens: node.text
+          .split('')
+          .map((character) =>
+            character === '\n' && lineBreak !== undefined
+              ? lineBreak
+              : character.charCodeAt(0)
+          ),
+      };
+    });
+  }
+
+  decode(tokens: readonly number[], node: Text): Descendant[] {
+    const output: Descendant[] = [];
+    let text = '';
+    for (const token of tokens) {
+      const inline = this.nodes.get(token);
+      if (inline) {
+        if (text) output.push({ ...node, text });
+        text = '';
+        output.push({ ...inline, ...NodeApi.extractProps(node) });
+      } else if (token === this.insertedBreak) {
+        text += `${this.lineBreakChar}\n`;
+      } else if (token === this.deletedBreak) text += this.lineBreakChar;
+      else text += String.fromCharCode(token);
+    }
+    if (text || output.length === 0) output.push({ ...node, text });
+    return output;
   }
 }
 
@@ -460,24 +653,16 @@ const transformDiffNodes = (
   return false;
 };
 
-const encodeLineBreaks = (text: Text, lineBreakChar?: string): Text =>
-  lineBreakChar === undefined
-    ? text
-    : {
-        ...text,
-        text: text.text.replaceAll('\n', lineBreakChar),
-      };
-
 type TextSpan = {
   end: number;
   node: Text;
 };
 
-const getSpans = (texts: Text[]): TextSpan[] => {
+const getSpans = (texts: TokenText[]): TextSpan[] => {
   let offset = 0;
 
-  return texts.map((node) => {
-    offset += node.text.length;
+  return texts.map(({ node, tokens }) => {
+    offset += tokens.length;
 
     return { end: offset, node };
   });
@@ -523,13 +708,18 @@ const getPropertyChanges = (
     : null;
 };
 
-const appendText = (output: Text[], node: Text) => {
+const appendText = (output: Descendant[], node: Descendant) => {
+  if (!TextApi.isText(node)) {
+    output.push(node);
+    return;
+  }
   if (node.text.length === 0) return;
 
   const previous = output.at(-1);
 
   if (
     previous &&
+    TextApi.isText(previous) &&
     isEqual(getNodeProperties(previous), getNodeProperties(node))
   ) {
     output[output.length - 1] = {
@@ -542,19 +732,23 @@ const appendText = (output: Text[], node: Text) => {
 };
 
 const diffTextSpans = (
-  source: Text[],
-  target: Text[],
-  options: ComputeDiffOptions
-): Text[] => {
+  source: TokenText[],
+  target: TokenText[],
+  options: ComputeDiffOptions,
+  inlineTokens: InlineTokens
+): Descendant[] => {
   const sourceSpans = getSpans(source);
   const targetSpans = getSpans(target);
-  const sourceText = source.map((node) => node.text).join('');
-  const targetText = target.map((node) => node.text).join('');
-  const diff = dmp.diff_main(sourceText, targetText);
+  const sourceText = source.flatMap(({ tokens }) => tokens);
+  const targetText = target.flatMap(({ tokens }) => tokens);
+  const diff = diffTokens(sourceText, targetText, true);
 
-  dmp.diff_cleanupSemantic(diff);
-
-  const output: Text[] = [];
+  const output: Descendant[] = [];
+  const append = (tokens: number[], node: Text) => {
+    for (const descendant of inlineTokens.decode(tokens, node)) {
+      appendText(output, descendant);
+    }
+  };
   let sourceOffset = 0;
   let targetOffset = 0;
   let sourceIndex = 0;
@@ -584,28 +778,26 @@ const diffTextSpans = (
       advanceSource();
       advanceTarget();
 
-      if (operation === DiffOp.Delete) {
+      if (operation === -1) {
         const span = sourceSpans[sourceIndex];
         const length = Math.min(remaining, span.end - sourceOffset);
 
-        appendText(output, {
+        append(sourceText.slice(sourceOffset, sourceOffset + length), {
           ...span.node,
           ...options.getDeleteProps(span.node),
-          text: sourceText.slice(sourceOffset, sourceOffset + length),
         });
         sourceOffset += length;
         remaining -= length;
         continue;
       }
 
-      if (operation === DiffOp.Insert) {
+      if (operation === 1) {
         const span = targetSpans[targetIndex];
         const length = Math.min(remaining, span.end - targetOffset);
 
-        appendText(output, {
+        append(targetText.slice(targetOffset, targetOffset + length), {
           ...span.node,
           ...options.getInsertProps(span.node),
-          text: targetText.slice(targetOffset, targetOffset + length),
         });
         targetOffset += length;
         remaining -= length;
@@ -623,13 +815,18 @@ const diffTextSpans = (
         sourceSpan.node,
         targetSpan.node
       );
+      const tokens = targetText.slice(targetOffset, targetOffset + length);
       const targetSlice = {
         ...targetSpan.node,
-        text: targetText.slice(targetOffset, targetOffset + length),
+        text: inlineTokens
+          .decode(tokens, targetSpan.node)
+          .filter(TextApi.isText)
+          .map((node) => node.text)
+          .join(''),
       };
 
-      appendText(
-        output,
+      append(
+        tokens,
         propertyChanges
           ? {
               ...targetSlice,
@@ -649,8 +846,8 @@ const diffTextSpans = (
 
   if (output.length > 0) return output;
 
-  const targetNode = target[0];
-  const sourceNode = source[0];
+  const targetNode = target[0].node;
+  const sourceNode = source[0].node;
   const propertyChanges = getPropertyChanges(sourceNode, targetNode);
 
   return [
@@ -715,52 +912,24 @@ const transformDiffTexts = (
     }
   }
 
-  const { lineBreakChar } = options;
-  const charGenerator = unusedCharGenerator({
-    skipChars: nodes
-      .concat(nextNodes)
-      .filter(TextApi.isText)
-      .map((node) => node.text)
-      .join(''),
-  });
-  const lineBreakProxyChars =
-    lineBreakChar === undefined
-      ? null
-      : {
-          inserted: charGenerator.next().value,
-          deleted: charGenerator.next().value,
-        };
-  const inlineNodeCharMap = new InlineNodeCharMap(charGenerator);
-  const texts = nodes
-    .map((node) => inlineNodeCharMap.nodeToText(node))
-    .map((text) => encodeLineBreaks(text, lineBreakProxyChars?.deleted));
-  const nextTexts = nextNodes
-    .map((node) => inlineNodeCharMap.nodeToText(node))
-    .map((text) => encodeLineBreaks(text, lineBreakProxyChars?.inserted));
-
-  let diffTexts = diffTextSpans(texts, nextTexts, options);
-
-  if (lineBreakProxyChars && lineBreakChar !== undefined) {
-    diffTexts = diffTexts.map((node) => ({
-      ...node,
-      text: node.text
-        .replaceAll(lineBreakProxyChars.inserted, `${lineBreakChar}\n`)
-        .replaceAll(lineBreakProxyChars.deleted, lineBreakChar),
-    }));
-  }
-
-  return diffTexts.flatMap((text) => inlineNodeCharMap.textToNodes(text));
+  const inlineTokens = new InlineTokens(options.lineBreakChar);
+  return diffTextSpans(
+    inlineTokens.encode(nodes, false),
+    inlineTokens.encode(nextNodes, true),
+    options,
+    inlineTokens
+  );
 };
 
 type DiffOperation = -1 | 0 | 1;
 
 const transformDiffDescendants = (
-  diff: ReadonlyArray<[DiffOperation, string]>,
+  diff: ReadonlyArray<[DiffOperation, number[]]>,
   {
-    stringCharMapping,
+    nodeTokens,
     ...options
   }: ComputeDiffOptions & {
-    stringCharMapping: StringCharMapping;
+    nodeTokens: NodeTokens;
   }
 ): Descendant[] => {
   const { getDeleteProps, getInsertProps, ignoreProps, isInline } = options;
@@ -770,7 +939,8 @@ const transformDiffDescendants = (
   let deleteBuffer: Descendant[] = [];
 
   const flushBuffers = () => {
-    children.push(...deleteBuffer, ...insertBuffer);
+    for (const node of deleteBuffer) children.push(node);
+    for (const node of insertBuffer) children.push(node);
     insertBuffer = [];
     deleteBuffer = [];
   };
@@ -778,35 +948,35 @@ const transformDiffDescendants = (
     insertBuffer.push({ ...node, ...getInsertProps(node) });
   const deleteNode = (node: Descendant) =>
     deleteBuffer.push({ ...node, ...getDeleteProps(node) });
-  const passThroughNodes = (...nodes: Descendant[]) => {
+  const passThroughNodes = (nodes: readonly Descendant[]) => {
     flushBuffers();
-    children.push(...nodes);
+    for (const node of nodes) children.push(node);
   };
   const isInlineList = (nodes: Descendant[]) =>
     nodes.every((node) => TextApi.isText(node) || isInline(node));
 
   while (index < diff.length) {
     const [operation, value] = diff[index];
-    const nodes = stringCharMapping.stringToNodes(value);
+    const nodes = nodeTokens.decode(value);
 
     if (operation === 0) {
-      passThroughNodes(...nodes);
+      passThroughNodes(nodes);
       index += 1;
       continue;
     }
 
     if (operation === -1) {
       if (index < diff.length - 1 && diff[index + 1][0] === 1) {
-        const nextNodes = stringCharMapping.stringToNodes(diff[index + 1][1]);
+        const nextNodes = nodeTokens.decode(diff[index + 1][1]);
 
         if (isEqual(nodes, nextNodes, { ignoreDeep: ignoreProps })) {
-          passThroughNodes(...nextNodes);
+          passThroughNodes(nextNodes);
           index += 2;
           continue;
         }
 
         if (isInlineList(nodes) && isInlineList(nextNodes)) {
-          passThroughNodes(...transformDiffTexts(nodes, nextNodes, options));
+          passThroughNodes(transformDiffTexts(nodes, nextNodes, options));
           index += 2;
           continue;
         }
@@ -823,7 +993,7 @@ const transformDiffDescendants = (
             );
 
             if (diffNodesResult) {
-              passThroughNodes(...diffNodesResult);
+              passThroughNodes(diffNodesResult);
             } else {
               deleteNode(item.originNode);
               insertNode(item.relatedNode);

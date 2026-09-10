@@ -790,6 +790,45 @@ const addChildWindow = (
   }
 };
 
+const isRangeInsideOneText = (
+  document: DocumentIndex,
+  from: number,
+  to: number
+) => {
+  const start = document.textAt(from);
+  const end = document.textAt(to);
+
+  return Boolean(
+    start &&
+    end &&
+    start.path.length === end.path.length &&
+    start.path.every((part, index) => part === end.path[index]) &&
+    start.contentFrom <= from &&
+    to <= start.contentTo
+  );
+};
+
+const isTextOnlyRepresentationChange = (
+  change: RootChange,
+  before: DocumentIndex,
+  after: DocumentIndex
+) => {
+  let changed = false;
+  let textOnly = true;
+
+  change.iterChangedRanges((fromBefore, toBefore, fromAfter, toAfter) => {
+    changed = true;
+    if (
+      !isRangeInsideOneText(before, fromBefore, toBefore) ||
+      !isRangeInsideOneText(after, fromAfter, toAfter)
+    ) {
+      textOnly = false;
+    }
+  });
+
+  return changed && textOnly;
+};
+
 const replaceCanonicalChildWindow = (
   draft: CanonicalRootDraft,
   editor: Editor,
@@ -798,6 +837,7 @@ const replaceCanonicalChildWindow = (
   rootContent: ReturnType<RepresentationSchema['getRootContent']>,
   path: readonly number[],
   window: ChildWindow,
+  beforeDocument: DocumentIndex | null,
   options: CanonicalizeOptions = {}
 ) => {
   const rootChildren = draft.document.value as readonly Descendant[];
@@ -817,6 +857,10 @@ const replaceCanonicalChildWindow = (
 
     if (ancestor && ElementApi.isElement(ancestor)) ancestors.push(ancestor);
   }
+  const baselineAt = (from: number) =>
+    beforeDocument
+      ? { children: beforeDocument.value as readonly Descendant[], path, from }
+      : undefined;
   const propertyNodes = new Map<number, Descendant>();
   const propertyNodeAt = (index: number) => {
     const cached = propertyNodes.get(index);
@@ -826,7 +870,8 @@ const replaceCanonicalChildWindow = (
       [source[index]],
       root,
       ancestors,
-      false
+      false,
+      baselineAt(index)
     )[0];
 
     propertyNodes.set(index, canonical);
@@ -876,7 +921,8 @@ const replaceCanonicalChildWindow = (
     selected,
     root,
     ancestors,
-    false
+    false,
+    baselineAt(from)
   );
   const preserveInlineSpacersAdjacentTo = carryProtectedInlineNodes(
     selected,
@@ -912,7 +958,8 @@ const replaceCanonicalChildWindow = (
     representationCanonical,
     root,
     ancestors,
-    false
+    false,
+    baselineAt(from)
   );
 
   if (
@@ -1054,12 +1101,13 @@ export const constructCanonicalDocumentChange = (
       document,
     };
     const rootChange = getInternalDocumentRootChange(change, root);
+    const beforeDocument = options.before
+      ? (options.indexedBefore?.get(root) ??
+        DocumentIndex.fromValue(getRootChildren(options.before, root)))
+      : null;
     const move =
-      options.before && rootChange
-        ? rootChange.movedNode(
-            options.indexedBefore?.get(root) ??
-              DocumentIndex.fromValue(getRootChildren(options.before, root))
-          )
+      beforeDocument && rootChange
+        ? rootChange.movedNode(beforeDocument)
         : null;
     const movedNode = move ? document.node(move.targetPath) : undefined;
     const moveParent = move?.path.slice(0, -1);
@@ -1094,6 +1142,14 @@ export const constructCanonicalDocumentChange = (
       string,
       { path: readonly number[]; window: ChildWindow }
     >();
+    const textOnlyRepresentationChange =
+      beforeDocument && rootChange
+        ? isTextOnlyRepresentationChange(rootChange, beforeDocument, document)
+        : false;
+
+    if (textOnlyRepresentationChange) {
+      profileCoreDuration('representation-text-locality-hit', () => undefined);
+    }
 
     if (fitPreparation?.forceRoots?.has(root)) {
       const propertyCanonical = schema.canonicalizeChildren(
@@ -1173,10 +1229,16 @@ export const constructCanonicalDocumentChange = (
 
               if (index === undefined) continue;
 
-              addChildWindow(windows, path.slice(0, -1), index, index + 1);
-
               const node = document.node(path);
               const range = document.nodeRange(path);
+
+              if (
+                !textOnlyRepresentationChange ||
+                TextApi.isText(node) ||
+                (ElementApi.isElement(node) && schema.isInline(node))
+              ) {
+                addChildWindow(windows, path.slice(0, -1), index, index + 1);
+              }
 
               if (trustedFitNodes?.has(node)) continue;
 
@@ -1217,6 +1279,7 @@ export const constructCanonicalDocumentChange = (
           rootSpec,
           path,
           window,
+          beforeDocument,
           {
             preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
           }

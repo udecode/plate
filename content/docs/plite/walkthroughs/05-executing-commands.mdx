@@ -9,7 +9,7 @@ buttons, menu items, or tests. A command is reusable editor logic. Keep command
 reads in `editor.read.<group>.<method>()` or `editor.read(...)`, and command
 writes in `editor.update.<group>.<method>()` or `editor.update(...)`.
 
-## Extracting Commands
+## Extracting commands
 
 Start by moving the bold and code-block logic into plain functions:
 
@@ -50,7 +50,7 @@ const toggleCodeBlock = (editor: Editor) => {
 These functions are not added to the editor object. They are normal JavaScript
 functions that receive an editor.
 
-## Using Commands From Editor Events
+## Using commands from editor events
 
 Use `Editable onKeyDown` for keyboard shortcuts that belong to one editor UI:
 
@@ -170,7 +170,7 @@ const App = () => {
 };
 ```
 
-## Using Commands From UI
+## Using commands from UI
 
 The same functions can be called from toolbar buttons:
 
@@ -199,7 +199,7 @@ const Toolbar = ({ editor }) => {
 };
 ```
 
-## Extension Commands
+## Extension commands
 
 Plain functions are enough for app code. Extensions can expose typed `state`
 and `tx` namespaces when a behavior needs to be shared across editors.

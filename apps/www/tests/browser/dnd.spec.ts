@@ -1,4 +1,7 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import {
+  createPliteBrowserEditorHarness,
+  recordPliteBrowserRuntimeErrors,
+} from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const CASE_ID = 'dnd:drag-handle-excluded-from-native-selection';
@@ -10,11 +13,19 @@ test(CASE_ID, async ({ page }, testInfo) => {
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
+    const harness = createPliteBrowserEditorHarness(
+      page,
+      CASE_ID,
+      page.locator('.plite-editor')
+    );
+    await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
 
     const heading = page.getByRole('heading', {
       name: 'Collaborative Editing',
     });
-    const draggable = heading.locator('..').locator('..').locator('..');
+    const draggable = page.locator('.plite-editor > .group').filter({
+      has: heading,
+    });
     const previousText = draggable
       .locator('xpath=preceding-sibling::*[1]')
       .locator('[data-plite-node="text"]')
@@ -30,7 +41,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     expect(end).not.toBeNull();
 
     await page.mouse.move(
-      start!.x + Math.max(2, start!.width - 2),
+      start!.x + start!.width / 2,
       start!.y + start!.height / 2
     );
     await page.mouse.down();

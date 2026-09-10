@@ -1,6 +1,6 @@
 import { ElementApi, property, schema, target } from '../../core';
 import { createEditor, defineBasePlugin } from '../../lib';
-import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
+import { getRenderNodeStaticProps } from './getRenderNodeStaticProps.internal';
 
 describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
@@ -12,7 +12,7 @@ describe('getRenderNodeStaticProps', () => {
         },
       },
       render: {
-        nodeProps: ({ editor, element }) => {
+        attributes: ({ editor, element }) => {
           const innerTarget =
             typeof element.attributes === 'object' &&
             element.attributes !== null &&

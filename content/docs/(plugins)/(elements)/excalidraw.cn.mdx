@@ -81,6 +81,8 @@ editor.plugin(BaseExcalidrawPlugin).update.insert(
 
 ## UI 行为
 
-复制的 registry 元素直接拥有 Excalidraw React 集成。它动态导入 canvas，
-从元素数据构建 `initialData`，在编辑模式保存变化，并在只读模式启用
-`viewModeEnabled`。
+复制的 registry 元素负责动态加载、初始视图、控件和布局，并在只读模式启用
+`viewModeEnabled`。`useExcalidrawSync({ api, excalidraw })` 负责当前元素与画布同步：
+保存绘图、持久状态和引用的图片文件，忽略平移、缩放及选区变化。文档更新和
+撤销会反映到画布，并清除不再适用的画布撤销记录。该 hook 返回 `void`；加载期间
+`api` 和 `excalidraw` 可以为 `null`。

@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short sync-vision objective, under 240 characters. Put the
 full contract below.
@@ -105,7 +107,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | `sync-vision` source rule read | pending | pending |
 | `VISION.md` read | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | `docs/sync/vision/status.json` read | pending | pending |
 | Base and target commits resolved | pending | pending |
 | Output budget strategy recorded | pending | pending |

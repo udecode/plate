@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -33,6 +33,19 @@ const target = ({ id, path: innerPath, required = true }) => ({
   artifacts: [{ path: innerPath, required }],
   timeouts: { benchmarkMs: 5000, correctnessMs: 5000 },
 });
+
+const benchmarkNodeRuntime = process.versions.bun
+  ? JSON.parse(
+      execFileSync(
+        'node',
+        [
+          '-p',
+          'JSON.stringify({ version: process.version, executable: process.execPath })',
+        ],
+        { encoding: 'utf-8' }
+      )
+    )
+  : { executable: process.execPath, version: process.version };
 
 for (const scenario of [
   { name: 'complete', status: 0, attachments: true, expected: 0 },
@@ -131,22 +144,23 @@ for (const packageManager of ['pnpm', 'yarn', 'bun']) {
       repo,
     });
     assert.deepEqual(result, {
-      version: process.version,
-      executable: process.execPath,
+      ...benchmarkNodeRuntime,
       pnp: 'active',
     });
   });
 }
 
-for (const packageName of [
-  'plitejs',
-  'slate',
-  'slate-react',
-  'slate-history',
+for (const [packageName, directoryName] of [
+  ['platejs', 'platejs'],
+  ['@platejs/test', 'test'],
+  ['plitejs', 'plitejs'],
+  ['slate', 'slate'],
+  ['slate-react', 'slate-react'],
+  ['slate-history', 'slate-history'],
 ]) {
   test(`resolves ${packageName} from an isolated comparison runner`, async () => {
     const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-workspace-'));
-    const packageDirectory = path.join(repo, 'packages', packageName);
+    const packageDirectory = path.join(repo, 'packages', directoryName);
     fs.mkdirSync(path.join(packageDirectory, 'dist'), { recursive: true });
     fs.writeFileSync(
       path.join(packageDirectory, 'package.json'),
@@ -215,7 +229,7 @@ test('requires positive benchmark timeout policy fields', () => {
   ]);
 });
 
-test('keeps previous artifact existence sticky for partial local benchmark caches', () => {
+test('preserves historical receipts without claiming current benchmark success', () => {
   const stickyPath = `.tmp/bench-targets-sticky-${process.pid}.json`;
   const missingPath = `.tmp/bench-targets-missing-${process.pid}.json`;
 
@@ -242,19 +256,34 @@ test('keeps previous artifact existence sticky for partial local benchmark cache
 
   assert.deepEqual(history.counts, {
     artifacts: 2,
-    existingArtifacts: 1,
+    recordedArtifacts: 1,
     missingOptionalArtifacts: 0,
     missingRequiredArtifacts: 1,
     requiredArtifacts: 2,
     statusCounts: {
       'missing-required-artifact': 1,
-      ok: 1,
+      recorded: 1,
     },
     targets: 2,
   });
   assert.equal(
     history.targets.find((entry) => entry.id === 'sticky-target')?.status,
-    'ok'
+    'recorded'
+  );
+  assert.equal(history.targets[1].artifacts[0].recorded, true);
+  assert.equal(fs.existsSync(stickyPath), false);
+  const regenerated = buildTargetHistory(
+    {
+      version: 1,
+      policy: {},
+      targets: [target({ id: 'sticky-target', path: stickyPath })],
+    },
+    [history]
+  );
+  assert.equal(regenerated.targets[0].artifacts[0].recorded, true);
+  assert.match(
+    renderMarkdownReport(history),
+    /does not establish current availability, source freshness, or passing budgets/
   );
   assert.match(renderMarkdownReport(history), /Missing required artifacts: 1/);
 });

@@ -2,6 +2,10 @@ import { useCallback, useState } from 'react';
 
 import type { Value } from '../..';
 import { subscribeEditableRuntimeFocus } from '../editable/editable-dom-runtime';
+import {
+  type AnyEditor,
+  subscribeEditorViewState,
+} from '../editable/runtime-editor-api';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
@@ -24,7 +28,19 @@ export const useRuntimeFocusState = <
   useIsomorphicLayoutEffect(() => {
     refreshFocused();
 
-    return subscribeEditableRuntimeFocus(editor, publishFocusState);
+    const unsubscribeFocus = subscribeEditableRuntimeFocus(
+      editor,
+      publishFocusState
+    );
+    const unsubscribeViewState = subscribeEditorViewState(
+      editor as unknown as AnyEditor,
+      refreshFocused
+    );
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeViewState();
+    };
   }, [editor, publishFocusState, refreshFocused]);
 
   return { focused, focusVersion, refreshFocused };

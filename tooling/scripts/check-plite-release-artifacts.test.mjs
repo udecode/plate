@@ -106,9 +106,11 @@ test('owns focused packed proof for Plite package boundaries', () => {
 test('tracks root and every public Plate feature entrypoint bundle size', () => {
   const specifiers = getPlateEntrypointSizeSpecifiers();
 
-  assert.equal(specifiers.length, 29);
+  assert.equal(specifiers.length, 30);
   assert.equal(new Set(specifiers).size, specifiers.length);
   assert.equal(specifiers[0], 'platejs');
+  assert.ok(specifiers.includes('platejs/comments'));
+  assert.ok(specifiers.includes('platejs/find'));
   assert.ok(specifiers.includes('platejs/media'));
   assert.ok(specifiers.includes('platejs/media/react'));
   assert.ok(specifiers.includes('platejs/resizable/react'));
@@ -329,7 +331,7 @@ test('proves Plite and Plate cross-subpath runtime identity', () => {
   );
   assert.match(
     source,
-    /releaseLayout\.createPlitePageLayout,[\s\S]*releaseLayoutReact\.createPlitePageLayout/
+    /releaseLayout\.createPliteLayout,[\s\S]*releaseLayoutReact\.createPliteLayout/
   );
   assert.match(
     source,

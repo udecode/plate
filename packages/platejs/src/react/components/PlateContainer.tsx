@@ -13,7 +13,7 @@ import {
   useEditorScrollElementRef,
   useOptionalEditorReadOnly,
 } from '../plite-react';
-import { useEditor, usePlateValue } from '../stores';
+import { useEditor, useEditorContainerRef } from '../stores';
 
 export const PlateContainer = ({
   children,
@@ -29,7 +29,7 @@ export const PlateContainer = ({
   );
   const readOnly = plateReadOnly ?? editorReadOnly;
 
-  const containerRef = usePlateValue('containerRef');
+  const containerRef = useEditorContainerRef();
   const scrollElementRef = useEditorScrollElementRef(editor);
   const ref = useComposedRef(containerRef, scrollElementRef);
 
@@ -42,14 +42,14 @@ export const PlateContainer = ({
     </div>
   );
 
-  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.beforeContainer.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    if (isEditOnly(readOnly, plugin, 'render')) return;
+    if (isEditOnly(readOnly, plugin, 'slots')) return;
 
     const BeforeContainer =
-      plugin.render.beforeContainer ??
+      plugin.slots.beforeContainer ??
       failInvariant('Expected value to be defined');
 
     beforeContainer = (
@@ -60,14 +60,14 @@ export const PlateContainer = ({
     );
   });
 
-  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.afterContainer.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    if (isEditOnly(readOnly, plugin, 'render')) return;
+    if (isEditOnly(readOnly, plugin, 'slots')) return;
 
     const AfterContainer =
-      plugin.render.afterContainer ??
+      plugin.slots.afterContainer ??
       failInvariant('Expected value to be defined');
 
     afterContainer = (

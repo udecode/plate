@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-equation-drafts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-equation-drafts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep equation drafts local until confirmation",
+  "targets": [
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-math-keep-equation-drafts-local-e8f8d6e6",
+      "kind": "fix",
+      "summary": "Edit a local equation draft, confirm it with Done or Enter, and undo it in one step. Escape discards the draft without overwriting external changes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-equation-drafts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,13 @@
+source_key	repo_key	path	lines_read	relevant_signal
+lexical-5251	lexical	packages/lexical-playground/__tests__/regression/5251-paste-into-inline-element.spec.mjs	31-110	Rich content pasted into an inline link selection should not expand link ownership incorrectly.
+lexical-7354	lexical	packages/lexical-playground/__tests__/regression/7354-firefox-decorator-paste.spec.mjs	26-210	Firefox decorator input paste repeats copied text inside a contenteditable=false decorator island.
+lexical-7635	lexical	packages/lexical-playground/__tests__/regression/7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs	39-170	Rich HTML paste into a nested image-caption editor inside a decorator should preserve formatting and parent focus behavior.
+prosemirror-clipboard	prosemirror-view	src/clipboard.ts	1-220	Clipboard parse/serialize uses slice metadata, transform hooks, wrapping, and sibling normalization.
+prosemirror-table-source	prosemirror-tables	src/copypaste.ts	1-180	Table clipboard converts row/cell slices into rectangular areas and clips/repeats cells for the target rectangle.
+prosemirror-table-tests	prosemirror-tables	test/copypaste.test.ts	31-152	Tests cover cells, rows, partial rows, rowspans, rectangular padding, clipping, and repeated cells.
+tiptap-transform	tiptap	packages/core/src/__tests__/transformPastedHTML.test.ts	90-570	Transform-pasted-HTML chain covers ordering, empty HTML, security transforms, whitespace normalization, and many extensions.
+tiptap-link	tiptap	packages/extension-link/src/helpers/pasteHandler.ts	1-49	Selected text plus pasted URL becomes a link; product/plugin behavior, not Slate core.
+slate-inlines	plate-2	.tmp/slate-v2/playwright/integration/examples/inlines.test.ts	590-758	Slate already covers inline paste at link boundaries and plain text paste inside a link.
+slate-editable-voids	plate-2	.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts	176-199,1068-1201	Slate covers native input paste, child-root text paste isolation, and child-root HTML drop isolation.
+slate-paste-html	plate-2	.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts	1324-1390,1537-1621	Slate covers sanitizer behavior and ProseMirror list/text/table slice metadata handling.
+slate-pagination-table	plate-2	.tmp/slate-v2/playwright/integration/examples/pagination.test.ts	2379-2415	Slate covers table selection copy across a pagination page boundary.

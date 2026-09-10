@@ -1,0 +1,6 @@
+source	path	read	relevant_takeaway
+web search	https://github.com/microsoft/playwright/issues/36715	snippet/repo link	Current Playwright issue reports Firefox `fill()` failure on contenteditable widgets that own `beforeinput`.
+repo	/Users/zbeyens/git/playwright-issue-firefox-fill/examples.test.ts	yes	Repro prevents default `beforeinput`, mutates a text node, sets selection, then `locator.fill()` fails while keyboard input works.
+repo	/Users/zbeyens/git/playwright-issue-firefox-fill/index.html	yes	Minimal blank page; all editor behavior is constructed in the test.
+repo	/Users/zbeyens/git/rich-text-editor/playwright/editor.spec.tsx	partial	Tests cover real keyboard typing, paste, history, image/equation operations, and helper-driven selection.
+repo	/Users/zbeyens/git/rich-text-editor/playwright/test-utils.ts	yes	Offset-based selection helper spans child nodes, but Slate already has semantic selection helpers and stronger native/model assertions.

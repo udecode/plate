@@ -3,15 +3,22 @@ title: Plate Plugin
 description: API reference for Plate plugins.
 ---
 
-Plate plugins are descriptors passed to the `Plate` [plugins](/docs/api/core/plate-components#plugins) prop. Installed plugin APIs are inferred on `editor.api` under the plugin name. Pass the descriptor to `editor.plugin(MyPlugin)` when generic code needs the exact plugin API, update commands, identity, or editor-local state; React components subscribe with `usePluginStore`.
+Plate plugins are descriptors passed in the `plugins` array of `createEditor`
+or `useCreateEditor`. Installed plugin APIs are inferred on `editor.api` under
+the plugin name. Pass the descriptor to `editor.plugin(MyPlugin)` for its exact
+API, reads, update commands, schema identity, and editor-local state. React
+components use `useEditorPlugin(MyPlugin)` for the portal and `usePluginStore`
+for state subscriptions.
 
-## Authoring Context
+## Authoring context
 
 Plugin constructor, extension, configuration, event, codec, and injection
 callbacks receive the current plugin context when their callback contract
 supports it:
 
 ```ts
+import { definePlatePlugin, schema } from 'platejs/react';
+
 export type UploadPluginState = {
   active: boolean;
 };
@@ -28,25 +35,15 @@ export const UploadPlugin = definePlatePlugin("upload", {
   },
   initialState: uploadInitialState,
   api: ({ store }) => ({
-    start: () => store.set({ active: true }),
+    isActive: () => store.get('active'),
   }),
   read: ({ state }) => ({
     isReady: () => !!state.selection(),
   }),
-  update: ({ tx, type }) => ({
-    insert: () => tx.nodes.insert({ children: [{ text: "" }], type }),
+  update: ({ tx, schema }) => ({
+    insert: () => tx.nodes.insert({ children: [{ text: "" }], type: schema.type }),
   }),
-}).extend(({ api, read, store, update }) => ({
-  on: {
-    focus: () => {
-      if (!read.isReady()) return;
-
-      store.set({ active: true });
-      api.start();
-      update.insert();
-    },
-  },
-}));
+});
 ```
 
 Use `store`, `api`, `read`, `update`, `name`, `plugin`, and `installed`
@@ -55,7 +52,7 @@ another plugin, or transaction metadata unavailable on the scoped `update`
 facade. Specialized callbacks such as shortcut handlers and input rules may
 only receive `editor`; use an exact typed plugin portal there.
 
-## Plugin Properties
+## Plugin properties
 
 <API name="Properties">
 <APIAttributes>
@@ -118,8 +115,8 @@ the seed with one final `.configure({ initialState: { ... } })`. Runtime code
 reads and updates the installed store through `editor.plugin(MyPlugin).store`.
 </APIItem>
 
-<APIItem name="component" type="NodeComponent" optional>
-  The ordinary component for this plugin's node. Declare it in
+<APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
+  The ordinary component or intrinsic HTML tag for this plugin's node. Declare it in
   `defineBasePlugin(name, { component })` or
   `definePlatePlugin(name, { component })` for
   static/RSC and live rendering. Replace it with one terminal
@@ -197,7 +194,8 @@ Defines how the plugin injects functionality into other plugins or the editor.
 
 <APISubList>
 <APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
-Properties used by Plate to inject props into any node component.
+Properties used by Plate to inject props into node components. Queries and
+transforms are pure synchronous functions and cannot call React hooks.
 </APISubListItem>
 
 <APISubListItem parent="inject" name="excludePlugins" type="readonly (PluginReference | string)[]" optional>
@@ -341,21 +339,14 @@ Whether to remove nodes with empty text during normalization. See [Plugin Rules]
 </APISubList>
 </APIItem>
 
-<APIItem name="override" type="object">
-Provides component replacement and weak cross-package plugin adaptation.
-
-<APISubList>
-<APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
-Replace plugin `NodeComponent` by name.
-</APISubListItem>
-<APISubListItem parent="override" name="plugins" type="Record<string, BasePluginOverride>" optional>
-Weakly adapts an already-installed foreign plugin by name. Missing targets are
-ignored. Values cannot define `name`, `dependencies`, or another `override`.
-Contributors resolve by priority then source order, and direct target
-`.configure()` values remain authoritative. Use `{ enabled: false }` when a
-package plugin must disable an optional installed peer.
-</APISubListItem>
-</APISubList>
+<APIItem name="override" type="Record<string, BasePluginOverride>">
+Weakly adapts already-installed foreign plugins by name. Each key is a target
+plugin name. Missing targets are ignored. Values cannot define `name`,
+`dependencies`, `schema`, or another `override`. Contributors resolve by
+priority then source order, and direct target `.configure()` values remain
+authoritative. A peer may replace the target `component`; use
+`{ enabled: false }` when a package plugin must disable an optional installed
+target.
 </APIItem>
 
 <APIItem name="parsers" type="object">
@@ -371,63 +362,86 @@ flat siblings. Node, mark, and property mappings use the schema-aware
 </APIItem>
 
 <APIItem name="render" type="object">
-Defines how the plugin renders components.
+Defines rendering for the plugin's primary `component` and mounted views.
 
 <APISubList>
-<APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-Component rendered above the Editable component but inside the Plite wrapper.
+<APISubListItem parent="render" name="attributes" type="NodeProps" optional>
+Adds trusted DOM attributes to the primary element, leaf, or text renderer in
+interactive and static rendering. A function value is a pure per-node render
+callback and cannot call React hooks.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
-Create a function that generates a parent React node for all other plugins' node components.
-</APISubListItem>
-<APISubListItem parent="render" name="abovePlite" type="Component" optional>
-Component rendered above the Plite wrapper.
-</APISubListItem>
-<APISubListItem parent="render" name="afterContainer" type="ContainerSiblingComponent" optional>
-Renders a component after `PlateContainer`. It receives only `{ containerRef }`,
-the exact mounted container ref.
-</APISubListItem>
-<APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
-Renders a component after the Editable component. It receives only
-`{ editableRef }`, the exact mounted Editable ref.
-</APISubListItem>
-<APISubListItem parent="render" name="beforeContainer" type="ContainerSiblingComponent" optional>
-Renders a component before `PlateContainer`. It receives only
-`{ containerRef }`, the exact mounted container ref.
-</APISubListItem>
-<APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
-Renders a component before the Editable component. It receives only
-`{ editableRef }`, the exact mounted Editable ref.
-</APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
-Create a function that generates a React node below all other plugins' node React node, but above their children.
-</APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
-Renders a component after the direct children of the root element. This differs from `belowNodes` in that it's the direct child of `PlateElement` rather than wrapping the children that could be nested. This is useful when you need components relative to the root element.
-</APISubListItem>
-<APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
-Renders a component below leaf nodes when `schema.mark` is declared and
-`render.isDecoration: false`. Bind the ordinary node component through
-`.configure({ component: Component })`.
-</APISubListItem>
-<APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
-Explicitly maps model values to rendered element or leaf props in interactive
-and static rendering. Return only trusted DOM props owned by the plugin.
-</APISubListItem>
-<APISubListItem parent="render" name="isDecoration" type="boolean" optional>
-Renders marked values as decorated leaves when `true`, or once per text node
-when `false`.
+<APISubListItem parent="render" name="useViewElementAttributes" type="UseViewElementAttributes<D>" optional>
+Plate mounts one React hook host for this enabled plugin in each content view.
+The callback receives the exact Plite root as `view` and returns sparse
+`{ key, attributes }[]` entries for whole element hosts. Return an empty array
+when no element needs attributes.
 
-- **Default:** `true`
+```tsx
+import { definePlatePlugin, usePluginStore } from "platejs/react";
 
+const ActiveFirstBlockPlugin = definePlatePlugin("activeFirstBlock", {
+  initialState: { active: false },
+  render: {
+    useViewElementAttributes({ editor, plugin, view }) {
+      const active = usePluginStore(plugin, (state) => state.active, {
+        id: editor.id,
+      });
+      const key = view.key([0]);
+
+      return active && key
+        ? [{ attributes: { "data-active": "true" }, key }]
+        : [];
+    },
+  },
+});
+```
+
+Attributes may contain `className`, `placeholder`, `style`, and primitive
+`aria-*` or `data-*` values. Refs and event handlers are rejected. Plate merges
+sources in compiled plugin order, cleans them up with the mounted view, and
+keeps publication and per-key subscriptions private. Use `decorate` for inline
+text ranges and components or slots for structure.
 </APISubListItem>
+<APISubListItem parent="render" name="mark" type="object" optional>
+Controls where a schema mark's primary `component` renders. `placement: 'leaf'`
+wraps every active leaf and is the default. `placement: 'text'` wraps the text
+node once and permits `leafComponent` as a secondary active-leaf renderer.
+`leafAttributes` and `textAttributes` add trusted attributes to their matching
+hosts.
+</APISubListItem>
+</APISubList>
+</APIItem>
 
-<APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
-Specifies the HTML tag name used when no component is bound through
-`.configure({ component })`.
+<APIItem name="slots" type="object">
+Defines structural composition around Plate surfaces and rendered nodes. Each slot accepts one component. Replacing a slot replaces that component; compose multiple wrappers with JSX inside the slot. A replacement `wrapRoot` owns any required feature integration and cleanup.
 
-- **Default:** `'div'` for elements, `'span'` for leaves
-
+<APISubList>
+<APISubListItem parent="slots" name="wrapRoot" type="({ children, editableRef }) => ReactNode" optional>
+Wraps the complete Plite root for the mounted Plate view and receives `{ children, editableRef }`. The ref identifies that view’s actual Editable and is `null` before attachment and after detach.
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapContent" type="NodeComponent" optional>
+Wraps Editable content and Plate lifecycle effects inside the Plite root.
+</APISubListItem>
+<APISubListItem parent="slots" name="beforeEditable" type="EditableSiblingComponent" optional>
+Renders before Editable and receives `{ editableRef }`.
+</APISubListItem>
+<APISubListItem parent="slots" name="afterEditable" type="EditableSiblingComponent" optional>
+Renders after Editable and receives `{ editableRef }`.
+</APISubListItem>
+<APISubListItem parent="slots" name="beforeContainer" type="ContainerSiblingComponent" optional>
+Renders before `PlateContainer` and receives `{ containerRef }`.
+</APISubListItem>
+<APISubListItem parent="slots" name="afterContainer" type="ContainerSiblingComponent" optional>
+Renders after `PlateContainer` and receives `{ containerRef }`.
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapNode" type="RenderNodeWrapperConfig<D>" optional>
+Wraps the complete rendered node.
+</APISubListItem>
+<APISubListItem parent="slots" name="wrapNodeChildren" type="RenderNodeWrapper<D>" optional>
+Wraps a rendered node's children inside its primary component.
+</APISubListItem>
+<APISubListItem parent="slots" name="afterNodeChildren" type="(props: RenderNodeWrapperProps<D>) => React.ReactNode" optional>
+Renders after a node's children inside its primary component.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -450,7 +464,7 @@ Specifies the HTML tag name used when no component is bound through
 <APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
   Plate plugin or raw Plite extension descriptors that cannot be installed
   with this plugin. Import both reference types from `platejs`; Plite-only
-  libraries can import `EditorExtensionReference` from `platejs`.
+  libraries can import `EditorExtensionReference` from `plitejs`.
 </APIItem>
 
 <APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
@@ -499,8 +513,23 @@ Specifies the HTML tag name used when no component is bound through
   should be used.
 </APIItem>
 
-<APIItem name="decorate" type="Decorate<WithAnyName<D>>" optional>
-  Property used by Plate to decorate editor ranges.
+<APIItem name="decorate" type="Decorate<D>" optional>
+  Supplies transient keyed ranges through `read({ entry, ...context })`.
+  `observe({ refresh, ...context })` owns source invalidation and cleanup;
+  static rendering reads the source without subscribing.
+
+  `attributes` accepts a `PliteDecorationAttributes` object, a pure callback
+  receiving the inferred plugin context plus `entry` and `decoration`, or
+  `null` to clear inherited presentation. Configure an existing source's
+  attributes without repeating its reader or observer. A new source requires
+  `read`.
+
+  Presentation classes concatenate with semantic classes, styles merge
+  shallowly, and other supplied attributes override the reader's attributes.
+  Use `className`, `style`, `data-*`, and `aria-*`; inline markup and event
+  handlers belong to components. Callbacks run after each source read and
+  add no subscription. Changes to external inputs require the source's
+  `observe` contract.
 </APIItem>
 
 <APIItem
@@ -514,9 +543,6 @@ Specifies the HTML tag name used when no component is bound through
   invariants, not source-version migrations.
 </APIItem>
 
-<APIItem name="useHooks" type="() => void" optional>
-  Hook called when the editor is initialized.
-</APIItem>
 
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
 Configures which plugin functionalities should only be active when the editor is not read-only.
@@ -565,7 +591,7 @@ editOnly: {
 </APIAttributes>
 </API>
 
-## Plugin Methods
+## Plugin methods
 
 <API name="Methods">
 <APIMethods>
@@ -611,7 +637,7 @@ Use `defineCodecs(map)` for self/product codecs and
 `defineCodecs(TargetPlugin, map)` for foreign codecs. The helper injects the
 foreign target. The map remains MIME-keyed; its `'text/html'` value accepts one
 schema-aware rule or a non-empty ordered rule tuple. `defineCodecs` is the one
-inline inference anchor—do not author direct codec maps or manual `target`
+inline inference anchor. Do not author direct codec maps or manual `target`
 fields.
 
 `defineBasePlugin()` / `definePlatePlugin()` own every independent declaration
@@ -622,15 +648,17 @@ field, including `api`, `read`, `selectors`, `update`, native Plite fields, and
 </APIMethods>
 </API>
 
-## Plugin Context
+## Plugin context
 
 <API name="Context">
   <APIAttributes>
     <APIItem name="editor" type="Editor">
       The current editor instance.
     </APIItem>
-    <APIItem name="plugin" type="ResolvedPlatePlugin<D>">
-      The current plugin instance.
+    <APIItem name="plugin" type="PlatePluginContext<D>['plugin']">
+      The current plugin supplied by the callback. Let the constructor or
+      extension infer it. Consumer code obtains its portal by passing the
+      descriptor to `editor.plugin(MyPlugin)` or `useEditorPlugin(MyPlugin)`.
     </APIItem>
     <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
       Creates a schema-checked codec declaration inside the constructor's
@@ -647,7 +675,7 @@ field, including `api`, `read`, `selectors`, `update`, native Plite fields, and
 
 For more detailed information on specific aspects of Plate plugins, refer to the individual guides on [Plugin Configuration](/docs/plugin), [Plugin Methods](/docs/plugin-methods), [Plugin Context](/docs/plugin-context), [Plugin Components](/docs/plugin-components), and [Plugin Shortcuts](/docs/plugin-shortcuts).
 
-## Generic Types
+## Generic types
 
 Use `DefinitionOf<typeof Plugin>` as the sole public way to extract a
 descriptor's inferred definition.

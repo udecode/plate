@@ -1,9 +1,16 @@
+import {
+  createEditableInputControllerState,
+  createEditableInputController,
+} from '../../src/react/editable/input-state';
+
 const createFrameDocument = () => {
   const frame = document.createElement('iframe');
   document.body.append(frame);
 
   const frameDocument = frame.contentDocument;
-  const frameWindow = frame.contentWindow;
+  const frameWindow = frame.contentWindow as
+    | (Window & typeof globalThis)
+    | null;
 
   if (!frameDocument || !frameWindow) {
     throw new Error('Expected iframe document');
@@ -21,9 +28,9 @@ const markWebKitRealm = (frameWindow: Window) => {
 };
 
 const createInputController = () =>
-  ({
+  createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -32,7 +39,7 @@ const createInputController = () =>
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'dom-current',
-    },
+    }),
   }) as any;
 
 const importWebKitSelectionModules = async () => {
@@ -62,7 +69,7 @@ afterEach(() => {
 
 test('selectionchange listener ignores input targets from the target document realm', async () => {
   const { attachEditableSelectionChangeListener } =
-    await import('../../src/react/editable/selection-reconciler');
+    await import('../../src/react/editable/selection-change-listener');
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const input = frameDocument.createElement('input');
   const scheduleOnDOMSelectionChange = vi.fn();
@@ -73,7 +80,7 @@ test('selectionchange listener ignores input targets from the target document re
   const detach = attachEditableSelectionChangeListener({
     scheduleOnDOMSelectionChange,
     state,
-    targetDocument: frameDocument,
+    root: frameDocument.body,
   });
 
   try {
@@ -95,7 +102,7 @@ test('selectionchange listener ignores input targets from the target document re
 
 test('selectionchange listener skips repair-induced model-owned history imports', async () => {
   const { attachEditableSelectionChangeListener } =
-    await import('../../src/react/editable/selection-reconciler');
+    await import('../../src/react/editable/selection-change-listener');
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const scheduleOnDOMSelectionChange = vi.fn();
   const { state } = createInputController();
@@ -112,7 +119,7 @@ test('selectionchange listener skips repair-induced model-owned history imports'
   const detach = attachEditableSelectionChangeListener({
     scheduleOnDOMSelectionChange,
     state,
-    targetDocument: frameDocument,
+    root: frameDocument.body,
   });
 
   try {
@@ -187,7 +194,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
   const root = host.attachShadow({ mode: 'open' });
   const range = frameDocument.createRange();
   const pliteRange = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 1, path: [0, 0] },
   };
@@ -216,7 +223,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
   vi.spyOn(ReactEditor, 'resolvePliteRange').mockImplementation(
     (_editor, domRange) => {
       expect(domRange).toBeInstanceOf(frameWindow.Range);
-      return pliteRange as any;
+      return pliteRange;
     }
   );
 

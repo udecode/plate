@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 
 import type { EditorCommit, Path } from '../..';
-import { ElementPathContext, NodeKeyContext } from '../context';
+import { ElementContext } from '../context';
 import { readPathByNodeKey } from '../editable/runtime-live-state';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
@@ -15,8 +15,9 @@ const samePath = (left: Path | null, right: Path | null) => {
 
 /** Subscribe to the live path for the current rendered element. */
 export const useElementPath = (): Path | null => {
-  const renderedPath = useContext(ElementPathContext);
-  const nodeKey = useContext(NodeKeyContext);
+  const element = useContext(ElementContext);
+  const renderedPath = element?.path ?? null;
+  const nodeKey = element?.nodeKey ?? null;
 
   const selector = useCallback(
     (editor: ReactRuntimeEditor) => {

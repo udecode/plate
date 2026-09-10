@@ -28,6 +28,29 @@ import {
 } from '../../src/internal';
 import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
 
+const createRect = ({
+  height,
+  left,
+  top,
+  width,
+}: {
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}) =>
+  ({
+    bottom: top + height,
+    height,
+    left,
+    right: left + width,
+    top,
+    width,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  }) as DOMRect;
+
 const createParagraphEditor = (text = 'alpha beta') => {
   const editor = createEditor({ extensions: [dom()] });
 
@@ -628,29 +651,6 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
-
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
       string.appendChild(domText);
@@ -713,29 +713,6 @@ describe('plite-dom bridge', () => {
       const originalGetBoundingClientRect =
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
-
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
 
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -829,29 +806,6 @@ describe('plite-dom bridge', () => {
       const originalGetBoundingClientRect =
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
-
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
 
       firstLeaf.setAttribute('data-plite-leaf', 'true');
       secondLeaf.setAttribute('data-plite-leaf', 'true');
@@ -954,29 +908,6 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
-
       firstLeaf.setAttribute('data-plite-leaf', 'true');
       secondLeaf.setAttribute('data-plite-leaf', 'true');
       firstString.setAttribute('data-plite-string', 'true');
@@ -1055,29 +986,6 @@ describe('plite-dom bridge', () => {
       const originalGetBoundingClientRect =
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
-
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
 
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -1159,29 +1067,6 @@ describe('plite-dom bridge', () => {
         const originalGetBoundingClientRect =
           window.Range.prototype.getBoundingClientRect;
         const originalGetClientRects = window.Range.prototype.getClientRects;
-
-        const createRect = ({
-          height,
-          left,
-          top,
-          width,
-        }: {
-          height: number;
-          left: number;
-          top: number;
-          width: number;
-        }) =>
-          ({
-            bottom: top + height,
-            height,
-            left,
-            right: left + width,
-            top,
-            width,
-            x: left,
-            y: top,
-            toJSON: () => ({}),
-          }) as DOMRect;
 
         leaf.setAttribute('data-plite-leaf', 'true');
         string.setAttribute('data-plite-string', 'true');
@@ -1265,29 +1150,6 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
-
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
       string.appendChild(domText);
@@ -1362,29 +1224,6 @@ describe('plite-dom bridge', () => {
       const originalGetBoundingClientRect =
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
-
-      const createRect = ({
-        height,
-        left,
-        top,
-        width,
-      }: {
-        height: number;
-        left: number;
-        top: number;
-        width: number;
-      }) =>
-        ({
-          bottom: top + height,
-          height,
-          left,
-          right: left + width,
-          top,
-          width,
-          x: left,
-          y: top,
-          toJSON: () => ({}),
-        }) as DOMRect;
 
       owner.style.direction = 'rtl';
       leaf.setAttribute('data-plite-leaf', 'true');

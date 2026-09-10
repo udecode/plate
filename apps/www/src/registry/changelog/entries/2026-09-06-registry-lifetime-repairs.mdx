@@ -1,0 +1,19 @@
+---
+id: 2026-09-06-registry-lifetime-repairs
+date: 2026-09-06
+status: draft
+kind: fix
+summary: 'Preserve editor state across streaming controls and clipboard failures'
+change: { 'type': 'source', 'date': '2026-09-06', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-06-markdown-streaming-preserve-editor-state-across-b0032e1e","kind":"fix","migrationNotes":[]} -->
+
+- **`markdown-streaming-demo`**: Stop pending chunks when resetting, changing scenarios, navigating, switching editor modes, or leaving the demo.
+- **`code-block`**: Confirm copying after the clipboard write succeeds and allow retry after a failure.
+- **`comment`**: Preserve stored timestamps when callers reuse or mutate input dates.
+- **`select-editor`**, **`controlled-demo`**: Release pending layout measurements and loading timers on unmount.
+- **`media`**: Clarify file-size and minimum-file-count errors.
+- **`export-toolbar-button`**: Avoid adding an empty stylesheet during image and PDF export.

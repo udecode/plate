@@ -1,8 +1,16 @@
 ---
-description: 'Skill: testing'
+description: Select valuable Plate/Plite behavior and type tests, use the correct runners, or audit suite health and coverage with testing audit.
 ---
 
+For `testing audit [scope]`, read the full [suite audit method](./references/audit.md).
+It refreshes coverage and timing, ranks valuable remaining work and maintains
+the existing roadmap. An audit does not authorize writing tests. Use the
+ordinary method below for implementation and runner decisions.
+
 ## Testing Goal
+
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
 
 Push the suite toward three layers only:
 
@@ -38,10 +46,10 @@ Hard constraints:
   - history, diff, and change-tracking behavior
   - public editor invariants
 - `/react` is not permanently excluded. Exclude it only when the current pass explicitly says so.
-- React work should wait until non-React seams are exhausted only when that is the active phase goal, not because the skill hardcodes it forever.
+- React work should wait until non-React boundaries are exhausted only when that is the active phase goal, not because the skill hardcodes it forever.
 - Stop when the remaining misses are mostly:
   - thin wrappers
-  - DOM-only or provider-only seams
+  - DOM-only or provider-only boundaries
   - giant low-ROI sludge files
   - tiny uncovered crumbs
   - code likely to be deleted or rewritten soon
@@ -58,7 +66,9 @@ Hard constraints:
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
 - Prefer explicit assertions over snapshots by default.
-- Delete skipped tests, commented-out tests, and dead placeholder cases. Do not preserve wishful thinking.
+- Delete obsolete placeholders and commented-out dead tests. Preserve explicit
+  capability skips and their missing prerequisites; never turn an unavailable
+  browser/device case into a passing no-op or erase its coverage gap.
 - No fake smoke tests.
 - No app-registry imports in package tests.
 - Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
@@ -119,6 +129,10 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 ## Fixtures And Assertions
 
 - Use JSX hyperscript only when tree shape or selection shape is the contract.
+- In a hyperscript file under automatic React JSX, put `/** @jsxRuntime classic */`
+  before the custom factory pragma (`/** @jsx jsxt */` or `/** @jsx jsx */`).
+  The factory pragma alone does not switch runtimes; React elements are not
+  editor fixtures. Keep ordinary React rendering in its own JSX runtime.
 - Use plain object fixtures for option, state, and pure helper tests.
 - Use a real editor object only when editor-root semantics matter. `NodeApi` and `ElementApi` do not treat plain `{ children: [...] }` objects the same way as real editors.
 - Keep inputs and outputs small.
@@ -181,7 +195,7 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 
 ### `plate`
 
-- Use `createSlateEditor` for:
+- Use `createEditor` for:
   - pure plugin option stores
   - selector extension
   - plugin API composition
@@ -256,7 +270,7 @@ Keep `__tests__/` when it holds:
 
 ## Quick Reference
 
-- Start with the smallest boundary that proves the contract: raw `createEditor` -> `createSlateEditor` -> Plate React `createEditor`.
+- Start with the smallest boundary that proves the contract: raw `createEditor` -> `createEditor` -> Plate React `createEditor`.
 - Work in passes: `>= 6` first, rerun coverage, then worthwhile `>= 5`, then switch to architecture-safety targets.
 - Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
 - Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
@@ -265,7 +279,8 @@ Keep `__tests__/` when it holds:
 - Keep specs beside the implementation. Use `__tests__/` only for helpers, fixtures, or intentional split or integration suites.
 - Use plain objects for simple state. Use JSX hyperscript only when tree or selection shape is the contract.
 - Prefer explicit assertions. Use render-returned queries over `screen`, and use direct style-property assertions over `toHaveStyle`.
-- Delete skips, commented tests, dead smoke tests, and stale snapshot files after broad title renames.
+- Remove obsolete tests and stale snapshots after broad title renames. Keep
+  meaningful negative type proofs and explicit capability skips.
 - Package tests must stay package-local. No app registries, no app kits, no cross-spec imports.
 - For package-only coverage decisions, trust `lcov`, not Bun’s broad text summary.
 - Keep exactly two lanes:

@@ -525,7 +525,7 @@ describe('commit metadata contract', () => {
       before.index.entries().filter(([, path]) => path.length === 1),
       keys.map((key, index) => [key, [index]])
     );
-    assert.ok(commit.changed.nodeKeys('projection').includes(keys[0]!));
+    assert.ok(commit.changed.nodeKeys('decoration').includes(keys[0]!));
     assert.equal(commit.after.index.pathOf(keys[0]!), null);
   });
 
@@ -598,7 +598,7 @@ describe('commit metadata contract', () => {
       blockNodeKey,
       textNodeKey,
     ]);
-    assert.deepEqual(commit.changed.nodeKeys('projection'), [
+    assert.deepEqual(commit.changed.nodeKeys('decoration'), [
       blockNodeKey,
       textNodeKey,
     ]);
@@ -803,7 +803,7 @@ describe('commit metadata contract', () => {
     assert.equal(commit.changed.has('root-order'), true);
     assert.deepEqual(commit.changed.nodeKeys('text'), [nextNodeKeys[1]]);
     assert.deepEqual(commit.changed.nodeKeys('node'), nextNodeKeys);
-    assert.deepEqual(commit.changed.nodeKeys('projection'), nextNodeKeys);
+    assert.deepEqual(commit.changed.nodeKeys('decoration'), nextNodeKeys);
     assert.deepEqual(commit.changed.nodeKeys('selection'), []);
     assert.deepEqual(commit.changed.topLevelRanges(), [[0, 0]]);
   });

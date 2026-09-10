@@ -266,16 +266,19 @@ plugin-owned capability in an earlier builder stage, then consume the
 accumulated inferred surface from later stages:
 
 ```ts
-export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
-  initialState: {
+type FooPluginState = { labels: { id: string; value: string }[] };
+
+export const BaseFooPlugin = defineBasePlugin('foo', {
+  schema: { element: schema.element.textBlock() },
+  initialState: (): FooPluginState => ({
     labels: [{ id: 'alpha', value: 'Alpha' }],
-  },
+  }),
   selectors: {
     getLabel: (state, id: string) =>
       state.labels.find((label) => label.id === id)?.value,
   },
 })
-  .extend(({ store, type }) => ({
+  .extend(({ store, schema: { type } }) => ({
     update: ({ tx }) => ({
       insertFoo: (id: string) => {
         const label = store.get('getLabel', id);

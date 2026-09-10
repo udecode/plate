@@ -1,0 +1,14 @@
+id	source	anchor	claim	grade
+r001	https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming	PerformanceLongTaskTiming	Long tasks represent browser main-thread tasks above the long-task threshold; they are not automatically Slate-owned.	B
+r002	https://developer.mozilla.org/en-US/docs/Web/API/PerformanceLongTaskTiming/attribution	PerformanceLongTaskTiming.attribution	Attribution is a list of TaskAttributionTiming entries, so the harness should report when task duration is unattributed or only partially attributed.	B
+r003	https://developer.mozilla.org/en-US/docs/Web/API/TaskAttributionTiming	TaskAttributionTiming	The browser may provide container/window/source-style attribution fields, but this is claim-width evidence, not a runtime blame oracle.	B
+r004	https://w3c.github.io/longtasks/	Long Tasks API	The API observes tasks that block important work on the UI thread; it should be used to flag latency risk and then cross-check app profiler/timer data.	B
+r005	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts:723-735	delete selection restore	Lexical saves a correct collapsed model selection after Android Chrome delete and waits for selectionchange, with timeout cleanup if the event never fires.	A
+r006	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts:1393-1404	global selectionchange	Lexical uses a single document-level selectionchange listener shared by editor roots.	A
+r007	/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/utils/index.mjs:445-453	native selection endpoint oracle	Lexical e2e helpers assert native selection anchor/focus paths and offsets through window.getSelection.	A
+r008	/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/utils/index.mjs:821-861	drag helper	Lexical e2e tests use coordinate-based mouse drag helpers with controlled move count.	A
+r009	/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/e2e/Tables.spec.mjs:6128-6138	Firefox table drag regression	Lexical has a specific Firefox click-and-drag selection regression row.	A
+r010	/Users/zbeyens/git/prosemirror-view/src/selection.ts:55-101	selectionToDOM guarded sync	ProseMirror writes model selection to DOM only when the editor owns selection and has drag-selection browser guards.	A
+r011	/Users/zbeyens/git/prosemirror-view/src/domobserver.ts:119-145	selectionchange observer	ProseMirror observes document selectionchange, suppresses some selection updates, and flushes model/DOM changes based on focus and current selection.	A
+r012	/Users/zbeyens/git/prosemirror-view/src/index.ts:207-218	drag selection race	ProseMirror explicitly guards against updates arriving between DOM selection change and the selectionchange event disrupting mouse drag selection.	A
+r013	/Users/zbeyens/git/prosemirror-view/src/input.ts:346-370	drag delayed selection sync	ProseMirror temporarily mutates draggable/contentEditable state and delays selection sync at drag end.	A

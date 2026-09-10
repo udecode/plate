@@ -1,5 +1,7 @@
 # registry-changelog pack
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Use this pack when work touches user-visible Plate registry output under
 `apps/www/src/registry/**`: UI components, node renderers, kits, examples,
 registry metadata, style dependencies, install behavior, or generated registry
@@ -7,7 +9,7 @@ changelog artifacts.
 
 This pack owns the registry changelog contract only. Package release notes stay
 with `changeset` / `package-api`. Release page topology stays with
-`docs-creator`.
+Plate Docs.
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -34,4 +36,3 @@ Completion Gates:
 | Registry changelog check | pending | Run `node tooling/scripts/generate-ui-changelog-entries.mjs --check` | pending |
 | Registry generator test | pending | If generator/schema/source layout changed, run `bun test tooling/scripts/generate-ui-changelog-entries.test.mjs`; otherwise N/A | pending |
 | Registry package release split | pending | Record `.changeset`, registry changelog, both, or N/A with reason | pending |
-

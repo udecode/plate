@@ -1,0 +1,7 @@
+path	reason
+/Users/zbeyens/git/lexical/CHANGELOG.md	Lexical explicitly fixed triple-click around inline links and adjusted selection after triple-click.
+/Users/zbeyens/git/lexical/packages/lexical/src/LexicalSelection.ts	Lexical normalizes DOM-applied selections because Firefox can resolve element points instead of text points.
+/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts	Lexical handles triple-click over-selection as a model selection correction.
+/Users/zbeyens/git/lexical/packages/lexical-link/src/LexicalLinkNode.ts	Lexical normalizes restored selection when link transforms cross element boundaries.
+/Users/zbeyens/git/slate/docs/api/nodes/editor.md	Classic Slate documents triple-click hanging ranges as a first-class editor invariant.
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/visual-native-selection-smoke.test.ts	Slate v2 visual smoke row promoted from Firefox skip to normalized desktop proof.

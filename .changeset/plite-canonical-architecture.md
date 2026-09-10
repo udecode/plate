@@ -19,6 +19,9 @@
 - Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
 - Give every live descendant, including text, an editor-scoped `NodeKey`. Read it with `editor.key(nodeOrLocation)`, resolve it with `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget` reads and updates. Node keys are unique across one editor's roots and carry private runtime ownership, so a key from another editor fails closed even when public editor IDs and local allocation order match. Path lookup stays scoped to the current editor or view root. Node keys never enter values, slices, history, or collaboration payloads.
 - Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
+- Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
+- Read resolved annotations by `NodeKey` with `getAnnotationsAt(nodeKey)`. Annotation change subscribers receive exact `ids`, affected `nodeKeys`, and an `editor`, `external`, `refresh`, or `annotation` reason so consumers can invalidate only changed content.
+- Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor.
 - Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling

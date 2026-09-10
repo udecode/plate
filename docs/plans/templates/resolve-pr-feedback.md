@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short resolve-pr-feedback objective, under 240 characters. Put
 the full PR feedback contract below.
@@ -30,8 +32,8 @@ First checkpoint:
 Completion threshold:
 - TODO: Define the exact PR feedback closure state.
 - Closure is legal only when every new actionable feedback item has a verdict,
-  valid code changes are verified, P1 `autoreview` is clean after the last
-  material fix, replies/resolution are posted when authorized, remaining
+  valid code changes are verified, Task's applicable review gate is resolved,
+  replies/resolution are posted when authorized, remaining
   pending or needs-human items are named, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
@@ -98,7 +100,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `resolve-pr-feedback` source skill read | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | PR/comment target resolved | pending | pending |
 | Commit/push/reply/resolve authority recorded | pending | pending |
 | Source scripts selected from `.agents/skills/resolve-pr-feedback/scripts` | pending | pending |
@@ -123,14 +125,14 @@ Work Checklist:
       evidence; they are not auto-dropped.
 - [ ] Each item has a verdict: fixed, fixed-differently, replied,
       not-addressing, declined, or needs-human.
-- [ ] `review-sweep` is used when feedback implies a clear diff-wide rule, or
+- [ ] `task review-patterns` is used when feedback implies a clear diff-wide rule, or
       marked N/A with reason.
 - [ ] Focused proof is run after valid code changes, or marked N/A with reason.
-- [ ] P1 `autoreview` target mode is selected from actual diff/branch state.
-- [ ] `autoreview --max-priority P1` runs after validation and before commit/push/reply/resolve; P2/P3 are opt-in only.
+- [ ] Task review applicability is resolved before selecting a target; never on next.
+- [ ] Task's applicable review uses the existing budget after validation; never on next.
 - [ ] Every accepted P1 `autoreview` finding is fixed or rejected with
       source-backed reason.
-- [ ] Focused proof and P1 `autoreview` are rerun after material review fixes.
+- [ ] Focused proof is rerun after material fixes; review follows Task's remaining budget.
 - [ ] Commit/push action is completed when authorized, or marked N/A/blocker.
 - [ ] Thread replies quote only the relevant reviewer passage.
 - [ ] Review threads are resolved when authorized, except needs-human/pending.
@@ -158,7 +160,7 @@ Completion Gates:
 | Browser proof | pending | Capture Browser/route proof or record N/A/blocker | pending |
 | Package/API proof | pending | Run package/type/export/source audit or record N/A | pending |
 | Agent/rule/generated sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
-| P1 autoreview | yes | Load `autoreview`, pass `--max-priority P1` in the selected target mode after validation and before public mutation, fix/reject accepted findings, and rerun after material fixes within the hard cap of three helper invocations for one unchanged scope; stop and report any remaining findings after invocation 3; P2/P3 are opt-in only | pending |
+| P1 autoreview | pending | Load `autoreview`, pass `--max-priority P1` in the selected target mode after validation and before public mutation, fix/reject accepted findings, and rerun after material fixes within the hard cap of three helper invocations for one unchanged scope; after invocation 3 continue authorized repairs and disclose the review limit; P2/P3 are opt-in only | pending |
 | Commit / push | pending | Commit and push changed files when authorized, or record N/A/blocker | pending |
 | Reply / resolve | pending | Post replies and resolve review threads when authorized, or record N/A/blocker | pending |
 | Final re-fetch | pending | Re-run feedback fetch and record remaining unresolved review threads | pending |

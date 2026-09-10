@@ -36,9 +36,7 @@ export const exitBreakValue: Value = (
     <hcolumngroup>
       <hcolumn width="50%">{createTable()}</hcolumn>
       <hcolumn width="50%">
-        <hcodeblock>
-          <hcodeline>Try ⌘⏎ to exit this code block.</hcodeline>
-        </hcodeblock>
+        <hcodeblock>Try ⌘⏎ to exit this code block.</hcodeblock>
       </hcolumn>
     </hcolumngroup>
   </fragment>

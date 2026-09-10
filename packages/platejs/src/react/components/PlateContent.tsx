@@ -1,67 +1,52 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { useAtomStoreValue } from 'jotai-x';
 import omit from 'lodash/omit.js';
 import React, { useRef } from 'react';
 
-import type { Element, NodeEntry, Range, RootKey } from '../../facade';
+import type { Element, RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import type { EditableProps } from '../../lib/types/EditableProps';
 import type { Editor } from '../editor/Editor';
-import { useHotkeysContext } from '../hotkeys';
+import { usePlateModel } from '../internal/plate-context';
 import {
   Editable,
   type EditableProps as PliteEditableProps,
 } from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
+import { PlateRenderedAttributeProvider } from '../internal/rendered-attributes';
 import { useDeepCompareMemo } from '../internal/useDeepCompareMemo';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
-import { usePliteRootEditor, useOptionalEditorReadOnly } from '../plite-react';
-import { useEditor, usePlateStore } from '../stores';
-import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut';
-import { DOM_HANDLERS } from '../utils/dom-attributes';
-import { pipeHandler } from '../utils/pipeHandler';
-import { pipeRenderElement } from '../utils/pipeRenderElement';
-import { pipeRenderLeaf } from '../utils/pipeRenderLeaf';
-import { pipeRenderText } from '../utils/pipeRenderText';
+import { useEditor } from '../stores';
+import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut.internal';
+import { DOM_HANDLERS } from '../utils/dom-attributes.internal';
+import { pipeHandler } from '../utils/pipeHandler.internal';
+import { pipeRenderElement } from '../utils/pipeRenderElement.internal';
+import { pipeRenderLeaf } from '../utils/pipeRenderLeaf.internal';
+import { pipeRenderText } from '../utils/pipeRenderText.internal';
 import { EditorRefEffect } from './EditorRefEffect';
-import { PlateControllerEffect } from './PlateControllerEffect';
-import { PlateRoot } from './PlateRoot';
+import { PlateRoot } from './PlateRoot.internal';
 
 export type PlateContentProps<
-  T = unknown,
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
-> = Omit<PliteEditableProps<T, TElement, TRoot>, 'decorate'> & {
+> = Omit<
+  PliteEditableProps<TElement, TRoot>,
+  | 'renderElement'
+  | 'renderLeaf'
+  | 'renderPlaceholder'
+  | 'renderText'
+  | 'renderVoid'
+> & {
   /** Autofocus when it becomes editable (readOnly false -> readOnly true) */
   autoFocusOnEditable?: boolean;
-  decorate?: PliteEditableProps<T, TElement, TRoot>['decorate'];
   disabled?: boolean;
-  /** R enders the editable content. */
-  renderEditable?: (editable: React.ReactElement) => React.ReactNode;
   ref?: React.Ref<HTMLDivElement>;
 };
-
-const renderDefaultPlatePlaceholder: NonNullable<
-  PlateContentProps['renderPlaceholder']
-> = ({ attributes, children }) => (
-  <span
-    {...attributes}
-    style={{
-      ...attributes.style,
-      opacity: 0.333,
-      textDecoration: 'none',
-    }}
-  >
-    {children}
-  </span>
-);
 
 const getPlateContentReadOnly = ({
   disabled,
@@ -73,49 +58,47 @@ const getPlateContentReadOnly = ({
   readOnly?: boolean;
 }) => (disabled ? true : (readOnly ?? plateReadOnly ?? false));
 
-const pipePlateContentDecorate = (
-  editor: Editor,
-  decorateProp:
-    | ((context: { editor: Editor; entry: NodeEntry }) => Range[] | undefined)
-    | null
-    | undefined,
-  editableDecorate: PliteEditableProps['decorate']
-): PliteEditableProps['decorate'] => {
-  if (!decorateProp && !editableDecorate) return undefined;
-
-  return (entry) => [
-    ...(decorateProp?.({ editor, entry }) ?? []),
-    ...(editableDecorate?.([entry[0], entry[1]], editor) ?? []),
-  ];
-};
-
 /**
  * Editable with plugins.
  *
- * - Decorate prop
  * - DOM handler props
  * - ReadOnly prop
- * - Render.afterEditable
- * - Render.beforeEditable
- * - RenderElement prop
- * - RenderLeaf prop
- * - UseHooks
+ * - Slots.afterEditable
+ * - Slots.beforeEditable
+ * - Plugin renderers and hooks
  */
 function PlateContent<
-  T = unknown,
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
 >({
   autoFocusOnEditable,
   readOnly: readOnlyProp,
   ref,
-  renderEditable,
   ...props
-}: PlateContentProps<T, TElement, TRoot>) {
-  const { id } = props;
-
-  const editor = useEditor({ id });
-  const plateReadOnly = useOptionalEditorReadOnly();
+}: PlateContentProps<TElement, TRoot>) {
+  const { editor, readOnly: plateReadOnly } = usePlateModel();
+  const editableRef = useRef<HTMLDivElement | null>(null);
+  const previousElementRef = useRef<{
+    element: HTMLDivElement;
+    generation: number;
+  } | null>(null);
+  const [viewGeneration, setViewGeneration] = React.useState(0);
+  const bindEditable = React.useCallback(
+    (element: HTMLDivElement | null) => {
+      editableRef.current = element;
+      if (!element) return;
+      const previous = previousElementRef.current;
+      previousElementRef.current = { element, generation: viewGeneration };
+      if (
+        previous?.generation === viewGeneration &&
+        previous.element !== element
+      ) {
+        setViewGeneration((generation) => generation + 1);
+      }
+    },
+    [viewGeneration]
+  );
+  const combinedRef = useComposedRef(ref, bindEditable);
 
   const readOnly = getPlateContentReadOnly({
     disabled: props.disabled,
@@ -132,81 +115,56 @@ function PlateContent<
   const branchProps = props as PlateContentProps;
 
   return (
-    <PlateContentBranch
-      {...branchProps}
-      ref={ref}
-      autoFocusOnEditable={autoFocusOnEditable}
-      editor={editor}
-      plateReadOnly={readOnly}
-      readOnly={readOnlyProp}
-      renderEditable={renderEditable}
-    />
+    <PlateRoot
+      key={viewGeneration}
+      editableRef={editableRef}
+      readOnly={readOnly}
+      root={props.root}
+    >
+      <PlateContentBranch
+        {...branchProps}
+        ref={combinedRef}
+        editableRef={editableRef}
+        autoFocusOnEditable={autoFocusOnEditable}
+        plateReadOnly={readOnly}
+        readOnly={readOnlyProp}
+      />
+    </PlateRoot>
   );
 }
 
 function PlateContentBranch({
   autoFocusOnEditable,
-  editor,
+  editableRef,
   plateReadOnly,
   ref,
-  renderEditable,
   ...props
 }: PlateContentProps & {
-  editor: Editor;
+  editableRef: React.RefObject<HTMLDivElement | null>;
   plateReadOnly: boolean;
 }) {
-  const { disabled, ...editableInput } = {
+  const editor = useEditor();
+  const { disabled, root, ...editableInput } = {
     ...props,
     readOnly: plateReadOnly,
-    renderPlaceholder:
-      props.renderPlaceholder ??
-      (props.disableDefaultStyles ? undefined : renderDefaultPlatePlaceholder),
   };
-  const { id } = editableInput;
-  const { activeScopes } = useHotkeysContext();
   const modelRevision = usePlateModelRevision(editor);
   const { shortcutTable } = getPlateRuntime(editor);
-  const store = usePlateStore(id);
-  const storeDecorate = useAtomStoreValue(store, 'decorate');
-  const storeRenderElement = useAtomStoreValue(store, 'renderElement');
-  const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
-  const storeRenderText = useAtomStoreValue(store, 'renderText');
-  const decorate = React.useMemo(() => {
-    void modelRevision;
-
-    return pipePlateContentDecorate(
-      editor,
-      storeDecorate,
-      editableInput.decorate
-    );
-  }, [editableInput.decorate, editor, modelRevision, storeDecorate]);
   const renderElement = React.useMemo(() => {
     void modelRevision;
 
-    return pipeRenderElement(
-      editor,
-      (storeRenderElement ??
-        editableInput.renderElement) as EditableProps['renderElement']
-    );
-  }, [editableInput.renderElement, editor, modelRevision, storeRenderElement]);
+    return pipeRenderElement(editor);
+  }, [editor, modelRevision]);
   const renderLeaf = React.useMemo(() => {
     void modelRevision;
 
-    return pipeRenderLeaf(
-      editor,
-      (storeRenderLeaf ??
-        editableInput.renderLeaf) as EditableProps['renderLeaf']
-    );
-  }, [editableInput.renderLeaf, editor, modelRevision, storeRenderLeaf]);
+    return pipeRenderLeaf(editor);
+  }, [editor, modelRevision]);
   const renderText = React.useMemo(() => {
     void modelRevision;
 
-    return pipeRenderText(
-      editor,
-      (storeRenderText ??
-        editableInput.renderText) as EditableProps['renderText']
-    );
-  }, [editableInput.renderText, editor, modelRevision, storeRenderText]);
+    return pipeRenderText(editor);
+  }, [editor, modelRevision]);
   const scrollSelectionIntoView = React.useMemo<
     PliteEditableProps['scrollSelectionIntoView']
   >(() => {
@@ -218,7 +176,6 @@ function PlateContentBranch({
   }, [editableInput, editor]);
   const pipedProps: PliteEditableProps = useDeepCompareMemo(() => {
     const nextProps: PliteEditableProps = {
-      decorate,
       renderElement,
       renderLeaf,
       renderText,
@@ -244,7 +201,6 @@ function PlateContentBranch({
           event: React.KeyboardEvent<HTMLDivElement>
         ) => {
           const shortcutHandled = dispatchPlateShortcut(
-            activeScopes,
             editor,
             event.nativeEvent,
             shortcutPhase,
@@ -276,8 +232,6 @@ function PlateContentBranch({
 
     return nextProps;
   }, [
-    activeScopes,
-    decorate,
     editableInput,
     editor,
     renderElement,
@@ -287,29 +241,15 @@ function PlateContentBranch({
   ]);
   const editableProps = useDeepCompareMemo(
     () => ({
-      ...omit(editableInput, [
-        ...DOM_HANDLERS,
-        'renderElement',
-        'renderLeaf',
-        'renderText',
-        'decorate',
-        'scrollSelectionIntoView',
-      ]),
+      ...omit(editableInput, [...DOM_HANDLERS, 'scrollSelectionIntoView']),
       ...pipedProps,
       'aria-disabled': disabled,
-      className: clsx(
-        'plite-editor',
-        'ignore-click-outside/toolbar',
-        editableInput.className
-      ),
+      className: clsx('plite-editor', editableInput.className),
       'data-readonly': plateReadOnly ? 'true' : undefined,
       readOnly: plateReadOnly,
     }),
     [disabled, editableInput, pipedProps, plateReadOnly]
   );
-
-  const editableRef = useRef<HTMLDivElement | null>(null);
-  const combinedRef = useComposedRef(ref, editableRef);
 
   const children = editor.read.children();
 
@@ -318,19 +258,19 @@ function PlateContentBranch({
     return null;
   }
 
-  const editable = <Editable ref={combinedRef} {...editableProps} />;
+  const editable = <Editable ref={ref} {...editableProps} />;
 
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.beforeEditable.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    if (isEditOnly(plateReadOnly, plugin, 'slots')) return;
 
     const BeforeEditable =
-      plugin.render.beforeEditable ??
+      plugin.slots.beforeEditable ??
       failInvariant('Expected value to be defined');
 
     beforeEditable = (
@@ -341,14 +281,14 @@ function PlateContentBranch({
     );
   });
 
-  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.afterEditable.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    if (isEditOnly(plateReadOnly, plugin, 'slots')) return;
 
     const AfterEditable =
-      plugin.render.afterEditable ??
+      plugin.slots.afterEditable ??
       failInvariant('Expected value to be defined');
 
     afterEditable = (
@@ -359,41 +299,38 @@ function PlateContentBranch({
     );
   });
 
-  let aboveEditable: React.ReactNode = (
-    <>
-      {renderEditable ? renderEditable(editable) : editable}
+  let content: React.ReactNode = (
+    <PlateRenderedAttributeProvider>
+      {editable}
 
-      <EditorRefEffect id={id} />
-      <PlateControllerEffect id={id} />
-    </>
+      <EditorRefEffect />
+    </PlateRenderedAttributeProvider>
   );
 
-  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((name) => {
+  getPlateRuntime(editor).pluginCache.slots.wrapContent.forEach((name) => {
     const plugin =
       getCompiledPlatePlugin(editor, name) ??
       failInvariant('Expected value to be defined');
-    if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    if (isEditOnly(plateReadOnly, plugin, 'slots')) return;
 
-    const AboveEditable =
-      plugin.render.aboveEditable ??
-      failInvariant('Expected value to be defined');
+    const WrapContent =
+      plugin.slots.wrapContent ?? failInvariant('Expected value to be defined');
 
-    aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+    content = <WrapContent>{content}</WrapContent>;
   });
 
   return (
-    <PlateRoot id={id} root={props.root}>
+    <>
       <PlateContentStateEffect
         autoFocusOnEditable={autoFocusOnEditable}
         editor={editor}
         readOnly={plateReadOnly}
-        root={props.root}
       />
 
       {beforeEditable}
-      {aboveEditable}
+      {content}
       {afterEditable}
-    </PlateRoot>
+    </>
   );
 }
 
@@ -401,28 +338,25 @@ function PlateContentStateEffect({
   autoFocusOnEditable,
   editor,
   readOnly,
-  root,
 }: {
   editor: Editor;
   autoFocusOnEditable?: boolean;
   readOnly?: boolean;
-  root?: RootKey;
 }) {
   const prevReadOnly = React.useRef(readOnly);
-  const rootEditor = usePliteRootEditor(root, { readOnly });
 
   React.useEffect(() => {
     if (autoFocusOnEditable && prevReadOnly.current && !readOnly) {
-      const point = rootEditor.read.points.end([]);
+      const point = editor.read.points.end([]);
 
       if (point) {
-        rootEditor.update.selection.set({ anchor: point, focus: point });
+        editor.update.selection.set({ anchor: point, focus: point });
         editor.api.dom.focus();
       }
     }
 
     prevReadOnly.current = readOnly;
-  }, [autoFocusOnEditable, editor, readOnly, rootEditor]);
+  }, [autoFocusOnEditable, editor, readOnly]);
 
   return null;
 }

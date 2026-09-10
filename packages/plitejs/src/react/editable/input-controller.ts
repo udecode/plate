@@ -6,8 +6,12 @@ import type {
 } from 'react';
 
 import type { Editor } from '../..';
-import { Hotkeys, isDOMElement, isDOMText } from '../../dom';
-import { DOMRootRuntime, IS_COMPOSING } from '../../dom/internal';
+import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
+import {
+  DOMRootRuntime,
+  findDOMRootRuntime,
+  IS_COMPOSING,
+} from '../../dom/internal';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -15,6 +19,7 @@ import {
   shouldModelOwnPlainVerticalLargeDocumentExtension,
 } from './dom-coverage-vertical-selection';
 import type { EditableInputController, InputIntent } from './input-state';
+import { getExternalTextHostOwner } from './interaction-owner';
 import { setEditorComposing } from './runtime-editor-api';
 
 export type {
@@ -117,10 +122,7 @@ export const getNestedEditableDOMSelectionRoot = (
   editorElement: HTMLElement
 ) => {
   const rootNode = editorElement.getRootNode() as Document | ShadowRoot;
-  const selection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : editorElement.ownerDocument.getSelection();
+  const selection = getSelection(rootNode);
   const anchorElement = isDOMElement(selection?.anchorNode)
     ? selection.anchorNode
     : isDOMText(selection?.anchorNode)
@@ -160,6 +162,13 @@ export const isInteractiveInternalTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget | null
 ) => {
+  const external = getExternalTextHostOwner(target);
+  if (
+    external &&
+    findDOMRootRuntime(external.host)?.editor.api === editor.api
+  ) {
+    return true;
+  }
   const editorElement = getEditorDOMElement(editor);
 
   if (!editorElement) {
@@ -181,7 +190,7 @@ export const isInteractiveInternalTarget = (
   }
 
   const control = element.closest(
-    'input, textarea, select, button, [role="button"], [data-plite-editor="true"]'
+    'input, textarea, select, button, [role="button"], [data-plite-editor="true"], [data-plite-root-chrome-ignore="true"]'
   );
 
   return (
@@ -209,6 +218,13 @@ export const isNativeInternalControlTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget | null
 ) => {
+  const external = getExternalTextHostOwner(target);
+  if (
+    external &&
+    findDOMRootRuntime(external.host)?.editor.api === editor.api
+  ) {
+    return true;
+  }
   const editorElement = getEditorDOMElement(editor);
   const element = isDOMElement(target)
     ? target
@@ -221,7 +237,7 @@ export const isNativeInternalControlTarget = (
   }
 
   const control = element.closest(
-    'input, textarea, select, button, [role="button"]'
+    'input, textarea, select, button, [role="button"], [data-plite-root-chrome-ignore="true"]'
   );
 
   return (
@@ -313,6 +329,9 @@ export const classifyKeyboardIntent = ({
       event: nativeEvent,
     }) ||
     shouldModelOwnPlainVerticalDOMCoverageExtension({
+      coverage: event.currentTarget
+        ? findDOMRootRuntime(event.currentTarget)?.domCoverage
+        : undefined,
       editor,
       event: nativeEvent,
     }) ||

@@ -66,7 +66,7 @@ describe('pluginInjectNodeProps', () => {
     ).toBeUndefined();
   });
 
-  it('keeps transformProps hook order when inject matching rejects the node', () => {
+  it('skips transformProps when inject matching rejects the node', () => {
     const transformProps = mock(({ props }) => props);
     const TargetPlugin = defineBasePlugin('target', {
       targetPlugins: ['quote'],
@@ -97,11 +97,10 @@ describe('pluginInjectNodeProps', () => {
       )
     ).toBeUndefined();
 
-    expect(transformProps).toHaveBeenCalledTimes(1);
-    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
+    expect(transformProps).not.toHaveBeenCalled();
   });
 
-  it('keeps transformProps hook order when the query rejects the node', () => {
+  it('skips transformProps when the query rejects the node', () => {
     const transformProps = mock(({ props }) => props);
     const QueryPlugin = defineBasePlugin('query', {
       inject: {
@@ -126,8 +125,7 @@ describe('pluginInjectNodeProps', () => {
       )
     ).toBeUndefined();
 
-    expect(transformProps).toHaveBeenCalledTimes(1);
-    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
+    expect(transformProps).not.toHaveBeenCalled();
   });
 
   it('suppresses default node values unless transformProps forces an injection', () => {
@@ -316,7 +314,6 @@ describe('pluginInjectNodeProps', () => {
       )
     ).toBeUndefined();
 
-    expect(transformProps).toHaveBeenCalledTimes(1);
-    expect(transformProps.mock.calls[0]?.[0].props).toEqual({});
+    expect(transformProps).not.toHaveBeenCalled();
   });
 });

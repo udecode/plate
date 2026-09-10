@@ -1,7 +1,7 @@
 'use client';
 
 import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
-import { EmojiInlineIndexSearch } from 'platejs/emoji';
+import { createEmojiSearch } from 'platejs/emoji';
 import { EmojiInputPlugin, EmojiPlugin } from 'platejs/emoji/react';
 import {
   type PlateElementProps,
@@ -32,19 +32,20 @@ export const emojiPlugin = EmojiPlugin.extend({
 export function EmojiInputElement(
   props: PlateElementProps<typeof EmojiInputPlugin>
 ) {
-  const { children, editor, element } = props;
+  const { children, element } = props;
   const data = usePluginStore(emojiPlugin, 'data');
   const [value, setValue] = React.useState('');
   const debouncedValue = useDebounce(value, 100);
   const isPending = value !== debouncedValue;
+  const search = React.useMemo(() => createEmojiSearch(data), [data]);
 
   const filteredEmojis = React.useMemo(() => {
     if (debouncedValue.trim().length === 0) return [];
 
-    return EmojiInlineIndexSearch.getInstance(data)
-      .search(debouncedValue.replace(TRAILING_COLON_REGEX, ''))
-      .get();
-  }, [data, debouncedValue]);
+    return search(debouncedValue.replace(TRAILING_COLON_REGEX, ''), {
+      limit: 60,
+    });
+  }, [search, debouncedValue]);
 
   return (
     <PlateElement as="span" {...props}>
@@ -66,8 +67,8 @@ export function EmojiInputElement(
               <InlineComboboxItem
                 key={emoji.id}
                 value={emoji.name}
-                onClick={() => {
-                  editor.plugin(emojiPlugin).update.insert(emoji);
+                onSelect={(tx) => {
+                  tx.plugin(emojiPlugin).insert(emoji);
                 }}
               >
                 {emoji.skins[0].native} {emoji.name}

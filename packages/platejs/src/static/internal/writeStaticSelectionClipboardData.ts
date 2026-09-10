@@ -1,9 +1,9 @@
 import { writeDOMFragmentData } from '../../dom/plite-dom.internal';
 import { ContentSlice } from '../../facade';
 import type { Editor } from '../../lib/editor';
-import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
-import { getSelectedDomNode } from '../utils/getSelectedDomNode';
-import { isSelectOutside } from '../utils/isSelectOutside';
+import { getSelectedDomFragment } from '../utils/getSelectedDomFragment.internal';
+import { getSelectedDomNode } from '../utils/getSelectedDomNode.internal';
+import { isSelectOutside } from '../utils/isSelectOutside.internal';
 import { getPlainText } from './getPlainText';
 
 export const writeStaticSelectionClipboardData = (

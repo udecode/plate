@@ -23,10 +23,17 @@ export {
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu';
 
-export function ContextMenu(
-  props: React.PropsWithChildren<{ modal?: boolean }>
-) {
-  return <ShadcnContextMenu {...props} />;
+const ContextMenuDisabledContext = React.createContext(false);
+
+export function ContextMenu({
+  disabled = false,
+  ...props
+}: React.PropsWithChildren<{ disabled?: boolean; modal?: boolean }>) {
+  return (
+    <ContextMenuDisabledContext value={disabled}>
+      <ShadcnContextMenu {...props} />
+    </ContextMenuDisabledContext>
+  );
 }
 
 export function ContextMenuContent({
@@ -50,8 +57,10 @@ export function ContextMenuTrigger({
 }: Omit<React.ComponentPropsWithoutRef<'div'>, 'children'> & {
   children: React.ReactElement;
 }) {
+  const disabled = React.useContext(ContextMenuDisabledContext);
+
   return (
-    <ShadcnContextMenuTrigger {...props} asChild>
+    <ShadcnContextMenuTrigger {...props} asChild disabled={disabled}>
       {children}
     </ShadcnContextMenuTrigger>
   );

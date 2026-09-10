@@ -25,11 +25,11 @@ Date adds inline void elements that display a date label inside text. One requir
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 <Steps>
 
-### Add The Kit
+### Add the kit
 
 `DateKit` installs `DatePlugin` with the registry `DateElement`.
 
@@ -45,13 +45,13 @@ export const editor = createEditor({
 });
 ```
 
-### Render The Element
+### Render the element
 
 `date` owns the inline wrapper, display label, popover, calendar picker, and static element.
 
 <ComponentSource name="date" />
 
-### Add An Insert Action
+### Add an insert action
 
 The registry insert toolbar maps `PLUGINS.date` to the plugin-owned update.
 
@@ -80,17 +80,17 @@ export const insertInlineMap = {
 
 `BaseDatePlugin` is inline and void. The text child exists only to satisfy Plite's element shape.
 
-## Manual Setup
+## Manual setup
 
 <Steps>
 
-### Install Package
+### Install package
 
 ```bash
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add The Plugin
+### Add the plugin
 
 Use the React plugin when the editor renders the calendar popover.
 
@@ -105,13 +105,13 @@ export const editor = createEditor({
 });
 ```
 
-### Add Static Rendering
+### Add static rendering
 
 Use the base kit when rendering read-only output with `platejs/static`.
 
 <ComponentSource name="date-static" />
 
-### Insert A Date
+### Insert a date
 
 `DatePlugin` exposes date insertion through the `date` transaction group.
 
@@ -123,7 +123,7 @@ editor.update((tx) =>
 
 </Steps>
 
-## Value Shape
+## Value shape
 
 Date elements store one non-empty authored string. Parsing is derived from that value rather than persisted as a second field.
 
@@ -150,7 +150,7 @@ const value = [
 | `children` | `[{ text: '' }]` | Required Plite child for the inline void element. |
 | `value` | `string` | Required canonical date or authored date text. |
 
-## Date Normalization
+## Date normalization
 
 `normalizeDateValue` returns the one persisted string.
 
@@ -165,7 +165,7 @@ const value = [
 
 `getDateDisplayLabel(value)` returns `Today`, `Yesterday`, `Tomorrow`, a localized long date, or the authored string.
 
-## Picker Behavior
+## Picker behavior
 
 The registry element is display-only while read-only. In editable mode, clicking the inline label opens a calendar popover.
 

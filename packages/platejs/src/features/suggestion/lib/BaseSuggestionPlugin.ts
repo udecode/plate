@@ -20,6 +20,7 @@ import {
   NodeApi,
   type NodeEntry,
   type NodeSetNodesOptions,
+  type Path,
   PathApi,
   PLUGINS,
   type Point,
@@ -94,37 +95,21 @@ export type InlineSuggestionData =
   | RemoveSuggestionData
   | UpdateSuggestionData;
 
-export type ResolvedSuggestion = {
-  createdAt: Date;
-  keyId: string;
-  suggestionId: string;
+/** Current semantic changes grouped by their serialized suggestion identity. */
+export type SuggestionReview = Readonly<{
+  id: string;
+  createdAt: number;
+  userId: string;
   type: 'insert' | 'remove' | 'replace' | 'update';
-  userId: string;
-  newProperties?: Record<string, unknown>;
-  newText?: string;
-  properties?: Record<string, unknown>;
-  text?: string;
-};
-
-export type SuggestionDescription =
-  | ({
-      deletedText: string;
-      type: 'deletion';
-    } & SuggestionCommonDescription)
-  | ({
-      insertedText: string;
-      type: 'insertion';
-    } & SuggestionCommonDescription)
-  | ({
-      deletedText: string;
-      insertedText: string;
-      type: 'replacement';
-    } & SuggestionCommonDescription);
-
-type SuggestionCommonDescription = {
-  suggestionId: string;
-  userId: string;
-};
+  range: Range;
+  changes: ReadonlyArray<
+    Readonly<{
+      data: InlineSuggestionData | SuggestionData;
+      node: Descendant;
+      path: Path;
+    }>
+  >;
+}>;
 
 type SuggestionIdentity = {
   createdAt: number;
@@ -453,7 +438,16 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         return undefined;
       };
       const suggestionData = (node: Node) => {
-        if (isInlineSuggestion(node)) return inlineData(node);
+        if (isInlineSuggestion(node)) {
+          const own = inlineData(node);
+          if (own || TextApi.isText(node)) return own;
+          for (const child of node.children) {
+            if (!TextApi.isText(child)) continue;
+            const data = inlineData(child);
+            if (data) return data;
+          }
+          return undefined;
+        }
         if (isBlockSuggestion(node)) return node.suggestion;
 
         return undefined;
@@ -731,6 +725,13 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
   })
   .extend(({ api, store, schema: { key } }) => ({
     read: ({ state }) => {
+      let reviewsSnapshot:
+        | {
+            children: readonly Descendant[];
+            reviews: readonly SuggestionReview[];
+          }
+        | undefined;
+
       function node(
         options: Omit<EditorNodesOptions<Node>, 'type'> & {
           id?: string;
@@ -870,78 +871,70 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
       };
 
       return {
-        activeDescriptions: () => {
-          const entry = node({ isText: true });
-
-          if (!entry) return [];
-
-          const suggestionId = api.id(entry[0]);
-
-          if (!suggestionId) return [];
-
-          return api
-            .dataList(entry[0])
-            .map(({ id, userId }): SuggestionDescription => {
-              const suggestionKey = api.key(id);
-              const nodes = state.nodes
-                .toArray({
-                  at: [],
-                  match: (
-                    candidate
-                  ): candidate is SuggestionTextContract &
-                    SuggestionTextProperties =>
-                    TextApi.isText(candidate) &&
-                    Boolean(Reflect.get(candidate, suggestionKey)),
-                })
-                .map(([candidate]) => candidate);
-              const insertions = nodes.filter((candidate) => {
-                const suggestion = candidate[suggestionKey];
-
-                return (
-                  isInlineSuggestionData(suggestion) &&
-                  suggestion.type === 'insert'
-                );
-              });
-              const deletions = nodes.filter((candidate) => {
-                const suggestion = candidate[suggestionKey];
-
-                return (
-                  isInlineSuggestionData(suggestion) &&
-                  suggestion.type === 'remove'
-                );
-              });
-              const insertedText = insertions
-                .map((candidate) => candidate.text)
-                .join('');
-              const deletedText = deletions
-                .map((candidate) => candidate.text)
-                .join('');
-
-              if (insertions.length > 0 && deletions.length > 0) {
-                return {
-                  deletedText,
-                  insertedText,
-                  suggestionId: id,
-                  type: 'replacement',
-                  userId,
-                };
-              }
-              if (deletions.length > 0) {
-                return {
-                  deletedText,
-                  suggestionId: id,
-                  type: 'deletion',
-                  userId,
-                };
-              }
-
-              return {
-                insertedText,
-                suggestionId: id,
-                type: 'insertion',
-                userId,
-              };
-            });
+        reviews: () => {
+          const children = state.children();
+          if (reviewsSnapshot?.children === children) {
+            return reviewsSnapshot.reviews;
+          }
+          const byId = new Map<
+            string,
+            Array<SuggestionReview['changes'][number]>
+          >();
+          for (const [candidate, path] of state.nodes.entries({
+            at: [],
+            mode: 'all',
+          })) {
+            if (
+              !ElementApi.isElement(candidate) &&
+              !TextApi.isText(candidate)
+            ) {
+              continue;
+            }
+            const dataList = api.isBlockSuggestion(candidate)
+              ? [candidate.suggestion]
+              : api.dataList(candidate);
+            for (const data of dataList) {
+              const changes = byId.get(data.id) ?? [];
+              changes.push({ data, node: candidate, path });
+              byId.set(data.id, changes);
+            }
+          }
+          const reviews = [...byId]
+            .flatMap(([id, changes]): SuggestionReview[] => {
+              const first = changes[0];
+              const range = state.ranges.fromEntries(
+                changes.map(({ node: changedNode, path }) => [
+                  changedNode,
+                  path,
+                ])
+              );
+              if (!first || !range) return [];
+              const kinds = new Set(changes.map(({ data }) => data.type));
+              const type = kinds.has('update')
+                ? 'update'
+                : kinds.has('insert') && kinds.has('remove')
+                  ? 'replace'
+                  : kinds.has('insert')
+                    ? 'insert'
+                    : 'remove';
+              return [
+                {
+                  id,
+                  createdAt: first.data.createdAt,
+                  userId: first.data.userId,
+                  type,
+                  range,
+                  changes,
+                },
+              ];
+            })
+            .toSorted(
+              (left, right) =>
+                left.createdAt - right.createdAt ||
+                PathApi.compare(left.range.anchor.path, right.range.anchor.path)
+            );
+          reviewsSnapshot = { children, reviews };
+          return reviews;
         },
         findIdentity,
         node,
@@ -1391,7 +1384,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
         clearTransient: (options?: EditorNodeUnsetOptions<Node>) => {
           tx.nodes.unset(context.schema.properties.transientElement, options);
         },
-        accept: (description: ResolvedSuggestion) => {
+        accept: (id: string) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const mergeNodes = tx.nodes.toArray({
@@ -1401,14 +1394,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               api.isBlockSuggestion(node) &&
               node.suggestion.type === 'remove' &&
               Boolean(node.suggestion.isLineBreak) &&
-              node.suggestion.id === description.suggestionId,
+              node.suggestion.id === id,
           });
 
           mergeNodes.toReversed().forEach(([, path]) => {
             tx.nodes.merge({ at: PathApi.next(path) });
           });
 
-          tx.nodes.unset([description.keyId, key, SUGGESTION_TRANSIENT_KEY], {
+          const clearEntries = tx.nodes.toArray({
             at: [],
             mode: 'all',
             match: (node) => {
@@ -1419,28 +1412,39 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
                 const suggestions = api.dataList(node);
 
                 if (suggestions.some((data) => data.type === 'update')) {
-                  return suggestions.some(
-                    (data) => data.id === description.suggestionId
-                  );
+                  return suggestions.some((data) => data.id === id);
                 }
 
-                const suggestion = api.inlineData(node);
+                const suggestion = api
+                  .dataList(node)
+                  .find((data) => data.id === id);
 
                 return Boolean(
-                  suggestion?.type === 'insert' &&
-                  suggestion.id === description.suggestionId
+                  suggestion?.type === 'insert' && suggestion.id === id
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
                 return node.suggestion.isLineBreak
-                  ? node.suggestion.id === description.suggestionId
+                  ? node.suggestion.id === id
                   : node.suggestion.type === 'insert' &&
-                      node.suggestion.id === description.suggestionId;
+                      node.suggestion.id === id;
               }
 
               return false;
             },
           });
+          for (const [node, path] of clearEntries.toReversed()) {
+            const remaining = api.dataList(node).some((data) => data.id !== id);
+            tx.nodes.unset(
+              [
+                api.key(id),
+                ...(remaining
+                  ? []
+                  : [key, 'suggestionData', SUGGESTION_TRANSIENT_KEY]),
+              ],
+              { at: path }
+            );
+          }
 
           const emptyInlineEntries = tx.nodes.toArray({
             at: [],
@@ -1448,12 +1452,11 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               ElementApi.isElement(node) &&
               tx.schema.isInline(node) &&
               Array.from(NodeApi.texts(node)).every(([text]) => {
-                const suggestion = api.inlineData(text);
+                const suggestion = api
+                  .dataList(text)
+                  .find((data) => data.id === id);
 
-                return (
-                  suggestion?.type === 'remove' &&
-                  suggestion.id === description.suggestionId
-                );
+                return suggestion?.type === 'remove' && suggestion.id === id;
               }),
           });
 
@@ -1469,17 +1472,18 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
                 TextApi.isText(node) ||
                 (ElementApi.isElement(node) && tx.schema.isInline(node))
               ) {
-                const suggestion = api.inlineData(node);
+                const suggestion = api
+                  .dataList(node)
+                  .find((data) => data.id === id);
 
                 return Boolean(
-                  suggestion?.type === 'remove' &&
-                  suggestion.id === description.suggestionId
+                  suggestion?.type === 'remove' && suggestion.id === id
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
                 return (
                   node.suggestion.type === 'remove' &&
-                  node.suggestion.id === description.suggestionId &&
+                  node.suggestion.id === id &&
                   !node.suggestion.isLineBreak
                 );
               }
@@ -1576,7 +1580,7 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
             { at: getTextSelection() ?? selection, select: true }
           );
         },
-        reject: (description: ResolvedSuggestion) => {
+        reject: (id: string) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const inlineInsertElements = tx.nodes.toArray({
@@ -1586,11 +1590,12 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
                 return false;
               }
 
-              const suggestion = api.inlineData(node);
+              const suggestion = api
+                .dataList(node)
+                .find((data) => data.id === id);
 
               return Boolean(
-                suggestion?.type === 'insert' &&
-                suggestion.id === description.suggestionId
+                suggestion?.type === 'insert' && suggestion.id === id
               );
             },
           });
@@ -1601,14 +1606,14 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
               api.isBlockSuggestion(node) &&
               node.suggestion.type === 'insert' &&
               Boolean(node.suggestion.isLineBreak) &&
-              node.suggestion.id === description.suggestionId,
+              node.suggestion.id === id,
           });
 
           mergeNodes.toReversed().forEach(([, path]) => {
             tx.nodes.merge({ at: PathApi.next(path) });
           });
 
-          tx.nodes.unset([description.keyId, key, SUGGESTION_TRANSIENT_KEY], {
+          const clearEntries = tx.nodes.toArray({
             at: [],
             mode: 'all',
             match: (node) => {
@@ -1616,40 +1621,54 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
                 TextApi.isText(node) ||
                 (ElementApi.isElement(node) && tx.schema.isInline(node))
               ) {
-                const suggestion = api.inlineData(node);
+                const suggestion = api
+                  .dataList(node)
+                  .find((data) => data.id === id);
 
                 return Boolean(
-                  suggestion?.type === 'remove' &&
-                  suggestion.id === description.suggestionId
+                  suggestion?.type === 'remove' && suggestion.id === id
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
                 return node.suggestion.isLineBreak
-                  ? node.suggestion.id === description.suggestionId
+                  ? node.suggestion.id === id
                   : node.suggestion.type === 'remove' &&
-                      node.suggestion.id === description.suggestionId;
+                      node.suggestion.id === id;
               }
 
               return false;
             },
           });
+          for (const [node, path] of clearEntries.toReversed()) {
+            const remaining = api.dataList(node).some((data) => data.id !== id);
+            tx.nodes.unset(
+              [
+                api.key(id),
+                ...(remaining
+                  ? []
+                  : [key, 'suggestionData', SUGGESTION_TRANSIENT_KEY]),
+              ],
+              { at: path }
+            );
+          }
 
           tx.nodes.remove({
             at: [],
             mode: 'all',
             match: (node) => {
               if (TextApi.isText(node)) {
-                const suggestion = api.inlineData(node);
+                const suggestion = api
+                  .dataList(node)
+                  .find((data) => data.id === id);
 
                 return Boolean(
-                  suggestion?.type === 'insert' &&
-                  suggestion.id === description.suggestionId
+                  suggestion?.type === 'insert' && suggestion.id === id
                 );
               }
               if (ElementApi.isElement(node) && api.isBlockSuggestion(node)) {
                 return (
                   node.suggestion.type === 'insert' &&
-                  node.suggestion.id === description.suggestionId &&
+                  node.suggestion.id === id &&
                   !node.suggestion.isLineBreak
                 );
               }
@@ -1665,23 +1684,19 @@ export const BaseSuggestionPlugin = defineBasePlugin(PLUGINS.suggestion, {
           tx.nodes
             .toArray({
               at: [],
-              match: (node): node is SuggestionTextContract =>
-                TextApi.isText(node) &&
+              match: (node): node is Element | Text =>
+                (TextApi.isText(node) ||
+                  (ElementApi.isElement(node) && tx.schema.isInline(node))) &&
                 api
                   .dataList(node)
-                  .some(
-                    (data) =>
-                      data.type === 'update' &&
-                      data.id === description.suggestionId
-                  ),
+                  .some((data) => data.type === 'update' && data.id === id),
             })
             .forEach(([node, path]) => {
               const suggestion = api
                 .dataList(node)
                 .find(
                   (data): data is UpdateSuggestionData =>
-                    data.type === 'update' &&
-                    data.id === description.suggestionId
+                    data.type === 'update' && data.id === id
                 );
 
               if (!suggestion) return;

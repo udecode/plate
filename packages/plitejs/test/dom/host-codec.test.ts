@@ -18,10 +18,10 @@ import {
 } from 'plitejs';
 
 import {
-  defineHostCodec,
   dom,
   hostCodecs,
   type HostCodec,
+  type HostCodecSchemaTarget,
   writeHostFragmentData,
 } from '../../src/dom';
 
@@ -187,7 +187,7 @@ test('host codecs expose only immutable model and host read capabilities', () =>
     }
   );
   const editor = createCodecEditor([
-    defineHostCodec({ format: 'text/html', key: 'html', parse: inspect }),
+    { format: 'text/html', key: 'html', parse: inspect },
   ]);
   const data = new DataTransferStub();
 
@@ -203,7 +203,7 @@ test('host codecs expose only immutable model and host read capabilities', () =>
 test('host codecs receive an ingress snapshot instead of the DataTransfer', () => {
   const data = new DataTransferStub();
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'snapshot',
       parse: ({ data: html, source }) => {
@@ -217,7 +217,7 @@ test('host codecs receive an ingress snapshot instead of the DataTransfer', () =
 
         return true;
       },
-    }),
+    },
   ]);
 
   data.setData('text/html', '<p>before</p>');
@@ -236,11 +236,11 @@ test('host codec results cross one immutable slice boundary', () => {
     openStart: 0,
   };
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'mutable-result',
       parse: () => slice,
-    }),
+    },
   ]);
   const data = new DataTransferStub();
 
@@ -355,11 +355,11 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
 
 test('host codec serialization observes the active transaction document', () => {
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'draft-html',
       serialize: ({ state }) => `<p>${state.text.string([])}</p>`,
-    }),
+    },
   ]);
   const data = new DataTransferStub();
 
@@ -377,23 +377,23 @@ test('host codec serialization observes the active transaction document', () => 
 
 test('host codec configuration order is deterministic per format', () => {
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'low-html',
       parse: () => ContentSlice.closed([paragraph('low')]),
       serialize: () => '<p>low</p>',
-    }),
-    defineHostCodec({
+    },
+    {
       format: 'text/html',
       key: 'high-html',
       parse: () => ContentSlice.closed([paragraph('high')]),
       serialize: () => '<p>high</p>',
-    }),
-    defineHostCodec({
+    },
+    {
       format: 'text/markdown',
       key: 'markdown',
       serialize: () => 'high',
-    }),
+    },
   ]);
   const input = new DataTransferStub();
   const output = new DataTransferStub();
@@ -413,16 +413,16 @@ test('host codec configuration order is deterministic per format', () => {
 
 test('later host codec registration runs first', () => {
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'first',
       parse: () => ContentSlice.closed([paragraph('first')]),
-    }),
-    defineHostCodec({
+    },
+    {
       format: 'text/html',
       key: 'second',
       parse: () => ContentSlice.closed([paragraph('second')]),
-    }),
+    },
   ]);
   const data = new DataTransferStub();
 
@@ -437,11 +437,11 @@ test('later host codec registration runs first', () => {
 test('plain text is the last compiled codec fallback', () => {
   const delegate = mock(() => null);
   const fallbackEditor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/plain',
       key: 'delegating-plain-text',
       parse: delegate,
-    }),
+    },
   ]);
   const fallbackData = new DataTransferStub();
 
@@ -459,11 +459,11 @@ test('plain text is the last compiled codec fallback', () => {
   ]);
 
   const overrideEditor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/plain',
       key: 'overriding-plain-text',
       parse: () => ContentSlice.closed([paragraph('override')]),
-    }),
+    },
   ]);
   const overrideData = new DataTransferStub();
 
@@ -478,11 +478,11 @@ test('plain text is the last compiled codec fallback', () => {
 });
 
 test('host codec compilation follows configuration revisions and rolls back conflicts', () => {
-  const original = defineHostCodec({
+  const original: HostCodec = {
     format: 'text/html',
     key: 'original',
     serialize: () => '<p>original</p>',
-  });
+  };
   const editor = createCodecEditor([original]);
   const slice = ContentSlice.closed([paragraph('value')]);
   const write = () => {
@@ -497,11 +497,11 @@ test('host codec compilation follows configuration revisions and rolls back conf
 
   const cleanup = editor.install(
     hostCodecs('temporary-host-codec', [
-      defineHostCodec({
+      {
         format: 'text/html',
         key: 'temporary',
         serialize: () => '<p>temporary</p>',
-      }),
+      },
     ])
   );
 
@@ -529,12 +529,12 @@ test('host codec ownership resolves declaration semantics against the candidate 
       ],
     },
   });
-  const italic = defineHostCodec({
+  const italic: HostCodec = {
     format: 'text/html',
     key: 'italic',
     owns: [Italic],
     serialize: () => '<em>value</em>',
-  });
+  };
 
   expect(() => editor.install(hostCodecs('italic-codec', [italic]))).toThrow(
     /owns schema property .* that is not installed/
@@ -614,12 +614,12 @@ test('query and parse faults report lifecycle errors then fall through', () => {
   const diagnostics: EditorLifecycleError[] = [];
   const editor = createCodecEditor(
     [
-      defineHostCodec({
+      {
         format: 'text/html',
         key: 'fallback',
         parse: () => ContentSlice.closed([paragraph('fallback')]),
-      }),
-      defineHostCodec({
+      },
+      {
         format: 'text/html',
         key: 'malformed',
         parse: () => ({
@@ -627,15 +627,15 @@ test('query and parse faults report lifecycle errors then fall through', () => {
           openEnd: 2,
           openStart: 2,
         }),
-      }),
-      defineHostCodec({
+      },
+      {
         format: 'text/html',
         key: 'throwing-query',
         parse: () => ContentSlice.closed([paragraph('unreachable')]),
         query: () => {
           throw new Error('query failed');
         },
-      }),
+      },
     ],
     (diagnostic) => diagnostics.push(diagnostic)
   );
@@ -681,13 +681,13 @@ test('a failed codec invocation reports once and publishes nothing', () => {
   const diagnostics: EditorLifecycleError[] = [];
   const editor = createCodecEditor(
     [
-      defineHostCodec({
+      {
         format: 'text/html',
         key: 'throwing-only',
         parse: () => {
           throw new Error('decode failed');
         },
-      }),
+      },
     ],
     (diagnostic) => diagnostics.push(diagnostic)
   );
@@ -714,18 +714,18 @@ test('serialization faults report lifecycle errors then fall through', () => {
   const diagnostics: EditorLifecycleError[] = [];
   const editor = createCodecEditor(
     [
-      defineHostCodec({
+      {
         format: 'text/html',
         key: 'fallback',
         serialize: () => '<p>fallback</p>',
-      }),
-      defineHostCodec({
+      },
+      {
         format: 'text/html',
         key: 'throwing',
         serialize: () => {
           throw new Error('serialize failed');
         },
-      }),
+      },
     ],
     (diagnostic) => diagnostics.push(diagnostic)
   );
@@ -747,7 +747,7 @@ test('serialization faults report lifecycle errors then fall through', () => {
 
 test('host codecs preserve open slices and fit at the paste range', () => {
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'open-html',
       parse: () =>
@@ -756,7 +756,7 @@ test('host codecs preserve open slices and fit at the paste range', () => {
           openEnd: 1,
           openStart: 1,
         }),
-    }),
+    },
   ]);
   const data = new DataTransferStub();
 
@@ -777,11 +777,11 @@ test('host codecs preserve open slices and fit at the paste range', () => {
 
 test('host codecs fit detached text properties into the target parent', () => {
   const editor = createCodecEditor([
-    defineHostCodec({
+    {
       format: 'text/html',
       key: 'bold-leaf-html',
       parse: () => ContentSlice.closed([{ bold: true, text: 'X' }]),
-    }),
+    },
   ]);
   const data = new DataTransferStub();
 
@@ -796,13 +796,12 @@ test('host codecs fit detached text properties into the target parent', () => {
 });
 
 test('codec keys and compiled schema ownership conflict atomically', () => {
-  const codec = (key: string, ownedTargets?: HostCodec['owns']) =>
-    defineHostCodec({
-      format: 'text/html',
-      key,
-      ...(ownedTargets ? { owns: ownedTargets } : {}),
-      parse: () => ContentSlice.closed([paragraph(key)]),
-    });
+  const codec = (key: string, ownedTargets?: HostCodec['owns']): HostCodec => ({
+    format: 'text/html',
+    key,
+    ...(ownedTargets ? { owns: ownedTargets } : {}),
+    parse: () => ContentSlice.closed([paragraph(key)]),
+  });
   const duplicate = codec('duplicate');
 
   expect(() => createCodecEditor([duplicate, duplicate])).toThrow(
@@ -848,7 +847,7 @@ test('codec keys and compiled schema ownership conflict atomically', () => {
   ).toThrow(/owns schema property .* that is not installed/);
 });
 
-test('host codec property ownership stores normalized declarations', () => {
+test('host codec ownership snapshots declarations before installation', () => {
   const equivalentParagraphBold = schema.textProperty(
     'bold',
     property.boolean(),
@@ -856,34 +855,39 @@ test('host codec property ownership stores normalized declarations', () => {
       target: target.type('paragraph'),
     }
   );
-  const codec = defineHostCodec({
+  const owns: HostCodecSchemaTarget[] = [equivalentParagraphBold];
+  const codec: HostCodec = {
     format: 'text/html',
     key: 'semantic-property',
-    owns: [equivalentParagraphBold],
+    owns,
     parse: () => null,
-  });
+  };
+  const extension = hostCodecs('snapshot-codec', [codec]);
+  const editor = createCodecEditor([]);
 
-  expect(codec.owns?.[0]).toEqual(equivalentParagraphBold);
-  expect(codec.owns?.[0]).not.toBe(equivalentParagraphBold);
-  expect(Object.isFrozen(codec.owns?.[0])).toBe(true);
-  expect(() => createCodecEditor([codec])).not.toThrow();
+  owns[0] = { kind: 'element', type: 'not-installed' };
+
+  expect(() => editor.install(extension)).not.toThrow();
+  expect(() => createCodecEditor([codec])).toThrow(
+    /owns unknown schema element "not-installed"/
+  );
 });
 
 test('parser and serializer ownership claims are independent', () => {
   expect(() =>
     createCodecEditor([
-      defineHostCodec({
+      {
         format: 'text/html',
         key: 'parse-paragraph',
         owns: [{ kind: 'element', type: 'paragraph' }],
         parse: () => ContentSlice.closed([paragraph('parse')]),
-      }),
-      defineHostCodec({
+      },
+      {
         format: 'text/html',
         key: 'serialize-paragraph',
         owns: [{ kind: 'element', type: 'paragraph' }],
         serialize: () => '<p>serialize</p>',
-      }),
+      },
     ])
   ).not.toThrow();
 });
@@ -899,7 +903,7 @@ test('host codecs round-trip registered formats', () => {
       return JSON.stringify(context.slice.content);
     }
   );
-  const json = defineHostCodec({
+  const json: HostCodec = {
     format: 'application/x-test-rich-text',
     key: 'json-rich-text',
     parse({ data }) {
@@ -912,7 +916,7 @@ test('host codecs round-trip registered formats', () => {
       }
     },
     serialize,
-  });
+  };
   const source = createCodecEditor([json]);
   const innerTarget = createCodecEditor([json]);
   const output = new DataTransferStub();

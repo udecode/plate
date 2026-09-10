@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-ai-session",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-ai-session.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Bind AI streams to the editor session",
+  "targets": [
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "copilot",
+      "files": ["apps/www/src/registry/components/editor/copilot.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "copilot-api",
+      "files": ["apps/www/src/registry/app/api/ai/copilot/route.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-ai-session-1",
+      "kind": "behavior",
+      "summary": "Bind the shared SDK transport with `useAIChat`. Share one session across mounted views and keep streaming while a writable view remains. Keep endpoint configuration and comment persistence in the application.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["use-chat"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-ai-session",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-ai-session-2",
+      "kind": "behavior",
+      "summary": "Render the session preview through a read-only editor view and size the menu within the viewport.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-ai-session",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-ai-session-3",
+      "kind": "behavior",
+      "summary": "Render ghost text without changing the accepted completion. Keep demo responses in the application route.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["copilot"],
+      "source": {
+        "line": 14,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-ai-session",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-ai-session-4",
+      "kind": "behavior",
+      "summary": "Return completion text and pass the configured gateway key to the provider.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["copilot-api"],
+      "source": {
+        "line": 15,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-ai-session",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

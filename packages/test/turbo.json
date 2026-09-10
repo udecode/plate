@@ -202,8 +202,9 @@
     "test:partition:root": {
       "cache": true,
       "dependsOn": [
-        "platejs#typecheck:partition:proxies",
         "platejs#typecheck:partition:root",
+        "platejs#typecheck:partition:testing",
+        "typecheck:partition:playwright",
         "typecheck:partition:root"
       ],
       "inputs": [
@@ -386,8 +387,8 @@
     "typecheck:partition:root": {
       "cache": true,
       "dependsOn": [
-        "platejs#typecheck:partition:proxies",
-        "platejs#typecheck:partition:root"
+        "platejs#typecheck:partition:root",
+        "platejs#typecheck:partition:testing"
       ],
       "inputs": [
         "src/**",

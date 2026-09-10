@@ -6,7 +6,7 @@ import {
 } from './documentMigrations';
 import { createEditor } from './withPlite';
 
-const EditorSchema = { id: 'migration-contract', version: 55 } as const;
+const EditorSchema = { id: 'migration-contract', version: 3 } as const;
 
 const append = (document: EditorDocumentValue, suffix: string) => ({
   ...document,
@@ -22,14 +22,14 @@ const append = (document: EditorDocumentValue, suffix: string) => ({
 
 const migrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: {
-    53: 'source-53',
-    54: 'source-54',
+    1: 'source-1',
+    2: 'source-2',
   },
   steps: {
-    54: ({ document }) => append(document, '54'),
-    55: ({ document }) => append(document, '55'),
+    2: ({ document }) => append(document, '2'),
+    3: ({ document }) => append(document, '3'),
   },
-  unversioned: 53,
+  unversioned: 1,
 });
 
 const source = (version: number, text = 'v') => ({
@@ -48,20 +48,20 @@ const text = (editor: ReturnType<typeof createEditor>) =>
   NodeApi.string(editor.read.children()[0]);
 
 describe('document migrations', () => {
-  it('runs every target-version step from v53 to v55', () => {
+  it('runs every target-version step in ascending order', () => {
     const editor = createEditor({
-      initialValue: source(53),
+      initialValue: source(1),
       migrations,
       schema: EditorSchema,
     });
 
-    expect(text(editor)).toBe('v5455');
+    expect(text(editor)).toBe('v23');
   });
 
   it('preserves an enveloped initial selection through migration', () => {
     const editor = createEditor({
       initialValue: {
-        ...source(53),
+        ...source(1),
         selection: {
           kind: 'text',
           anchor: { offset: 1, path: [0, 0] },
@@ -127,16 +127,16 @@ describe('document migrations', () => {
     });
   });
 
-  it('runs only v55 for a v54 deferred document', () => {
+  it('runs only the remaining step for a deferred document', () => {
     const editor = createEditor({
       migrations,
       schema: EditorSchema,
       skipInitialization: true,
     });
 
-    editor.update.value.replace(source(54));
+    editor.update.value.replace(source(2));
 
-    expect(text(editor)).toBe('v55');
+    expect(text(editor)).toBe('v3');
   });
 
   it('runs migration before installed document preparation', () => {
@@ -144,13 +144,13 @@ describe('document migrations', () => {
       prepareDocument: ({ document }) => append(document, 'p'),
     });
     const editor = createEditor({
-      initialValue: source(53),
+      initialValue: source(1),
       migrations,
       plugins: [PreparePlugin],
       schema: EditorSchema,
     });
 
-    expect(text(editor)).toBe('v5455p');
+    expect(text(editor)).toBe('v23p');
   });
 
   it('uses the explicit floor for unversioned documents', () => {
@@ -160,25 +160,25 @@ describe('document migrations', () => {
       schema: EditorSchema,
     });
 
-    expect(text(editor)).toBe('v5455');
+    expect(text(editor)).toBe('v23');
   });
 
   it('does not migrate an internally synthesized current-schema default', () => {
     let calls = 0;
     const blankMigrations = defineDocumentMigrations(EditorSchema, {
       steps: {
-        54: ({ document }) => {
+        2: ({ document }) => {
           calls += 1;
 
           return document;
         },
-        55: ({ document }) => {
+        3: ({ document }) => {
           calls += 1;
 
           return document;
         },
       },
-      unversioned: 53,
+      unversioned: 1,
     });
     const editor = createEditor({
       migrations: blankMigrations,
@@ -191,18 +191,18 @@ describe('document migrations', () => {
 
   it('rejects a missing intermediate step before publication', () => {
     const incomplete = defineDocumentMigrations(EditorSchema, {
-      sourceFingerprints: { 53: 'source-53' },
-      steps: { 55: ({ document }) => document },
-      unversioned: 53,
+      sourceFingerprints: { 1: 'source-1' },
+      steps: { 3: ({ document }) => document },
+      unversioned: 1,
     });
 
     expect(() =>
       createEditor({
-        initialValue: source(53),
+        initialValue: source(1),
         migrations: incomplete,
         schema: EditorSchema,
       })
-    ).toThrow('Missing document migration step 54');
+    ).toThrow('Missing document migration step 2');
   });
 
   it('rejects wrong lineage, future versions, and current fingerprint drift', () => {
@@ -215,22 +215,22 @@ describe('document migrations', () => {
 
     expect(() =>
       editor.update.value.replace({
-        ...source(53),
-        schema: { ...source(53).schema, fingerprint: 'wrong' },
+        ...source(1),
+        schema: { ...source(1).schema, fingerprint: 'wrong' },
       })
     ).toThrow('does not match migration source');
     expect(() =>
       editor.update.value.replace({
-        ...source(53),
-        schema: { ...source(53).schema, id: 'other' },
+        ...source(1),
+        schema: { ...source(1).schema, id: 'other' },
       })
     ).toThrow('does not match migration id');
-    expect(() => editor.update.value.replace(source(56))).toThrow(
+    expect(() => editor.update.value.replace(source(4))).toThrow(
       'downgrades are not supported'
     );
     expect(() =>
       editor.update.value.replace({
-        document: source(55).document,
+        document: source(3).document,
         schema: { ...current, fingerprint: 'wrong' },
       })
     ).toThrow('does not match current fingerprint');
@@ -239,7 +239,7 @@ describe('document migrations', () => {
   it('requires a declared fingerprint for every historical envelope', () => {
     const incomplete = defineDocumentMigrations(EditorSchema, {
       steps: migrations.steps,
-      unversioned: 53,
+      unversioned: 1,
     });
     const editor = createEditor({
       migrations: incomplete,
@@ -247,7 +247,7 @@ describe('document migrations', () => {
       skipInitialization: true,
     });
 
-    expect(() => editor.update.value.replace(source(53))).toThrow(
+    expect(() => editor.update.value.replace(source(1))).toThrow(
       'Missing source schema fingerprint'
     );
   });
@@ -259,7 +259,7 @@ describe('document migrations', () => {
       skipInitialization: true,
     });
     const input = {
-      document: source(55).document,
+      document: source(3).document,
       schema: editor.read.schema.identity(),
     };
     const result = migrateDocument(input, { editor, migrations });

@@ -2,7 +2,6 @@
 
 import { Plate, useCreateEditor } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
-import * as React from 'react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';

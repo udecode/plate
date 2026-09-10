@@ -51,6 +51,16 @@ async function fetchIssuePage(state, page) {
   return value;
 }
 
+async function fetchIssuePages(state) {
+  const issues = [];
+
+  for (let page = 1; ; page += 1) {
+    const pageIssues = await fetchIssuePage(state, page);
+    issues.push(...pageIssues);
+    if (pageIssues.length < providerLimit) return issues;
+  }
+}
+
 async function fetchTimeline(number) {
   const events = [];
 
@@ -157,11 +167,10 @@ export async function hydrateIssues() {
   const previousByNumber = new Map(
     previousClassified.map((issue) => [issue.number, issue])
   );
-  const [all, allPageTwo, open, closed] = await Promise.all([
-    fetchIssuePage('all', 1),
-    fetchIssuePage('all', 2),
-    fetchIssuePage('open', 1),
-    fetchIssuePage('closed', 1),
+  const [all, open, closed] = await Promise.all([
+    fetchIssuePages('all'),
+    fetchIssuePages('open'),
+    fetchIssuePages('closed'),
   ]);
   const listed = all
     .map(normalizeListIssue)
@@ -172,11 +181,6 @@ export async function hydrateIssues() {
     .map((issue) => issue.number)
     .sort((a, b) => a - b);
 
-  if (allPageTwo.length !== 0) {
-    throw new Error(
-      `Provider pagination is incomplete: page 2 has ${allPageTwo.length} issues.`
-    );
-  }
   if (new Set(listedNumbers).size !== listedNumbers.length) {
     throw new Error(
       'Forgejo all-state inventory contains duplicate issue numbers.'

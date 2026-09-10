@@ -1,8 +1,4 @@
-import {
-  defineCommand,
-  dispatchCommand,
-  getInstalledEditorExtension,
-} from '../../core';
+import { defineCommand, dispatchCommand } from '../../core';
 import {
   createEditorView,
   createEditor as createPliteEditor,
@@ -17,6 +13,7 @@ import type {
 import { createEditor } from '../../lib/editor';
 import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import { defineBasePlugin } from '../../lib/plugin';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import {
   getCompiledPlateModel,
   getCompiledPlatePlugin,
@@ -135,9 +132,9 @@ describe('Plate model publication', () => {
     expect(getPlateModelPublication(raw)).toBeUndefined();
     expect(getPlateRuntimeCandidate(raw)).toBeUndefined();
     expect(getPluginStore(raw, Plugin.name)).toBeUndefined();
-    expect(
-      getInstalledEditorExtension(raw, 'throwing-bootstrap-correction')
-    ).toBeUndefined();
+    expect(() => Reflect.apply(raw.extension, raw, [Plugin])).toThrow(
+      'not installed'
+    );
 
     shouldThrow = false;
     correctionPaths.length = 0;
@@ -154,9 +151,7 @@ describe('Plate model publication', () => {
     expect(correctionPaths).toEqual([[0], [0, 0]]);
     expect(editor.read.lastCommit()).toBeNull();
     expect(getPlateModelPublication(editor)).toBeDefined();
-    expect(
-      getInstalledEditorExtension(editor, 'retryableBootstrap')
-    ).toBeDefined();
+    expect(() => editor.extension(Plugin)).not.toThrow();
   });
 
   it('invalidates specs minted before a supplied raw editor is bootstrapped', () => {
@@ -248,6 +243,17 @@ describe('Plate model publication', () => {
     expect(getPluginStore(view, Plugin.name)).toBe(
       getPluginStore(editor, Plugin.name)
     );
+    expect(view.plugin(Plugin).store.get('enabled')).toBe(true);
+    expect(view.plugin).toBe(view.plugin);
+    expect(view.plugin).not.toBe(editor.plugin);
+    expect(view.read.schema.element(BaseParagraphPlugin)).toBe(
+      editor.read.schema.element(BaseParagraphPlugin)
+    );
+    expect(view.read.schema.isBlockContent(editor.read.children()[0])).toBe(
+      true
+    );
+    view.plugin(Plugin).store.set({ enabled: false });
+    expect(editor.plugin(Plugin).store.get('enabled')).toBe(false);
     expect(getPlateModelPublication(view)).not.toBe(
       getPlateModelPublication(other)
     );
@@ -278,7 +284,6 @@ describe('Plate model publication', () => {
       getCompiledPlatePlugin(editor, Plugin)
     );
     expect(Reflect.get(runtime.plugins, 'constructor')).toBeUndefined();
-    expect(Reflect.get(runtime.components, 'toString')).toBeUndefined();
     expect(
       Reflect.get(runtime.inputRules.plugins, 'toString').rules
     ).toHaveLength(1);
@@ -475,25 +480,26 @@ describe('Plate model publication', () => {
     ).toThrow();
   });
 
-  it('deep-freezes published component and plugin-cache indexes', () => {
+  it('deep-freezes published plugin-cache indexes', () => {
     const editor = createEditor({
       plugins: [defineBasePlugin('frozenModelIndexes', {})],
     });
-    const { components, pluginCache } = getPlateModelPublication(editor)!;
+    const { pluginCache } = getPlateModelPublication(editor)!;
 
-    expect(Object.isFrozen(components)).toBe(true);
     expect(Object.isFrozen(pluginCache)).toBe(true);
     expect(Object.isFrozen(pluginCache.decorate)).toBe(true);
     expect(Object.isFrozen(pluginCache.on)).toBe(true);
     expect(Object.isFrozen(pluginCache.inject)).toBe(true);
     expect(Object.isFrozen(pluginCache.inject.nodeProps)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject.nodeProps.element)).toBe(true);
+    expect(Object.isFrozen(pluginCache.inject.nodeProps.text)).toBe(true);
     expect(Object.isFrozen(pluginCache.node)).toBe(true);
-    expect(Object.isFrozen(pluginCache.render)).toBe(true);
-    expect(Object.isFrozen(pluginCache.render.aboveEditable)).toBe(true);
+    expect(Object.isFrozen(pluginCache.slots)).toBe(true);
+    expect(Object.isFrozen(pluginCache.slots.wrapContent)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules)).toBe(true);
     expect(Object.isFrozen(pluginCache.rules.match)).toBe(true);
     expect(Object.isFrozen(pluginCache.prepareDocument)).toBe(true);
-    expect(Object.isFrozen(pluginCache.useHooks)).toBe(true);
+    expect(Object.isFrozen(pluginCache.useViewElementAttributes)).toBe(true);
     expect(() =>
       Object.defineProperty(pluginCache.node, 'mutated', { value: 'mutated' })
     ).toThrow();

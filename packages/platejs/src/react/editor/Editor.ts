@@ -26,7 +26,7 @@ import type {
   DynamicPlatePluginPortal,
   PlatePluginPortal,
 } from '../plugin/PlatePlugin';
-import type { PlateCorePlugins } from './getPlateCorePlugins';
+import type { PlateCorePlugins } from './getPlateCorePlugins.internal';
 
 declare const plateEditorReference: unique symbol;
 

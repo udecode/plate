@@ -1,0 +1,77 @@
+{
+  "command": [
+    "turbo",
+    "--filter",
+    "./packages/**",
+    "build",
+    "--dry=json"
+  ],
+  "tasks": [
+    {
+      "taskId": "@platejs/cli#build",
+      "package": "@platejs/cli",
+      "command": "tsdown --config tsdown.config.mts --log-level warn",
+      "dependencies": [
+        "platejs#build"
+      ],
+      "dependents": [],
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      }
+    },
+    {
+      "taskId": "@platejs/test#build",
+      "package": "@platejs/test",
+      "command": "tsdown --config tsdown.config.mts --log-level warn",
+      "dependencies": [
+        "platejs#build"
+      ],
+      "dependents": [],
+      "cache": {
+        "local": true,
+        "remote": false,
+        "status": "HIT",
+        "source": "LOCAL",
+        "timeSaved": 518
+      }
+    },
+    {
+      "taskId": "platejs#build",
+      "package": "platejs",
+      "command": "tsdown --config tsdown.config.mts --log-level warn && tsc --project tsconfig.build.json --pretty false && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist",
+      "dependencies": [
+        "plitejs#build"
+      ],
+      "dependents": [
+        "@platejs/cli#build",
+        "@platejs/test#build"
+      ],
+      "cache": {
+        "local": true,
+        "remote": false,
+        "status": "HIT",
+        "source": "LOCAL",
+        "timeSaved": 8712
+      }
+    },
+    {
+      "taskId": "plitejs#build",
+      "package": "plitejs",
+      "command": "tsdown --config tsdown.config.mts --log-level warn",
+      "dependencies": [],
+      "dependents": [
+        "platejs#build"
+      ],
+      "cache": {
+        "local": true,
+        "remote": false,
+        "status": "HIT",
+        "source": "LOCAL",
+        "timeSaved": 1221
+      }
+    }
+  ]
+}

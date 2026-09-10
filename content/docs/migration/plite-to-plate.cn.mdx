@@ -19,23 +19,24 @@ npm install platejs @tanstack/react-virtual
 
 ```ts
 // 之前
-import { createEditor } from 'plitejs';
-import { Plite, Editable, withReact } from 'plitejs/react';
+import { Plite, Editable, useEditor } from 'plitejs/react';
 
 // 之后
-import { createEditor, Plate, PlateContent } from 'platejs/react';
+import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
 ```
 
 ## 3. 创建 Plate 编辑器
 
-将 Plite 创建器、`withHistory` 和 `withReact` 替换为 Plate 的 `createEditor`：
+在 React 组件中，将 Plite 的 `useEditor` 替换为 Plate 的 `useCreateEditor`：
 
 ```ts
 // 之前
-const editor = useMemo(() => withReact(withHistory(createEditor())), []);
+const editor = useEditor({ initialValue: value });
+```
 
+```ts
 // 之后
-const editor = createEditor({
+const editor = useCreateEditor({
   initialValue: value,
   plugins: [
     // 在此处添加其他插件
@@ -51,7 +52,7 @@ const editor = createEditor({
 
 ```tsx
 // 之前
-<Plite editor={editor} value={value}>
+<Plite editor={editor}>
   <Editable className="p-4" />
 </Plite>
 
@@ -212,7 +213,12 @@ editor.api.debug.log(text);
 Plate 提供了许多内置插件，您可以在侧边栏中查看。使用它们快速添加功能：
 
 ```ts
-import { BoldPlugin, ItalicPlugin, UnderlinePlugin } from 'platejs/react';
+import {
+  BoldPlugin,
+  ItalicPlugin,
+  UnderlinePlugin,
+  useCreateEditor,
+} from 'platejs/react';
 
 const plugins = [
   BoldPlugin,
@@ -221,7 +227,7 @@ const plugins = [
   // ... 其他插件
 ];
 
-const editor = createEditor({
+const editor = useCreateEditor({
   plugins,
 });
 ```

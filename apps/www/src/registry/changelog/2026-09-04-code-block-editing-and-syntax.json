@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-04-code-block-editing-and-syntax",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-04-code-block-editing-and-syntax.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Code blocks preserve selection, composition and indentation with incremental CodeMirror syntax.",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror-demo",
+      "files": [
+        "apps/www/src/registry/examples/code-block-codemirror-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-code-block-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-views-demo",
+      "files": ["apps/www/src/registry/examples/code-block-views-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-04-code-block-blocks-preserve-selection-composition-0d12d240",
+      "kind": "behavior",
+      "summary": "Code blocks preserve selection, composition and indentation with incremental CodeMirror syntax.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "code-block",
+        "code-block-codemirror",
+        "code-block-codemirror-demo",
+        "code-block-views-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-04",
+          "entry": "2026-09-04-code-block-editing-and-syntax",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

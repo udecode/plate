@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the exact active `sync-shadcn` objective after creating this file.
 
@@ -14,10 +16,7 @@ policy before any range plan is written.
 Goal plan:
 {{PLAN_PATH}}
 
-Primary template:
-docs/plans/templates/sync-shadcn.md
-
-Applied packs:
+Optional packs:
 - none by default
 - add `docs` if docs/content pages are edited during an accepted implementation
 - add `browser` if browser-visible docs UI is edited
@@ -51,12 +50,12 @@ Completion threshold:
   and complete, every direct micro-overlap merge is recorded and verified or
   marked N/A, the final response asks the user to review the remaining plan and
   invoke `sync-shadcn` again with the accepted plan/slice, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 - Accepted implementation run: complete only when the accepted slice is
   implemented and verified, excluded/forked rows remain recorded, partial sync
   or baseline advancement semantics are updated in `status.json`, and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 
 Verification surface:
@@ -72,7 +71,9 @@ Verification surface:
   owned by the touched Plate surface.
 
 Constraints:
-- Do not run `build:registry`.
+- Do not run `build:registry` in planning-only work. On `next`, run
+  `pnpm --filter www build:registry` when accepted registry source changes;
+  other branches follow the repository CI-generation rule.
 - Do not edit generated registry output, template output, or generated skill
   mirrors by hand.
 - Do not write `.patch` files into sync run directories. Inspect focused diffs
@@ -82,7 +83,9 @@ Constraints:
 - Do not advance `lastSyncedCommit` until every upstream row through the target
   is accounted for and the user accepts the final accounting.
 - Preserve settled Plate policy unless the user explicitly changes it: discard
-  v0/create/charts/colors/theme/customizer surfaces; keep Plate API MDX, CN
+  v0/charts/colors/theme/customizer and the full upstream project designer;
+  keep the thin Plate `/create` selector for editor presets, Base or Radix,
+  and the eight pinned upstream code styles. Preserve Plate API MDX, CN
   docs, MCP, Plate Plus hooks, GA, home page, editor demos, registry content,
   lazy registry-source loading, and sidebar accordion/filter UX.
 
@@ -93,8 +96,10 @@ Boundaries:
 - Allowed implementation edits only in implementation mode, after later user
   acceptance of a named plan/slice: the files named by the accepted slice plus
   required lock/config/test/doc updates.
-- Non-goals: broad shadcn mirroring, homepage/create/theme adoption, registry
-  build output, and unrelated docs redesign.
+- Non-goals: broad shadcn mirroring, upstream homepage/full project-designer
+  or theme adoption, manual generated-output edits, and unrelated docs
+  redesign. The accepted thin Plate `/create` and registry code styles remain
+  in scope when requested.
 
 Output budget strategy:
 - Do not stream broad upstream diffs or full generated registry output into
@@ -134,7 +139,7 @@ Completion rule:
   `N/A: <reason>`.
 - Do not call `update_goal(status: complete)` until the range plan or accepted
   implementation evidence is recorded below and
-  `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
 - Do not create hook state. This plan, `docs/sync/shadcn/status.json`, and the
   run artifact directory are the durable state.
@@ -143,7 +148,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| `autogoal` loaded and active goal checked/created | pending | pending |
+| Task plan and scope read; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | `sync-shadcn` skill/rule read | pending | pending |
 | Output budget strategy recorded before broad upstream commands | pending | pending |
 | `docs/sync/shadcn/status.json` read | pending | pending |
@@ -210,7 +215,7 @@ Completion Gates:
 | Baseline advancement | pending | Advance `lastSyncedCommit` only if all rows through target are complete and accepted; otherwise record why unchanged | pending |
 | User review boundary | pending | In planning mode, stop and ask the user to review the plan; in implementation mode, record the accepted plan/slice | pending |
 | Output budget discipline | pending | Verify broad output was artifacted/capped, or record accidental output and recovery | pending |
-| Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |

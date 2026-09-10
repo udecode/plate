@@ -10,15 +10,19 @@ import type {
   DOMCoverageReason,
   DOMCoverageSelectionPolicy,
 } from '../../dom/internal';
-import { DOMCoverage } from '../../dom/internal';
-import { ElementPathContext, NodeKeyContext } from '../context';
+import { ElementContext } from '../context';
 import {
   getNodeKey as editorGetNodeKey,
   failInvariant,
 } from '../editable/runtime-editor-api';
-import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commit';
+import {
+  useClaimEditableDOMCommit,
+  useClaimEditableDOMInsertionCommit,
+  useEditableDOMRuntime,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { ImperativeTextFlowContext } from './editable-text-flow';
 
 export type DOMCoverageBoundaryMaterializePayload = {
   boundary: DOMCoverageBoundary;
@@ -54,10 +58,13 @@ export const DOMCoverageBoundaryRange = ({
   to?: number;
 }) => {
   const editor = useEditorContext();
-  const ownerPath = React.useContext(ElementPathContext);
-  const ownerNodeKey = React.useContext(NodeKeyContext);
+  const coverage = useEditableDOMRuntime()?.domCoverage;
+  const owner = React.useContext(ElementContext);
+  const ownerPath = owner?.path ?? null;
+  const ownerNodeKey = owner?.nodeKey ?? null;
 
   useClaimEditableDOMCommit();
+  useClaimEditableDOMInsertionCommit();
 
   const anchorPath = ownerPath ? [...ownerPath, from] : null;
   const focusPath = ownerPath ? [...ownerPath, to] : null;
@@ -97,16 +104,15 @@ export const DOMCoverageBoundaryRange = ({
       return undefined;
     }
 
-    return DOMCoverage.registerBoundary(editor, boundary);
-  }, [boundary, editor, hidden]);
+    return coverage?.registerBoundary(boundary);
+  }, [boundary, coverage, hidden]);
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary || !onMaterialize) {
       return undefined;
     }
 
-    return DOMCoverage.registerMaterializeHandler(
-      editor,
+    return coverage?.registerMaterializeHandler(
       (targetBoundary, materializeReason, options) => {
         if (targetBoundary.boundaryId !== boundary.boundaryId) {
           return false;
@@ -122,10 +128,14 @@ export const DOMCoverageBoundaryRange = ({
         return true;
       }
     );
-  }, [boundary, editor, hidden, onMaterialize]);
+  }, [boundary, coverage, hidden, onMaterialize]);
 
   if (!hidden) {
-    return <>{content}</>;
+    return (
+      <ImperativeTextFlowContext.Provider value={false}>
+        {content}
+      </ImperativeTextFlowContext.Provider>
+    );
   }
 
   return (
@@ -160,11 +170,13 @@ export const DOMCoverageSelfBoundary = ({
   reason?: DOMCoverageReason;
   selectionPolicy?: DOMCoverageSelectionPolicy;
 }) => {
-  const editor = useEditorContext();
-  const ownerPath = React.useContext(ElementPathContext);
-  const ownerNodeKey = React.useContext(NodeKeyContext);
+  const coverage = useEditableDOMRuntime()?.domCoverage;
+  const owner = React.useContext(ElementContext);
+  const ownerPath = owner?.path ?? null;
+  const ownerNodeKey = owner?.nodeKey ?? null;
 
   useClaimEditableDOMCommit();
+  useClaimEditableDOMInsertionCommit();
 
   const boundary =
     ownerPath && ownerNodeKey
@@ -189,16 +201,15 @@ export const DOMCoverageSelfBoundary = ({
       return undefined;
     }
 
-    return DOMCoverage.registerBoundary(editor, boundary);
-  }, [boundary, editor, hidden]);
+    return coverage?.registerBoundary(boundary);
+  }, [boundary, coverage, hidden]);
 
   useIsomorphicLayoutEffect(() => {
     if (!hidden || !boundary || !onMaterialize) {
       return undefined;
     }
 
-    return DOMCoverage.registerMaterializeHandler(
-      editor,
+    return coverage?.registerMaterializeHandler(
       (targetBoundary, materializeReason, options) => {
         if (targetBoundary.boundaryId !== boundary.boundaryId) {
           return false;
@@ -214,10 +225,14 @@ export const DOMCoverageSelfBoundary = ({
         return true;
       }
     );
-  }, [boundary, editor, hidden, onMaterialize]);
+  }, [boundary, coverage, hidden, onMaterialize]);
 
   if (!hidden) {
-    return <>{content}</>;
+    return (
+      <ImperativeTextFlowContext.Provider value={false}>
+        {content}
+      </ImperativeTextFlowContext.Provider>
+    );
   }
 
   return (

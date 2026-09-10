@@ -1,10 +1,6 @@
 import { act, render, waitFor } from '@testing-library/react';
 
 import {
-  getSelection as editorGetSelection,
-  string as editorString,
-} from '../../src/internal';
-import {
   createEditor,
   Editable,
   Plite,
@@ -29,15 +25,6 @@ describe('plite-react DOM capability contract', () => {
 
     return event;
   };
-
-  test('editor.api.react.refreshDecorations is a stable React API method', () => {
-    const editor = createEditor({
-      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
-    });
-
-    expect(typeof editor.api.react.refreshDecorations).toBe('function');
-    expect(() => editor.api.react.refreshDecorations()).not.toThrow();
-  });
 
   test('editor.api.dom owns root, editable, and scroll DOM scope', async () => {
     const editor = createEditor({
@@ -92,11 +79,62 @@ describe('plite-react DOM capability contract', () => {
     });
   });
 
+  test('DOM scope subscriptions follow mounted focus and retirement', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const ScopeProbe = () => (
+      <output
+        data-testid="scope"
+        data-root={useEditorRootElement(editor)?.id ?? ''}
+        data-editable={useEditorEditableElement(editor)?.id ?? ''}
+        data-scroll={useEditorScrollElement(editor)?.id ?? ''}
+      />
+    );
+    const probe = <ScopeProbe />;
+    const tree = (views: number) => (
+      <>
+        {probe}
+        <button type="button">Outside</button>
+        <Plite editor={editor}>
+          {views > 0 && <Editable id="first-view" />}
+          {views > 1 && <Editable id="second-view" />}
+        </Plite>
+      </>
+    );
+    const rendered = render(tree(2));
+    const expectScope = (id: string) => {
+      for (const attribute of ['data-root', 'data-editable', 'data-scroll']) {
+        expect(rendered.getByTestId('scope')).toHaveAttribute(attribute, id);
+      }
+    };
+    try {
+      const first =
+        rendered.container.querySelector<HTMLElement>('#first-view')!;
+      const second =
+        rendered.container.querySelector<HTMLElement>('#second-view')!;
+      await act(async () => first.focus());
+      expect(editor.api.dom.root()).toBe(first);
+      expectScope('first-view');
+      await act(async () => second.focus());
+      expectScope('second-view');
+      await act(async () =>
+        rendered.getByRole('button', { name: 'Outside' }).focus()
+      );
+      expectScope('');
+      rendered.rerender(tree(1));
+      expectScope('first-view');
+      rendered.rerender(tree(0));
+      expectScope('');
+    } finally {
+      rendered.unmount();
+    }
+  });
+
   test('editor.api.dom.focus initializes a null selection at the top of the document', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
     const expectedSelection = {
-      kind: 'text',
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -109,13 +147,13 @@ describe('plite-react DOM capability contract', () => {
       );
     });
 
-    expect(editorGetSelection(editor)).toBe(null);
+    expect(editor.read.selection()).toBe(null);
 
     await act(async () => {
       editor.api.dom.focus();
     });
 
-    expect(editorGetSelection(editor)).toEqual(expectedSelection);
+    expect(editor.read.selection()).toEqual(expectedSelection);
 
     const windowSelection = editor.api.dom.getWindow().getSelection();
 
@@ -133,7 +171,6 @@ describe('plite-react DOM capability contract', () => {
       { type: 'block', children: [{ text: 'bar' }] },
     ];
     const expectedSelection = {
-      kind: 'text',
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     };
@@ -154,21 +191,21 @@ describe('plite-react DOM capability contract', () => {
       editor.api.dom.focus();
     });
 
-    expect(editorGetSelection(editor)).toEqual(expectedSelection);
+    expect(editor.read.selection()).toEqual(expectedSelection);
 
     await act(async () => {
       editor.api.dom.focus();
     });
 
-    expect(editorGetSelection(editor)).toEqual(expectedSelection);
+    expect(editor.read.selection()).toEqual(expectedSelection);
   });
 
   test('editor.api.dom.focus reports a selection change without a value change', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onSelectionChange = jest.fn();
-    const onValueChange = jest.fn();
+    const onCommit = vi.fn();
+    const onSelectionChange = vi.fn();
+    const onValueChange = vi.fn();
 
     act(() => {
       render(
@@ -187,13 +224,12 @@ describe('plite-react DOM capability contract', () => {
       editor.api.dom.focus();
     });
 
-    expect(editorGetSelection(editor)).toEqual({
-      kind: 'text',
+    expect(editor.read.selection()).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
     const expectedSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     };
@@ -227,7 +263,7 @@ describe('plite-react DOM capability contract', () => {
       </Plite>
     );
     const editable = mounted.container.querySelector('[data-plite-editor]')!;
-    const assertDOMRange = jest.spyOn(ReactEditor, 'assertDOMRange');
+    const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
     const [alphaText, bravoText] = Array.from(
       editable.querySelectorAll('[data-plite-string="true"]')
     ).map((node) => node.firstChild);
@@ -252,8 +288,8 @@ describe('plite-react DOM capability contract', () => {
       editor.update((tx) => {
         tx.selection.set({
           kind: 'text',
-          anchor: tx.points.start([]),
-          focus: tx.points.end([]),
+          anchor: tx.points.start([])!,
+          focus: tx.points.end([])!,
         });
       });
     });
@@ -281,14 +317,14 @@ describe('plite-react DOM capability contract', () => {
       </Plite>
     );
     const editable = mounted.container.querySelector('[data-plite-editor]')!;
-    const assertDOMRange = jest.spyOn(ReactEditor, 'assertDOMRange');
+    const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
 
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
           kind: 'text',
-          anchor: tx.points.start([]),
-          focus: tx.points.end([]),
+          anchor: tx.points.start([])!,
+          focus: tx.points.end([])!,
         });
       });
     });
@@ -326,7 +362,6 @@ describe('plite-react DOM capability contract', () => {
 
     await act(async () => {
       editable?.__pliteBrowserHandle?.selectRange({
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -338,7 +373,7 @@ describe('plite-react DOM capability contract', () => {
     });
 
     expect(first.defaultPrevented).toBe(true);
-    await waitFor(() => expect(editorString(editor, [])).toBe('Xalpha'));
+    await waitFor(() => expect(editor.read.text.string([])).toBe('Xalpha'));
 
     const second = createInsertTextBeforeInput('Y');
     await act(async () => {
@@ -346,7 +381,7 @@ describe('plite-react DOM capability contract', () => {
     });
 
     expect(second.defaultPrevented).toBe(true);
-    await waitFor(() => expect(editorString(editor, [])).toBe('XYalpha'));
+    await waitFor(() => expect(editor.read.text.string([])).toBe('XYalpha'));
   });
 
   test('browser handle resolves mounted elements by Plite path without DOM scans', () => {

@@ -1142,7 +1142,7 @@ The preferred v2 surface should talk in terms of:
 
 - decoration sources
 - annotation stores
-- projection runtime
+- Decoration runtime
 - widget layers
 
 Not one magic callback.
@@ -1158,16 +1158,16 @@ Not one magic callback.
 
 ### React runtime
 
-- `createPliteProjectionStore(editor, options)`
-- `useTextProjections(nodeKey, layer?)`
-- `useBlockProjections(nodeKey, layer?)`
+- `<Plite decorations={sources}>`
+- `PliteDecorationSource` with `id`, `read`, and optional `observe`
+- provider-compiled node-key buckets shared by every mounted Editable
+- source-local `refresh({ nodeKeys })` supplied only inside `observe`
 - `useAnchoredWidgets(nodeKey | blockId)`
-- explicit `refresh(sourceId, scope?)`
 
 ### Decorations
 
-- register derived sources
-- sources return logical ranges + payload + layer + priority
+- register ordered sources
+- sources return keyed ranges plus class, style, ARIA, or data attributes
 - overlap is first-class
 
 ### Annotations

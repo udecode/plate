@@ -7,12 +7,12 @@ Plate plugins own one capability: schema, behavior, state, services, reads,
 updates, rendering, or a deliberate combination of them. Define independent
 fields at creation and use terminal configuration only for app-owned values.
 
-- [Getting Started: Components](/docs/installation#components) - Instructions for adding plugins to your editor
+- [Getting Started: Components](/docs/installation/plate-ui) - Instructions for adding plugins to your editor
 - [PlatePlugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
 
-## Basic Plugin Configuration
+## Basic plugin configuration
 
-### New Plugin
+### New plugin
 
 The most basic plugin configuration requires only a `name`:
 
@@ -22,7 +22,7 @@ const MyPlugin = definePlatePlugin("minimal", {});
 
 While this plugin doesn't do anything yet, it's a starting point for more complex configurations.
 
-### Existing Plugin
+### Existing plugin
 
 The `.configure` method allows you to configure an existing plugin:
 
@@ -34,7 +34,7 @@ const ConfiguredPlugin = MyPlugin.configure({
 });
 ```
 
-## Schema Plugins
+## Schema plugins
 
 Schema plugins declare persisted document identity and structure under
 `schema`. React components stay on the plugin root.
@@ -66,7 +66,7 @@ const NoticePlugin = definePlatePlugin("noticeFeature", {
 });
 ```
 
-### Block Content
+### Block content
 
 Plate treats each non-inline element as normal-flow block content unless its
 schema declares `blockContent: false`. Use that flag for structural internals,
@@ -94,7 +94,7 @@ This classification is independent of
 `plugins.blockContent(...)` when they declare which normal-flow blocks they
 accept.
 
-### Inline, Void, and Text Properties
+### Inline, void, and text properties
 
 Element behavior lives inside `schema.element`. Declare a boolean text property
 with a property descriptor under `schema.mark`:
@@ -122,14 +122,14 @@ const CustomBoldPlugin = definePlatePlugin("customBold", {
 });
 ```
 
-## Behavioral Plugins
+## Behavioral plugins
 
 Rather than declare an element or text property, you may want to customize the
 behavior of your editor. Plugin fields describe that behavior.
 
-### Plugin Rules
+### Plugin rules
 
-The `rules` property allows you to configure common editing behaviors like breaking, deleting, and merging nodes without overriding editor methods. This is a powerful way to define intuitive interactions for your custom elements.
+The `rules` property configures editing behaviors such as breaking, deleting, and merging nodes without overriding editor methods.
 
 For example, you can define what happens when a user presses `Enter` in an empty heading, or `Backspace` at the start of a blockquote.
 
@@ -145,7 +145,7 @@ HeadingPlugin.configure({
 
 See the [Plugin Rules guide](/docs/plugin-rules) for a complete list of available rules and actions.
 
-### Event Handlers
+### Event handlers
 
 The `on` field owns both editor lifecycle and React DOM events. A DOM handler receives a
 `PlatePluginContext & { event }` object.
@@ -167,7 +167,7 @@ const ExamplePlugin = definePlatePlugin("example", {
 });
 ```
 
-### Inject Props
+### Inject props
 
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with a `textAlign` property.
 
@@ -217,7 +217,9 @@ binds the bidirectional HTML claim to this plugin's schema. `defineCodecs`
 keeps `value` inferred from the property declaration. Both paths use the
 author callback's compiled `schema.properties.textAlign` handle. Consumers use
 typed node fields or the plugin's semantic capabilities instead of reading that
-property map. Its `name` identifies only the capability namespace.
+property map. Node-prop queries and transforms are pure synchronous functions;
+they cannot call React hooks. View-dependent presentation belongs in a stable
+plugin hook or the owning component. Its `name` identifies only the capability namespace.
 `.configure()` and `.extend()` do not change schema identity. The `schema`
 passed to `createEditor` or `useCreateEditor` may remap an element type or
 relationship; plugin-owned property keys remain fixed. A plugin update passes
@@ -235,11 +237,17 @@ const paragraph = {
 };
 ```
 
-### Add APIs and Transaction Commands
+### Add APIs and transaction commands
 
 Put state-bound queries under `read`, immutable services under `api`, and
 document mutations under `update`. Constructor callbacks receive plugin
 context.
+
+Every top-level `initialState` field is required and must exclude `undefined`.
+Use a concrete default or `null` for an empty value. This also applies to
+state returned by a factory or added through `.extend()`. Nested objects may
+have optional properties; `.configure({ initialState })` can override a subset
+of the defaults.
 
 ```ts
 export type CustomPluginState = {
@@ -269,10 +277,16 @@ editor.api.custom.getPrefix();
 editor.update.custom.insertPrefix();
 ```
 
+An `api` factory receives the exact editor or mounted view that exposes its
+methods. Capture `editor` inside that factory for focus, scrolling, or other
+view work. Outer descriptor-construction callbacks and plugin stores retain
+their shared model lifetime. In React controls, call the API through the
+mounted editor returned by `useEditor()` or `useEditorPlugin()`.
+
 Generic package code can reach the same immutable API object through
 `editor.plugin(CustomPlugin).api.getPrefix()`.
 
-### Native Plite Capabilities
+### Native Plite capabilities
 
 Plate plugins declare Plite capabilities directly at the plugin root. Use
 `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
@@ -311,9 +325,9 @@ An independently reusable standalone Plite descriptor uses
 `defineExtension` from `platejs`. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
-## Advanced Plugin Configuration
+## Advanced plugin configuration
 
-### Plugin Store
+### Plugin store
 
 Each plugin has its own store, which can be used to manage plugin-specific state.
 
@@ -370,7 +384,7 @@ const MyPlugin = definePlatePlugin("myPlugin", {
 });
 ```
 
-### Enabled Flag
+### Enabled flag
 
 The `enabled` property allows you to conditionally enable or disable a plugin:
 
@@ -380,7 +394,7 @@ const MyPlugin = definePlatePlugin("myPlugin", {
 });
 ```
 
-### Optional Capabilities
+### Optional capabilities
 
 Keep optional capabilities as ordinary plugins in the consumer's plugin array.
 When an enhancement needs a host, the enhancement depends on the host:
@@ -396,20 +410,52 @@ const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 Omit `CodeHighlightPlugin` for plain code blocks. The host does not install
 optional enhancements.
 
-### Plugin Order
+### Plugin order
 
 Dependencies load before their dependents. Independent plugins keep the order
 provided by the application:
 
 ```ts
-const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
+const plugins = [LinkPlugin, MentionPlugin, HighlightPlugin];
 ```
 
 Use `dependencies` for a real installation requirement. Competing shortcuts,
 input rules, and codecs own their local `priority`; plugin registration has no
 global priority.
 
-### HTML Input Hooks
+### Decoration styling
+
+Configure `decorate.attributes` in the copied feature file. The existing
+`read` keeps ownership of ranges and semantic markers, and `observe` keeps
+ownership of invalidation.
+
+```tsx
+import { BaseFindPlugin } from 'platejs/find';
+
+const FindPlugin = BaseFindPlugin.configure({
+  decorate: {
+    attributes: { className: 'rounded-sm bg-yellow-200' },
+  },
+});
+```
+
+Use a pure callback for per-range presentation. It receives the inferred plugin
+context, `entry`, and `decoration`. `null` clears inherited presentation.
+Classes concatenate and styles merge shallowly; later attributes win other
+collisions. Keep feature selectors out of shared `Editor` skins. See the
+[decoration API](/docs/api/core/plate-plugin#properties-attrs-decorate).
+
+### View-local element attributes
+
+Use `render.useViewElementAttributes` when a plugin needs reactive attributes
+on a sparse set of whole element hosts. Plate mounts one hook program per
+enabled plugin per view and returns `{ key, attributes }[]`. Keep
+`render.attributes` and `inject.nodeProps.transformProps` pure because those
+callbacks run per node. Inline ranges use `decorate`; structural output uses
+components or slots. See the
+[Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render).
+
+### HTML input hooks
 
 Use hooks on the plugin's `'text/html'` codec to decide whether it participates
 in an HTML input, transform the source string, or transform the decoded
@@ -434,7 +480,7 @@ const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
 `'text/html'` codec. Node-level HTML conversion remains separate from these
 whole-input hooks.
 
-## Typed Plugins
+## Typed plugins
 
 `definePlatePlugin` infers one exact definition from the author object. Keep
 state contracts explicit with a typed `initialState` value or `satisfies`;
@@ -481,7 +527,7 @@ export const SnippetPlugin = definePlatePlugin("snippet", {
 });
 ```
 
-### Using Typed Plugins
+### Using typed plugins
 
 When using typed plugins, you get full type checking and autocompletion ✨
 

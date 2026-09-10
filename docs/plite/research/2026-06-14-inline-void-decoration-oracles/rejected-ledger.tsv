@@ -1,0 +1,4 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+github-code-inline-atom-decoration	unknown	none	GitHub code search returned 0 rows for the broad inline atom decoration query.	Reopen with exact repository or symbol names.
+github-code-contenteditable-composition-decoration	unknown	none	GitHub code search returned 0 rows for the broad contenteditable composition decoration query.	Reopen with exact repository or symbol names.
+raw-broad-lexical-tiptap-milkdown-scan	mixed	none	Broad rg output was too large for active context and did not beat exact source-slice reads.	Redirect to raw artifact first, then sample exact files through read-log rows.

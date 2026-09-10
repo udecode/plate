@@ -38,8 +38,10 @@ stopping at the first package import. Classify it as:
 For a mixed row, classify responsibilities separately. Retain only a durable
 subscription/DOM/accessibility/integration lifecycle in the package, with
 required lifecycle inputs and no renderer prop/state bag. Localize derived
-layout, transient state, trivial pure helpers, and event handlers in the copied
-family; record every deleted return field and exported result/helper type.
+layout, transient rendering state, trivial presentation helpers and presentation
+event wiring in the copied family; record every deleted return field and
+exported result/helper type. Keep semantic calculations and neutral interaction
+lifecycle with their durable owner regardless of current consumer count.
 
 When a registry-local hook depends on a package store, provider, hotkey
 controller, or UI-only plugin extension, move that complete state owner in the
@@ -49,13 +51,14 @@ one family do not increase the terminal-consumer count.
 ## Package extraction
 
 A package extraction is valid when it owns semantic transforms, queries,
-serialization, a controller reused across surfaces, or a headless primitive
+serialization, a durable semantic controller, or a headless primitive
 whose contract is DOM behavior and accessibility. It is invalid when it only
 hides copied registry JSX, labels, classes, menu data, or local popover state.
 
 For a headless primitive such as resizable behavior, verify that the package
 owns pointer/touch/keyboard/RTL/focus/ARIA behavior while the registry owns
-styles, labels, editor persistence, and composition. Private provider/store
+styles, labels and composition. The editor feature owns document constraints
+and persistence; a generic DOM primitive does not. Private provider/store
 plumbing is not part of the public API.
 
 ## Cross-platform direction

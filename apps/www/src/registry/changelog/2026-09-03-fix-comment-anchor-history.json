@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-03-fix-comment-anchor-history",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-03-fix-comment-anchor-history.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-03",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep comments attached through destructive edits and history",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-demo",
+      "files": ["apps/www/src/registry/examples/discussion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-03-comment-keep-comments-attached-through-20b2de16",
+      "kind": "fix",
+      "summary": "Keep comments reachable after complete text deletion, and restore exact highlights through undo and redo.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "discussion", "discussion-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-03",
+          "entry": "2026-09-03-fix-comment-anchor-history",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-03-comment-static-thread-bodies",
+      "kind": "fix",
+      "summary": "Render thread message bodies with the static Plate view so replies do not mount nested editable runtimes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-03",
+          "entry": "2026-09-03-fix-comment-anchor-history",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

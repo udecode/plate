@@ -1,6 +1,6 @@
 import type { Editor as PliteEditor } from '../../facade';
 import { getEditorRuntimeOwner } from '../../facade';
-import type { AnyBasePlugin, EditorShortcut, NodeComponents } from '../../lib';
+import type { AnyBasePlugin, EditorShortcut } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 import type { CompiledPlateShortcut } from './compilePlateShortcuts';
 
@@ -11,29 +11,32 @@ export type PlatePluginCache = Readonly<{
     textChange: readonly string[];
   }>;
   inject: Readonly<{
-    nodeProps: readonly string[];
+    nodeProps: Readonly<{
+      element: readonly string[];
+      text: readonly string[];
+    }>;
   }>;
   node: Readonly<{
     containerTypes: readonly string[];
-    decoratedMarks: readonly string[];
-    textMarks: readonly string[];
-    leafProps: readonly string[];
-    textProps: readonly string[];
+    leafAttributeMarks: readonly string[];
+    leafRenderers: readonly string[];
+    textAttributeMarks: readonly string[];
+    textRenderers: readonly string[];
   }>;
   prepareDocument: readonly string[];
-  render: Readonly<{
-    aboveEditable: readonly string[];
-    aboveNodes: readonly string[];
-    abovePlite: readonly string[];
+  slots: Readonly<{
     afterContainer: readonly string[];
     afterEditable: readonly string[];
+    afterNodeChildren: readonly string[];
     beforeContainer: readonly string[];
     beforeEditable: readonly string[];
-    belowNodes: readonly string[];
-    belowRootNodes: readonly string[];
+    wrapContent: readonly string[];
+    wrapNode: readonly string[];
+    wrapNodeChildren: readonly string[];
+    wrapRoot: readonly string[];
   }>;
   rules: Readonly<{ match: readonly string[] }>;
-  useHooks: readonly string[];
+  useViewElementAttributes: readonly string[];
 }>;
 
 type PublishedEditorShortcut = Readonly<
@@ -48,7 +51,6 @@ type PublishedEditorShortcut = Readonly<
 >;
 
 export type PlateRuntime = Readonly<{
-  components: Readonly<NodeComponents>;
   genericElementToggles: readonly string[];
   inputRules: ResolvedInputRulesMeta;
   pluginCache: PlatePluginCache;

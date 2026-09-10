@@ -53,6 +53,7 @@ mock.module('react-textarea-autosize', () => ({
 }));
 
 mock.module('platejs', () => ({
+  NodeApi: { isElement: () => true },
   isHotkey: (hotkey: string) => (event: KeyboardEvent) =>
     event.key.toLowerCase() === hotkey.toLowerCase(),
   SelectionApi: {
@@ -70,12 +71,20 @@ mock.module('platejs/react', () => ({
   ),
   useEditor: () => ({
     api: { dom: { focus: mock() } },
-    key: mock(),
+    key: () => 'equation-key',
     plugin: () => ({
       api: { set: mock() },
       update: Object.assign(updateWithOptions, { set: mock() }),
     }),
-    read: { nodes: { path: () => [0] }, points: { after: mock() } },
+    read: {
+      nodes: {
+        get: () => [element, [0]],
+        path: () => [0],
+        elementReadOnly: () => false,
+      },
+      points: { after: mock() },
+      view: { isReadOnly: () => readOnly },
+    },
     update: { selection: { set: mock() } },
   }),
   useEditorReadOnly: () => readOnly,
@@ -221,7 +230,7 @@ describe('InlineEquationElement', () => {
     expect(view.getByTestId('popover').dataset.open).toBe('true');
   });
 
-  it('merges an escaped inline rollback into the edit history batch', async () => {
+  it('discards an equation draft without any document write', async () => {
     readOnly = false;
     const { InlineEquationElement } = await import(
       `./math?test=${Math.random().toString(36).slice(2)}`
@@ -247,11 +256,8 @@ describe('InlineEquationElement', () => {
     view.rerender(<InlineEquationElement {...props} />);
 
     expect(input.value).toBe('discarded');
-    expect(setExpression).toHaveBeenCalledWith(
-      { history: 'merge' },
-      { latex: 'discarded' },
-      { at: [0] }
-    );
+    expect(element.latex).toBe('E=mc^2');
+    expect(setExpression).not.toHaveBeenCalled();
     updateWithOptions.mockClear();
     setExpression.mockReset();
 
@@ -259,12 +265,8 @@ describe('InlineEquationElement', () => {
     view.rerender(<InlineEquationElement {...props} />);
 
     expect(input.value).toBe('E=mc^2');
-    expect(updateWithOptions).toHaveBeenCalledWith({ history: 'merge' });
-    expect(setExpression).toHaveBeenCalledWith(
-      { history: 'merge' },
-      { latex: 'E=mc^2' },
-      { at: [0] }
-    );
+    expect(updateWithOptions).not.toHaveBeenCalled();
+    expect(setExpression).not.toHaveBeenCalled();
   });
 
   it('renders external equation updates without writing stale local state', async () => {
@@ -289,6 +291,8 @@ describe('InlineEquationElement', () => {
     view.rerender(<InlineEquationElement {...props} />);
 
     expect(input.value).toBe('a^2 + b^2');
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(element.latex).toBe('a^2 + b^2');
     expect(setExpression).not.toHaveBeenCalled();
   });
 });

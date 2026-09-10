@@ -4,7 +4,7 @@ This is the mandatory first read for Plate and Plite direction.
 
 Root `VISION.md` keeps the essential doctrine every agent must see. Detailed owner doctrine lives in `docs/vision/*.md`; read only the relevant detail file after this root file.
 
-The `vision` skill is only a router. Durable product doctrine belongs here and in `docs/vision/*.md`; operational skills may own the compact method that applies it. When reusable taste, architecture, proof, or automation doctrine changes, update this file and the relevant detail owner.
+Durable product doctrine belongs here and in `docs/vision/*.md`; Task routes work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner.
 
 ## Detail Files
 
@@ -19,12 +19,15 @@ Read this before changing reusable architecture, public APIs, editor behavior, a
 
 Use active plans for run-specific evidence. Use this file and the relevant detail file for durable direction.
 
+## Next beta: Redesign from First Principles
+
+**Redesign from First Principles is the governing principle of `next`.** Start every API or architecture plan, review and feedback decision from the current user job and hard laws: what would we build if these requirements had been present from the start? Apply the full [principle](.agents/skills/principle-redesign-from-first-principles/SKILL.md) and its [Plate decision method](docs/vision/common.md#redesign-from-first-principles).
+
+Existing and proposed APIs, owners, layers and packages must earn their place. Choose the strongest materially justified target, including deletion or replacement, before planning adoption. During beta, compatibility, migration convenience and implementation difficulty affect sequencing, never the target. Preserve hard correctness, security, serialized-data, native-behavior and runtime laws, plus explicit user constraints. Reuse sound decisions while their requirements and evidence hold; prove any adopted change through its real owner.
+
 ## Common Essentials
 
-- Best long-term architecture beats the nearest symptom patch.
 - Package/runtime ownership beats example glue when the bug is systemic.
-- Breaking changes are acceptable when they produce the better API, behavior, or performance shape.
-- Before stability, break public APIs and runtime architecture when `best-api` shows materially better lasting value. Compatibility, migration convenience, compiler difficulty, and current machinery may change sequencing, never the target. Preserve only hard correctness, security, serialized-data, native- behavior, or runtime laws.
 - No fake aliases, no fake compatibility, no hidden migration story in docs.
 - Public docs describe the current API only.
 - Names, flags, config keys, output shapes, docs examples, and workflow conventions are API surface. Add fewer conventions, make them clearer, and do not churn them casually.
@@ -41,11 +44,12 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 - `plitejs` is the raw editor distribution: model, canonical document changes, runtime, explicit DOM/React/history subpaths, selection, browser proof, and unopinionated APIs.
 - `platejs` is the default product/editor framework distribution: plugins, React wrappers, components, ordinary features, opinionated UX, examples, and app-facing docs. Plate applications install and import `platejs`, never `plitejs`. Dedicated raw Plite examples and proof apps import `plitejs` because their job is to verify the substrate itself.
 - Inside `packages/platejs`, only exact facade, proxy, or intentional replacement leaves import `plitejs`. Every first-party plugin, feature, component, spec, type test, fixture, and other user-authorable implementation consumes the relative Plate facade or matching Plate entrypoint owner; package-wide and test-glob raw-import authority is forbidden. `platejs/testing` mirrors raw Plite test helpers for consumer tests.
-- When Plate API names or runtime habits conflict with Slate v2, Slate v2 wins. Break Plate instead of bending Slate or hiding the conflict behind aliases.
+- Plite owns neutral substrate laws. Reuse its API when it fits the current job; repair Plite when that primitive is inadequate. Remove conflicting Plate machinery instead of hiding either problem behind aliases or product glue.
 - Do not fix a Plate product concern by polluting Slate core.
 - Do not hide a Slate primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
 - Canonical editor state and mounted-view presentation have different owners. When an Editable can derive transient paint from its own DOM lifecycle, Plite React owns that behavior and a literal DOM protocol. Plate inherits it; copied product UI marks external focus targets and styles neutral output hooks. Add a controlled view input only when user intent cannot be derived from the mounted view or DOM. Never create editor-global plugin state or a parallel state carrier for a view-local presentation choice.
+- Plate plugin paint has two explicit shapes. Inline ranges use `decorate: { read, observe? }`. Sparse attributes on whole element hosts use `render.useViewElementAttributes`, one hook host per enabled plugin per mounted view, returning `{ key, attributes }[]`. Plate keeps its keyed store, provider, publisher, source identity, cleanup, and compiled precedence private. Per-node `render.attributes` and `inject.nodeProps.transformProps` remain pure and hook-free; components and slots own structure.
 
 ### Evidence Order
 
@@ -63,13 +67,12 @@ Executable tests outrank prose docs for behavior claims. Prose docs outrank test
 ### Automation Essentials
 
 - Long-running automation must repair tests, metrics, skills, and docs while it works. A plan note without a future behavior change is archaeology.
-- `$benchmark` owns performance execution across Plate and Plite: all applicable lanes are inventoried by default, run in cheapest/highest-signal order, paused at a causally proven owner, routed through `best-api` and the correct layer plan when the durable target changes API or runtime architecture, fixed and rerun immediately, then resumed until breadth is complete. `$performance` is the review lens, not a second execution loop.
-- Public repo maintenance is owned by `$maintainer`: issue/PR/security queue, heartbeat, VISION fit, duplicate/claim guard, owner routing, proof gates, and authority boundaries. `$auto` owns long internal Plate/Slate quality loops and routes measured work to `$benchmark`. `$autoclosure` owns post-merge/current-tree until-clean closure of already applied work.
-- `$auto` may be the user-facing front door. `auto PR #123`, `auto issue #123`, `auto all PRs/issues`, and `auto security` immediately route to `$maintainer`; `auto current tree` and `auto post-merge` immediately route to `$autoclosure`; `auto benchmark`, `auto perf`, and performance comparisons route to `$benchmark`; `auto slate` and `auto plate packages` stay in `$auto`. This is routing convenience, not an ownership merge.
+- `$benchmark` owns performance execution across Plate and Plite: all applicable lanes are inventoried by default, run in cheapest/highest-signal order, paused at a causally proven owner, routed through `best-api` and the correct layer plan when the durable target changes API or runtime architecture, fixed and rerun immediately, then resumed until breadth is complete. `$benchmark review` owns the review method.
+- `$maintainer` owns the public issue/PR/security queue, heartbeat, duplicate/claim guard, and public proof gates. `$task autonomous` owns internal Plate/Plite quality loops. `$improve` supplies the recurring whole-project audit and improvement preset through that same method. `$task closure` owns current-checkout closure of already applied work. Measured work routes to `$benchmark`.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate maintenance runs through local Codex sessions in maintainer checkouts, not a hosted API bot that can infer private context. Require enough public repro, proof, risk, and next-action state to route or stop cleanly.
 - Maintainer heartbeat state should be durable and boring: queue snapshot, candidate matrix, selected owner, proof path, authority boundary, run note when useful, and next heartbeat. Chat memory is not the queue ledger.
 - Private security advisory details must not leak into versioned queue docs. Keep public/versioned ledgers redacted and read sensitive details from live GitHub or local ignored artifacts.
-- Source-backed pure improvements may be applied autonomously when they stay inside this vision. Ask only when the change alters taste, product/API direction, human authority, skill topology, security, release policy, or an irreversible side effect.
+- Apply source-backed improvements within the active request's authority, including justified beta architecture and API cuts. Challenge stale doctrine and repair its authorized owner. Task owns permission boundaries; a technical owner transition or a large blast radius does not require another approval. Ask for a missing decision, access, or authority only when it blocks the next action.
 - Multi-step automation must carry resumable state and stop at real approval boundaries. Never auto-approve payments, external sends/posts, credential use, destructive operations, or other irreversible user-authority actions.
 - Agent/harness integrations must preserve the harness's authentication, session, permission, and tool boundary. Do not reimplement model transport or claim stronger isolation than the underlying harness provides.
 - All issue/test harvests are issue-by-issue when the prompt says "all". Clusters and matrices are routing checkpoints, not completion.
@@ -94,7 +97,8 @@ Executable tests outrank prose docs for behavior claims. Prose docs outrank test
 Plite is the raw editor substrate. It must stay unopinionated, precise, and boring in the best way: document model, canonical changes, runtime, input, DOM, selection, history, browser proof, package API, and benchmarks.
 
 - Preserve Plite's simple document model and canonical `DocumentChange` as the sole mutation and commit truth. Transactions construct canonical changes directly; React does not define the core ontology.
-- Public API should teach `editor.read`, `editor.update`, `state`, `tx`, extension groups, commit listeners, and projection sources.
+- Public API should teach `editor.read`, `editor.update`, `state`, `tx`, extension groups, commit listeners, and decoration sources.
+- `<Plite decorations>` is the sole raw Plite input for transient inline paint. Sources return keyed ranges with render-safe attributes; `Editable` only renders them. Annotations use their own provider, and a feature explicitly adapts annotation ranges into decorations when it needs inline paint.
 - Primary-root APIs do not expose a public `main` key. The primary document is addressed by omission; explicit roots are for additional roots only.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.

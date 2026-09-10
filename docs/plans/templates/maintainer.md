@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short maintainer objective, under 240 characters. Put the full
 queue contract in the sections below.
@@ -102,7 +104,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Root VISION.md read | pending | pending |
 | Relevant docs/vision detail read | pending | pending |
 | Repo resolved | pending | pending |
@@ -186,7 +188,7 @@ Completion Gates:
 | Next heartbeat | pending | Name the next useful heartbeat slice or say none safe | pending |
 | Run artifact | pending | Write or explicitly skip `docs/maintainer/runs/*` | pending |
 | Agent-native review | pending | Run/review when agent workflow files changed, else N/A | pending |
-| P1 autoreview | pending | Run with `--max-priority P1` for non-trivial implementation diffs; P2/P3 are opt-in only, else N/A | pending |
+| Task review decision | pending | Reuse Task's single authorized review result or N/A; P1 default, three-invocation scope cap, never on next; no review for direct release sync | pending |
 | Final handoff contract | pending | Report repo/mode/matrix/owner/proof/mutations/changed/attention/next heartbeat | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 

@@ -25,13 +25,11 @@ docs:
 
 ### 安装
 
-最快捷添加代码块功能的方式是使用 `CodeBlockKit`。它组合了 `CodeBlockPlugin`、必需的 `CodeLinePlugin`，以及可移除的 `CodeHighlightPlugin`，并带上三反引号 input rule 和 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷添加代码块功能的方式是使用 `CodeBlockKit`。它组合了 `CodeBlockPlugin` 和可移除的 `CodeHighlightPlugin`，并带上三反引号 input rule 和 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="code-block" />
 
 - [`CodeBlockElement`](/docs/components/code-block): 渲染代码块容器
-- [`CodeLineElement`](/docs/components/code-block): 渲染单行代码
-- [`CodeSyntaxLeaf`](/docs/components/code-block): 渲染语法高亮文本
 
 ### 添加套件
 
@@ -51,6 +49,29 @@ const editor = createEditor({
 
 </Steps>
 
+## 大型代码块
+
+`CodeBlockKit` 将代码保留在原生编辑器 DOM 中。当单个代码块的文本或语法标记使 DOM 变得昂贵时，请显式使用 `CodeBlockCodeMirrorElement`。Plate 仍然拥有规范文本、选择、历史记录、装饰和协作状态；CodeMirror 只拥有代码块挂载后的 DOM 和输入界面。
+
+### 原生 Plate DOM
+
+<ComponentPreview name="code-block-huge-demo" />
+
+### CodeMirror
+
+<ComponentPreview name="code-block-codemirror-demo" />
+
+<ComponentSource name="code-block-codemirror" />
+
+`platejs/code-block/codemirror` 导出 `createCodeMirrorAdapter`，负责 ExternalText
+投影。适配器应在组件外创建，并通过 `props.slots.externalText` 使用；配置为
+`config: { language }`。此可选入口需要 `@codemirror/language`、
+`@codemirror/state` 和 `@codemirror/view`。
+
+`extensions` 配置主题、搜索与编辑命令；`loadLanguage(language)` 返回语言扩展或
+对应的 Promise。配置变更和卸载会使过期加载失效。不要启用 CodeMirror 历史扩展，
+撤销与重做由编辑器共享历史管理。组件中的 Tab 使用两个空格缩进行，Enter 根据语法缩进。
+
 ## 手动使用
 
 <Steps>
@@ -58,12 +79,12 @@ const editor = createEditor({
 ### 安装
 
 ```bash
-npm install platejs @tanstack/react-virtual lowlight
+npm install platejs lowlight
 ```
 
 ### 添加插件
 
-加入 `CodeBlockPlugin` 即可获得代码块编辑行为。它会把 `CodeLinePlugin` 作为必需依赖安装；需要 Lowlight 语法高亮时，再单独加入 `CodeHighlightPlugin`。
+加入 `CodeBlockPlugin` 即可获得代码块编辑行为；需要 Lowlight 语法高亮时，再单独加入 `CodeHighlightPlugin`。
 
 ```tsx
 import { CodeBlockPlugin } from 'platejs/react';
@@ -79,16 +100,16 @@ const editor = createEditor({
 
 ### 配置插件
 
-在各自的能力所有者上配置：`CodeBlockPlugin` 负责编辑，`CodeLinePlugin` 负责代码行渲染，`CodeHighlightPlugin` 负责高亮。
+在各自的能力所有者上配置：`CodeBlockPlugin` 负责多行文本和编辑行为，`CodeHighlightPlugin` 负责高亮。
 
 **包含所有语言的基础设置：**
 
 ```tsx
 import { CodeBlockRules } from 'platejs';
-import { CodeBlockPlugin, CodeHighlightPlugin, CodeLinePlugin } from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
 import { all, createLowlight } from 'lowlight';
 import { createEditor } from 'platejs/react';
-import { CodeBlockElement, CodeLineElement, CodeSyntaxLeaf } from '@/components/editor/code-block';
+import { CodeBlockElement } from '@/components/editor/code-block';
 
 // 创建包含所有语言的 lowlight 实例
 const lowlight = createLowlight(all);
@@ -101,9 +122,7 @@ const editor = createEditor({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
-      component: CodeSyntaxLeaf,
       initialState: { lowlight },
     }),
   ],
@@ -138,9 +157,7 @@ const editor = createEditor({
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
-      component: CodeSyntaxLeaf,
       initialState: {
         lowlight,
         defaultLanguage: 'js', // 设置默认语言（可选）
@@ -156,7 +173,8 @@ const editor = createEditor({
 - `CodeHighlightPlugin.initialState.lowlight`: 用于语法高亮的 lowlight 实例
 - `CodeHighlightPlugin.initialState.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
-- `component`: 为代码行和语法高亮指定组件
+
+每个 `codeBlock` 只包含一个文本子节点。换行符定义物理行；编辑和高亮行为由文本偏移量推导。
 
 需要纯文本代码块时，省略 `CodeHighlightPlugin`：
 
@@ -201,7 +219,7 @@ const editor = createEditor({
 
 ### `CodeBlockPlugin`
 
-负责代码块 schema、编辑行为、input rule、快捷键和命令。`CodeLinePlugin` 是它的必需依赖。
+负责代码块 schema、多行编辑行为、input rule、快捷键和命令。
 
 ### `CodeHighlightPlugin`
 
@@ -218,10 +236,6 @@ const editor = createEditor({
 </APIOptions>
 </API>
 
-### `CodeLinePlugin`
-
-代码块行的必需结构依赖。仅在替换其默认配置或组件时直接加入。
-
 ## 命令
 
 安装 `CodeBlockPlugin` 后，通过命令组修改代码块：
@@ -237,7 +251,7 @@ editor.update.codeBlock.selectAll();
 
 - `insert()` 原地转换选中的空块；对于非空或展开选区，在选区末尾块之后插入段落并转换。无选区时不执行操作。
 - `toggle()` 在普通块和代码块之间切换。
-- `tab()` 与 `untab()` 将选中的代码行缩进或减少两个空格。
+- `tab()` 与 `untab()` 将选中的物理行缩进或减少两个空格。
 - `resetBlock()` 将代码块解包为段落。
 - `selectAll()` 选择当前代码块。
 
@@ -255,6 +269,6 @@ editor.update.codeBlock.selectAll();
 
 <API name="isSelectionAtCodeBlockStart">
 <APIReturns type="boolean">
-  判断选区是否位于代码块第一行开头。
+  判断选区是否位于代码块的绝对开头。
 </APIReturns>
 </API>

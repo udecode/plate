@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 
 import {
@@ -10,6 +10,7 @@ import {
   editorCommands,
   property,
   schema,
+  setEditorReadOnly,
   target,
   TextApi,
   valueCodecs,
@@ -42,12 +43,12 @@ const VariantPlugin = defineBasePlugin('variant', {
 });
 
 const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
+  component: 'u',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  render: {
-    as: 'u',
-    abovePlite: ({ children }) => (
+  slots: {
+    wrapRoot: ({ children }) => (
       <div data-testid="plite-renderer-b">{children}</div>
     ),
     beforeContainer: () => <span data-testid="container-renderer-b" />,
@@ -71,36 +72,40 @@ const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
 let storeDecorationReadCount = 0;
 
 const StoreDecorationPlugin = definePlatePlugin('storeDecoration', {
-  decorate: ({ entry, store }) => {
-    storeDecorationReadCount += 1;
+  decorate: {
+    observe: ({ refresh, store }) =>
+      store.subscribe(() => refresh({ nodeKeys: 'all' })),
+    read: ({ entry, store }) => {
+      storeDecorationReadCount += 1;
 
-    if (!store.get('active') || !TextApi.isText(entry[0])) return [];
+      if (!store.get('active') || !TextApi.isText(entry[0])) return [];
 
-    return [
-      {
-        anchor: { offset: 0, path: entry[1] },
-        focus: { offset: entry[0].text.length, path: entry[1] },
-        storeDecoration: true,
-      },
-    ];
+      return [
+        {
+          attributes: { 'data-testid': 'store-decoration' },
+          key: `store-decoration:${entry[1].join('.')}`,
+          range: {
+            anchor: { offset: 0, path: entry[1] },
+            focus: { offset: entry[0].text.length, path: entry[1] },
+          },
+        },
+      ];
+    },
   },
   initialState: {
     active: false,
-  },
-  render: {
-    leaf: ({ children }) => (
-      <mark data-testid="store-decoration">{children}</mark>
-    ),
   },
 });
 
 let idleDecorationReadCount = 0;
 
 const IdleDecorationPlugin = definePlatePlugin('idleDecoration', {
-  decorate: () => {
-    idleDecorationReadCount += 1;
+  decorate: {
+    read: () => {
+      idleDecorationReadCount += 1;
 
-    return [];
+      return [];
+    },
   },
   initialState: {
     revision: 0,
@@ -144,10 +149,57 @@ const ContainerRefProbe = (props: ContainerSiblingProps) => {
 };
 
 const RefScopePlugin = definePlatePlugin('refScope', {
-  render: {
+  slots: {
     beforeContainer: ContainerRefProbe,
     beforeEditable: EditableRefProbe,
   },
+});
+
+test('wrapRoot receives the exact Editable of each independent view and releases it on detach', () => {
+  const attached = new Set<HTMLDivElement>();
+  const observed = new Set<React.RefObject<HTMLDivElement | null>>();
+  const Integration = definePlatePlugin('viewIntegration', {
+    slots: {
+      // oxlint-disable-next-line eslint/func-name-matching -- Hooks require a named React component in this slot.
+      wrapRoot: function ViewIntegration({ children, editableRef }) {
+        React.useLayoutEffect(() => {
+          observed.add(editableRef);
+          const element = editableRef.current;
+          if (!element) throw new Error('Expected this view Editable');
+          attached.add(element);
+          return () => {
+            attached.delete(element);
+          };
+        }, [editableRef]);
+        return <section>{children}</section>;
+      },
+    },
+  });
+  const editor = createEditor({
+    plugins: [ParagraphPlugin, Integration],
+    initialValue: value,
+  });
+  const assembly = (first = true) => (
+    <React.StrictMode>
+      {first && (
+        <Plate editor={editor} suppressInstanceWarning>
+          <PlateContent data-testid="first-view" />
+        </Plate>
+      )}
+      <Plate editor={editor} suppressInstanceWarning readOnly>
+        <PlateContent data-testid="second-view" />
+      </Plate>
+    </React.StrictMode>
+  );
+  const view = render(assembly());
+  expect(attached).toEqual(
+    new Set([view.getByTestId('first-view'), view.getByTestId('second-view')])
+  );
+  view.rerender(assembly(false));
+  expect(attached).toEqual(new Set([view.getByTestId('second-view')]));
+  view.unmount();
+  expect(attached.size).toBe(0);
+  expect([...observed].every((ref) => ref.current === null)).toBe(true);
 });
 
 const ReadOnlyProbe = () => {
@@ -155,6 +207,19 @@ const ReadOnlyProbe = () => {
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
 
   return <span data-testid="read-only">{String(readOnly)}</span>;
+};
+
+const ReadOnlyToggle = () => {
+  const editor = useEditor();
+  return (
+    <button
+      data-testid="toggle-view"
+      onClick={() => setEditorReadOnly(editor, !editor.read.view.isReadOnly())}
+      type="button"
+    >
+      Toggle read-only
+    </button>
+  );
 };
 
 const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
@@ -172,6 +237,43 @@ const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
 };
 
 describe('PlateContent', () => {
+  it('paints configured decorations in a bare host and refreshes through the existing source', async () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [
+        StoreDecorationPlugin.configure({
+          decorate: {
+            attributes: {
+              className: 'feature-paint',
+              style: { backgroundColor: 'yellow' },
+            },
+          },
+        }),
+      ],
+    });
+    const { getByTestId, queryByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+
+    expect(queryByTestId('store-decoration')).toBeNull();
+    await act(async () => {
+      editor.plugin(StoreDecorationPlugin).store.set({ active: true });
+    });
+    await waitFor(() =>
+      expect(getByTestId('store-decoration')).toHaveClass('feature-paint')
+    );
+    expect(getByTestId('store-decoration').style.backgroundColor).toBe(
+      'yellow'
+    );
+    expect(getByTestId('store-decoration').textContent).toBe('one');
+    await act(async () => {
+      editor.plugin(StoreDecorationPlugin).store.set({ active: false });
+    });
+    await waitFor(() => expect(queryByTestId('store-decoration')).toBeNull());
+  });
+
   it('invalidates a plugin decoration when its own store changes', async () => {
     const editor = createEditor({
       initialValue: value,
@@ -362,7 +464,7 @@ describe('PlateContent', () => {
   it('fails closed only where a custom Plate text component is active', () => {
     const CustomMarkPlugin = definePlatePlugin('customMark', {
       component: ({ children }) => <strong>{children}</strong>,
-      render: { isDecoration: false },
+      render: { mark: { placement: 'text' } },
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -397,8 +499,10 @@ describe('PlateContent', () => {
   it('fails closed where arbitrary text props are active', () => {
     const TextPropsPlugin = definePlatePlugin('textProps', {
       render: {
-        isDecoration: false,
-        textProps: { onBeforeInput: () => {} },
+        mark: {
+          placement: 'text',
+          textAttributes: { onBeforeInput: () => {} },
+        },
       },
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
@@ -468,38 +572,21 @@ describe('PlateContent', () => {
     expect(evaluation.nativeEquivalent).toBe(true);
   });
 
-  it('owns default placeholder presentation above Plite structure', async () => {
+  it('preserves the native placeholder element', async () => {
     const editor = createEditor({
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
-    const { container, rerender } = render(
+    const { container } = render(
       <Plate editor={editor}>
         <PlateContent placeholder="Type something" />
       </Plate>
     );
-
     await waitFor(() => {
       const placeholder = container.querySelector<HTMLElement>(
         '[data-plite-placeholder="true"]'
       );
-
-      expect(placeholder?.style.opacity).toBe('0.333');
-      expect(placeholder?.style.textDecoration).toBe('none');
-    });
-
-    rerender(
-      <Plate editor={editor}>
-        <PlateContent disableDefaultStyles placeholder="Type something" />
-      </Plate>
-    );
-
-    await waitFor(() => {
-      const placeholder = container.querySelector<HTMLElement>(
-        '[data-plite-placeholder="true"]'
-      );
-
-      expect(placeholder?.style.opacity).toBe('');
-      expect(placeholder?.style.textDecoration).toBe('');
+      expect(placeholder?.textContent).toBe('Type something');
+      expect(placeholder?.getAttribute('contenteditable')).toBe('false');
     });
   });
 
@@ -507,10 +594,16 @@ describe('PlateContent', () => {
     const editor = createEditor({
       initialValue: value,
     });
+    let commandEditor: ReturnType<typeof useEditor> | undefined;
+    function CommandProbe() {
+      commandEditor = useEditor();
+      return null;
+    }
     const { getByTestId } = render(
       <Plate editor={editor}>
         <PlateContainer data-testid="plate-shell">
           <PlateContent data-testid="runtime-editable" />
+          <CommandProbe />
         </PlateContainer>
       </Plate>
     );
@@ -518,7 +611,7 @@ describe('PlateContent', () => {
     expect(getByTestId('plate-shell')).toContainElement(
       getByTestId('runtime-editable')
     );
-    expect(editor.api.dom.scroll()).toBe(getByTestId('plate-shell'));
+    expect(commandEditor!.api.dom.scroll()).toBe(getByTestId('plate-shell'));
     expect(Object.hasOwn(editor.runtime, 'uid')).toBe(false);
   });
 
@@ -558,6 +651,68 @@ describe('PlateContent', () => {
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
     });
+  });
+
+  it('tracks imperative readOnly changes when Plate is uncontrolled', async () => {
+    const editor = createEditor({
+      initialValue: value,
+    });
+    const { getByTestId } = render(
+      <Plate editor={editor}>
+        <PlateContent data-testid="runtime-editable" />
+        <ReadOnlyProbe />
+      </Plate>
+    );
+
+    act(() => setEditorReadOnly(editor, true));
+
+    await waitFor(() => {
+      expect(
+        getByTestId('runtime-editable').getAttribute('aria-readonly')
+      ).toBe('true');
+      expect(getByTestId('read-only')).toHaveTextContent('true');
+    });
+
+    act(() => setEditorReadOnly(editor, false));
+
+    await waitFor(() => {
+      expect(
+        getByTestId('runtime-editable').getAttribute('aria-readonly')
+      ).toBeNull();
+      expect(getByTestId('read-only')).toHaveTextContent('false');
+    });
+  });
+
+  it('applies mounted-view read-only changes without changing sibling views', async () => {
+    const editor = createEditor({ initialValue: value });
+    const { getByTestId } = render(
+      <>
+        <Plate editor={editor} suppressInstanceWarning>
+          <PlateContent data-testid="first-view" />
+          <ReadOnlyToggle />
+        </Plate>
+        <Plate editor={editor} suppressInstanceWarning>
+          <PlateContent data-testid="second-view" />
+        </Plate>
+      </>
+    );
+
+    fireEvent.click(getByTestId('toggle-view'));
+    await waitFor(() => {
+      expect(getByTestId('first-view').getAttribute('aria-readonly')).toBe(
+        'true'
+      );
+    });
+    expect(getByTestId('second-view').getAttribute('aria-readonly')).toBeNull();
+    expect(editor.read.view.isReadOnly()).toBe(false);
+
+    fireEvent.click(getByTestId('toggle-view'));
+    await waitFor(() => {
+      expect(
+        getByTestId('first-view').getAttribute('aria-readonly')
+      ).toBeNull();
+    });
+    expect(editor.read.children()).toEqual(value);
   });
 
   it('keeps node and text observers active for the Plate provider lifetime', async () => {
@@ -864,11 +1019,6 @@ describe('PlateContent', () => {
         'aria-readonly',
         'true'
       );
-      expect(typeof editor.api.react.refreshDecorations).toBe('function');
-    });
-
-    act(() => {
-      editor.api.react.refreshDecorations();
     });
   });
 

@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "../../content/docs/api/plite/document-change.mdx",
-      "content": "---\ntitle: Document Change\ndescription: Plite canonical document changes, serialization, and replay.\n---\n\nApplication code mutates documents through `editor.update`. Serialize\n`commit.changes` and import canonical changes through `tx.changes.apply`.\n\nRead [Document Changes](/docs/plite/concepts/05-document-changes) for the\nalgebra and [Canonical Change Substrate](/docs/plite/walkthroughs/07-canonical-change-substrate)\nfor adapter boundaries.\n",
+      "content": "---\ntitle: Document Change\ndescription: Plite canonical document changes, serialization, and replay.\n---\n\nApplication code mutates documents through `editor.update`. Serialize\n`commit.changes` and import canonical changes through `tx.changes.apply`.\n\nRead [Document Changes](/docs/plate/plite/concepts/05-document-changes) for the\nalgebra and [Canonical Change Substrate](/docs/plate/plite/walkthroughs/07-canonical-change-substrate)\nfor adapter boundaries.\n",
       "type": "registry:file",
       "target": "content/docs/plate/api/plite/document-change.mdx"
     }

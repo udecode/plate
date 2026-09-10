@@ -1,5 +1,5 @@
 ---
-description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, lane-specific proof, and P1 autoreview.
+description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, and exact owning-lane proof.
 argument-hint: '[repair <expectation> | <one bug report, route, failing test, or observable regression case>]'
 disable-model-invocation: true
 name: patch
@@ -9,6 +9,9 @@ metadata:
 ---
 
 # Patch
+
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
 
 Handle $ARGUMENTS.
 
@@ -20,18 +23,18 @@ regression:
 
 ```txt
 reproduce -> classify -> red proof -> fix durable owner
--> architecture pressure -> verify -> P1 autoreview -> handoff
+-> architecture pressure -> verify -> handoff
 ```
 
 It owns local code and proof only. It does not read or mutate public issue/PR
-state. Use `resolve-slate-issue` when a Slate issue is the public target and
+state. Use `maintainer slate-issue` when a Slate issue is the public target and
 `maintainer` for a public Plate issue; let the coordinator delegate the local
 repair here.
 
 ## Use When
 
 - The user invokes `patch`.
-- `regression`, `maintainer`, or `resolve-slate-issue` delegates a
+- `regression`, `maintainer`, or `maintainer slate-issue` delegates a
   normalized one-case local repair packet. The packet may retain issue, corpus,
   or report references for provenance; do not treat that as public-mutation
   authority.
@@ -45,7 +48,7 @@ repair here.
 ## Do Not Use When
 
 - A direct user prompt names a public issue or PR, even when it asks for a
-  local-only fix or no public mutation. Use `resolve-slate-issue` for one Slate
+  local-only fix or no public mutation. Use `maintainer slate-issue` for one Slate
   issue or `maintainer` for Plate/public queue work; accept issue provenance
   only inside the normalized local repair packet that coordinator delegates
   back here.
@@ -55,9 +58,9 @@ repair here.
   `maintainer`.
 - The prompt asks for a regression cluster, multi-issue batch, harness rewrite,
   or rewrite-closure loop. Use `regression` directly or through
-  `auto regression`; Regression normalizes and prioritizes
+  `task autonomous regression`; Regression normalizes and prioritizes
   cases, then delegates exactly one observable repair case here at a time.
-- The prompt asks for broad or timed quality work. Use `auto`.
+- The prompt asks for broad or timed quality work. Use `task autonomous`.
 - The prompt asks only for an architecture plan. Use `plite-plan` or
   `plate-plan` after classifying the owning lane.
 - Reusable public call shape is unresolved. Use `best-api`, then the owning
@@ -114,7 +117,7 @@ Plite owns only editor-agnostic substrate behavior.
   pass known-correct single-layer, known-absent, and known-invalid
   duplicate-layer controls through the identical capture path. Without that
   oracle, return `needs-repro`; never claim fixed.
-- End non-trivial implementation work with P1 `autoreview` by passing
+- When Task's review gate applies, use its single P1 `autoreview` budget by passing
   `--max-priority P1`. Use P2 or P3 only when explicitly requested.
 - A claimed `candidate-local`, `kept`, or `completed` fix that later fails its
   exact replay/final verification, or receives a reporter contradiction, is a
@@ -153,12 +156,12 @@ Do not hand-edit `.agents/skills/**/SKILL.md`.
 
 ## Goal Setup
 
-Use `autogoal` for non-trivial work.
+Use one Task-owned file plan for non-trivial work. Apply the project's standing Autogoal request when this work becomes long-running.
 
 ```txt
 Fix <Plate or Plite> behavior bug or regression <one observable case>; done when
-reproduction, durable behavior coverage, focused owning-lane proof, and P1
-autoreview pass in the current Plate checkout.
+reproduction, durable behavior coverage, and focused owning-lane proof pass in
+the current Plate checkout, with Task's applicable review gate resolved.
 ```
 
 Add Browser or package proof packs only when the claim needs them. Add the
@@ -373,9 +376,9 @@ the reporter environment, stop with `methodology-repair` or `needs-repro`.
 Package tests, DOM reads, screenshots, autoreview, and green proxy routes cannot
 upgrade that blocker into a behavior claim.
 
-### 7. P1 Autoreview
+### 7. Review When Applicable
 
-For non-trivial diffs:
+Only when Task's explicit-review or PR-closeout gate applies, and never on `next`:
 
 1. Load `.agents/skills/autoreview/SKILL.md` for the P1 review contract.
 2. Review the actual current-checkout diff with a strict file boundary and
@@ -386,12 +389,13 @@ For non-trivial diffs:
    gates pass.
 5. Rerun focused proof and P1 autoreview as needed, with at most three helper
    invocations for the unchanged review scope. The initial review counts as 1.
-   If invocation 3 still has an accepted actionable finding, stop and return it
-   as unresolved instead of claiming the patch clean.
+   An exhausted review budget does not stop authorized repairs. Resolve known
+   defects with focused proof, report the actual review limit, and do not claim
+   an unperformed clean review.
 
 ## Coordinator Handoff
 
-When invoked by `regression`, `resolve-slate-issue`, or `maintainer`,
+When invoked by `regression`, `maintainer slate-issue`, or `maintainer`,
 return a compact evidence packet:
 
 - classification and root cause;
@@ -403,7 +407,7 @@ return a compact evidence packet:
 - Browser/device proof or explicit limitation;
 - architecture-pressure verdict;
 - changeset status;
-- P1 autoreview result;
+- Task review result, or N/A with its applicability reason;
 - unresolved caveat.
 
 For `regression`, also return the executable test path and command, exact red
@@ -426,5 +430,5 @@ Keep it short:
 - root cause and durable owner;
 - architecture-pressure verdict;
 - tests and Browser proof;
-- changeset and P1 autoreview status;
+- changeset and Task review status, including N/A when review does not apply;
 - unresolved gate or next owner.

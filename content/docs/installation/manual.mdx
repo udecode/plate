@@ -7,10 +7,10 @@ This guide walks you through setting up Plate from scratch, giving you full cont
 
 <Steps>
 
-### Create Project
+### Create project
 
 <Callout type="info">
-This guide uses **Vite** for demonstrating the initial project setup. Plate is framework-agnostic and integrates seamlessly with other React environments like Next.js or Remix. You can adapt the general setup principles to your chosen framework.
+This guide uses **Vite** for the initial project setup. The editor code also works in other React environments; adapt the build configuration to your framework.
 </Callout>
 
 To begin with Vite, create a new project and select the **React + TypeScript** template:
@@ -27,7 +27,7 @@ Install `platejs` for the core editor runtime and React components.
 npm install platejs @tanstack/react-virtual
 ```
 
-### TypeScript Configuration
+### TypeScript configuration
 
 Plate provides ESM packages. If you're using TypeScript, ensure your `tsconfig.json` is configured correctly. The recommended setup for Plate requires TypeScript 5.0+ with the `"moduleResolution": "bundler"` setting:
 
@@ -44,10 +44,10 @@ Plate provides ESM packages. If you're using TypeScript, ensure your `tsconfig.j
 ```
 
 <Callout type="info">
-  If you cannot use `"moduleResolution": "bundler"` or are on an older TypeScript version, please see our [full TypeScript guide](/docs/typescript) for alternative configurations using path aliases.
+  For Node.js module resolution and import troubleshooting, see the [TypeScript guide](/docs/typescript).
 </Callout>
 
-### Create Your First Editor
+### Create your first editor
 
 Start by creating a basic editor component. This example sets up a simple editor.
 
@@ -78,7 +78,7 @@ export default function App() {
 
 At this point, you'll have a very basic editor capable of displaying and editing plain text.
 
-### Adding Basic Marks
+### Adding basic marks
 
 Let's add support for basic text formatting like bold, italic, and underline.
 
@@ -141,7 +141,7 @@ export default function App() {
 
 You'll need to implement your own toolbar to apply these marks. For example, to toggle bold: `editor.update.bold.toggle()`.
 
-### Adding Basic Elements
+### Adding basic elements
 
 Now, let's add support for block-level elements like headings, and blockquotes.
 
@@ -241,7 +241,7 @@ export default function App() {
 
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
 
-### Handling Editor Value
+### Handling editor value
 
 To make the editor's content persistent, let's integrate state management to save and load the editor's value.
 
@@ -380,7 +380,7 @@ export default function App() {
 
 <ComponentPreview name="installation-next-demo" />
 
-### Next Steps
+### Next steps
 
 You've now set up a basic Plate editor manually! From here, you can:
 
@@ -388,7 +388,7 @@ You've now set up a basic Plate editor manually! From here, you can:
     *   For a quick start with pre-built components, consider using [Plate UI](/docs/installation/plate-ui)
     *   Or continue styling manually using CSS, CSS-in-JS libraries, or your preferred styling solution
 *   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `platejs`) and add them to your `plugins` array.
-*   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/transforms) to apply formatting (e.g., `editor.update.bold.toggle()`, `editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`). You can also use the editor state with the [Editor API](/docs/api).
+*   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/plite/api/transforms) to apply formatting (e.g., `editor.update.bold.toggle()`, `editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`). You can also use the editor state with the [Editor API](/docs/api).
 *   **Learn More:**
     *   [Editor Configuration](/docs/editor)
     *   [Plugin Configuration](/docs/plugin)

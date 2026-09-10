@@ -9,7 +9,6 @@ import {
   select as editorSelect,
   string as editorString,
 } from '../../src/internal';
-import type { ReactEditor } from '../../src/react';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -20,6 +19,7 @@ import {
   applyModelOwnedNativeHistoryEvent,
 } from '../../src/react/editable/model-input-strategy';
 import { applyModelOwnedDataTransferInput } from '../../src/react/editable/mutation-controller';
+import type { ReactRuntimeEditor as ReactEditor } from '../../src/react/plugin/react-editor';
 
 const createTextEditor = (text = '', offset = 0, type = 'paragraph') => {
   const editor = createEditor();
@@ -111,7 +111,7 @@ describe('model input strategy', () => {
           kind: 'insert-data',
         },
         data,
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertFromPaste',
         native: false,
@@ -132,7 +132,7 @@ describe('model input strategy', () => {
         text: 'kernel',
       },
       data: 'event',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -154,7 +154,7 @@ describe('model input strategy', () => {
         text: '!',
       },
       data: '!',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -172,7 +172,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path for empty marks', () => {
     const editor = createTextEditor('abcd', 2);
-    const events: Array<{ id: string; kind: string }> = [];
+    const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -197,7 +197,7 @@ describe('model input strategy', () => {
           text: '!',
         },
         data: '!',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
@@ -228,7 +228,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path at the start of a plain leaf', () => {
     const editor = createTextEditor('', 0);
-    const events: Array<{ id: string; kind: string }> = [];
+    const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -253,7 +253,7 @@ describe('model input strategy', () => {
           text: 'a',
         },
         data: 'a',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
@@ -284,7 +284,7 @@ describe('model input strategy', () => {
 
   it('uses the direct collapsed insert path at the start of a nested plain leaf', () => {
     const editor = createEditor();
-    const events: Array<{ id: string; kind: string }> = [];
+    const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -323,7 +323,7 @@ describe('model input strategy', () => {
           text: 'a',
         },
         data: 'a',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
@@ -355,12 +355,12 @@ describe('model input strategy', () => {
   it('does not use the direct collapsed insert path when empty marks clear a marked leaf', () => {
     const editor = createEditor();
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
       marks: {},
     };
-    const events: Array<{ id: string; kind: string }> = [];
+    const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
         __PLITE_REACT_RENDER_PROFILER__?: unknown;
@@ -395,7 +395,7 @@ describe('model input strategy', () => {
           text: ' Plain',
         },
         data: ' Plain',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
@@ -429,7 +429,7 @@ describe('model input strategy', () => {
   it('replaces expanded beforeinput target ranges with typed text', () => {
     const editor = createEditor();
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     };
@@ -449,7 +449,7 @@ describe('model input strategy', () => {
         text: 'X',
       },
       data: 'X',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -490,7 +490,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: ' ',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -498,7 +498,7 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(editor.read((state) => state.nodes.get([0])[0])).toEqual({
+    expect(editor.read((state) => state.nodes.get([0])![0])).toEqual({
       type: 'list-item',
       children: [{ text: '' }],
     });
@@ -507,7 +507,7 @@ describe('model input strategy', () => {
   it('routes Android-style replacement text through model-owned beforeinput', () => {
     const editor = createTextEditor('alpha beta');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'alpha '.length },
       focus: { path: [0, 0], offset: 'alpha beta'.length },
     };
@@ -516,7 +516,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: 'omega',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertReplacementText',
       native: false,
@@ -539,7 +539,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: 'S',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -548,7 +548,7 @@ describe('model input strategy', () => {
     });
 
     const replacementSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     };
@@ -557,7 +557,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: 'I',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertReplacementText',
       native: false,
@@ -577,14 +577,14 @@ describe('model input strategy', () => {
   it('uses the provided replacement target after native text repair moves selection', () => {
     const editor = createTextEditor('iS', 2);
     const replacementSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     };
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: 'I',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertReplacementText',
       native: false,
@@ -606,7 +606,7 @@ describe('model input strategy', () => {
 
     const firstRepair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertTranspose',
       native: false,
@@ -632,7 +632,7 @@ describe('model input strategy', () => {
 
     const secondRepair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertTranspose',
       native: false,
@@ -655,7 +655,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertParagraph',
       native: false,
@@ -687,7 +687,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: 'A',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -709,7 +709,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: 'hello',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertReplacementText',
       native: false,
@@ -731,7 +731,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: 'hello',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertFromComposition',
       native: false,
@@ -743,7 +743,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertParagraph',
       native: false,
@@ -760,7 +760,7 @@ describe('model input strategy', () => {
 
     applyModelOwnedBeforeInputMutation({
       data: 'world',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
@@ -782,7 +782,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteContentBackward',
       native: false,
@@ -819,7 +819,7 @@ describe('model input strategy', () => {
 
       const repair = applyModelOwnedBeforeInputMutation({
         data: null,
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType,
         native: false,
@@ -852,7 +852,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteHardLineBackward',
       native: false,
@@ -896,7 +896,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteSoftLineForward',
       native: false,
@@ -929,7 +929,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteContentBackward',
       native: false,
@@ -958,7 +958,7 @@ describe('model input strategy', () => {
   it('replaces expanded CJK composition selection once', () => {
     const editor = createTextEditor('prefix stale suffix');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'prefix '.length },
       focus: { path: [0, 0], offset: 'prefix stale'.length },
     };
@@ -967,7 +967,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: '中文',
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'insertFromComposition',
       native: false,
@@ -987,7 +987,7 @@ describe('model input strategy', () => {
   it('keeps composing when compositionend precedes insertFromComposition', () => {
     const editor = createTextEditor('prefix stale suffix');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'prefix '.length },
       focus: { path: [0, 0], offset: 'prefix stale'.length },
     };
@@ -1001,7 +1001,7 @@ describe('model input strategy', () => {
     try {
       applyModelOwnedBeforeInputMutation({
         data: '中文',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertFromComposition',
         native: false,
@@ -1021,7 +1021,7 @@ describe('model input strategy', () => {
   it('clears composing when insertFromComposition precedes compositionend', () => {
     const editor = createTextEditor('prefix stale suffix');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 'prefix '.length },
       focus: { path: [0, 0], offset: 'prefix stale'.length },
     };
@@ -1035,7 +1035,7 @@ describe('model input strategy', () => {
     try {
       applyModelOwnedBeforeInputMutation({
         data: '中文',
-        deferredMutations: { current: [] },
+
         editor: editor as ReactEditor,
         inputType: 'insertFromComposition',
         native: false,
@@ -1055,7 +1055,7 @@ describe('model input strategy', () => {
   it('deletes expanded CJK composition selection once', () => {
     const editor = createTextEditor('中文');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -1064,7 +1064,7 @@ describe('model input strategy', () => {
 
     const repair = applyModelOwnedBeforeInputMutation({
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteByComposition',
       native: false,
@@ -1093,7 +1093,7 @@ describe('model input strategy', () => {
   it('refreshes selection-dependent delete commands after DOM selection import', () => {
     const editor = createTextEditor('abcd', 2);
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     };
@@ -1103,7 +1103,7 @@ describe('model input strategy', () => {
     applyModelOwnedBeforeInputMutation({
       command: { direction: 'backward', kind: 'delete' },
       data: null,
-      deferredMutations: { current: [] },
+
       editor: editor as ReactEditor,
       inputType: 'deleteContentBackward',
       native: false,

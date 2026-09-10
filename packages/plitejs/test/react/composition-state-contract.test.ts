@@ -1,5 +1,5 @@
-import { createEditor } from 'plitejs';
 import { history } from 'plitejs/history';
+import { createEditor, type Editor } from 'plitejs/react';
 import type { CompositionEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -37,7 +37,27 @@ import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
 } from '../../src/react/editable/runtime-before-input-events';
+import type { AndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
+import { readTextSelection } from './read-text-selection';
+
+const createAndroidManager = () =>
+  ({
+    flush: vi.fn(),
+    prepareDOMTeardown: vi.fn(),
+    scheduleFlush: vi.fn(),
+    hasPendingDiffs: vi.fn(() => false),
+    hasPendingAction: vi.fn(() => false),
+    hasPendingChanges: vi.fn(() => false),
+    isFlushing: vi.fn(() => false),
+    handleUserSelect: vi.fn(),
+    handleCompositionEnd: vi.fn(),
+    handleCompositionStart: vi.fn(),
+    handleDOMBeforeInput: vi.fn(),
+    handleKeyDown: vi.fn(),
+    handleDomMutations: vi.fn(),
+    handleInput: vi.fn(() => false),
+  }) satisfies AndroidInputManager;
 
 const createTextEditor = (text = 'abcd') => {
   const editor = createEditor();
@@ -51,17 +71,17 @@ const createTextEditor = (text = 'abcd') => {
     },
   });
 
-  return editor as ReactEditor;
+  return editor;
 };
 
-const readVisibleEditorState = (editor: ReactEditor) =>
+const readVisibleEditorState = (editor: Editor) =>
   editor.read((state) => ({
     selection: structuredClone(state.selection()),
     value: structuredClone(state.value()),
   }));
 
 const createMarkedHistoryEditor = () => {
-  const editor = createEditor({ extensions: [history()] }) as ReactEditor;
+  const editor = createEditor({ extensions: [history()] });
 
   editorReplace(editor, {
     children: [
@@ -87,10 +107,12 @@ const createMarkedHistoryEditor = () => {
 const createCompositionEvent = (
   data = '',
   textContent: string | null = null,
-  currentTarget: Pick<HTMLElement, 'querySelectorAll' | 'textContent'> = {
-    querySelectorAll: () => [],
-    textContent,
-  }
+  currentTarget: Pick<
+    HTMLElement,
+    'querySelectorAll' | 'textContent'
+  > = Object.assign(document.createElement('div'), {
+    textContent: textContent ?? '',
+  })
 ) => {
   const event = {
     currentTarget,
@@ -148,7 +170,7 @@ describe('composition state', () => {
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
     const inputController = createInputController();
-    const androidInputManager = { handleCompositionStart: vi.fn() };
+    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
@@ -186,7 +208,9 @@ describe('composition state', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    let pendingInput: PendingCompositionInput | null = null;
+    const pendingInput: { current: PendingCompositionInput | null } = {
+      current: null,
+    };
 
     try {
       applyEditableCompositionStart({
@@ -196,7 +220,7 @@ describe('composition state', () => {
         inputController,
         setComposing: vi.fn(),
       });
-      const compositionSelection = editorGetSelection(editor);
+      const compositionSelection = readTextSelection(editor);
 
       expect(compositionSelection).not.toBeNull();
       expect(editorString(editor, [])).toBe('This is , done');
@@ -206,7 +230,7 @@ describe('composition state', () => {
         ownership: 'plite',
         phase: 'end-pending',
         replaceWithInput: (input) => {
-          pendingInput = input;
+          pendingInput.current = input;
           return true;
         },
       };
@@ -227,12 +251,12 @@ describe('composition state', () => {
         })
       ).toBe(true);
 
-      if (!pendingInput || !compositionSelection) {
+      if (!pendingInput.current || !compositionSelection) {
         throw new Error('expected queued composition input');
       }
-      expect(pendingInput.commit(compositionSelection, { publish: true })).toBe(
-        true
-      );
+      expect(
+        pendingInput.current.commit(compositionSelection, { publish: true })
+      ).toBe(true);
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
@@ -274,7 +298,7 @@ describe('composition state', () => {
         inputController,
         setComposing: vi.fn(),
       });
-      const compositionSelection = editorGetSelection(editor);
+      const compositionSelection = readTextSelection(editor);
 
       expect(compositionSelection).not.toBeNull();
       applyModelOwnedBeforeInputMutation({
@@ -317,7 +341,7 @@ describe('composition state', () => {
         inputController,
         setComposing: vi.fn(),
       });
-      const compositionSelection = editorGetSelection(editor);
+      const compositionSelection = readTextSelection(editor);
 
       if (!compositionSelection) {
         throw new Error('expected composition selection');
@@ -347,7 +371,7 @@ describe('composition state', () => {
   });
 
   it('does not merge collapsed composition input with an unrelated edit', () => {
-    const editor = createEditor({ extensions: [history()] }) as ReactEditor;
+    const editor = createEditor({ extensions: [history()] });
     const firstSelection = {
       kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },
@@ -397,7 +421,7 @@ describe('composition state', () => {
         inputType: 'insertFromComposition',
         mergeHistory: shouldMergeEditableCompositionHistory(inputController),
         native: false,
-        selection: editorGetSelection(editor),
+        selection: readTextSelection(editor),
         setComposing: vi.fn(),
       });
 
@@ -417,7 +441,7 @@ describe('composition state', () => {
   it('defers Chrome fallback replacement until compositionend releases the DOM', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文', 'a文d');
-    const androidInputManager = { handleCompositionEnd: vi.fn() };
+    const androidInputManager = createAndroidManager();
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
@@ -653,7 +677,7 @@ describe('composition state', () => {
           throw new Error('expected Plite-owned composition end');
         }
         if (phase === 'input-claimed') {
-          const selection = editorGetSelection(editor);
+          const selection = readTextSelection(editor);
 
           if (!selection) throw new Error('expected composition selection');
           queuePendingCompositionModelInput({
@@ -924,11 +948,21 @@ describe('composition state', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    const compositionSelection = editorGetSelection(editor);
+    const compositionSelection = readTextSelection(editor);
+    const anchorFields = {
+      association: 'inward' as const,
+      deletion: 'drop' as const,
+      kind: 'range' as const,
+      root: undefined,
+      resolve: () => compositionSelection,
+    };
     const anchor = vi
       .spyOn(editor, 'anchor')
-      .mockReturnValueOnce({ release: () => compositionSelection })
-      .mockReturnValueOnce({ release: () => null });
+      .mockReturnValueOnce({
+        ...anchorFields,
+        release: () => compositionSelection,
+      })
+      .mockReturnValueOnce({ ...anchorFields, release: () => null });
     const scheduled: Array<{ callback: () => void; cancelled: boolean }> = [];
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
       vi.fn((_phase, _label, callback) => {
@@ -1593,12 +1627,21 @@ describe('composition state', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    let cleanupRead: { mockRestore: () => void } | null = null;
+    const cleanupRead: { current: { mockRestore: () => void } | null } = {
+      current: null,
+    };
     const anchor = vi.spyOn(editor, 'anchor').mockReturnValue({
+      association: 'inward',
+      deletion: 'drop',
+      kind: 'range',
+      root: undefined,
+      resolve: () => null,
       release: () => {
-        cleanupRead = vi.spyOn(editor, 'read').mockImplementation(() => {
-          throw cleanupFailure;
-        });
+        cleanupRead.current = vi
+          .spyOn(editor, 'read')
+          .mockImplementation(() => {
+            throw cleanupFailure;
+          });
         throw targetFailure;
       },
     });
@@ -1656,7 +1699,7 @@ describe('composition state', () => {
       expect(EDITOR_TO_PENDING_INSERTION_MARKS.has(editor)).toBe(false);
       expect(EDITOR_TO_USER_MARKS.has(editor)).toBe(false);
     } finally {
-      cleanupRead?.mockRestore();
+      cleanupRead.current?.mockRestore();
       anchor.mockRestore();
       hasSelectableTarget.mockRestore();
     }
@@ -1691,7 +1734,9 @@ describe('composition state', () => {
       });
       if (!nextValue) throw finishFailure;
     };
-    let cleanupUpdate: { mockRestore: () => void } | null = null;
+    const cleanupUpdate: { current: { mockRestore: () => void } | null } = {
+      current: null,
+    };
 
     beginEditableCompositionSession(inputController);
     setComposing(true);
@@ -1720,9 +1765,11 @@ describe('composition state', () => {
           });
           markEditableCompositionModelCommitted(inputController);
           EDITOR_TO_USER_MARKS.set(editor, { italic: true });
-          cleanupUpdate = vi.spyOn(editor, 'update').mockImplementation(() => {
-            throw cleanupFailure;
-          });
+          cleanupUpdate.current = vi
+            .spyOn(editor, 'update')
+            .mockImplementation(() => {
+              throw cleanupFailure;
+            });
           throw modelFailure;
         },
         complete: vi.fn(),
@@ -1752,7 +1799,7 @@ describe('composition state', () => {
       });
       expect(EDITOR_TO_USER_MARKS.has(editor)).toBe(false);
     } finally {
-      cleanupUpdate?.mockRestore();
+      cleanupUpdate.current?.mockRestore();
       inputController.state.pendingCompositionEnd?.cancel();
       hasSelectableTarget.mockRestore();
     }
@@ -1858,7 +1905,7 @@ describe('composition state', () => {
     frame.contentDocument!.body.append(root);
     const event = createCompositionEvent('文', 'a文d', root);
     const inputController = createInputController();
-    const manager = { handleCompositionEnd: vi.fn() };
+    const manager = createAndroidManager();
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
       vi.fn(() => () => {});
     const hasSelectableTarget = vi
@@ -1895,7 +1942,7 @@ describe('composition state', () => {
   it('defers externally owned composition completion without running fallback', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文', 'a文d');
-    const androidInputManager = { handleCompositionEnd: vi.fn() };
+    const androidInputManager = createAndroidManager();
     const onCompositionEnd = vi.fn(() => true);
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
@@ -2179,7 +2226,7 @@ describe('composition state', () => {
     const event = createCompositionEvent('文');
     const setComposing = vi.fn();
     const onCompositionStart = vi.fn();
-    const androidInputManager = { handleCompositionStart: vi.fn() };
+    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);
@@ -2210,7 +2257,7 @@ describe('composition state', () => {
     const event = createCompositionEvent('!');
     const setComposing = vi.fn();
     const onCompositionEnd = vi.fn();
-    const androidInputManager = { handleCompositionEnd: vi.fn() };
+    const androidInputManager = createAndroidManager();
     const hasEditableTarget = vi
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(true);

@@ -8,16 +8,6 @@ export type TabbableEntry = {
   slateNode: Node;
 };
 
-export type TabDestination =
-  | { domNode: FocusableElement; type: 'dom-node' }
-  | { path: Path; type: 'path' };
-
-export type FindTabDestinationOptions = {
-  activeTabbableEntry: TabbableEntry | null;
-  direction: 'backward' | 'forward';
-  tabbableEntries: TabbableEntry[];
-};
-
 export type TabbablePluginState = {
   /**
    * When true, the plugin will add its event listener to the document instead

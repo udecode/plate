@@ -17,7 +17,7 @@ type Selection<TSelection extends SelectionValue = SelectionValue> =
 `SelectionApi` is frozen. Compose a custom helper around it instead of
 mutating the namespace.
 
-## Editor Reads
+## Editor reads
 
 #### `editor.read.selection() => Range | null`
 
@@ -56,7 +56,7 @@ plain `Range`. A missing selection returns an empty array.
 Use `state.selection.ranges()` or `tx.selection.ranges()` inside a read or
 update callback.
 
-## Editor Updates
+## Editor updates
 
 #### `editor.update.selection.setNodes(targets, options?)`
 
@@ -72,7 +72,7 @@ document-order endpoints.
 Use `tx.selection.setNodes(targets)` when earlier writes in the same transaction
 create or move the targets.
 
-## Static Methods
+## Static methods
 
 #### `SelectionApi.equals(left: Selection, right: Selection) => boolean`
 
@@ -113,7 +113,7 @@ Read exact selected entries with `editor.read.selection.nodes()` or
 selection to schema blocks. `ranges()` projects one range per selected node,
 while `contains` and `intersects` evaluate those exact projections.
 
-## Editor Validation
+## Editor validation
 
 #### `state.selection.isValid(value: unknown) => value is Selection`
 

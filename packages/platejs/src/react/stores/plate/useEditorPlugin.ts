@@ -13,7 +13,7 @@ import type {
   PlatePluginPortal,
 } from '../../plugin';
 import { createPluginPortal } from '../../plugin/createPluginContext.internal';
-import { useEditor } from './createPlateStore';
+import { useEditor } from './useEditor';
 
 /** Get an installed plugin's consumer portal. */
 export function useEditorPlugin<
@@ -24,7 +24,7 @@ export function useEditorPlugin<
     | AnyPluginBase
   ) &
     PluginReference,
->(p: P, id?: string): PlatePluginPortal<InternalPluginDefinitionOf<P>>;
+>(p: P): PlatePluginPortal<InternalPluginDefinitionOf<P>>;
 export function useEditorPlugin(
   plugin:
     | AnyBasePlugin
@@ -32,8 +32,7 @@ export function useEditorPlugin(
     | AnyPlatePlugin
     | AnyPluginBase
     | PluginReference
-    | string,
-  id?: string
+    | string
 ): AnyPlatePluginPortal;
 export function useEditorPlugin(
   plugin:
@@ -42,10 +41,9 @@ export function useEditorPlugin(
     | AnyPlatePlugin
     | AnyPluginBase
     | PluginReference
-    | string,
-  id?: string
+    | string
 ): unknown {
-  const editor = useEditor({ id });
+  const editor = useEditor();
 
   return React.useMemo(
     () => createPluginPortal(editor, plugin),

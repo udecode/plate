@@ -150,6 +150,10 @@ jobs:
           pnpm plite:bench:targets:check
           pnpm plite:public-types
 
+      - name: 🧪 Check CLI generation and migrations
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        run: pnpm --filter @platejs/cli test
+
       - name: 🔧 Configure git
         if: ${{ env.GENERATED_RELEASE_PR != 'true' && github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
         run: |

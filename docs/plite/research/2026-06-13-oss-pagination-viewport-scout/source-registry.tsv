@@ -1,0 +1,7 @@
+id	repo	local_path	scope	status
+prosemirror-forum-badon	ProseMirror discussion: Badon Writer pagination	n/a	CSS-heavy pagination description without available source	read-doc
+prosemirror-forum-pagination	ProseMirror discussion: implementing pagination	n/a	presentation-vs-schema pagination tradeoffs	read-doc
+prosemirror-pagination	todorstoev/prosemirror-pagination	/Users/zbeyens/git/prosemirror-pagination	ProseMirror schema/page splitting plugin	read-source
+react-prosemirror	handlewithcare/react-prosemirror	/Users/zbeyens/git/react-prosemirror	React renderer, composition pause, selection proof tests	read-source
+editable	editablejs/editable	/Users/zbeyens/git/editable	custom renderer, hidden textarea input transport, drawn selection rectangles	read-source
+windoc	aliansyahFirdaus/windoc	/Users/zbeyens/git/windoc	canvas pagination editor, visible page listeners	read-source

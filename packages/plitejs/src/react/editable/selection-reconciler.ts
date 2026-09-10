@@ -3,6 +3,7 @@ import {
   type MouseEvent,
   type RefObject,
   useCallback,
+  useRef,
 } from 'react';
 
 import { NodeApi, PathApi, type Range, RangeApi, SelectionApi } from '../..';
@@ -19,19 +20,21 @@ import {
 } from '../../dom';
 import {
   type DOMPhaseScheduler,
-  DOMCoverage,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_USER_SELECTION,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  findEditorDOMRootRuntime,
   isGeckoDOMHost,
   isWebKitDOMHost,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '../../dom/internal';
+import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { recordPliteReactRender } from '../render-profiler';
 import {
   readPliteViewSelection,
   writePliteViewSelection,
@@ -114,14 +117,13 @@ const getTextHostForDOMPoint = (node: globalThis.Node | null) => {
   return element?.closest('[data-plite-node="text"]') ?? null;
 };
 
-const isProjectedTextHost = (textHost: Element | null | undefined) =>
-  textHost?.getAttribute('data-plite-dom-sync-reason') === 'projection' ||
-  textHost?.getAttribute('data-plite-projected-dom-sync') === 'true';
+const isDecoratedTextHost = (textHost: Element | null | undefined) =>
+  textHost?.getAttribute('data-plite-dom-sync-reason') === 'decoration';
 
-const isProjectedTextRange = (range: StaticRange | null) =>
+const isDecoratedTextRange = (range: StaticRange | null) =>
   !!range &&
-  (isProjectedTextHost(getTextHostForDOMPoint(range.startContainer)) ||
-    isProjectedTextHost(getTextHostForDOMPoint(range.endContainer)));
+  (isDecoratedTextHost(getTextHostForDOMPoint(range.startContainer)) ||
+    isDecoratedTextHost(getTextHostForDOMPoint(range.endContainer)));
 
 export type EditableSelectionReconcilerState = {
   isUpdatingSelection: boolean;
@@ -164,66 +166,6 @@ const isReactEventHandled = <
   }
 
   return event.isDefaultPrevented() || event.isPropagationStopped();
-};
-
-export const attachEditableSelectionChangeListener = ({
-  scheduleOnDOMSelectionChange,
-  state,
-  targetDocument,
-}: {
-  scheduleOnDOMSelectionChange: () => void;
-  state: {
-    activeIntent?: EditableInputController['state']['activeIntent'];
-    modelSelectionPreference?: EditableInputController['state']['modelSelectionPreference'];
-    pendingDOMSelectionImport: boolean;
-    selectionChangeOrigin?: EditableInputController['state']['selectionChangeOrigin'];
-    selectionSource?: EditableInputController['state']['selectionSource'];
-  };
-  targetDocument: Document;
-}) => {
-  const HTMLElementConstructor = targetDocument.defaultView?.HTMLElement;
-
-  // COMPAT: In Chrome, `selectionchange` events can fire when <input> and
-  // <textarea> elements are appended to the DOM, causing
-  // `editor.selection` to be overwritten in some circumstances.
-  // (2025/01/16) https://issues.chromium.org/issues/389368412
-  const handleNativeSelectionChange = ({ target }: Event) => {
-    const targetElement =
-      HTMLElementConstructor && target instanceof HTMLElementConstructor
-        ? target
-        : null;
-    const targetTagName = targetElement?.tagName;
-    if (targetTagName === 'INPUT' || targetTagName === 'TEXTAREA') {
-      return;
-    }
-    if (
-      state.activeIntent === 'history' &&
-      state.selectionChangeOrigin === 'repair-induced' &&
-      state.selectionSource === 'model-owned' &&
-      state.modelSelectionPreference?.preferModelSelection === true
-    ) {
-      return;
-    }
-    state.pendingDOMSelectionImport = true;
-    scheduleOnDOMSelectionChange();
-  };
-
-  // Attach a native DOM event handler for `selectionchange`, because React's
-  // built-in `onSelect` handler doesn't fire for all selection changes. It's
-  // a leaky polyfill that only fires on keypresses or clicks. Instead, we
-  // want to fire for any change to the selection inside the editor.
-  // (2019/11/04) https://github.com/facebook/react/issues/5785
-  targetDocument.addEventListener(
-    'selectionchange',
-    handleNativeSelectionChange
-  );
-
-  return () => {
-    targetDocument.removeEventListener(
-      'selectionchange',
-      handleNativeSelectionChange
-    );
-  };
 };
 
 export const applyEditableBlur = ({
@@ -337,7 +279,7 @@ export const applyEditableFocus = ({
     // results in issues with keyboard navigation. (2017/03/30)
     if (isGeckoDOMHost(event) && event.target !== el) {
       el.focus();
-      return undefined;
+      return false;
     }
 
     IS_FOCUSED.set(editor, true);
@@ -587,7 +529,8 @@ export const syncSelectionForBeforeInput = ({
   const domSelectionTextHost =
     domSelectionAnchorElement?.closest('[data-plite-node="text"]') ?? null;
   const domSelectionUsesProjectedTextHost =
-    type === 'insertText' && isProjectedTextHost(domSelectionTextHost);
+    type === 'insertText' && isDecoratedTextHost(domSelectionTextHost);
+  const hasProjectedViewSelection = readPliteViewSelection(editor) !== null;
 
   if (
     type === 'insertText' &&
@@ -596,13 +539,17 @@ export const syncSelectionForBeforeInput = ({
     RangeApi.isCollapsed(selection) &&
     typeof data === 'string' &&
     data.length === 1 &&
-    (forceModelOwnedTextInput || domSelectionUsesProjectedTextHost)
+    (forceModelOwnedTextInput ||
+      domSelectionUsesProjectedTextHost ||
+      hasProjectedViewSelection)
   ) {
     return {
       native: false,
       nativeBlocker: forceModelOwnedTextInput
         ? 'force-model-owned'
-        : 'projected-text-host',
+        : hasProjectedViewSelection
+          ? 'projected-view-selection'
+          : 'projected-text-host',
       selection,
     };
   }
@@ -654,24 +601,28 @@ export const syncSelectionForBeforeInput = ({
   const targetRanges = getInputEventTargetRanges(event);
   const targetRange = targetRanges.length === 1 ? targetRanges[0] : null;
   const targetRangeUsesProjectedTextHost =
-    type === 'insertText' && isProjectedTextRange(targetRange);
+    type === 'insertText' && isDecoratedTextRange(targetRange);
   const shouldPreferModelSelectionForInput =
     preferModelSelectionForInput ||
     forceModelOwnedTextInput ||
+    hasProjectedViewSelection ||
     domSelectionUsesProjectedTextHost ||
     targetRangeUsesProjectedTextHost;
   if (
     type === 'insertText' &&
     (forceModelOwnedTextInput ||
+      hasProjectedViewSelection ||
       domSelectionUsesProjectedTextHost ||
       targetRangeUsesProjectedTextHost)
   ) {
     nextNative = false;
     nativeBlocker = forceModelOwnedTextInput
       ? 'force-model-owned'
-      : domSelectionUsesProjectedTextHost
-        ? 'projected-dom-selection'
-        : 'projected-target-range';
+      : hasProjectedViewSelection
+        ? 'projected-view-selection'
+        : domSelectionUsesProjectedTextHost
+          ? 'projected-dom-selection'
+          : 'projected-target-range';
   }
 
   // Most deleting forward/backward input types can derive the target from the
@@ -1035,6 +986,7 @@ export const useEditableSelectionReconciler = ({
     rootRef,
     state,
   } = runtime;
+  const reconciledRuntime = useRef<EditableDOMRuntime | null>(null);
   useIsomorphicLayoutEffect(() => {
     // Update element-related weak maps with the DOM element ref.
     const editorWindow = rootRef.current
@@ -1051,6 +1003,19 @@ export const useEditableSelectionReconciler = ({
 
     // Make sure the DOM selection state is in sync.
     const selection = readRuntimeSelection(editor);
+    const initialMount = reconciledRuntime.current !== runtime;
+    reconciledRuntime.current = runtime;
+    // Reading native selection can force layout before sibling adapters mount.
+    // A fresh view with no model selection has nothing to export or clear.
+    if (initialMount && !selection) return undefined;
+    // Body is temporarily active between native blur and focus. An unfocused
+    // sibling must not export selection and steal that keyboard transition.
+    if (
+      runtime.connected &&
+      findEditorDOMRootRuntime(editor)?.adapter !== runtime
+    ) {
+      return undefined;
+    }
     const projectedSelection = getSelectionDOMRange(editor, selection);
     const root = ReactEditor.findDocumentOrShadowRoot(editor);
     const domSelection = getSelection(root);
@@ -1058,6 +1023,8 @@ export const useEditableSelectionReconciler = ({
     if (!isSelectionInEditorView(editor, selection)) {
       return undefined;
     }
+
+    if (runtime.externalText.focusSelection()) return undefined;
 
     if (isEditableOutsideFocusBoundarySettling(state)) {
       return undefined;
@@ -1071,7 +1038,7 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
-    const editorElementForActiveTarget = EDITOR_TO_ELEMENT.get(editor);
+    const editorElementForActiveTarget = rootRef.current;
     if (
       !editorElementForActiveTarget ||
       (root.activeElement &&
@@ -1090,7 +1057,7 @@ export const useEditableSelectionReconciler = ({
 
     const selectionHasDOMCoverage =
       !!projectedSelection &&
-      DOMCoverage.getBoundariesForRange(editor, projectedSelection).length > 0;
+      runtime.domCoverage.getBoundariesForRange(projectedSelection).length > 0;
 
     if (
       state.pendingDOMSelectionImport &&
@@ -1121,6 +1088,7 @@ export const useEditableSelectionReconciler = ({
 
     const setDomSelection = (forceChange?: boolean) => {
       const hasDomSelection = domSelection.type !== 'None';
+      let resolvedDOMSelection: Range | null = null;
 
       // If the DOM selection is properly unset, we're done.
       if (!selection && !hasDomSelection) {
@@ -1150,8 +1118,7 @@ export const useEditableSelectionReconciler = ({
 
       // verify that the dom selection is in the editor
       const editorElement =
-        EDITOR_TO_ELEMENT.get(editor) ??
-        failInvariant('Expected value to be defined');
+        rootRef.current ?? failInvariant('Expected value to be defined');
       let hasDomSelectionInEditor = false;
       if (
         containsShadowAware(editorElement, anchorNode) &&
@@ -1173,6 +1140,31 @@ export const useEditableSelectionReconciler = ({
           // domSelection is not necessarily a valid Plite range
           // (e.g. when clicking on contentEditable:false element)
         });
+        resolvedDOMSelection = pliteRange;
+        const retainedTextHost = getTextHostForDOMPoint(anchorNode);
+        const isPendingRetainedNativeInsert =
+          pliteRange &&
+          projectedSelection &&
+          domSelection.isCollapsed &&
+          RangeApi.isCollapsed(pliteRange) &&
+          RangeApi.isCollapsed(projectedSelection) &&
+          retainedTextHost?.getAttribute('data-plite-text-flow-host') ===
+            'true' &&
+          (state.textInputOwnership === 'native' ||
+            state.pendingRootDOMInput?.inputType === 'insertText') &&
+          PathApi.equals(
+            pliteRange.anchor.path,
+            projectedSelection.anchor.path
+          ) &&
+          pliteRange.anchor.offset === projectedSelection.anchor.offset + 1;
+
+        if (isPendingRetainedNativeInsert) {
+          recordPliteReactRender({
+            id: 'selection-export-skip-pending-native-insert',
+            kind: 'runtime-time',
+          });
+          return undefined;
+        }
 
         const isCollapsedElementSelection =
           domSelection.isCollapsed && !isDOMText(anchorNode);
@@ -1183,6 +1175,10 @@ export const useEditableSelectionReconciler = ({
           RangeApi.equals(pliteRange, projectedSelection) &&
           !isCollapsedElementSelection
         ) {
+          recordPliteReactRender({
+            id: 'selection-export-skip-equal',
+            kind: 'runtime-time',
+          });
           return undefined;
         }
       }
@@ -1216,6 +1212,8 @@ export const useEditableSelectionReconciler = ({
         selection &&
         selectionHasDOMCoverage &&
         applyDOMCoverageSelectionPolicy({
+          editorElement,
+          coverage: runtime.domCoverage,
           domSelection,
           editor,
           onDOMSelectionWillChange: () => {
@@ -1230,6 +1228,24 @@ export const useEditableSelectionReconciler = ({
       }
 
       // Otherwise the DOM selection is out of sync, so update it.
+      const mismatchDetail =
+        resolvedDOMSelection && projectedSelection
+          ? `:${resolvedDOMSelection.anchor.path.join('.')}:${resolvedDOMSelection.anchor.offset}->${projectedSelection.anchor.path.join('.')}:${projectedSelection.anchor.offset}`
+          : '';
+      recordPliteReactRender({
+        id: `selection-export-write:${
+          forceChange
+            ? 'forced'
+            : !hasDomSelection
+              ? 'missing-dom-selection'
+              : !hasDomSelectionInEditor
+                ? 'outside-editor'
+                : resolvedDOMSelection
+                  ? 'range-mismatch'
+                  : 'unresolved-dom-selection'
+        }${mismatchDetail}`,
+        kind: 'runtime-time',
+      });
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
 
@@ -1245,7 +1261,7 @@ export const useEditableSelectionReconciler = ({
             includeFullDocument: false,
             selection: projectedSelection,
           }) ??
-          ReactEditor.resolveDOMRange(editor, projectedSelection))
+          resolveDOMRangeInRoot(editor, projectedSelection, editorElement))
         : null;
 
       if (newDomRange) {

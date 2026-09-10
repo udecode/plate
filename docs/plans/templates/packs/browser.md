@@ -1,5 +1,7 @@
 # browser pack
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Use this pack when the changed behavior has a real browser, route, UI, visual,
 selection, interaction, console, or network surface.
 

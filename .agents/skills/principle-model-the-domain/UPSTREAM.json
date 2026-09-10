@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-model-the-domain",
+  "files": [
+    {
+      "upstream": "skills/principle-model-the-domain/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "6b359783c5c9be87860d0999321e864940ff17729b9f9a27f38abae449640022",
+      "destinationSha256": "788d4e5d127a5311189c5f5bc934c10095d7985a4e759f31c11812a58cf064fe",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-model-the-domain/SKILL.md\n+++ skills/principle-model-the-domain/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-model-the-domain\n description: \"Apply when writing stateful logic, or when code branches a lot or repeats a shape assumption across files. Encode the domain in a structure instead of scattered conditionals.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Model the Domain\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

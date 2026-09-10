@@ -1,0 +1,2 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github/web-platform-tests/wpt	https://github.com/web-platform-tests/wpt	github	BSD-3-Clause	cross-browser web-platform conformance suite	commit dd54691426c23a08c6f4a0972b2c40965307e5ce	input-events,selection,contenteditable	/Users/zbeyens/git/wpt	read	8	Used for browser-owned beforeinput target-range and selection mutation invariants; do not copy harness code into Slate.

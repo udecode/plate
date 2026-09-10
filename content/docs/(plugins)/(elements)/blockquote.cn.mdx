@@ -131,6 +131,15 @@ const editor = createEditor({
 
 ## 转换
 
+### `editor.plugin(BlockquotePlugin).update.wrap()`
+
+将每个选中的区块包裹进引用块，保留未选中的区块，并保持现有引用块不变。
+可传入 `at` 指定位置或节点选区。
+
+```tsx
+editor.plugin(BlockquotePlugin).update.wrap();
+```
+
 ### `editor.plugin(BlockquotePlugin).update.toggle()`
 
 将当前块或选区包裹进引用块中。如果选区已经位于引用块内，则取消该引用块包裹。

@@ -1,19 +1,5 @@
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import {
-  yjs,
-  type YjsAwarenessLike,
-  type YjsProviderEvent,
-  type YjsProviderEventHandler,
-  type YjsProviderLike,
-  type YjsProviderStatus,
-} from 'platejs/yjs';
-import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
-  useYjsRemoteCursor,
-  useYjsRemoteCursorIds,
-} from 'platejs/yjs/react';
-import {
   type Descendant,
   type Editor,
   type EditorUpdateTransaction,
@@ -30,6 +16,20 @@ import {
   type RenderLeafProps,
   useEditor,
 } from 'plitejs/react';
+import {
+  yjs,
+  type YjsAwarenessLike,
+  type YjsProviderEvent,
+  type YjsProviderEventHandler,
+  type YjsProviderLike,
+  type YjsProviderStatus,
+} from 'plitejs/yjs';
+import {
+  useYjsProviderStatus,
+  useYjsProviderSynced,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorIds,
+} from 'plitejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
@@ -1084,7 +1084,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CustomText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

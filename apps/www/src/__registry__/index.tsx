@@ -52,7 +52,7 @@ export const Index: Record<string, any> = {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
     type: "registry:component",
-    registryDependencies: ["button","command","https://platejs.org/r/floating-popover.json","https://platejs.org/r/editor.json","https://platejs.org/r/use-chat.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/editor-plugins-static.json"],
+    registryDependencies: ["button","command","https://platejs.org/r/comment.json","https://platejs.org/r/floating-popover.json","https://platejs.org/r/editor.json","https://platejs.org/r/use-chat.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/editor-plugins-static.json"],
     files: [{
       path: "src/registry/components/editor/ai-menu.tsx",
       type: "registry:component",
@@ -163,24 +163,7 @@ export const Index: Record<string, any> = {
       target: "@components/editor/comment-toolbar-button.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-toolbar-button"}],"examples":["discussion-demo","floating-toolbar-demo","discussion-pro"]},
-  },
-  "block-discussion": {
-    name: "block-discussion",
-    description: "A popover interface for managing discussions: comments, replies, suggestions.",
-    type: "registry:component",
-    registryDependencies: ["button","https://platejs.org/r/floating-popover.json","avatar","dropdown-menu","https://platejs.org/r/editor.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/basic-marks.json"],
-    files: [{
-      path: "src/registry/components/editor/block-discussion.tsx",
-      type: "registry:component",
-      target: "@components/editor/block-discussion.tsx"
-    },{
-      path: "src/registry/lib/block-discussion-index.ts",
-      type: "registry:lib",
-      target: ""
-    }],
-    component: null,
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/block-discussion"}],"examples":["discussion-demo","discussion-pro"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-toolbar-button"}],"examples":["discussion-demo","floating-toolbar-demo"]},
   },
   "select-editor": {
     name: "select-editor",
@@ -195,10 +178,6 @@ export const Index: Record<string, any> = {
       path: "src/registry/components/editor/select-command.tsx",
       type: "registry:component",
       target: "@components/editor/select-command.tsx"
-    },{
-      path: "src/registry/components/editor/select-command-score.ts",
-      type: "registry:lib",
-      target: "@components/editor/select-command-score.ts"
     }],
     component: null,
     meta: {"docs":[{"route":"/docs/multi-select"}],"examples":["select-editor-demo"],"label":"New"},
@@ -207,7 +186,7 @@ export const Index: Record<string, any> = {
     name: "emoji-picker",
     description: "A searchable emoji picker with frequent emoji storage.",
     type: "registry:component",
-    registryDependencies: ["button","popover","tooltip","https://platejs.org/r/emoji.json"],
+    registryDependencies: ["button","tooltip","https://platejs.org/r/emoji.json","https://platejs.org/r/floating-popover.json"],
     files: [{
       path: "src/registry/components/editor/emoji-picker.tsx",
       type: "registry:component",
@@ -439,7 +418,7 @@ export const Index: Record<string, any> = {
   },
   "remote-cursor-overlay": {
     name: "remote-cursor-overlay",
-    description: "Remote Yjs selections and carets positioned over the Plate editor.",
+    description: "Copied Yjs selection highlights, carets, and labels.",
     type: "registry:component",
     registryDependencies: [],
     files: [{
@@ -498,6 +477,10 @@ export const Index: Record<string, any> = {
       path: "src/registry/bases/base/toolbar.tsx",
       type: "registry:component",
       target: "@components/editor/toolbar.tsx"
+    },{
+      path: "src/registry/components/editor/toolbar-overlay.tsx",
+      type: "registry:component",
+      target: "@components/editor/toolbar-overlay.tsx"
     }],
     component: null,
     meta: {},
@@ -513,7 +496,7 @@ export const Index: Record<string, any> = {
       target: "@components/editor/suggestion-toolbar-button.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["discussion-demo","discussion-pro"]},
+    meta: {"docs":[{"route":"/docs/suggestion"}]},
   },
   "block-list": {
     name: "block-list",
@@ -623,7 +606,7 @@ export const Index: Record<string, any> = {
     name: "heading",
     description: "A heading with multiple level support.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/highlight-style.json"],
+    registryDependencies: [],
     files: [{
       path: "src/registry/components/editor/heading.tsx",
       type: "registry:component",
@@ -844,7 +827,7 @@ export const Index: Record<string, any> = {
     name: "media-placeholder",
     description: "A placeholder for media upload progress indication.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/uploadthing.json","https://platejs.org/r/use-object-url.json"],
+    registryDependencies: ["https://platejs.org/r/use-object-url.json"],
     files: [{
       path: "src/registry/components/editor/media-placeholder.tsx",
       type: "registry:component",
@@ -1005,19 +988,6 @@ export const Index: Record<string, any> = {
       path: "src/registry/components/editor/column-static.tsx",
       type: "registry:component",
       target: "@components/editor/column-static.tsx"
-    }],
-    component: null,
-    meta: undefined,
-  },
-  "comment-static": {
-    name: "comment-static",
-    description: "",
-    type: "registry:component",
-    registryDependencies: [],
-    files: [{
-      path: "src/registry/components/editor/comment-static.tsx",
-      type: "registry:component",
-      target: "@components/editor/comment-static.tsx"
     }],
     component: null,
     meta: undefined,
@@ -1221,7 +1191,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins-static",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-static.json","https://platejs.org/r/align-static.json","https://platejs.org/r/basic-blocks-static.json","https://platejs.org/r/basic-marks-static.json","https://platejs.org/r/callout-static.json","https://platejs.org/r/code-block-static.json","https://platejs.org/r/code-drawing-static.json","https://platejs.org/r/column-static.json","https://platejs.org/r/comment-static.json","https://platejs.org/r/date-static.json","https://platejs.org/r/font-static.json","https://platejs.org/r/footnote-static.json","https://platejs.org/r/line-height-static.json","https://platejs.org/r/link-static.json","https://platejs.org/r/list-static.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math-static.json","https://platejs.org/r/media-static.json","https://platejs.org/r/mention-static.json","https://platejs.org/r/suggestion-static.json","https://platejs.org/r/table-static.json","https://platejs.org/r/toc-static.json","https://platejs.org/r/details-static.json"],
+    registryDependencies: ["https://platejs.org/r/editor-static.json","https://platejs.org/r/align-static.json","https://platejs.org/r/basic-blocks-static.json","https://platejs.org/r/basic-marks-static.json","https://platejs.org/r/callout-static.json","https://platejs.org/r/code-block-static.json","https://platejs.org/r/code-drawing-static.json","https://platejs.org/r/column-static.json","https://platejs.org/r/date-static.json","https://platejs.org/r/font-static.json","https://platejs.org/r/footnote-static.json","https://platejs.org/r/line-height-static.json","https://platejs.org/r/link-static.json","https://platejs.org/r/list-static.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math-static.json","https://platejs.org/r/media-static.json","https://platejs.org/r/mention-static.json","https://platejs.org/r/suggestion-static.json","https://platejs.org/r/table-static.json","https://platejs.org/r/toc-static.json","https://platejs.org/r/details-static.json"],
     files: [{
       path: "src/registry/components/editor/plugins-static.ts",
       type: "registry:component",
@@ -1232,7 +1202,7 @@ export const Index: Record<string, any> = {
   },
   "ai": {
     name: "ai",
-    description: "A text highlighter for AI-generated content.",
+    description: "Streaming edits, command menu, and text highlighting.",
     type: "registry:component",
     registryDependencies: ["https://platejs.org/r/ai-menu.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/ai-api.json","https://platejs.org/r/use-chat.json"],
     files: [{
@@ -1358,7 +1328,20 @@ export const Index: Record<string, any> = {
       target: "@components/editor/code-block.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/code-block"},{"route":"https://pro.platejs.org/docs/components/code-block"}],"examples":["code-block-demo"]},
+    meta: {"docs":[{"route":"/docs/code-block"},{"route":"https://pro.platejs.org/docs/components/code-block"}],"examples":["code-block-demo","code-block-huge-demo","code-block-codemirror-demo"]},
+  },
+  "code-block-codemirror": {
+    name: "code-block-codemirror",
+    description: "A CodeMirror projection for explicitly high-scale code block editors.",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/code-block.json"],
+    files: [{
+      path: "src/registry/components/editor/code-block-codemirror.tsx",
+      type: "registry:component",
+      target: "@components/editor/code-block-codemirror.tsx"
+    }],
+    component: null,
+    meta: {"docs":[{"route":"/docs/code-block"}],"examples":["code-block-codemirror-demo","code-block-views-demo"]},
   },
   "code-drawing": {
     name: "code-drawing",
@@ -1388,16 +1371,42 @@ export const Index: Record<string, any> = {
   },
   "comment": {
     name: "comment",
-    description: "",
+    description: "Rich comment cards, forms, and styling for package-owned thread records and mapped editor ranges.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/basic-marks.json","avatar","button","https://platejs.org/r/editor-dropdown-menu.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["avatar","button","https://platejs.org/r/basic-marks.json","https://platejs.org/r/basic-marks-static.json","https://platejs.org/r/editor-dropdown-menu.json","https://platejs.org/r/editor.json","https://platejs.org/r/highlight-style.json"],
     files: [{
       path: "src/registry/components/editor/comment.tsx",
       type: "registry:component",
       target: "@components/editor/comment.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["discussion-demo","discussion-pro"]},
+    meta: {"docs":[{"route":"/docs/comment"},{"route":"https://pro.platejs.org/docs/components/comment-node"}],"examples":["discussion-demo"]},
+  },
+  "comment-static": {
+    name: "comment-static",
+    description: "Decoration attributes for static comment ranges and overlaps.",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/highlight-style.json"],
+    files: [{
+      path: "src/registry/components/editor/comment-static.ts",
+      type: "registry:component",
+      target: "@components/editor/comment-static.ts"
+    }],
+    component: null,
+    meta: undefined,
+  },
+  "discussion": {
+    name: "discussion",
+    description: "A Floating Discussion surface that combines each block's comment threads and document suggestions.",
+    type: "registry:component",
+    registryDependencies: ["avatar","button","separator","https://platejs.org/r/comment.json","https://platejs.org/r/floating-popover.json","https://platejs.org/r/suggestion.json"],
+    files: [{
+      path: "src/registry/components/editor/discussion.tsx",
+      type: "registry:component",
+      target: "@components/editor/discussion.tsx"
+    }],
+    component: null,
+    meta: {"docs":[{"route":"/docs/discussion"}],"examples":["discussion-demo"]},
   },
   "copilot": {
     name: "copilot",
@@ -1414,9 +1423,9 @@ export const Index: Record<string, any> = {
   },
   "find": {
     name: "find",
-    description: "A document find controller with transient match highlights.",
+    description: "A search bar over the editor’s current text matches.",
     type: "registry:component",
-    registryDependencies: ["input-group","tooltip"],
+    registryDependencies: ["input-group","tooltip","https://platejs.org/r/editor.json"],
     files: [{
       path: "src/registry/components/editor/find.tsx",
       type: "registry:component",
@@ -1438,22 +1447,9 @@ export const Index: Record<string, any> = {
     component: null,
     meta: {"docs":[{"route":"/docs/date"},{"route":"https://pro.platejs.org/docs/components/date"}],"examples":["date-demo"]},
   },
-  "discussion": {
-    name: "discussion",
-    description: "",
-    type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/block-discussion.json","https://platejs.org/r/comment.json"],
-    files: [{
-      path: "src/registry/components/editor/discussion.tsx",
-      type: "registry:component",
-      target: "@components/editor/discussion.tsx"
-    }],
-    component: null,
-    meta: undefined,
-  },
   "dnd": {
     name: "dnd",
-    description: "A block wrapper with a drag handle for moving editor blocks.",
+    description: "Block drag handles and drop indicators.",
     type: "registry:component",
     registryDependencies: ["button","tooltip"],
     files: [{
@@ -1462,7 +1458,7 @@ export const Index: Record<string, any> = {
       target: "@components/editor/dnd.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/dnd","title":"Drag & Drop"},{"route":"https://pro.platejs.org/docs/components/dnd"}],"examples":["dnd-demo","dnd-pro"],"usage":["DndPlugin.configure({\n  render: {\n    aboveNodes: BlockDraggable,\n  },\n})"]},
+    meta: {"docs":[{"route":"/docs/dnd","title":"Drag & Drop"},{"route":"https://pro.platejs.org/docs/components/dnd"}],"examples":["dnd-demo","dnd-pro"],"usage":["createEditor({ plugins: DndKit })"]},
   },
   "docx": {
     name: "docx",
@@ -1494,7 +1490,7 @@ export const Index: Record<string, any> = {
     name: "editor-plugins",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/date.json","https://platejs.org/r/discussion.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/details.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/align.json","https://platejs.org/r/autoformat.json","https://platejs.org/r/basic-blocks.json","https://platejs.org/r/basic-marks.json","https://platejs.org/r/block-menu.json","https://platejs.org/r/block-placeholder.json","https://platejs.org/r/callout.json","https://platejs.org/r/code-block.json","https://platejs.org/r/column.json","https://platejs.org/r/comment.json","https://platejs.org/r/date.json","https://platejs.org/r/dnd.json","https://platejs.org/r/emoji.json","https://platejs.org/r/exit-break.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","https://platejs.org/r/font.json","https://platejs.org/r/footnote.json","https://platejs.org/r/line-height.json","https://platejs.org/r/link.json","https://platejs.org/r/list.json","https://platejs.org/r/markdown.json","https://platejs.org/r/math.json","https://platejs.org/r/media.json","https://platejs.org/r/mention.json","https://platejs.org/r/slash.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/table.json","https://platejs.org/r/toc.json","https://platejs.org/r/details.json"],
     files: [{
       path: "src/registry/components/editor/plugins.ts",
       type: "registry:component",
@@ -1546,7 +1542,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar",
     description: "A set of formatting buttons for the floating toolbar.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/use-widget-floating.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
+    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/use-widget-floating.json","https://platejs.org/r/tailwind-scrollbar-hide.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/equation-toolbar-button.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/mark-toolbar-button.json","https://platejs.org/r/more-toolbar-button.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/turn-into-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/floating-toolbar.tsx",
       type: "registry:component",
@@ -1559,7 +1555,7 @@ export const Index: Record<string, any> = {
     name: "footnote",
     description: "Inline footnote references, definitions, and input UI.",
     type: "registry:component",
-    registryDependencies: ["button","command","hover-card","https://platejs.org/r/floating-popover.json","https://platejs.org/r/inline-combobox.json"],
+    registryDependencies: ["button","command","hover-card","https://platejs.org/r/floating-popover.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/inline-combobox.json"],
     files: [{
       path: "src/registry/components/editor/footnote.tsx",
       type: "registry:component",
@@ -1611,7 +1607,7 @@ export const Index: Record<string, any> = {
     name: "link",
     description: "A component for rendering hyperlinks with hover states.",
     type: "registry:component",
-    registryDependencies: ["button","input","separator","https://platejs.org/r/comment.json","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion.json","https://platejs.org/r/suggestion-style.json","https://platejs.org/r/use-on-click-outside.json","https://platejs.org/r/use-widget-floating.json"],
+    registryDependencies: ["button","input","separator","https://platejs.org/r/link-toolbar-button.json","https://platejs.org/r/suggestion-style.json","https://platejs.org/r/use-widget-floating.json"],
     files: [{
       path: "src/registry/components/editor/link.tsx",
       type: "registry:component",
@@ -1661,9 +1657,9 @@ export const Index: Record<string, any> = {
   },
   "media": {
     name: "media",
-    description: "Media kit without API (see media-uploadthing-api for reference)",
+    description: "Media kit with an UploadThing client transport (see media-uploadthing-api for the server route).",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/media-audio.json","https://platejs.org/r/media-embed.json","https://platejs.org/r/media-file.json","https://platejs.org/r/media-image.json","https://platejs.org/r/media-placeholder.json","https://platejs.org/r/media-preview-dialog.json","https://platejs.org/r/media-toolbar.json","https://platejs.org/r/media-video.json","https://platejs.org/r/media-toolbar-button.json"],
+    registryDependencies: ["https://platejs.org/r/uploadthing.json","https://platejs.org/r/media-audio.json","https://platejs.org/r/media-embed.json","https://platejs.org/r/media-file.json","https://platejs.org/r/media-image.json","https://platejs.org/r/media-placeholder.json","https://platejs.org/r/media-preview-dialog.json","https://platejs.org/r/media-toolbar.json","https://platejs.org/r/media-video.json","https://platejs.org/r/media-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/media.tsx",
       type: "registry:component",
@@ -1711,14 +1707,14 @@ export const Index: Record<string, any> = {
     name: "suggestion",
     description: "A text component for suggestion.",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/discussion.json"],
+    registryDependencies: ["https://platejs.org/r/suggestion-toolbar-button.json"],
     files: [{
       path: "src/registry/components/editor/suggestion.tsx",
       type: "registry:component",
       target: "@components/editor/suggestion.tsx"
     }],
     component: null,
-    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["discussion-demo","discussion-pro"]},
+    meta: {"docs":[{"route":"/docs/suggestion"}],"examples":["discussion-demo"]},
   },
   "tabbable": {
     name: "tabbable",
@@ -1750,7 +1746,7 @@ export const Index: Record<string, any> = {
     name: "toc",
     description: "A table of contents component with links to document headings.",
     type: "registry:component",
-    registryDependencies: ["button"],
+    registryDependencies: ["button","https://platejs.org/r/highlight-style.json"],
     files: [{
       path: "src/registry/components/editor/toc.tsx",
       type: "registry:component",
@@ -1856,7 +1852,7 @@ export const Index: Record<string, any> = {
     name: "use-chat",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/discussion.json"],
+    registryDependencies: ["https://platejs.org/r/comment.json"],
     files: [{
       path: "src/registry/components/editor/use-chat.ts",
       type: "registry:component",
@@ -1882,7 +1878,7 @@ export const Index: Record<string, any> = {
     name: "editor-ai",
     description: "An AI editor",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor.json","https://platejs.org/r/media-uploadthing-api.json","https://platejs.org/r/settings-dialog.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/plate-ui.json","tooltip","https://platejs.org/r/editor.json","https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/use-mobile.json","https://platejs.org/r/media-uploadthing-api.json","https://platejs.org/r/settings-dialog.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/blocks/editor-ai/page.tsx",
       type: "registry:page",
@@ -1941,7 +1937,7 @@ export const Index: Record<string, any> = {
     name: "plate-to-html",
     description: "",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","button","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/editor-plugins-static.json","https://platejs.org/r/use-object-url.json"],
+    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/floating-toolbar.json","button","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/editor-plugins-static.json","https://platejs.org/r/use-object-url.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/blocks/plate-to-html/page.tsx",
       type: "registry:page",
@@ -1972,10 +1968,6 @@ export const Index: Record<string, any> = {
       target: ""
     },{
       path: "src/registry/examples/values/column-value.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/examples/values/discussion-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -2012,6 +2004,10 @@ export const Index: Record<string, any> = {
       target: ""
     },{
       path: "src/registry/examples/values/mention-value.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/suggestion-value.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -2096,19 +2092,6 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
-  "use-on-click-outside": {
-    name: "use-on-click-outside",
-    description: "",
-    type: "registry:hook",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/hooks/use-on-click-outside.ts",
-      type: "registry:hook",
-      target: ""
-    }],
-    component: null,
-    meta: undefined,
-  },
   "use-object-url": {
     name: "use-object-url",
     description: "",
@@ -2165,7 +2148,7 @@ export const Index: Record<string, any> = {
     name: "copilot-demo",
     description: "Renders AI ghost text suggestions at the cursor position.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/copilot.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/copilot.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/copilot-demo.tsx",
       type: "registry:example",
@@ -2220,7 +2203,7 @@ export const Index: Record<string, any> = {
     name: "huge-document-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["button"],
+    registryDependencies: ["button","https://platejs.org/r/use-mounted.json"],
     files: [{
       path: "src/registry/examples/huge-document-demo.tsx",
       type: "registry:example",
@@ -2262,7 +2245,7 @@ export const Index: Record<string, any> = {
     name: "multiple-editors-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["separator","https://platejs.org/r/align.json","https://platejs.org/r/basic-nodes.json","https://platejs.org/r/media.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/turn-into-toolbar-button.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["separator","https://platejs.org/r/align.json","https://platejs.org/r/basic-nodes.json","https://platejs.org/r/dnd.json","https://platejs.org/r/media.json","https://platejs.org/r/editor.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/turn-into-toolbar-button.json","https://platejs.org/r/editor-plugins.json"],
     files: [{
       path: "src/registry/examples/multiple-editors-demo.tsx",
       type: "registry:example",
@@ -2329,7 +2312,7 @@ export const Index: Record<string, any> = {
     name: "markdown-to-plite-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/use-debounce.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/use-debounce.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/markdown-to-plite-demo.tsx",
       type: "registry:example",
@@ -2346,7 +2329,7 @@ export const Index: Record<string, any> = {
     name: "markdown-streaming-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["button","https://platejs.org/r/editor.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/markdown-joiner-transform.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/editor-plugins-static.json"],
+    registryDependencies: ["button","https://platejs.org/r/editor.json","https://platejs.org/r/editor-static.json","https://platejs.org/r/markdown-joiner-transform.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/editor-plugins-static.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/markdown-streaming-demo.tsx",
       type: "registry:example",
@@ -2397,7 +2380,7 @@ export const Index: Record<string, any> = {
     name: "tabbable-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/tabbable-demo.tsx",
       type: "registry:example",
@@ -2418,7 +2401,7 @@ export const Index: Record<string, any> = {
     name: "table-nomerge-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/table-nomerge-demo.tsx",
       type: "registry:example",
@@ -2439,7 +2422,7 @@ export const Index: Record<string, any> = {
     name: "excalidraw-demo",
     description: "A drawing component powered by Excalidraw.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/excalidraw.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/excalidraw.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/excalidraw-demo.tsx",
       type: "registry:example",
@@ -2460,7 +2443,7 @@ export const Index: Record<string, any> = {
     name: "code-drawing-demo",
     description: "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/code-drawing.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/code-drawing.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/code-drawing-demo.tsx",
       type: "registry:example",
@@ -2498,7 +2481,7 @@ export const Index: Record<string, any> = {
     name: "editable-voids-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","input","label","radio-group"],
+    registryDependencies: ["https://platejs.org/r/editor.json","input","label","radio-group","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/editable-voids-demo.tsx",
       type: "registry:example",
@@ -2519,7 +2502,7 @@ export const Index: Record<string, any> = {
     name: "find-demo",
     description: "Find text with keyboard navigation and transient highlights.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/find.json"],
+    registryDependencies: ["button","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/find.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/find-demo.tsx",
       type: "registry:example",
@@ -2557,7 +2540,7 @@ export const Index: Record<string, any> = {
     name: "ai-demo",
     description: "AI menu with commands, streaming responses in a preview or directly into the editor.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/ai.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/ai.json","https://platejs.org/r/editor.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2578,7 +2561,7 @@ export const Index: Record<string, any> = {
     name: "align-demo",
     description: "Text alignment controls for blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/align.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/align.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2599,7 +2582,7 @@ export const Index: Record<string, any> = {
     name: "autoformat-demo",
     description: "Apply formatting automatically using shortcodes.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/autoformat.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/autoformat.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2620,7 +2603,7 @@ export const Index: Record<string, any> = {
     name: "basic-blocks-demo",
     description: "Basic block elements like headings, quotes, and code blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/blockquote.json","https://platejs.org/r/heading.json","https://platejs.org/r/paragraph.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/basic-blocks.json","https://platejs.org/r/blockquote.json","https://platejs.org/r/heading.json","https://platejs.org/r/paragraph.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2641,7 +2624,7 @@ export const Index: Record<string, any> = {
     name: "basic-marks-demo",
     description: "Basic text formatting marks like bold, italic, and underline.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/code.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/code.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2662,7 +2645,7 @@ export const Index: Record<string, any> = {
     name: "basic-nodes-demo",
     description: "Basic block elements and text marks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/basic-nodes.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/basic-nodes.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2691,7 +2674,7 @@ export const Index: Record<string, any> = {
     name: "block-menu-demo",
     description: "Block-level context menu with formatting options.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/block-menu.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/block-menu.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2712,7 +2695,7 @@ export const Index: Record<string, any> = {
     name: "node-selection-demo",
     description: "Visual node selection backed by editor selection.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2733,7 +2716,7 @@ export const Index: Record<string, any> = {
     name: "column-demo",
     description: "Column layout.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/column.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/column.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2754,9 +2737,9 @@ export const Index: Record<string, any> = {
     name: "code-block-demo",
     description: "Display code with syntax highlighting.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/code-block.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/code-block.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
-      path: "src/registry/examples/demo.tsx",
+      path: "src/registry/examples/code-block-demo.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -2765,17 +2748,76 @@ export const Index: Record<string, any> = {
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/demo.tsx")
+      const mod = await import("@/registry/examples/code-block-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/code-block","title":"Code Block"}],"registry":false},
   },
+  "code-block-huge-demo": {
+    name: "code-block-huge-demo",
+    description: "Render a 10,000-line code block with native Plate DOM.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/code-block.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
+    files: [{
+      path: "src/registry/examples/code-block-huge-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/huge-code-block-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/code-block-huge-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/code-block","title":"Code Block"}],"registry":false},
+  },
+  "code-block-codemirror-demo": {
+    name: "code-block-codemirror-demo",
+    description: "Render a 10,000-line code block with CodeMirror.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/code-block-codemirror.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
+    files: [{
+      path: "src/registry/examples/code-block-codemirror-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/huge-code-block-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/code-block-codemirror-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/code-block","title":"Code Block"}],"registry":false},
+  },
+  "code-block-views-demo": {
+    name: "code-block-views-demo",
+    description: "Edit shared code through native Plate and CodeMirror views.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/code-block-codemirror.json","https://platejs.org/r/editor.json"],
+    files: [{
+      path: "src/registry/examples/code-block-views-demo.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/code-block-views-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"registry":false},
+  },
   "callout-demo": {
     name: "callout-demo",
     description: "Display callouts with different variants and icons.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/callout.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/callout.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2794,30 +2836,26 @@ export const Index: Record<string, any> = {
   },
   "discussion-demo": {
     name: "discussion-demo",
-    description: "Adding and displaying comments within content.",
+    description: "Review each block's comments and suggestions in Floating Discussion.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
-      path: "src/registry/examples/demo.tsx",
-      type: "registry:example",
-      target: ""
-    },{
-      path: "src/registry/examples/values/discussion-value.tsx",
+      path: "src/registry/examples/discussion-demo.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/demo.tsx")
+      const mod = await import("@/registry/examples/discussion-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/discussion","title":"Discussion"}],"registry":false},
+    meta: {"docs":[{"route":"/docs/comment","title":"Comments"},{"route":"/docs/discussion","title":"Discussion"},{"route":"/docs/suggestion","title":"Suggestion"}],"registry":false},
   },
   "date-demo": {
     name: "date-demo",
     description: "Inline date elements with calendar selection interface.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/date.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/date.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2838,7 +2876,7 @@ export const Index: Record<string, any> = {
     name: "footnote-demo",
     description: "GFM footnote references and definitions as dedicated editor nodes.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/highlight-style.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/highlight-style.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2859,7 +2897,7 @@ export const Index: Record<string, any> = {
     name: "dnd-demo",
     description: "Implements draggable functionality for editor blocks, including drag handles and drop indicators.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/dnd.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/dnd.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2880,7 +2918,7 @@ export const Index: Record<string, any> = {
     name: "emoji-demo",
     description: "Emoji insertion via toolbar or colon-triggered combobox.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/emoji.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/emoji.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2901,7 +2939,7 @@ export const Index: Record<string, any> = {
     name: "equation-demo",
     description: "LaTeX equations with inline and block formats.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/math.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/math.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2922,7 +2960,7 @@ export const Index: Record<string, any> = {
     name: "exit-break-demo",
     description: "Exit a large block using a shortcut.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/exit-break.json","https://platejs.org/r/editor.json","https://platejs.org/r/table-demo.json"],
+    registryDependencies: ["https://platejs.org/r/exit-break.json","https://platejs.org/r/editor.json","https://platejs.org/r/table-demo.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2943,7 +2981,7 @@ export const Index: Record<string, any> = {
     name: "floating-toolbar-demo",
     description: "Floating toolbar with text formatting and AI assistance options.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2964,7 +3002,7 @@ export const Index: Record<string, any> = {
     name: "font-demo",
     description: "Color picker for text and background colors.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -2985,7 +3023,7 @@ export const Index: Record<string, any> = {
     name: "indent-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/list.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/list.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3006,7 +3044,7 @@ export const Index: Record<string, any> = {
     name: "list-demo",
     description: "Turn any block into a list item.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/list.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/list.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3027,7 +3065,7 @@ export const Index: Record<string, any> = {
     name: "line-height-demo",
     description: "Line height adjustment controls.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/line-height.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/line-height.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3048,7 +3086,7 @@ export const Index: Record<string, any> = {
     name: "link-demo",
     description: "Hyperlinks with toolbar insertion and URL pasting support.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/link.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3069,7 +3107,7 @@ export const Index: Record<string, any> = {
     name: "media-demo",
     description: "Media embedding and management.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/media.json","https://platejs.org/r/media-audio.json","https://platejs.org/r/media-embed.json","https://platejs.org/r/media-file.json","https://platejs.org/r/media-image.json","https://platejs.org/r/media-placeholder.json","https://platejs.org/r/media-video.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/media.json","https://platejs.org/r/media-audio.json","https://platejs.org/r/media-embed.json","https://platejs.org/r/media-file.json","https://platejs.org/r/media-image.json","https://platejs.org/r/media-placeholder.json","https://platejs.org/r/media-video.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3090,7 +3128,7 @@ export const Index: Record<string, any> = {
     name: "mention-demo",
     description: "Mention functionality for referencing users or entities.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/mention.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/mention.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3111,7 +3149,7 @@ export const Index: Record<string, any> = {
     name: "block-placeholder-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/block-placeholder.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/block-placeholder.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3128,7 +3166,7 @@ export const Index: Record<string, any> = {
     name: "csv-demo",
     description: "Copy paste from CSV to Plate.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3149,7 +3187,7 @@ export const Index: Record<string, any> = {
     name: "docx-demo",
     description: "Copy paste from DOCX to Plate.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/docx.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/export-toolbar-button.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/import-toolbar-button.json","https://platejs.org/r/toolbar.json"],
+    registryDependencies: ["https://platejs.org/r/docx.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/export-toolbar-button.json","https://platejs.org/r/fixed-toolbar.json","https://platejs.org/r/import-toolbar-button.json","https://platejs.org/r/toolbar.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/docx-demo.tsx",
       type: "registry:example",
@@ -3170,7 +3208,7 @@ export const Index: Record<string, any> = {
     name: "html-demo",
     description: "Copy paste from HTML to Plate.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3191,7 +3229,7 @@ export const Index: Record<string, any> = {
     name: "markdown-demo",
     description: "Copy paste from Markdown to Plate.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/markdown.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/markdown.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3212,7 +3250,7 @@ export const Index: Record<string, any> = {
     name: "slash-command-demo",
     description: "Slash command menu for quick insertion of various content types.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/slash.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/slash.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3233,7 +3271,7 @@ export const Index: Record<string, any> = {
     name: "plugin-rules-demo",
     description: "Use plugin rules to customize the common editing behaviors.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3254,7 +3292,7 @@ export const Index: Record<string, any> = {
     name: "table-demo",
     description: "Customizable tables with resizable columns and row merging options.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/table.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/table.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3275,7 +3313,7 @@ export const Index: Record<string, any> = {
     name: "toc-demo",
     description: "Dynamic TOC with in-document element for easy navigation.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/toc.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/toc.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3296,7 +3334,7 @@ export const Index: Record<string, any> = {
     name: "details-demo",
     description: "Collapsible content blocks.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/details.json","https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/details.json","https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3313,7 +3351,7 @@ export const Index: Record<string, any> = {
     name: "document-migration-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/document-migration-demo.tsx",
       type: "registry:example",
@@ -3330,14 +3368,14 @@ export const Index: Record<string, any> = {
     name: "playground-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/code-drawing.json","https://platejs.org/r/editor.json","https://platejs.org/r/excalidraw.json"],
+    registryDependencies: ["https://platejs.org/r/code-drawing.json","https://platejs.org/r/comment.json","https://platejs.org/r/discussion.json","https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/excalidraw.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
-      path: "src/registry/examples/demo.tsx",
+      path: "src/registry/examples/playground-demo.tsx",
       type: "registry:example",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/demo.tsx")
+      const mod = await import("@/registry/examples/playground-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -3347,7 +3385,7 @@ export const Index: Record<string, any> = {
     name: "demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
@@ -3449,7 +3487,7 @@ export const Index: Record<string, any> = {
     name: "editor-default",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/editor-plugins.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/editor-default.tsx",
       type: "registry:example",
@@ -3483,7 +3521,7 @@ export const Index: Record<string, any> = {
     name: "editor-full-width",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/ai.json","https://platejs.org/r/dnd.json"],
     files: [{
       path: "src/registry/examples/editor-full-width.tsx",
       type: "registry:example",

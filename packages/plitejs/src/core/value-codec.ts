@@ -12,6 +12,14 @@ const getFunctionSource = (value: object) =>
   Function.prototype.toString.call(value);
 const arrayConstructorSource = getFunctionSource(Array);
 const objectConstructorSource = getFunctionSource(Object);
+const TRUSTED_FROZEN_EDITOR_JSON_VALUES = new WeakSet<object>();
+
+const freezeTrustedEditorJsonValue = <T extends object>(value: T): T => {
+  Object.freeze(value);
+  TRUSTED_FROZEN_EDITOR_JSON_VALUES.add(value);
+
+  return value;
+};
 
 const hasIntrinsicConstructor = (
   prototype: object,
@@ -119,6 +127,12 @@ export const isEditorJsonValue = (
       return Number.isFinite(value) && !Object.is(value, -0);
     }
     case 'object': {
+      if (
+        Object.isFrozen(value) &&
+        TRUSTED_FROZEN_EDITOR_JSON_VALUES.has(value)
+      ) {
+        return true;
+      }
       if (seen.has(value)) return false;
       seen.add(value);
 
@@ -273,12 +287,14 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
           if (Array.isArray(input)) {
             const items = getEditorJsonArrayItems(input) ?? invalid();
 
-            return Object.freeze(items.map((item) => clone(item, seen)));
+            return freezeTrustedEditorJsonValue(
+              items.map((item) => clone(item, seen))
+            );
           }
 
           const entries = getEditorJsonRecordEntries(input) ?? invalid();
 
-          return Object.freeze(
+          return freezeTrustedEditorJsonValue(
             Object.fromEntries(
               entries.map(([key, item]) => [key, clone(item, seen)])
             )
@@ -296,8 +312,15 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
   return clone(value, new WeakSet()) as T;
 };
 
-export const cloneFrozenEditorJsonValue = <T>(value: T): T =>
-  deepFreeze(cloneEditorJsonValue(value));
+export const cloneFrozenEditorJsonValue = <T>(value: T): T => {
+  const cloned = deepFreeze(cloneEditorJsonValue(value));
+
+  if (cloned !== null && typeof cloned === 'object') {
+    TRUSTED_FROZEN_EDITOR_JSON_VALUES.add(cloned);
+  }
+
+  return cloned;
+};
 
 const assertCodecVersion = (version: number) => {
   if (!Number.isSafeInteger(version) || version < 1) {

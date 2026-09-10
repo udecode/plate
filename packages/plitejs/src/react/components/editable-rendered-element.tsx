@@ -1,4 +1,4 @@
-import React, { createElement, type ComponentType } from 'react';
+import React, { type ComponentType } from 'react';
 
 import type {
   Descendant,
@@ -6,7 +6,11 @@ import type {
   Element as PliteElementNode,
   Text as PliteTextNode,
 } from '../..';
-import { DOMCoverage } from '../../dom/internal';
+import type { DOMCoverageSession } from '../../dom/internal';
+import {
+  useClaimEditableDOMInsertionCommit,
+  useEditableDOMRuntime,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -34,38 +38,54 @@ export const isPliteReactDevelopmentEnvironment = (
 
 const isDevelopment = isPliteReactDevelopmentEnvironment();
 
-const EditableRenderedElementBoundary = <
-  TElement extends PliteElementNode = PliteElementNode,
->({
-  props,
-  renderElement,
-}: {
-  props: RenderElementProps<TElement>;
-  renderElement: RenderElementRenderer<TElement>;
-}) =>
-  createElement(
-    renderElement as ComponentType<RenderElementProps<any>>,
-    props as RenderElementProps<any>
-  );
-
-export const EditableRenderedElement = <
-  TElement extends PliteElementNode = PliteElementNode,
->({
-  path,
-  props,
-  renderElement,
-}: {
+type RendererBoundaryProps = {
   path: Path;
-  props: RenderElementProps<TElement>;
-  renderElement: RenderElementRenderer<TElement>;
+  props: RenderElementProps;
+};
+const RENDERER_BOUNDARIES = new WeakMap<
+  object,
+  ComponentType<RendererBoundaryProps>
+>();
+
+export const getEditableElementRenderer = <TElement extends PliteElementNode>(
+  renderer: RenderElementRenderer<TElement>
+) => {
+  let Boundary = RENDERER_BOUNDARIES.get(renderer);
+  if (!Boundary) {
+    // React copies top-level props eagerly. Nest them to preserve the lazy children getter.
+    Boundary = ({ path, props }) => {
+      useClaimEditableDOMInsertionCommit();
+      const rendered = (renderer as RenderElementRenderer)(props);
+      return isDevelopment ? (
+        <RenderedChildrenGuard element={props.element} path={path}>
+          {rendered}
+        </RenderedChildrenGuard>
+      ) : (
+        rendered
+      );
+    };
+    RENDERER_BOUNDARIES.set(renderer, Boundary);
+  }
+  return Boundary as ComponentType<
+    Omit<RendererBoundaryProps, 'props'> & {
+      props: RenderElementProps<TElement>;
+    }
+  >;
+};
+
+const RenderedChildrenGuard = ({
+  children,
+  element,
+  path,
+}: {
+  children: React.ReactNode;
+  element: PliteElementNode;
+  path: Path;
 }) => {
   const editor = useEditorContext();
+  const coverage = useEditableDOMRuntime()?.domCoverage;
 
   useIsomorphicLayoutEffect(() => {
-    if (!isDevelopment) {
-      return undefined;
-    }
-
     let cancelled = false;
     const timeout = globalThis.setTimeout(() => {
       if (cancelled) {
@@ -73,8 +93,9 @@ export const EditableRenderedElement = <
       }
 
       assertRenderedElementChildrenHaveDOMOrCoverage(editor, {
-        element: props.element,
-        path: editor.read.nodes.path(props.element) ?? path,
+        coverage,
+        element,
+        path: editor.read.nodes.path(element) ?? path,
       });
     }, 0);
 
@@ -82,14 +103,9 @@ export const EditableRenderedElement = <
       cancelled = true;
       globalThis.clearTimeout(timeout);
     };
-  }, [editor, path, props.element]);
+  }, [coverage, editor, element, path]);
 
-  return (
-    <EditableRenderedElementBoundary
-      props={props}
-      renderElement={renderElement}
-    />
-  );
+  return children;
 };
 
 const getFirstTextPath = (node: Descendant, path: Path): Path | null => {
@@ -110,7 +126,15 @@ const getFirstTextPath = (node: Descendant, path: Path): Path | null => {
 
 const assertRenderedElementChildrenHaveDOMOrCoverage = (
   editor: ReactRuntimeEditor,
-  { element, path }: { element: PliteElementNode; path: Path }
+  {
+    coverage,
+    element,
+    path,
+  }: {
+    coverage: DOMCoverageSession | undefined;
+    element: PliteElementNode;
+    path: Path;
+  }
 ) => {
   element.children.forEach((child, index) => {
     const childPath = [...path, index];
@@ -122,7 +146,7 @@ const assertRenderedElementChildrenHaveDOMOrCoverage = (
 
     const point = { path: textPath, offset: 0 };
 
-    if (DOMCoverage.getBoundaryForPoint(editor, point)) {
+    if (coverage?.getBoundaryForPoint(point)) {
       return;
     }
 

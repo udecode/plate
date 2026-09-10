@@ -66,6 +66,7 @@ const resolvePath = (value: unknown, path: readonly string[]) => {
   let owner: unknown;
 
   for (const key of path) {
+    const receiver = owner;
     owner = current;
     if (
       (typeof current !== 'object' || current === null) &&
@@ -76,6 +77,15 @@ const resolvePath = (value: unknown, path: readonly string[]) => {
     const descriptor = Object.getOwnPropertyDescriptor(current, key);
 
     if (!descriptor || !('value' in descriptor)) {
+      if (
+        typeof current === 'function' &&
+        (key === 'call' || key === 'apply')
+      ) {
+        const method = current;
+        owner = (...args: unknown[]) => Reflect.apply(method, receiver, args);
+        current = Function.prototype[key];
+        continue;
+      }
       return { owner: undefined, value: undefined };
     }
     current = descriptor.value;

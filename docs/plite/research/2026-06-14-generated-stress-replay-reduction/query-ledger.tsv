@@ -1,0 +1,3 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+local-existing-research	local-docs	stress|replay|fuzz|generated docs/slate-v2/research	exclude raw	1	1	0	0	local source reduction scan
+local-repo-reduction-scan	local-rg	shrink|minimize|reduce|replay|seed	selected local editor/browser-test repos; CKEditor/TinyMCE excluded	4	4	3	1	close promoted packet

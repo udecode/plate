@@ -29,10 +29,11 @@ export const tabbableValue: Value = (
     <hp indent={1} listType="bulleted">
       列表项 3
     </hp>
-    <hcodeblock lang="javascript">
-      <hcodeline>if (true) {'{'}</hcodeline>
-      <hcodeline>{'// <-'} 将光标放在行首并按 Tab 键</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
+    <hcodeblock language="javascript">
+      if (true) {'{'}
+      {'\n'}
+      {'// <-'} 将光标放在行首并按 Tab 键{'\n'}
+      {'}'}
     </hcodeblock>
     <hp>
       在此示例中，当光标在列表或代码块内时，插件会被禁用。您可以使用{' '}

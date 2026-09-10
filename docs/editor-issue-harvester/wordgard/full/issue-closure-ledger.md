@@ -110,3 +110,8 @@ Only issues #13 and #27 expand the concept union. The other 18 rows revise compl
 | [x] | [#35](https://code.haverbeke.berlin/wordgard/wordgard/issues/35) | OPEN | open | The link editor is a top panel dialog rather than an anchored editable tooltip. | WG-PRODUCT-003D1B, WG-PRODUCT-003D2, WG-VIEW-014C1 | Open preference request. Link creation/editing uses Dialog.show; the existing link tooltip only renders the target as a read-only anchor. | No editable link-tooltip implementation or proof exists. | deferred-with-owner | no |
 
 Machine-readable resume state: `classified-issues.json`, `classified-issues.tsv`, and `issue-closure-ledger.tsv`.
+
+
+## Metadata refresh 2026-09-09T17:59:27.205228+00:00
+
+The current [all-state issue index](issues.md) and [TSV ledger](issue-closure-ledger.tsv) account for 73 issues and 38 unchecked rows. The older semantic rows above remain historical: 8 rows require another read after metadata changed. This refresh did not hydrate or decide those issues.

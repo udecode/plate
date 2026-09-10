@@ -1,13 +1,13 @@
 ---
-date: 2026-05-30
+date: 2026-09-05
 topic: plite-agent-start
 status: active
 ---
 
 # Plite Agent Start
 
-Use this first. It is the small control plane for Plite work after the long
-4k-prompt development run.
+Read root `VISION.md` and `docs/vision/plite.md` first. This page locates Plite
+source and proof commands in the Plate checkout.
 
 ## Current Truth
 
@@ -15,46 +15,39 @@ Use this first. It is the small control plane for Plite work after the long
   `content/docs/plite/**`, and examples under
   `apps/www/src/app/(app)/examples/plite/**`.
 - Control docs: `docs/plite/**`
-- Active private-alpha architecture claim:
+- Recorded architecture claim:
   [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/plite/absolute-architecture-release-claim.md)
-- Active roadmap:
+- Roadmap and prior decisions:
   [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md)
 - Gate scoreboard:
   [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
 
-Current public API examples must match live Plate repo source, not old docs.
-For reads, teach `editor.read((state) => ...)`. For writes, teach
-`editor.update((tx) => ...)`.
+Current API examples must match live source. Prefer direct one-shot reads and
+updates; use callbacks when operations share a snapshot or transaction.
+Historical claims and scoreboards need fresh source-bound proof before reuse.
 
-## Current Blockers
+## Proof boundaries
 
-- Continuous private alpha: no release, publish, PR, or changeset readiness
-  claim unless a prompt explicitly asks for that lane.
-- Current-tree private-alpha integration/build/type/lint/perf closure is green
-  from the latest same-turn proof after the `plite-browser/playwright` helper
-  and Playwright wrapper-script edits.
-- Full `bun test:integration-local` is a closure gate, not the default
-  iteration gate.
+- Local work does not authorize a release, publication, PR, or native goal.
+- Use the affected development gate during iteration and the strict package
+  plus Chromium gate for handoff. A past passing run does not certify the
+  current checkout.
 - Yjs soak proof runners are manual-only diagnostics:
-  `scripts/proof/yjs-collaboration-soak.mjs`,
-  `scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs`,
-  `scripts/proof/persistent-browser-soak.mjs`, and
-  `scripts/proof/yjs-hocuspocus-production-soak.mjs`. Do not run them unless the
+  `tooling/plite/donor/proof/yjs-collaboration-soak.mjs`,
+  `tooling/plite/donor/proof/yjs-hocuspocus-persistent-room-soak.mjs`, and
+  `tooling/plite/donor/proof/yjs-hocuspocus-production-soak.mjs`. Do not run them unless the
   user explicitly asks for a soak run. Do not add them to `check`, `test`,
   `test:release-proof`, or any automatic agent gate.
 - Native mobile proof remains scoped unless a raw-device lane runs.
-- Huge-document superiority remains claim-scoped, not release-scoped. The
-  strict product gate is green, and the latest broad direct legacy diagnostic is
-  current-green: worst p95 ratio `0.77`, default `auto`
-  `middleBlockSelectThenTypeMs` `69.78ms` vs legacy `90.42ms`. Keep tracking
-  tiny select-all deltas, repeated vertical Shift+Down, and select-all-delete
-  undo residual p95 / bulk-restore cost separately.
+- Performance claims need the exact workload, source fingerprints, baseline,
+  candidate, and correctness guards. Benchmark owns measurement and open
+  budgets; this entrypoint does not retain a current-green snapshot.
 
 ## Normal Agent Path
 
-1. Read this file.
-2. Read `master-roadmap.md` only for current tranche and blocker state.
-3. Read `absolute-architecture-release-claim.md` only for accepted public claim.
+1. Read the current Task plan and the applicable Vision owner.
+2. Read `master-roadmap.md` when its recorded tranche applies.
+3. Read `absolute-architecture-release-claim.md` when assessing that claim.
 4. Read live Plate repo source/tests before making any current-state claim.
 5. For bugs, use `patch`.
 6. For architecture, use `plite-plan --quick` first unless the user asks for a
@@ -109,7 +102,7 @@ accepting operator-authored results.
 From `plate-2`:
 
 ```sh
-pnpm docs:plite:audit
+node tooling/scripts/check-plite-docs.mjs
 pnpm install
 pnpm lint:fix
 ```

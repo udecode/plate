@@ -34,8 +34,8 @@ GitHub Release Assets have an official upload API, but creating or modifying a
 release solely to host issue evidence changes repository release state and is
 not an acceptable default.
 
-If the report requires a native `github.com/user-attachments` URL, skill
-invocation supplies issue-publication approval. Use the Chrome file-input flow
-without reconfirming and accept that this is not API-only. Separate approval is
+When the user has authorized publication and the report requires a native
+`github.com/user-attachments` URL, use the Chrome file-input flow without
+reconfirming. This path is not API-only. Separate approval is
 still required for browser permission changes or public disclosure of private
 evidence.

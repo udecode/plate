@@ -1,0 +1,6 @@
+query_key	query	source	type	result_count	sampled_count	new_repo_keys	new_lead_keys	notes
+local-prosemirror-tables	ProseMirror table copy paste rectangle semantics	/Users/zbeyens/git/prosemirror-tables	local clone	1	1	prosemirror-tables	table-fragment:rectangle-algebra:core-browser-proof	Primary source; cloned shallowly for code-level evidence.
+local-tiptap-table	Tiptap table extension table editing implementation	/Users/zbeyens/git/tiptap	local clone	1	1	tiptap	0	Tiptap OSS table delegates semantics to prosemirror-tables.
+local-lexical-table	Lexical table selection clipboard import export	/Users/zbeyens/git/lexical	local clone	1	1	lexical	table-fragment:selection-shape-json-html-proof	Secondary contrast; useful for selected-node HTML/JSON copy shape but less directly applicable to Slate core fixture semantics.
+local-slate-v2-table	Slate v2 table fragment skipped fixtures and browser table paste proof	/Users/zbeyens/git/plate-2/.tmp/slate-v2	local source	1	1	slate-v2	table-fragment:rectangle-algebra:core-browser-proof	Target proof surface and current local gap.
+

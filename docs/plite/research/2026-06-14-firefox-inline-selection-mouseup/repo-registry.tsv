@@ -1,0 +1,5 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+local/wpt	https://github.com/web-platform-tests/wpt	github	BSD-3-Clause	local	2026-06-14	selection,contenteditable,anchors	/Users/zbeyens/git/wpt	sampled	4	Anchor editing fixtures exist; no direct pointer mouseup link-collapse oracle found.
+github/ianstormtaylor/slate	https://github.com/ianstormtaylor/slate	github	MIT	local	2026-06-14	slate-upstream,inlines,selection	/Users/zbeyens/git/slate	sampled	3	Upstream inlines Playwright has a skipped selection.anchorNode instability, not a stronger oracle.
+github/prosemirror/prosemirror	https://github.com/prosemirror/prosemirror	github	MIT	local	2026-06-14	pointer-selection,dom-observer,selection-sync	/Users/zbeyens/git/prosemirror	read	8	Strong pointer-selection synchronization invariant.
+github/facebook/lexical	https://github.com/facebook/lexical	github	MIT	local	2026-06-14	selectionchange,restore-selection,browser-workaround	/Users/zbeyens/git/lexical	read	7	Selection restore after browser event/order quirk supports evidence-backed replay invariant.

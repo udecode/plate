@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short goal objective.
 
@@ -11,13 +13,6 @@ Goal plan:
 
 Template:
 {{TEMPLATE_PATH}}
-
-Primary template:
-{{TEMPLATE_PATH}}
-
-Applied packs:
-
-- none
 
 Mode:
 
@@ -37,8 +32,9 @@ Verification surface:
 
 Constraints:
 
-- Planning only until the user explicitly accepts this exact plan and invokes
-  `plite-plan` against it.
+- Planning-only requests stop at handoff. Existing authorization to execute
+  continues under Task once readiness is resolved. Otherwise, wait for
+  execution authorization.
 - No public compatibility aliases or runtime shims.
 - Keep one plan as the default artifact; add a machine-readable artifact only
   when it materially improves a large audit.
@@ -71,7 +67,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 | --- | --- | --- |
 | Prompt requirements captured | pending | pending |
-| Active goal and plan verified | pending | pending |
+| Task plan and execution authority verified | pending | pending |
 | Current owners read | pending | pending |
 | Best API target resolved | pending | `best-api design/review`, or N/A because no reusable call shape changes |
 | Runtime scale applicability resolved | pending | Identify runtime layers, repeated units, size/fan-out variables, and hot work; apply `performance-observability` when any can change, or record a source-backed zero-runtime N/A |
@@ -105,7 +101,7 @@ Completion Gates:
 | Conditional risk and adoption | pending | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | pending |
 | Verification recorded | pending | Record fresh planning proof and exact execution gates | pending |
 | Handoff prepared | pending | Prepare concise ownership, breaks, proof, risks, and execution order | pending |
-| P1 autoreview | pending | Run with `--max-priority P1` for implementation changes; P2/P3 are opt-in only, or record planning-only N/A | pending |
+| P1 autoreview | pending | Apply Task's explicit-review/PR-closeout gate and shared budget; never on next; otherwise N/A with reason | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

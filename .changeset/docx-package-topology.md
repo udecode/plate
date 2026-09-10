@@ -2,16 +2,14 @@
 'platejs': major
 ---
 
-Require `platejs@>=54.0.0-beta.1` as a peer dependency.
-
 Require React and React DOM 19.2 or newer.
 
-Use `platejs/docx` for DOCX paste, file import, and export. Applications compose the descriptors they need in their own plugin arrays.
+Use independent DOCX entrypoints for paste, file import, and export.
 
-Install a focused package when the editor needs only one direction:
+Compose the operations needed by the application:
 
-- `DocxPastePlugin`, `cleanWordHtml`, and `isWordHtml` own Word clipboard normalization.
-- `DocxImportPlugin` owns `.docx` file decoding.
-- `DocxExportPlugin`, `exportToDocx`, `downloadDocx`, and the low-level HTML-to-DOCX helpers own DOCX generation.
+- `DocxPlugin` from `platejs/docx` owns pasted CSS inlining and Word clipboard normalization.
+- `importDocx(editor, buffer, options)` from `platejs/docx/import` returns decoded nodes, comments, and warnings without inserting them or requiring a plugin.
+- `exportToDocx(value, options)` from `platejs/docx/export` returns a DOCX `Blob`, including caller-provided metadata, styles, bookmarks, and preserved indentation. The application owns downloading or saving it.
 
-Replace `DocxPlugin` with `DocxPastePlugin`. Replace `DocxIOPlugin` with the direction-specific `DocxImportPlugin` and `DocxExportPlugin`. Replace `cleanDocx` and `isDocxContent` with `cleanWordHtml` and `isWordHtml`.
+The import entrypoint requires Mammoth; the export entrypoint owns the HTML-to-DOCX conversion dependencies. The paste entrypoint loads neither conversion graph. Juice and Word normalization helpers are private implementation details. Copied import and export toolbars load their DOCX converters on demand.

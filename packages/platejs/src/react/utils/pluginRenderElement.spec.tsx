@@ -7,13 +7,13 @@ import { property, schema, target, type Element } from '../../core';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateRoot } from '../components/PlateRoot';
+import { PlateRoot } from '../components/PlateRoot.internal';
 import type { Editor } from '../editor/Editor';
 import { createEditor } from '../editor/withPlate';
 import { definePlatePlugin } from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useElement } from '../stores/element/useElement';
-import { pluginRenderElement } from './pluginRenderElement';
+import { pluginRenderElement } from './pluginRenderElement.internal';
 
 const createValue = () =>
   [
@@ -101,8 +101,8 @@ describe('pluginRenderElement', () => {
         isMarked: (element: Element) => element.marker === 'yes',
       }),
     }).extend({
-      render: {
-        belowNodes: ({ api, element }) =>
+      slots: {
+        wrapNodeChildren: ({ api, element }) =>
           api.isMarked(element)
             ? ({ children }) => (
                 <section data-testid="wrapper">{children}</section>
@@ -124,8 +124,8 @@ describe('pluginRenderElement', () => {
     let componentCalls = 0;
     let matchCalls = 0;
     const WrapperPlugin = definePlatePlugin('wrapper', {
-      render: {
-        aboveNodes: {
+      slots: {
+        wrapNode: {
           component: ({ children }) => {
             componentCalls += 1;
 
@@ -151,12 +151,10 @@ describe('pluginRenderElement', () => {
     expect(componentCalls).toBe(0);
   });
 
-  it('preserves Plite children for void render.as tags', () => {
+  it('preserves Plite children for void intrinsic components', () => {
     const HorizontalRulePlugin = defineBasePlugin('horizontalRule', {
+      component: 'hr',
       schema: { element: { void: 'block' } },
-      render: {
-        as: 'hr',
-      },
     });
     const editor = createEditor({
       plugins: [HorizontalRulePlugin],

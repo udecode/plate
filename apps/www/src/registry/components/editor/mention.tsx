@@ -77,7 +77,7 @@ export function MentionElement(
 export function MentionInputElement(
   props: PlateElementProps<typeof MentionInputPlugin>
 ) {
-  const { editor, element } = props;
+  const { element } = props;
   const [search, setSearch] = React.useState('');
 
   return (
@@ -101,10 +101,11 @@ export function MentionInputElement(
               <InlineComboboxItem
                 key={item.ref}
                 value={item.label}
-                onClick={() => {
-                  editor
-                    .plugin(MentionPlugin)
-                    .update.insert({ label: item.label, ref: item.ref });
+                onSelect={(tx) => {
+                  tx.plugin(MentionPlugin).insert({
+                    label: item.label,
+                    ref: item.ref,
+                  });
                 }}
               >
                 {item.label}

@@ -3,7 +3,7 @@ import {
   defineExtension,
   NodeApi,
   schema,
-  type Element as PliteElement,
+  type Element as PliteElementNode,
 } from 'plitejs';
 import type {
   DOMCoverageCopyPolicy,
@@ -12,7 +12,7 @@ import type {
 import {
   Editable,
   type EditableDOMStrategyMetrics,
-  EditableElement,
+  PliteElement,
   type RenderElementProps,
   Plite,
   useEditor,
@@ -190,7 +190,7 @@ const HiddenContentBlocksExample = () => {
         type: 'paragraph',
         children: [{ text: 'Outro visible after hidden blocks.' }],
       },
-    ] as PliteElement[],
+    ] as PliteElementNode[],
   });
   const [
     { accordionOpen, activeTab, collapsibleOpen, copyPolicy, selectionPolicy },
@@ -469,7 +469,7 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
   switch (element.type) {
     case 'accordion-block': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <Accordion
             collapsible
             onValueChange={(value) => {
@@ -506,12 +506,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'collapsible-block': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <Collapsible onOpenChange={setCollapsibleOpen} open={collapsibleOpen}>
             <div contentEditable={false}>
               <CollapsibleTrigger asChild>
@@ -542,12 +542,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               />
             </CollapsibleContent>
           </Collapsible>
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'tabs-block': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <Tabs
             onValueChange={(value) => {
               setActiveTab(value as HiddenBlocksState['activeTab']);
@@ -610,14 +610,18 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               );
             })}
           </Tabs>
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'tab-panel': {
-      return <EditableElement>{children}</EditableElement>;
+      return (
+        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+      );
     }
     default: {
-      return <EditableElement>{children}</EditableElement>;
+      return (
+        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+      );
     }
   }
 };

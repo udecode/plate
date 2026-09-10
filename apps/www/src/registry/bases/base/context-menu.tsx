@@ -19,6 +19,8 @@ const BaseContextMenuContent =
   ShadcnContextMenuContent as React.ComponentType<BaseContextMenuContentProps>;
 const BaseContextMenuTrigger =
   ShadcnContextMenuTrigger as React.ComponentType<BaseContextMenuPrimitive.Trigger.Props>;
+const BaseContextMenu =
+  ShadcnContextMenu as React.ComponentType<BaseContextMenuPrimitive.Root.Props>;
 
 // biome-ignore lint/performance/noBarrelFile: This adapter owns one stable menu API across registry bases.
 export {
@@ -38,8 +40,9 @@ export {
 
 export function ContextMenu({
   children,
-}: React.PropsWithChildren<{ modal?: boolean }>) {
-  return <ShadcnContextMenu>{children}</ShadcnContextMenu>;
+  disabled,
+}: React.PropsWithChildren<{ disabled?: boolean; modal?: boolean }>) {
+  return <BaseContextMenu disabled={disabled}>{children}</BaseContextMenu>;
 }
 
 export function ContextMenuContent({

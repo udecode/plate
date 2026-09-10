@@ -66,6 +66,11 @@
       "import": "./dist/react/index.js",
       "default": "./dist/react/index.js"
     },
+    "./annotations": {
+      "types": "./dist/annotations/index.d.ts",
+      "import": "./dist/annotations/index.js",
+      "default": "./dist/annotations/index.js"
+    },
     "./diff": {
       "types": "./dist/diff/index.d.ts",
       "import": "./dist/diff/index.js",
@@ -76,7 +81,17 @@
       "import": "./dist/testing/index.js",
       "default": "./dist/testing/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./yjs": {
+      "types": "./dist/yjs/index.d.ts",
+      "import": "./dist/yjs/index.js",
+      "default": "./dist/yjs/index.js"
+    },
+    "./yjs/react": {
+      "types": "./dist/yjs/react/index.d.ts",
+      "import": "./dist/yjs/react/index.js",
+      "default": "./dist/yjs/react/index.js"
+    }
   },
   "publishConfig": {
     "access": "public"
@@ -103,6 +118,7 @@
     "lint:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs pagination",
     "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
+    "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs yjs",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs test",
     "test:bun": "bun test --preload ../../config/plite-source-test-setup.ts --path-ignore-patterns 'test/react/**'",
     "test:entrypoint:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
@@ -121,6 +137,7 @@
     "test:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs pagination",
     "test:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
     "test:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
+    "test:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs yjs",
     "test:react": "vitest run --config ./vitest.config.mjs",
     "typecheck": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs typecheck",
     "typecheck:contracts": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-contracts plitejs core",
@@ -140,13 +157,16 @@
     "typecheck:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs pagination",
     "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
     "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
+    "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs yjs",
     "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests plitejs core"
   },
   "dependencies": {
+    "csstype": "3.2.3",
     "lodash": "^4.17.21",
     "scroll-into-view-if-needed": "^3.1.0"
   },
   "devDependencies": {
+    "@babel/core": "7.29.0",
     "@chenglou/pretext": "^0.0.7",
     "@happy-dom/global-registrator": "20.0.10",
     "@tanstack/react-virtual": "^3.13.25",
@@ -158,19 +178,22 @@
     "@types/node": "24.12.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "babel-plugin-react-compiler": "1.0.0",
     "diff-match-patch-ts": "^0.6.0",
     "fast-check": "^3.23.2",
     "jsdom": "20.0.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "yjs": "13.6.30"
   },
   "peerDependencies": {
     "@chenglou/pretext": "^0.0.7",
     "@tanstack/react-virtual": "^3.13.25",
     "diff-match-patch-ts": "^0.6.0",
     "react": ">=19.2.0",
-    "react-dom": ">=19.2.0"
+    "react-dom": ">=19.2.0",
+    "yjs": ">=13.6.30"
   },
   "peerDependenciesMeta": {
     "@chenglou/pretext": {
@@ -186,6 +209,9 @@
       "optional": true
     },
     "react-dom": {
+      "optional": true
+    },
+    "yjs": {
       "optional": true
     }
   }

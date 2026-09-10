@@ -224,6 +224,49 @@ describe('playwright selection snapshots', () => {
     expect(reads).toBeGreaterThan(1);
   });
 
+  test('accepts a partial native range only while its view declares model-owned DOM coverage', async () => {
+    document.body.innerHTML =
+      '<div data-plite-editor="true"><span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">before</span></span></div>';
+    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const text = root.querySelector('[data-plite-string]')!.firstChild!;
+    const nativeRange = document.createRange();
+    nativeRange.setStart(text, 0);
+    nativeRange.setEnd(text, 6);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(nativeRange);
+    const model = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    };
+    let covered = true;
+    let native = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 6 },
+    };
+    let reads = 0;
+    (root as any).__pliteBrowserHandle = {
+      getDOMSelection: () => {
+        reads += 1;
+        return native;
+      },
+      getInputState: () => ({
+        modelOwnedDOMCoverageSelection: covered,
+        preferModelSelection: true,
+      }),
+      getSelection: () => model,
+    };
+    await expect(
+      waitForSelectionSync(createRootLocator(root), model)
+    ).resolves.toBeUndefined();
+    covered = false;
+    reads = 0;
+    setTimeout(() => {
+      native = model;
+    }, 20);
+    await waitForSelectionSync(createRootLocator(root), model);
+    expect(reads).toBeGreaterThan(1);
+  });
+
   test('waits for native selection inside the requested editor root', async () => {
     document.body.innerHTML = `
       <div data-editor="first"><span>first</span></div>

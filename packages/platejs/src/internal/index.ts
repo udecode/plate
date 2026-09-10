@@ -29,7 +29,6 @@ export {
   getCompiledPlateContainerTypes,
   getCompiledPlatePlugin,
   getPlateRuntime,
-  getResolvedPluginTargetTypes,
 } from './plugin/compilePlateModel';
 export { isNominalPluginDescriptor } from './utils/mergePlugins';
 export {

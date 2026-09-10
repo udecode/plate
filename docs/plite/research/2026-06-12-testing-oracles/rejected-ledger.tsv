@@ -1,0 +1,3 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+clipboard:synthetic-datatransfer-paste	github/ueberdosis/tiptap	testing-oracle:tiptap-paste-datatransfer:duplicate	Slate v2 already has native clipboard plus synthetic DataTransfer/event fallback and trace/model-selection checks; Tiptap helper adds no stronger invariant.	Reopen only if Slate's helper lacks a Cypress/browser-specific paste surface that Tiptap proves.
+clipboard:prosemirror-open-slice-context	github/prosemirror/prosemirror-view	testing-oracle:clipboard-open-slice-context:queued	Useful but not the current highest oracle packet; table-fragment contract already owns the strongest clipboard-adjacent semantic gap.	Reopen after table-fragment plan is accepted or a clipboard semantic regression appears.

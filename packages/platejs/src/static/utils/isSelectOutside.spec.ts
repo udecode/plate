@@ -1,5 +1,5 @@
-import * as getSelectedDomNodeModule from './getSelectedDomNode';
-import { isSelectOutside } from './isSelectOutside';
+import * as getSelectedDomNodeModule from './getSelectedDomNode.internal';
+import { isSelectOutside } from './isSelectOutside.internal';
 
 describe('isSelectOutside', () => {
   let mockGetSelectedDomNode: ReturnType<typeof mock>;

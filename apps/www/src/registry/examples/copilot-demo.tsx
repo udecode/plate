@@ -1,7 +1,6 @@
 'use client';
 
 import { Plate, useCreateEditor } from 'platejs/react';
-import * as React from 'react';
 
 import { CopilotKit } from '@/registry/components/editor/copilot';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';

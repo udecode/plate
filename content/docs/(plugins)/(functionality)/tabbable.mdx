@@ -13,7 +13,7 @@ title: Tabbable
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -23,7 +23,7 @@ The fastest way to add the tabbable plugin is with `TabbableKit`. The kit keeps 
 
 <ComponentSource name="tabbable" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -39,7 +39,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -49,7 +49,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual tabbable
 ```
 
-### Add Plugin
+### Add plugin
 
 ```tsx
 import { TabbablePlugin } from 'platejs/tabbable/react';
@@ -63,7 +63,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 ```tsx
 import { TabbablePlugin } from 'platejs/tabbable/react';
@@ -100,9 +100,9 @@ const editor = createEditor({
 
 </Steps>
 
-## Advanced Usage
+## Advanced usage
 
-### Conflicts with Other Plugins
+### Conflicts with other plugins
 
 The Tabbable plugin may cause issues with other plugins that handle the `Tab` key, such as:
 
@@ -139,7 +139,7 @@ query: (event) => !!editor.read.nodes.some({
 }),
 ```
 
-### Non-void Plite Nodes
+### Non-void Plite nodes
 
 One `TabbableEntry` will be created for each tabbable DOM element in the editor, as determined using the [tabbable](https://www.npmjs.com/package/tabbable) NPM package. The list of tabbables is then filtered using `isTabbable`.
 
@@ -153,7 +153,7 @@ isTabbable: (tabbableEntry) => (
 ),
 ```
 
-### DOM Elements Outside the Editor
+### DOM elements outside the editor
 
 In some circumstances, you may want to allow users to tab from the editor to a DOM element rendered outside the editor, such as an interactive popover.
 
@@ -209,12 +209,6 @@ Plugin for managing tab order between tabbable elements.
   </APIItem>
 </APIOptions>
 </API>
-
-## Read API
-
-### `editor.plugin(TabbablePlugin).read.findDestination(options)`
-
-Finds the next DOM or document destination from the active snapshot.
 
 ## Types
 

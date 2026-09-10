@@ -65,11 +65,11 @@ Use `highlight` for marked text.
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
-### Add The Kit
+### Add the kit
 
 `BasicMarksKit` is the full client-side registry kit. It includes mark plugins, input rules, `CodeLeaf`, `HighlightLeaf`, and `KbdLeaf`.
 
@@ -85,7 +85,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add Toolbar Buttons
+### Add toolbar buttons
 
 Use `MarkToolbarButton` for direct mark toggles.
 
@@ -118,7 +118,7 @@ export function BoldToolbarButton() {
 The package exports each mark capability independently. The registry owns the
 editable and static mark presets.
 
-## Mark Set
+## Mark set
 
 | Mark | Plugin | Default property | Render | Notes |
 |------|--------|-----|--------|-------|
@@ -127,7 +127,7 @@ editable and static mark presets.
 | Underline | `UnderlinePlugin` | `underline` | `u` | Deserializes `u` and underline text decoration. |
 | Strikethrough | `StrikethroughPlugin` | `strikethrough` | `s` | Uses directional selection affinity. |
 | Code | `CodePlugin` | `code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
-| Script | `ScriptPlugin` | `script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
+| Script | `ScriptPlugin` | `script` | `sub` or `sup` | Uses one property with the value `'sub'` or `'sup'` for both positions. |
 | Highlight | `HighlightPlugin` | `highlight` | `mark` | Uses directional selection affinity. |
 | Kbd | `KbdPlugin` | `kbd` | `kbd` | Uses hard selection affinity. |
 
@@ -137,7 +137,7 @@ text property from `editor.plugin(Plugin).schema.key`.
 Boolean mark plugins expose `editor.update.<mark>.toggle()`. `ScriptPlugin`
 exposes `editor.update.script.toggle('sub' | 'sup')`.
 
-## Input Rules
+## Input rules
 
 `BasicMarksKit` registers input rules explicitly. The package plugins do not enable them by default.
 
@@ -154,7 +154,7 @@ exposes `editor.update.script.toggle('sub' | 'sup')`.
 
 See [Plugin Input Rules](/docs/plugin-input-rules) for the runtime model.
 
-## Manual Usage
+## Manual usage
 
 Install the package when you want to compose marks yourself.
 

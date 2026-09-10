@@ -4,10 +4,10 @@ import { performance } from 'node:perf_hooks';
 import { createEditor } from 'platejs';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
 
-import { yjs } from 'platejs/yjs';
+import { yjs } from 'plitejs/yjs';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
-const Y = await import(Bun.resolveSync('yjs', new URL('../../../../../packages/platejs/', import.meta.url).pathname));
+const Y = await import(Bun.resolveSync('yjs', new URL('../../../../../packages/plitejs/', import.meta.url).pathname));
 
 const iterations = Number.parseInt(
   process.env.PLITE_YJS_COLLAB_ITERATIONS ?? '5',

@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-06-registry-lifetime-repairs",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-06-registry-lifetime-repairs.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-06",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve editor state across streaming controls and clipboard failures",
+  "targets": [
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": ["apps/www/src/registry/components/editor/code-block.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-command.tsx",
+        "apps/www/src/registry/components/editor/select-editor.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "controlled-demo",
+      "files": ["apps/www/src/registry/examples/controlled-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media",
+      "files": ["apps/www/src/registry/components/editor/media.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-06-markdown-streaming-preserve-editor-state-across-b0032e1e",
+      "kind": "fix",
+      "summary": "Stop pending chunks when resetting, changing scenarios, navigating, switching editor modes, or leaving the demo.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["markdown-streaming-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs-2",
+      "kind": "behavior",
+      "summary": "Confirm copying after the clipboard write succeeds and allow retry after a failure.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs-3",
+      "kind": "behavior",
+      "summary": "Preserve stored timestamps when callers reuse or mutate input dates.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs-4",
+      "kind": "behavior",
+      "summary": "Release pending layout measurements and loading timers on unmount.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor", "controlled-demo"],
+      "source": {
+        "line": 17,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs-5",
+      "kind": "behavior",
+      "summary": "Clarify file-size and minimum-file-count errors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media"],
+      "source": {
+        "line": 18,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-06-registry-lifetime-repairs-6",
+      "kind": "wiring",
+      "summary": "Avoid adding an empty stylesheet during image and PDF export.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 19,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-09-06",
+          "entry": "2026-09-06-registry-lifetime-repairs",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

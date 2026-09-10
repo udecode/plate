@@ -4,6 +4,7 @@ import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
 const newExampleSlugs = [
   'comment-mode',
   'document-state',
+  'external-text',
   'hidden-content-blocks',
   'linting',
   'multi-root-document',
@@ -14,6 +15,32 @@ const newExampleSlugs = [
 ];
 
 test.describe('example navigation metadata', () => {
+  for (const [slug, selector] of [
+    ['comment-mode', '.plite-comment-mode-panel'],
+    ['decorations-async', '.plite-decorations-async-container'],
+    ['document-state', '.plite-document-state-panel'],
+    ['linting', '.plite-linting-panel'],
+    ['multi-root-document', '.plite-multi-root-document-page'],
+    ['persistent-annotation-anchors', '.plite-persistent-annotation-anchors-panel'],
+  ] as const) {
+    test(`keeps the centered ${slug} example inside a narrow viewport`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`/examples/plite/${slug}`);
+      await expect(page.locator(selector)).toBeVisible();
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              document.documentElement.scrollWidth -
+              document.documentElement.clientWidth
+          )
+        )
+        .toBeLessThanOrEqual(1);
+    });
+  }
+
   test('redirects the examples index to rich text', async ({ page }) => {
     await page.goto('/examples/plite');
     await expect(page).toHaveURL(/\/examples\/plite\/richtext$/);

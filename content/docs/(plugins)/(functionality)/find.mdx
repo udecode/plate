@@ -19,7 +19,7 @@ docs:
 - Searches through adjacent text leaves and inline descendants.
 - Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons.
 - Rescans after document commits and keeps one active result visible.
-- Exposes `useFindController` for app-owned controls.
+- Opens independently in each mounted editor view, with `useFind` for custom controls.
 
 </PackageInfo>
 
@@ -44,36 +44,97 @@ const editor = createEditor({
 });
 ```
 
-`FindKit` owns the search shortcut, transient decorations, active-match style,
-and accessible search bar. The copied component keeps its result owner outside
-the editor document, so a query never creates an editor operation.
+`BaseFindPlugin` owns the current query, matches, navigation and transient
+decoration data. `FindKit` supplies the shortcut, deferred input and accessible
+search bar. Its configured `decorate.attributes` supplies ordinary and active
+match styling. Each mounted Editable owns its open bar, draft, focus and scroll
+requests. Views of the same editor share committed queries and results; opening
+one bar does not open another. Open bars follow the committed query when they
+have no pending draft. Only the focused bar scrolls its view. Detaching a view
+preserves the shared search. Search state stays outside the document and history.
 
 <ComponentSource name="find" />
 
-## Custom Controls
+## Search API
 
-Use `useFindController` inside the matching `<Plate>` tree when your product
-needs a different button or search bar:
+Use the headless feature for search without the copied bar:
+
+```ts
+import { createEditor } from 'platejs';
+import { BaseFindPlugin } from 'platejs/find';
+
+const editor = createEditor({ plugins: [BaseFindPlugin] });
+const find = editor.plugin(BaseFindPlugin);
+
+find.api.search('example');
+find.api.move(1);
+find.store.get('matches');
+find.store.get('activeMatch');
+find.update.select();
+```
+
+`api.search(query)` applies a case-insensitive literal query. An empty query
+clears the results. `api.move(1 | -1)` wraps through the current results without
+rescanning. Document commits refresh the query automatically, including when
+no view is mounted. `update.select()` selects the current range and returns
+whether a result exists; view focus remains the caller's responsibility.
+
+`FindPluginState` contains `query`, immutable `matches`, `activeIndex` and
+`error`. The `count` and `activeMatch` store selectors derive current results.
+Each `FindMatch` contains an ID and range. Match data is transient and never
+stored as document marks. Custom renderers can style `data-find-match` and
+`data-find-active` attributes.
+
+## Custom controls
+
+Use `useFind` in a component rendered by that Editable's `beforeEditable` or
+`afterEditable` slot. `FindKit` supplies the context through `wrapRoot`, so a
+custom control addresses one mounted view without subscribing to search results:
 
 ```tsx
-import { useFindController } from '@/components/editor/find';
+import { useFind } from '@/components/editor/find';
 
 export function FindButton() {
-  const find = useFindController();
+  const { open } = useFind();
 
   return (
-    <button onClick={() => find.open()} type="button">
+    <button onClick={() => open()} type="button">
       Find
     </button>
   );
 }
 ```
 
-The controller exposes `open`, `close`, `setQuery`, `next`, `previous`, and
-`commitActiveMatch`, plus query, count, active-index, pending, and error state.
-`commitActiveMatch` selects the active result and focuses the editor.
+In the copied `FindKit` configuration, add `beforeEditable: FindButton` alongside
+`wrapRoot: FindRoot`. A sibling of `<Editor>` outside those slots does not have
+the exact view's Find context.
 
-## Keyboard Behavior
+`open(query?)` opens and focuses this view's bar. An explicit query becomes its
+input; otherwise it uses the committed search query. `close()` closes this
+view's bar, clears the shared query and returns focus to this view's editor.
+Typing stays local until the bar applies its deferred query.
+
+Search controls use `editor.plugin(BaseFindPlugin)` directly. Controls that
+display results can subscribe with `usePluginStore(BaseFindPlugin, 'count')`,
+`'activeIndex'`, or `'error'`. Opening controls do not need these subscriptions.
+
+To select a result and focus the current view from an Editable slot, call the
+existing selection and DOM commands:
+
+```tsx
+import { BaseFindPlugin } from 'platejs/find';
+import { useEditor } from 'platejs/react';
+
+const editor = useEditor();
+
+const selectMatch = () => {
+  if (editor.plugin(BaseFindPlugin).update.select()) {
+    editor.api.dom.focus();
+  }
+};
+```
+
+## Keyboard behavior
 
 | Key | Behavior |
 | --- | --- |

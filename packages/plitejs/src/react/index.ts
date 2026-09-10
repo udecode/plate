@@ -6,14 +6,14 @@ export * from '..';
 export type {
   PliteAnnotation,
   PliteAnnotationAnchor,
-  PliteAnnotationProjectionData,
+  PliteAnnotationChange,
   PliteAnnotationRefreshOptions,
   PliteAnnotationSnapshot,
   PliteAnnotationStore,
   PliteAnnotationStoreMetrics,
   PliteAnnotationStoreOptions,
   PliteResolvedAnnotation,
-} from './annotation-store';
+} from '../annotations';
 export type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
@@ -27,16 +27,12 @@ export type {
   EditableKeyDownContext,
   EditableKeyDownHandler,
 } from './components/editable';
-export { defaultScrollSelectionIntoView } from './components/editable';
-export { EditableElement } from './components/editable-element';
 export type {
   RenderLeafProps,
   RenderPlaceholderProps,
   RenderTextProps,
 } from './components/editable-text';
 export type {
-  EditableDecorate,
-  EditableDecoration,
   EditableDOMCoverageBoundaryMaterializePayload,
   EditableDOMCoverageBoundaryPlaceholderContext,
   EditableDOMCoverageBoundaryProps,
@@ -47,6 +43,18 @@ export type {
   RenderVoidProps,
 } from './components/editable-text-blocks';
 export { Editable } from './components/editable-text-blocks';
+export type {
+  ExternalTextActions,
+  ExternalTextAdapter,
+  ExternalTextChange,
+  ExternalTextDecoration,
+  ExternalTextDispatchResult,
+  ExternalTextOptions,
+  ExternalTextSelection,
+  ExternalTextSelectionState,
+  ExternalTextState,
+  ExternalTextView,
+} from './external-text';
 export {
   Plite,
   type PliteCommitContext,
@@ -59,12 +67,10 @@ export { PliteLeaf } from './components/plite-leaf';
 export { PlitePlaceholder } from './components/plite-placeholder';
 export { PliteText } from './components/plite-text';
 export type {
+  PliteDecorationAttributes,
   PliteDecoration,
+  PliteDecorationRefresh,
   PliteDecorationSource,
-  PliteDecorationSourceOptions,
-  PliteDecorationSourceReadContext,
-  PliteRangeDecoration,
-  PliteRangeDecorationSourceOptions,
 } from './decoration-source';
 export type {
   DOMStrategyOptions,
@@ -73,11 +79,6 @@ export type {
   VirtualizedPageLayoutItem,
   VirtualizedTopLevelLayoutItem,
 } from './dom-strategy/create-segment-plan';
-export {
-  type EditorDecorationSelectorContext,
-  type EditorDecorationSelectorOptions,
-  useDecorationSelector,
-} from './hooks/use-decoration-selector';
 export { useDOMStrategyVirtualOffset } from './hooks/use-dom-strategy-virtual-offset';
 export {
   useEditorContext,
@@ -132,6 +133,7 @@ export {
   usePliteAnnotationStore,
 } from './hooks/use-plite-annotation-store';
 export {
+  PliteAnnotationProvider,
   usePliteAnnotation,
   usePliteAnnotations,
 } from './hooks/use-plite-annotations';
@@ -141,12 +143,6 @@ export {
   type UsePliteContentRootOptions,
   usePliteContentRoot,
 } from './hooks/use-plite-content-root';
-export {
-  type UsePliteDecorationSourceOptions,
-  type UsePliteRangeDecorationSourceOptions,
-  usePliteDecorationSource,
-  usePliteRangeDecorationSource,
-} from './hooks/use-plite-decoration-source';
 export { type UseEditorOptions, useEditor } from './hooks/use-editor';
 export { useClaimEditableDOMCommit } from './hooks/use-claim-editable-dom-commit';
 export {
@@ -159,12 +155,6 @@ export {
   type UsePliteHistoryOptions,
   usePliteHistory,
 } from './hooks/use-plite-history';
-export { usePliteNodeRef } from './hooks/use-plite-node-ref';
-export {
-  type PliteProjectionEntry,
-  type PliteProjectionStore,
-  usePliteProjectionEntries,
-} from './hooks/use-plite-projection-entries';
 export {
   type PliteRootChromeController,
   type UsePliteRootChromeOptions,
@@ -224,22 +214,6 @@ export {
   type ReactExtension,
   react,
 } from './plugin/with-react';
-export type {
-  PliteCustomSourceDirtiness,
-  PliteProjection,
-  PliteProjectionRefreshListener,
-  PliteProjectionRefreshResult,
-  PliteProjectionRuntimeScope,
-  PliteProjectionSlice,
-  PliteProjectionSource,
-  PliteProjectionStoreMetrics,
-  PliteProjectionStoreOptions,
-  PliteProjectionStoreRefreshOptions,
-  PliteRangeProjection,
-  PliteSourceDirtiness,
-  PliteSourceDirtinessClass,
-  PliteSourceDirtinessContext,
-} from './projection-store';
 export { PliteReactUpdatePolicy } from './update-policy';
 export type {
   PliteResolvedWidget,
@@ -257,4 +231,4 @@ export type {
   PliteViewSourceOptions,
   PliteViewSourcePhase,
   PliteViewSourceStatus,
-} from './view-source';
+} from '../internal/view/view-source';

@@ -311,8 +311,8 @@ Check time:          1.45s
 Total time:          1.50s
 `);
 
-    assert.doesNotMatch(exact, /readonly AnyBasePlugin\[\] = \[/u);
-    assert.match(widened, /readonly AnyBasePlugin\[\] = \[/u);
+    assert.doesNotMatch(exact, /readonly BasePluginInput\[\] = \[/u);
+    assert.match(widened, /readonly BasePluginInput\[\] = \[/u);
     assert.equal(
       (widened.match(/const Plugin\d+ = defineBasePlugin/g) ?? []).length,
       1000

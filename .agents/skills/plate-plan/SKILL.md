@@ -10,6 +10,9 @@ metadata:
 
 # Plate Plan
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Use Plate Plan for Plate architecture, adoption, execution, and proof after the
@@ -26,21 +29,38 @@ Choose one mode from the arguments. Default to `--standard`.
   is the decision. Do not create a goal or call the result execution-ready.
   Promote to standard when the decision spans multiple owners, public breaks,
   or uncertain runtime behavior.
-- `--standard`: create or continue one Plate Plan goal and plan. Run the three
+- `--standard`: create or continue one Task-owned Plate plan. Run the three
   phases continuously in the current activation unless interrupted or blocked.
 - `--deep`: use the standard workflow and add only the research, Benchmark
   evidence/packet, or red-team work justified by the named risk. Do not add more lifecycle
   phases or generic research. Use `editor-audit` first when source-level
   comparison against one or more editor architectures is required.
 
-A plan path does not by itself authorize implementation. Execution starts only
-when the user explicitly accepts a ready plan and invokes `plate-plan` against
-that exact path. Create a new one-shot execution goal for the accepted plan.
+A planning request stops at the ready plan. A plan path alone does not authorize
+implementation. An execution request or a clear "go" accepting the current plan
+does; continue in this task without requiring the user to repeat the skill name.
+When planning and execution are already authorized, readiness is an internal
+checkpoint before implementation.
+
+A primary supervisor may delegate accepted execution without another user turn
+only when its invocation already carries explicit source-mutation authority and
+its required decision gate has accepted the target. `task autonomous architecture
+<scope> execute` qualifies only after its bounded challenge records the final
+target, `challenge delta`, exact Plate packet, proof, and current goal/plan.
+Continue that goal and plan; do not create a worker goal or ask the user to
+reinvoke Plate Plan. Without every field, remain planning-only and return the
+missing gate to the supervisor.
 
 ## Ownership
 
 Read root `VISION.md` and `docs/vision/plate.md` for doctrine; do not duplicate
 their full ownership tables in the plan.
+
+Consume the [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
+comparison before planning adoption. Existing plugins, Plate owners and Plite
+primitives are candidates to keep, merge or replace. Reuse an accepted target
+while its requirements and evidence hold; reopen it when a material new law or
+contradiction changes the choice. Migration convenience cannot select the target.
 
 `editor-audit` owns exhaustive external editor architecture comparison.
 `best-api` owns the ideal public call surface. Plate Plan consumes those targets
@@ -53,7 +73,7 @@ An accepted API change carries its doctrine repair with it. Add the affected
 Vision and worker-skill owners to the adoption ledger, then run
 `best-api repair` during execution without waiting for another prompt. A plan
 cannot be ready or complete while `plate-plugin-creator`, `plate-ui`,
-`docs-creator`, `plate-next`, or another affected worker still teaches the
+Plate Docs, `plate-next`, or another affected worker still teaches the
 rejected shape.
 
 - Plite owns the editor model, operations, reads, updates, transactions,
@@ -76,6 +96,20 @@ rejected shape.
   feature exclusions, and styling. Add a controlled input only when the exact
   view cannot derive user intent. Do not plan a Plate plugin, store, or registry
   kit whose only job is toggling that exact-view paint.
+- Plan inline transient feature paint on the owning plugin's
+  `decorate: { read, observe?, attributes? }` descriptor. Reads return keyed ranges with
+  render-safe attributes; Plate lowers them into Plite decorations. Copied
+  features configure `decorate.attributes` without wrapping semantic reads or
+  repeating observers. Prove object/callback/null input, inferred context,
+  class/style merge, observer lifetime and live/static output; remove feature
+  selectors from generic Editor skins only after explicit caller adoption. Plan
+  sparse whole-element view attributes through
+  `render.useViewElementAttributes`, one hook host per enabled plugin per
+  mounted view. It returns `{ key, attributes }[]`; Plate keeps source order,
+  publication, cleanup, and keyed subscriptions private. Per-node
+  `render.attributes` and `inject.nodeProps.transformProps` stay pure and
+  hook-free. Do not add raw decoration props, public attribute stores, source
+  registries, managers, or imperative refresh APIs to Plate components.
 - Plan sibling render slots as exact placement capabilities, not host prop
   forwarding channels. Editable slots receive only `editableRef`; container
   slots receive only `containerRef`. Adopt complete components through direct
@@ -111,6 +145,10 @@ rejected shape.
   only an explicit unversioned floor. Keep `prepareDocument` for installed
   current-schema invariants after migration. Reject migration plugins,
   historical normalizers, AST version guessing, and CLI-only runtime policy.
+  Only the persistence or release owner allocates a target version; fold every
+  unreleased change into that target. Plate's approved next target is v54. Do
+  not plan v55 or later without explicit release-owner approval and a persisted
+  v54 source fingerprint.
 - Planning edits only planning, research, vision, behavior-law, migration, and
   reference artifacts it explicitly owns. Do not implement product source
   before accepted-plan execution.
@@ -124,7 +162,8 @@ rejected shape.
 
 ## Standard And Deep Setup
 
-Use `autogoal` with `docs/plans/templates/plate-plan.md`.
+Reuse the active Task plan. When no suitable plan exists, create a file from
+`docs/plans/templates/plate-plan.md`:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -142,9 +181,13 @@ Use a short objective:
 Close <Plate decision>; done when binary readiness gates pass; plan docs/plans/<path>.md.
 ```
 
-Autogoal owns lifecycle, evidence integrity, blocking, and the final mechanical
-check. Plate Plan owns Plate/Plite decisions, adoption, execution slices, and
-Plate-specific proof.
+Task owns lifecycle and authority. The helper creates and checks a file; native goals follow the user's direct or standing request. Plate Plan owns Plate/Plite decisions,
+adoption, execution slices, and Plate-specific proof.
+
+When a primary supervisor delegates with an active goal, keep that goal. Add
+the Plate Plan readiness fields and decision rows to its plan instead of
+creating a second template or duplicating the same decisions. If the parent
+plan cannot express a required gate, repair it before continuing.
 
 ## Read Order
 
@@ -228,7 +271,7 @@ Add only what the scope triggers:
   blast radius, rollback/hard-cut answer, and focused proof.
 - Performance: require the embedded Benchmark receipt before choosing a
   scale-sensitive owner. If no causal baseline or executable target probe
-  exists, the plan remains provisional. Use `performance` only to pressure-test
+  exists, the plan remains provisional. Use `benchmark review` only to pressure-test
   cohorts, repeated-unit budgets, degradation, native behavior, and production
   proof requirements.
 - A mounted-view presentation row must name the Plite React input, Plate proxy,
@@ -264,11 +307,12 @@ open gate, not a decimal.
 
 ## Accepted-Plan Execution
 
-After explicit acceptance:
+After standalone acceptance or a qualifying delegated supervisor gate:
 
 1. Read the accepted plan and current source; repair stale plan claims before
    implementation.
-2. Create a new one-shot execution goal naming the plan and target owners.
+2. Record execution authority and the Plate packet in the same plan. Preserve
+   the active native goal and its full objective.
 3. Implement the vertical slices in order, using focused proof first.
 4. Hard-cut rejected surfaces and sweep callers, exports, tests, docs, and
    examples. Leave no compatibility path unless the accepted ledger contains a
@@ -295,4 +339,7 @@ For ready standard/deep plans, link the plan and concisely report:
 - focused proof and unresolved execution risks;
 - execution order and what needs user acceptance.
 
-Stop after planning handoff. Never silently begin implementation.
+Standalone planning stops after handoff and never silently begins
+implementation. Delegated planning returns its readiness result to the primary
+supervisor; continue in the same activation only when the supervisor already
+records explicit execution authority and every gate above.

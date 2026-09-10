@@ -4,7 +4,6 @@ import {
   type EditorCommandInput,
   editorCommands,
   type EditorCoreStateView,
-  type EditorExtensionDefinitionInput,
   type Element,
   RangeApi,
 } from '../../../core';
@@ -14,10 +13,10 @@ export type TriggerComboboxEditor = Pick<Editor, 'plugin'> & {
 };
 
 export type TriggerComboboxPluginState = {
-  trigger?: readonly string[] | RegExp | string;
-  triggerPreviousCharPattern?: RegExp;
-  createComboboxInput?: (trigger: string) => Element;
-  triggerQuery?: (editor: TriggerComboboxEditor) => boolean;
+  trigger: readonly string[] | RegExp | string | null;
+  triggerPreviousCharPattern: RegExp | null;
+  createComboboxInput: ((trigger: string) => Element) | null;
+  triggerQuery: ((editor: TriggerComboboxEditor) => boolean) | null;
 };
 
 export type TriggerComboboxOptions<
@@ -27,10 +26,6 @@ export type TriggerComboboxOptions<
   getState: () => Readonly<TriggerComboboxPluginState>;
   type: string;
 };
-
-export type TriggerComboboxCommands<
-  TEditor extends Editor<any, any> = Editor<any, any>,
-> = NonNullable<EditorExtensionDefinitionInput<TEditor>['commands']>;
 
 type TriggerComboboxCommandContext = Readonly<{
   handle: (...args: never[]) => unknown;

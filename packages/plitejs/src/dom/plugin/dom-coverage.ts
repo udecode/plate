@@ -12,7 +12,7 @@ import {
   before as editorBefore,
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
-  getSnapshotVersion,
+  getSnapshot,
 } from '../../internal';
 import {
   type DOMElement,
@@ -21,6 +21,7 @@ import {
   isDOMElement,
 } from '../utils/dom';
 import { IS_COMPOSING } from '../utils/weak-maps';
+import { resolveDOMPointInRoot, resolveDOMRangeInRoot } from './dom-editor';
 import type { DOMEditor as DOMEditorType } from './with-dom';
 
 export const DOM_COVERAGE_BOUNDARY_ATTRIBUTE =
@@ -38,6 +39,7 @@ export type DOMCoverageBoundaryState =
 
 /** Why a model range is missing from, summarized in, or detached from the DOM. */
 export type DOMCoverageReason =
+  | 'external-text'
   | 'app-collapse'
   | 'app-hidden'
   | 'rendering-staged'
@@ -166,33 +168,11 @@ interface DOMCoverageRegistry {
   boundaries: Map<string, DOMCoverageBoundary>;
   boundaryRootKeys: Map<string, Set<string>>;
   boundariesByRootKey: Map<string, Set<string>>;
-  indexedVersion: number;
+  indexedIndex: ReturnType<typeof getSnapshot>['index'];
+  registrations: Map<string, object>;
   materializeHandlers: Map<number, DOMCoverageMaterializeHandler>;
   nextMaterializeHandlerId: number;
 }
-
-const EDITOR_TO_DOM_COVERAGE_REGISTRY = new WeakMap<
-  EditorType,
-  DOMCoverageRegistry
->();
-
-const getRegistry = (editor: EditorType): DOMCoverageRegistry => {
-  let registry = EDITOR_TO_DOM_COVERAGE_REGISTRY.get(editor);
-
-  if (!registry) {
-    registry = {
-      boundaries: new Map(),
-      boundaryRootKeys: new Map(),
-      boundariesByRootKey: new Map(),
-      indexedVersion: getSnapshotVersion(editor),
-      materializeHandlers: new Map(),
-      nextMaterializeHandlerId: 1,
-    };
-    EDITOR_TO_DOM_COVERAGE_REGISTRY.set(editor, registry);
-  }
-
-  return registry;
-};
 
 const rebasePathFromOwner = (
   path: PlitePath,
@@ -464,11 +444,11 @@ const getIndexedBoundaries = (
 
 const syncRegistryToEditor = (
   editor: EditorType,
-  registry = getRegistry(editor)
+  registry: DOMCoverageRegistry
 ) => {
-  const version = getSnapshotVersion(editor);
+  const { index } = getSnapshot(editor);
 
-  if (registry.indexedVersion === version) {
+  if (registry.indexedIndex === index) {
     return registry;
   }
 
@@ -485,14 +465,10 @@ const syncRegistryToEditor = (
       setRegistryBoundary(registry, resolved);
     }
   });
-  registry.indexedVersion = version;
+  registry.indexedIndex = index;
 
   return registry;
 };
-
-const getResolvedBoundaries = (editor: EditorType) => [
-  ...syncRegistryToEditor(editor).boundaries.values(),
-];
 
 const pathIsCoveredByRange = (path: PlitePath, range: DOMCoveragePathRange) => {
   const orderedRange = getOrderedPathRange(range);
@@ -577,266 +553,309 @@ export const DOMCoverage = {
   boundaryEdgeAttribute: DOM_COVERAGE_BOUNDARY_EDGE_ATTRIBUTE,
   boundaryElementAttribute: DOM_COVERAGE_BOUNDARY_ATTRIBUTE,
 
-  /** Remove all boundary and materialization state for an editor. */
-  clear(editor: EditorType) {
-    EDITOR_TO_DOM_COVERAGE_REGISTRY.delete(editor);
-  },
-
-  /** Remove all materialization handlers for an editor. */
-  clearMaterializeHandler(editor: EditorType) {
-    getRegistry(editor).materializeHandlers.clear();
-  },
-
-  /** Return all currently valid boundaries after rebasing them to the editor. */
-  getBoundaries(editor: EditorType): readonly DOMCoverageBoundary[] {
-    return getResolvedBoundaries(editor);
-  },
-
-  /** Return boundaries whose covered ranges intersect a Plite range. */
-  getBoundariesForRange(
-    editor: EditorType,
-    range: PliteRange
-  ): readonly DOMCoverageBoundary[] {
-    const orderedRange = getOrderedPathRange({
-      anchor: range.anchor.path,
-      focus: range.focus.path,
-    });
-    const registry = syncRegistryToEditor(editor);
-
-    return getIndexedBoundaries(registry, [
-      ...getRootKeysForPathRange(orderedRange),
-    ])
-      .filter((boundary) => rangeIntersectsBoundary(range, boundary))
-      .sort(compareBoundaries);
-  },
-
-  /** Resolve a boundary by id, rebasing or removing it if the owner moved. */
-  getBoundary(editor: EditorType, boundaryId: string) {
-    const registry = syncRegistryToEditor(editor);
-    const boundary = registry.boundaries.get(boundaryId);
-
-    if (!boundary) {
-      return null;
-    }
-
-    const resolved = resolveBoundary(editor, boundary);
-
-    if (!resolved) {
-      registry.boundaries.delete(boundaryId);
-      removeBoundaryFromIndex(registry, boundaryId);
-      return null;
-    }
-
-    if (resolved !== boundary) {
-      setRegistryBoundary(registry, resolved);
-    }
-
-    return resolved;
-  },
-
-  /** Return the nearest boundary that owns a Plite point. */
-  getBoundaryForPoint(editor: EditorType, point: Point) {
-    const registry = syncRegistryToEditor(editor);
-    const [boundary] = getIndexedBoundaries(registry, [getRootKey(point.path)])
-      .filter((candidate) => boundaryContainsPoint(candidate, point))
-      .sort(compareBoundaries);
-
-    return boundary ?? null;
-  },
-
-  /** Find the next selectable point outside a boundary with the same policy. */
-  getPointOutsideBoundary(
-    editor: EditorType,
-    boundary: DOMCoverageBoundary,
-    point: Point,
-    options: { reverse?: boolean } = {}
-  ) {
-    let targetBoundary: DOMCoverageBoundary | null = boundary;
-    let targetPoint: Point | null = point;
-    const { selectionPolicy } = boundary;
-    const visited = new Set<string>();
-
-    while (targetBoundary?.selectionPolicy === selectionPolicy && targetPoint) {
-      const rangeMatch = getBoundaryRangeForPoint(targetBoundary, targetPoint);
-
-      if (!rangeMatch) {
-        return null;
-      }
-
-      const visitKey = `${targetBoundary.boundaryId}:${rangeMatch.index}`;
-
-      if (visited.has(visitKey)) {
-        return null;
-      }
-      visited.add(visitKey);
-
-      const orderedRange = getOrderedPathRange(rangeMatch.range);
-      const nextPoint = options.reverse
-        ? editorBefore(editor, orderedRange.anchor)
-        : editorAfter(editor, orderedRange.focus);
-
-      if (!nextPoint) {
-        return null;
-      }
-
-      targetPoint = nextPoint;
-      targetBoundary = DOMCoverage.getBoundaryForPoint(editor, targetPoint);
-    }
-
-    return targetPoint;
-  },
-
-  /** Ask app code to mount or reveal a boundary for selection, copy, or focus. */
-  materializeBoundary(
-    editor: EditorType,
-    boundaryId: string,
-    reason: DOMCoverageMaterializeReason,
-    options: DOMCoverageMaterializeOptions = {}
-  ): DOMCoverageMaterializeResult {
-    const boundary = DOMCoverage.getBoundary(editor, boundaryId);
-
-    if (!boundary) {
-      return { boundaryId, reason, status: 'missing-boundary' };
-    }
-
-    if (IS_COMPOSING.get(editor)) {
-      return { boundaryId, reason, status: 'unhandled' };
-    }
-
-    let didHandle = false;
-
-    for (const handler of getRegistry(editor).materializeHandlers.values()) {
-      if (handler(boundary, reason, options)) {
-        didHandle = true;
-        break;
-      }
-    }
-
-    return {
-      boundaryId,
-      reason,
-      status: didHandle ? 'handled' : 'unhandled',
-    };
-  },
-
-  /** Register or replace one boundary and return an unregister function. */
-  registerBoundary(editor: EditorType, boundary: DOMCoverageBoundary) {
-    const registry = syncRegistryToEditor(editor);
-
-    setRegistryBoundary(registry, boundary);
-    registry.indexedVersion = getSnapshotVersion(editor);
-
-    return () => {
-      DOMCoverage.unregisterBoundary(editor, boundary.boundaryId);
-    };
-  },
-
-  /** Replace all materialization handlers with one handler. */
-  setMaterializeHandler(
-    editor: EditorType,
-    handler: DOMCoverageMaterializeHandler
-  ) {
-    const registry = getRegistry(editor);
-
-    registry.materializeHandlers.clear();
-    registry.materializeHandlers.set(0, handler);
-  },
-
-  /** Register one materialization handler and return an unregister function. */
-  registerMaterializeHandler(
-    editor: EditorType,
-    handler: DOMCoverageMaterializeHandler
-  ) {
-    const registry = getRegistry(editor);
-    const handlerId = registry.nextMaterializeHandlerId;
-
-    registry.nextMaterializeHandlerId += 1;
-
-    registry.materializeHandlers.set(handlerId, handler);
-
-    return () => {
-      registry.materializeHandlers.delete(handlerId);
-    };
-  },
-
-  /** Resolve a Plite point to mounted DOM or to the covering boundary. */
-  resolveDOMPointOrBoundary(
-    editor: DOMEditorType<any>,
-    point: Point
-  ): DOMCoverageDOMPointResult {
-    const boundary = DOMCoverage.getBoundaryForPoint(editor, point);
-
-    if (boundary) {
-      return {
-        boundary,
-        point,
-        type: 'boundary',
-      };
-    }
-
-    return {
-      domPoint: editor.api.dom.assertDOMPoint(point),
-      type: 'dom-point',
-    };
-  },
-
-  /** Resolve a Plite range to mounted DOM or to covered boundary ranges. */
-  resolveDOMRangeOrBoundary(
-    editor: DOMEditorType<any>,
-    range: PliteRange
-  ): DOMCoverageDOMRangeResult {
-    const boundaries = DOMCoverage.getBoundariesForRange(editor, range);
-
-    if (boundaries.length > 0) {
-      return {
-        boundaries,
-        range,
-        type: 'boundary-range',
-      };
-    }
-
-    return {
-      domRange: editor.api.dom.assertDOMRange(range),
-      type: 'dom-range',
-    };
-  },
-
-  /** Resolve native boundary DOM back to the Plite point it represents. */
-  resolvePlitePointFromBoundary(
-    editor: EditorType,
-    domPoint: DOMPoint
-  ): DOMCoveragePlitePointResult | null {
-    const element = getDOMCoverageElementFromPoint(domPoint);
-
-    if (!element) {
-      return null;
-    }
-
-    const boundaryId = element.getAttribute(DOM_COVERAGE_BOUNDARY_ATTRIBUTE);
-    const boundary = boundaryId
-      ? DOMCoverage.getBoundary(editor, boundaryId)
-      : null;
-
-    if (!boundary) {
-      return null;
-    }
-
-    return {
-      boundary,
-      domPoint,
-      edge: getBoundaryEdge(element),
-      type: 'boundary-point',
-    };
-  },
-
-  /** Remove one registered boundary and its lookup index entries. */
-  unregisterBoundary(editor: EditorType, boundaryId: string) {
-    const registry = getRegistry(editor);
-
-    registry.boundaries.delete(boundaryId);
-    removeBoundaryFromIndex(registry, boundaryId);
+  /** Create independent coverage for one mounted view of an editor. */
+  create(editor: EditorType) {
+    return createDOMCoverageSession(editor);
   },
 };
+
+/** Bind runtime coverage to its exact DOM root without adding a public view selector. @internal */
+export const createDOMCoverageSession = (
+  editor: EditorType,
+  getRoot?: () => HTMLElement | null
+) => {
+  const registry: DOMCoverageRegistry = {
+    boundaries: new Map(),
+    boundaryRootKeys: new Map(),
+    boundariesByRootKey: new Map(),
+    indexedIndex: getSnapshot(editor).index,
+    registrations: new Map(),
+    materializeHandlers: new Map(),
+    nextMaterializeHandlerId: 1,
+  };
+  const coverage = {
+    /** Release this view's boundary registrations and materialization handlers. */
+    destroy() {
+      registry.boundaries.clear();
+      registry.boundaryRootKeys.clear();
+      registry.boundariesByRootKey.clear();
+      registry.registrations.clear();
+      registry.materializeHandlers.clear();
+    },
+
+    /** Remove all materialization handlers for this view. */
+    clearMaterializeHandler() {
+      registry.materializeHandlers.clear();
+    },
+
+    /** Return all currently valid boundaries after rebasing them to the editor. */
+    getBoundaries(): readonly DOMCoverageBoundary[] {
+      return [...syncRegistryToEditor(editor, registry).boundaries.values()];
+    },
+
+    /** Return boundaries whose covered ranges intersect a Plite range. */
+    getBoundariesForRange(range: PliteRange): readonly DOMCoverageBoundary[] {
+      const orderedRange = getOrderedPathRange({
+        anchor: range.anchor.path,
+        focus: range.focus.path,
+      });
+      syncRegistryToEditor(editor, registry);
+
+      return getIndexedBoundaries(registry, [
+        ...getRootKeysForPathRange(orderedRange),
+      ])
+        .filter((boundary) => rangeIntersectsBoundary(range, boundary))
+        .sort(compareBoundaries);
+    },
+
+    /** Resolve a boundary by id, rebasing or removing it if the owner moved. */
+    getBoundary(boundaryId: string): DOMCoverageBoundary | null {
+      syncRegistryToEditor(editor, registry);
+      const boundary = registry.boundaries.get(boundaryId);
+
+      if (!boundary) {
+        return null;
+      }
+
+      const resolved = resolveBoundary(editor, boundary);
+
+      if (!resolved) {
+        registry.boundaries.delete(boundaryId);
+        removeBoundaryFromIndex(registry, boundaryId);
+        return null;
+      }
+
+      if (resolved !== boundary) {
+        setRegistryBoundary(registry, resolved);
+      }
+
+      return resolved;
+    },
+
+    /** Return the nearest boundary that owns a Plite point. */
+    getBoundaryForPoint(point: Point): DOMCoverageBoundary | null {
+      syncRegistryToEditor(editor, registry);
+      const [boundary] = getIndexedBoundaries(registry, [
+        getRootKey(point.path),
+      ])
+        .filter((candidate) => boundaryContainsPoint(candidate, point))
+        .sort(compareBoundaries);
+
+      return boundary ?? null;
+    },
+
+    /** Find the next selectable point outside a boundary with the same policy. */
+    getPointOutsideBoundary(
+      boundary: DOMCoverageBoundary,
+      point: Point,
+      options: { reverse?: boolean } = {}
+    ): Point | null {
+      let targetBoundary: DOMCoverageBoundary | null = boundary;
+      let targetPoint: Point | null = point;
+      const { selectionPolicy } = boundary;
+      const visited = new Set<string>();
+
+      while (
+        targetBoundary?.selectionPolicy === selectionPolicy &&
+        targetPoint
+      ) {
+        const rangeMatch = getBoundaryRangeForPoint(
+          targetBoundary,
+          targetPoint
+        );
+
+        if (!rangeMatch) {
+          return null;
+        }
+
+        const visitKey = `${targetBoundary.boundaryId}:${rangeMatch.index}`;
+
+        if (visited.has(visitKey)) {
+          return null;
+        }
+        visited.add(visitKey);
+
+        const orderedRange = getOrderedPathRange(rangeMatch.range);
+        const nextPoint = options.reverse
+          ? editorBefore(editor, orderedRange.anchor)
+          : editorAfter(editor, orderedRange.focus);
+
+        if (!nextPoint) {
+          return null;
+        }
+
+        targetPoint = nextPoint;
+        targetBoundary = coverage.getBoundaryForPoint(targetPoint);
+      }
+
+      return targetPoint;
+    },
+
+    /** Ask app code to mount or reveal a boundary for selection, copy, or focus. */
+    materializeBoundary(
+      boundaryId: string,
+      reason: DOMCoverageMaterializeReason,
+      options: DOMCoverageMaterializeOptions = {}
+    ): DOMCoverageMaterializeResult {
+      const boundary = coverage.getBoundary(boundaryId);
+
+      if (!boundary) {
+        return { boundaryId, reason, status: 'missing-boundary' };
+      }
+
+      if (IS_COMPOSING.get(editor)) {
+        return { boundaryId, reason, status: 'unhandled' };
+      }
+
+      let didHandle = false;
+
+      for (const handler of registry.materializeHandlers.values()) {
+        if (handler(boundary, reason, options)) {
+          didHandle = true;
+          break;
+        }
+      }
+
+      return {
+        boundaryId,
+        reason,
+        status: didHandle ? 'handled' : 'unhandled',
+      };
+    },
+
+    /** Register or replace one boundary and return an unregister function. */
+    registerBoundary(boundary: DOMCoverageBoundary): () => void {
+      syncRegistryToEditor(editor, registry);
+      const registration = {};
+
+      setRegistryBoundary(registry, boundary);
+      registry.registrations.set(boundary.boundaryId, registration);
+
+      return () => {
+        if (registry.registrations.get(boundary.boundaryId) === registration) {
+          coverage.unregisterBoundary(boundary.boundaryId);
+        }
+      };
+    },
+
+    /** Replace all materialization handlers with one handler. */
+    setMaterializeHandler(handler: DOMCoverageMaterializeHandler) {
+      registry.materializeHandlers.clear();
+      registry.materializeHandlers.set(0, handler);
+    },
+
+    /** Register one materialization handler and return an unregister function. */
+    registerMaterializeHandler(handler: DOMCoverageMaterializeHandler) {
+      const handlerId = registry.nextMaterializeHandlerId;
+
+      registry.nextMaterializeHandlerId += 1;
+
+      registry.materializeHandlers.set(handlerId, handler);
+
+      return () => {
+        registry.materializeHandlers.delete(handlerId);
+      };
+    },
+
+    /** Resolve a Plite point to mounted DOM or to the covering boundary. */
+    resolveDOMPointOrBoundary(point: Point): DOMCoverageDOMPointResult {
+      const boundary = coverage.getBoundaryForPoint(point);
+
+      if (boundary) {
+        return {
+          boundary,
+          point,
+          type: 'boundary',
+        };
+      }
+
+      return {
+        domPoint: getRoot
+          ? assertCoverageDOMResult(
+              resolveDOMPointInRoot(
+                editor as DOMEditorType<any>,
+                point,
+                getRoot()
+              )
+            )
+          : (editor as DOMEditorType<any>).api.dom.assertDOMPoint(point),
+        type: 'dom-point',
+      };
+    },
+
+    /** Resolve a Plite range to mounted DOM or to covered boundary ranges. */
+    resolveDOMRangeOrBoundary(range: PliteRange): DOMCoverageDOMRangeResult {
+      const boundaries = coverage.getBoundariesForRange(range);
+
+      if (boundaries.length > 0) {
+        return {
+          boundaries,
+          range,
+          type: 'boundary-range',
+        };
+      }
+
+      return {
+        domRange: getRoot
+          ? assertCoverageDOMResult(
+              resolveDOMRangeInRoot(
+                editor as DOMEditorType<any>,
+                range,
+                getRoot()
+              )
+            )
+          : (editor as DOMEditorType<any>).api.dom.assertDOMRange(range),
+        type: 'dom-range',
+      };
+    },
+
+    /** Resolve native boundary DOM back to the Plite point it represents. */
+    resolvePlitePointFromBoundary(
+      domPoint: DOMPoint
+    ): DOMCoveragePlitePointResult | null {
+      const element = getDOMCoverageElementFromPoint(domPoint);
+
+      if (
+        !element ||
+        (getRoot && element.closest('[data-plite-editor="true"]') !== getRoot())
+      ) {
+        return null;
+      }
+
+      const boundaryId = element.getAttribute(DOM_COVERAGE_BOUNDARY_ATTRIBUTE);
+      const boundary = boundaryId ? coverage.getBoundary(boundaryId) : null;
+
+      if (!boundary) {
+        return null;
+      }
+
+      return {
+        boundary,
+        domPoint,
+        edge: getBoundaryEdge(element),
+        type: 'boundary-point',
+      };
+    },
+
+    /** Remove one registered boundary and its lookup index entries. */
+    unregisterBoundary(boundaryId: string) {
+      registry.boundaries.delete(boundaryId);
+      registry.registrations.delete(boundaryId);
+      removeBoundaryFromIndex(registry, boundaryId);
+    },
+  };
+  return coverage;
+};
+
+const assertCoverageDOMResult = <T>(result: T | null): T => {
+  if (result === null) {
+    throw new Error('Cannot resolve DOM coordinates in this coverage view.');
+  }
+  return result;
+};
+
+/** Boundary and materialization state owned by one mounted editor view. */
+export type DOMCoverageSession = ReturnType<typeof DOMCoverage.create>;
 
 const getBoundaryEdge = (element: DOMElement): DOMCoverageBoundaryEdge => {
   const edge = element.getAttribute(DOM_COVERAGE_BOUNDARY_EDGE_ATTRIBUTE);

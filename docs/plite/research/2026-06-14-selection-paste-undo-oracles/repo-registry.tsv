@@ -1,0 +1,6 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github.com/ianstormtaylor/slate	https://github.com/ianstormtaylor/slate	github	MIT	local-sibling	unknown	selection,paste,history	/Users/zbeyens/git/slate	sampled	1	upstream Slate behavior/test parity source
+github.com/prosemirror/prosemirror	https://github.com/prosemirror/prosemirror	github	MIT	local-sibling	unknown	selection,paste,history,view	/Users/zbeyens/git/prosemirror	sampled	3	core editor view and tests
+github.com/facebook/lexical	https://github.com/facebook/lexical	github	MIT	local-sibling	unknown	selection,paste,history	/Users/zbeyens/git/lexical	sampled	3	event/order and selection recovery source
+github.com/ueberdosis/tiptap	https://github.com/ueberdosis/tiptap	github	MIT	local-sibling	unknown	prosemirror,extension-tests,paste	/Users/zbeyens/git/tiptap	sampled	1	ProseMirror ecosystem integration tests
+github.com/microsoft/monaco-editor	https://github.com/microsoft/monaco-editor	github	MIT	local-sibling	unknown	selection,undo,large-doc	/Users/zbeyens/git/monaco-editor	rejected	0	wrapper files sampled; no direct editor oracle promoted

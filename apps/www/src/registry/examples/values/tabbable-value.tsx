@@ -33,12 +33,12 @@ export const tabbableValue: Value = (
     <hp indent={1} listType="bulleted">
       List item 3
     </hp>
-    <hcodeblock lang="javascript">
-      <hcodeline>if (true) {'{'}</hcodeline>
-      <hcodeline>
-        {'// <-'} Place cursor at start of line and press tab
-      </hcodeline>
-      <hcodeline>{'}'}</hcodeline>
+    <hcodeblock language="javascript">
+      if (true) {'{'}
+      {'\n'}
+      {'// <-'} Place cursor at start of line and press tab
+      {'\n'}
+      {'}'}
     </hcodeblock>
     <hp>
       In this example, the plugin is disabled when the cursor is inside a list

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-block-action-owners",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-block-action-owners.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Insert and convert blocks through their feature commands.",
+  "targets": [
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-block-action-owners-local-72b51b9d",
+      "kind": "fix",
+      "summary": "Insert blocks with owned construction, empty-source replacement and selection. Preserve source content while media URL input resolves and keep each action in one history step.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["transforms"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-block-action-owners",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-block-action-owners-2",
+      "kind": "behavior",
+      "summary": "Convert the selected blocks with one feature command, including disjoint selections and structural wrappers.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-menu"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-block-action-owners",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,0 +1,2 @@
+repo_key	local_path	source_kind	why_used	freshness
+github/easylogic/contenteditable	../contenteditable	local-clone	Contenteditable case catalog and playground with event logging, anomaly detection, target-range visualization, and DOM delta tracking.	local snapshot

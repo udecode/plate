@@ -17,11 +17,14 @@ export const basicBlocksValue: Value = (
         <hp>嵌套引用块可以清楚表达谁在回复谁。</hp>
       </hblockquote>
     </hblockquote>
-    <hcodeblock lang="javascript">
-      <hcodeline>{'// Use code blocks to showcase code snippets'}</hcodeline>
-      <hcodeline>{'function greet() {'}</hcodeline>
-      <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
-      <hcodeline>{'}'}</hcodeline>
+    <hcodeblock language="javascript">
+      {'// Use code blocks to showcase code snippets'}
+      {'\n'}
+      {'function greet() {'}
+      {'\n'}
+      {`  console.info('Hello World!');`}
+      {'\n'}
+      {'}'}
     </hcodeblock>
   </fragment>
 );

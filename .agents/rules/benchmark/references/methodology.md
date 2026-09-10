@@ -22,6 +22,14 @@ all applicable lanes inventoried
 The ordered inventory is stable. Commands and target IDs are discovered from
 current source each run.
 
+Record `## Interaction Coverage` before closure: `first-interaction`,
+`settled-interaction`, `route-scope`, and `reporter-profile`, each with
+`pass: <proof>` or `N/A: <concrete reason>`. Preserve the live reporter tab before
+reload, warmup, or viewport changes. Page-scrolling proof includes the outer
+page and embedded scrollers at first exposure and after settlement. Keep
+extension/profile evidence with the real reporter host; a clean-browser result
+cannot replace it. A reporter contradiction reopens coverage through Regression.
+
 Resolve every lane's applicability before executing the first lane. Workflow
 status advances as one ordered prefix: completed rows, at most one active row,
 then pending rows. A named later-lane symptom is exercised inside lane 2's
@@ -29,7 +37,7 @@ product smoke; it does not authorize skipping the ordered attribution lanes.
 
 ## Embedded Architecture Probe
 
-When `best-api`, `major-task`, `plate-plan`, `plite-plan`,
+When `best-api`, `task`, `plate-plan`, `plite-plan`,
 `plate-plugin-creator`, `plate-feature`, or `architecture-cleanup` needs scale
 evidence before accepting a target, run the smallest decisive subset of this
 methodology inside that owner's active plan. This is a design falsification
@@ -220,7 +228,7 @@ When the cause becomes conclusive:
    `runtime-architecture`. Public API and runtime architecture run `best-api`
    from the ideal target, then `plite-plan`, `plate-plan`, or both for adoption.
 4. Choose exactly one implementation owner for the accepted target. A bounded
-   package owner may implement directly; cross-owner execution may use `auto`.
+   package owner may implement directly; cross-owner execution may use `task autonomous`.
    Before stability, hard-cut compatibility when that buys materially better
    lasting value. Preserve only correctness, security, serialized-data,
    native-behavior, or runtime law; migration effort, compiler difficulty, old
@@ -254,7 +262,7 @@ lane and call a different green benchmark proof.
   `tdd`, then Benchmark reruns;
 - public API or runtime architecture -> `best-api` chooses the best long-term
   target, then `plite-plan`, `plate-plan`, or both own adoption; a bounded
-  package owner implements directly or `auto` supervises broad execution;
+  package owner implements directly or `task autonomous` supervises broad execution;
 - multiple measured optimization hypotheses after one target is selected ->
   Benchmark may use `codex-autoresearch` as packet machinery while retaining
   lane/cause ownership;

@@ -3,11 +3,11 @@ title: 编辑器配置
 description: 学习如何配置和自定义Plate编辑器。
 ---
 
-本指南涵盖Plate编辑器的配置选项，包括基础设置、插件管理和高级配置技巧。
+Plate 编辑器配置包括基础设置、插件管理和高级配置。
 
 ## 基础编辑器配置
 
-创建基础Plate编辑器可以使用`createEditor`函数，或在React组件中使用`useCreateEditor`：
+使用 `createEditor` 创建基础 Plate 编辑器，或在 React 组件中使用 `useCreateEditor`：
 
 ```ts
 import { createEditor } from 'platejs/react';
@@ -47,7 +47,7 @@ const editor = createEditor({
 });
 ```
 
-支持HTML字符串反序列化的完整插件列表，请参阅[插件反序列化规则](/docs/html#plugin-deserialization-rules)部分。
+支持 HTML 字符串反序列化的插件参见[插件反序列化规则](/docs/html#plugin-html-codec-overview)。
 
 ### Schema 身份
 
@@ -127,18 +127,16 @@ import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
   migratePlateV54,
-  migratePlateV55,
 } from 'platejs/migrations';
 
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
-import { fingerprint as v54Fingerprint } from './migrations/v55-upgrade-plate/from';
 
 export const EditorKit = [ParagraphPlugin] as const;
-export const EditorSchema = { id: 'acme-document', version: 55 } as const;
+export const EditorSchema = { id: 'acme-document', version: 54 } as const;
 
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
-  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
-  steps: { 54: migratePlateV54, 55: migratePlateV55 },
+  sourceFingerprints: { 53: v53Fingerprint },
+  steps: { 54: migratePlateV54 },
   unversioned: 53,
 });
 ```
@@ -164,7 +162,7 @@ export function DocumentEditor({ persisted }) {
 ```
 
 持久化 `{ document: value, schema: editor.read.schema.identity() }`。版本 53 的文档由
-版本 55 的编辑器加载时，会依次运行步骤 54 和 55。缺失步骤、错误 schema ID、未来
+版本 54 的编辑器加载时，会运行步骤 54。缺失步骤、错误 schema ID、未来
 版本或指纹不匹配都会直接报错。每个历史 envelope 版本都要在 `sourceFingerprints`
 中绑定生成的精确指纹；原始文档使用显式 `unversioned` 下限。
 
@@ -226,7 +224,7 @@ function AsyncEditor() {
 
 ### 添加插件
 
-通过`plugins`数组添加插件：
+通过 `plugins` 数组添加插件：
 
 ```ts
 const editor = createEditor({
@@ -364,6 +362,35 @@ cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
 `--stdin` 将迁移后的 envelope 写到标准输出，不修改存储。envelope selection 会通过同一
 文档迁移和准备 pipeline 完成映射并保留。
 
+### 编译 Schema 产物
+
+构建工具需要 schema 身份、属性契约和最终插件绑定时，使用 `compileEditor`。
+普通编辑器直接使用 `createEditor` 或 `useCreateEditor`。
+
+```ts title="scripts/compile-editor.ts" showLineNumbers
+import { writeFileSync } from 'node:fs';
+import { compileEditor } from 'platejs/compiler';
+
+import { EditorKit, EditorSchema } from '../src/editor';
+
+const artifact = compileEditor({ plugins: EditorKit, schema: EditorSchema });
+
+writeFileSync('editor.schema.json', JSON.stringify(artifact.schema, null, 2));
+```
+
+结果包含递归冻结的 JSON 数据：
+
+| 字段 | 内容 |
+| --- | --- |
+| `schema` | 已验证的 schema 契约、身份和指纹。 |
+| `bindings` | 已安装能力的名称、最终元素类型和 mark 键；`authoredToggle` 标识插件声明的 toggle 命令。 |
+
+编译会求值配置、API 工厂并执行验证器，不会激活扩展或生成初始文档。返回结果不包含
+编辑器、store 或回调。与创建编辑器时一样，`schema` 是可选的。
+
+`plate generate` 还会生成精确的应用类型。它使用的纯类型导入
+`EditorPropertyTypes` 和 `GeneratedEditorTypeProvider` 属于高级工具和生成文件。
+
 ### 最大长度
 
 设置编辑器的最大长度：
@@ -386,8 +413,7 @@ const editor = createEditor({
 });
 ```
 
-当 controller-aware hook 需要选择特定的已挂载 editor 时，传入同一个 ID，
-例如 `useEditor({ id: 'my-custom-editor-id' })`。
+ID 用于应用代码标识模型。通过 `useEditor()` 获取上下文选择的挂载视图，或用 `<EditorProvider editor={editor}>` 绑定已有控件。共享 UI 参见 [Plate 控制器](/cn/docs/api/core/plate-controller)。
 
 ### 节点身份
 
@@ -484,7 +510,7 @@ const editor = createEditor({
 });
 ```
 
-注意，对于大型文档（如playground值），规范化可能需要几十毫秒。
+对于大型文档（如 playground 值），规范化可能需要几十毫秒。
 
 ### 自动选择
 
@@ -496,19 +522,18 @@ const editor = createEditor({
 });
 ```
 
-这与自动聚焦不同：可以在不聚焦编辑器的情况下选择文本。
+自动选择可以在不聚焦编辑器的情况下选择文本。
 
-### 组件覆盖
+### 组件
 
-覆盖插件的默认组件：
+把每个组件绑定到所属插件描述符：
 
 ```ts
 const editor = createEditor({
-  plugins: [HeadingPlugin],
-  components: {
-    paragraph: CustomParagraphComponent,
-    heading: CustomHeadingComponent,
-  },
+  plugins: [
+    ParagraphPlugin.configure({ component: CustomParagraphComponent }),
+    HeadingPlugin.configure({ component: CustomHeadingComponent }),
+  ],
 });
 ```
 
@@ -538,10 +563,8 @@ import { definePlatePlugin } from 'platejs/react';
 
 const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
   override: {
-    plugins: {
-      [PLUGINS.trailingBlock]: {
-        enabled: false,
-      },
+    [PLUGINS.trailingBlock]: {
+      enabled: false,
     },
   },
 });
@@ -587,27 +610,28 @@ editor.update((tx) => {
 
 ### 值类型
 
-当其他模块需要编辑器类型时，使用 `Editor<typeof Kit>`；当命名值类型能提高
-可读性时，使用 `ValueOf<MyEditor>`。不要用手写元素接口重复 schema。
+先传入插件元组和初始文档创建编辑器，再从推断出的实例派生
+`typeof editor` 和 `ValueOf<typeof editor>`。
 
 ```ts
 import type { ValueOf } from 'platejs';
-import type { Editor } from 'platejs/react';
+import { createEditor, LinkPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
-export type MyEditor = Editor<typeof AppKit>;
-export type MyValue = ValueOf<MyEditor>;
-
-const value: MyValue = [{
-  type: 'paragraph',
-  children: [{ text: '你好，Plate!' }],
-}];
-
 const editor = createEditor({
   plugins: AppKit,
-  initialValue: value,
+  initialValue: [
+    {
+      type: 'paragraph',
+      children: [{ text: '你好，Plate!' }],
+    },
+  ],
 });
+
+export type MyEditor = typeof editor;
+export type MyValue = ValueOf<typeof editor>;
 ```
 
 组件从 context 读取当前 editor，无需重复 plugin tuple：

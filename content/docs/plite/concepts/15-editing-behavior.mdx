@@ -5,7 +5,7 @@ description: "Understand how browser input, transactions, changes, corrections, 
 
 Editing behavior is the path from user intent to committed Plite state. Use this page for the runtime pipeline; use [Selection And DOM](16-selection-and-dom) for caret, native selection, and DOM coverage rules.
 
-## Choose The Right Surface
+## Choose the right surface
 
 Most editing bugs come from putting behavior in the wrong layer.
 
@@ -20,7 +20,7 @@ Most editing bugs come from putting behavior in the wrong layer.
 
 Use `Editable` for UI-local event interception. Use transactions and extensions for editor behavior that should survive another input path.
 
-## Runtime Pipeline
+## Runtime pipeline
 
 Plite edits run through explicit owners.
 
@@ -39,7 +39,7 @@ Plite edits run through explicit owners.
 
 The important rule is simple: user intent can arrive through many browser paths, but Plite behavior should land in the transaction pipeline when it changes editor state.
 
-## Event Handlers
+## Event handlers
 
 `Editable` event props are the right tool for editor-local UI behavior.
 
@@ -79,7 +79,7 @@ Keep writes inside one update when they belong to one user action. That gives hi
 
 Use [Transforms](04-transforms) for the concept guide and [Transforms API](../api/transforms) for the exact transaction groups.
 
-## Command Handlers
+## Command handlers
 
 Reusable semantic behavior belongs in pure extension command handlers when it
 should apply outside one React event.
@@ -117,7 +117,7 @@ built-in implementation. Use `around(descriptor, handler)` from the command
 factory only when a handler must rewrite input or compose with downstream
 behavior.
 
-## Changes And Corrections
+## Changes and corrections
 
 `DocumentChange` is the replay boundary. Plite corrects the affected regions
 before publishing the final change.
@@ -132,7 +132,7 @@ Use [Document Changes](05-document-changes) for replay and mapping. Use
 [Normalizing](11-normalizing) when a structural edit can leave the document
 temporarily invalid.
 
-## Commits And React
+## Commits and React
 
 A finished update publishes one commit. Runtime subscribers can observe it, history can batch it, React can render from it, and browser proof can inspect the aftermath.
 
@@ -146,7 +146,7 @@ const unsubscribe = editor.subscribe((_snapshot, change) => {
 
 React UI should read narrow editor facts through hooks where possible. App services can subscribe to commits when they need persistence, analytics, replay, or sync work.
 
-## Browser Proof
+## Browser proof
 
 Model-only tests do not prove browser editing. DOM-only tests do not prove Plite correctness.
 

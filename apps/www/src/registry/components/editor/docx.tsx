@@ -1,15 +1,5 @@
 'use client';
 
-import {
-  DocxExportPlugin,
-  DocxImportPlugin,
-  DocxPastePlugin,
-} from 'platejs/docx';
-import { JuicePlugin } from 'platejs/juice';
+import { DocxPlugin } from 'platejs/docx';
 
-export const DocxKit = [
-  JuicePlugin,
-  DocxPastePlugin,
-  DocxImportPlugin,
-  DocxExportPlugin,
-] as const;
+export const DocxKit = [DocxPlugin] as const;

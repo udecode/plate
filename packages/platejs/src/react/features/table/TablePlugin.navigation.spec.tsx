@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import {
@@ -6,10 +7,11 @@ import {
   type TestEditor,
 } from '#platejs-test-internal';
 
-import { DOMPlugin, Hotkeys } from '../../../core';
+import { Hotkeys } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from '../../../features/table/lib/BaseTablePlugin';
-import { pipeHandler } from '../../core';
+import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
+import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;

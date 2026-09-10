@@ -29,9 +29,7 @@ export const exitBreakValue: Value = (
       之前 – 选择光标是退出到下一个还是上一个块
     </hp>
 
-    <hcodeblock>
-      <hcodeline>在块的中间 ⌘⏎ 使用。</hcodeline>
-    </hcodeblock>
+    <hcodeblock>在块的中间 ⌘⏎ 使用。</hcodeblock>
     <hp>退出换行在嵌套块中也可以使用：</hp>
     {createTable()}
   </fragment>

@@ -1,0 +1,5 @@
+id	source	reason	status
+copy-prosemirror-pagination	prosemirror-pagination	Direct schema page splitting would fight Slate v2's current layout/projection direction and risks selection/table rewrite complexity.	rejected
+copy-canvas-renderer	windoc	Canvas rendering is a different editor product architecture and does not exercise Slate's DOM/contenteditable behavior contracts.	rejected
+patch-from-badon-forum	prosemirror-forum-badon	Interesting CSS/layout claim but no source was available; keep as research lead only.	rejected-for-now
+copy-editable-hidden-textarea	editable	Editable's hidden textarea/custom renderer is valuable comparison but not a safe swap for Slate's current DOM/editor pipeline.	rejected-for-now

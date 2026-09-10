@@ -1,28 +1,61 @@
 /// <reference types="@testing-library/jest-dom" />
 
 import { render, renderHook } from '@testing-library/react';
-import { useAtomStoreValue } from 'jotai-x';
 import React from 'react';
 
 import { property, schema, target, type Value } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { defineBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
+import { useEditorContainerRef } from '../core';
 import { createEditor, useCreateEditor } from '../editor';
 import type { PlatePlugins } from '../plugin';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
 import { ParagraphPlugin } from '../plugins';
-import {
-  PlateController,
-  useOptionalEditor,
-  useEditor,
-  useEditorValue,
-  usePlateStore,
-} from '../stores';
+import { useOptionalEditor, useEditor, useEditorValue } from '../stores';
+import { EditorProvider } from './EditorProvider';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
+import { PlateContainer } from './PlateContainer';
 import { PlateContent } from './PlateContent';
+import { PlateController } from './PlateController';
 
 describe('Plate', () => {
+  it('resolves the nearest container and clears its ref on unmount', () => {
+    const first = createEditor({ id: 'first' });
+    const second = createEditor({ id: 'second' });
+    const refs = new Map<string, React.RefObject<HTMLDivElement | null>>();
+    const Probe = ({ id }: { id?: string }) => {
+      const ref = useEditorContainerRef();
+
+      React.useLayoutEffect(() => {
+        refs.set(id ?? 'closest', ref);
+      }, [id, ref]);
+
+      return null;
+    };
+    const { getByTestId, unmount } = render(
+      <Plate editor={first}>
+        <PlateContainer data-testid="first" />
+        <Probe id="first" />
+        <Plate editor={second}>
+          <PlateContainer data-testid="second" />
+          <Probe id="second" />
+          <Probe />
+        </Plate>
+      </Plate>
+    );
+
+    expect(refs.get('first')?.current).toBe(getByTestId('first'));
+    expect(refs.get('second')?.current).toBe(getByTestId('second'));
+    expect(refs.get('closest')).toBe(refs.get('second'));
+    expect(refs.get('first')).not.toBe(refs.get('second'));
+
+    unmount();
+
+    expect(refs.get('first')?.current).toBeNull();
+    expect(refs.get('second')?.current).toBeNull();
+  });
+
   describe('useEditor()', () => {
     describe('when editor is defined', () => {
       it('returns the provided editor', async () => {
@@ -55,35 +88,6 @@ describe('Plate', () => {
         const { result } = renderHook(() => useEditor(), { wrapper });
 
         expect(result.current.id).toBe('test2');
-      });
-    });
-
-    describe('when id is defined', () => {
-      it('selects the editor by id', async () => {
-        const editor1 = createEditor({
-          id: 'test1',
-        });
-        const editor2 = createEditor({
-          id: 'test2',
-        });
-
-        const wrapper = ({ children }: any) => (
-          <Plate editor={editor1}>
-            <Plate editor={editor2}>{children}</Plate>
-          </Plate>
-        );
-
-        const { result: result1 } = renderHook(
-          () => useEditor({ id: 'test1' }),
-          { wrapper }
-        );
-        const { result: result2 } = renderHook(
-          () => useEditor({ id: 'test2' }),
-          { wrapper }
-        );
-
-        expect(result1.current.id).toBe('test1');
-        expect(result2.current.id).toBe('test2');
       });
     });
   });
@@ -196,119 +200,31 @@ describe('Plate', () => {
         expect(result.current).toBe('test');
       });
     });
-
-    describe('when Plate with id > Plate without id > select id', () => {
-      it('returns the requested editor id from context', () => {
-        const wrapper = ({ children }: any) => (
-          <Plate
-            editor={createEditor({
-              id: 'test',
-            })}
-          >
-            <Plate editor={createEditor()}>{children}</Plate>
-          </Plate>
-        );
-        const { result } = renderHook(() => useEditor({ id: 'test' }).id, {
-          wrapper,
-        });
-
-        expect(result.current).toBe('test');
-      });
-    });
   });
 
-  describe('usePlateStore', () => {
-    const getStore = (wrapper: any) =>
-      renderHook(() => usePlateStore(), { wrapper }).result.current;
+  it('provides an explicit editor to controls under another Plate', () => {
+    const outer = createEditor();
+    const inner = createEditor();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={inner}>
+        <EditorProvider editor={outer}>{children}</EditorProvider>
+      </Plate>
+    );
+    expect(renderHook(() => useEditor(), { wrapper }).result.current).toBe(
+      outer
+    );
+  });
 
-    const getId = (wrapper: any) =>
-      renderHook(() => useAtomStoreValue(usePlateStore(), 'editor').id, {
-        wrapper,
-      }).result.current;
-
-    const getActiveEditor = (wrapper: any) =>
-      renderHook(() => useOptionalEditor(), { wrapper }).result.current;
-
-    describe('when Plate exists', () => {
-      describe('when editor is defined', () => {
-        it('returns the store', async () => {
-          const editor = createEditor({
-            id: 'test',
-          });
-
-          const wrapper = ({ children }: any) => (
-            <Plate editor={editor}>{children}</Plate>
-          );
-          expect(getStore(wrapper)).toBeDefined();
-          expect(getId(wrapper)).toBe('test');
-          expect(getActiveEditor(wrapper)).toBe(editor);
-        });
-
-        it('prefers the closest Plate store over PlateController state', () => {
-          const EXPECTED_STORE = 'controller store' as any;
-          const editor = createEditor({
-            id: 'local',
-          });
-
-          const wrapper = ({ children }: any) => (
-            <PlateController
-              activeId="controller"
-              editorStores={{ controller: EXPECTED_STORE }}
-            >
-              <Plate editor={editor}>{children}</Plate>
-            </PlateController>
-          );
-
-          expect(getStore(wrapper)).not.toBe(EXPECTED_STORE);
-          expect(getId(wrapper)).toBe('local');
-          expect(getActiveEditor(wrapper)).toBe(editor);
-        });
-      });
-    });
-
-    describe('when Plate does not exist', () => {
-      describe('when PlateController exists', () => {
-        describe('when PlateController returns a store', () => {
-          it('returns the store', () => {
-            const EXPECTED_STORE = 'expected store' as any;
-
-            const wrapper = ({ children }: any) => (
-              <PlateController
-                activeId="test"
-                editorStores={{ test: EXPECTED_STORE }}
-              >
-                {children}
-              </PlateController>
-            );
-
-            expect(getStore(wrapper)).toBe(EXPECTED_STORE);
-          });
-        });
-
-        describe('when PlateController returns null', () => {
-          it('returns the fallback store', () => {
-            const wrapper = ({ children }: any) => (
-              <PlateController activeId="test" editorStores={{ test: null }}>
-                {children}
-              </PlateController>
-            );
-
-            expect(getStore(wrapper)).toBeDefined();
-            expect(getActiveEditor(wrapper)).toBeNull();
-            expect(() => renderHook(() => useEditor(), { wrapper })).toThrow(
-              'useEditor() requires an active Plate editor.'
-            );
-          });
-        });
-      });
-
-      describe('when PlateController does not exist', () => {
-        it('throws an error', () => {
-          const wrapper = ({ children }: any) => <>{children}</>;
-          expect(() => getStore(wrapper)).toThrow();
-        });
-      });
-    });
+  it('returns null from optional controls until a controller has a mounted target', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <PlateController>{children}</PlateController>
+    );
+    expect(
+      renderHook(() => useOptionalEditor(), { wrapper }).result.current
+    ).toBeNull();
+    expect(() => renderHook(() => useEditor(), { wrapper })).toThrow(
+      'useEditor() requires an active Plate editor.'
+    );
   });
 
   describe('when editor normalization is disabled', () => {
@@ -351,12 +267,12 @@ describe('Plate', () => {
       ]);
     });
   });
-  describe('when render abovePlite renders null', () => {
+  describe('when slots.wrapRoot renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
         definePlatePlugin('a', {
-          render: {
-            abovePlite: () => null,
+          slots: {
+            wrapRoot: () => null,
           },
         }),
       ];
@@ -461,7 +377,7 @@ describe('Plate', () => {
       ParagraphPlugin.configure({
         component: ParagraphElement,
         render: {
-          nodeProps: projectAttributes
+          attributes: projectAttributes
             ? ({ element }) => {
                 const value =
                   typeof element.attributes === 'object' &&
@@ -485,7 +401,7 @@ describe('Plate', () => {
       BoldPlugin.configure({
         component: BoldLeaf,
         render: {
-          nodeProps: projectAttributes
+          attributes: projectAttributes
             ? ({ text }) => {
                 const value =
                   typeof text.attributes === 'object' &&

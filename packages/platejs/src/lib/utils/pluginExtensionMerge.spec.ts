@@ -1,4 +1,4 @@
-import { defineExtension, getInstalledEditorExtension } from '../../core';
+import { defineExtension } from '../../core';
 import { createEditor } from '../editor';
 import { defineBasePlugin } from '../plugin';
 
@@ -26,11 +26,12 @@ describe('plugin API projection', () => {
     const editor = createEditor({
       plugins: [ProjectionPlugin],
     });
-    const installed = getInstalledEditorExtension(editor, 'projection')!;
     const api = editor.api.projection;
 
     expect(api).toBe(editor.plugin(ProjectionPlugin).api);
-    expect(api).toBe(Reflect.apply(editor.extension, editor, [installed]).api);
+    expect(api).toBe(
+      Reflect.apply(editor.extension, editor, [NativeExtension]).api
+    );
     expect(api.nativeName()).toBe('projection');
     expect(api.plate()).toBe('plate');
     expect(api.final()).toBe('final');

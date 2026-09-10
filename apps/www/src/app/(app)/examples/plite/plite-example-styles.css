@@ -797,6 +797,8 @@ details > summary {
 }
 
 .plite-multi-root-document-page {
+  width: 100%;
+  min-width: 0;
   max-width: 880px;
   margin: 32px auto;
   padding: 0 24px 56px;
@@ -1289,6 +1291,7 @@ details > summary {
   font-family: monospace;
   font-size: 16px;
   line-height: 20px;
+  white-space: pre;
 }
 
 .plite-code-highlighting-positioned {
@@ -1422,6 +1425,11 @@ details > summary {
     Helvetica,
     Arial,
     sans-serif;
+}
+
+[data-pagination-native-flow-break='true']::after {
+  content: '\A';
+  white-space: pre;
 }
 
 .plite-android-tests-instructions {

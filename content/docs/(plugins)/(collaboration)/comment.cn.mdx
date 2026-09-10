@@ -1,27 +1,28 @@
 ---
 title: 评论
+description: 加载带文档范围的评论记录，并保存随编辑更新的位置。
 docs:
-  - route: https://pro.platejs.org/docs/examples/discussion
-    title: Plus
+  - route: /docs/discussion
+    title: 讨论
   - route: /docs/components/comment
-    title: Comment Leaf
+    title: 评论 UI
   - route: /docs/components/comment-toolbar-button
-    title: Comment Toolbar Button
-  - route: /docs/components/block-discussion
-    title: Block Discussion
+    title: 评论工具栏按钮
 ---
 
 <ComponentPreview name="discussion-demo" />
 
+把获取的评论记录传给 `CommentsPlugin`。包负责记录、评论操作、订阅和范围映射；应用负责加载与保存数据。
+
 <PackageInfo>
 
-## 功能特性
+## 功能
 
-- **文本评论:** 将评论作为文本标记添加,支持内联注释
-- **重叠评论:** 支持在同一文本上添加多个评论
-- **草稿评论:** 在最终确认前创建草稿评论
-- **状态追踪:** 追踪评论状态和用户交互
-- **讨论集成:** 与讨论插件配合使用,实现完整的协作功能
+- 包含富文本消息与 ISO 时间戳的可序列化线程记录
+- 随编辑、撤销和重做更新的范围
+- 有序重叠高亮与每个编辑器独立的激活状态
+- 按记录、待提交输入和线程列表分别订阅
+- 通过复制的 Discussion UI 审阅评论和建议
 
 </PackageInfo>
 
@@ -31,442 +32,219 @@ docs:
 
 ### 安装
 
-添加评论功能最快的方式是使用 `CommentKit`,它包含预配置的 `commentPlugin` 和相关组件,以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
+```bash
+npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
+```
 
-<ComponentSource name="comment" />
+`DiscussionKit` 包含评论样式、共享讨论索引、区块触发器和 Floating Discussion。复制的 `comment` 项提供 `CommentKit`、富文本卡片和输入框。工具栏按钮或 `Mod+Shift+M` 可根据选区开始评论。
 
-- [`CommentLeaf`](/docs/components/comment): 渲染评论文本标记
-- [`BlockDiscussion`](/docs/components/block-discussion): 渲染带有评论集成的讨论 UI
+<ComponentSource name="discussion" />
 
 ### 添加 Kit
 
-```tsx
-import { createEditor } from 'platejs/react';
-import { CommentKit } from '@/components/editor/comment';
+将与文档一起获取的记录传给 `initialThreads`：
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...CommentKit,
-  ],
-});
+```tsx title="components/editor/comments-editor.tsx" showLineNumbers {23-30}
+"use client";
+
+import type { EditorValueInput } from "platejs";
+import type { CommentThread, CommentUser } from "platejs/comments";
+import { CommentsPlugin } from "platejs/comments/react";
+import { Plate, useCreateEditor } from "platejs/react";
+
+import { DiscussionKit } from "@/components/editor/discussion";
+import { Editor, EditorContainer } from "@/components/editor/editor";
+import { EditorKit } from "@/components/editor/plugins";
+
+export function CommentsEditor({ value, threads, users, currentUserId }: {
+  value: EditorValueInput;
+  threads: readonly CommentThread[];
+  users: Record<string, CommentUser>;
+  currentUserId: string;
+}) {
+  const editor = useCreateEditor({
+    plugins: [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          initialThreads: threads,
+          users,
+          currentUserId,
+        },
+      }),
+    ],
+    initialValue: value,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
 ```
 
+`initialThreads` 只在每个编辑器初始化时读取一次。重新获取数据后，调用 `api.setThreads(records)`。修改组件的初始属性不会替换编辑器当前的评论记录。
+
 </Steps>
+
+## 应用数据
+
+存储完整的 `CommentThread` 记录。消息正文使用 Plate `Value`，时间戳使用 ISO 8601 字符串，范围目标包含普通文档坐标：
+
+```ts
+import type { CommentThread } from "platejs/comments";
+
+const threads: CommentThread[] = [{
+  id: "review-1",
+  userId: "alice",
+  createdAt: "2026-09-09T12:00:00.000Z",
+  excerpt: "Selected text",
+  resolved: false,
+  status: "published",
+  target: {
+    type: "range",
+    range: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 13 },
+    },
+  },
+  messages: [{
+    id: "message-1",
+    userId: "alice",
+    createdAt: "2026-09-09T12:00:00.000Z",
+    body: [{ type: "paragraph", children: [{ text: "Please review this." }] }],
+  }],
+}];
+```
+
+`{ type: "suggestion", id }` 将线程关联到建议。`range: null` 表示已脱离文档位置的范围线程。
+
+保存时读取当前映射后的范围，并与同一版本的文档一起保存：
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin);
+const snapshot = {
+  document: editor.read.value(),
+  threads: comments.api.getThreads(),
+};
+```
+
+`api.subscribeThreads(listener)` 报告 `{ ids, reason }`，其中 `reason` 为 `"data"` 或 `"document"`。持久化层可通过此订阅观察变化。数据库请求、协作传输和服务端授权由应用负责。
+
+`api.setThreads(records)` 一次替换完整记录，同时保留当前用户和待提交输入。包复制传入数据，并在替换现有记录之前拒绝重复线程 ID、无效时间戳和无效范围。范围必须属于主文档，不支持命名的次级文档根。`api.setThreads([])` 清空记录。读取的快照不可变；请通过 API 修改记录。
 
 ## 手动用法
 
-<Steps>
-
-### 安装
+无界面插件提供相同的数据与范围 API，不依赖 React。此例加载上面的记录：
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npm install platejs
 ```
 
-### 扩展评论插件
-
-创建带有扩展配置的评论插件以进行状态管理:
-
-```tsx
-import { isString } from 'platejs/dom';
-import { TextApi, type Path } from 'platejs';
-import { BaseCommentPlugin, getDraftCommentKey } from 'platejs/comment';
-import { CommentLeaf } from '@/components/editor/comment';
-
-const initialState: {
-  activeId: string | null;
-  commentingBlock: Path | null;
-  hoverId: string | null;
-} = {
-  activeId: null,
-  commentingBlock: null,
-  hoverId: null,
-};
-
-export const commentPlugin = BaseCommentPlugin.configure({
-  component: CommentLeaf,
-  initialState,
-});
-```
-
-- `initialState.activeId`: 当前激活的评论 ID,用于视觉高亮
-- `initialState.commentingBlock`: 当前正在评论的块的路径
-- `initialState.hoverId`: 当前悬停的评论 ID,用于悬停效果
-- `component: CommentLeaf`：使用
-  [`CommentLeaf`](/docs/components/comment) 渲染评论文本标记
-
-### 添加点击处理器
-
-添加点击处理来管理激活评论状态:
-
-```tsx
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-    initialState,
-    on: {
-      // Set active comment when clicking on comment marks
-      click: ({ api, event, store, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
-
-        const unsetActiveComment = () => {
-          store.set({ activeId: null });
-          isSet = true;
-        };
-
-        if (!isString(leaf)) unsetActiveComment();
-
-        while (leaf.parentElement) {
-          if (leaf.classList.contains(`plite-${type}`)) {
-            const commentsEntry = api.node();
-
-            if (!commentsEntry) {
-              unsetActiveComment();
-              break;
-            }
-
-            const id = api.id(commentsEntry[0]);
-            store.set({ activeId: id ?? null });
-            isSet = true;
-            break;
-          }
-
-          leaf = leaf.parentElement;
-        }
-
-        if (!isSet) unsetActiveComment();
-      },
-    },
-    // ... render
-});
-```
-
-点击处理器追踪当前激活的评论:
-
-- **检测评论点击**: 遍历 DOM 以找到评论元素
-- **设置激活状态**: 点击评论时更新 `activeId`
-- **清除状态**: 点击评论外部时取消 `activeId`
-- **视觉反馈**: 在评论组件中启用悬停/激活样式
-
-### 扩展 Transforms
-
-扩展 `setDraft` 事务命令以增强功能:
-
-```tsx
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-  initialState,
-})
-  .extend(({ editor, store, type }) => ({
-    update: ({ tx }) => ({
-        setDraft: (options = {}) => {
-          const commentingBlock =
-            editor.selection?.focus.path.slice(0, 1) ?? null;
-
-          if (editor.api.isCollapsed()) {
-            const blockEntry = editor.api.block();
-
-            if (blockEntry) {
-              tx.selection.set(blockEntry[1]);
-            }
-          }
-
-          tx.nodes.set(
-            {
-              [getDraftCommentKey()]: true,
-              [type]: true,
-            },
-            { match: TextApi.isText, split: true, ...options }
-          );
-
-          tx.selection.collapse();
-          store.set({
-            activeId: getDraftCommentKey(),
-            commentingBlock,
-          });
-        },
-      }),
-  }))
-  .configure({
-    component: CommentLeaf,
-    shortcuts: {
-      setDraft: { keys: 'mod+shift+m' },
-    },
-  });
-```
-
-### 添加工具栏按钮
-
-你可以将 [`CommentToolbarButton`](/docs/components/comment-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中,以便在选中文本上添加评论。
-
-### 添加插件
-
-```tsx
-import { createEditor } from 'platejs/react';
+```ts
+import { createEditor } from "platejs";
+import { BaseCommentsPlugin } from "platejs/comments";
 
 const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    commentPlugin,
-  ],
+  plugins: [BaseCommentsPlugin.configure({
+    initialState: { initialThreads: threads, currentUserId: "alice" },
+  })],
+  initialValue: [{ type: "paragraph", children: [{ text: "Selected text" }] }],
 });
 ```
 
-### 讨论集成
+## 所有权
 
-评论插件与[讨论插件](/docs/discussion)配合使用,实现完整的协作功能:
+| 所有者 | 职责 |
+| --- | --- |
+| `platejs/comments` | 管理记录、操作、订阅和私有原生范围句柄 |
+| `platejs/comments/react` | 添加选区命令、快捷键和高亮点击行为 |
+| 复制的 `comment` 与 `discussion` 项 | 设置高亮样式，渲染表单、卡片、区块触发器和弹出层 |
+| 应用 | 提供用户与获取的记录，持久化数据并授权远程写入 |
 
-```tsx
-import { discussionPlugin } from '@/components/editor/discussion';
+评论消息独立于文档节点和标记。修改消息只通知该线程的订阅者，不解析锚点或刷新编辑器装饰。`users` 和 `currentUserId` 位于插件 store 中；用 `usePluginStore` 订阅，用 `store.set` 更新。
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    discussionPlugin,
-    commentPlugin,
-  ],
+## 编辑与历史
+
+Comments 在内部使用向内关联的 `nearest` 锚点。范围内插入文本会扩大范围，删除文本会缩小范围；边界处插入的文本保持在范围之外。
+
+删除全部注解文本后，范围折叠到有效的文档位置。区块触发器仍可打开线程，不会高亮相邻文本。撤销和重做恢复映射后的范围，包括反向范围和重叠范围。
+
+## 协作与只读审阅
+
+文档相同时，可将同一份序列化记录传给独立编辑器。各编辑器创建自己的原生句柄和激活状态。文档版本不同时，请加载对应版本的范围；普通坐标无法识别其他位置发生的编辑。
+
+只读视图应同时在 `Plate` 和 `Editor` 上设置 `readOnly`。静态渲染使用 `BaseCommentsPlugin`，并配置复制的 `comment-static` 项提供的 `commentDecorationAttributes`。线程卡片仍属于复制的应用 UI。
+
+## 旧文档迁移
+
+加载包含 `comment`、`comment_*`、`comment_draft` 或 `commentTransient` 属性的文档前，运行 `extractLegacyCommentRanges`。
+
+```ts
+import { extractLegacyCommentRanges } from "platejs/migrations";
+
+const {
+  comments,
+  diagnostics,
+  document: cleanDocument,
+} = extractLegacyCommentRanges(document, {
+  threadIds: storedThreads.map((thread) => thread.id),
 });
+
+console.table(diagnostics);
 ```
 
-</Steps>
-
-## 键盘快捷键
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Shift + M">
-    在选中文本上添加评论。
-  </KeyTableItem>
-</KeyTable>
-
-## Plate Plus
-
-<ComponentPreviewPro name="discussion-pro" />
+检查全部诊断后，持久化 `cleanDocument`，并通过你的存储层导入 `comments`。提取器不会编造缺失的线程 ID。请离线运行迁移；运行时插件不提供旧格式回退。
 
 ## 插件
 
-### `CommentPlugin`
+- `platejs/comments` 的 `BaseCommentsPlugin` 负责无界面数据与范围行为。
+- `platejs/comments/react` 的 `CommentsPlugin` 添加 React 视图交互。
 
-用于创建和管理文本评论的插件,支持状态追踪和讨论集成。
+## API 参考
 
-<API name="CommentPlugin">
-  <APIOptions>
-    <APIItem name="activeId" type="string | null">
-      当前激活的评论 ID,用于视觉高亮。内部用于追踪状态。
-    </APIItem>
-    <APIItem name="commentingBlock" type="Path | null">
-      当前正在评论的块的路径。
-    </APIItem>
-    <APIItem name="hoverId" type="string | null">
-      当前悬停的评论 ID,用于悬停效果。
-    </APIItem>
-  </APIOptions>
-</API>
+### 数据与范围
 
-## API
+| 方法 | 用途 |
+| --- | --- |
+| `api.getThreads()` | 读取带当前映射范围的完整记录，用于持久化 |
+| `api.getThread(id)` | 读取稳定的单条记录；不存在时返回 `undefined` |
+| `api.setThreads(records)` | 替换获取的全部记录 |
+| `api.getSnapshot()` | 读取稳定的线程 ID、可见 ID、草稿 ID 与待提交输入 |
+| `api.range(id)` | 读取范围目标当前的 `Range`，或 `null` |
+| `api.idsAt(location)` | 按记录顺序读取该位置未解决的重叠评论 ID |
+| `api.setActive(ids)` | 选择有序 ID 组；`[]` 清空选择 |
+| `api.subscribe(listener)` | 观察规范范围投影的变化 |
 
-### `editor.read.comment.has`
+### 评论操作
 
-检查编辑器中是否存在指定 ID 的评论。
+| 方法 | 用途 |
+| --- | --- |
+| `api.begin(range?)` | 开始待提交输入；光标位置扩展为所在文本区块 |
+| `api.pendingRange()` | 读取待提交输入映射后的范围 |
+| `api.cancel()` | 取消待提交输入并释放范围 |
+| `api.create(body)` | 完成待提交线程 |
+| `api.createThread({ body, target, ... })` | 创建范围或建议线程；可传入 `id`、`excerpt`、`status` 和 `userId` |
+| `api.reply(id, body)` | 向未解决线程追加消息 |
+| `api.edit(id, messageId, body)` | 编辑当前用户的消息 |
+| `api.removeMessage(id, messageId)` | 删除当前用户的消息；没有消息时删除线程 |
+| `api.removeThread(id)` | 删除当前用户拥有的线程 |
+| `api.resolve(id, resolved?)` | 解决或重新打开当前用户的线程；默认为 `true` |
+| `api.publishDraft(id)` | 发布 AI 草稿 |
+| `api.discardDraft(id)` | 删除 AI 草稿 |
 
-<API name="editor.read.comment.has">
-  <APIParameters>
-    <APIItem name="options" type="{ id: string }">
-      包含要检查的评论 ID 的选项。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">评论是否存在。</APIReturns>
-</API>
+创建需要用户 ID 和非空正文。创建失败返回 `null`；被拒绝的布尔操作返回 `false`。`create`、`createThread`、`reply` 和 `edit` 允许异步 API 覆盖，调用者可等待其结果。
 
-### `editor.read.comment.node`
+### 订阅
 
-获取评论节点条目。
+`subscribeThread(id, listener)` 观察一条记录。`subscribeVisibleThreadIds`、`subscribeDraftThreadIds` 和 `subscribePending` 分别观察对应快照。`subscribeThreads` 观察持久化数据的变化，包括映射后的范围。各方法均返回取消订阅函数。
 
-<API name="editor.read.comment.node">
-  <APIOptions
-    type="object & { id?: string; isDraft?: boolean }"
-    optional
-  >
-    查找节点的选项。
-  </APIOptions>
-  <APIReturns type="NodeEntry<CommentText> | undefined">
-    如果找到则返回评论节点条目。
-  </APIReturns>
-</API>
+### `CommentComposer`
 
-### `editor.api.comment.id`
-
-从叶子节点获取评论的 ID。
-
-<API name="editor.api.comment.id">
-  <APIParameters>
-    <APIItem name="leaf" type="CommentText">
-      评论叶子节点。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string | undefined">如果找到则返回评论 ID。</APIReturns>
-</API>
-
-### `editor.read.comment.nodes`
-
-获取匹配选项的所有评论节点条目。
-
-<API name="editor.read.comment.nodes">
-  <APIOptions
-    type="object & { id?: string; isDraft?: boolean }"
-    optional
-  >
-    查找节点的选项。
-  </APIOptions>
-  <APIReturns type="NodeEntry<CommentText>[]">
-    评论节点条目数组。
-  </APIReturns>
-</API>
-
-## Transforms
-
-### `editor.update.comment.removeMark`
-
-从当前选区或指定位置移除评论标记。
-
-<API name="removeMark" />
-
-### `editor.update.comment.setDraft`
-
-在当前选区设置草稿评论标记。
-
-<API name="setDraft">
-  <APIOptions type="object" optional>
-    设置草稿评论的选项。
-  </APIOptions>
-</API>
-
-### `editor.update.comment.unsetMark`
-
-从编辑器中取消指定 ID 的评论节点。
-
-<API name="unsetMark">
-<APIParameters>
-  <APIItem name="options" type="{ id: string; transient?: boolean }">
-    取消评论标记的选项。
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="object">
-  <APIItem name="id" type="string">
-    要取消的评论 ID。
-  </APIItem>
-  <APIItem name="transient" type="boolean" optional>
-    当为 true 时,一次性移除所有 AI 评论。
-    - **默认值:** `false`
-  </APIItem>
-</APIOptions>
-</API>
-
-## 工具函数
-
-### `getCommentCount`
-
-获取评论节点中非草稿评论的数量。
-
-<API name="getCommentCount">
-  <APIParameters>
-    <APIItem name="node" type="CommentText">
-      评论节点。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">评论数量。</APIReturns>
-</API>
-
-### `getCommentKey`
-
-根据提供的 ID 生成评论键。
-
-<API name="getCommentKey">
-  <APIParameters>
-    <APIItem name="id" type="string">
-      评论的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string">生成的评论键。</APIReturns>
-</API>
-
-### `getCommentKeyId`
-
-从评论键中提取评论 ID。
-
-<API name="getCommentKeyId">
-  <APIParameters>
-    <APIItem name="key" type="string">
-      评论键。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string">提取的评论 ID。</APIReturns>
-</API>
-
-### `getCommentKeys`
-
-返回给定节点中存在的评论键数组。
-
-<API name="getCommentKeys">
-  <APIParameters>
-    <APIItem name="node" type="CommentText">
-      要检查评论键的节点。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string[]">评论键数组。</APIReturns>
-</API>
-
-### `getDraftCommentKey`
-
-获取用于草稿评论的键。
-
-<API name="getDraftCommentKey">
-  <APIReturns type="string">草稿评论键。</APIReturns>
-</API>
-
-### `isCommentKey`
-
-检查给定的键是否是评论键。
-
-<API name="isCommentKey">
-  <APIParameters>
-    <APIItem name="key" type="string">
-      要检查的键。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">是否是评论键。</APIReturns>
-</API>
-
-### `isCommentNodeById`
-
-检查给定节点是否是具有指定 ID 的评论。
-
-<API name="isCommentNodeById">
-  <APIParameters>
-    <APIItem name="node" type="Node">
-      要检查的节点。
-    </APIItem>
-    <APIItem name="id" type="string">
-      评论的 ID。
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">
-    节点是否是具有指定 ID 的评论。
-  </APIReturns>
-</API>
-
-## 类型
-
-### `CommentText`
-
-可以包含评论的文本节点。
-
-<API name="CommentText">
-  <APIAttributes>
-    <APIItem name="comment" type="boolean" optional>
-      此文本节点是否包含评论。
-    </APIItem>
-    <APIItem name="comment_<id>" type="boolean" optional>
-      按评论 ID 键入的评论数据。一个文本节点中可以存在多个评论。
-    </APIItem>
-  </APIAttributes>
-</API>
+`onSubmit(body)` 成功时返回线程 ID 或 `true`，拒绝时返回 `null` 或 `false`，也可返回 Promise。输入框在保存时保留富文本输入，阻止重复提交，仅在成功后清空。拒绝或抛出错误会保留草稿并显示重试提示。

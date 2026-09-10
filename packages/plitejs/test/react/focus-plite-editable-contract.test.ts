@@ -1,4 +1,5 @@
 import { SelectionApi } from 'plitejs';
+import { DOMEditor } from 'plitejs/dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -22,30 +23,28 @@ import {
 } from '../../src/react/hooks/focus-plite-editable';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
-import { createPliteProjectionGraph } from '../../src/react/projection-graph';
+import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 
 const createProjectedSelection = () => {
-  const graph = createPliteProjectionGraph([
+  const graph = createPliteViewBoundaryGraph([
     { path: [0], root: 'main' },
     { path: [0], root: 'side' },
   ]);
 
   return createPliteViewSelection(graph, {
-    kind: 'text',
     anchor: { point: { path: [0, 0], offset: 0 } },
     focus: { point: { path: [0, 0], root: 'side', offset: 1 } },
   });
 };
 
 const createCollapsedProjectedSelection = () => {
-  const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
+  const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
 
   return createPliteViewSelection(graph, {
-    kind: 'text',
     anchor: { point: { path: [0, 0], offset: 1 } },
     focus: { point: { path: [0, 0], offset: 1 } },
   });
@@ -57,17 +56,14 @@ const createFocusableEditor = () => {
   element.tabIndex = 0;
   document.body.appendChild(element);
 
-  const focus = vi.fn(() => {
-    element.focus({ preventScroll: true });
+  const focus = vi.spyOn(DOMEditor, 'focus').mockImplementation((target) => {
+    EDITOR_TO_ELEMENT.get(target)?.focus({ preventScroll: true });
   });
-  const editor = Object.assign(element, {
-    api: {
-      dom: {
-        assertDOMNode: () => element,
-        focus,
-      },
-    },
-  }) as unknown as Parameters<typeof focusPliteEditable>[0];
+  const editor = createEditor();
+  EDITOR_TO_ELEMENT.set(editor, element);
+  EDITOR_TO_WINDOW.set(editor, window);
+  ELEMENT_TO_NODE.set(element, editor);
+  NODE_TO_ELEMENT.set(editor, element);
 
   return { editor, element, focus };
 };
@@ -99,6 +95,29 @@ afterEach(() => {
 });
 
 describe('focusPliteEditable', () => {
+  it.each(['input', 'button'])(
+    'keeps a native %s focus handoff through pending retries',
+    (tag) => {
+      const { editor, element } = createFocusableEditor();
+      const runtime = new EditableDOMRuntime({ editor });
+      const field = document.createElement(tag);
+
+      document.body.appendChild(field);
+      runtime.setRoot(element);
+      runtime.connect();
+
+      try {
+        focusPliteEditableAfterEventFrame(editor);
+        field.focus();
+        runtime.domPhaseScheduler.flush();
+
+        expect(document.activeElement === field).toBe(true);
+      } finally {
+        runtime.destroy();
+      }
+    }
+  );
+
   it('cancels superseded frame and settle focus work', () => {
     const { editor, element } = createFocusableEditor();
     const runtime = new EditableDOMRuntime({ editor });
@@ -118,6 +137,32 @@ describe('focusPliteEditable', () => {
       expect(document.activeElement).toBe(nextElement);
     } finally {
       runtime.destroy();
+    }
+  });
+
+  it('keeps an older root retry from reclaiming focus', () => {
+    const first = createFocusableEditor();
+    const second = createFocusableEditor();
+    const firstRuntime = new EditableDOMRuntime({ editor: first.editor });
+    const secondRuntime = new EditableDOMRuntime({ editor: second.editor });
+
+    firstRuntime.setRoot(first.element);
+    firstRuntime.connect();
+    secondRuntime.setRoot(second.element);
+    secondRuntime.connect();
+
+    try {
+      focusPliteEditableAfterEventFrame(first.editor);
+      focusPliteEditableAfterEventFrame(second.editor);
+
+      expect(document.activeElement).toBe(second.element);
+      firstRuntime.domPhaseScheduler.flush();
+      expect(document.activeElement).toBe(second.element);
+      secondRuntime.domPhaseScheduler.flush();
+      expect(document.activeElement).toBe(second.element);
+    } finally {
+      firstRuntime.destroy();
+      secondRuntime.destroy();
     }
   });
 
@@ -178,7 +223,7 @@ describe('focusPliteEditable', () => {
     const secondLine = document.createTextNode('second line');
     const domSelection = document.getSelection();
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: firstLine.textContent.length },
       focus: { path: [0, 0], offset: firstLine.textContent.length },
     };
@@ -239,7 +284,7 @@ describe('focusPliteEditable', () => {
     const firstLine = document.createTextNode('first line');
     const secondLine = document.createTextNode('second line');
     const selection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: firstLine.textContent.length },
       focus: { path: [0, 0], offset: firstLine.textContent.length },
     };

@@ -60,7 +60,7 @@ describe('useElementSelector', () => {
 
     const exactScope = renderHook(
       () =>
-        useElementSelector(([element]) => element.type, {
+        useElementSelector((element) => element.type, {
           scope: 'name',
         }),
       { wrapper: Wrapper }
@@ -70,7 +70,7 @@ describe('useElementSelector', () => {
 
     const fallbackScope = renderHook(
       () =>
-        useElementSelector(([element]) => element.type, {
+        useElementSelector((element) => element.type, {
           scope: 'missing',
         }),
       { wrapper: Wrapper }
@@ -112,10 +112,10 @@ describe('useElementSelector', () => {
 
     const { result } = renderHook(
       () => {
-        const value = useElementSelector(
-          ([element]) => element.children.length,
-          { equalityFn: (a, b) => a === b, scope: 'element' }
-        );
+        const value = useElementSelector((element) => element.children.length, {
+          equalityFn: (a, b) => a === b,
+          scope: 'element',
+        });
 
         renderValues.push(value);
 
@@ -172,7 +172,7 @@ describe('useElementSelector', () => {
 
     const { rerender, result } = renderHook(
       ({ suffix }) =>
-        useElementSelector(([element]) => `${element.type}-${suffix}`, {
+        useElementSelector((element) => `${element.type}-${suffix}`, {
           scope: 'element',
         }),
       { initialProps: { suffix: 'one' }, wrapper: Wrapper }

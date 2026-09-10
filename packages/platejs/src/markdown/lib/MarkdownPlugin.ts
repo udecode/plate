@@ -32,7 +32,7 @@ export type MarkdownPluginState = {
   /** Allowed node types. Cannot be combined with `disallowedNodes`. */
   allowedNodes: readonly MarkdownNodeName[] | null;
   /** Custom node filters for deserialization and serialization. */
-  allowNode?: AllowNodeConfig;
+  allowNode: AllowNodeConfig;
   /** Disallowed node types. Cannot be combined with `allowedNodes`. */
   disallowedNodes: readonly MarkdownNodeName[] | null;
   /** Marks serialized as plain text. */
@@ -130,6 +130,13 @@ export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
                 !ElementApi.isElement(child) || state.schema.isInline(child)
             );
 
+            if (
+              hasOnlyInlineChildren &&
+              state.schema.element(node.type)?.slice.preserveContext
+            ) {
+              return NodeApi.string(node);
+            }
+
             if (hasOnlyInlineChildren) {
               return serialize([
                 {
@@ -168,6 +175,7 @@ export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
     });
   },
   initialState: (): MarkdownPluginState => ({
+    allowNode: {},
     allowedNodes: null,
     disallowedNodes: null,
     plainMarks: null,

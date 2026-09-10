@@ -29,7 +29,7 @@ docs:
 
 ## Features
 
-### Media Support
+### Media support
 - **File types**: 
   - Image
   - Video
@@ -41,7 +41,7 @@ docs:
 - **Embed providers**: 
   - Tweets
 
-### Media Features
+### Media features
 - Editable captions
 - Resizable elements
 - Embed URLs are normalized into `url` and `provider`, with an optional `sourceUrl` preserved for reversible editing.
@@ -62,7 +62,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -81,10 +81,10 @@ which includes pre-configured `ImagePlugin`, `VideoPlugin`, `AudioPlugin`,
 - [`FileElement`](/docs/components/media-file): Renders file elements.
 - [`MediaEmbedElement`](/docs/components/media-embed): Renders embedded media.
 - [`PlaceholderElement`](/docs/components/media-placeholder): Renders upload placeholders.
-- [`MediaUploadToast`](/docs/components/media): Shows upload progress notifications.
+- [`MediaUploadToast`](/docs/components/media): Shows file validation errors.
 - [`MediaPreviewDialog`](/docs/components/media-preview-dialog): Provides media preview functionality.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -100,11 +100,11 @@ const editor = createEditor({
 });
 ```
 
-### Add API Routes
+### Add API routes
 
 <ComponentInstallation name="media-uploadthing-api" inline />
 
-### Environment Setup
+### Environment setup
 
 Get your secret key from [UploadThing](https://uploadthing.com/dashboard/settings) and add it to `.env`:
 
@@ -114,7 +114,7 @@ UPLOADTHING_TOKEN=xxx
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -124,7 +124,7 @@ UPLOADTHING_TOKEN=xxx
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 Include the media plugins in your Plate plugins array when creating the editor.
 
@@ -145,21 +145,19 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
 Configure the plugins with custom components and upload settings.
 
 ```tsx
 import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
 import { createEditor } from 'platejs/react';
-import { 
-  AudioElement, 
-  FileElement, 
-  ImageElement, 
-  MediaEmbedElement, 
-  PlaceholderElement, 
-  VideoElement 
-} from '@/components/editor/media-nodes';
+import { AudioElement } from '@/components/editor/media-audio';
+import { FileElement } from '@/components/editor/media-file';
+import { ImageElement } from '@/components/editor/media-image';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+import { PlaceholderElement } from '@/components/editor/media-placeholder';
+import { VideoElement } from '@/components/editor/media-video';
 import { MediaUploadToast } from '@/components/editor/media';
 
 const editor = createEditor({
@@ -173,15 +171,15 @@ const editor = createEditor({
     PlaceholderPlugin.configure({
       component: PlaceholderElement,
       initialState: { disableEmptyPlaceholder: true },
-      render: { afterEditable: MediaUploadToast },
+      slots: { afterEditable: MediaUploadToast },
     }),
   ],
 });
 ```
 
 - `component`: Assigns custom components to render each media type.
-- `initialState.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
-- `render.afterEditable`: Renders upload progress toast outside the editor.
+- `initialState.disableEmptyPlaceholder`: Starts a separate undo batch when inserting upload placeholders.
+- `slots.afterEditable`: Renders file validation errors outside the editor.
 
 <Callout type="info">
   **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url` and `provider`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
@@ -264,151 +262,73 @@ Asset focus and caption editing are separate selection states:
 | Plite `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets `ArrowDown` enter the caption, and lets Delete remove the media node. |
 | Plite `TextSelection` inside the media children | Edits the caption and lets `ArrowUp` at the caption start return focus to the asset. |
 
-### Custom Upload Implementation
+### Custom upload implementation
 
-For custom upload implementations, create an upload hook that matches this interface:
-
-```ts
-interface UseUploadFileProps {
-  onUploadComplete?: (file: UploadedFile) => void;
-  onUploadError?: (error: unknown) => void;
-  headers?: Record<string, string>;
-  onUploadBegin?: (fileName: string) => void;
-  onUploadProgress?: (progress: { progress: number }) => void;
-  skipPolling?: boolean;
-}
-
-interface UploadedFile {
-  key: string;    // Unique identifier
-  url: string;    // Public URL of the uploaded file
-  name: string;   // Original filename
-  size: number;   // File size in bytes
-  type: string;   // MIME type
-}
-```
-
-Example implementation with S3 presigned URLs:
+Configure `initialState.upload` with your upload transport. The placeholder
+plugin owns cancellation, progress and replacement of the same live node.
+Your endpoint must accept the file and return its public `url`.
 
 ```ts
-export function useUploadFile({ 
-  onUploadComplete, 
-  onUploadError, 
-  onUploadProgress 
-}: UseUploadFileProps = {}) {
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile>();
-  const [uploadingFile, setUploadingFile] = useState<File>();
-  const [progress, setProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
+import { PlaceholderPlugin } from 'platejs/media/react';
 
-  async function uploadFile(file: File) {
-    setIsUploading(true);
-    setUploadingFile(file);
-
-    try {
-      // Get presigned URL and final URL from your backend
-      const { presignedUrl, fileUrl, fileKey } = await fetch('/api/upload', {
+PlaceholderPlugin.configure({
+  initialState: {
+    upload: async (file, { signal, onProgress }) => {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/upload', {
+        body,
         method: 'POST',
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-        }),
-      }).then(r => r.json());
-
-      // Upload to S3 using presigned URL
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
-        onUploadProgress: (progressEvent) => {
-          const progress = (progressEvent.loaded / progressEvent.total) * 100;
-          setProgress(progress);
-          onUploadProgress?.({ progress });
-        },
+        signal,
       });
-
-      const uploadedFile = {
-        key: fileKey,
-        url: fileUrl,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      };
-
-      setUploadedFile(uploadedFile);
-      onUploadComplete?.(uploadedFile);
-      return uploadedFile;
-    } catch (error) {
-      onUploadError?.(error);
-      throw error;
-    } finally {
-      setProgress(0);
-      setIsUploading(false);
-      setUploadingFile(undefined);
-    }
-  }
-
-  return {
-    isUploading,
-    progress,
-    uploadFile,
-    uploadedFile,
-    uploadingFile,
-  };
-}
+      if (!response.ok) throw new Error('Upload failed.');
+      const result: unknown = await response.json();
+      if (
+        !result || typeof result !== 'object' ||
+        !('url' in result) || typeof result.url !== 'string'
+      ) {
+        throw new Error('The upload returned no URL.');
+      }
+      onProgress(100);
+      return { name: file.name, url: result.url };
+    },
+  },
+});
 ```
 
-Then integrate your custom upload hook with the media components:
+Pass `signal` to your transport and report progress from 0 to 100. The result
+accepts optional `name`, `naturalWidth` and `naturalHeight` metadata. Image
+replacement does not wait for a rendered preview to load. A rejected request
+leaves the placeholder in place and exposes the error; no fallback URL is
+created. A missing transport also produces a failed task.
+
+Call `editor.plugin(PlaceholderPlugin).api.upload(key, file)` to upload into an
+existing placeholder, and `api.cancelUpload(key)` to cancel it. Obtain the live
+`NodeKey` with `editor.key(element)`. File insertion starts uploads only after
+the document transaction commits.
+
+The copied `PlaceholderElement` already subscribes to its task. A custom React
+view can use `usePluginStore` from `platejs/react` and `React.useSyncExternalStore`:
 
 ```tsx
-import { type PlateElementProps, useEditor } from 'platejs/react';
-import { PlaceholderPlugin } from 'platejs/media/react';
-import { PLUGINS } from 'platejs';
-
-import { useUploadFile } from '@/hooks/use-upload-file'; // Your custom hook
-
-export function PlaceholderElement({
-  element,
-}: PlateElementProps<typeof PlaceholderPlugin>) {
-  const editor = useEditor();
-  const { uploadFile, isUploading, progress } = useUploadFile({
-    onUploadComplete: (uploadedFile) => {
-      const path = editor.read.nodes.path(element);
-
-      if (!path) return;
-
-      const file = editor.plugin(PLUGINS.file);
-
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({ at: path });
-        tx.nodes.insert(
-          {
-            children: [{ text: '' }],
-            provider:
-              element.mediaType === editor.plugin(PLUGINS.video).schema.type
-                ? 'file'
-                : undefined,
-            ...(file.installed && element.mediaType === file.schema.type
-              ? { name: uploadedFile.name }
-              : {}),
-            type: element.mediaType,
-            url: uploadedFile.url,
-          },
-          { at: path }
-        );
-      });
-    },
-    onUploadError: (error) => {
-      console.error('Upload failed:', error);
-    },
-  });
-
-  // Call uploadFile when the user drops or selects a file.
-}
+const task = usePluginStore(PlaceholderPlugin, 'uploadTask', editor.key(element));
+const upload = React.useSyncExternalStore(
+  React.useCallback((notify) => task?.subscribe(notify) ?? (() => {}), [task]),
+  React.useCallback(() => task?.getSnapshot() ?? null, [task]),
+  () => null
+);
 ```
 
-### Add Toolbar Button
+`task.file` identifies the request. The snapshot contains `status`, `progress`
+and `error`. Unsubscribing or remounting a view does not restart the upload.
+`BasePlaceholderPlugin` exposes the same upload operations from `platejs/media`
+for headless consumers. Transport and task types are exported from that subpath.
+
+### Add toolbar button
 
 You can add [`MediaToolbarButton`](/docs/components/media-toolbar-button) to your [Toolbar](/docs/toolbar) to upload and insert media.
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 You can add these items to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert media elements:
 
@@ -487,6 +407,9 @@ Plugin for managing media placeholders during upload. Handles file uploads, drag
 
 <API name="PlaceholderPlugin">
 <APIOptions type="object">
+  <APIItem name="upload" type="MediaUploadTransport" optional>
+Upload transport returning a URL and optional file metadata. Receives the file, an abort signal and a progress callback. Configure it before inserting files.
+  </APIItem>
   <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
 Configuration for different file types. The package maps every supported file
 family to its media plugin without imposing size or per-type count limits. The
@@ -548,11 +471,11 @@ Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
 </APISubList>
 </APIItem>
 <APIItem name="disableEmptyPlaceholder" type="boolean" optional>
-Disable empty placeholder when no file is uploading.
+Starts a separate undo batch when inserting upload placeholders.
 - **Default:** `false`
 </APIItem>
 <APIItem name="disableFileDrop" type="boolean" optional>
-Disable drag and drop file upload functionality.
+Enables the placeholder DOM drop handler when the DnD plugin does not handle file drops.
 - **Default:** `false`
 </APIItem>
 <APIItem name="maxFileCount" type="number" optional>
@@ -568,50 +491,18 @@ Allow multiple files of the same type to be uploaded.
 
 ## API
 
-### `editor.api.placeholder.addUploadingFile`
+### Upload tasks
 
-Tracks a file that is currently being uploaded.
+| Operation | Contract |
+| --- | --- |
+| `editor.plugin(PlaceholderPlugin).api.upload(key, file)` | Validates the file type and size, then starts an upload for the live placeholder. Supersedes its previous request. |
+| `editor.plugin(PlaceholderPlugin).api.cancelUpload(key)` | Aborts that request and removes its task. Late callbacks cannot replace the node. |
+| `editor.plugin(PlaceholderPlugin).store.get('uploadTask', key)` | Returns `MediaUpload` or `undefined`; its `file`, `getSnapshot` and `subscribe` support custom progress UI. |
 
-<API name="editor.api.placeholder.addUploadingFile">
-<APIParameters>
-  <APIItem name="id" type="string">
-    Unique identifier for the placeholder element.
-  </APIItem>
-  <APIItem name="file" type="File">
-    The file being uploaded.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
-
-Gets a file that is currently being uploaded.
-
-<API name="editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)">
-<APIParameters>
-  <APIItem name="id" type="string">
-    Unique identifier for the placeholder element.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="File | undefined">
-    The uploading file if found, undefined otherwise.
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.api.placeholder.removeUploadingFile`
-
-Removes a file from the uploading tracking state after upload completes or fails.
-
-<API name="editor.api.placeholder.removeUploadingFile">
-<APIParameters>
-  <APIItem name="id" type="string">
-    Unique identifier for the placeholder element to remove.
-  </APIItem>
-</APIParameters>
-</API>
+`key` is a live `NodeKey`, not a persisted element ID or path. Completed uploads
+replace only the original placeholder. Removed nodes, changed media types and
+readonly editors cannot accept a late result. A failed task remains available
+until it is cancelled, retried or its placeholder is removed.
 
 ## Transforms
 
@@ -640,7 +531,7 @@ Inserts media files into the editor with upload placeholders.
 </APIOptions>
 </API>
 
-Validates files against configured limits (size, count, type), creates placeholder elements for each file, handles multiple file uploads sequentially, maintains upload history for undo/redo operations, and triggers error handling if validation fails.
+Validates files against configured limits (size, count, type), creates placeholder elements for each file, starts each upload after the insertion commits, and reports validation errors.
 
 Error codes:
 ```ts
@@ -718,33 +609,29 @@ Transforms and normalizes a URL, then inserts a media embed.
 </APIOptions>
 </API>
 
-### `insertMediaUrl`
+### `api.insertUrl`
 
-Prompts for an image or embed URL and dispatches to its scoped plugin update.
-Import it from `platejs/react`.
+The selected media plugin captures the insertion target while the application
+resolves URL input. Image, embed, audio, video and file plugins expose this API.
+The operation calls the installed `update.insert`, including its URL validation
+and application overrides. It returns `false` for cancelled or invalid input or
+a removed target. A rejected resolver promise propagates to the caller.
 
-<API name="insertMediaUrl">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    The editor receiving the media element.
-  </APIItem>
-  <APIItem name="options" type="InsertMediaUrlOptions" optional>
-    URL resolution, media type, exact-path, and selection options.
-  </APIItem>
-</APIParameters>
+```tsx
+const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
+  getUrlFromDialog,
+  { caption: 'An optional caption', select: true }
+);
+```
 
-<APIOptions type="InsertMediaUrlOptions">
-  <APIItem name="getUrl" type="() => Promise<string>" optional>
-    Resolves a URL without showing the browser prompt.
-  </APIItem>
-  <APIItem name="type" type="string" optional>
-    The resolved image or media-embed schema type. When omitted, the helper
-    prefers the installed image type, then the installed media-embed type.
-  </APIItem>
-</APIOptions>
-</API>
+`getUrlFromDialog` is an application function returning a URL, `null`, or a promise
+of either. Options accept the insertion `at` location, `after` source block,
+`replaceEmpty`, `caption` and `select`. With `replaceEmpty: true`, the captured
+source is replaced only if it is still empty when the URL resolves. Moves and
+intervening text edits preserve the source identity and content.
+The application owns the URL dialog and selects the media plugin.
 
-## Registry Media UI
+## Registry media UI
 
 `media-toolbar` owns URL editing, submission, cancellation, and focus restore.
 Each copied media node reads its typed element and primitive editor state

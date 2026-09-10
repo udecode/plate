@@ -1,10 +1,12 @@
 import {
+  compileEditorSchemaContract,
   containsCompleteEditorSchema,
   createEditor as createPliteEditor,
   defineExtension,
   defineEditorSchema,
   type Editor as PliteEditor,
   type EditorDocumentValue,
+  type EditorSchemaContract,
   type EditorExtensionReference,
   type EditorExtensionsFromOptions,
   type EditorLifecycleErrorSink,
@@ -74,12 +76,8 @@ import type {
   DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
 import { createPluginPortal } from '../plugin/createPluginContext.internal';
-import { defineBasePlugin } from '../plugin/defineBasePlugin';
-import type {
-  AnyBasePluginDefinition,
-  NodeComponents,
-  PluginReference,
-} from '../plugin/PluginDefinition';
+import { createBasePlugin } from '../plugin/defineBasePlugin.internal';
+import type { PluginReference } from '../plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import {
   type CorePluginDefinition,
@@ -733,7 +731,7 @@ const installPlateEditorExtensions = (
 
 export type EditorOptions<
   TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends BasePluginInput = CorePluginDefinition,
+  P extends BasePluginInput = CorePlugins[number],
 > = {
   /**
    * Unique identifier for the editor instance.
@@ -766,8 +764,6 @@ export type EditorOptions<
    * - `'start'`: Select the start of the editor
    */
   autoSelect?: boolean | 'end' | 'start';
-  /** Specifies the component for each plugin name. */
-  components?: NodeComponents;
   /**
    * Specifies the maximum number of characters allowed in the editor. When the
    * limit is reached, further input will be prevented.
@@ -820,7 +816,7 @@ export type EditorOptions<
 
 type ApplyEditorOptions<
   V extends Value = Value,
-  P extends BasePluginInput = CorePluginDefinition,
+  P extends BasePluginInput = CorePlugins[number],
   TExtensions extends readonly EditorExtensionReference[] = readonly [],
 > = Omit<EditorOptions<TExtensions, P>, 'id'> &
   Partial<
@@ -847,44 +843,32 @@ type ApplyEditorOptions<
       | EditorValueInput<NoInfer<V>>;
   };
 
-/**
- * Applies the Base plugin model to the supplied Plite editor during
- * construction.
- */
-export const applyEditor = <
-  V extends Value = Value,
-  P extends BasePluginInput = CorePluginDefinition,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
->(
-  e: PliteEditor<any, any>,
-  options: ApplyEditorOptions<V, P, TExtensions>,
-  implicitDocumentIsCurrent: boolean
-): InternalBaseEditorWithInstalledPlugins<
-  V,
-  InferBaseEditorPlugins<P[]>,
-  InferBaseEditorSchemaPlugins<P[]>,
-  TExtensions
-> => {
-  const {
+const prepareInitialPlatePlugins = (
+  editor: Editor,
+  {
     affinity,
-    autoSelect,
-    extensions = [],
-    initialValue,
-    initialSelection,
-    lifecycleErrorSink: _lifecycleErrorSink,
     maxLength,
     migrations,
     plugins = [],
     readOnly,
     schema,
-    selection,
-    shouldNormalizeEditor,
-    skipInitialization,
     userId,
-    ...pluginConfig
-  } = options;
+  }: Pick<
+    EditorOptions<readonly EditorExtensionReference[], BasePluginInput>,
+    | 'affinity'
+    | 'maxLength'
+    | 'migrations'
+    | 'plugins'
+    | 'readOnly'
+    | 'schema'
+    | 'userId'
+  >,
+  pluginConfig: Pick<
+    ApplyEditorOptions,
+    'api' | 'decorate' | 'initialState' | 'inject' | 'override'
+  > = {}
+) => {
   const identity = getEditorSchemaIdentity(schema);
-  const editor = e as unknown as Editor;
 
   editor.runtime ??= {} as Editor['runtime'];
   editor.runtime.userId = userId;
@@ -896,30 +880,40 @@ export const applyEditor = <
   }
 
   function getInstalledPluginPortal<P extends AnyBasePlugin & PluginReference>(
+    this: Editor,
     plugin: P
   ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
   function getInstalledPluginPortal(
+    this: Editor,
     plugin: AnyBasePlugin | PluginReference | string
   ): DynamicBasePluginPortal;
-  function getInstalledPluginPortal(plugin: PluginContextLookupInput): unknown {
-    return createPluginPortal(editor, plugin);
+  function getInstalledPluginPortal(
+    this: Editor,
+    plugin: PluginContextLookupInput
+  ): unknown {
+    return createPluginPortal(this, plugin);
   }
-  editor.plugin = getInstalledPluginPortal;
+  const pluginAccessors = new WeakMap<
+    object,
+    typeof getInstalledPluginPortal
+  >();
+  Object.defineProperty(editor, 'plugin', {
+    configurable: true,
+    enumerable: true,
+    get(this: Editor) {
+      let accessor = pluginAccessors.get(this);
+      if (!accessor) {
+        accessor = getInstalledPluginPortal.bind(
+          this
+        ) as typeof getInstalledPluginPortal;
+        pluginAccessors.set(this, accessor);
+      }
+      return accessor;
+    },
+  });
   const baseCorePlugins = getCorePlugins({ affinity });
 
-  const internalRootCandidate = Reflect.apply(defineBasePlugin, undefined, [
-    'root',
-    {
-      ...pluginConfig,
-      override: {
-        ...pluginConfig.override,
-        components: {
-          ...pluginConfig.components,
-          ...pluginConfig.override?.components,
-        },
-      },
-    },
-  ]);
+  const internalRootCandidate = createBasePlugin('root', pluginConfig);
 
   if (!isBasePluginDescriptor(internalRootCandidate)) {
     throw new Error(
@@ -939,6 +933,14 @@ export const applyEditor = <
   let restoreSnapshotInputTransform: (() => void) | undefined;
   let restoreStateViewTransform: (() => void) | undefined;
   let restoreTransactionViewTransform: (() => void) | undefined;
+
+  const restore = () => {
+    restoreSnapshotInputTransform?.();
+    restoreStateViewTransform?.();
+    restoreTransactionViewTransform?.();
+    if (!publicationBeforeExtension) clearPlateModelPublication(editor);
+    clearPluginStores(editor);
+  };
 
   try {
     withEditorApplicationSchemaCandidate(
@@ -1132,49 +1134,104 @@ export const applyEditor = <
         };
       }
     );
-    withEditorApplicationSchemaCandidate(
-      editor,
-      applicationPolicy,
-      collectPlatePluginSourceCandidates(sourcePlugins),
-      () => {
-        installPlateEditorExtensions(
+    return {
+      identity,
+      restore,
+      withSchemaCandidate: <T>(run: () => T): T =>
+        withEditorApplicationSchemaCandidate(
           editor,
-          identity
-            ? Object.freeze({
-                id: identity.id,
-                version: identity.version,
-              })
-            : undefined,
-          extensions,
-          skipInitialization
-            ? undefined
-            : {
-                initialize: shouldNormalizeEditor
-                  ? () => normalizeBaseEditor(editor)
-                  : undefined,
-                initialValue: () =>
-                  resolveBaseInitialValue(editor, {
-                    autoSelect,
-                    implicitDocumentIsCurrent,
-                    initialValue:
-                      typeof initialValue === 'function'
-                        ? () =>
-                            initialValue({
-                              editor:
-                                editor as unknown as InternalBaseEditorWithInstalledPlugins<
-                                  V,
-                                  InferBaseEditorPlugins<P[]>,
-                                  InferBaseEditorSchemaPlugins<P[]>
-                                >,
-                            })
-                        : initialValue,
-                    selection: selection ?? initialSelection,
-                  }),
-              },
-          schema
-        );
-      }
-    );
+          applicationPolicy,
+          collectPlatePluginSourceCandidates(sourcePlugins),
+          run
+        ),
+    };
+  } catch (error) {
+    restore();
+    clearPlateRuntimeCandidate(editor);
+    throw error;
+  }
+};
+
+/** Applies the Base plugin model to a Plite editor during construction. */
+export const applyEditor = <
+  V extends Value = Value,
+  P extends BasePluginInput = CorePlugins[number],
+  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
+>(
+  e: PliteEditor<any, any>,
+  options: ApplyEditorOptions<V, P, TExtensions>,
+  implicitDocumentIsCurrent: boolean
+): InternalBaseEditorWithInstalledPlugins<
+  V,
+  InferBaseEditorPlugins<P[]>,
+  InferBaseEditorSchemaPlugins<P[]>,
+  TExtensions
+> => {
+  const {
+    affinity,
+    autoSelect,
+    extensions = [],
+    initialValue,
+    initialSelection,
+    lifecycleErrorSink: _lifecycleErrorSink,
+    maxLength,
+    migrations,
+    plugins = [],
+    readOnly,
+    schema,
+    selection,
+    shouldNormalizeEditor,
+    skipInitialization,
+    userId,
+    ...pluginConfig
+  } = options;
+  const editor = e as unknown as Editor;
+  const prepared = prepareInitialPlatePlugins(
+    editor,
+    { affinity, maxLength, migrations, plugins, readOnly, schema, userId },
+    pluginConfig
+  );
+  const { identity } = prepared;
+
+  try {
+    prepared.withSchemaCandidate(() => {
+      installPlateEditorExtensions(
+        editor,
+        identity
+          ? Object.freeze({
+              id: identity.id,
+              version: identity.version,
+            })
+          : undefined,
+        extensions,
+        skipInitialization
+          ? undefined
+          : {
+              initialize: shouldNormalizeEditor
+                ? () => normalizeBaseEditor(editor)
+                : undefined,
+              initialValue: () =>
+                resolveBaseInitialValue(editor, {
+                  autoSelect,
+                  implicitDocumentIsCurrent,
+                  initialValue:
+                    typeof initialValue === 'function'
+                      ? () =>
+                          initialValue({
+                            editor:
+                              editor as unknown as InternalBaseEditorWithInstalledPlugins<
+                                V,
+                                InferBaseEditorPlugins<P[]>,
+                                InferBaseEditorSchemaPlugins<P[]>
+                              >,
+                          })
+                      : initialValue,
+                  selection: selection ?? initialSelection,
+                }),
+            },
+        schema
+      );
+    });
 
     return editor as unknown as InternalBaseEditorWithInstalledPlugins<
       V,
@@ -1183,13 +1240,77 @@ export const applyEditor = <
       TExtensions
     >;
   } catch (error) {
-    restoreSnapshotInputTransform?.();
-    restoreStateViewTransform?.();
-    restoreTransactionViewTransform?.();
-    if (!publicationBeforeExtension) clearPlateModelPublication(editor);
-    clearPluginStores(editor);
+    prepared.restore();
     throw error;
   } finally {
+    clearPlateRuntimeCandidate(editor);
+  }
+};
+
+/** Detached schema and plugin facts emitted by `compileEditor`. */
+export type EditorCompilation = Readonly<{
+  bindings: ReadonlyArray<
+    Readonly<{
+      authoredToggle?: true;
+      key?: string;
+      name: string;
+      type?: string;
+    }>
+  >;
+  schema: EditorSchemaContract;
+}>;
+
+/** @internal */
+export const compilePlateEditor = (
+  options: Pick<
+    EditorOptions<readonly EditorExtensionReference[], BasePluginInput>,
+    'plugins' | 'schema'
+  >
+): EditorCompilation => {
+  const editor = createPliteEditor() as unknown as Editor;
+  const prepared = prepareInitialPlatePlugins(editor, options);
+  const previousBindings = getPlateRuntimeExtensionBindings(editor);
+  const restoreExtensionPortal = installPlateExtensionPortal(editor);
+
+  try {
+    return prepared.withSchemaCandidate(() => {
+      const configuration = createPlateConfiguration(
+        editor,
+        prepared.identity,
+        getPlateRuntime(editor).pluginList,
+        [],
+        options.schema
+      );
+      const schema = withCompiledPlateModelCandidate(
+        editor,
+        configuration.model,
+        () => compileEditorSchemaContract(editor, configuration.extensions)
+      );
+      const publication = getPlateModelPublication(editor);
+
+      if (!publication) {
+        throw new Error('Editor compilation requires a validated Plate model.');
+      }
+      return Object.freeze({
+        bindings: Object.freeze(
+          publication.model.bindings.map((binding) =>
+            Object.freeze({
+              ...(publication.updateMethods[binding.name]?.includes('toggle')
+                ? { authoredToggle: true as const }
+                : {}),
+              ...(binding.propertyKey ? { key: binding.propertyKey } : {}),
+              name: binding.name,
+              ...(binding.elementType ? { type: binding.elementType } : {}),
+            })
+          )
+        ),
+        schema,
+      });
+    });
+  } finally {
+    restorePlateRuntimeExtensionBindings(editor, previousBindings);
+    restoreExtensionPortal();
+    prepared.restore();
     clearPlateRuntimeCandidate(editor);
   }
 };
@@ -1197,7 +1318,7 @@ export const applyEditor = <
 type CreateEditorOptionsForValue<
   V extends Value,
   TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends readonly unknown[] = readonly CreateEditorPluginInput[],
+  P extends readonly BasePluginInput[] = readonly BasePluginInput[],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
@@ -1222,7 +1343,7 @@ type CreateEditorOptionsForValue<
 export type CreateEditorOptions<
   V extends Value = Value,
   TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends readonly unknown[] = readonly CreateEditorPluginInput[],
+  P extends readonly BasePluginInput[] = readonly BasePluginInput[],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
@@ -1231,7 +1352,7 @@ export type CreateEditorOptions<
 export function createEditorWithEditor<
   V extends Value = Value,
   const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const P extends readonly unknown[] = readonly [],
+  const P extends readonly BasePluginInput[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
   editor: PliteEditor<any, any>,
@@ -1243,10 +1364,6 @@ export function createEditorWithEditor<
     false
   ) as unknown as Editor<V, TExtensions, P, TSchema>;
 }
-
-type CreateEditorPluginInput<
-  _C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
-> = BasePluginInput;
 
 /**
  * Creates a base Plate editor (non-React version).
@@ -1318,7 +1435,7 @@ export function createEditor<
 export function createEditor<
   V extends Value = Value,
   const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const P extends readonly unknown[] = readonly [],
+  const P extends readonly BasePluginInput[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
   options: CreateEditorOptions<V, TExtensions, P, TSchema> & { plugins: P }

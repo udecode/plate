@@ -7,6 +7,7 @@ export const BaseListKit = [
   ...BaseIndentKit,
   BaseListPlugin.configure({
     inject: {
+      isElement: true,
       nodeProps: {
         nodeKey: 'listType',
         query: ({ nodeProps }) => {
@@ -26,8 +27,8 @@ export const BaseListKit = [
         }),
       },
     },
-    render: {
-      belowNodes: BlockListStatic,
+    slots: {
+      wrapNodeChildren: BlockListStatic,
     },
     targetPlugins: [
       PLUGINS.paragraph,

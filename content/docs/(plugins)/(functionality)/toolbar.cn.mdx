@@ -69,7 +69,7 @@ import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbar } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
-  render: {
+  slots: {
     beforeEditable: () => (
       <FixedToolbar>
         <FixedToolbarButtons />
@@ -79,7 +79,7 @@ const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
 });
 
 const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
-  render: {
+  slots: {
     afterEditable: FloatingToolbar,
   },
 });
@@ -93,8 +93,8 @@ const editor = createEditor({
 });
 ```
 
-- `render.beforeEditable`: 在编辑器内容上方渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
-- `render.afterEditable`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层
+- `slots.beforeEditable`: 在编辑器内容上方渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
+- `slots.afterEditable`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层
 
 ### 自定义固定工具栏按钮
 
@@ -220,7 +220,7 @@ const turnIntoItems = [
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="render.beforeEditable" type="EditableSiblingComponent">
+  <APIItem name="slots.beforeEditable" type="EditableSiblingComponent">
     在编辑器内容前渲染固定工具栏。默认包含FixedToolbarButtons。
   </APIItem>
 </APIOptions>
@@ -232,7 +232,7 @@ const turnIntoItems = [
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="render.afterEditable" type="EditableSiblingComponent">
+  <APIItem name="slots.afterEditable" type="EditableSiblingComponent">
     在编辑器后作为覆盖层渲染浮动工具栏。默认包含FloatingToolbarButtons。
   </APIItem>
 </APIOptions>

@@ -1,6 +1,11 @@
 import { NodeApi, type Range, RangeApi } from '../..';
 import type { DOMText } from '../../dom';
-import { IS_NODE_MAP_DIRTY } from '../../dom/internal';
+import {
+  IS_NODE_MAP_DIRTY,
+  isDOMTextFlowSegmentSynchronized,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowRecordText,
+} from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getInputEventData } from './dom-input-event';
 import {
@@ -16,7 +21,7 @@ const hasNativeBlockingMarks = (marks: Record<string, unknown> | null) =>
 
 const canUseNativeTextHost = (textHost: Element | null | undefined) =>
   textHost?.getAttribute('data-plite-dom-sync') === 'true' &&
-  textHost.getAttribute('data-plite-dom-sync-reason') !== 'projection';
+  textHost.getAttribute('data-plite-dom-sync-reason') !== 'decoration';
 
 export const getNativeSingleCharacterInputDecision = ({
   allowDirtyDOMText = false,
@@ -75,16 +80,24 @@ export const getNativeSingleCharacterInputDecision = ({
   }
 
   if (IS_NODE_MAP_DIRTY.get(editor)) {
-    const textHostPath = textHost?.getAttribute('data-plite-path');
+    const textFlowEntry = resolveDOMTextFlowEntry(node, offset);
+    const textHostPath = textFlowEntry
+      ? textFlowEntry.path.join(',')
+      : textHost.getAttribute('data-plite-path');
 
     if (textHostPath !== anchor.path.join(',')) {
       return blocked('dirty-text-path');
     }
 
+    const modelText = editorString(editor, anchor.path);
+    const flowText = textFlowEntry
+      ? resolveDOMTextFlowRecordText(textFlowEntry.host, textFlowEntry.nodeKey)
+      : textHost.textContent?.replace(/\uFEFF/g, '');
+
     if (
       !allowDirtyDOMText &&
-      textHost.textContent?.replace(/\uFEFF/g, '') !==
-        editorString(editor, anchor.path)
+      (flowText !== modelText ||
+        (textFlowEntry && !isDOMTextFlowSegmentSynchronized(node)))
     ) {
       return blocked('dirty-dom-text');
     }

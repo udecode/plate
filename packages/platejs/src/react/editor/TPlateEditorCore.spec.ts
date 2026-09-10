@@ -1,13 +1,12 @@
-import { property, schema } from '../../core';
+import { schema } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor as createHeadlessEditor } from '../../lib/editor/withPlite';
 import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
-import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { definePlatePlugin } from '../plugin/definePlatePlugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
-import { getPlateCorePlugins } from './getPlateCorePlugins';
+import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 import { createEditor } from './withPlate';
 
 describe('Editor core package', () => {
@@ -201,19 +200,6 @@ describe('Editor core package', () => {
       multiPluginEditor.api.nonExistentMethod;
     });
 
-    it('exposes custom plugin APIs on createEditor', () => {
-      const editor = createEditor({
-        plugins: [MyCustomPlugin, ListPlugin, ImagePlugin],
-      });
-
-      expect(editor.api.myCustom.myCustomMethod).toBeInstanceOf(Function);
-      expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
-      expect(editor.api.image.insertImage).toBeInstanceOf(Function);
-
-      // @ts-expect-error -- unavailable plugin APIs must remain excluded
-      editor.api.table;
-    });
-
     it('creates an editor with all plugins atomically', () => {
       const editor = createEditor({
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
@@ -225,60 +211,6 @@ describe('Editor core package', () => {
 
       // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.image;
-    });
-
-    it('isolates overlapping API names by plugin namespace', () => {
-      const OverlappingPlugin = defineBasePlugin('overlapping', {
-        api: () => ({
-          bold: (_: number) => {},
-          insertImage: (_: number) => {},
-        }),
-      });
-
-      const editor = createEditor({
-        plugins: [TextFormattingPlugin, OverlappingPlugin, ImagePlugin],
-      });
-
-      expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
-      expect(editor.api.textFormatting.italic).toBeInstanceOf(Function);
-      expect(editor.api.image.insertImage).toBeInstanceOf(Function);
-      expect(editor.api.image.resizeImage).toBeInstanceOf(Function);
-      expect(editor.api.overlapping.bold).toBeInstanceOf(Function);
-      expect(editor.api.overlapping.insertImage).toBeInstanceOf(Function);
-
-      // @ts-expect-error -- unavailable plugin APIs must remain excluded
-      editor.api.nonExistentMethod;
-    });
-  });
-
-  describe('Plugin', () => {
-    const BoldPlugin = defineBasePlugin('bold', {
-      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      codecs: ({ defineCodecs }) =>
-        defineCodecs({
-          'text/html': {
-            decode: ({ element }) =>
-              someHtmlElement(
-                element,
-                (node) => node.style.fontWeight === 'normal'
-              )
-                ? undefined
-                : true,
-            encode: ({ value }) => (value ? { tag: 'strong' } : null),
-            match: [
-              { tag: ['strong', 'b'] },
-              { style: { fontWeight: ['600', '700', 'bold'] } },
-            ],
-          },
-        }),
-    });
-
-    it('supports specific plugin generics on createEditor', () => {
-      const editor = createEditor({
-        plugins: [BoldPlugin],
-      });
-
-      expect(getPlateRuntime(editor).plugins[BoldPlugin.name]).toBeDefined();
     });
   });
 });

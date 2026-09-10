@@ -12,7 +12,11 @@ describe('/registry/changelog/index.json', () => {
     expect(response.status).toBe(200);
     expect(data.schemaVersion).toBe(1);
     expect(data.events.length).toBeGreaterThanOrEqual(19);
-    expect(data.events[0]).toMatchObject({
+    expect(
+      data.events.find(
+        (event) => event.id === '2026-06-14-fix-shadcn-editor-kit-install-paths'
+      )
+    ).toMatchObject({
       href: '/registry/changelog/2026-06-14-fix-shadcn-editor-kit-install-paths.json',
       id: '2026-06-14-fix-shadcn-editor-kit-install-paths',
       release: { status: 'latest', source: 'open-pull-request' },

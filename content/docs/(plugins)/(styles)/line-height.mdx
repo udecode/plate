@@ -25,11 +25,11 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
-### Add the Kit
+### Add the kit
 
 Use `LineHeightKit` for the Plate UI setup. It targets paragraphs and all heading levels, with valid values `1`, `1.2`, `1.5`, `2`, and `3`.
 
@@ -45,7 +45,7 @@ export const editor = createEditor({
 });
 ```
 
-### Add the Toolbar Control
+### Add the toolbar control
 
 `LineHeightToolbarButton` reads `defaultNodeValue` and `validNodeValues` from the plugin inject props.
 
@@ -59,17 +59,17 @@ export function LineHeightControls() {
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
-### Install Package
+### Install package
 
 ```bash
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add the Plugin
+### Add the plugin
 
 Configure target block types and the values your UI should expose.
 
@@ -96,7 +96,7 @@ export const editor = createEditor({
 });
 ```
 
-### Set Line Height
+### Set line height
 
 Use the bound update method.
 

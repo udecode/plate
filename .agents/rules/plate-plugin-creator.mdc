@@ -4,6 +4,9 @@ description: Build or refactor Plate plugins and entrypoints with owner-first co
 
 # Plate Plugin Creator
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Build Plate plugins that do not need a later `plate-next` cleanup.
 
 This skill owns plugin authoring mechanics: semantic layer, durable source
@@ -11,10 +14,10 @@ owners, file topology, contextual typing, initial state, scoped stores/APIs and
 transactions, React families, and package-local proof.
 
 Before changing reusable API shape, naming, builder/factory patterns,
-composition identity, or runtime/perf law, read [vision](../vision/SKILL.md)
+composition identity, or runtime/perf law, read [vision](../task/references/source-authority.md)
 and route the target call shape to [best-api](../best-api/SKILL.md). Use
 `plate-plan` or `plite-plan` only when adoption, runtime law, or layer ownership
-needs a plan. Use [docs-creator](../docs-creator/SKILL.md) for public docs.
+needs a plan. Use [Plate Docs](../plate-docs/SKILL.md) for public documentation.
 
 ## Required Reads
 
@@ -34,7 +37,7 @@ for current repo examples. Plate foundation builders and type tests outrank prec
 
 | Owner                       | Scope                                                     |
 | --------------------------- | --------------------------------------------------------- |
-| `vision`                    | durable doctrine, Plate/Plite ownership, perf law         |
+| `VISION.md`                    | durable doctrine, Plate/Plite ownership, perf law         |
 | `best-api`                  | reusable call shape, naming, composition identity, DX/AX  |
 | `plate-plan` / `plite-plan` | runtime/adoption boundary and proof plan                  |
 | `patch`                     | one local behavior bug or regression repair/proof closure |
@@ -107,7 +110,7 @@ later migration pass or wait for the user to notice the drift.
 
 Named direct-Plate exceptions:
 
-1. hook- or `useHooks`-driven plugins;
+1. React render descriptors with no useful semantic base;
 2. DOM/editor-surface plugins with no useful semantic base;
 3. React node-prop or component behavior that has no non-React meaning.
 
@@ -119,10 +122,20 @@ Colocation is the default.
   `define*Plugin` / `.extend()` chain. This includes one-use `with*`,
   `decorate*`, normalizers, parsers, commands, corrections, matchers, state,
   APIs, and tx callbacks.
-- Author transient feature paint through the owning plugin's `decorate` and
-  render slots. Plugin-store changes already invalidate that plugin's
-  decorations. Do not publish source registries, renderer registries, manual
-  refresh requirements, or carrier stores for the normal Plate path.
+- Author inline transient feature paint through the owning plugin's
+  `decorate: { read, observe?, attributes? }` descriptor. Reads return `{ key, range,
+  attributes }`; plugin-store changes invalidate that plugin through
+  `observe`. Copied feature files configure `decorate.attributes` with a safe
+  object or pure inferred-context callback; `null` clears inherited presentation.
+  Existing capabilities accept presentation-only patches without repeating their
+  reader or observer. New capabilities require `read`. Keep generic Editor skins
+  free of optional feature selectors. Author sparse whole-element attributes through
+  `render.useViewElementAttributes`, which receives the mounted `view` and
+  returns `{ key, attributes }[]` from one hook host per enabled plugin per
+  view. Keep per-node attribute and injection callbacks pure and hook-free.
+  Structural render slots remain for nodes and marks. Do not publish source
+  registries, renderer registries, keyed stores, managers, or manual refresh
+  requirements.
 - Give before/after Editable and container sibling components only their exact
   slot ref. Never intersect those props with Editable props or container HTML
   attributes, and never spread host props into the sibling invocation. Register
@@ -160,9 +173,11 @@ Colocation is the default.
 - When a hook mixes durable DOM lifecycle with renderer state/props, publish
   only the lifecycle job. Require its ref/controller input, return `void` when
   it only synchronizes side effects, and keep subscription/observer/cleanup
-  together. Move derived layout, transient overrides, rounding, refs/styles
-  used only as props, and event handlers into the copied renderer. Do not
-  salvage a trivial one-family pure helper as another package export.
+  together. Move derived layout, transient rendering overrides, visual rounding,
+  refs/styles used only as props, and presentation event wiring into the copied
+  renderer. Apply Plate UI's extraction test to semantic calculations and
+  neutral interaction lifecycle; one current consumer does not disqualify them.
+  Do not publish trivial presentation helpers to shorten copied code.
 - Plugin descriptor files never own named custom hook definitions.
 - Public exports and external imports prove access, not independent source
   ownership. For React surfaces, trace through package wrappers to terminal
@@ -211,6 +226,9 @@ Read this reference when authoring inferred plugin capabilities, current-owner c
 - Plugin `read` factories return methods or nested method records built once
   per configuration. Compute live document values when those methods run;
   stable constants and host services belong in `api`.
+- Capture the exact editor for focus, scrolling or view feedback inside the
+  `api` factory. Outer descriptor-construction callbacks retain their model
+  lifetime; Best API owns the shared-model and mounted-view boundary.
 - Keep one colocated `<FooPlugin>.<family>.spec.tsx` per plugin behavior
   family. Do not mirror each API method, helper, or deleted filename into a
   separate spec.

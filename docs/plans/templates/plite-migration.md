@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short slate-migration objective, under 240 characters. Put the
 full migration contract in the sections below.
@@ -69,12 +71,14 @@ Blocked condition:
 Migration state:
 - surface: pending
 - mode: pending
-- minimum_runtime: pending
+- time_budget_or_deadline: pending
+- explicit_minimum_runtime: N/A unless requested
 - current_loop: 0
 - current_checkpoint: checkpoint-zero
 - current_checkpoint_status: in_progress
 - next_checkpoint: inventory
-- goal_status: active
+- plan_status: active
+- native_goal: N/A unless explicitly requested
 
 Current verdict:
 - verdict: pending
@@ -84,15 +88,15 @@ Current verdict:
 - reason: pending
 
 Completion rule:
-- Do not call `update_goal(status: complete)` while any required checklist item
-  remains unchecked. If an item does not apply, check it and add
-  `N/A: <reason>`.
-- Do not call `update_goal(status: complete)` until every completion threshold
-  above is satisfied, final handoff evidence is recorded, and
-  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
-  passes.
-- Do not create hook state for this goal. This file plus the active goal are
-  the durable state.
+- Mark this Task plan complete only after every required checklist item and
+  completion threshold is satisfied. For an inapplicable item, record
+  `N/A: <reason>` rather than pretending it ran.
+- Record final evidence and run
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`.
+  That checks the file structure, not native goal status or runtime behavior.
+- For a native goal requested directly or by standing instruction, update its
+  status only after the full objective is achieved under Autogoal's tool contract.
+- This file is the durable task state; do not create parallel hook state.
 
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
@@ -102,7 +106,7 @@ Checkpoint supervisor:
 | api-map | slate-migration / plite-plan | pending | P0 | Map old APIs to current Plite public APIs. | API map rows source-backed. | seed |
 | stale-symbol-audit | slate-migration | pending | P0 | Find stale Plite/Plate migration symbols. | Audit command and result recorded. | seed |
 | migration-packet | slate-migration / plite-patch | pending | P0 | Migrate one owner or prove already migrated. | Proof command passes or packet quarantined. | seed |
-| guide-repair | docs-creator / slate-migration | pending | P1 | Repair migration guide when a user-facing step is missing. | Guide decision recorded. | seed |
+| guide-repair | Plate Docs / slate-migration | pending | P1 | Repair migration guide when a user-facing step is missing; use Plate Docs for public MDX/API claims and Technical Writing for general prose. | Guide decision recorded. | seed |
 | changeset-repair | changeset / slate-migration | pending | P1 | Repair release-facing migration notes when package users need them. | Changeset decision recorded. | seed |
 | proof | slate-migration | pending | P0 | Run focused type/test/browser/docs proof for the packet. | Command result recorded with cwd. | seed |
 | self-repair | slate-migration | pending | P1 | Patch workflow skill/template when the loop misses a recurring expectation. | Source/mirror sync recorded or N/A. | seed |
@@ -118,8 +122,8 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `slate-migration` source rule read | pending | pending |
-| `vision` read | pending | pending |
-| Active goal checked or created | pending | pending |
+| `VISION.md` read | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Invocation mode recorded | pending | pending |
 | Source and target owners recorded | pending | pending |
 | Output budget strategy recorded | pending | pending |
@@ -157,8 +161,9 @@ Work Checklist:
       skills/workflow, and reverted/quarantined packets.
 - [ ] Needs-your-attention list is ranked and capped at five items.
 - [ ] Stopping checkpoints are queued or marked none.
-- [ ] P1 autoreview/review gate is run for non-trivial implementation diffs or
-      marked N/A with reason.
+- [ ] Task review applicability and existing result are recorded; only an
+      explicit review request or actual PR closure uses the shared P1 budget,
+      never on `next`. Otherwise record N/A with reason.
 - [ ] Output budget discipline is followed: broad scans are capped or written
       to artifacts instead of streamed.
 
@@ -177,7 +182,7 @@ Completion Gates:
 | Skill/rule sync | pending | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | pending |
 | Changed list / review attention / stopping checkpoints | pending | Fill final handoff ledgers from packet evidence | pending |
 | Workflow slowdown review | pending | Log slow steps and repair avoidable repeats, otherwise N/A | pending |
-| P1 autoreview for non-trivial implementation changes | pending | Load `autoreview`, pass `--max-priority P1`, and close accepted findings; use P2 or P3 only when explicitly requested, or N/A | pending |
+| Task-owned review when explicitly requested or closing a PR | pending | Reuse Task's review result; run P1 only for explicit review or actual PR closure, within three total helper invocations for this scope; never on `next`. Record N/A when unrequested or prohibited; do not add a final review | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

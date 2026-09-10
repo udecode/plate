@@ -5,19 +5,35 @@ Shared doctrine for Plate, Plite, and agent workflows.
 Root `VISION.md` is the mandatory first read. This file carries the fuller
 common doctrine after the lane is selected.
 
+## Redesign from First Principles
+
+This is the governing principle of the `next` beta redesign. Apply the full
+[shared method](../../.agents/skills/principle-redesign-from-first-principles/SKILL.md)
+when choosing or reviewing an API or architecture, including during initial
+planning. The current design does not need to fail first.
+
+1. Name the current user job and hard correctness, security, serialized-data,
+   native-behavior and runtime laws, plus explicit user constraints.
+2. Sketch what we would build if those requirements had been present from the
+   start, before preserving names, layers, state models or package boundaries.
+3. Compare the strongest relevant delete, merge, inline, reuse and replacement
+   alternatives. Existing Plite primitives and newly proposed abstractions
+   face the same test: a current job or hard law must justify their ownership.
+4. Choose the target for material lasting value. Compatibility, sunk effort
+   and implementation difficulty affect adoption order during beta; they do
+   not make a weaker target better. Keeping the current design is a valid win.
+5. Carry an authorized change through its types, consumers, docs, examples,
+   rationale and proof. Design the whole result and deliver it incrementally.
+
+Reuse an accepted comparison while its requirements and evidence remain valid.
+Reopen it when a material new requirement or contradiction changes the choice.
+Ordinary edits do not require a rewrite, a review does not grant implementation
+authority, and a promising direction does not prove its runtime design.
+
 ## Taste
 
-- Prefer the best long-term durable architecture that materially fixes the
-  owning problem over the nearest compatible or local patch.
 - Package/runtime ownership beats example glue when the bug is systemic.
 - Examples should expose the real API and DX at the call site.
-- Breaking changes are acceptable when they produce the better API, behavior,
-  or performance shape.
-- Before stability, compatibility, migration convenience, compiler difficulty,
-  and current machinery affect sequencing, not the target. Hard-cut APIs and
-  architecture when that buys materially better lasting value. Preserve only
-  hard correctness, security, serialized-data, native-behavior, or runtime
-  laws.
 - No fake aliases, no fake compatibility, no hidden migration story in docs.
 - Public docs describe the current API only.
 - Conventions are API surface: names, flags, config keys, persisted fields,
@@ -115,7 +131,7 @@ tests for package ownership, API intent, and public teaching surfaces.
   simplify, split, keep, defer, and reject decisions for shallow modules, split
   ownership, testability gaps, over-splits, and agent-navigation friction, then
   either applies a safe behavior-neutral packet or routes broader decisions to
-  `major-task`, `plite-plan`, `plate-plan`, `auto`, or a package owner.
+  `task`, `plite-plan`, `plate-plan`, or a package owner.
 - Public issue and PR bodies are maintainer-agent input contracts. Plate/Plite
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,
@@ -143,26 +159,25 @@ tests for package ownership, API intent, and public teaching surfaces.
   fair current/main and cross-editor baselines, ordered all-lane discovery,
   causal diagnosis, metric/harness repair, durable target selection through
   `best-api` and the correct layer plan when architecture changes, one-owner
-  implementation, exact reruns, and resumed breadth. `$performance` supplies
-  review doctrine only.
-- `$auto` is internal Plate/Plite quality supervision: behavior, visual proof,
-  API cleanup, test repair, docs consolidation, and skill repair. It routes
-  measured work to `$benchmark` and must not become a second benchmark loop or
-  the public GitHub queue brain.
-- `$auto` may still be the ergonomic user-facing router. `auto PR #123`,
-  `auto issue #123`, `auto all PRs/issues`, and `auto security` route to
-  `$maintainer`; `auto current tree` and `auto post-merge` route to
-  `$autoclosure`; `auto benchmark`, `auto perf`, and performance comparisons
-  route to `$benchmark`; `auto slate` and `auto plate packages` stay in
-  `$auto`. Routing convenience is not ownership transfer.
-- `$autoclosure` is post-merge/current-tree until-clean closure for already
-  applied work. It loops like P1 `autoreview`, patches safe findings, reruns proof,
-  and stops only when no accepted actionable findings remain or a real boundary
-  appears.
-- Source-backed pure improvements may be applied autonomously when they stay
-  inside root `VISION.md`. Ask only when the change alters taste, product/API
-  direction, human authority, skill topology, security, release policy, or an
-  irreversible side effect.
+  implementation, exact reruns, and resumed breadth. `$benchmark review`
+  supplies the review method.
+- Task owns ordinary, complex, autonomous and current-checkout closure work.
+  `$task autonomous` supervises requested quality work through the technical
+  owners; `$improve` supplies its recurring whole-project preset, including
+  rule compliance and defect-triggered audits of complete affected areas.
+  Measured work routes to `$benchmark`; public queue work routes to
+  `$maintainer`. Full Poteto methods and principle leaves guide engineering.
+  File plans do not create native goals, publication authority or extra review
+  budgets.
+- `$task closure` repairs verified in-scope findings and reruns affected proof.
+  Structured review uses Task's existing explicit-review or PR-closeout budget,
+  never on `next`; an unchanged clean result needs no repeated panel.
+- Apply source-backed improvements within the active request's authority,
+  including justified beta architecture and API cuts. Challenge stale doctrine
+  and repair its authorized owner. Task owns permission boundaries; technical
+  owner transitions and blast radius do not create approval requirements.
+  Ask for a missing decision, access or authority only when it blocks the next
+  action.
 - Maintainer automation is live-state-first. Before issue/PR closure,
   duplicate calls, agent handoff, or ready-to-merge claims, read the thread,
   related items, current source, proof, and owner instructions. Titles,

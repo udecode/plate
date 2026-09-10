@@ -8,6 +8,9 @@ metadata:
 
 # Shadcn Parity
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 ## Core Contract
 
 When the user asks for shadcn parity, treat `../shadcn` as the source of

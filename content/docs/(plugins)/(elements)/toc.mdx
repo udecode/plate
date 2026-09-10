@@ -23,7 +23,7 @@ persisted element IDs or install `ElementIdPlugin`.
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -35,7 +35,7 @@ The fastest way to add table of contents functionality is with the `TocKit`, whi
 
 - [`TocElement`](/docs/components/toc): Renders table of contents elements.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -53,7 +53,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -63,7 +63,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 Include `TocPlugin` and `HeadingPlugin` in your Plate plugins array when creating the editor.
 
@@ -81,7 +81,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 Configure the `TocPlugin` with custom component and scroll options.
 
@@ -97,21 +97,17 @@ const editor = createEditor({
     // ...otherPlugins,
     HeadingPlugin.configure({ component: HeadingElement }),
     TocPlugin.configure({
-      component: TocElement,
-      initialState: {
-        topOffset: 80,
-        isScroll: true,
-      },
+      component: (props) => <TocElement {...props} topOffset={80} isScroll />,
     }),
   ],
 });
 ```
 
 - `.configure({ component })`: Assigns [`TocElement`](/docs/components/toc) to render table of contents elements.
-- `initialState.topOffset`: Sets the top offset when scrolling to headings.
-- `initialState.isScroll`: Enables scrolling behavior to headings.
+- `TocElement.topOffset`: Sets the top offset when scrolling to headings.
+- `TocElement.isScroll`: Enables scrolling behavior to headings.
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table of contents elements:
 
@@ -123,24 +119,20 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 }
 ```
 
-### Scroll Container Setup
+### Scroll container setup
 
-- If your scrolling element is [EditorContainer](/docs/components/editor), you can skip this step.
-- If you render a custom scroll container, register it with `useEditorScrollElementRef(editor)`.
+Use [EditorContainer](/docs/components/editor) for the editor's scrolling region.
+For a custom layout, render `PlateContainer` inside `<Plate>` and apply your
+scrolling styles to it. `PlateContainer` registers that region with the editor.
 
 ```tsx
-import { useEditor, useEditorScrollElementRef } from 'platejs/react';
+import { PlateContainer, PlateContent } from 'platejs/react';
 
 function Layout() {
-  const editor = useEditor();
-  const scrollRef = useEditorScrollElementRef(editor);
-
   return (
-    <main ref={scrollRef}>
-      <EditorContainer>
-        <PlateContent />
-      </EditorContainer>
-    </main>
+    <PlateContainer className="h-[600px] overflow-y-auto">
+      <PlateContent />
+    </PlateContainer>
   );
 }
 ```
@@ -159,6 +151,19 @@ Plugin for generating table of contents.
 
 <API name="TocPlugin">
 <APIOptions>
+  <APIItem name="queryHeading" type="((state: EditorStateView) => Heading[]) | null" optional>
+    Custom function to query headings. Defaults to `null`, which uses the built-in query.
+  </APIItem>
+</APIOptions>
+</API>
+
+
+### `TocElement`
+
+Scroll options belong to the copied view. The heading query belongs to `TocPlugin`.
+
+<API name="TocElement">
+<APIOptions>
   <APIItem name="isScroll" type="boolean" optional>
     Enable scrolling behavior.
     - **Default:** `true`
@@ -166,9 +171,6 @@ Plugin for generating table of contents.
   <APIItem name="topOffset" type="number" optional>
     Top offset when scrolling to heading.
     - **Default:** `80`
-  </APIItem>
-  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
-    Custom function to query headings.
   </APIItem>
 </APIOptions>
 </API>

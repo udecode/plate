@@ -1,0 +1,6 @@
+id	query	source	status	result
+q001	MDN PerformanceLongTaskTiming attribution TaskAttributionTiming longtask PerformanceObserver	web	read	Official docs define long task entries and attribution objects; useful for claim-width limits.
+q002	W3C Long Tasks API TaskAttributionTiming attribution longtask spec	web	read	Spec frames long tasks as UI-thread monopolization; attribution does not guarantee app-owned function attribution.
+q003	Playwright performance long tasks PerformanceObserver attribution testing	web	read	Useful only as harness pressure; rejected generic blog-level proof without source ownership.
+q004	Lexical playwright selection native selection tests no double highlight	web+local	read	Local Lexical source/tests have stronger evidence than search snippets.
+q005	ProseMirror selection drag browser tests native selection	web+local	read	Local prosemirror-view source has transferable browser-selection caveats.

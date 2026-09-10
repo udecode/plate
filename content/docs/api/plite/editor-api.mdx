@@ -9,7 +9,7 @@ explicit and prevent query helpers from accumulating on the editor root.
 The complete reference lives in [Plite Editor](/docs/plite/api/nodes/editor).
 This page is the Plate-facing index for that API.
 
-## Direct Reads
+## Direct reads
 
 Use a direct group method for one read.
 
@@ -33,7 +33,7 @@ The main groups are:
 | `editor.read.view` | Read focus, composition, and read-only state. |
 | `editor.read.runtime` | Read immutable runtime snapshots. |
 
-## Snapshot Reads
+## Snapshot reads
 
 Use the callback form when several reads must share one coherent state view.
 
@@ -47,7 +47,7 @@ const summary = editor.read((state) => ({
 
 The callback is for grouped reads. It does not unlock a second API.
 
-## Node Targets
+## Node targets
 
 Read and update methods with an `at` option accept a location, a live
 descendant, or a `NodeKey` from the same editor. A node key can target a node
@@ -64,7 +64,7 @@ Lifecycle node, point, and range reads return `undefined` when their target is
 unavailable. For node targets, that includes detached nodes and nodes owned by
 another editor.
 
-## Node Keys
+## Node keys
 
 `NodeKey` is private editor identity for every live descendant, including
 text. It is stable across moves and immutable updates, invalid after removal,
@@ -90,7 +90,7 @@ overlays, and component state. Persisted application references belong in a
 schema property instead. Detached `state.transaction(...)` spec builders may
 target an existing key but do not allocate keys.
 
-## Matching Nodes
+## Matching nodes
 
 Node queries use `type` for structural selection and `match` for an optional
 predicate.
@@ -113,7 +113,7 @@ TypeScript narrowing. `nodes.block(options?)` reads the nearest schema block.
 `nodes.blocks(options?)` reads every relevant schema block and defaults to the
 active selection, including exact node selections.
 
-## Selection Queries
+## Selection queries
 
 Selection checks are explicit methods, not boolean query flags.
 

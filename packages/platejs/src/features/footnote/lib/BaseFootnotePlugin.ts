@@ -16,6 +16,7 @@ import {
   type Point,
 } from '../../../core';
 import {
+  BaseComboboxPlugin,
   triggerCombobox,
   type TriggerComboboxPluginState,
 } from '../../combobox';
@@ -89,6 +90,7 @@ export type FootnoteDefinitionElement = ElementOf<
 
 /** Enables support for inline footnote combobox inputs. */
 export const BaseFootnoteInputPlugin = defineBasePlugin(PLUGINS.footnoteInput, {
+  dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
       properties: {
@@ -127,6 +129,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
       type: editor.plugin(BaseFootnoteInputPlugin).schema.type,
     }),
     trigger: '^',
+    triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
   codecs: ({ defineCodecs, schema: { type } }) =>
@@ -295,7 +298,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
       references,
     };
   },
-  render: { as: 'sup' },
+  component: 'sup',
   schema: {
     element: {
       properties: {
@@ -419,15 +422,6 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
 
         return { point, targetPath: reference[1] };
       };
-      const focusDefinition = ({ ref }: { ref: string }) =>
-        !!selectDefinition({ ref });
-      const focusReference = ({
-        ref,
-        index = 0,
-      }: {
-        ref: string;
-        index?: number;
-      }) => !!selectReference({ ref, index });
       const createDefinition = ({
         focus = true,
         fragment,
@@ -448,7 +442,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         });
 
         if (existingDefinition) {
-          if (focus) focusDefinition({ ref });
+          if (focus) selectDefinition({ ref });
 
           return existingDefinition[1];
         }
@@ -490,7 +484,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           { at: path }
         );
 
-        if (focus) focusDefinition({ ref });
+        if (focus) selectDefinition({ ref });
 
         return path;
       };
@@ -558,8 +552,6 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
 
       return {
         createDefinition,
-        focusDefinition,
-        focusReference,
         insert,
         normalizeDuplicateDefinition,
         selectDefinition,

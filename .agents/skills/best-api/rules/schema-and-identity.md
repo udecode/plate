@@ -111,9 +111,14 @@ target-version chain:
   envelope version to its exact generated fingerprint. An explicit
   `unversioned` floor is the only path without historical fingerprint proof.
 - Configure `migrations` beside the named app `schema`. Define exact target
-  steps with `defineDocumentMigrations`; a source at v53 and target at v55 runs
-  steps 54 then 55. Missing steps, another lineage, future input, downgrade,
-  and same-version fingerprint drift fail closed.
+  steps with `defineDocumentMigrations`; a source at version 1 and target at
+  version 3 runs steps 2 then 3. Missing steps, another lineage, future input,
+  downgrade, and same-version fingerprint drift fail closed.
+- Only the persistence or release owner allocates a target version. Fold every
+  change into the current target until that boundary ships; implementation
+  order never earns another schema version. Plate's approved next target is
+  v54. Do not create v55 or later without explicit release-owner approval and
+  a persisted v54 source fingerprint.
 - `migrateDocument` is the shared document runner for runtime loads, app
   storage jobs, and CLI dry-run/check/write. It is not an editor option or a
   second migration declaration grammar.
@@ -208,8 +213,8 @@ reference must survive editor destruction, reload, storage, or another client.
 Plate plugin runtime values have one channel: defaults in `initialState`,
 descriptor overrides through `.configure({ initialState })`, builder access
 through inferred `store`, and consumer access through
-`editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` or
-`useEditorPluginStore`. Do not recreate deleted `options`, `getOption`,
+`editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` with
+an installed typed descriptor. Do not recreate deleted `options`, `getOption`,
 `getOptions`, `setOption`, `setOptions`, or `usePluginOption` APIs, and do not
 add a parallel immutable `config` channel. Generic operation parameters may
 still be named `options`; this rule owns plugin declaration/runtime state.

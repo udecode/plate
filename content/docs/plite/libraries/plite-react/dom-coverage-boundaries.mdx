@@ -5,7 +5,7 @@ description: "Keep hidden Plite content selectable, copyable, and materializable
 
 DOM coverage boundaries let Plite keep model content selectable and copyable when the matching editable DOM is intentionally not mounted. Use them for closed accordions, inactive tab panels, collapsed sections, and app-hidden element shells. They are React rendering tools; the document content stays in the Plite value, and [Selection And DOM](../../concepts/16-selection-and-dom) owns the broader model-selection and native-selection boundary.
 
-## Render A Boundary
+## Render a boundary
 
 `renderElement` receives `slots.contentBoundary`. Wrap the hidden part of an
 element with a boundary and tell Plite which children it covers.
@@ -40,7 +40,7 @@ Use `scope={{ type: 'children', from, to }}` when the boundary covers child
 nodes. Use `scope={{ type: 'self' }}` when the whole element is hidden by app
 chrome.
 
-## Selection Policy
+## Selection policy
 
 `selectionPolicy` controls keyboard and model selection through hidden content.
 
@@ -54,7 +54,7 @@ chrome.
 Use that callback to open the accordion, activate the tab, or reveal the
 collapsed panel.
 
-## Copy Policy
+## Copy policy
 
 `copyPolicy` controls clipboard output when a copied selection crosses hidden
 content.
@@ -69,7 +69,7 @@ content.
 `model` is the right default for document content. `exclude` is usually better
 for app-hidden wrappers, private metadata, and chrome-only shells.
 
-## Find Policy
+## Find policy
 
 `findPolicy` records who owns search for that hidden range.
 
@@ -87,19 +87,27 @@ collapsed content must remain available to assistive technology, keep an
 accessible summary mounted, materialize the content from the boundary, or render
 an app-owned accessible representation outside the editable surface.
 
-## Boundary Identity
+## Boundary identity
 
-`boundaryId` is optional. Plite derives a stable editor-local boundary id from
+`boundaryId` is optional. Plite derives a stable view-local boundary id from
 the rendered element and scope. Pass an explicit id when tests or diagnostics
 need a predictable name.
+
+Each mounted `Editable` owns an independent coverage session. Two views of the
+same document may cover different ranges or use the same boundary id without
+sharing registration or cleanup.
 
 Boundary placeholders are runtime-owned non-editable DOM. Keep tab triggers,
 accordion buttons, and other app chrome outside the editable text flow so native
 selection does not grab UI labels instead of document text.
 
-## Boundaries Versus Content Roots
+## Boundaries versus content roots
 
 Use DOM coverage boundaries when content belongs to the current root but its
 DOM is hidden. Use [content roots](../../concepts/13-roots#content-roots)
 when an element owns another editable root, such as a synced block body or an
 editable card body.
+
+Use [External Text Views](external-text) when another editing engine renders
+one Text in the same root. That slot registers its own model-copy and custom-find
+coverage; it is not a void, a separate content root, or a generic virtualizer.

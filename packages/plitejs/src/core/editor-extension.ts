@@ -82,7 +82,12 @@ import {
 import { createReadRegistration } from './read-definition';
 import { registerReadInRegistry } from './read-registry';
 import { constructCanonicalDocumentChange } from './representation';
-import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
+import {
+  areEditorSchemaIdentitiesEqual,
+  createEditorSchemaContract,
+  type CompiledEditorSchema,
+  type EditorSchemaContract,
+} from './schema-compiler';
 import { registerSchemaContribution } from './schema-contribution-registry';
 import {
   type EditorSchemaDefinitionInput,
@@ -2109,11 +2114,14 @@ export type PreparedEditorExtensionPublication = Readonly<{
   documentChange: DocumentChange;
   finalize: () => void;
   rollback: () => void;
+  schemaContract: () => EditorSchemaContract;
   stage: () => void;
   validateDocument: (value: EditorDocumentValue) => void;
 }>;
 
-const createNoopPublication = (): PreparedEditorExtensionPublication => {
+const createNoopPublication = (
+  schema: CompiledEditorSchema
+): PreparedEditorExtensionPublication => {
   let phase: 'cancelled' | 'finalized' | 'prepared' | 'published' = 'prepared';
 
   return Object.freeze({
@@ -2133,6 +2141,7 @@ const createNoopPublication = (): PreparedEditorExtensionPublication => {
       if (phase === 'prepared' || phase === 'published') phase = 'cancelled';
     },
     stage() {},
+    schemaContract: () => createEditorSchemaContract(schema),
     validateDocument() {},
   });
 };
@@ -2150,7 +2159,9 @@ const prepareRecordPublication = <TEditor extends Editor>(
   options: EditorExtensionPublicationOptions = {}
 ): PreparedEditorExtensionPublication => {
   if (sameExtensionRecords(previousRecords, nextRecords)) {
-    return createNoopPublication();
+    return createNoopPublication(
+      getExtensionRegistry(editor).schemaContributions.compiled
+    );
   }
 
   const previousCurrentRegistry = getExtensionRegistry(editor);
@@ -2163,14 +2174,18 @@ const prepareRecordPublication = <TEditor extends Editor>(
   const resolvedApis = new Map<string, EditorExtensionApiMap>();
 
   runWithEditorExtensionPublicationGuard(editor, () => {
-    const declarative = buildConfiguredRegistry(
-      editor,
-      previousRegistry,
-      previousCurrentRegistry.schemaRevision,
-      nextRecords,
-      new Map(),
-      { validateDocument: false }
-    );
+    const declarative = [...nextRecords.values()].some(
+      ({ extension }) => extension.api !== undefined
+    )
+      ? buildConfiguredRegistry(
+          editor,
+          previousRegistry,
+          previousCurrentRegistry.schemaRevision,
+          nextRecords,
+          new Map(),
+          { validateDocument: false }
+        )
+      : null;
     const candidateApis = new Map<
       EditorExtensionReference,
       EditorExtensionApiMap
@@ -2193,7 +2208,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
           extension,
           createExtensionApiFactoryContext(
             record.editor as TEditor,
-            declarative.merged
+            getDefined(declarative).merged
           )
         );
 
@@ -2521,6 +2536,14 @@ const prepareRecordPublication = <TEditor extends Editor>(
     stage() {
       stageFields();
     },
+    schemaContract() {
+      if (phase !== 'prepared') {
+        throw new Error('Editor extension candidate schema is not prepared.');
+      }
+      return createEditorSchemaContract(
+        mergedCandidate.schemaContributions.compiled
+      );
+    },
     validateDocument(value: EditorDocumentValue) {
       validateCandidateDocument(value);
     },
@@ -2583,7 +2606,11 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
       );
     });
 
-  if (equivalentReplacement) return createNoopPublication();
+  if (equivalentReplacement) {
+    return createNoopPublication(
+      getExtensionRegistry(editor).schemaContributions.compiled
+    );
+  }
   const validationState = getValidationStateWithoutReplacements(
     state,
     replacedNames
@@ -2752,14 +2779,16 @@ export const prepareEditorExtensionPublication = (
 export const prepareInitialEditorExtensionPublication = (
   editor: Editor,
   input: EditorExtensionInput,
-  initializeDocument: boolean
+  initializeDocument: boolean | 'schema-contract'
 ): PreparedEditorExtensionPublication =>
   prepareScopedEditorExtensionPublication(
     editor,
     normalizeExtensionInput(input).map((extension) =>
       Object.freeze({ editor, extension })
     ),
-    { initialPublication: true, initializeDocument }
+    initializeDocument === 'schema-contract'
+      ? { initialPublication: true, validateDocument: false }
+      : { initialPublication: true, initializeDocument }
   );
 
 export const extendEditor = (

@@ -47,8 +47,8 @@ const EditorSchema = {
 
 `defineDocumentMigrations` 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema
 适配前调用同一个 `migrateDocument`。命名 Schema 的 root 语法变化时，应递增版本并迁移
-已存储文档。Plate v55 依次运行 `migratePlateV54` 和 `migratePlateV55`；已有 v54 文档只
-运行 v55 步骤。
+已存储文档。`migratePlateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
+约束，并把每个旧代码块的行元素序列合并为一个带换行符的文本子节点。
 
 ## 代表性功能结构
 
@@ -63,7 +63,7 @@ type HeadingElement = {
 type CodeBlockElement = {
   type: 'codeBlock';
   language?: string;
-  children: CodeLineElement[];
+  children: [Text];
 };
 type TableElement = {
   type: 'table';

@@ -23,6 +23,7 @@ import {
   type NodeEntry,
   type NodeKey,
   type NodeSelection,
+  type PlateBlockInsertOptions,
 } from '../../../core';
 import { BaseIndentPlugin } from '../../indent';
 
@@ -378,12 +379,12 @@ const getListOrdinal = (
 };
 
 export type BaseListPluginState = {
-  getSiblingListOptions?: GetSiblingListOptions;
+  getSiblingListOptions: GetSiblingListOptions;
 };
 
 export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
   dependencies: [BaseIndentPlugin],
-  initialState: (): BaseListPluginState => ({}),
+  initialState: (): BaseListPluginState => ({ getSiblingListOptions: {} }),
   schema: ({ targetElementTypes }) => ({
     properties: {
       checked: schema.elementProperty(property.boolean(), {
@@ -999,10 +1000,8 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
   }))
   .extend(({ editor, plugin, store }) => ({
     override: {
-      plugins: {
-        [PLUGINS.indent]: {
-          targetPlugins: plugin.targetPlugins,
-        },
+      [PLUGINS.indent]: {
+        targetPlugins: plugin.targetPlugins,
       },
     },
     update: ({ tx }) => ({
@@ -1071,6 +1070,40 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
             'listType',
           ],
         });
+      },
+      clear: ({ at }: { at?: Location | NodeSelection } = {}) => {
+        for (const [node, path] of tx.nodes.blocks({
+          at,
+          match: getInjectMatch(editor, plugin),
+          mode: 'lowest',
+        })) {
+          if (!isListItem(node)) continue;
+          tx.nodes.unset(
+            [
+              'checked',
+              'indent',
+              'listRestart',
+              'listStart',
+              'listStyle',
+              'listType',
+            ],
+            { at: path }
+          );
+        }
+      },
+      insert: (
+        { type }: { type: ListType },
+        options: PlateBlockInsertOptions = {}
+      ) => {
+        const element = tx.schema.create(
+          editor.plugin(BaseParagraphPlugin).schema.type,
+          { indent: 1, listType: type }
+        );
+        if (options.at === undefined || options.after !== undefined) {
+          tx.blocks.insertAfter(element, { ...options, at: options.after });
+        } else {
+          tx.nodes.insert(element, options);
+        }
       },
       toggle: ({
         at,

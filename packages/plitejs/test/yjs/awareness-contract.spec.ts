@@ -1,0 +1,421 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import type { Descendant, Range } from '../../src/index';
+import type { YjsCursorDataSchema } from '../../src/yjs/core';
+import {
+  clearYjsTrace,
+  connectYjsPeer,
+  createYjsPeer,
+  disconnectYjsPeer,
+  FakeAwareness,
+  getYjsAwarenessRevision,
+  getYjsRemoteCursorCacheMetrics,
+  getYjsRemoteCursorIds,
+  getYjsRemoteCursors,
+  getYjsTrace,
+  type Peer,
+  paragraph,
+  readEditorYjsState,
+  runYjsUpdate,
+  subscribeYjsAwareness,
+  subscribeYjsRemoteCursor,
+} from './support/collaboration';
+
+type AwarePeer = {
+  readonly awareness: FakeAwareness;
+  readonly peer: Peer;
+};
+
+const initialValue = (): Descendant[] => [
+  paragraph('alpha'),
+  paragraph('beta'),
+  paragraph('gamma'),
+];
+
+const selection = (
+  path: Range['anchor']['path'] = [0, 0],
+  offset = 2
+): Range => ({
+  anchor: { path, offset },
+  focus: { path, offset },
+});
+
+const createAwarePeer = (cursorData?: YjsCursorDataSchema): AwarePeer => {
+  const awareness = new FakeAwareness(2);
+  const peer = createYjsPeer({
+    awareness,
+    children: initialValue(),
+    clientId: 'b',
+    cursorData,
+    numericClientId: 2,
+  });
+
+  return { awareness, peer };
+};
+
+const sendRemoteSelection = (
+  peer: Peer,
+  awareness: FakeAwareness,
+  range: Range,
+  clientId = 101
+): void => {
+  runYjsUpdate(peer, (yjs) => {
+    yjs.sendSelection(range);
+    awareness.setRemoteState(clientId, {
+      data: { name: 'Ada' },
+      selection: awareness.getLocalState()?.selection,
+    });
+  });
+};
+
+describe('plitejs/yjs awareness contract', () => {
+  it('publishes local selections as relative positions without changing document trace', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.clearTrace();
+      yjs.sendSelection(range, { name: 'B' });
+    });
+
+    assert.deepEqual(awareness.getLocalState()?.data, { name: 'B' });
+    assert.deepEqual(getYjsTrace(peer), []);
+    assert.deepEqual(getYjsRemoteCursors(peer), []);
+  });
+
+  it('projects remote awareness selections to Plite ranges', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+
+    sendRemoteSelection(peer, awareness, range);
+
+    assert.deepEqual(getYjsRemoteCursors(peer), [
+      {
+        clientId: 101,
+        data: { name: 'Ada' },
+        selection: range,
+      },
+    ]);
+  });
+
+  it('reuses decoded endpoints for metadata-only awareness updates', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+
+    sendRemoteSelection(peer, awareness, range);
+
+    const selectionBefore = getYjsRemoteCursors(peer)[0]?.selection;
+    const idsBefore = getYjsRemoteCursorIds(peer);
+    const metricsBefore = getYjsRemoteCursorCacheMetrics(peer);
+    const remoteSelection = awareness.getStates().get(101)?.selection;
+
+    awareness.setRemoteState(101, {
+      data: { name: 'Grace' },
+      selection: remoteSelection,
+    });
+
+    const metricsAfter = getYjsRemoteCursorCacheMetrics(peer);
+    const cursor = getYjsRemoteCursors(peer)[0];
+
+    assert.equal(cursor?.selection, selectionBefore);
+    assert.equal(getYjsRemoteCursorIds(peer), idsBefore);
+    assert.deepEqual(cursor?.data, { name: 'Grace' });
+    assert.equal(
+      metricsAfter.clientDecodeCount,
+      metricsBefore.clientDecodeCount + 1
+    );
+    assert.equal(
+      metricsAfter.cursorResolutionPassCount,
+      metricsBefore.cursorResolutionPassCount
+    );
+    assert.equal(
+      metricsAfter.endpointConversionCount,
+      metricsBefore.endpointConversionCount
+    );
+  });
+
+  it('notifies only the changed remote cursor subscriber', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    sendRemoteSelection(peer, awareness, selection(), 101);
+    sendRemoteSelection(peer, awareness, selection([1, 0], 1), 102);
+
+    let firstNotifications = 0;
+    let secondNotifications = 0;
+    const unsubscribeFirst = subscribeYjsRemoteCursor(peer, 101, () => {
+      firstNotifications += 1;
+    });
+    const unsubscribeSecond = subscribeYjsRemoteCursor(peer, 102, () => {
+      secondNotifications += 1;
+    });
+
+    awareness.setRemoteState(101, {
+      data: { name: 'Grace' },
+      selection: awareness.getStates().get(101)?.selection,
+    });
+
+    assert.equal(firstNotifications, 1);
+    assert.equal(secondNotifications, 0);
+
+    unsubscribeFirst();
+    unsubscribeSecond();
+  });
+
+  it('ignores non-record remote cursor data', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range);
+      awareness.setRemoteState(101, {
+        data: null,
+        selection: awareness.getLocalState()?.selection,
+      });
+      awareness.setRemoteState(102, {
+        data: ['Ada'],
+        selection: awareness.getLocalState()?.selection,
+      });
+    });
+
+    assert.deepEqual(getYjsRemoteCursors(peer), [
+      { clientId: 101, selection: range },
+      { clientId: 102, selection: range },
+    ]);
+  });
+
+  it('validates cursor data at the extension boundary', () => {
+    const cursorData: YjsCursorDataSchema<{ readonly name: string }> = {
+      validate: (value): value is { readonly name: string } =>
+        typeof value === 'object' &&
+        value !== null &&
+        'name' in value &&
+        typeof value.name === 'string',
+    };
+    const { awareness, peer } = createAwarePeer(cursorData);
+    const range = selection([1, 0], 3);
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range);
+      awareness.setRemoteState(101, {
+        data: { color: 'tomato' },
+        selection: awareness.getLocalState()?.selection,
+      });
+    });
+
+    assert.deepEqual(getYjsRemoteCursors(peer), [
+      { clientId: 101, selection: range },
+    ]);
+    assert.throws(
+      () => runYjsUpdate(peer, (yjs) => yjs.sendCursorData({ color: 'red' })),
+      /cursor data does not match its configured schema/
+    );
+
+    peer.cleanup();
+  });
+
+  it('auto-publishes local selection-only commits', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([0, 0], 1);
+
+    clearYjsTrace(peer);
+    peer.editor.update.selection.set(range);
+    awareness.setRemoteState(101, {
+      selection: awareness.getLocalState()?.selection,
+    });
+
+    assert.deepEqual(getYjsTrace(peer), []);
+    assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, range);
+  });
+
+  it('publishes root-qualified awareness for a named root', () => {
+    const { awareness, peer } = createAwarePeer();
+    const headerRange: Range = {
+      anchor: { path: [0, 0], offset: 1, root: 'header' },
+      focus: { path: [0, 0], offset: 1, root: 'header' },
+    };
+
+    peer.editor.update.selection.set(selection([0, 0], 1));
+    peer.editor.update.roots.create('header', [paragraph('header')]);
+    peer.editor.update.selection.set(headerRange);
+
+    assert.equal(
+      (awareness.getLocalState()?.selection as { root?: unknown } | undefined)
+        ?.root,
+      'header'
+    );
+    awareness.setRemoteState(101, {
+      selection: awareness.getLocalState()?.selection,
+    });
+    assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, headerRange);
+  });
+
+  it('rejects selections that span different roots', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    peer.editor.update.roots.create('header', [paragraph('header')]);
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1, root: 'header' },
+      });
+    });
+
+    assert.equal(awareness.getLocalState()?.selection, null);
+  });
+
+  it('does not expose remote cursors while disconnected', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    sendRemoteSelection(peer, awareness, selection());
+    disconnectYjsPeer(peer);
+
+    assert.deepEqual(getYjsRemoteCursors(peer), []);
+
+    connectYjsPeer(peer);
+
+    assert.equal(getYjsRemoteCursors(peer).length, 1);
+  });
+
+  it('gates single remote cursor reads by connection and local client id', () => {
+    const { awareness, peer } = createAwarePeer();
+    const range = selection([1, 0], 3);
+    const yjs = readEditorYjsState(peer.editor);
+
+    sendRemoteSelection(peer, awareness, range);
+
+    assert.deepEqual(yjs.remoteCursor(101), {
+      clientId: 101,
+      data: { name: 'Ada' },
+      selection: range,
+    });
+    assert.equal(yjs.remoteCursor(2), null);
+
+    disconnectYjsPeer(peer);
+
+    assert.equal(yjs.remoteCursor(101), null);
+  });
+
+  it('increments awareness revision on remote changes', () => {
+    const { awareness, peer } = createAwarePeer();
+    const before = getYjsAwarenessRevision(peer);
+
+    sendRemoteSelection(peer, awareness, selection());
+
+    assert.equal(getYjsAwarenessRevision(peer) > before, true);
+  });
+
+  it('notifies awareness subscribers on remote changes', () => {
+    const { awareness, peer } = createAwarePeer();
+    let notifications = 0;
+    const unsubscribe = subscribeYjsAwareness(peer, () => {
+      notifications += 1;
+    });
+
+    sendRemoteSelection(peer, awareness, selection());
+    unsubscribe();
+    sendRemoteSelection(peer, awareness, selection([1, 0], 1));
+
+    assert.equal(notifications, 2);
+  });
+
+  it('does not notify awareness subscribers for unchanged local cursor payloads', () => {
+    const { peer } = createAwarePeer();
+    const range = selection();
+    let notifications = 0;
+    const unsubscribe = subscribeYjsAwareness(peer, () => {
+      notifications += 1;
+    });
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range, { name: 'Ada' });
+    });
+    notifications = 0;
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range, { name: 'Ada' });
+    });
+
+    assert.equal(notifications, 0);
+
+    unsubscribe();
+  });
+
+  it('does not notify awareness subscribers for equivalent nested cursor payloads', () => {
+    const { peer } = createAwarePeer();
+    const range = selection();
+    let notifications = 0;
+    const unsubscribe = subscribeYjsAwareness(peer, () => {
+      notifications += 1;
+    });
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range, {
+        name: 'Ada',
+        palette: ['tomato', 'white'],
+        profile: { role: 'reviewer', accent: undefined },
+      });
+    });
+    notifications = 0;
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(range, {
+        name: 'Ada',
+        palette: ['tomato', 'white'],
+        profile: { role: 'reviewer' },
+      });
+    });
+
+    assert.equal(notifications, 0);
+
+    unsubscribe();
+  });
+
+  it('rebases remote selections through virtual moved-node identity', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    sendRemoteSelection(peer, awareness, selection([0, 0], 2));
+
+    const metricsBefore = getYjsRemoteCursorCacheMetrics(peer);
+
+    peer.editor.update.nodes.move({ at: [0], to: [2] });
+
+    const metricsAfter = getYjsRemoteCursorCacheMetrics(peer);
+
+    assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, {
+      anchor: { path: [2, 0], offset: 2 },
+      focus: { path: [2, 0], offset: 2 },
+    });
+    assert.equal(
+      metricsAfter.endpointConversionCount,
+      metricsBefore.endpointConversionCount
+    );
+  });
+
+  it('clears the local awareness selection without clearing cursor data', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(selection(), { name: 'B' });
+      yjs.clearSelection();
+    });
+
+    assert.deepEqual(awareness.getLocalState(), {
+      data: { name: 'B' },
+      selection: null,
+    });
+  });
+
+  it('clears standalone awareness selection during editor cleanup', () => {
+    const { awareness, peer } = createAwarePeer();
+
+    runYjsUpdate(peer, (yjs) => {
+      yjs.sendSelection(selection(), { name: 'B' });
+    });
+
+    peer.cleanup();
+
+    assert.deepEqual(awareness.getLocalState(), {
+      data: { name: 'B' },
+      selection: null,
+    });
+  });
+});

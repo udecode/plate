@@ -18,11 +18,11 @@ room document. The provider is credential-free and development-only.
 
 <ComponentSource name="collaboration-demo" />
 
-## Runtime Shape
+## Runtime shape
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `YjsPlugin` | `platejs/yjs/react` | Installs the Yjs adapter in a Plate editor and binds the configured document and providers. |
+| `YjsPlugin` | Copied `remote-cursor-overlay` file | Configures the package Yjs adapter with selection highlights, carets, and labels. |
 | Provider wrapper | App infrastructure | Wrap Hocuspocus, WebRTC, IndexedDB, or custom transport as `YjsProviderLike`. |
 | Local room | Registry example | Exchanges document and awareness updates between two independent peers. |
 | Production room state | App | Keep room ids, auth tokens, persistence, and provider URLs outside Plate packages. |
@@ -32,18 +32,21 @@ room document. The provider is credential-free and development-only.
 
 Use the full [Yjs guide](/docs/yjs) when wiring a real provider.
 
-## Remote Cursors
+## Remote cursors
 
 Remote cursor UI belongs at the app edge. The reusable registry component is
 `remote-cursor-overlay`.
 
 <ComponentSource name="remote-cursor-overlay" />
 
-Render it inside a positioned editor container. It reads cursor state and DOM
-geometry from `platejs/yjs/react`, excludes the local cursor, and ignores
-unresolved ranges.
+Import `YjsPlugin` from the copied file and configure its `initialState` with
+your provider. It styles remote selections and installs the caret overlay beside
+the Editable. Edit this file to customize colors, opacity, and labels.
 
-## Try It
+The overlay reads cursor state and DOM geometry from `platejs/yjs/react`,
+excludes the local cursor, and ignores unresolved ranges.
+
+## Try it
 
 Type in either editor to see remote document and cursor updates. Disconnect one
 peer to queue local work, reconnect it, then use the standard history controls
@@ -54,4 +57,3 @@ editor.
 ## Related
 
 - [Yjs](/docs/yjs) covers provider setup, connection commands, and React cursor UI.
-- [Remote Cursor Overlay](/docs/components/remote-cursor-overlay) covers the reusable cursor UI component.

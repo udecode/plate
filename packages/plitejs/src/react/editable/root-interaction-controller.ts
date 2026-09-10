@@ -18,6 +18,7 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
+import { getSelection } from '../../dom';
 import type {
   DOMPhase,
   DOMPhaseScheduler,
@@ -29,7 +30,7 @@ import {
 } from '../hooks/focus-plite-editable';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
 import {
@@ -39,7 +40,7 @@ import {
 } from '../view-selection';
 import {
   type ContentRootOwner,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-navigation';
 import {
@@ -247,24 +248,6 @@ const attachProjectedDragReleaseListeners = (
     document.removeEventListener('mouseup', release);
     window?.removeEventListener('blur', releaseOnBlur);
   };
-};
-
-const measureRootMouseDownPhase = <T>(id: string, run: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return run();
-  }
-
-  const startedAt = performance.now();
-
-  try {
-    return run();
-  } finally {
-    recordPliteReactRender({
-      duration: performance.now() - startedAt,
-      id,
-      kind: 'runtime-time',
-    });
-  }
 };
 
 const withInteractionRangeRoot = (range: Range, root: RootKey): Range => {
@@ -595,16 +578,19 @@ const applyProjectedDragSelection = ({
   selectionBridge?.beginProjectedDrag();
   writePliteViewSelection(
     editor,
-    createPliteViewSelection(createContentRootProjectionGraph(editor, owners), {
-      anchor: {
-        ...(anchorOwner ? { owner: anchorOwner } : {}),
-        point: anchor.point,
-      },
-      focus: {
-        ...(focusOwner ? { owner: focusOwner } : {}),
-        point: focus.point,
-      },
-    })
+    createPliteViewSelection(
+      createContentRootViewBoundaryGraph(editor, owners),
+      {
+        anchor: {
+          ...(anchorOwner ? { owner: anchorOwner } : {}),
+          point: anchor.point,
+        },
+        focus: {
+          ...(focusOwner ? { owner: focusOwner } : {}),
+          point: focus.point,
+        },
+      }
+    )
   );
   collapseModelSelectionToProjectedDragAnchor({ anchor, editor });
 
@@ -711,7 +697,7 @@ const getEditableRootChromeCoordinatePlacement = ({
     editableRoot,
     event: event.nativeEvent,
     includeInsideString,
-    target: includeInsideString ? element : null,
+    target: element,
   });
 };
 
@@ -852,10 +838,7 @@ const canApplyCoordinateDragSelection = (
 
 const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
   const rootNode = event.currentTarget.getRootNode() as Document | ShadowRoot;
-  const domSelection =
-    'getSelection' in rootNode
-      ? rootNode.getSelection()
-      : event.currentTarget.ownerDocument.getSelection();
+  const domSelection = getSelection(rootNode);
 
   domSelection?.removeAllRanges();
 };
@@ -982,7 +965,7 @@ const applyModelDragSelection = ({
     editor,
     useViewSelection
       ? createPliteViewSelection(
-          createContentRootProjectionGraph(
+          createContentRootViewBoundaryGraph(
             editor,
             findContentRootOwners(editor)
           ),
@@ -1352,7 +1335,7 @@ export const useRootInteractionController = ({
             },
           })
             ? createPliteViewSelection(
-                createContentRootProjectionGraph(
+                createContentRootViewBoundaryGraph(
                   focusEditor,
                   findContentRootOwners(focusEditor)
                 ),
@@ -1395,7 +1378,7 @@ export const useRootInteractionController = ({
 
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
-      measureRootMouseDownPhase('root-mousedown.capture', () => {
+      profilePliteReactDuration('root-mousedown.capture', () => {
         if (disabled || event.defaultPrevented) {
           return;
         }
@@ -1461,7 +1444,7 @@ export const useRootInteractionController = ({
             target.kind === 'root-chrome');
         const rootChromeCoordinatePlacement =
           shouldResolveRootChromeFromCoordinates
-            ? measureRootMouseDownPhase(
+            ? profilePliteReactDuration(
                 'root-mousedown.resolve-coordinate-placement',
                 () =>
                   getEditableRootChromeCoordinatePlacement({
@@ -1539,7 +1522,7 @@ export const useRootInteractionController = ({
 
         const focusEditor = getMountedViewEditor(root) ?? editor;
         const startRange = rootChromeCoordinatePlacement
-          ? measureRootMouseDownPhase(
+          ? profilePliteReactDuration(
               'root-mousedown.resolve-start-range',
               () =>
                 resolvePliteStringPlacementRange({
@@ -1548,7 +1531,7 @@ export const useRootInteractionController = ({
                 }) ?? focusEditor.api.dom.resolveEventRange(event.nativeEvent)
             )
           : action.type === 'place-native-editable'
-            ? measureRootMouseDownPhase(
+            ? profilePliteReactDuration(
                 'root-mousedown.resolve-start-range',
                 () => focusEditor.api.dom.resolveEventRange(event.nativeEvent)
               )
@@ -1562,7 +1545,7 @@ export const useRootInteractionController = ({
         }
 
         const existingSelectionProjectedDragEndpoint = nativeEditableTextTarget
-          ? measureRootMouseDownPhase(
+          ? profilePliteReactDuration(
               'root-mousedown.resolve-existing-selection-endpoint',
               () =>
                 resolveExistingSelectionProjectedDragEndpoint({
@@ -1580,7 +1563,7 @@ export const useRootInteractionController = ({
           rootEdgeCoordinatePlacement
             ? null
             : (existingSelectionProjectedDragEndpoint ??
-              measureRootMouseDownPhase(
+              profilePliteReactDuration(
                 'root-mousedown.resolve-projected-drag-endpoint',
                 () =>
                   resolveProjectedDragEndpoint({
@@ -1682,7 +1665,7 @@ export const useRootInteractionController = ({
 
         if (action.type === 'place-native-editable') {
           if (startRange) {
-            measureRootMouseDownPhase(
+            profilePliteReactDuration(
               'root-mousedown.apply-place-native-selection',
               () =>
                 applyInteractionAction(

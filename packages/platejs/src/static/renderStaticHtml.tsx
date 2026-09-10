@@ -1,28 +1,10 @@
-import { decode } from 'html-entities';
 import React from 'react';
 
 import type { Editor } from '../lib';
 import type { PlateStaticProps } from './components/PlateStatic';
 import { PlateStatic } from './components/PlateStatic';
-import { stripHtmlClassNames } from './utils/stripHtmlClassNames';
-import { stripPliteDataAttributes } from './utils/stripPliteDataAttributes';
-
-type ReactDOMServerModule = typeof import('react-dom/server');
-
-const getReactDOMServer = async () => {
-  const ReactDOMServer = await import('react-dom/server');
-
-  return ReactDOMServer;
-};
-
-const renderComponentToHtml = <P extends {}>(
-  ReactDOMServer: ReactDOMServerModule,
-  Component: React.ComponentType<P>,
-  props: P
-): string =>
-  decode(
-    ReactDOMServer.renderToStaticMarkup(React.createElement(Component, props))
-  );
+import { stripHtmlClassNames } from './utils/stripHtmlClassNames.internal';
+import { stripPliteDataAttributes } from './utils/stripPliteDataAttributes.internal';
 
 export type RenderStaticHtmlOptions<
   T extends PlateStaticProps = PlateStaticProps,
@@ -55,12 +37,11 @@ export const renderStaticHtml = async <
     stripDataAttributes = false,
   }: RenderStaticHtmlOptions<T> = {}
 ): Promise<string> => {
-  const ReactDOMServer = await getReactDOMServer();
+  const ReactDOMServer = await import('react-dom/server');
 
-  let htmlString = renderComponentToHtml(ReactDOMServer, EditorComponent, {
-    editor,
-    ...props,
-  } as T);
+  let htmlString = ReactDOMServer.renderToStaticMarkup(
+    React.createElement(EditorComponent, { editor, ...props } as T)
+  );
 
   if (stripClassNames) {
     htmlString = stripHtmlClassNames(htmlString, {

@@ -147,8 +147,6 @@ describe('AIChatPlugin read.commentRange', () => {
           {
             children: [
               {
-                comment: true,
-                comment_discussion1: true,
                 text: 'comments',
               },
             ],
@@ -156,16 +154,12 @@ describe('AIChatPlugin read.commentRange', () => {
             url: '/docs/comment',
           },
           {
-            comment: true,
-            comment_discussion1: true,
             text: ' on many text segments',
           },
           {
             text: '. You can even have ',
           },
           {
-            comment: true,
-            comment_discussion2: true,
             suggestion: true,
             suggestion_playground3: {
               id: 'playground3',
@@ -427,7 +421,7 @@ describe('AIChatPlugin read.commentRange', () => {
         comment:
           'This section describes the collaborative editing features, including suggestions and comments, highlighting the ability to annotate and discuss changes.',
         content:
-          '## Collaborative Editing\n\nReview and refine content seamlessly. Use [<suggestion>suggestions</suggestion>](/docs/suggestion) <suggestion>like this added text</suggestion> or to <suggestion>mark text for removal</suggestion>. Discuss changes using [<comment>comments</comment>](/docs/comment) <comment>on many text segments</comment>. You can even have <comment><suggestion>overlapping</suggestion></comment> annotations!',
+          '## Collaborative Editing\n\nReview and refine content seamlessly. Use [<suggestion>suggestions</suggestion>](/docs/suggestion) <suggestion>like this added text</suggestion> or to <suggestion>mark text for removal</suggestion>. Discuss changes using [comments](/docs/comment) on many text segments. You can even have <suggestion>overlapping</suggestion> annotations!',
       },
       {
         blockRef: refByFixtureId.ll9QY8QwZe,

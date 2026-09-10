@@ -1,0 +1,9 @@
+source	kind	read	claim
+packages/yjs/src/core/controller.ts	local-source	yes	importFromYjs still owns full remote read/replace import.
+packages/yjs/src/core/document.ts	local-source	yes	Visible child readers and virtual placeholders constrain incremental import.
+packages/yjs/src/core/operations.ts	local-source	yes	Text-point resolution and fallback taxonomy are reusable constraints.
+packages/yjs/test/remote-import-contract.spec.ts	local-test	yes	Remote apply/import trace oracle proves current behavior.
+benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs	local-benchmark	yes	Benchmark prints local edit, remote apply, remote encode, remote sync, and correctness metrics.
+node_modules/yjs	local-source	yes	YEvent path, delta, changes, and observeDeep are the external substrate.
+Lexical yjs binding	external-source	yes	Prior art for event-driven sync, not copied runtime code.
+y-prosemirror	external-source	yes	Prior art for transaction-driven sync, not copied runtime code.

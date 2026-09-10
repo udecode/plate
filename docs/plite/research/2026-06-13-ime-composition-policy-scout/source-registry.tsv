@@ -1,0 +1,12 @@
+source_key	kind	url_or_path	local_checkout	evidence_grade	notes
+codemirror-view-input	local-source	https://github.com/codemirror/view/blob/main/src/input.ts	/Users/zbeyens/git/codemirror-view/src/input.ts	B	Composition counters plus pending Safari key/change handling.
+prosemirror-view-input	local-source	https://github.com/ProseMirror/prosemirror-view/blob/master/src/input.ts	/Users/zbeyens/git/prosemirror/view/src/input.ts	A	Composing state, composition IDs, timeout cleanup, and paste handling during composition.
+prosemirror-viewdesc	local-source	https://github.com/ProseMirror/prosemirror-view/blob/master/src/viewdesc.ts	/Users/zbeyens/git/prosemirror/view/src/viewdesc.ts	A	Protects local composition DOM while syncing view descs.
+lexical-events	local-source	https://github.com/facebook/lexical/blob/main/packages/lexical/src/LexicalEvents.ts	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts	B	Composition beforeinput is browser-owned; Android/Firefox cleanup is special-cased.
+lexical-updates	local-source	https://github.com/facebook/lexical/blob/main/packages/lexical/src/LexicalUpdates.ts	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts	B	Transforms skip active composition key; composition key changes force sync flush.
+lexical-utils	local-source	https://github.com/facebook/lexical/blob/main/packages/lexical/src/LexicalUtils.ts	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUtils.ts	B	Editor composition key marks previous/current nodes writable.
+w3c-ui-events	web	https://www.w3.org/TR/uievents/	n/a	B	Keyboard events and composition events do not map one-to-one.
+w3c-input-events-115	web	https://github.com/w3c/input-events/issues/115	n/a	C	Shows insertCompositionText cancelability/commit ambiguity.
+prosemirror-ime-discussion	web	https://discuss.prosemirror.net/t/extra-unexpected-text-input-when-selection-end-is-touch-mark-which-inclusive-is-false-with-ime-mode/6603	n/a	C	Recent maintainer discussion rejects broad freeze-like behavior.
+slate-ime-plan	local-doc	docs/plans/2026-06-12-ime-overlap-policy-contract.md	docs/plans/2026-06-12-ime-overlap-policy-contract.md	A	Existing policy boundary blocks runtime overlap work until user review.
+slate-richtext-ime	local-test	.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	A	Current Slate rows cover same-point/non-overlap native IME coherence and cleanup.

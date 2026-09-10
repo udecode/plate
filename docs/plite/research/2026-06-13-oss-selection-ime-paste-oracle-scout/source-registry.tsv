@@ -1,0 +1,9 @@
+id	type	source	path_or_url	license_or_access
+prosemirror-android-discussion	web	ProseMirror forum Android contenteditable discussion	https://discuss.prosemirror.net/t/contenteditable-on-android-is-the-absolute-worst/3810	public web
+playwright-input-doc	web	Playwright input actions docs	https://playwright.dev/docs/input	public web
+monaco-playwright-article	web	Monaco and Playwright notes	https://giacomocerquone.com/notes/monaco-playwright/	public web
+prosemirror-view	local-source	ProseMirror view	/Users/zbeyens/git/prosemirror/view	MIT
+codemirror-view	local-source	CodeMirror view	/Users/zbeyens/git/codemirror-view	MIT
+lexical	local-source	Lexical	/Users/zbeyens/git/lexical	MIT
+tiptap	local-source	Tiptap	/Users/zbeyens/git/tiptap	MIT
+monaco-editor	local-source	Monaco Editor	/Users/zbeyens/git/monaco-editor	MIT

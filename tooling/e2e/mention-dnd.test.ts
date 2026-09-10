@@ -1,28 +1,9 @@
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-const recordRuntimeErrors = (page: Page) => {
-  const errors: string[] = [];
-  const onConsole = (message: { text: () => string; type: () => string }) => {
-    if (message.type() === 'error') errors.push(message.text());
-  };
-  const onPageError = (error: Error) => {
-    errors.push(error.stack ?? error.message);
-  };
-
-  page.on('console', onConsole);
-  page.on('pageerror', onPageError);
-
-  return {
-    assertNone: () => expect(errors).toEqual([]),
-    stop: () => {
-      page.off('console', onConsole);
-      page.off('pageerror', onPageError);
-    },
-  };
-};
+import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 test('drags the seeded Alice mention across inline text', async ({ page }) => {
-  const runtimeErrors = recordRuntimeErrors(page);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
   const editor = page.locator(
     '[data-plite-editor="true"][contenteditable="true"]'
   );

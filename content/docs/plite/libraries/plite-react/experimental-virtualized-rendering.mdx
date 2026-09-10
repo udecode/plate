@@ -8,7 +8,7 @@ experimental and not production-ready. Use it to measure and harden
 huge-document behavior without making ordinary editors give up native DOM
 coverage.
 
-## When To Use It
+## When to use it
 
 Use this mode only when a document is large enough that staged rendering and
 partial-DOM preview rendering still leave too much DOM or heap pressure.
@@ -53,7 +53,7 @@ The public API uses editor-shaped options. It does not expose TanStack's
 `getScrollElement`, `measureElement`, `rangeExtractor`, item-key hooks, or raw
 virtualizer options.
 
-## Native Behavior Limits
+## Native behavior limits
 
 Unmounted content has no native DOM. That is the point of virtualization, and it
 is also the reason this mode stays experimental.
@@ -102,7 +102,7 @@ mounted.
 If `effectiveStrategy` is not `virtualized`, Plite is telling you
 that the virtualized path did not activate.
 
-## Production Gate
+## Production gate
 
 Keep this mode behind explicit product flags until these rows are green:
 

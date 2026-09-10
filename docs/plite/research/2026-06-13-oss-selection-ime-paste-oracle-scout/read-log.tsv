@@ -1,0 +1,11 @@
+id	source	ref	finding
+web-1	web-search	contenteditable selection IME paste testing Playwright editor source ProseMirror Lexical CodeMirror Monaco	Search surfaced Android contenteditable pain, Playwright input docs, Monaco automation notes, and rich-editor fill/type warnings.
+prosemirror-input	prosemirror-view	src/input.ts:439-666	Read Safari composition Enter guard, Android composition timeout, compositionend pending-change flush, copy capture selection manipulation, paste fallback, and paste-during-composition guard.
+prosemirror-domobserver	prosemirror-view	src/domobserver.ts:120-160	Read selectionchange connection, suppression window, and ignore-selection logic.
+prosemirror-paste-api	prosemirror-view	src/index.ts:432-446	Read `pasteHTML` and `pasteText` editor paste helper APIs.
+codemirror-composition-tests	codemirror-view	test/webtest-composition.ts:1-180	Read live text-node mutation composition helper and cases for empty/end/start/middle replacement, Android-style newline, decoration adjacency, tokens, and widgets.
+codemirror-input	codemirror-view	src/input.ts:812-906	Read composition state, pending key/change flags, beforeinput text capture, Android key fallback, iOS forward-delete flush, and Safari missing compositionend guard.
+lexical-copy-paste-test	lexical	packages/lexical/src/__tests__/unit/HTMLCopyAndPaste.test.ts:108-164	Read DataTransferMock rich paste tests and iOS prediction plaintext/HTML equality behavior.
+lexical-clipboard	lexical	packages/lexical-clipboard/src/clipboard.ts:421-589	Read copy event timeout/race guard, DOM selection ownership check, multi-MIME clipboard serialization, and DataTransfer population.
+tiptap-scan	tiptap	packages/** rg selection/paste/composition	Read Tiptap mostly delegates core browser editing to ProseMirror but adds selection decorations, NodeView mutation rules, details hidden-content selection correction, and paste metadata hooks.
+monaco-smoke	monaco-editor	test/smoke/smoke.test.ts:25-45,137-175	Read smoke tests that create editor, set position, and trigger editor commands for typing; useful as API smoke contrast, not Slate-native browser proof.

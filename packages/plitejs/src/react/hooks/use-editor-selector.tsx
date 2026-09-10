@@ -360,7 +360,7 @@ export function useEditorSelectorContext() {
     ) => {
       const subscribedNodeKeys =
         nodeKeys && nodeKeys.length > 0
-          ? Array.from(new Set(nodeKeys))
+          ? [...new Set(nodeKeys)]
           : nodeKey
             ? [nodeKey]
             : null;
@@ -444,6 +444,7 @@ export function useEditorSelectorContext() {
         }
 
         return () => {
+          if (!isSubscribed) return;
           isSubscribed = false;
           deferredEventListeners.current.delete(queuedCallback);
           subscribedNodeKeys.forEach((subscribedNodeKey, index) => {
@@ -462,6 +463,7 @@ export function useEditorSelectorContext() {
       eventListeners.current.add(callback);
 
       return () => {
+        if (!isSubscribed) return;
         isSubscribed = false;
         deferredEventListeners.current.delete(queuedCallback);
         eventListeners.current.delete(callback);

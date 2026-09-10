@@ -17,7 +17,6 @@ import {
   isDOMText,
 } from '../../dom';
 import {
-  DOMCoverage,
   type DOMPhaseScheduler,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
@@ -25,6 +24,7 @@ import {
   isWebKitDOMHost,
   replaceDOMSelectionRange,
 } from '../../dom/internal';
+import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
@@ -39,12 +39,15 @@ import {
 } from '../view-selection';
 import {
   type ContentRootOwner,
-  createContentRootProjectionGraph,
+  createContentRootViewBoundaryGraph,
   findContentRootOwners,
   isRangeAcrossContentRootOwners,
 } from './content-root-owners';
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  getMountedEditableDOMRuntime,
+  isDOMTargetInAnotherSelectionView,
+} from './editable-dom-runtime';
 import type { EditableSelectionPolicy } from './editing-kernel';
 import { createFastDOMSelectionRange } from './fast-dom-selection-range';
 import type {
@@ -55,6 +58,7 @@ import type {
   SelectionSource,
 } from './input-state';
 import { isEditableOutsideFocusBoundarySettling } from './input-state';
+import { getExternalTextHostOwner } from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   getSelection as editorGetSelection,
@@ -143,7 +147,7 @@ const createContentRootDOMRangeViewSelection = ({
   };
 
   return createPliteViewSelection(
-    createContentRootProjectionGraph(editor, owners),
+    createContentRootViewBoundaryGraph(editor, owners),
     {
       anchor: projectPoint(range.anchor),
       focus: projectPoint(range.focus),
@@ -276,7 +280,11 @@ export const shouldUseModelBackedSelectAllSelection = ({
     return false;
   }
 
-  if (DOMCoverage.getBoundariesForRange(editor, selection).length > 0) {
+  if (
+    (getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundariesForRange(
+      selection
+    ).length ?? 0) > 0
+  ) {
     return true;
   }
 
@@ -895,6 +903,8 @@ export const resolveEditableImplicitTarget = ({
   const preferModelSelection =
     isEditableModelSelectionPreferred(inputController);
 
+  if (!ReactEditor.editable(editor)) return request.fallback;
+
   const root = ReactEditor.findDocumentOrShadowRoot(editor);
   const domSelection = getSelection(root);
 
@@ -983,9 +993,7 @@ export const applyEditableDOMSelectionChange = ({
       editorDocument.execCommand('indent');
     } else {
       writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(null);
-      });
+      writeRuntimeSelection(editor, null);
     }
 
     processing.current = false;
@@ -1008,6 +1016,14 @@ export const applyEditableDOMSelectionChange = ({
   const { activeElement } = root;
   const domSelection = getSelection(root);
 
+  if (
+    getExternalTextHostOwner(activeElement) ||
+    getExternalTextHostOwner(domSelection?.anchorNode ?? null) ||
+    getExternalTextHostOwner(domSelection?.focusNode ?? null)
+  ) {
+    return;
+  }
+
   if (activeElement === editorElement) {
     state.latestElement = activeElement;
     IS_FOCUSED.set(editor, true);
@@ -1024,9 +1040,7 @@ export const applyEditableDOMSelectionChange = ({
       selectionSource: 'unknown',
     });
     writePliteViewSelection(editor, null);
-    editor.update((tx) => {
-      tx.selection.set(null);
-    });
+    writeRuntimeSelection(editor, null);
     return;
   }
 
@@ -1134,7 +1148,7 @@ export const applyEditableDOMSelectionChange = ({
   const projectedTextSelection =
     anchorElement
       ?.closest('[data-plite-node="text"]')
-      ?.getAttribute('data-plite-dom-sync-reason') === 'projection';
+      ?.getAttribute('data-plite-dom-sync-reason') === 'decoration';
   const pendingNativeTextInputRepairPathKey =
     state.pendingNativeTextInputRepairPathKey ?? null;
 
@@ -1237,7 +1251,11 @@ export const applyEditableDOMSelectionChange = ({
   const modelSelectionHasDOMCoverage =
     selectionChangeOrigin === 'programmatic-export' &&
     currentSelectionRange !== null &&
-    DOMCoverage.getBoundariesForRange(editor, currentSelectionRange).length > 0;
+    (getMountedEditableDOMRuntime(
+      editor,
+      editorElement
+    )?.domCoverage.getBoundariesForRange(currentSelectionRange).length ?? 0) >
+      0;
   const modelSelectionIsFullDocument =
     selectionChangeOrigin === 'programmatic-export' &&
     currentSelectionRange !== null &&
@@ -1317,16 +1335,20 @@ export const applyEditableDOMSelectionChange = ({
   }
 
   // Deselect the editor if the DOM selection is not selectable in read-only mode.
-  if (readOnly && (!anchorNodeSelectable || !focusNodeSelectable)) {
+  if (
+    readOnly &&
+    (!anchorNodeSelectable || !focusNodeSelectable) &&
+    !isDOMTargetInAnotherSelectionView(editor, editorElement, activeElement) &&
+    !isDOMTargetInAnotherSelectionView(editor, editorElement, anchorNode) &&
+    !isDOMTargetInAnotherSelectionView(editor, editorElement, focusNode)
+  ) {
     setEditableModelSelectionPreference({
       inputController,
       preferModelSelection: false,
       selectionSource: 'unknown',
     });
     writePliteViewSelection(editor, null);
-    editor.update((tx) => {
-      tx.selection.set(null);
-    });
+    writeRuntimeSelection(editor, null);
   }
 };
 
@@ -1352,9 +1374,10 @@ export const syncEditableDOMSelectionToEditor = ({
     selectionChangeOrigin?: SelectionChangeOrigin | null;
   };
 }) => {
-  const runtime = getMountedEditableDOMRuntime(editor);
+  const runtime = getMountedEditableDOMRuntime(editor, explicitEditorElement);
 
   if (!runtime) return;
+  if (runtime.externalText.focusSelection()) return;
   if (
     runtime.inputController.state.isNativeSelectionDragActive &&
     !runtime.inputController.state.isProjectingSelection
@@ -1366,7 +1389,7 @@ export const syncEditableDOMSelectionToEditor = ({
   const projectedSelection = getSelectionDOMRange(editor, selection);
   const selectionHasDOMCoverage =
     !!projectedSelection &&
-    DOMCoverage.getBoundariesForRange(editor, projectedSelection).length > 0;
+    runtime.domCoverage.getBoundariesForRange(projectedSelection).length > 0;
   const scheduleClearSelectionUpdate = (label: string, delay = 0) => {
     const clear = () => {
       state.isUpdatingSelection = false;
@@ -1460,6 +1483,8 @@ export const syncEditableDOMSelectionToEditor = ({
     if (
       selectionHasDOMCoverage &&
       applyDOMCoverageSelectionPolicy({
+        editorElement,
+        coverage: runtime.domCoverage,
         domSelection,
         editor,
         forceDOMRangeRebuild: options?.forceModelExport,
@@ -1485,7 +1510,7 @@ export const syncEditableDOMSelectionToEditor = ({
         editorElement,
         selection: projectedSelection,
       }) ??
-      ReactEditor.resolveDOMRange(editor, projectedSelection);
+      resolveDOMRangeInRoot(editor, projectedSelection, editorElement);
 
     if (!domRange) {
       return;

@@ -59,6 +59,11 @@
       "import": "./dist/react/features/callout/index.js",
       "default": "./dist/react/features/callout/index.js"
     },
+    "./code-block/codemirror": {
+      "types": "./dist/code-block/codemirror/index.d.ts",
+      "import": "./dist/code-block/codemirror/index.js",
+      "default": "./dist/code-block/codemirror/index.js"
+    },
     "./code-drawing": {
       "types": "./dist/code-drawing/index.d.ts",
       "import": "./dist/code-drawing/index.js",
@@ -74,15 +79,20 @@
       "import": "./dist/features/combobox/index.js",
       "default": "./dist/features/combobox/index.js"
     },
-    "./comment": {
-      "types": "./dist/features/comment/index.d.ts",
-      "import": "./dist/features/comment/index.js",
-      "default": "./dist/features/comment/index.js"
+    "./comments": {
+      "types": "./dist/features/comments/index.d.ts",
+      "import": "./dist/features/comments/index.js",
+      "default": "./dist/features/comments/index.js"
     },
-    "./comment/react": {
-      "types": "./dist/react/features/comment/index.d.ts",
-      "import": "./dist/react/features/comment/index.js",
-      "default": "./dist/react/features/comment/index.js"
+    "./comments/react": {
+      "types": "./dist/react/features/comments/index.d.ts",
+      "import": "./dist/react/features/comments/index.js",
+      "default": "./dist/react/features/comments/index.js"
+    },
+    "./compiler": {
+      "types": "./dist/compiler/index.d.ts",
+      "import": "./dist/compiler/index.js",
+      "default": "./dist/compiler/index.js"
     },
     "./csv": {
       "types": "./dist/csv/index.d.ts",
@@ -99,6 +109,16 @@
       "import": "./dist/react/features/date/index.js",
       "default": "./dist/react/features/date/index.js"
     },
+    "./details": {
+      "types": "./dist/features/details/index.d.ts",
+      "import": "./dist/features/details/index.js",
+      "default": "./dist/features/details/index.js"
+    },
+    "./details/react": {
+      "types": "./dist/react/features/details/index.d.ts",
+      "import": "./dist/react/features/details/index.js",
+      "default": "./dist/react/features/details/index.js"
+    },
     "./diff": {
       "types": "./dist/diff/index.d.ts",
       "import": "./dist/diff/index.js",
@@ -113,6 +133,16 @@
       "types": "./dist/docx/index.d.ts",
       "import": "./dist/docx/index.js",
       "default": "./dist/docx/index.js"
+    },
+    "./docx/export": {
+      "types": "./dist/docx/export/index.d.ts",
+      "import": "./dist/docx/export/index.js",
+      "default": "./dist/docx/export/index.js"
+    },
+    "./docx/import": {
+      "types": "./dist/docx/import/index.d.ts",
+      "import": "./dist/docx/import/index.js",
+      "default": "./dist/docx/import/index.js"
     },
     "./dom": {
       "types": "./dist/dom/index.d.ts",
@@ -139,6 +169,11 @@
       "import": "./dist/excalidraw/react/index.js",
       "default": "./dist/excalidraw/react/index.js"
     },
+    "./find": {
+      "types": "./dist/features/find/index.d.ts",
+      "import": "./dist/features/find/index.js",
+      "default": "./dist/features/find/index.js"
+    },
     "./footnote": {
       "types": "./dist/features/footnote/index.d.ts",
       "import": "./dist/features/footnote/index.js",
@@ -159,11 +194,6 @@
       "import": "./dist/hyperscript/index.js",
       "default": "./dist/hyperscript/index.js"
     },
-    "./juice": {
-      "types": "./dist/juice/index.d.ts",
-      "import": "./dist/juice/index.js",
-      "default": "./dist/juice/index.js"
-    },
     "./layout": {
       "types": "./dist/features/layout/index.d.ts",
       "import": "./dist/features/layout/index.js",
@@ -178,6 +208,20 @@
       "types": "./dist/markdown/index.d.ts",
       "import": "./dist/markdown/index.js",
       "default": "./dist/markdown/index.js"
+    },
+    "./math": {
+      "types": "./dist/math/index.d.ts",
+      "import": "./dist/math/index.js",
+      "default": "./dist/math/index.js"
+    },
+    "./math/katex.css": {
+      "types": "./math/katex.css.d.ts",
+      "default": "./math/katex.css"
+    },
+    "./math/react": {
+      "types": "./dist/math/react/index.d.ts",
+      "import": "./dist/math/react/index.js",
+      "default": "./dist/math/react/index.js"
     },
     "./media": {
       "types": "./dist/features/media/index.d.ts",
@@ -199,21 +243,12 @@
       "import": "./dist/react/features/mention/index.js",
       "default": "./dist/react/features/mention/index.js"
     },
-    "./math": {
-      "types": "./dist/math/index.d.ts",
-      "import": "./dist/math/index.js",
-      "default": "./dist/math/index.js"
-    },
-    "./math/react": {
-      "types": "./dist/math/react/index.d.ts",
-      "import": "./dist/math/react/index.js",
-      "default": "./dist/math/react/index.js"
-    },
     "./migrations": {
       "types": "./dist/migrations/index.d.ts",
       "import": "./dist/migrations/index.js",
       "default": "./dist/migrations/index.js"
     },
+    "./package.json": "./package.json",
     "./pagination": {
       "types": "./dist/pagination/index.d.ts",
       "import": "./dist/pagination/index.js",
@@ -259,16 +294,6 @@
       "import": "./dist/react/features/suggestion/index.js",
       "default": "./dist/react/features/suggestion/index.js"
     },
-    "./table": {
-      "types": "./dist/features/table/index.d.ts",
-      "import": "./dist/features/table/index.js",
-      "default": "./dist/features/table/index.js"
-    },
-    "./table/react": {
-      "types": "./dist/react/features/table/index.d.ts",
-      "import": "./dist/react/features/table/index.js",
-      "default": "./dist/react/features/table/index.js"
-    },
     "./tabbable": {
       "types": "./dist/tabbable/index.d.ts",
       "import": "./dist/tabbable/index.js",
@@ -279,10 +304,15 @@
       "import": "./dist/tabbable/react/index.js",
       "default": "./dist/tabbable/react/index.js"
     },
-    "./testing": {
-      "types": "./dist/testing/index.d.ts",
-      "import": "./dist/testing/index.js",
-      "default": "./dist/testing/index.js"
+    "./table": {
+      "types": "./dist/features/table/index.d.ts",
+      "import": "./dist/features/table/index.js",
+      "default": "./dist/features/table/index.js"
+    },
+    "./table/react": {
+      "types": "./dist/react/features/table/index.d.ts",
+      "import": "./dist/react/features/table/index.js",
+      "default": "./dist/react/features/table/index.js"
     },
     "./tag": {
       "types": "./dist/features/tag/index.d.ts",
@@ -294,6 +324,11 @@
       "import": "./dist/react/features/tag/index.js",
       "default": "./dist/react/features/tag/index.js"
     },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js",
+      "default": "./dist/testing/index.js"
+    },
     "./toc": {
       "types": "./dist/features/toc/index.d.ts",
       "import": "./dist/features/toc/index.js",
@@ -304,16 +339,6 @@
       "import": "./dist/react/features/toc/index.js",
       "default": "./dist/react/features/toc/index.js"
     },
-    "./details": {
-      "types": "./dist/features/details/index.d.ts",
-      "import": "./dist/features/details/index.js",
-      "default": "./dist/features/details/index.js"
-    },
-    "./details/react": {
-      "types": "./dist/react/features/details/index.d.ts",
-      "import": "./dist/react/features/details/index.js",
-      "default": "./dist/react/features/details/index.js"
-    },
     "./yjs": {
       "types": "./dist/yjs/index.d.ts",
       "import": "./dist/yjs/index.js",
@@ -323,12 +348,7 @@
       "types": "./dist/yjs/react/index.d.ts",
       "import": "./dist/yjs/react/index.js",
       "default": "./dist/yjs/react/index.js"
-    },
-    "./math/katex.css": {
-      "types": "./math/katex.css.d.ts",
-      "default": "./math/katex.css"
-    },
-    "./package.json": "./package.json"
+    }
   },
   "publishConfig": {
     "access": "public"
@@ -354,11 +374,13 @@
     "lint:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai-react",
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
     "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
+    "lint:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-block-codemirror",
     "lint:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing",
     "lint:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-drawing-react",
     "lint:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs combobox",
-    "lint:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comment",
-    "lint:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comment-react",
+    "lint:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments",
+    "lint:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments-react",
+    "lint:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs compiler",
     "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs core",
     "lint:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs csv",
     "lint:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date",
@@ -367,13 +389,16 @@
     "lint:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details-react",
     "lint:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs dnd-react",
     "lint:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx",
+    "lint:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-export",
+    "lint:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-html",
+    "lint:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-import",
     "lint:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji",
     "lint:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji-react",
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
     "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
+    "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
-    "lint:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs juice",
     "lint:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout",
     "lint:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs layout-react",
     "lint:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs markdown",
@@ -431,9 +456,12 @@
     "test:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai",
     "test:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai-react",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
+    "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
     "test:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-drawing",
     "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
-    "test:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comment",
+    "test:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments",
+    "test:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments-react",
+    "test:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs compiler",
     "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs core",
     "test:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs csv",
     "test:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs date",
@@ -441,11 +469,15 @@
     "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
     "test:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs dnd-react",
     "test:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx",
+    "test:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-export",
+    "test:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-html",
+    "test:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-import",
     "test:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs emoji",
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
+    "test:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw-react",
+    "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",
-    "test:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs juice",
     "test:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs layout",
     "test:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs markdown",
     "test:partition:math": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs math",
@@ -468,6 +500,7 @@
     "test:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list-react",
     "test:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
     "test:partition:suggestion": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs suggestion",
+    "test:partition:suggestion-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs suggestion-react",
     "test:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tabbable-react",
     "test:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table",
     "test:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table-react",
@@ -493,11 +526,13 @@
     "typecheck:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs ai-react",
     "typecheck:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout",
     "typecheck:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs callout-react",
+    "typecheck:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-block-codemirror",
     "typecheck:partition:code-drawing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing",
     "typecheck:partition:code-drawing-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs code-drawing-react",
     "typecheck:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs combobox",
-    "typecheck:partition:comment": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comment",
-    "typecheck:partition:comment-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comment-react",
+    "typecheck:partition:comments": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments",
+    "typecheck:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments-react",
+    "typecheck:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs compiler",
     "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs core",
     "typecheck:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs csv",
     "typecheck:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date",
@@ -506,13 +541,16 @@
     "typecheck:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details-react",
     "typecheck:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs dnd-react",
     "typecheck:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx",
+    "typecheck:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-export",
+    "typecheck:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-html",
+    "typecheck:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-import",
     "typecheck:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji",
     "typecheck:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji-react",
     "typecheck:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw",
     "typecheck:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw-react",
+    "typecheck:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs find",
     "typecheck:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote",
     "typecheck:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs footnote-react",
-    "typecheck:partition:juice": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs juice",
     "typecheck:partition:layout": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout",
     "typecheck:partition:layout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs layout-react",
     "typecheck:partition:markdown": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs markdown",
@@ -562,6 +600,7 @@
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
     "clsx": "^2.1.1",
+    "csstype": "3.2.3",
     "dequal": "2.0.3",
     "html-entities": "^2.6.0",
     "is-hotkey": "^0.2.0",
@@ -581,6 +620,9 @@
   "devDependencies": {
     "@ai-sdk/react": "^3.0.0",
     "@chenglou/pretext": "^0.0.7",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/state": "6.7.2",
+    "@codemirror/view": "6.41.0",
     "@emoji-mart/data": "^1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
     "@testing-library/react": "16.3.0",
@@ -590,6 +632,7 @@
     "@types/papaparse": "^5.3.16",
     "@types/plantuml-encoder": "^1.4.2",
     "@types/react": "19.2.7",
+    "@types/use-sync-external-store": "1.5.0",
     "@types/viz.js": "^2.1.5",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
@@ -621,6 +664,7 @@
     "remark-stringify": "^11.0.0",
     "tabbable": "^6.2.0",
     "unified": "^11.0.5",
+    "use-sync-external-store": "1.6.0",
     "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
     "viz.js": "^2.1.2",
@@ -630,6 +674,9 @@
   "peerDependencies": {
     "@ai-sdk/react": "^3.0.0",
     "@chenglou/pretext": "^0.0.7",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.2",
+    "@codemirror/view": "^6.41.0",
     "@emoji-mart/data": ">=1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
     "@types/papaparse": "^5.3.16",
@@ -661,14 +708,22 @@
     "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
     "viz.js": "^2.1.2",
-    "xmlbuilder2": "^3.1.1",
-    "yjs": ">=13.6.30"
+    "xmlbuilder2": "^3.1.1"
   },
   "peerDependenciesMeta": {
     "@ai-sdk/react": {
       "optional": true
     },
     "@chenglou/pretext": {
+      "optional": true
+    },
+    "@codemirror/language": {
+      "optional": true
+    },
+    "@codemirror/state": {
+      "optional": true
+    },
+    "@codemirror/view": {
       "optional": true
     },
     "@emoji-mart/data": {
@@ -713,10 +768,10 @@
     "marked": {
       "optional": true
     },
-    "mime-types": {
+    "mermaid": {
       "optional": true
     },
-    "mermaid": {
+    "mime-types": {
       "optional": true
     },
     "papaparse": {
@@ -765,9 +820,6 @@
       "optional": true
     },
     "xmlbuilder2": {
-      "optional": true
-    },
-    "yjs": {
       "optional": true
     }
   }

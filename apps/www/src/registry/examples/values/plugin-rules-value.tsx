@@ -46,11 +46,9 @@ export const pluginRulesValue: Value = (
       <htext bold>Code block reset:</htext> Backspace in empty code block resets
       to paragraph.
     </hp>
-    <hcodeblock lang="javascript">
-      <hcodeline>console.info('Hello world');</hcodeline>
-      <hcodeline>
-        <text />
-      </hcodeline>
+    <hcodeblock language="javascript">
+      console.info('Hello world');{'\n'}
+      <text />
     </hcodeblock>
 
     <hp>

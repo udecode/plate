@@ -7,6 +7,7 @@ export const workspaceSourcePathConfigFiles = Object.freeze([
   'tsconfig.json',
   'apps/www/tsconfig.json',
   'packages/platejs/tsconfig.json',
+  'packages/plitejs/tsconfig.json',
   'packages/test/tsconfig.json',
   'tooling/config/tsconfig.test.json',
   'tooling/config/tsconfig.type-tests.json',
@@ -22,13 +23,10 @@ const relativeSourcePath = (configPath, sourceEntry) => {
   return relative.startsWith('.') ? relative : `./${relative}`;
 };
 
-const plateSourcePaths = (repoRoot, configPath) =>
+const editorSourcePaths = (repoRoot, configPath) =>
   Object.fromEntries(
     getWorkspaceSourceEntries(repoRoot)
-      .filter(
-        ({ specifier }) =>
-          specifier === 'platejs' || specifier.startsWith('platejs/')
-      )
+      .filter(({ specifier }) => /^(?:platejs|plitejs)(?:\/|$)/.test(specifier))
       .sort((left, right) => left.specifier.localeCompare(right.specifier))
       .map(({ sourceEntry, specifier }) => [
         specifier,
@@ -47,7 +45,7 @@ const expectedConfig = (repoRoot, relativeConfigPath) => {
     );
   }
 
-  const generated = plateSourcePaths(repoRoot, configPath);
+  const generated = editorSourcePaths(repoRoot, configPath);
   const paths = {};
   let inserted = false;
 
@@ -56,7 +54,7 @@ const expectedConfig = (repoRoot, relativeConfigPath) => {
       paths[specifier] = targets;
       continue;
     }
-    if (specifier === 'platejs' || specifier.startsWith('platejs/')) {
+    if (/^(?:platejs|plitejs)(?:\/|$)/.test(specifier)) {
       if (!inserted) {
         Object.assign(paths, generated);
         inserted = true;
@@ -82,7 +80,7 @@ export const assertWorkspaceSourcePathsGenerated = (repoRoot) => {
 
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
       throw new Error(
-        `${relativeConfigPath} has stale Plate source paths. Run pnpm entrypoint:turbo:generate.`
+        `${relativeConfigPath} has stale editor source paths. Run pnpm entrypoint:turbo:generate.`
       );
     }
   }

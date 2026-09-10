@@ -1,0 +1,6 @@
+lead_key	source	evidence	slate_v2_coverage	decision
+composition-marks-cursor-wrapper	prosemirror:view/test/webtest-composition.ts; lexical:packages/lexical/src/LexicalEvents.ts	Composition inside marks/cursor wrappers keeps DOM selection and committed model text coherent.	playwright/integration/examples/richtext.test.ts:1603,1815,1868,1940,2383,2437	promoted-covered
+beforeinput-target-range	lexical:packages/lexical/src/LexicalEvents.ts; prosemirror:view/src/input.ts	Target ranges are imported or ignored depending ownership, preventing stale live-selection reads.	packages/slate-react/test/selection-reconciler-contract.test.tsx and plaintext beforeinput target-range rows	covered-existing
+same-html-plain-prediction-paste	lexical:packages/lexical/src/__tests__/unit/HTMLCopyAndPaste.test.ts	Prediction/autocorrect payloads with identical HTML/plain data stay plain text to preserve active formatting.	P45/P51/P54 package/browser rows	already-promoted
+drag-handle-nodeview-routing	tiptap:packages/extension-drag-handle	Useful for product drag handles, not a core Slate v2 selection/input oracle today.	n/a	rejected-scope
+monaco-editor-selection-input	monaco-editor:src	Mostly code-editor/language-service selection/input noise for this shard.	n/a	rejected-scope

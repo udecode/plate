@@ -23,9 +23,7 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '../../dom/internal';
-import { refreshEditorDecorations } from '../decoration-refresh';
 import type { AnyEditor } from '../editable/runtime-editor-api';
-import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
 type AnyDOMExtension =
   | DOMExtension
@@ -42,7 +40,6 @@ export interface ReactExtensionOptions<
 
 /** React capability exposed through `editor.api.react`. */
 export type ReactApi = {
-  refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => void;
   isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
@@ -50,14 +47,6 @@ export type ReactApi = {
 
 const createReactApi = (editor: AnyEditor): ReactApi =>
   Object.freeze({
-    refreshDecorations: (options) => {
-      refreshEditorDecorations(editor, {
-        ...options,
-        reason: options?.reason ?? 'external',
-        requiresDOMSelectionExport:
-          options?.requiresDOMSelectionExport ?? DOMEditor.isFocused(editor),
-      });
-    },
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
     isReadOnly: () => DOMEditor.isReadOnly(editor),

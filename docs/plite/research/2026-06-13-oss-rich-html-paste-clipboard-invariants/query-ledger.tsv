@@ -1,0 +1,5 @@
+query_key	command	signal
+local-paste-files	rg --files /Users/zbeyens/git/{lexical,tiptap,prosemirror-view,prosemirror-tables} | rg "paste|clipboard|DataTransfer"	Found targeted regression and clipboard source files.
+slate-current-coverage	rg -n "pastes content outside inline link boundaries|pastes plain text inside an inline link|same-runtime child root|ProseMirror slice|table row slices|rich HTML paste" .tmp/slate-v2/playwright/integration/examples .tmp/slate-v2/packages/slate*/test	Mapped OSS leads to existing Slate v2 proof rows.
+prosemirror-table-slices	nl -ba /Users/zbeyens/git/prosemirror-tables/src/copypaste.ts /Users/zbeyens/git/prosemirror-tables/test/copypaste.test.ts	Confirmed rectangular normalize/clip/repeat table-cell semantics.
+child-root-rich-html-experiment	bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium --project=firefox --project=webkit --grep "pastes rich HTML inside same-runtime child root"	Inserted text but did not preserve strong mark; reverted as deferred API question.

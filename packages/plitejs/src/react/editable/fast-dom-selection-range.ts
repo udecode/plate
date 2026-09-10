@@ -1,21 +1,33 @@
 import { type Point, type Range, RangeApi } from '../..';
 import { type DOMRange, isDOMText } from '../../dom';
+import {
+  getPliteTextHostStrings,
+  resolveDOMTextFlowPoint,
+} from '../../dom/internal';
 import { getPliteNodeElementByPath } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { getNodeKey as editorGetNodeKey } from './runtime-editor-api';
 
 const getDOMPointForPliteTextPoint = (
   editor: ReactRuntimeEditor,
-  point: Point
+  point: Point,
+  editorElement: HTMLElement
 ): { node: globalThis.Node; offset: number } | null => {
-  const textHost = getPliteNodeElementByPath(editor, point.path);
+  const textHost = getPliteNodeElementByPath(editor, point.path, editorElement);
 
   if (!textHost) {
     return null;
   }
 
-  const strings = Array.from(
-    textHost.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
+  const textFlowPoint = resolveDOMTextFlowPoint(
+    textHost,
+    point.offset,
+    editorGetNodeKey(editor, point.path) ?? undefined
   );
+
+  if (textFlowPoint) return textFlowPoint;
+
+  const strings = getPliteTextHostStrings(textHost);
   let offset = 0;
 
   for (const string of strings) {
@@ -76,8 +88,12 @@ export const createFastDOMSelectionRange = ({
   selection: Range;
 }): DOMRange | null => {
   const [start, end] = RangeApi.edges(selection);
-  const startDOMPoint = getDOMPointForPliteTextPoint(editor, start);
-  const endDOMPoint = getDOMPointForPliteTextPoint(editor, end);
+  const startDOMPoint = getDOMPointForPliteTextPoint(
+    editor,
+    start,
+    editorElement
+  );
+  const endDOMPoint = getDOMPointForPliteTextPoint(editor, end, editorElement);
 
   if (!startDOMPoint || !endDOMPoint) {
     return null;

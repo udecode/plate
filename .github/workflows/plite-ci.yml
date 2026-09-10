@@ -23,6 +23,7 @@ on:
       - 'apps/www/src/hooks/use-mobile.ts'
       - 'apps/www/src/lib/utils.ts'
       - 'apps/www/src/registry/hooks/use-mounted.ts'
+      - 'apps/www/src/registry/examples/collaboration-demo.tsx'
       - 'apps/www/src/registry/components/editor/**/*.ts'
       - 'apps/www/src/registry/components/editor/**/*.tsx'
       - 'apps/www/src/types/**'
@@ -57,8 +58,7 @@ on:
       - 'tooling/scripts/run-bounded-process.test.mjs'
       - 'tooling/scripts/run-bounded-process.slow.test.mjs'
       - 'tooling/scripts/run-entrypoint-*.mjs'
-      - 'tooling/scripts/test-fast.mjs'
-      - 'tooling/scripts/test-slow.mjs'
+      - 'tooling/scripts/test-suite.mjs'
       - 'tooling/scripts/test-slowest.mjs'
       - 'tooling/scripts/test-suite-routing.test.mjs'
       - 'tooling/scripts/typecheck-package-source.mjs'
@@ -95,6 +95,7 @@ on:
       - 'apps/www/src/hooks/use-mobile.ts'
       - 'apps/www/src/lib/utils.ts'
       - 'apps/www/src/registry/hooks/use-mounted.ts'
+      - 'apps/www/src/registry/examples/collaboration-demo.tsx'
       - 'apps/www/src/registry/components/editor/**/*.ts'
       - 'apps/www/src/registry/components/editor/**/*.tsx'
       - 'apps/www/src/types/**'
@@ -129,8 +130,7 @@ on:
       - 'tooling/scripts/run-bounded-process.test.mjs'
       - 'tooling/scripts/run-bounded-process.slow.test.mjs'
       - 'tooling/scripts/run-entrypoint-*.mjs'
-      - 'tooling/scripts/test-fast.mjs'
-      - 'tooling/scripts/test-slow.mjs'
+      - 'tooling/scripts/test-suite.mjs'
       - 'tooling/scripts/test-slowest.mjs'
       - 'tooling/scripts/test-suite-routing.test.mjs'
       - 'tooling/scripts/typecheck-package-source.mjs'
@@ -154,8 +154,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  proof-plan:
+    name: Plite affected proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      browser: ${{ steps.plan.outputs.browser }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select proof from the changed inputs
+        id: plan
+        env:
+          PLITE_CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node tooling/scripts/check-plite.mjs ${{ github.event_name == 'workflow_dispatch' && 'strict' || 'dev' }} --dry-run --github-output
+
   browser-build:
     name: Plite browser build
+    needs: proof-plan
+    if: ${{ needs.proof-plan.outputs.browser == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -172,11 +190,21 @@ jobs:
       - name: Monorepo install
         uses: ./.github/actions/pnpm-install
 
+      - name: Restore verified browser build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/plite/out
+            packages/test/dist
+          key: plite-browser-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            plite-browser-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Build browser package
         run: node apps/plite/scripts/build-browser-if-stale.mjs
 
       - name: Build Plite proof app
-        run: PLITE_PROOF_FORCE_BUILD=1 node apps/plite/scripts/build-app-if-stale.mjs
+        run: node apps/plite/scripts/build-app-if-stale.mjs
 
       - name: Upload proof build
         uses: actions/upload-artifact@v4
@@ -277,7 +305,7 @@ jobs:
   browser-chromium-merge:
     name: Plite browser chromium coverage
     needs: browser-chromium
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.browser-chromium.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
 

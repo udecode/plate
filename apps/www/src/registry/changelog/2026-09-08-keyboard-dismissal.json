@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-keyboard-dismissal",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-keyboard-dismissal.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Use editor shortcuts and local panel dismissal",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-link-editor-shortcuts-local-panel-8faf819b",
+      "kind": "fix",
+      "summary": "Use editor shortcuts and local panel dismissal",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "link",
+        "floating-toolbar",
+        "discussion",
+        "comment",
+        "ai",
+        "ai-menu"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-keyboard-dismissal",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

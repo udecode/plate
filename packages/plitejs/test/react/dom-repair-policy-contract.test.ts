@@ -19,8 +19,13 @@ import {
   isDOMRepairFrameCurrent,
 } from '../../src/react/editable/dom-repair-queue';
 import { beginEditableEventFrame } from '../../src/react/editable/editing-kernel';
-import { createEditableInputControllerState } from '../../src/react/editable/input-state';
+import {
+  createEditableInputController,
+  createEditableInputControllerState,
+} from '../../src/react/editable/input-state';
 import { executeEditableRepairPolicy } from '../../src/react/editable/mutation-controller';
+
+const browserWindow: Window = window;
 
 const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
 const createDOMRepairQueue = (
@@ -134,10 +139,10 @@ test('native input repair skips already synced local text inside partial DOM roo
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -192,10 +197,10 @@ test('native input repair imports a burst DOM text delta once', () => {
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -259,10 +264,10 @@ test('native input repair does not move selection for pathless clicks outside th
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -338,10 +343,10 @@ test('native input repair reconciles captured burst targets against partially sy
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -412,10 +417,10 @@ test('native input repair moves model selection when the captured target still o
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -461,10 +466,10 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
   try {
     const editor = createEditor();
     const root = mountEditorRoot(editor);
-    const inputController = {
+    const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    };
+    });
 
     editorReplace(editor, {
       children: [
@@ -526,10 +531,10 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
 test('native text repair keeps model authority inside virtualized pages', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
 
   editorReplace(editor, {
     children: [
@@ -589,10 +594,10 @@ test('native text repair keeps model authority inside virtualized pages', () => 
 test('native text repair keeps a reconciled virtualized target model-owned until delayed caret repair', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'model-owned';
 
@@ -618,7 +623,7 @@ test('native text repair keeps a reconciled virtualized target model-owned until
   const selection = window.getSelection();
   const setBaseAndExtentSpy = vi.spyOn(Selection.prototype, 'setBaseAndExtent');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const queue = createDOMRepairQueue({
     editor,
@@ -680,10 +685,10 @@ test('native text repair keeps a reconciled virtualized target model-owned until
 test('native text repair advances captured virtualized target when DOM offset lags', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'model-owned';
 
@@ -757,10 +762,10 @@ test('native text repair advances captured virtualized target when DOM offset la
 test('native text repair advances captured virtualized target when DOM caret reset to start', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   const beforeText = 'Condico uredo ante arca umbra.';
   const insertedText = 'X'.repeat(10);
   const domText = beforeText.slice(0, 1) + insertedText + beforeText.slice(1);
@@ -841,10 +846,10 @@ test('native text repair advances captured virtualized target when DOM caret res
 test('native text repair keeps model authority when synced virtualized DOM caret lags', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'dom-current';
   inputController.state.pendingNativeTextInputRepairOffset = 2;
@@ -923,10 +928,10 @@ test('native text repair keeps model authority when synced virtualized DOM caret
 test('text insert caret repair keeps model authority in virtualized DOM', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'dom-current';
   inputController.state.pendingNativeTextInputRepairOffset = 2;
@@ -985,13 +990,13 @@ test('text insert caret repair keeps model authority in virtualized DOM', () => 
   root.remove();
 });
 
-test('text insert caret repair keeps model authority for projected DOM sync', () => {
+test('text insert caret repair keeps model authority for decorated text', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'dom-current';
   inputController.state.pendingNativeTextInputRepairOffset = 2;
@@ -1025,7 +1030,7 @@ test('text insert caret repair keeps model authority for projected DOM sync', ()
 
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-projected-dom-sync', 'true');
+  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
   string.setAttribute('data-plite-string', 'true');
   string.append(text);
   textHost.append(string);
@@ -1048,13 +1053,13 @@ test('text insert caret repair keeps model authority for projected DOM sync', ()
   root.remove();
 });
 
-test('completed projected text insert repair does not schedule repair retries', () => {
+test('completed decorated text insert repair does not schedule repair retries', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   const repairRequestAnimationFrame = vi.fn(() => 1);
   const repairSetTimeout = vi.fn(() => 1);
   const repairQueueMicrotask = vi.fn();
@@ -1093,7 +1098,7 @@ test('completed projected text insert repair does not schedule repair retries', 
 
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-projected-dom-sync', 'true');
+  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
   string.setAttribute('data-plite-string', 'true');
   string.append(text);
   textHost.append(string);
@@ -1131,10 +1136,10 @@ test('completed projected text insert repair does not schedule repair retries', 
 test('completed model caret repair does not schedule redundant retries', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   const repairRequestAnimationFrame = vi.fn(() => 1);
   const repairSetTimeout = vi.fn(() => 1);
   const repairQueueMicrotask = vi.fn();
@@ -1210,10 +1215,10 @@ test('completed model caret repair does not schedule redundant retries', () => {
 test('model-owned text insert caret repair keeps authority for plain DOM text', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'model-owned';
   inputController.state.textInputOwnership = 'model';
@@ -1274,10 +1279,10 @@ test('model-owned text insert caret repair keeps authority for plain DOM text', 
 test('virtualized text insert caret repair ignores stale frame cancellation when pending matches', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.selectionSource = 'model-owned';
   inputController.state.pendingNativeTextInputRepairOffset = 2;
@@ -1328,7 +1333,9 @@ test('virtualized text insert caret repair ignores stale frame cancellation when
     eventFamily: 'selectionchange',
     focusOwner: 'editor',
     inputIntent: 'text-insert',
-    modelSelectionBefore: editor.read((state) => state.selection()),
+    modelSelectionBefore: editor.read(
+      (state) => state.runtime.snapshot().selection
+    ),
     selectionSource: 'model-owned',
     targetOwner: 'editor',
   });
@@ -1345,10 +1352,10 @@ test('virtualized text insert caret repair ignores stale frame cancellation when
 test('virtualized text insert caret repair corrects model drift back to pending offset', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
   const textValue = 'CXXXXXXXXXXondico uredo ante arca umbra.';
 
   inputController.state.selectionSource = 'model-owned';
@@ -1415,10 +1422,10 @@ test('native input repair trusts captured coalesced inserts when projected DOM i
   try {
     const editor = createEditor();
     const root = mountEditorRoot(editor);
-    const inputController = {
+    const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    };
+    });
     const originalText = 'This mixed';
     const domText = 'This qmrixed';
     const repairedText = 'This qrmixed';
@@ -1522,10 +1529,10 @@ test('native input repair rebases later captured same-path inserts against repai
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -1615,10 +1622,10 @@ test('native input repair does not repair the caret for stale captured targets',
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {
       scrollCalls += 1;
     },
@@ -1698,10 +1705,10 @@ test('native input repair does not move selection for stale coalesced targets', 
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: false },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {
       scrollCalls += 1;
     },
@@ -1778,10 +1785,10 @@ test('native input repair replaces expanded model selections and collapses at th
   const selection = window.getSelection();
   const queue = createDOMRepairQueue({
     editor,
-    inputController: {
+    inputController: createEditableInputController({
       preferModelSelectionForInputRef: { current: true },
       state: createEditableInputControllerState(),
-    },
+    }),
     scrollSelectionIntoView: () => {},
     syncDOMSelectionToEditor: () => {},
   });
@@ -1815,10 +1822,10 @@ test('native input repair replaces expanded model selections and collapses at th
 test('text insert caret repair waits until rendered text matches the model', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   inputController.state.selectionSource = 'model-owned';
   const originalText = 'This is editable';
   const modelText = `C${originalText}`;
@@ -1893,10 +1900,10 @@ test('text insert caret repair waits until rendered text matches the model', () 
 test('deferred native input repair still fixes a stale caret after text already synced', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   const beforeText = 'Condico uredo ante arca umbra.';
   const insertedText = 'X'.repeat(10);
   const modelText = beforeText.slice(0, 1) + insertedText + beforeText.slice(1);
@@ -1976,10 +1983,10 @@ test('deferred native input repair still fixes a stale caret after text already 
 test('virtualized captured input repair moves selection when DOM selection is root-backed', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
   const beforeText = 'Condico uredo ante arca umbra.';
   const insertedText = 'X'.repeat(10);
   const domText = beforeText.slice(0, 1) + insertedText + beforeText.slice(1);
@@ -2054,10 +2061,10 @@ test('virtualized captured input repair moves selection when DOM selection is ro
 test('native input repair prefers live model continuation over stale captured text target', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
   const modelText = 'oXXXne';
   const domText = 'oXXXXne';
   const virtualRow = document.createElement('div');
@@ -2131,10 +2138,10 @@ test('native input repair prefers live model continuation over stale captured te
 test('deferred native input repair fixes a stale caret after text already synced without a captured target', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
   const beforeText = 'Condico uredo ante arca umbra.';
   const insertedText = 'X'.repeat(10);
   const modelText = beforeText.slice(0, 1) + insertedText + beforeText.slice(1);
@@ -2199,10 +2206,10 @@ test('deferred native input repair fixes a stale caret after text already synced
 test('deferred native input repair rechecks a virtualized synced caret after initial agreement', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
-  const inputController = {
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
-  };
+  });
   const modelText = 'aXbc';
   const modelOffset = 2;
   const virtualRow = document.createElement('div');
@@ -2212,7 +2219,7 @@ test('deferred native input repair rechecks a virtualized synced caret after ini
   const range = document.createRange();
   const selection = window.getSelection();
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
 
   editorReplace(editor, {

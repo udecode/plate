@@ -61,19 +61,11 @@ export const plitePackages = Object.freeze(
   })
 );
 
-export const plateAdopterPackages = Object.freeze([]);
-
 const packageByRoot = new Map(
   plitePackages.map((definition) => [definition.root, definition])
 );
 const packageOrder = new Map(
   plitePackages.map((definition, index) => [definition.name, index])
-);
-const adopterByRoot = new Map(
-  plateAdopterPackages.map((definition) => [definition.root, definition])
-);
-const adopterOrder = new Map(
-  plateAdopterPackages.map((definition, index) => [definition.name, index])
 );
 const allPackageNames = plitePackages.map(({ name }) => name);
 const fixturePackageNames = Object.freeze(['plitejs']);
@@ -131,8 +123,7 @@ const proofContractInputs = new Set([
   'tooling/scripts/run-bounded-process.mjs',
   'tooling/scripts/run-bounded-process.test.mjs',
   'tooling/scripts/run-bounded-process.slow.test.mjs',
-  'tooling/scripts/test-fast.mjs',
-  'tooling/scripts/test-slow.mjs',
+  'tooling/scripts/test-suite.mjs',
   'tooling/scripts/test-slowest.mjs',
   'tooling/scripts/test-suite-routing.test.mjs',
 ]);
@@ -142,6 +133,41 @@ const normalizePath = (file) =>
 
 const isPathWithin = (file, root) =>
   file === root || file.startsWith(`${root}/`);
+
+const browserContractFiles = () =>
+  fs
+    .readdirSync(path.join(repoRoot, 'apps/plite/scripts'))
+    .filter((file) => file.endsWith('.test.mjs'))
+    .map((file) => `apps/plite/scripts/${file}`)
+    .sort(compareStrings);
+
+const affectedContractFiles = (inputs) => {
+  const files = new Set();
+
+  for (const input of inputs) {
+    if (input === 'tooling/scripts/check-plite.mjs') {
+      files.add('tooling/scripts/check-plite.test.mjs');
+    } else if (input === '.github/workflows/plite-ci.yml') {
+      files.add('tooling/scripts/check-plite.test.mjs');
+      files.add('tooling/scripts/ci-workflow.test.mjs');
+      files.add('apps/plite/scripts/plite-browser-runner.test.mjs');
+    } else if (
+      input.endsWith('.test.mjs') &&
+      fs.existsSync(path.join(repoRoot, input))
+    ) {
+      files.add(input);
+    } else if (
+      isPathWithin(input, 'apps/plite/scripts') ||
+      isPathWithin(input, 'apps/plite/tests/plite-browser')
+    ) {
+      for (const file of browserContractFiles()) files.add(file);
+    } else {
+      return null;
+    }
+  }
+
+  return [...files].sort(compareStrings);
+};
 
 const isBenchmarkContractInput = (file) =>
   (isPathWithin(file, 'benchmarks/editor/benchmarks') &&
@@ -187,23 +213,15 @@ const orderedNames = (names) =>
     (left, right) => packageOrder.get(left) - packageOrder.get(right)
   );
 
-const orderedAdopterNames = (names) =>
-  [...names].sort(
-    (left, right) => adopterOrder.get(left) - adopterOrder.get(right)
-  );
-
 export const createAffectedPlan = (changedFiles) => {
   const normalizedFiles = [...new Set(changedFiles.map(normalizePath))].filter(
     Boolean
   );
   const affected = new Set();
-  const affectedAdopterTests = new Set();
-  const affectedAdopterTypechecks = new Set();
   const runtimeAffected = new Set();
-  let adopterRuntimeImpact = false;
   let appTypecheck = false;
   let browserSmoke = false;
-  let contracts = false;
+  const contractInputs = new Set();
   let relevant = false;
   let wwwTypecheck = false;
 
@@ -219,16 +237,17 @@ export const createAffectedPlan = (changedFiles) => {
 
     if (
       globalInputs.has(file) ||
+      isPathWithin(file, '.github/actions/pnpm-install') ||
+      isPathWithin(file, 'config') ||
+      isPathWithin(file, 'tooling/entrypoints') ||
       isPathWithin(file, 'tooling/config') ||
+      file === 'tooling/scripts/plate-pkg.cjs' ||
       file === 'tooling/scripts/check-package-build-artifacts.mjs'
     ) {
       for (const name of allPackageNames) affected.add(name);
-      for (const { name } of plateAdopterPackages) {
-        affectedAdopterTypechecks.add(name);
-      }
       appTypecheck = true;
       browserSmoke = true;
-      contracts = true;
+      contractInputs.add(file);
       relevant = true;
       continue;
     }
@@ -237,13 +256,13 @@ export const createAffectedPlan = (changedFiles) => {
       file === 'tooling/scripts/check-plite.mjs' ||
       file === 'tooling/scripts/check-plite.test.mjs'
     ) {
-      contracts = true;
+      contractInputs.add(file);
       relevant = true;
       continue;
     }
 
     if (proofContractInputs.has(file) || isBenchmarkContractInput(file)) {
-      contracts = true;
+      contractInputs.add(file);
       relevant = true;
       if (file === 'tooling/scripts/run-bounded-process.mjs') {
         browserSmoke = true;
@@ -252,7 +271,7 @@ export const createAffectedPlan = (changedFiles) => {
     }
 
     if (file === '.github/workflows/plite-ci.yml') {
-      contracts = true;
+      contractInputs.add(file);
       relevant = true;
       continue;
     }
@@ -269,9 +288,6 @@ export const createAffectedPlan = (changedFiles) => {
 
       if (isRuntimePackageInput(file, root)) {
         runtimeAffected.add(definition.name);
-        if (definition.name !== '@platejs/test') {
-          adopterRuntimeImpact = true;
-        }
         browserSmoke = true;
         if (definition.name !== '@platejs/test') appTypecheck = true;
       }
@@ -279,20 +295,9 @@ export const createAffectedPlan = (changedFiles) => {
       continue;
     }
 
-    const adopterEntry = [...adopterByRoot.entries()].find(([root]) =>
-      isPathWithin(file, root)
-    );
-
-    if (adopterEntry) {
-      affectedAdopterTests.add(adopterEntry[1].name);
-      affectedAdopterTypechecks.add(adopterEntry[1].name);
-      relevant = true;
-      continue;
-    }
-
     if (isPathWithin(file, 'apps/plite/scripts')) {
-      contracts = true;
-      browserSmoke = true;
+      contractInputs.add(file);
+      if (!testFilePattern.test(file)) browserSmoke = true;
       relevant = true;
       continue;
     }
@@ -314,6 +319,8 @@ export const createAffectedPlan = (changedFiles) => {
       file === 'apps/plite/tsconfig.json' ||
       isPathWithin(file, 'apps/www/src/app/(app)/examples/plite') ||
       isPathWithin(file, 'apps/www/src/components/ui') ||
+      isPathWithin(file, 'apps/www/src/registry/components/editor') ||
+      file === 'apps/www/src/registry/examples/collaboration-demo.tsx' ||
       isPathWithin(file, 'apps/www/src/types') ||
       sharedAppFiles.has(file)
     ) {
@@ -323,7 +330,7 @@ export const createAffectedPlan = (changedFiles) => {
         file === 'apps/plite/package.json' ||
         file === 'apps/plite/playwright.config.ts'
       ) {
-        contracts = true;
+        contractInputs.add(file);
       }
       if (
         file === 'apps/www/tsconfig.json' ||
@@ -337,39 +344,27 @@ export const createAffectedPlan = (changedFiles) => {
 
     if (isPathWithin(file, 'apps/plite/tests/plite-browser')) {
       browserSmoke = true;
-      contracts = true;
+      contractInputs.add(file);
       relevant = true;
     }
   }
 
   addDownstreamPackages(runtimeAffected);
   for (const name of runtimeAffected) affected.add(name);
-  if (adopterRuntimeImpact) {
-    for (const { name } of plateAdopterPackages) {
-      affectedAdopterTypechecks.add(name);
-    }
-  }
 
   const packageNames = orderedNames(affected);
-  const adopterPackageNames = orderedAdopterNames(affectedAdopterTypechecks);
-  const adopterTestPackageNames = orderedAdopterNames(affectedAdopterTests);
 
   return Object.freeze({
-    adopterPackageNames: Object.freeze(adopterPackageNames),
-    adopterTestPackageNames: Object.freeze(adopterTestPackageNames),
     appTypecheck,
     browserSmoke,
     changedFiles: Object.freeze(normalizedFiles),
-    contracts,
+    contractFiles: affectedContractFiles(contractInputs),
+    contracts: contractInputs.size > 0,
     packageNames: Object.freeze(packageNames),
     relevant,
-    testPackageNames: Object.freeze([
-      ...packageNames,
-      ...adopterTestPackageNames,
-    ]),
+    testPackageNames: Object.freeze([...packageNames]),
     typecheckPackageNames: Object.freeze([
       ...packageNames,
-      ...adopterPackageNames,
       ...(appTypecheck ? ['plite'] : []),
     ]),
     wwwTypecheck,
@@ -503,7 +498,15 @@ export const createCheckSteps = (mode, affectedPlan) => {
     steps.push(...packageTestSteps(affectedPlan.testPackageNames));
   }
   if (affectedPlan.contracts) {
-    steps.push(pnpmStep('contracts', ['check:plite:contracts']));
+    steps.push(
+      affectedPlan.contractFiles === null
+        ? pnpmStep('contracts', ['check:plite:contracts'])
+        : Object.freeze({
+            args: ['--test', ...affectedPlan.contractFiles],
+            command: 'node',
+            id: 'contracts',
+          })
+    );
   }
   if (affectedPlan.browserSmoke) {
     steps.push(
@@ -549,9 +552,9 @@ export const collectChangedFiles = () => {
 
   const commands = [
     ...(base
-      ? [['diff', '--name-only', '--diff-filter=ACMRD', `${base}...HEAD`]]
+      ? [['diff', '--no-renames', '--name-only', `${base}...HEAD`]]
       : []),
-    ['diff', '--name-only', '--diff-filter=ACMRD', 'HEAD'],
+    ['diff', '--no-renames', '--name-only', 'HEAD'],
     ['ls-files', '--others', '--exclude-standard'],
   ];
 
@@ -609,6 +612,15 @@ const run = () => {
   };
 
   if (dryRun) {
+    if (process.argv.includes('--github-output')) {
+      if (!process.env.GITHUB_OUTPUT) {
+        throw new Error('--github-output requires GITHUB_OUTPUT.');
+      }
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `browser=${mode === 'strict' || affectedPlan?.browserSmoke === true}\n`
+      );
+    }
     console.log(JSON.stringify(planSummary, null, 2));
     return 0;
   }

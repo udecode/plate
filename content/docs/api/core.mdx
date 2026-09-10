@@ -5,6 +5,17 @@ description: Editor creation, plugins, and React hooks from platejs.
 
 ## API
 
+### `PlateBlockInsertOptions`
+
+Placement options for feature commands that insert whole blocks. Import the
+type from `platejs` when declaring a public command boundary.
+
+- `at`: an explicit insertion location.
+- `after`: a live source block target; omit `at` when using it.
+- `replaceEmpty`: replace the empty, writable source text block when inserting
+  after it. Structural and atomic blocks remain intact.
+- `select`: select the inserted content.
+
 ### `createEditor`
 
 Creates an `Editor` with the supplied plugins and configuration.
@@ -88,9 +99,6 @@ Creates an `Editor` with the supplied plugins and configuration.
   </APIItem>
   <APIItem name="transforms" type="object" optional>
     Transform functions for the editor.
-  </APIItem>
-  <APIItem name="useHooks" type="function" optional>
-    Hook to use with the editor.
   </APIItem>
 </APIOptions>
 
@@ -238,27 +246,11 @@ Creates a memoized Plate editor for React components.
   </APIReturns>
 </API>
 
-### `useEditorEditableElement`
-
-<API name="useEditorEditableElement">
-  <APIReturns type="HTMLElement | null">
-    The mounted editable element for the current Plite root.
-  </APIReturns>
-</API>
-
 ### `useEditorScrollElement`
 
 <API name="useEditorScrollElement">
   <APIReturns type="HTMLElement | null">
     The element Plite uses as the editor scroll container.
-  </APIReturns>
-</API>
-
-### `useEditorScrollElementRef`
-
-<API name="useEditorScrollElementRef">
-  <APIReturns type="(element: HTMLElement | null) => void">
-    A callback ref that registers a custom editor scroll container.
   </APIReturns>
 </API>
 
@@ -285,158 +277,45 @@ Get an installed plugin's flat consumer portal.
 
 ### `useEditor`
 
-Get the active Plate editor without re-rendering. The hook throws when no
-matching editor is active.
-
-<API name="useEditor">
-<APIParameters>
-  <APIItem name="options" type="{ id?: string }" optional>
-    Editor ID used for an explicit controller scope. Without an ID, the hook
-    resolves the nearest editor, active controller editor, or first primary
-    controller editor.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Editor">
-  The editor reference.
-</APIReturns>
-</API>
+`useEditor(): Editor` returns the nearest provider’s selected editor and throws when no target exists. It rerenders when the provider changes targets without subscribing to document commits. Inside `PlateContent`, it binds commands to that mount’s root, DOM, and permissions.
 
 ### `useOptionalEditor`
 
-Use `useOptionalEditor({ id? })` when no active editor is a valid UI state. It
-returns the same editor value as `useEditor()`, or `null` while the controller
-has no matching active editor.
+`useOptionalEditor(): Editor | null` returns `null` without a provider or selected editor.
 
 ### `useEditorSelector`
 
-Subscribe to a specific property of the editor.
-
-<API name="useEditorSelector">
-<APIParameters>
-  <APIItem name="selector" type="(editor: Editor<V>, prev?: T) => T">
-    The selector function.
-  </APIItem>
-  <APIItem name="options" type="UseEditorSelectorOptions<T>" optional>
-    Options for the selector function.
-  </APIItem>
-</APIParameters>
-
-<APIOptions>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor. Useful only when nesting editors. Default is
-    using the closest editor id.
-  </APIItem>
-  <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
-    Equality function to determine whether the result of the selector function
-    has changed. Default is `(a, b) => a === b`.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="T">
-  The return value of the selector function.
-</APIReturns>
-</API>
+`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives `(editor, previous?)`; options include `equalityFn` and `shouldUpdate`.
 
 ### `useEditorState`
 
-Get the Plate editor reference with re-rendering.
-
-<API name="useEditorState">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor. Default is using the closest editor id.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="Editor">
-  The editor reference.
-</APIReturns>
-</API>
+`useEditorState(selector, options?)` subscribes to a value derived from immutable editor state and returns the selector’s inferred result. For a concrete editor type, use `useEditorRuntimeState(editor, selector, options?)`.
 
 ### `useEditorComposing`
 
-Get the editor's `composing` state.
-
-<API name="useEditorComposing">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">Whether the editor is composing.</APIReturns>
-</API>
+`useEditorComposing(): boolean` reads the selected view’s composition state.
 
 ### `useEditorReadOnly`
 
-Get the editor's `readOnly` state.
-
-<API name="useEditorReadOnly">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">Whether the editor is read-only.</APIReturns>
-</API>
+`useEditorReadOnly(): boolean` reads the selected view’s current permission. Captured views become read-only after unmount; an empty controller is also read-only.
 
 ### `useEditorMounted`
 
-Get the editor's `isMounted` state.
+`useEditorMounted(): boolean` reports whether the selected view has mounted editable DOM.
 
-<API name="useEditorMounted">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">Whether the editor is mounted.</APIReturns>
-</API>
+### `useEditorHasSelection`
+
+`useEditorHasSelection(): boolean` reports a text selection in the selected root, including a caret. It rerenders only when presence changes and does not report DOM focus.
 
 ### `useEditorSelection`
 
-Get the editor's selection. Memoized so it does not re-render if the range is the same.
+`useEditorSelection(): Range | null` returns the selected root’s text selection. Equal ranges do not trigger a rerender.
 
-<API name="useEditorSelection">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="Range | null">
-    The current selection in the editor.
-  </APIReturns>
-</API>
+### `EditorProvider`
 
-### `useEditorVersion`
+`<EditorProvider editor={editor}>` binds descendant controls to an existing editor; `editor={null}` represents no target. It creates no editable view.
 
-Get the version of the editor value. That version is incremented on each editor change.
-
-<API name="useEditorVersion">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">
-    The current version of the editor value.
-  </APIReturns>
-</API>{" "}
-
-### `useSelectionVersion`
-
-Get the version of the editor selection. That version is incremented on each selection change (the range being different).
-
-<API name="useSelectionVersion">
-  <APIParameters>
-    <APIItem name="id" type="string" optional>
-      The ID of the plate editor.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">
-    The current version of the editor selection.
-  </APIReturns>
-</API>
+See [Editor Context](/docs/api/core/plate-store) and [Plate Controller](/docs/api/core/plate-controller).
 
 ### `useSelectionFragmentProp`
 
@@ -474,21 +353,11 @@ Get the live path of the closest element and throw when the matching provider
 is absent. Pass a plugin descriptor to select an owning element provider.
 
 <API name="usePath">
-<APIParameters>
-  <APIItem name="plugin" type="PlateElementDescriptor" optional>
-    Plugin descriptor whose configured element provider should be used.
-  </APIItem>
-</APIParameters>
 
 <APIReturns>
   The current element path.
 </APIReturns>
 </API>
-
-### `useOptionalPath`
-
-Use `useOptionalPath(Plugin)` when the provider is intentionally optional. It
-returns `null` instead of manufacturing a path for an arbitrary node object.
 
 ### `usePluginStore`
 
@@ -528,37 +397,6 @@ const pair = usePluginStore(
 
 </API>
 
-### `useEditorPluginStore`
-
-Explicit-editor variant of `usePluginStore`.
-
-<API name="useEditorPluginStore">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    The editor instance.
-  </APIItem>
-  <APIItem name="plugin" type="PlatePlugin">
-    The plugin whose store should be observed.
-  </APIItem>
-  <APIItem name="keyOrSelector" type="keyof InferPluginStoreState<C> | keyof InferSelectors<C> | ((state) => T)">
-    A state key, named selector key, or selector callback.
-  </APIItem>
-  <APIItem name="...args" type="any[]" optional>
-    Arguments for a named selector. Selector callbacks instead accept
-    `{ equalityFn? }` as the final options object.
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="T">The selected field or derived value.</APIReturns>
-
-```tsx
-const value = useEditorPluginStore(editor, plugin, "value");
-const doubleValue = useEditorPluginStore(editor, plugin, "doubleValue", 2);
-const state = useEditorPluginStore(editor, plugin, (state) => state);
-```
-
-</API>
-
 ### `useElement`
 
 Get the current element and throw when the matching provider is absent. Pass a
@@ -585,12 +423,6 @@ import { useElement } from "platejs/react";
 const quote = useElement(BlockquotePlugin);
 const generic = useElement();
 ```
-
-### `useOptionalElement`
-
-Use `useOptionalElement(Plugin)` when a specific provider is optional, or call
-`useOptionalElement()` for the erased nearest provider. It returns `null`
-instead of a placeholder element.
 
 ## Core plugins
 
@@ -678,9 +510,11 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
 });
 ```
 
-### `DOMPlugin`
+### DOM operations
 
-Exposes DOM helpers for Plate and composes with Plite React on editable surfaces.
+Use `editor.api.dom` for DOM queries and focus, and `editor.update.dom` for
+clipboard insertion and transaction-scoped auto-scroll. Editor construction
+installs the DOM integration.
 
 ### `HistoryPlugin`
 
@@ -697,10 +531,6 @@ Enables HTML serialization and deserialization.
 ### `ParagraphPlugin`
 
 Provides paragraph formatting functionality.
-
-### `EventEditorPlugin`
-
-Manages editor events such as focus and blur.
 
 ## Components
 

@@ -9,6 +9,7 @@ import {
   type RenderNodeWrapperProps,
   toPlatePlugin,
   useElementSelector,
+  usePath,
 } from 'platejs/react';
 
 import { property, schema } from '../src/core';
@@ -85,21 +86,21 @@ const exactStaticRootNode = ({
 };
 
 BaseWrapperBoundaryPlugin.configure({
-  render: {
-    belowRootNodes: exactStaticRootNode,
+  slots: {
+    afterNodeChildren: exactStaticRootNode,
   },
 });
 
 BaseUnrelatedWrapperPlugin.configure({
-  render: {
+  slots: {
     // @ts-expect-error Exact static root callbacks cannot attach to unrelated plugins.
-    belowRootNodes: exactStaticRootNode,
+    afterNodeChildren: exactStaticRootNode,
   },
 });
 
 WrapperBoundaryPlugin.configure({
-  render: {
-    belowNodes: broadWrapper,
+  slots: {
+    wrapNodeChildren: broadWrapper,
   },
 });
 
@@ -115,8 +116,8 @@ const adaptedWrapper: RenderNodeWrapper<typeof AdaptedWrapperPlugin> = ({
 };
 
 AdaptedWrapperPlugin.configure({
-  render: {
-    belowNodes: adaptedWrapper,
+  slots: {
+    wrapNodeChildren: adaptedWrapper,
   },
 });
 
@@ -158,28 +159,32 @@ void wrapperProps.path;
 void wrapperProps.renderPath;
 
 WrapperBoundaryPlugin.configure({
-  render: {
-    belowRootNodes: exactRootNode,
+  slots: {
+    afterNodeChildren: exactRootNode,
   },
 });
 
 const useSelectedToneContract = () => {
   const selectedTone = useElementSelector(
     WrapperBoundaryPlugin,
-    ([element]) => element.wrapperTone
+    (element) => element.wrapperTone
   );
 
-  void selectedTone;
+  const selectedToneContract: string | undefined = selectedTone;
+  // @ts-expect-error The descriptor selector preserves the string result.
+  const invalidSelectedTone: number = selectedTone;
+  void selectedToneContract;
+  void invalidSelectedTone;
 };
 
 const UnrelatedWrapperPlugin = definePlatePlugin('unrelatedWrapper', {});
 
 UnrelatedWrapperPlugin.configure({
-  render: {
+  slots: {
     // @ts-expect-error Exact wrappers cannot attach to unrelated plugins.
-    belowNodes: exactWrapper,
+    wrapNodeChildren: exactWrapper,
     // @ts-expect-error Exact root callbacks cannot attach to unrelated plugins.
-    belowRootNodes: exactRootNode,
+    afterNodeChildren: exactRootNode,
   },
 });
 
@@ -189,3 +194,23 @@ void exactRootNode;
 void exactStaticWrapper;
 void exactStaticRootNode;
 void useSelectedToneContract;
+
+const usePathProjectionContract = () => {
+  const fullPath: readonly number[] = usePath();
+  // @ts-expect-error Public paths remain readonly.
+  const invalidMutablePath: number[] = fullPath;
+  const index = usePath((path) => path.at(-1));
+  const exactIndex: number | undefined = index;
+  // @ts-expect-error Path projections preserve their numeric result.
+  const invalidIndex: string = index;
+  const derived = usePath((path) => ({ depth: path.length }), {
+    equalityFn: (left, right) => left.depth === right.depth,
+  });
+  const exactDepth: number = derived.depth;
+  void fullPath;
+  void invalidMutablePath;
+  void exactIndex;
+  void invalidIndex;
+  void exactDepth;
+};
+void usePathProjectionContract;

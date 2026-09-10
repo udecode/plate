@@ -10,11 +10,7 @@ type Equal<A, B> =
     : false;
 type Assert<T extends true> = T;
 
-type ExplicitVoidKind =
-  | 'block'
-  | 'editable-island'
-  | 'inline'
-  | 'markable-inline';
+type ExplicitVoidKind = 'block' | 'inline' | 'markable-inline';
 type ElementVoidKind = NonNullable<SchemaElement['void']>;
 
 type _VoidKindIsExplicitPreset = Assert<
@@ -35,9 +31,6 @@ const inlineVoid = { void: 'inline' } as const;
 const markableInlineVoid = {
   void: 'markable-inline',
 } as const;
-const editableIslandVoid = {
-  void: 'editable-island',
-} as const;
 const editorOnlyRootedContent = {
   contentRoots: { body: schema.content.open() },
 } as const satisfies SchemaElement;
@@ -46,6 +39,5 @@ const nonVoid = {} as const;
 void blockVoid;
 void inlineVoid;
 void markableInlineVoid;
-void editableIslandVoid;
 void editorOnlyRootedContent;
 void nonVoid;

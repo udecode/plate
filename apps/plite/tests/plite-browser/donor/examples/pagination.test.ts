@@ -397,25 +397,25 @@ type PaginationMiddleTypingSample = {
 type PaginationProjectedTextTarget = {
   blockPath: string;
   blockText: string;
-  firstLeafLeft: number;
-  firstLeafTop: number;
-  leafText: string;
-  visibleLeafCount: number;
+  firstLineLeft: number;
+  firstLineTop: number;
+  lineText: string;
+  visibleLineCount: number;
   x: number;
   y: number;
 };
 
 type PaginationProjectedTextProof = {
-  absoluteLeafCount: number;
+  absoluteLineCount: number;
   blockText: string | null;
   domSync: string | null;
-  firstVisibleLeafLeft: number | null;
-  firstVisibleLeafTop: number | null;
+  firstVisibleLineLeft: number | null;
+  firstVisibleLineTop: number | null;
   pageSurfaceCount: number;
   reason: string | null;
-  staticLeafCount: number;
+  staticLineCount: number;
   totalElementCount: number;
-  visibleLeafCount: number;
+  visibleLineCount: number;
 };
 
 const getVisibleModelOwnedProjectedPaginationTextTarget = async (
@@ -448,53 +448,53 @@ const getVisibleModelOwnedProjectedPaginationTextTarget = async (
           return [];
         }
 
-        const visibleLeaves = Array.from(
-          textHost.querySelectorAll<HTMLElement>('[data-plite-leaf]')
+        const visibleLines = Array.from(
+          textHost.querySelectorAll<HTMLElement>('[data-pagination-line]')
         )
-          .map((leaf) => {
-            const rect = leaf.getBoundingClientRect();
+          .map((line) => {
+            const rect = line.getBoundingClientRect();
 
             return {
               bottom: rect.bottom,
               left: rect.left,
-              position: getComputedStyle(leaf).position,
+              position: getComputedStyle(line).position,
               right: rect.right,
-              text: leaf.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+              text: line.textContent?.replace(/\s+/g, ' ').trim() ?? '',
               top: rect.top,
               width: rect.width,
             };
           })
           .filter(
-            (leaf) =>
-              leaf.position === 'absolute' &&
-              leaf.text.length > 0 &&
-              leaf.width > 0 &&
-              leaf.bottom > viewportRect.top + 32 &&
-              leaf.top < viewportRect.bottom - 32 &&
-              leaf.right > viewportRect.left &&
-              leaf.left < viewportRect.right
+            (line) =>
+              line.position === 'absolute' &&
+              line.text.length > 0 &&
+              line.width > 0 &&
+              line.bottom > viewportRect.top + 32 &&
+              line.top < viewportRect.bottom - 32 &&
+              line.right > viewportRect.left &&
+              line.left < viewportRect.right
           );
 
-        if (visibleLeaves.length < 2) return [];
-        const firstLeaf = visibleLeaves[0]!;
+        if (visibleLines.length < 2) return [];
+        const firstLine = visibleLines[0]!;
 
         return [
           {
             blockPath,
             blockText: block.textContent ?? '',
-            firstLeafLeft: firstLeaf.left,
-            firstLeafTop: firstLeaf.top,
-            leafText: firstLeaf.text,
-            visibleLeafCount: visibleLeaves.length,
-            x: Math.min(firstLeaf.right - 4, firstLeaf.left + 40),
-            y: (firstLeaf.top + firstLeaf.bottom) / 2,
+            firstLineLeft: firstLine.left,
+            firstLineTop: firstLine.top,
+            lineText: firstLine.text,
+            visibleLineCount: visibleLines.length,
+            x: Math.min(firstLine.right - 4, firstLine.left + 40),
+            y: (firstLine.top + firstLine.bottom) / 2,
           } satisfies PaginationProjectedTextTarget,
         ];
       })
       .sort(
         (left, right) =>
-          right.visibleLeafCount - left.visibleLeafCount ||
-          left.firstLeafTop - right.firstLeafTop
+          right.visibleLineCount - left.visibleLineCount ||
+          left.firstLineTop - right.firstLineTop
       );
 
     return candidates[0] ?? null;
@@ -533,54 +533,54 @@ const getVisiblePaginationTextTarget = async (
           return [];
         }
 
-        const visibleLeaves = Array.from(
-          textHost.querySelectorAll<HTMLElement>('[data-plite-leaf]')
+        const visibleLines = Array.from(
+          textHost.querySelectorAll<HTMLElement>('[data-pagination-line]')
         )
-          .map((leaf) => {
-            const rect = leaf.getBoundingClientRect();
+          .map((line) => {
+            const rect = line.getBoundingClientRect();
 
             return {
               bottom: rect.bottom,
               left: rect.left,
               right: rect.right,
-              text: leaf.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+              text: line.textContent?.replace(/\s+/g, ' ').trim() ?? '',
               top: rect.top,
               width: rect.width,
             };
           })
           .filter(
-            (leaf) =>
-              leaf.text.length > 0 &&
-              leaf.width > 0 &&
-              leaf.bottom > viewportRect.top + 32 &&
-              leaf.top < viewportRect.bottom - 32 &&
-              leaf.right > viewportRect.left &&
-              leaf.left < viewportRect.right
+            (line) =>
+              line.text.length > 0 &&
+              line.width > 0 &&
+              line.bottom > viewportRect.top + 32 &&
+              line.top < viewportRect.bottom - 32 &&
+              line.right > viewportRect.left &&
+              line.left < viewportRect.right
           );
 
-        if (visibleLeaves.length === 0) {
+        if (visibleLines.length === 0) {
           return [];
         }
 
-        const firstLeaf = visibleLeaves[0]!;
+        const firstLine = visibleLines[0]!;
 
         return [
           {
             blockPath,
             blockText: block.textContent ?? '',
-            firstLeafLeft: firstLeaf.left,
-            firstLeafTop: firstLeaf.top,
-            leafText: firstLeaf.text,
-            visibleLeafCount: visibleLeaves.length,
-            x: Math.min(firstLeaf.right - 4, firstLeaf.left + 40),
-            y: (firstLeaf.top + firstLeaf.bottom) / 2,
+            firstLineLeft: firstLine.left,
+            firstLineTop: firstLine.top,
+            lineText: firstLine.text,
+            visibleLineCount: visibleLines.length,
+            x: Math.min(firstLine.right - 4, firstLine.left + 40),
+            y: (firstLine.top + firstLine.bottom) / 2,
           } satisfies PaginationProjectedTextTarget,
         ];
       })
       .sort(
         (left, right) =>
-          right.visibleLeafCount - left.visibleLeafCount ||
-          left.firstLeafTop - right.firstLeafTop
+          right.visibleLineCount - left.visibleLineCount ||
+          left.firstLineTop - right.firstLineTop
       );
 
     return candidates[0] ?? null;
@@ -598,13 +598,13 @@ const getVisiblePaginationTextTargetByPath = async (
     const block = element.querySelector<HTMLElement>(
       `[data-plite-node="element"][data-plite-path="${path}"]`
     );
-    const leaf = block?.querySelector<HTMLElement>('[data-plite-leaf]');
+    const line = block?.querySelector<HTMLElement>('[data-pagination-line]');
 
-    if (!block || !leaf || !viewportRect) {
+    if (!block || !line || !viewportRect) {
       return null;
     }
 
-    const rect = leaf.getBoundingClientRect();
+    const rect = line.getBoundingClientRect();
 
     if (
       rect.width <= 0 ||
@@ -631,16 +631,16 @@ const getPaginationTextAlignmentByPath = async (
     const block = element.querySelector<HTMLElement>(
       `[data-plite-node="element"][data-plite-path="${path}"]`
     );
-    const leaf = block?.querySelector<HTMLElement>('[data-plite-leaf]');
+    const line = block?.querySelector<HTMLElement>('[data-pagination-line]');
 
-    if (!block || !leaf) {
+    if (!block || !line) {
       return null;
     }
 
     const blockRect = block.getBoundingClientRect();
-    const leafRect = leaf.getBoundingClientRect();
+    const lineRect = line.getBoundingClientRect();
     const blockStyle = getComputedStyle(block);
-    const leafStyle = getComputedStyle(leaf);
+    const lineStyle = getComputedStyle(line);
     const textRects: {
       bottom: number;
       left: number;
@@ -701,11 +701,11 @@ const getPaginationTextAlignmentByPath = async (
     return {
       blockLeft: blockRect.left,
       blockWidth: blockRect.width,
-      firstLeafLeft: leafRect.left,
-      firstLeafPosition: leafStyle.position,
+      firstLineLeft: lineRect.left,
+      firstLinePosition: lineStyle.position,
       lineRects,
       paddingLeft: Number.parseFloat(blockStyle.paddingLeft) || 0,
-      relativeLeft: leafRect.left - blockRect.left,
+      relativeLeft: lineRect.left - blockRect.left,
     };
   }, blockPath);
 
@@ -801,13 +801,13 @@ const getVisiblePaginationLineMarginTargetByPath = async (
     const block = element.querySelector<HTMLElement>(
       `[data-plite-node="element"][data-plite-path="${path}"]`
     );
-    const leaf = block?.querySelector<HTMLElement>('[data-plite-leaf]');
+    const line = block?.querySelector<HTMLElement>('[data-pagination-line]');
 
-    if (!block || !leaf || !viewportRect) {
+    if (!block || !line || !viewportRect) {
       return null;
     }
 
-    const rect = leaf.getBoundingClientRect();
+    const rect = line.getBoundingClientRect();
 
     if (
       rect.width <= 0 ||
@@ -1700,51 +1700,51 @@ const getProjectedPaginationTextProof = async (
     const textHost = element.querySelector<HTMLElement>(
       `[data-plite-node="text"][data-plite-path="${path},0"]`
     );
-    const visibleLeaves = Array.from(
-      block?.querySelectorAll<HTMLElement>('[data-plite-leaf]') ?? []
+    const visibleLines = Array.from(
+      block?.querySelectorAll<HTMLElement>('[data-pagination-line]') ?? []
     )
-      .map((leaf) => {
-        const rect = leaf.getBoundingClientRect();
+      .map((line) => {
+        const rect = line.getBoundingClientRect();
 
         return {
           bottom: rect.bottom,
           left: rect.left,
-          position: getComputedStyle(leaf).position,
+          position: getComputedStyle(line).position,
           right: rect.right,
-          text: leaf.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+          text: line.textContent?.replace(/\s+/g, ' ').trim() ?? '',
           top: rect.top,
           width: rect.width,
         };
       })
       .filter(
-        (leaf) =>
+        (line) =>
           viewportRect &&
-          leaf.text.length > 0 &&
-          leaf.width > 0 &&
-          leaf.bottom > viewportRect.top + 32 &&
-          leaf.top < viewportRect.bottom - 32 &&
-          leaf.right > viewportRect.left &&
-          leaf.left < viewportRect.right
+          line.text.length > 0 &&
+          line.width > 0 &&
+          line.bottom > viewportRect.top + 32 &&
+          line.top < viewportRect.bottom - 32 &&
+          line.right > viewportRect.left &&
+          line.left < viewportRect.right
       );
-    const firstVisibleLeaf = visibleLeaves[0];
+    const firstVisibleLine = visibleLines[0];
 
     return {
-      absoluteLeafCount: visibleLeaves.filter(
-        (leaf) => leaf.position === 'absolute'
+      absoluteLineCount: visibleLines.filter(
+        (line) => line.position === 'absolute'
       ).length,
       blockText: block?.textContent ?? null,
       domSync: textHost?.getAttribute('data-plite-dom-sync') ?? null,
-      firstVisibleLeafLeft: firstVisibleLeaf?.left ?? null,
-      firstVisibleLeafTop: firstVisibleLeaf?.top ?? null,
+      firstVisibleLineLeft: firstVisibleLine?.left ?? null,
+      firstVisibleLineTop: firstVisibleLine?.top ?? null,
       pageSurfaceCount: element.ownerDocument.querySelectorAll(
         '[data-plite-page-surface]'
       ).length,
       reason: textHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
-      staticLeafCount: visibleLeaves.filter(
-        (leaf) => leaf.position === 'static'
+      staticLineCount: visibleLines.filter(
+        (line) => line.position === 'static'
       ).length,
       totalElementCount: element.querySelectorAll('*').length,
-      visibleLeafCount: visibleLeaves.length,
+      visibleLineCount: visibleLines.length,
     } satisfies PaginationProjectedTextProof;
   }, blockPath);
 
@@ -3456,7 +3456,7 @@ test.describe('pagination example', {
 
     expect(before).toEqual(
       expect.objectContaining({
-        firstLeafPosition: 'absolute',
+        firstLinePosition: 'absolute',
       })
     );
     expect(target).toBeTruthy();
@@ -3485,9 +3485,9 @@ test.describe('pagination example', {
           aligned:
             !!before &&
             !!after &&
-            Math.abs(after.firstLeafLeft - before.firstLeafLeft) <= 0.5,
+            Math.abs(after.firstLineLeft - before.firstLineLeft) <= 0.5,
           lineRectsStable,
-          nativeFlow: after?.firstLeafPosition === 'static',
+          nativeFlow: after?.firstLinePosition === 'static',
           wrapWidthPreserved:
             !!before &&
             !!after &&
@@ -3930,11 +3930,19 @@ test.describe('pagination example', {
     );
 
     expect(target).toBeTruthy();
-    expect(target!.visibleLeafCount).toBeGreaterThan(1);
+    expect(target!.visibleLineCount).toBeGreaterThan(1);
 
     const targetPath = Number(target!.blockPath);
 
     expect(Number.isFinite(targetPath)).toBe(true);
+
+    expect(
+      await editor.root.evaluate((_root, point) =>
+        document
+          .elementFromPoint(point.x, point.y)
+          ?.closest('[data-plite-node="element"]')
+          ?.getAttribute('data-plite-path'), target!)
+    ).toBe(target!.blockPath);
 
     await page.mouse.click(target!.x, target!.y);
 
@@ -3973,12 +3981,12 @@ test.describe('pagination example', {
     expect(clickedOffset).toBeLessThan(target!.blockText.length);
     expect(clickedProof.reason).toBe('custom-leaf');
     expect(clickedProof.domSync).toBe(null);
-    expect(clickedProof.staticLeafCount).toBeGreaterThan(0);
-    expect(clickedProof.absoluteLeafCount).toBe(0);
+    expect(clickedProof.staticLineCount).toBeGreaterThan(0);
+    expect(clickedProof.absoluteLineCount).toBe(0);
     expect(clickedProof.totalElementCount).toBeLessThan(1400);
     expect(clickedProof.pageSurfaceCount).toBeLessThanOrEqual(8);
-    expect(clickedProof.firstVisibleLeafLeft).not.toBeNull();
-    expect(clickedProof.firstVisibleLeafTop).not.toBeNull();
+    expect(clickedProof.firstVisibleLineLeft).not.toBeNull();
+    expect(clickedProof.firstVisibleLineTop).not.toBeNull();
 
     await page.keyboard.press('ArrowRight');
     await expect
@@ -4024,8 +4032,8 @@ test.describe('pagination example', {
 
     expect(editedProof.reason).toBe('custom-leaf');
     expect(editedProof.domSync).toBe(null);
-    expect(editedProof.staticLeafCount).toBeGreaterThan(0);
-    expect(editedProof.absoluteLeafCount).toBe(0);
+    expect(editedProof.staticLineCount).toBeGreaterThan(0);
+    expect(editedProof.absoluteLineCount).toBe(0);
   });
 
   test('survives a rows=800 virtualized real-user editing journey', async ({

@@ -358,6 +358,31 @@ describe('createPluginContext', () => {
     expect(typedEditor.plugin(plugin).read.nested()).toBe('nested');
   });
 
+  it('supports compiled call and apply invocations on scoped capabilities', () => {
+    const plugin = defineBasePlugin('invocation', {
+      read: ({ state }) => ({
+        text: () => state.children()[0].children[0].text,
+      }),
+      update: ({ tx }) => ({
+        insert: (text: string) =>
+          tx.text.insert(text, { at: { path: [0, 0], offset: 0 } }),
+      }),
+    });
+    const typedEditor = createEditor({ plugins: [plugin] });
+    const portal = typedEditor.plugin(plugin);
+
+    /* eslint-disable no-useless-call -- Exercise the invocation form emitted by React Compiler. */
+    expect(portal.read.text.call(portal.read)).toBe('');
+    portal.update.insert.call(portal.update, 'a');
+    expect(portal.read.text.apply(portal.read, [])).toBe('a');
+    /* eslint-enable no-useless-call */
+    portal
+      .update({ tags: ['compiled-call'] })
+      .insert.apply(portal.update, ['b']);
+    expect(portal.read.text()).toBe('ba');
+    expect(typedEditor.read.lastCommit()?.tags).toContain('compiled-call');
+  });
+
   it('exposes plugin-owned updates without their name namespace', () => {
     let mode: 'edit' | 'view' = 'view';
     let insertedBy: 'command' | null = null;

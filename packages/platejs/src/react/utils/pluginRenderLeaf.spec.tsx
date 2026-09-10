@@ -6,14 +6,12 @@ import React from 'react';
 import { property } from '../../core';
 import { defineBasePlugin } from '../../lib/plugin';
 import { createEditor } from '../editor/withPlate';
-import { pluginRenderLeaf } from './pluginRenderLeaf';
+import { pluginRenderLeaf } from './pluginRenderLeaf.internal';
 
-it('uses a plain render.as fast path for simple leaf plugins', () => {
+it('uses an intrinsic component fast path for simple leaf plugins', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'strong',
-    },
   });
   const editor = createEditor({
     navigationFeedback: false,
@@ -45,10 +43,8 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 
 it('renders simple hard-affinity leaves without spacers when inactive', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'code',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'code',
-    },
     rules: {
       selection: {
         affinity: 'hard',
@@ -82,10 +78,8 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
 
 it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 's',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 's',
-    },
     rules: {
       selection: {
         affinity: 'directional',
@@ -115,10 +109,8 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
 
 it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'code',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      as: 'code',
-    },
     rules: {
       selection: {
         affinity: 'hard',

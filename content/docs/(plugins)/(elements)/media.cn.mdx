@@ -152,14 +152,12 @@ const editor = createEditor({
 ```tsx
 import { AudioPlugin, FilePlugin, ImagePlugin, MediaEmbedPlugin, PlaceholderPlugin, VideoPlugin } from 'platejs/media/react';
 import { createEditor } from 'platejs/react';
-import { 
-  AudioElement, 
-  FileElement, 
-  ImageElement, 
-  MediaEmbedElement, 
-  PlaceholderElement, 
-  VideoElement 
-} from '@/components/editor/media-nodes';
+import { AudioElement } from '@/components/editor/media-audio';
+import { FileElement } from '@/components/editor/media-file';
+import { ImageElement } from '@/components/editor/media-image';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+import { PlaceholderElement } from '@/components/editor/media-placeholder';
+import { VideoElement } from '@/components/editor/media-video';
 import { MediaUploadToast } from '@/components/editor/media';
 
 const editor = createEditor({
@@ -173,15 +171,15 @@ const editor = createEditor({
     PlaceholderPlugin.configure({
       component: PlaceholderElement,
       initialState: { disableEmptyPlaceholder: true },
-      render: { afterEditable: MediaUploadToast },
+      slots: { afterEditable: MediaUploadToast },
     }),
   ],
 });
 ```
 
 - `component`: 为每种媒体类型分配自定义渲染组件
-- `initialState.disableEmptyPlaceholder`: 无文件上传时禁止显示占位符
-- `render.afterEditable`: 在编辑器外部渲染上传进度提示
+- `initialState.disableEmptyPlaceholder`: 插入上传占位符时创建独立的撤销批次
+- `slots.afterEditable`: 在编辑器外部渲染上传进度提示
 
 ### 标题
 
@@ -258,144 +256,60 @@ editor.plugin(ImagePlugin).update.insert({
 
 ### 自定义上传实现
 
-对于自定义上传实现，创建符合此接口的上传钩子:
+通过 `initialState.upload` 配置上传函数。占位符插件负责取消、进度和替换原始
+节点。你的接口接收文件并返回公开的 `url`。
 
 ```ts
-interface UseUploadFileProps {
-  onUploadComplete?: (file: UploadedFile) => void;
-  onUploadError?: (error: unknown) => void;
-  headers?: Record<string, string>;
-  onUploadBegin?: (fileName: string) => void;
-  onUploadProgress?: (progress: { progress: number }) => void;
-  skipPolling?: boolean;
-}
+import { PlaceholderPlugin } from 'platejs/media/react';
 
-interface UploadedFile {
-  key: string;    // 唯一标识符
-  url: string;    // 上传文件的公开URL
-  name: string;   // 原始文件名
-  size: number;   // 文件大小(字节)
-  type: string;   // MIME类型
-}
-```
-
-使用S3预签名URL的示例实现:
-
-```ts
-export function useUploadFile({ 
-  onUploadComplete, 
-  onUploadError, 
-  onUploadProgress 
-}: UseUploadFileProps = {}) {
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile>();
-  const [uploadingFile, setUploadingFile] = useState<File>();
-  const [progress, setProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-
-  async function uploadFile(file: File) {
-    setIsUploading(true);
-    setUploadingFile(file);
-
-    try {
-      // 从后端获取预签名URL和最终URL
-      const { presignedUrl, fileUrl, fileKey } = await fetch('/api/upload', {
+PlaceholderPlugin.configure({
+  initialState: {
+    upload: async (file, { signal, onProgress }) => {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/upload', {
+        body,
         method: 'POST',
-        body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type,
-        }),
-      }).then(r => r.json());
-
-      // 使用预签名URL上传到S3
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
-        onUploadProgress: (progressEvent) => {
-          const progress = (progressEvent.loaded / progressEvent.total) * 100;
-          setProgress(progress);
-          onUploadProgress?.({ progress });
-        },
+        signal,
       });
-
-      const uploadedFile = {
-        key: fileKey,
-        url: fileUrl,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      };
-
-      setUploadedFile(uploadedFile);
-      onUploadComplete?.(uploadedFile);
-      return uploadedFile;
-    } catch (error) {
-      onUploadError?.(error);
-      throw error;
-    } finally {
-      setProgress(0);
-      setIsUploading(false);
-      setUploadingFile(undefined);
-    }
-  }
-
-  return {
-    isUploading,
-    progress,
-    uploadFile,
-    uploadedFile,
-    uploadingFile,
-  };
-}
+      if (!response.ok) throw new Error('Upload failed.');
+      const result: unknown = await response.json();
+      if (
+        !result || typeof result !== 'object' ||
+        !('url' in result) || typeof result.url !== 'string'
+      ) {
+        throw new Error('The upload returned no URL.');
+      }
+      onProgress(100);
+      return { name: file.name, url: result.url };
+    },
+  },
+});
 ```
 
-然后将你的自定义上传钩子与媒体组件集成:
+将 `signal` 传给上传服务，并报告 0 到 100 的进度。返回值可以包含 `name`、
+`naturalWidth` 和 `naturalHeight`。图片替换不依赖预览组件的加载事件。
+上传失败时保留占位符并提供错误，不会生成替代 URL。未配置上传函数也会产生失败任务。
+
+调用 `editor.plugin(PlaceholderPlugin).api.upload(key, file)` 上传到现有占位符，
+使用 `api.cancelUpload(key)` 取消。通过 `editor.key(element)` 获取当前节点的
+`NodeKey`。插入文件的上传只在文档事务提交后启动。
+
+复制的 `PlaceholderElement` 已订阅上传任务。自定义 React 组件可以结合
+`platejs/react` 的 `usePluginStore` 和 `React.useSyncExternalStore`：
 
 ```tsx
-import { type PlateElementProps, useEditor } from 'platejs/react';
-import { PlaceholderPlugin } from 'platejs/media/react';
-import { PLUGINS } from 'platejs';
-
-import { useUploadFile } from '@/hooks/use-upload-file'; // 你的自定义钩子
-
-export function PlaceholderElement({
-  element,
-}: PlateElementProps<typeof PlaceholderPlugin>) {
-  const editor = useEditor();
-  const { uploadFile, isUploading, progress } = useUploadFile({
-    onUploadComplete: (uploadedFile) => {
-      const path = editor.read.nodes.path(element);
-
-      if (!path) return;
-
-      const file = editor.plugin(PLUGINS.file);
-
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({ at: path });
-        tx.nodes.insert(
-          {
-            children: [{ text: '' }],
-            provider:
-              element.mediaType === editor.plugin(PLUGINS.video).schema.type
-                ? 'file'
-                : undefined,
-            name:
-              file.installed && element.mediaType === file.schema.type
-                ? uploadedFile.name
-                : '',
-            type: element.mediaType,
-            url: uploadedFile.url,
-          },
-          { at: path }
-        );
-      });
-    },
-    onUploadError: (error) => {
-      console.error('上传失败:', error);
-    },
-  });
-
-  // 用户拖放或选择文件时调用 uploadFile。
-}
+const task = usePluginStore(PlaceholderPlugin, 'uploadTask', editor.key(element));
+const upload = React.useSyncExternalStore(
+  React.useCallback((notify) => task?.subscribe(notify) ?? (() => {}), [task]),
+  React.useCallback(() => task?.getSnapshot() ?? null, [task]),
+  () => null
+);
 ```
+
+`task.file` 表示本次上传的文件，快照包含 `status`、`progress` 和 `error`。
+取消订阅或重新挂载视图不会重新启动上传。无 React 的调用方可以从
+`platejs/media` 使用 `BasePlaceholderPlugin` 的相同上传操作；上传与任务类型也从该路径导出。
 
 ### 添加工具栏按钮
 
@@ -479,6 +393,9 @@ export function PlaceholderElement({
 
 <API name="PlaceholderPlugin">
 <APIOptions type="object">
+  <APIItem name="upload" type="MediaUploadTransport" optional>
+返回 URL 和可选文件信息的上传函数，接收文件、取消信号和进度回调。插入文件前配置此函数。
+  </APIItem>
   <APIItem name="uploadConfig" type="Partial<Record<AllowedFileType, MediaItemConfig>>" optional>
 不同文件类型的配置。包默认把每个受支持的文件类别映射到对应媒体插件，且不设置大小或分类数量限制。复制的 `MediaKit` 使用以下产品策略：
 ```ts
@@ -538,11 +455,11 @@ export function PlaceholderElement({
 </APISubList>
 </APIItem>
 <APIItem name="disableEmptyPlaceholder" type="boolean" optional>
-无文件上传时禁用空占位符。
+插入上传占位符时创建独立的撤销批次。
 - **默认:** `false`
 </APIItem>
 <APIItem name="disableFileDrop" type="boolean" optional>
-禁用拖放文件上传功能。
+当 DnD 插件不处理文件拖放时，启用占位符的 DOM 拖放处理器。
 - **默认:** `false`
 </APIItem>
 <APIItem name="maxFileCount" type="number" optional>
@@ -558,50 +475,17 @@ export function PlaceholderElement({
 
 ## API
 
-### `editor.api.placeholder.addUploadingFile`
+### 上传任务
 
-跟踪当前正在上传的文件。
+| 操作 | 契约 |
+| --- | --- |
+| `editor.plugin(PlaceholderPlugin).api.upload(key, file)` | 启动当前占位符的上传，替换之前的请求。 |
+| `editor.plugin(PlaceholderPlugin).api.cancelUpload(key)` | 中止请求并移除任务，迟到的回调不能替换节点。 |
+| `editor.plugin(PlaceholderPlugin).store.get('uploadTask', key)` | 返回 `MediaUpload` 或 `undefined`；通过 `file`、`getSnapshot` 和 `subscribe` 显示进度。 |
 
-<API name="editor.api.placeholder.addUploadingFile">
-<APIParameters>
-  <APIItem name="id" type="string">
-    占位符元素的唯一标识符。
-  </APIItem>
-  <APIItem name="file" type="File">
-    正在上传的文件。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
-
-获取当前正在上传的文件。
-
-<API name="editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)">
-<APIParameters>
-  <APIItem name="id" type="string">
-    占位符元素的唯一标识符。
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="File | undefined">
-    如果找到则返回上传文件，否则返回undefined。
-  </APIItem>
-</APIReturns>
-</API>
-
-### `editor.api.placeholder.removeUploadingFile`
-
-上传完成或失败后从上传跟踪状态中移除文件。
-
-<API name="editor.api.placeholder.removeUploadingFile">
-<APIParameters>
-  <APIItem name="id" type="string">
-    要移除的占位符元素的唯一标识符。
-  </APIItem>
-</APIParameters>
-</API>
+`key` 是运行时的 `NodeKey`，不是持久化元素 ID 或路径。上传完成后只替换原始占位符。
+节点被删除、媒体类型发生变化或编辑器变为只读时，迟到的结果不会写入文档。
+失败任务保留到取消、重试或删除占位符为止。
 
 ## 转换方法
 
@@ -629,7 +513,7 @@ export function PlaceholderElement({
 </APIOptions>
 </API>
 
-根据配置的限制(大小、数量、类型)验证文件，为每个文件创建占位符元素，处理多个文件顺序上传，维护撤销/重做操作的上传历史记录，如果验证失败则触发错误处理。
+根据配置的限制(大小、数量、类型)验证文件，为每个文件创建占位符元素，在插入事务提交后启动每个上传，并报告验证错误。
 
 错误代码:
 ```ts
@@ -706,31 +590,23 @@ enum UploadErrorCode {
 </APIOptions>
 </API>
 
-### `insertMediaUrl`
+### `api.insertUrl`
 
-提示输入图片或嵌入 URL，并调用对应插件的作用域更新。请从
-`platejs/react` 导入。
+选定的媒体插件会在应用解析 URL 输入期间保留插入目标。图片、媒体嵌入、音频、视频和文件插件均提供此 API。
+该操作调用已安装的 `update.insert`，包括 URL 验证和应用覆盖逻辑。
+取消输入、URL 无效或目标已删除时返回 `false`；URL 解析 Promise 的错误会传递给调用方。
 
-<API name="insertMediaUrl">
-<APIParameters>
-  <APIItem name="editor" type="Editor">
-    接收媒体元素的编辑器。
-  </APIItem>
-  <APIItem name="options" type="InsertMediaUrlOptions" optional>
-    URL 解析、媒体类型、精确路径和选区选项。
-  </APIItem>
-</APIParameters>
+```tsx
+const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
+  getUrlFromDialog,
+  { caption: 'An optional caption', select: true }
+);
+```
 
-<APIOptions type="InsertMediaUrlOptions">
-  <APIItem name="getUrl" type="() => Promise<string>" optional>
-    不显示浏览器提示框，直接解析 URL。
-  </APIItem>
-  <APIItem name="type" type="string" optional>
-    已解析的 image 或 media-embed schema type。省略时优先使用已安装的
-    image type，其次使用已安装的 media-embed type。
-  </APIItem>
-</APIOptions>
-</API>
+`getUrlFromDialog` 由应用提供，返回 URL、`null` 或相应的 Promise。
+选项支持插入位置 `at`、来源区块 `after`、`replaceEmpty`、`caption` 和 `select`。
+设置 `replaceEmpty: true` 时，仅在 URL 解析完成后来源区块仍为空时替换它。
+区块移动或期间的文本编辑不会改变目标身份或丢失内容。应用负责 URL 对话框并选择媒体插件。
 
 ## Registry Media UI
 

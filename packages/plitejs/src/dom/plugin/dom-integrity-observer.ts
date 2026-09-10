@@ -1,3 +1,8 @@
+import {
+  markDOMTextFlowMutation,
+  observeDOMTextFlowRoot,
+} from './dom-text-flow-index';
+
 export type DOMIntegrityMutationOwner = 'composition' | 'host' | 'scheduler';
 
 export type DOMIntegrityMutationEvidence = Readonly<{
@@ -114,6 +119,11 @@ const isRootChromeMutation = (mutation: MutationRecord) => {
 
   return changedNodes.length > 0 && changedNodes.every(isRootChromeNode);
 };
+
+const affectsEditorDOMContract = (mutation: MutationRecord) =>
+  mutation.type !== 'attributes' ||
+  mutation.attributeName === 'contenteditable' ||
+  mutation.attributeName?.startsWith('data-plite-') === true;
 
 const captureSelection = (root: HTMLElement) => {
   const selection = root.ownerDocument.getSelection();
@@ -276,6 +286,7 @@ export class DOMIntegrityObserver {
 
   destroy() {
     this.connected = false;
+    if (this.root) observeDOMTextFlowRoot(this.root, null);
     this.observer?.disconnect();
     this.observer = null;
     this.root = null;
@@ -304,7 +315,16 @@ export class DOMIntegrityObserver {
     if (records.length === 0) return;
 
     for (const mutation of records) {
-      this.options.consumeOwnedMutation(mutation);
+      const owned = this.options.consumeOwnedMutation(mutation);
+
+      if (
+        this.root &&
+        (!owned || owner === 'composition') &&
+        isInsideOwnedRoot(this.root, mutation, records) &&
+        !isRootChromeMutation(mutation)
+      ) {
+        markDOMTextFlowMutation(this.root, mutation);
+      }
     }
 
     if (owner === 'composition') {
@@ -320,6 +340,7 @@ export class DOMIntegrityObserver {
     this.flushRecords();
     this.repairNow(false);
     this.observer?.disconnect();
+    if (this.root) observeDOMTextFlowRoot(this.root, null);
     this.hostCommitPaused = true;
   }
 
@@ -352,9 +373,22 @@ export class DOMIntegrityObserver {
     }
   }
 
+  runUnobserved<T>(callback: () => T): T {
+    const wasPaused = this.hostCommitPaused;
+
+    if (!wasPaused) this.pauseForHostCommit();
+
+    try {
+      return callback();
+    } finally {
+      if (!wasPaused) this.resumeAfterHostCommit();
+    }
+  }
+
   setRoot(root: HTMLElement | null) {
     if (this.root === root && this.observer) return;
 
+    if (this.root) observeDOMTextFlowRoot(this.root, null);
     this.observer?.disconnect();
     this.observer = null;
     this.pendingMutations = [];
@@ -387,22 +421,17 @@ export class DOMIntegrityObserver {
 
     androidMutationHandler?.(records);
 
-    const tracked = records.filter((mutation) =>
-      isInsideOwnedRoot(root, mutation, records)
-    );
-
-    if (tracked.length === 0) return;
-
-    const unauthorized = tracked.filter((mutation) => {
+    const unauthorized = records.filter((mutation) => {
+      if (!isInsideOwnedRoot(root, mutation, records)) return false;
       if (
-        isRootChromeMutation(mutation) ||
-        this.options.consumeOwnedMutation(mutation)
+        this.options.consumeOwnedMutation(mutation) ||
+        isRootChromeMutation(mutation)
       ) {
         this.diagnosticsValue.ignoredOwnedMutations += 1;
         return false;
       }
-
-      return true;
+      markDOMTextFlowMutation(root, mutation);
+      return affectsEditorDOMContract(mutation);
     });
 
     if (unauthorized.length === 0) return;
@@ -445,6 +474,7 @@ export class DOMIntegrityObserver {
 
     this.observer ??= new MutationObserverConstructor(this.handleMutations);
     this.observer.observe(root, OBSERVER_OPTIONS);
+    observeDOMTextFlowRoot(root, () => this.flushRecords());
   }
 
   private repairNow(notify = true) {

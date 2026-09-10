@@ -1,6 +1,5 @@
 'use client';
 
-import { faker } from '@faker-js/faker';
 import type { Element } from 'platejs';
 import { CopilotPlugin } from 'platejs/ai/react';
 import { stripMarkdown } from 'platejs/markdown';
@@ -30,7 +29,7 @@ function GhostTextContent() {
       className="pointer-events-none text-muted-foreground/70 max-sm:hidden"
       contentEditable={false}
     >
-      {suggestionText}
+      {suggestionText && stripMarkdown(suggestionText)}
     </span>
   );
 }
@@ -53,18 +52,8 @@ export const CopilotKit = [
   - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
   - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
         },
-        onError: () => {
-          // Mock the API response. Remove it when you implement the route /api/ai/copilot
-          update.setBlockSuggestion({
-            text: stripMarkdown(faker.lorem.sentence()),
-          });
-        },
         onFinish: (_, completion) => {
-          if (completion === '0') return;
-
-          update.setBlockSuggestion({
-            text: stripMarkdown(completion),
-          });
+          if (completion === '0') update.reject();
         },
       },
       debounceDelay: 500,

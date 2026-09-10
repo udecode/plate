@@ -5,11 +5,7 @@ import type {
   HostCodecSerializeContext,
 } from '../../dom/plite-dom.internal';
 import { hostCodecs } from '../../dom/plite-dom.internal';
-import {
-  ContentSlice,
-  getCompiledSchemaPropertyId,
-  reportEditorLifecycleError,
-} from '../../facade';
+import { ContentSlice, schema, reportEditorLifecycleError } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin';
 import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';
@@ -169,7 +165,7 @@ const claimKey = (claim: HostCodecSchemaTarget) => {
     return `element:${claim.type}`;
   }
 
-  return `property:${claim.placement}:${getCompiledSchemaPropertyId(claim)}`;
+  return `property:${claim.placement}:${schema.handle.property(claim).id}`;
 };
 
 const claimsOverlap = (

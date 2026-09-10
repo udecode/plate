@@ -137,10 +137,7 @@ describe('suggestion link integration', () => {
         readonly [],
         readonly [typeof BaseSuggestionPlugin]
       >
-    ).update.suggestion.accept({
-      keyId: editor.plugin(BaseSuggestionPlugin).api.key('1'),
-      suggestionId: '1',
-    } as any);
+    ).update.suggestion.accept('1');
 
     expect(editor.read.children()).toEqual(output.children);
   });
@@ -181,10 +178,7 @@ describe('suggestion link integration', () => {
         readonly [],
         readonly [typeof BaseSuggestionPlugin]
       >
-    ).update.suggestion.reject({
-      keyId: 'suggestion_1',
-      suggestionId: '1',
-    } as any);
+    ).update.suggestion.reject('1');
 
     expect(editor.read.children()).toEqual(output.children);
   });

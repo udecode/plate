@@ -1,4 +1,4 @@
-import { getSelectedDomNode } from './getSelectedDomNode';
+import { getSelectedDomNode } from './getSelectedDomNode.internal';
 
 type MockRange = Pick<Range, 'cloneContents'>;
 type MockSelection = {

@@ -1,0 +1,5 @@
+lead_key	reason
+runtime-patch-from-playwright-home-shift-end	The repro replaces DOM text nodes outside Slate's renderer; Slate-native owner is already detached endpoint import safety.
+new-slate-route-for-bare-contenteditable-race	A route that intentionally mutates DOM outside Slate would test a synthetic bare contenteditable, not a supported Slate behavior.
+playwright-fill-regression-on-editor-root	The correct invariant is to avoid fill as editor proof, not to make Playwright fill reliable for model-owned contenteditable.
+clone-lexical-playwright-component-testing	Lexical discussion supports real-browser proof width, but no source-backed helper from this discussion beats current Slate-browser helpers.

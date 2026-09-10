@@ -49,9 +49,9 @@ import { getEditorRuntimeOwner } from '../../../packages/plitejs/src/react/edita
 import { getSchemaInvalidatedNodeKeys } from '../../../packages/plitejs/src/react/editable/schema-runtime-invalidation';
 import type { ReactRuntimeEditor } from '../../../packages/plitejs/src/react/plugin/react-editor';
 import {
-  createPliteProjectionGraph,
-  type PliteProjectionOwner,
-} from '../../../packages/plitejs/src/react/projection-graph';
+  createPliteViewBoundaryGraph,
+  type PliteViewBoundaryOwner,
+} from '../../../packages/plitejs/src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   writePliteViewSelection,
@@ -75,8 +75,7 @@ import {
 import { runSchemaTypecheckBudget } from './plite-schema-typecheck-budget.mjs';
 
 const LEGACY_BASELINE = Object.freeze({
-  artifact:
-    'docs/plans/artifacts/wordgard-plite-schema-architecture/baseline.md',
+  artifact: 'benchmarks/editor/docs/baselines/plite-schema-architecture.md',
   equivalentReconfigurationP95Ms: 3.739,
   exactElementPropertyP50Ns: 2736,
   namespaceP50Ns: 3600,
@@ -336,6 +335,7 @@ const createPlateDescriptorPlugins = (
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
+          type: `storedBlock${cohort}${count}${index}`,
         },
       },
     })
@@ -345,6 +345,10 @@ const measurePlateDescriptorStartup = (
   cohort: string
 ) => {
   const plugins = createPlateDescriptorPlugins(count, cohort);
+  const types = Array.from(
+    { length: count },
+    (_, index) => `storedBlock${cohort}${count}${index}`
+  );
   const schemaId = `plate-descriptor-benchmark-${cohort}-${count}`;
   const before = performance.now();
   const editor = createHeadlessEditor({
@@ -355,10 +359,10 @@ const measurePlateDescriptorStartup = (
 
   assert.equal(
     editor.read.schema.element(getDefined(plugins.at(-1)))?.type,
-    getDefined(plugins.at(-1)).name
+    types.at(-1)
   );
 
-  return { editor, plugins, schemaId, startupMs };
+  return { editor, plugins, schemaId, startupMs, types };
 };
 const plateDescriptorSampleOrdinals = new Map<
   (typeof PLATE_DESCRIPTOR_COHORTS)[number],
@@ -410,8 +414,13 @@ const measurePlateDescriptorCohort = (
     () => {
       const before = process.hrtime.bigint();
 
-      for (const plugin of measured.plugins) {
-        if (measured.editor.read.schema.element(plugin)?.type === plugin.name) {
+      for (let index = 0; index < measured.plugins.length; index += 1) {
+        const plugin = getDefined(measured.plugins[index]);
+
+        if (
+          measured.editor.read.schema.element(plugin)?.type ===
+          measured.types[index]
+        ) {
           resolved += 1;
         }
       }
@@ -1277,7 +1286,6 @@ const projectedClipboardSchema = defineEditorSchema(
         contentRoots: {
           body: schema.content.not(schema.content.text()),
         },
-        void: 'editable-island',
       },
       projected_paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -1314,7 +1322,7 @@ const projectedOwner = {
   childRoot: PROJECTED_CLIPBOARD_ROOT,
   ownerPath: [1],
   ownerRoot: 'main',
-} satisfies PliteProjectionOwner;
+} satisfies PliteViewBoundaryOwner;
 const createProjectedClipboardEditor = (blocks: number) => {
   const owner = createEditor({
     extensions: [projectedClipboardSchema],
@@ -1335,7 +1343,7 @@ const createProjectedClipboardEditor = (blocks: number) => {
     },
   });
   const innerEditor = createEditorView(owner) as unknown as ReactRuntimeEditor;
-  const graph = createPliteProjectionGraph([
+  const graph = createPliteViewBoundaryGraph([
     { path: [0], root: 'main' },
     { owner: projectedOwner, path: [0], root: PROJECTED_CLIPBOARD_ROOT },
   ]);
@@ -1924,7 +1932,7 @@ const result = {
     ? {
         ...schemaTypecheckBudget,
         wideningBoundary:
-          'The 100-plugin fixture preserves a literal tuple. The 1,000-plugin fixture explicitly widens to readonly AnyBasePlugin[] so editor inference stays bounded while every descriptor still typechecks.',
+          'The 100-plugin fixture preserves a literal tuple. The 1,000-plugin fixture explicitly widens to readonly BasePluginInput[] so editor inference stays bounded while every descriptor still typechecks.',
       }
     : {
         enabled: false,

@@ -15,7 +15,7 @@ import {
 const currentRepo = process.cwd();
 const legacyRepo = resolve(
   currentRepo,
-  process.env.SLATE_LEGACY_BROWSER_TRACE_REPO || '../../../slate'
+  process.env.SLATE_LEGACY_BROWSER_TRACE_REPO || '../slate'
 );
 const siteOutRoot = resolve(legacyRepo, 'site/out');
 const blocks = Number(process.env.SLATE_LEGACY_BROWSER_TRACE_BLOCKS || 5000);
@@ -31,7 +31,7 @@ const materializationTimeoutMs = Number(
   process.env.SLATE_LEGACY_BROWSER_TRACE_MATERIALIZATION_TIMEOUT_MS || 20_000
 );
 const headless = process.env.SLATE_LEGACY_BROWSER_TRACE_HEADLESS !== '0';
-const buildLegacySite = process.env.SLATE_LEGACY_BROWSER_TRACE_BUILD === '1';
+const buildLegacySite = process.env.SLATE_LEGACY_BROWSER_TRACE_BUILD !== '0';
 const selectedSurfaces = new Set(
   (process.env.SLATE_LEGACY_BROWSER_TRACE_SURFACES || 'legacyChunkOn')
     .split(',')
@@ -538,9 +538,10 @@ const run = async () => {
   await buildSite();
 
   const server = await startStaticServer();
-  const browser = await chromium.launch({ headless });
+  let browser;
 
   try {
+    browser = await chromium.launch({ headless });
     const summary = {
       artifactPaths: {
         latest: latestArtifactPath,
@@ -585,8 +586,11 @@ const run = async () => {
 
     console.log(`\nWrote ${runArtifactPath}`);
   } finally {
-    await browser.close();
-    await server.close();
+    try {
+      await browser?.close();
+    } finally {
+      await server.close();
+    }
   }
 };
 

@@ -1,9 +1,9 @@
 import { parseAsBoolean, useQueryStates } from 'nuqs';
-import { NodeApi, type Element as PliteElement } from 'plitejs';
-import { DOMCoverage } from 'plitejs/dom';
+import { NodeApi, type Element as PliteElementNode } from 'plitejs';
 import {
   Editable,
-  EditableElement,
+  type EditableDOMStrategyMetrics,
+  PliteElement,
   type RenderElementProps,
   Plite,
   useEditor,
@@ -109,7 +109,7 @@ const DomCoverageBoundariesExample = () => {
         type: 'footer',
         children: [{ text: 'Hidden footer text' }],
       },
-    ] as PliteElement[],
+    ] as PliteElementNode[],
   });
   const [
     { deepHidden, footerHidden, headerHidden, innerHidden, outerHidden },
@@ -119,6 +119,9 @@ const DomCoverageBoundariesExample = () => {
     urlKeys: hiddenBoundaryUrlKeys,
   });
   const [copyPreview, setCopyPreview] = useState('');
+  const [metrics, setMetrics] = useState<EditableDOMStrategyMetrics | null>(
+    null
+  );
   const [traceTick, setTraceTick] = useState(0);
   const hiddenBoundaries = useMemo(
     () => ({
@@ -212,8 +215,6 @@ const DomCoverageBoundariesExample = () => {
     [hiddenBoundaries]
   );
 
-  const boundaries = DOMCoverage.getBoundaries(editor);
-
   return (
     <div className="plite-dom-coverage-page">
       <div className="plite-dom-coverage-toolbar">
@@ -282,6 +283,7 @@ const DomCoverageBoundariesExample = () => {
             autoFocus
             className="plite-dom-coverage-editor"
             placeholder="Try toggles, selection, and copy"
+            onDOMStrategyMetrics={setMetrics}
             renderElement={renderElement}
             spellCheck
           />
@@ -289,18 +291,7 @@ const DomCoverageBoundariesExample = () => {
       </div>
 
       <pre className="plite-dom-coverage-debug">
-        {JSON.stringify(
-          boundaries.map((boundary) => ({
-            id: boundary.boundaryId,
-            copy: boundary.copyPolicy,
-            range: boundary.coveredPathRanges,
-            reason: boundary.reason,
-            selection: boundary.selectionPolicy,
-            state: boundary.state,
-          })),
-          null,
-          2
-        )}
+        {JSON.stringify({ hiddenBoundaries, metrics }, null, 2)}
         {traceTick ? `\ntraceTick: ${traceTick}` : ''}
       </pre>
 
@@ -338,7 +329,7 @@ const Element = ({
     }
     case 'section': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
             Outer section
           </div>
@@ -353,12 +344,12 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'nested-section': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
             Nested section
           </div>
@@ -373,12 +364,12 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'deep-section': {
       return (
-        <EditableElement>
+        <PliteElement style={{ position: 'relative' }}>
           <div className="plite-dom-coverage-summary" contentEditable={false}>
             Deep section
           </div>
@@ -393,7 +384,7 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </EditableElement>
+        </PliteElement>
       );
     }
     case 'bulleted-list': {
@@ -417,7 +408,9 @@ const Element = ({
       );
     }
     default: {
-      return <EditableElement>{children}</EditableElement>;
+      return (
+        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+      );
     }
   }
 };

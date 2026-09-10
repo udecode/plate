@@ -21,13 +21,13 @@ instead of rebuilding every component by hand.
 
 | Plite surface | Plate surface |
 | --- | --- |
-| `createEditor()` plus `withReact()` | `useCreateEditor({ ... })` in React components, or `createEditor({ ... })` in factories and tests. |
+| `useEditor()` from `plitejs/react` | `useCreateEditor({ ... })` in React components, or `createEditor({ ... })` in factories and tests. |
 | `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
-| `withX(editor)` plugin functions | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
+| Plite extensions | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
 | Top-level event handlers on `Editable` | Plugin `on` or `shortcuts`. |
-| `Transforms.*` imports | `editor.update((tx) => tx.*)`. |
-| `Editor.*` imports | `editor.read((state) => state.*)`, or a plugin-owned `editor.api.*` service. |
+| `editor.update(...)` | Keep the transaction boundary; add plugin-owned commands through `update`. |
+| `editor.read(...)` | Keep the read boundary; add plugin-owned queries through `read`. |
 
 ## Editor Shell
 

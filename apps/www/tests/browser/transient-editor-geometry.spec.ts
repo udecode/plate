@@ -93,7 +93,7 @@ test('inactive selection paints expanded and collapsed selections 5/5', async ({
   }
 });
 
-test('Find highlights, wraps, closes, and returns editor input', async ({
+test('Find highlights, wraps, closes, and returns editor input 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
@@ -105,57 +105,237 @@ test('Find highlights, wraps, closes, and returns editor input', async ({
     const root = page.locator(EDITOR_ROOT);
     const editor = createPliteBrowserEditorHarness(page, 'find', root);
 
-    await expect(root).toBeVisible();
-    await editor.focus();
-    await editor.press('ControlOrMeta+f');
-
+    await editor.ready({ editor: 'visible' });
     const search = page.getByRole('search', { name: 'Find in document' });
     const input = page.getByRole('searchbox', { name: 'Find text' });
     const matches = page.locator('[data-find-match]');
     const active = page.locator('[data-find-active]');
 
-    await expect(search).toHaveCount(1);
-    const searchWinsStacking = await search.evaluate((element) => {
-      const toolbar = element.ownerDocument.querySelector('[role="toolbar"]');
+    for (let run = 0; run < 5; run++) {
+      const started = Date.now();
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await root.click();
+      await root.press('ControlOrMeta+A');
+      await root.press('ArrowLeft');
+      for (let offset = 0; offset < 4; offset++) {
+        await root.press('Shift+ArrowRight');
+      }
+      await editor.assert.selection({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      });
+      await root.press('ControlOrMeta+f');
+      await expect(input).toHaveValue('This');
+      await expect(input).toBeFocused();
 
-      if (!toolbar) return true;
+      await expect(search).toHaveCount(1);
+      const searchWinsStacking = await search.evaluate((element) => {
+        const toolbar = element.ownerDocument.querySelector('[role="toolbar"]');
 
-      const searchRect = element.getBoundingClientRect();
-      const toolbarRect = toolbar.getBoundingClientRect();
-      const overlapTop = Math.max(searchRect.top, toolbarRect.top);
-      const overlapBottom = Math.min(searchRect.bottom, toolbarRect.bottom);
-      const overlapHeight = Math.max(0, overlapBottom - overlapTop);
+        if (!toolbar) return true;
 
-      if (overlapHeight === 0) return true;
+        const searchRect = element.getBoundingClientRect();
+        const toolbarRect = toolbar.getBoundingClientRect();
+        const overlapTop = Math.max(searchRect.top, toolbarRect.top);
+        const overlapBottom = Math.min(searchRect.bottom, toolbarRect.bottom);
+        const overlapHeight = Math.max(0, overlapBottom - overlapTop);
 
-      const topElement = element.ownerDocument.elementFromPoint(
-        Math.min(searchRect.right, toolbarRect.right) - 1,
-        overlapTop + overlapHeight / 2
+        if (overlapHeight === 0) return true;
+
+        const topElement = element.ownerDocument.elementFromPoint(
+          Math.min(searchRect.right, toolbarRect.right) - 1,
+          overlapTop + overlapHeight / 2
+        );
+
+        return Boolean(topElement && element.contains(topElement));
+      });
+
+      expect(searchWinsStacking).toBe(true);
+
+      await input.fill('the');
+      await expect(search).toContainText('1 of 2');
+      await expect(matches).toHaveCount(2);
+      await expect(active).toHaveCount(1);
+      const activeBackground = await active.evaluate(
+        (element) => getComputedStyle(element).backgroundColor
       );
+      const inactiveBackground = await page
+        .locator('[data-find-match]:not([data-find-active])')
+        .evaluate((element) => getComputedStyle(element).backgroundColor);
+      expect(activeBackground).not.toBe(inactiveBackground);
 
-      return Boolean(topElement && element.contains(topElement));
+      await input.press('Enter');
+      await expect(search).toContainText('2 of 2');
+      await page.getByRole('button', { name: 'Previous match' }).click();
+      await expect(search).toContainText('1 of 2');
+      await page.getByRole('button', { name: 'Next match' }).click();
+      await expect(search).toContainText('2 of 2');
+      await input.press('Enter');
+      await expect(search).toContainText('1 of 2');
+      await input.press('Shift+Enter');
+      await expect(search).toContainText('2 of 2');
+
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect
+        .poll(() =>
+          search.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            return rect.left >= 0 && rect.right <= innerWidth;
+          })
+        )
+        .toBe(true);
+
+      if (run % 2 === 0) {
+        await input.press('Escape');
+      } else {
+        await page.getByRole('button', { name: 'Close find' }).click();
+      }
+      await expect(search).toHaveCount(0);
+      await expect(matches).toHaveCount(0);
+      await expect(root).toBeFocused();
+      await page.keyboard.type('!');
+      await expect(root).toContainText('!');
+      await page.keyboard.press('ControlOrMeta+z');
+      await expect(root).not.toContainText('!');
+      await testInfo.attach(`find-warm-run-${run + 1}`, {
+        body: JSON.stringify({
+          run: run + 1,
+          durationMs: Date.now() - started,
+          passed: true,
+        }),
+        contentType: 'application/json',
+      });
+    }
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('Find opens the requested shared-model view and survives detach 5/5', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
+    const first = page.getByRole('region', { name: 'First view', exact: true });
+    const firstRoot = first.locator(EDITOR_ROOT);
+    await createPliteBrowserEditorHarness(page, 'find-first', firstRoot).ready({
+      editor: 'visible',
     });
+    for (let run = 0; run < 5; run++) {
+      const started = Date.now();
+      await page.setViewportSize({
+        width: run % 2 === 0 ? 1280 : 390,
+        height: 844,
+      });
+      await page.getByRole('button', { name: 'Show second view' }).click();
+      const second = page.getByRole('region', {
+        name: 'Second view',
+        exact: true,
+      });
+      const secondRoot = second.locator(EDITOR_ROOT);
+      await createPliteBrowserEditorHarness(
+        page,
+        'find-second',
+        secondRoot
+      ).ready({ editor: 'visible' });
+      await firstRoot.click();
+      await firstRoot.press('ControlOrMeta+f');
+      const firstInput = first.getByRole('searchbox');
+      await expect(page.getByRole('search')).toHaveCount(1);
+      await expect(firstInput).toBeFocused();
+      await firstInput.fill('the');
+      await expect(first.getByRole('search')).toContainText('1 of 2');
+      await expect(second.locator('[data-find-match]')).toHaveCount(2);
+      await secondRoot.click();
+      await secondRoot.press('ControlOrMeta+f');
+      const secondInput = second.getByRole('searchbox');
+      await expect(page.getByRole('search')).toHaveCount(2);
+      await expect(secondInput).toHaveValue('the');
+      await expect(secondInput).toBeFocused();
+      await secondInput.fill('This');
+      await expect(firstInput).toHaveValue('This');
+      await expect(second.getByRole('search')).toContainText('1 of 1');
+      await firstInput.click();
+      await expect(firstInput).toBeFocused();
+      await page.getByRole('button', { name: 'Hide second view' }).click();
+      await expect(secondRoot).toHaveCount(0);
+      await expect(firstInput).toHaveValue('This');
+      await expect(first.locator('[data-find-match]')).toHaveCount(1);
+      await firstInput.press('Escape');
+      await expect(firstRoot).toBeFocused();
+      await expect(page.getByRole('search')).toHaveCount(0);
+      await page.keyboard.type('!');
+      await expect(firstRoot).toContainText('!');
+      await page.keyboard.press('ControlOrMeta+z');
+      await expect(firstRoot).not.toContainText('!');
+      await testInfo.attach(`find-view-warm-run-${run + 1}`, {
+        body: JSON.stringify({
+          run: run + 1,
+          durationMs: Date.now() - started,
+          passed: true,
+        }),
+        contentType: 'application/json',
+      });
+    }
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
 
-    expect(searchWinsStacking).toBe(true);
+test('Find scrolls distant ranges while retaining input focus and selection', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
 
-    await input.fill('the');
+  try {
+    await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
+    const root = page.locator(EDITOR_ROOT);
+    const editor = createPliteBrowserEditorHarness(page, 'find', root);
+    await expect(root).toBeVisible();
+    await editor.focus();
+    await root.press('ControlOrMeta+A');
+    await page.keyboard.insertText(
+      `needle at the start\n${'A line between matches.\n'.repeat(70)}needle at the end`
+    );
+    await root.press('ControlOrMeta+Home');
+    const selection = await editor.get.selection();
+    await root.press('ControlOrMeta+f');
+
+    const input = page.getByRole('searchbox', { name: 'Find text' });
+    const search = page.getByRole('search', { name: 'Find in document' });
+    const active = page.locator('[data-find-active]');
+    const matches = page.locator('[data-find-match]');
+
+    await input.fill('needle');
     await expect(search).toContainText('1 of 2');
     await expect(matches).toHaveCount(2);
-    await expect(active).toHaveCount(1);
+    await expect(active).toBeInViewport({ ratio: 1 });
+    await expect(matches.nth(1)).not.toBeInViewport();
 
-    await input.press('Enter');
-    await expect(search).toContainText('2 of 2');
-    await input.press('Enter');
-    await expect(search).toContainText('1 of 2');
-    await input.press('Shift+Enter');
-    await expect(search).toContainText('2 of 2');
-
+    for (const viewport of [
+      { width: 1280, height: 720 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await input.press('Enter');
+      await expect(search).toContainText('2 of 2');
+      await expect(active).toBeInViewport({ ratio: 1 });
+      await expect(input).toBeFocused();
+      await expect.poll(() => editor.get.selection()).toEqual(selection);
+      await input.press('Shift+Enter');
+      await expect(search).toContainText('1 of 2');
+      await expect(active).toBeInViewport({ ratio: 1 });
+      await expect(input).toBeFocused();
+      await expect.poll(() => editor.get.selection()).toEqual(selection);
+    }
     await input.press('Escape');
     await expect(search).toHaveCount(0);
     await expect(matches).toHaveCount(0);
-    await expect(root).toBeFocused();
-    await page.keyboard.type('!');
-    await expect(root).toContainText('!');
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();
@@ -194,6 +374,18 @@ test('Yjs remote selection and caret geometry pass 5/5', async ({
       await expect.poll(() => remoteSelection.count()).toBeGreaterThan(0);
       await expect(remoteCaret).toHaveCount(1);
       await expect(remoteLabel).toHaveText('Ada');
+      await expect(remoteSelection.first()).toHaveCSS(
+        'background-color',
+        'rgba(124, 58, 237, 0.2)'
+      );
+      await expect(remoteCaret).toHaveCSS(
+        'background-color',
+        'rgb(124, 58, 237)'
+      );
+      await expect(remoteLabel).toHaveCSS(
+        'background-color',
+        'rgb(124, 58, 237)'
+      );
 
       await editor.selection.collapse({ offset: 12, path: [0, 0] });
       await expect(remoteSelection).toHaveCount(0);

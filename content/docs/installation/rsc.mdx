@@ -5,7 +5,7 @@ description: Install and configure Plate for React Server Components.
 
 Use Plate in React Server Components when you need to render read-only editor content or generate HTML on the server. Interactive editors still belong in client components with `platejs/react`. This guide shows the server-safe static editor path, HTML serialization, and the boundary with Node-only processing.
 
-## RSC Setup
+## RSC setup
 
 <Callout type="warning" title="Use static imports">
   Do not import `platejs/react` or another `/react` subpath from a Server
@@ -14,7 +14,7 @@ Use Plate in React Server Components when you need to render read-only editor co
 
 <Steps>
 
-### Install the Base Kit
+### Install the base kit
 
 Install the copied base editor kit when you want Plate UI static components and
 the default serializer plugins.
@@ -26,7 +26,7 @@ npx shadcn@latest add @plate/editor-plugins-static
 The `editor-plugins-static` item installs `BaseEditorKit`, static node components, and
 the `editor-static` UI component used by server rendering.
 
-### Render Static Content
+### Render static content
 
 Create a static editor in the Server Component and render it with
 `<PlateStatic>`.
@@ -97,7 +97,7 @@ export async function GET() {
 }
 ```
 
-### Use Base Packages Without Plate UI
+### Use base packages without Plate UI
 
 If you only need data transforms or Markdown IO, use the Node.js path instead
 of static React rendering.
@@ -111,7 +111,7 @@ components.
 
 </Steps>
 
-## Runtime Boundaries
+## Runtime boundaries
 
 | Runtime | Import from | Use for |
 | --- | --- | --- |
@@ -126,7 +126,7 @@ components.
   reads or transforms a value.
 </Callout>
 
-## Next Steps
+## Next steps
 
 | Task | Guide |
 | --- | --- |

@@ -4,27 +4,27 @@ import {
   type Range,
   type NodeKey,
   type Editor as EditorType,
+  type Value,
 } from '..';
+import type {
+  PliteAnnotationStore,
+  PliteResolvedAnnotation,
+} from '../annotations';
 import {
-  subscribeAnnotationChanges,
-  type PliteAnnotationStore,
-  type PliteResolvedAnnotation,
-} from './annotation-store';
+  areMappedViewDataEqual,
+  createMappedViewStoreKernel,
+  createViewSourceFaultBoundary,
+} from '../internal/view/mapped-view-store';
+import { createStableIdMappedSource } from '../internal/view/stable-id-mapped-source';
+import type {
+  PliteViewSourceErrorSink,
+  PliteViewSourceStatus,
+} from '../internal/view/view-source';
 import {
   failInvariant,
   getSelectionDOMRange,
   getSnapshot as editorGetSnapshot,
 } from './editable/runtime-editor-api';
-import {
-  areMappedViewDataEqual,
-  createMappedViewStoreKernel,
-  createViewSourceFaultBoundary,
-} from './mapped-view-store';
-import { createStableIdMappedSource } from './stable-id-mapped-source';
-import type {
-  PliteViewSourceErrorSink,
-  PliteViewSourceStatus,
-} from './view-source';
 
 export type PliteWidgetTarget =
   | {
@@ -203,12 +203,13 @@ const createPliteWidgetStoreInternal = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
-  editor: EditorType,
+  editorInput: unknown,
   getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore: PliteAnnotationStore<TAnnotation> | null | undefined,
   options: PliteWidgetStoreOptions,
   dormant: boolean
 ): ActivatablePliteWidgetStore<T, TAnnotation> => {
+  const editor = editorInput as EditorType;
   let destroyed = false;
   const faultBoundary = createViewSourceFaultBoundary({
     id: options.id ?? 'widgets',
@@ -407,7 +408,7 @@ const createPliteWidgetStoreInternal = <
 
   const subscribeToAnnotations = () =>
     annotationStore
-      ? subscribeAnnotationChanges(annotationStore, (changedIds) => {
+      ? annotationStore.subscribeChanges(({ ids }) => {
           if (destroyed) {
             return;
           }
@@ -418,21 +419,11 @@ const createPliteWidgetStoreInternal = <
 
           const forceIds = [
             ...new Set(
-              changedIds === null
-                ? [...targetIndex.annotationIds.values()].flat()
-                : changedIds.flatMap(
-                    (id) => targetIndex.annotationIds.get(id) ?? []
-                  )
+              ids.flatMap((id) => targetIndex.annotationIds.get(id) ?? [])
             ),
           ];
 
           if (forceIds.length > 0 || widgetsResult.value !== currentWidgets) {
-            if (changedIds === null) {
-              metrics = Object.freeze({
-                ...metrics,
-                fullFallbackCount: metrics.fullFallbackCount + 1,
-              });
-            }
             syncWidgets(
               widgetsResult.value,
               widgetsResult.value === currentWidgets
@@ -502,9 +493,11 @@ const createPliteWidgetStoreInternal = <
 /** Create a widget store backed by a live widget projector. */
 export const createPliteWidgetStore = <
   T extends Record<string, unknown>,
-  TAnnotation extends Record<string, unknown>,
+  TAnnotation extends Record<string, unknown> = Record<string, never>,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: EditorType,
+  editor: EditorType<V, TExtensions>,
   getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null,
   options: PliteWidgetStoreOptions = {}
@@ -526,7 +519,7 @@ export const createDormantPliteWidgetStore = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
-  editor: EditorType,
+  editor: unknown,
   getWidgets: () => ReadonlyArray<PliteWidget<T>>,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null,
   options: PliteWidgetStoreOptions = {}

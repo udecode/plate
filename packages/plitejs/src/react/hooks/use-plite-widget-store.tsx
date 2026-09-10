@@ -1,8 +1,8 @@
 import { useInsertionEffect, useMemo, useRef } from 'react';
 
-import type { Editor } from '../..';
-import type { PliteAnnotationStore } from '../annotation-store';
-import type { PliteViewSourceErrorSink } from '../view-source';
+import type { Editor, Value } from '../..';
+import type { PliteAnnotationStore } from '../../annotations';
+import type { PliteViewSourceErrorSink } from '../../internal/view/view-source';
 import {
   createDormantPliteWidgetStore,
   type PliteWidget,
@@ -25,7 +25,7 @@ const createWidgetStoreOwner = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
-  editor: Editor,
+  editor: unknown,
   widgets: ReadonlyArray<PliteWidget<T>>,
   options: UsePliteWidgetStoreOptions<TAnnotation>
 ) => {
@@ -52,9 +52,11 @@ const createWidgetStoreOwner = <
  */
 export function usePliteWidgetStore<
   T extends Record<string, unknown> = Record<string, unknown>,
-  TAnnotation extends Record<string, unknown> = Record<string, unknown>,
+  TAnnotation extends Record<string, unknown> = Record<string, never>,
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: Editor,
+  editor: Editor<V, TExtensions>,
   widgets: ReadonlyArray<PliteWidget<T>>,
   options: UsePliteWidgetStoreOptions<TAnnotation> = {}
 ): PliteWidgetStore<T, TAnnotation> {

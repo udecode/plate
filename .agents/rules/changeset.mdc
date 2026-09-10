@@ -4,6 +4,9 @@ description: 'Command: changeset'
 
 # Changeset
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Changesets document package changes for release. Concise bullets, imperative voice, user impact only.
 
 **Core principle:** one action verb + one impact statement = one bullet.
@@ -95,7 +98,7 @@ Do not write:
   branch
 - implementation diary
 - architecture rationale
-- internal ownership or seam language
+- internal ownership or boundary language
 - test coverage notes
 - "editor-owned", "normalize path", "wrap semantics", or similar internal phrasing unless the public API literally uses those words
 
@@ -224,3 +227,13 @@ Before shipping:
 
 For `apps/www/src/registry` changes, use the `registry-changelog` skill. Do not
 duplicate its schema here.
+
+## Managed auto-release choice
+
+For PR-body edits, preserve the existing `auto-release` marker block and its
+checked state. `tooling/scripts/auto-release-pr.mjs` owns normalization;
+`.github/workflows/changeset-auto-release.yml` supplies the default for a new
+block and excludes Version Packages PRs. Do not copy that policy into Task or
+hand-toggle a release choice during prose cleanup. Creating or changing the
+release choice still requires the active request's authority. Read these owners
+when the task actually changes auto-release behavior.

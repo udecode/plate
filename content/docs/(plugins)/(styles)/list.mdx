@@ -24,7 +24,7 @@ List turns supported blocks into flat list items. Kind, marker style, explicit n
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 ~~~tsx
 import { ListKit } from '@/components/editor/list';
@@ -93,7 +93,16 @@ list.update.toggle({ type: ListType.Task });
 
 list.update.indent({ type: ListType.Bulleted });
 list.update.outdent();
+list.update.clear();
+list.update.insert({ type: ListType.Numbered }, { replaceEmpty: true, select: true });
 ~~~
+
+`clear` removes list fields and indentation from the selected list items without
+expanding to their unselected siblings. It preserves each block's type and text.
+Pass `at` to target a location or node selection. `insert` creates a paragraph
+list item after the current block; `replaceEmpty` replaces an empty source in
+the same history step. An explicit `at` keeps node-insertion placement, while
+`after` identifies the block to insert beside.
 
 ## HTML and Markdown
 
@@ -110,4 +119,6 @@ MDAST list.ordered maps to listType. Both start policies serialize as the curren
 | update.toggle(options) | Set or remove list semantics. |
 | update.indent(options) | Increase indentation and set list semantics. |
 | update.outdent(options) | Decrease indentation and clear list fields at the outer level. |
+| update.clear(options?) | Remove list semantics from the exact selected list items. |
+| update.insert(input, options?) | Insert a list item with owned construction and placement. |
 | read.ordinal(element) | Derive a numbered item's display ordinal. |

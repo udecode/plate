@@ -114,6 +114,11 @@ const editor = createEditor({
 
 `EmojiPicker` 自行管理弹出层、搜索、分类焦点、预览、选择和常用表情。`EmojiToolbarButton` 只提供工具栏触发器。
 
+行内输入和工具栏共用 `platejs/emoji` 的 `createEmojiSearch(data)`。
+为每个数据集创建一次搜索函数，再调用 `search(query, { limit: 60 })`。
+搜索匹配 ID、名称和关键词，优先返回完全匹配的 ID。每次查询返回独立数组，
+空查询返回空数组。分类、行布局、常用表情记录和结果数量由复制的 UI 管理。
+
 ```tsx
 import { Button } from '@/components/ui/button';
 import {

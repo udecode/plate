@@ -7,29 +7,21 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: false,
-      projections: [],
+      decorations: [],
     })
   ).toEqual({ enabled: false, reason: 'empty-text' });
 
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [{ key: 'p' } as any],
+      decorations: [{ attributes: {}, end: 1, key: 'decoration', start: 0 }],
     })
-  ).toEqual({ enabled: false, reason: 'projection' });
+  ).toEqual({ enabled: false, reason: 'decoration' });
 
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [],
-      renderSegment: () => null,
-    })
-  ).toEqual({ enabled: false, reason: 'custom-segment' });
-
-  expect(
-    getDOMTextSyncCapability({
-      hasText: true,
-      projections: [],
+      decorations: [],
       renderLeaf: () => null,
     })
   ).toEqual({ enabled: false, reason: 'custom-leaf' });
@@ -42,7 +34,7 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [],
+      decorations: [],
       renderLeaf: safeLeaf,
     })
   ).toEqual({ enabled: true, reason: null });
@@ -50,7 +42,7 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [],
+      decorations: [],
       renderText: () => null,
     })
   ).toEqual({ enabled: false, reason: 'custom-text' });
@@ -58,7 +50,7 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [{ key: 'p' } as any],
+      decorations: [{ attributes: {}, end: 1, key: 'decoration', start: 0 }],
       renderText: () => null,
     })
   ).toEqual({ enabled: false, reason: 'custom-text' });
@@ -66,7 +58,7 @@ test('DOM text sync capability names opt-out reasons', () => {
   expect(
     getDOMTextSyncCapability({
       hasText: true,
-      projections: [],
+      decorations: [],
     })
   ).toEqual({ enabled: true, reason: null });
 });

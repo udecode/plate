@@ -1,27 +1,28 @@
 ---
-title: Comment
+title: Comments
+description: Load comment records with document ranges, edit them, and save their mapped positions.
 docs:
-  - route: https://pro.platejs.org/docs/examples/discussion
-    title: Plus
+  - route: /docs/discussion
+    title: Discussion
   - route: /docs/components/comment
-    title: Comment Leaf
+    title: Comment Threads
   - route: /docs/components/comment-toolbar-button
     title: Comment Toolbar Button
-  - route: /docs/components/block-discussion
-    title: Block Discussion
 ---
 
 <ComponentPreview name="discussion-demo" />
+
+Pass fetched comment records to `CommentsPlugin`. The package owns the records, comment actions, subscriptions, and range mapping. Your application loads and saves the data.
 
 <PackageInfo>
 
 ## Features
 
-- **Text Comments:** Add comments as text marks with inline annotations
-- **Overlapping Comments:** Support multiple comments on the same text
-- **Draft Comments:** Create draft comments before finalizing
-- **State Tracking:** Track comment state and user interactions
-- **Discussion Integration:** Works with discussion plugin for complete collaboration
+- Serializable thread records with rich-text messages and ISO timestamps
+- Ranges that track edits, undo, and redo
+- Ordered overlapping highlights and editor-local activation
+- Keyed subscriptions for messages, pending input, and thread lists
+- Comment and suggestion review through copied Discussion UI
 
 </PackageInfo>
 
@@ -31,442 +32,219 @@ docs:
 
 ### Installation
 
-The fastest way to add comment functionality is with the `CommentKit`, which includes pre-configured `commentPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
+```bash
+npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
+```
 
-<ComponentSource name="comment" />
+`DiscussionKit` includes Comment styling, the shared discussion index, block triggers, and Floating Discussion. The copied `comment` item supplies `CommentKit`, rich thread cards, and the composer. The toolbar button starts a comment from the selection; `Mod+Shift+M` provides the same action.
 
-- [`CommentLeaf`](/docs/components/comment): Renders comment text marks
-- [`BlockDiscussion`](/docs/components/block-discussion): Renders discussion UI with comments integration
+<ComponentSource name="discussion" />
 
 ### Add Kit
 
-```tsx
-import { createEditor } from 'platejs/react';
-import { CommentKit } from '@/components/editor/comment';
+Pass records fetched with the matching document to `initialThreads`:
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...CommentKit,
-  ],
-});
+```tsx title="components/editor/comments-editor.tsx" showLineNumbers {23-30}
+"use client";
+
+import type { EditorValueInput } from "platejs";
+import type { CommentThread, CommentUser } from "platejs/comments";
+import { CommentsPlugin } from "platejs/comments/react";
+import { Plate, useCreateEditor } from "platejs/react";
+
+import { DiscussionKit } from "@/components/editor/discussion";
+import { Editor, EditorContainer } from "@/components/editor/editor";
+import { EditorKit } from "@/components/editor/plugins";
+
+export function CommentsEditor({ value, threads, users, currentUserId }: {
+  value: EditorValueInput;
+  threads: readonly CommentThread[];
+  users: Record<string, CommentUser>;
+  currentUserId: string;
+}) {
+  const editor = useCreateEditor({
+    plugins: [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          initialThreads: threads,
+          users,
+          currentUserId,
+        },
+      }),
+    ],
+    initialValue: value,
+  });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
 ```
 
+`initialThreads` seeds each editor once. Use `api.setThreads(records)` for an explicit refetch. Updating the component's initial props does not replace the editor's current records.
+
 </Steps>
+
+## Application data
+
+Store complete `CommentThread` records. Message bodies use Plate `Value`; timestamps use ISO 8601 strings. Range targets contain plain document coordinates:
+
+```ts
+import type { CommentThread } from "platejs/comments";
+
+const threads: CommentThread[] = [{
+  id: "review-1",
+  userId: "alice",
+  createdAt: "2026-09-09T12:00:00.000Z",
+  excerpt: "Selected text",
+  resolved: false,
+  status: "published",
+  target: {
+    type: "range",
+    range: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 13 },
+    },
+  },
+  messages: [{
+    id: "message-1",
+    userId: "alice",
+    createdAt: "2026-09-09T12:00:00.000Z",
+    body: [{ type: "paragraph", children: [{ text: "Please review this." }] }],
+  }],
+}];
+```
+
+`{ type: "suggestion", id }` attaches a thread to a suggestion. A range target with `range: null` represents a detached thread.
+
+Read current mapped ranges when saving, together with the same document revision:
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin);
+const snapshot = {
+  document: editor.read.value(),
+  threads: comments.api.getThreads(),
+};
+```
+
+`api.subscribeThreads(listener)` reports `{ ids, reason }`, where `reason` is `"data"` or `"document"`. Use it to observe changes for your persistence layer. Database requests, collaboration transport, and server authorization belong to the application.
+
+`api.setThreads(records)` replaces complete records together and preserves the current user and pending composer. It copies incoming data and rejects duplicate thread IDs, invalid timestamps, and invalid ranges before replacing existing records. Ranges address the primary document; named secondary roots are unsupported. `api.setThreads([])` clears the records. Read snapshots are immutable; use the API to change them.
 
 ## Manual Usage
 
-<Steps>
-
-### Installation
+The headless plugin provides the same data and range API without React. This example loads the records above:
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npm install platejs
 ```
 
-### Extend Comment Plugin
-
-Create the comment plugin with extended configuration for state management:
-
-```tsx
-import { isString } from 'platejs/dom';
-import { TextApi, type Path } from 'platejs';
-import { BaseCommentPlugin, getDraftCommentKey } from 'platejs/comment';
-import { CommentLeaf } from '@/components/editor/comment';
-
-const initialState: {
-  activeId: string | null;
-  commentingBlock: Path | null;
-  hoverId: string | null;
-} = {
-  activeId: null,
-  commentingBlock: null,
-  hoverId: null,
-};
-
-export const commentPlugin = BaseCommentPlugin.configure({
-  component: CommentLeaf,
-  initialState,
-});
-```
-
-- `initialState.activeId`: Currently active comment ID for visual highlighting
-- `initialState.commentingBlock`: Path of the block currently being commented
-- `initialState.hoverId`: Currently hovered comment ID for hover effects
-- `component: CommentLeaf`: Renders comment text marks with
-  [`CommentLeaf`](/docs/components/comment)
-
-### Add Click Handler
-
-Add click handling to manage active comment state:
-
-```tsx
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-    initialState,
-    on: {
-      // Set active comment when clicking on comment marks
-      click: ({ api, event, store, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
-
-        const unsetActiveComment = () => {
-          store.set({ activeId: null });
-          isSet = true;
-        };
-
-        if (!isString(leaf)) unsetActiveComment();
-
-        while (leaf.parentElement) {
-          if (leaf.classList.contains(`plite-${type}`)) {
-            const commentsEntry = api.node();
-
-            if (!commentsEntry) {
-              unsetActiveComment();
-              break;
-            }
-
-            const id = api.id(commentsEntry[0]);
-            store.set({ activeId: id ?? null });
-            isSet = true;
-            break;
-          }
-
-          leaf = leaf.parentElement;
-        }
-
-        if (!isSet) unsetActiveComment();
-      },
-    },
-    // ... render
-});
-```
-
-The click handler tracks which comment is currently active:
-
-- **Detects comment clicks**: Traverses DOM to find comment elements
-- **Sets active state**: Updates `activeId` when clicking on comments
-- **Clears state**: Unsets `activeId` when clicking outside comments
-- **Visual feedback**: Enables hover/active styling in comment components
-
-### Extend Transforms
-
-Extend the `setDraft` transaction command for enhanced functionality:
-
-```tsx
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-  initialState,
-})
-  .extend(({ schema, store }) => ({
-    update: ({ tx }) => ({
-      setDraft: (options = {}) => {
-        const commentingBlock =
-          tx.selection()?.focus.path.slice(0, 1) ?? null;
-
-        if (tx.selection.isCollapsed()) {
-          const blockEntry = tx.nodes.block();
-
-          if (blockEntry) {
-            tx.selection.set(blockEntry[1]);
-          }
-        }
-
-        tx.nodes.set(
-          {
-            [getDraftCommentKey()]: true,
-            [schema.key]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
-
-        tx.selection.collapse();
-        store.set({ activeId: getDraftCommentKey() });
-        store.set({ commentingBlock });
-      },
-    }),
-  }))
-  .configure({
-    component: CommentLeaf,
-    shortcuts: {
-      setDraft: { keys: 'mod+shift+m' },
-    },
-  });
-```
-
-### Add Toolbar Button
-
-You can add [`CommentToolbarButton`](/docs/components/comment-toolbar-button) to your [Toolbar](/docs/toolbar) to add comments on selected text.
-
-### Add Plugins
-
-```tsx
-import { createEditor } from 'platejs/react';
+```ts
+import { createEditor } from "platejs";
+import { BaseCommentsPlugin } from "platejs/comments";
 
 const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    commentPlugin,
-  ],
+  plugins: [BaseCommentsPlugin.configure({
+    initialState: { initialThreads: threads, currentUserId: "alice" },
+  })],
+  initialValue: [{ type: "paragraph", children: [{ text: "Selected text" }] }],
 });
 ```
 
-### Discussion Integration
+## Ownership
 
-The comment plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
+| Owner | Responsibility |
+| --- | --- |
+| `platejs/comments` | Own records, actions, subscriptions, and private native range handles |
+| `platejs/comments/react` | Add selection commands, shortcuts, and highlight clicks |
+| Copied `comment` and `discussion` items | Style highlights and render forms, cards, block triggers, and popovers |
+| Your application | Supply users and fetched records; persist data and authorize remote writes |
 
-```tsx
-import { discussionPlugin } from '@/components/editor/discussion';
+Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` and `currentUserId` use the plugin store; subscribe with `usePluginStore` and update them through `store.set`.
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    discussionPlugin,
-    commentPlugin,
-  ],
+## Editing and history
+
+Comments use inward-associated `nearest` anchors internally. Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside the range.
+
+When all annotated text is deleted, the range collapses at a valid document position. Its block trigger keeps the thread reachable without highlighting neighboring text. Undo and redo restore the mapped range, including backward direction and overlaps.
+
+## Collaboration and read-only review
+
+Pass the same serialized records to independent editors when their documents match. Each editor creates its own native handles and activation state. If document revisions differ, load ranges for each revision; plain coordinates cannot identify edits that happened elsewhere.
+
+For a read-only view, set `readOnly` on both `Plate` and `Editor`. For static rendering, use `BaseCommentsPlugin` and configure `commentDecorationAttributes` from the copied `comment-static` item. Thread cards remain copied application UI.
+
+## Legacy document migration
+
+Run `extractLegacyCommentRanges` before loading documents that contain `comment`, `comment_*`, `comment_draft`, or `commentTransient` properties.
+
+```ts
+import { extractLegacyCommentRanges } from "platejs/migrations";
+
+const {
+  comments,
+  diagnostics,
+  document: cleanDocument,
+} = extractLegacyCommentRanges(document, {
+  threadIds: storedThreads.map((thread) => thread.id),
 });
+
+console.table(diagnostics);
 ```
 
-</Steps>
-
-## Keyboard Shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Shift + M">
-    Add a comment on the selected text.
-  </KeyTableItem>
-</KeyTable>
-
-## Plate Plus
-
-<ComponentPreviewPro name="discussion-pro" />
+Persist `cleanDocument` and import `comments` through your storage layer after reviewing every diagnostic. The extractor never invents missing thread IDs. Run it offline; the runtime plugin has no legacy fallback.
 
 ## Plugins
 
-### `CommentPlugin`
+- `BaseCommentsPlugin` from `platejs/comments` owns headless data and range behavior.
+- `CommentsPlugin` from `platejs/comments/react` adds React view interactions.
 
-Plugin for creating and managing text comments with state tracking and discussion integration.
+## API Reference
 
-<API name="CommentPlugin">
-  <APIOptions>
-    <APIItem name="activeId" type="string | null">
-      Currently active comment ID for visual highlighting. Used internally to
-      track state.
-    </APIItem>
-    <APIItem name="commentingBlock" type="Path | null">
-      Path of the block currently being commented on.
-    </APIItem>
-    <APIItem name="hoverId" type="string | null">
-      Currently hovered comment ID for hover effects.
-    </APIItem>
-  </APIOptions>
-</API>
+### Data and ranges
 
-## API
+| Method | Purpose |
+| --- | --- |
+| `api.getThreads()` | Read complete records with current mapped ranges for persistence |
+| `api.getThread(id)` | Read one stable record, or `undefined` |
+| `api.setThreads(records)` | Replace all records from a fetch |
+| `api.getSnapshot()` | Read stable thread IDs, visible IDs, draft IDs, and pending input |
+| `api.range(id)` | Read a range target's current `Range`, or `null` |
+| `api.idsAt(location)` | Read overlapping unresolved IDs in record order |
+| `api.setActive(ids)` | Select an ordered group; use `[]` to clear it |
+| `api.subscribe(listener)` | Observe canonical range projection changes |
 
-### `editor.read.comment.has`
+### Comment actions
 
-Checks if a comment with the given ID exists in the editor.
+| Method | Purpose |
+| --- | --- |
+| `api.begin(range?)` | Start pending input; a caret expands to its text block |
+| `api.pendingRange()` | Read the pending input's mapped range |
+| `api.cancel()` | Cancel pending input and release its range |
+| `api.create(body)` | Complete the pending thread |
+| `api.createThread({ body, target, ... })` | Create a range or suggestion thread; accepts `id`, `excerpt`, `status`, and `userId` |
+| `api.reply(id, body)` | Append a message to an unresolved thread |
+| `api.edit(id, messageId, body)` | Edit the current user's message |
+| `api.removeMessage(id, messageId)` | Remove the current user's message; remove its thread when no messages remain |
+| `api.removeThread(id)` | Remove a thread owned by the current user |
+| `api.resolve(id, resolved?)` | Resolve or reopen a thread owned by the current user; defaults to `true` |
+| `api.publishDraft(id)` | Publish an AI draft |
+| `api.discardDraft(id)` | Remove an AI draft |
 
-<API name="editor.read.comment.has">
-  <APIParameters>
-    <APIItem name="options" type="{ id: string }">
-      Options containing the comment ID to check.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">Whether the comment exists.</APIReturns>
-</API>
+Creation requires a user ID and a nonempty body. Failed creation returns `null`; rejected boolean actions return `false`. `create`, `createThread`, `reply`, and `edit` allow asynchronous API overrides, so callers can await their results.
 
-### `editor.read.comment.node`
+### Subscriptions
 
-Gets a comment node entry.
+`subscribeThread(id, listener)` observes one record. `subscribeVisibleThreadIds`, `subscribeDraftThreadIds`, and `subscribePending` observe their respective snapshots. `subscribeThreads` observes persisted data changes, including mapped ranges. Each method returns an unsubscribe function.
 
-<API name="editor.read.comment.node">
-  <APIOptions
-    type="object & { id?: string; isDraft?: boolean }"
-    optional
-  >
-    Options for finding the node.
-  </APIOptions>
-  <APIReturns type="NodeEntry<CommentText> | undefined">
-    The comment node entry if found.
-  </APIReturns>
-</API>
+### `CommentComposer`
 
-### `editor.api.comment.id`
-
-Gets the ID of a comment from a leaf node.
-
-<API name="editor.api.comment.id">
-  <APIParameters>
-    <APIItem name="leaf" type="CommentText">
-      The comment leaf node.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string | undefined">The comment ID if found.</APIReturns>
-</API>
-
-### `editor.read.comment.nodes`
-
-Gets all comment node entries matching the options.
-
-<API name="editor.read.comment.nodes">
-  <APIOptions
-    type="object & { id?: string; isDraft?: boolean }"
-    optional
-  >
-    Options for finding the nodes.
-  </APIOptions>
-  <APIReturns type="NodeEntry<CommentText>[]">
-    Array of comment node entries.
-  </APIReturns>
-</API>
-
-## Transforms
-
-### `tx.comment.removeMark`
-
-Removes the comment mark from the current selection or a specified location.
-
-<API name="removeMark" />
-
-### `tx.comment.setDraft`
-
-Sets a draft comment mark at the current selection.
-
-<API name="setDraft">
-  <APIOptions type="object" optional>
-    Options for setting the draft comment.
-  </APIOptions>
-</API>
-
-### `tx.comment.unsetMark`
-
-Unsets comment nodes with the specified ID from the editor.
-
-<API name="unsetMark">
-<APIParameters>
-  <APIItem name="options" type="{ id: string; transient?: boolean }">
-    Options for unsetting comment marks.
-  </APIItem>
-</APIParameters>
-
-<APIOptions type="object">
-  <APIItem name="id" type="string">
-    The comment ID to unset.
-  </APIItem>
-  <APIItem name="transient" type="boolean" optional>
-    When true, removes all AI comments at once.
-    - **Default:** `false`
-  </APIItem>
-</APIOptions>
-</API>
-
-## Utilities
-
-### `getCommentCount`
-
-Gets the count of non-draft comments in a comment node.
-
-<API name="getCommentCount">
-  <APIParameters>
-    <APIItem name="node" type="CommentText">
-      The comment node.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="number">The count of comments.</APIReturns>
-</API>
-
-### `getCommentKey`
-
-Generates a comment key based on the provided ID.
-
-<API name="getCommentKey">
-  <APIParameters>
-    <APIItem name="id" type="string">
-      The ID of the comment.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string">The generated comment key.</APIReturns>
-</API>
-
-### `getCommentKeyId`
-
-Extracts the comment ID from a comment key.
-
-<API name="getCommentKeyId">
-  <APIParameters>
-    <APIItem name="key" type="string">
-      The comment key.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string">The extracted comment ID.</APIReturns>
-</API>
-
-### `getCommentKeys`
-
-Returns an array of comment keys present in the given node.
-
-<API name="getCommentKeys">
-  <APIParameters>
-    <APIItem name="node" type="CommentText">
-      The node to check for comment keys.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="string[]">Array of comment keys.</APIReturns>
-</API>
-
-### `getDraftCommentKey`
-
-Gets the key used for draft comments.
-
-<API name="getDraftCommentKey">
-  <APIReturns type="string">The draft comment key.</APIReturns>
-</API>
-
-### `isCommentKey`
-
-Checks if a given key is a comment key.
-
-<API name="isCommentKey">
-  <APIParameters>
-    <APIItem name="key" type="string">
-      The key to check.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">Whether the key is a comment key.</APIReturns>
-</API>
-
-### `isCommentNodeById`
-
-Checks if a given node is a comment with the specified ID.
-
-<API name="isCommentNodeById">
-  <APIParameters>
-    <APIItem name="node" type="Node">
-      The node to check.
-    </APIItem>
-    <APIItem name="id" type="string">
-      The ID of the comment.
-    </APIItem>
-  </APIParameters>
-  <APIReturns type="boolean">
-    Whether the node is a comment with the specified ID.
-  </APIReturns>
-</API>
-
-## Types
-
-### `CommentText`
-
-Text nodes that can contain comments.
-
-<API name="CommentText">
-  <APIAttributes>
-    <APIItem name="comment" type="boolean" optional>
-      Whether this text node contains comments.
-    </APIItem>
-    <APIItem name="comment_<id>" type="boolean" optional>
-      Comment data keyed by comment ID. Multiple comments can exist in one text
-      node.
-    </APIItem>
-  </APIAttributes>
-</API>
+`onSubmit(body)` returns a thread ID or `true` after success, or `null` or `false` after rejection. It can return a promise. The composer preserves rich input while saving, blocks duplicate submissions, and clears only on success. Rejection or a thrown error retains the draft and displays a retry message.

@@ -8,6 +8,9 @@ metadata:
 
 # Hard Cut
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Use this when a feature should die, not linger.
 
 ## Rules
@@ -55,5 +58,5 @@ Use this when a feature should die, not linger.
 
 ## Bias
 
-If the choice is between deleting more code and leaving a zombie seam, delete
+If the choice is between deleting more code and leaving a zombie boundary, delete
 more code.

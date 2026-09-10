@@ -1,9 +1,1 @@
 version = 1
-
-include = [
-  "../../.agents/rules/agent-browser-issue.mdc",
-  "../../.agents/rules/dev-browser.mdc",
-  "../../.agents/rules/grill-me.mdc",
-  "../../.agents/rules/hard-cut.mdc",
-  "../../skills-lock.json",
-]

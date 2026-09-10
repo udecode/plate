@@ -58,7 +58,7 @@ describe('BaseTablePlugin', () => {
     const editor = createTestTableEditor({
       plugins: [BaseTablePlugin],
     });
-    const cellProps = editor.plugin(BaseTableCellPlugin).render?.nodeProps;
+    const cellProps = editor.plugin(BaseTableCellPlugin).render?.attributes;
     const decoded = editor.api.html.deserialize({
       element: `
         <table style="margin-left: 12px">

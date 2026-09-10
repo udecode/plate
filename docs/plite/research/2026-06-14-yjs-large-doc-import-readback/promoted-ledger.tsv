@@ -1,0 +1,6 @@
+id	owner	status	decision	proof
+bench-large-doc-import-phase	@platejs/yjs	kept:benchmark	kept:benchmark	yjs_large_doc_local_edit_p95_ms and yjs_large_doc_remote_sync_p95_ms metrics print.
+remote-apply-import-trace	@platejs/yjs	kept:oracle	kept:oracle	remote-import contract records remote-yjs-import and full-read-replace trace.
+benchmark-metric-contract	@platejs/yjs	kept:contract	kept:contract	package config contract guards required benchmark metrics and artifact path.
+research-ledger-audit-contract	docs-audit	kept:audit	kept:audit	docs audit checks TSV shape and closure columns.
+incremental-import-architecture-plan	slate-plan	deferred-architecture	deferred-architecture	runtime implementation waits for accepted visible-slot-aware importer plan.

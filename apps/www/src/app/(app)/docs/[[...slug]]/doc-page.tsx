@@ -31,7 +31,6 @@ import { hrefWithLocale } from '@/lib/withLocale';
 import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
-import { registryEditor } from '@/registry/registry-editor';
 
 export type DocsLocale = 'cn' | 'en';
 
@@ -56,6 +55,9 @@ export type DocPageProps = {
 };
 
 const registryNames = new Set(registry.items.map((item) => item.name));
+const componentDocs = registry.items.filter(
+  (item) => item.type === 'registry:component'
+);
 const DEMO_SUFFIX_REGEX = /-demo$/;
 const packageInfo: PackageInfoType = {
   gzip: '',
@@ -88,7 +90,7 @@ function localizeDocsUrl(url: string, locale: DocsLocale) {
 
 function getRegistryStaticParams() {
   return [
-    ...registryEditor.map((item) => ({
+    ...componentDocs.map((item) => ({
       slug: ['components', item.name],
     })),
     ...registryExamples.map((item) => ({
@@ -109,16 +111,18 @@ function getRegistryFile({
   if (category === 'component') {
     return {
       docName: name,
-      file: registryEditor.find((item) => item.name === name),
+      file: componentDocs.find((item) => item.name === name),
     };
   }
 
   if (category === 'example' && name) {
-    const docName = `${name}-demo`;
+    const file = registryExamples.find(
+      (item) => item.name.replace(DEMO_SUFFIX_REGEX, '') === name
+    );
 
     return {
-      docName,
-      file: registryExamples.find((item) => item.name === docName),
+      docName: file?.name,
+      file,
     };
   }
 
@@ -361,7 +365,7 @@ function getRegistryDocs({
   locale: DocsLocale;
   registryNames: Set<string>;
 }) {
-  const usedBy = registryEditor.filter(
+  const usedBy = componentDocs.filter(
     (item) =>
       item.meta &&
       Array.isArray(item.meta.examples) &&
@@ -376,7 +380,7 @@ function getRegistryDocs({
           !!fileName && innerRegistryNames.has(fileName) && fileName !== docName
       )
       .map((fileName) => {
-        const uiItem = registryEditor.find((item) => item.name === fileName);
+        const uiItem = componentDocs.find((item) => item.name === fileName);
 
         if (!uiItem) return null;
 

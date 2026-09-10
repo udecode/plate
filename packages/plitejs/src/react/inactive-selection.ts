@@ -1,23 +1,15 @@
-import type { RootKey } from '..';
+import { type NodeKey, PathApi, RangeApi } from '..';
 import { isDOMNode } from '../dom';
+import type { PliteDecorationSource } from './decoration-source';
 import {
-  createDecorationSource,
-  type PliteDecorationSource,
-} from './decoration-source';
+  getSnapshot as editorGetSnapshot,
+  subscribeSource as editorSubscribeSource,
+} from './editable/runtime-editor-api';
 import { readRuntimeSelectionRange } from './editable/runtime-selection-state';
 import type { ReactRuntimeEditor } from './plugin/react-editor';
-import type { PliteProjectionRuntimeScope } from './projection-store';
-import { MAIN_ROOT_KEY } from './root-key';
-import { createMainRootPliteViewSelection } from './view-selection';
-import { createPliteViewSelectionDecorations } from './view-selection-decoration';
 
 export const PLITE_KEEP_SELECTION_VISIBLE_ATTRIBUTE =
   'data-plite-keep-selection-visible';
-
-export type PliteInactiveSelectionDecorationData = Readonly<{
-  pliteInactiveSelection: true;
-  root: RootKey;
-}>;
 
 export type PliteInactiveSelectionStore = Readonly<{
   getSnapshot: () => boolean;
@@ -96,10 +88,27 @@ const getPliteDocumentFocusCoordinator = (
 
     if (activeStore) defer(activeStore);
   };
+  const onPointerDown = (event: PointerEvent) => {
+    if (!event.isPrimary || event.button !== 0) return;
+
+    const path = event.composedPath();
+    const editable = path.find(
+      (target): target is Element =>
+        isDOMNode(target) &&
+        target.nodeType === 1 &&
+        (target as Element).hasAttribute('contenteditable')
+    );
+
+    if (editable?.getAttribute('contenteditable') === 'false') return;
+    if (!editable && path.some(keepsPliteSelectionVisible)) return;
+
+    clear();
+  };
   const onWindowBlur = () => clear();
   const coordinator = Object.freeze({
     register(store: PliteInactiveSelectionStore) {
       if (registrations === 0) {
+        document.addEventListener('pointerdown', onPointerDown, true);
         document.addEventListener('focusin', onFocusIn, true);
         document.addEventListener('focusout', onFocusOut, true);
         document.defaultView?.addEventListener('blur', onWindowBlur);
@@ -115,6 +124,7 @@ const getPliteDocumentFocusCoordinator = (
         if (activeStore === store || pendingStore === store) clear();
 
         if (registrations === 0) {
+          document.removeEventListener('pointerdown', onPointerDown, true);
           document.removeEventListener('focusin', onFocusIn, true);
           document.removeEventListener('focusout', onFocusOut, true);
           document.defaultView?.removeEventListener('blur', onWindowBlur);
@@ -238,51 +248,63 @@ export const setPliteInactiveSelectionVisible = (
 export const createPliteInactiveSelectionDecorationSource = (
   editor: ReactRuntimeEditor<any>,
   store: PliteInactiveSelectionStore,
-  {
-    root,
-    runtimeScope,
-  }: {
-    root: RootKey;
-    runtimeScope?: PliteProjectionRuntimeScope;
-  }
-): PliteDecorationSource<PliteInactiveSelectionDecorationData> =>
-  createDecorationSource(editor, {
-    dirtiness: ['node', 'selection', 'text', 'external'],
-    id: 'plite-inactive-selection',
-    read: (context) => {
+  id: string
+): PliteDecorationSource<unknown> => {
+  const getInputKey = () => {
+    const selection = readRuntimeSelectionRange(editor);
+
+    if (!selection || RangeApi.isCollapsed(selection)) return null;
+
+    return editorGetSnapshot(editor).index.keyAt(
+      RangeApi.edges(selection)[0].path
+    );
+  };
+
+  return Object.freeze({
+    id,
+    observe: ({ refresh }) => {
+      let previousInputKey = getInputKey();
+
+      refresh({
+        nodeKeys: previousInputKey ? [previousInputKey] : [],
+      });
+      const refreshAffectedInputs = () => {
+        const nextInputKey = getInputKey();
+        const nodeKeys = new Set<NodeKey>();
+
+        if (previousInputKey) nodeKeys.add(previousInputKey);
+        if (nextInputKey) nodeKeys.add(nextInputKey);
+
+        if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
+        previousInputKey = nextInputKey;
+      };
+      const unsubscribeStore = store.subscribe(refreshAffectedInputs);
+      const unsubscribeSelection = editorSubscribeSource(
+        editor,
+        'selection',
+        refreshAffectedInputs
+      );
+
+      return () => {
+        unsubscribeSelection();
+        unsubscribeStore();
+      };
+    },
+    read: ({ entry: [, path] }) => {
       if (!store.getSnapshot()) return [];
 
       const selection = readRuntimeSelectionRange(editor);
 
-      return selection
-        ? createPliteViewSelectionDecorations(
-            editor,
-            createMainRootPliteViewSelection(selection, root),
-            context,
-            {
-              data: ({ root: segmentRoot }) => ({
-                pliteInactiveSelection: true,
-                root: segmentRoot,
-              }),
-              sourceId: 'plite-inactive-selection',
-            }
-          )
-        : [];
+      if (!selection || RangeApi.isCollapsed(selection)) return [];
+      if (!PathApi.equals(RangeApi.edges(selection)[0].path, path)) return [];
+
+      return [
+        {
+          attributes: { 'data-plite-inactive-selection': '' },
+          key: `${id}:range`,
+          range: selection,
+        },
+      ];
     },
-    runtimeScope,
   });
-
-export const hasVisiblePliteInactiveSelectionDecoration = (
-  slices: ReadonlyArray<{ data?: unknown }>,
-  root: RootKey | null
-) =>
-  slices.some(({ data }) => {
-    if (typeof data !== 'object' || data === null) return false;
-
-    const selection = data as Partial<PliteInactiveSelectionDecorationData>;
-
-    return (
-      selection.pliteInactiveSelection === true &&
-      selection.root === (root ?? MAIN_ROOT_KEY)
-    );
-  });
+};

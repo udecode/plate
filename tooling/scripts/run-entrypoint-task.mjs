@@ -51,13 +51,22 @@ const runTypecheck = () => {
   );
 };
 
-const runPackageTestsTypecheck = () =>
-  runProcess(path.join(repoRoot, 'node_modules/.bin/tsc'), [
-    '--project',
-    'tsconfig.entrypoints/tests.json',
-    '--pretty',
-    'false',
-  ]);
+const runPackageTestsTypecheck = () => {
+  const configs = ['tsconfig.entrypoints/tests.json'];
+  if (packageName === 'plitejs') configs.push('test/react/tsconfig.json');
+
+  for (const config of configs) {
+    const status = runProcess(path.join(repoRoot, 'node_modules/.bin/tsc'), [
+      '--project',
+      config,
+      '--pretty',
+      'false',
+    ]);
+    if (status !== 0) return status;
+  }
+
+  return 0;
+};
 
 const runLint = () => {
   const files = relativePackageFiles(

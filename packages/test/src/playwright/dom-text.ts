@@ -9,7 +9,24 @@ export const getBlockTexts = async (root: Locator): Promise<string[]> =>
   root.evaluate((element: HTMLElement) =>
     Array.from(
       element.querySelectorAll(':scope > [data-plite-node="element"]')
-    ).map((block) => (block.textContent ?? '').replace(/\uFEFF/g, ''))
+    ).map((block) => {
+      const logicalBlock = block.cloneNode(true) as Element;
+
+      logicalBlock
+        .querySelectorAll('[data-plite-string][data-plite-length]')
+        .forEach((string) => {
+          const length = Number.parseInt(
+            string.getAttribute('data-plite-length') ?? '',
+            10
+          );
+
+          if (Number.isFinite(length)) {
+            string.textContent = (string.textContent ?? '').slice(0, length);
+          }
+        });
+
+      return (logicalBlock.textContent ?? '').replace(/\uFEFF/g, '');
+    })
   );
 
 export const includesPasteText = (candidate: string, text: string) => {

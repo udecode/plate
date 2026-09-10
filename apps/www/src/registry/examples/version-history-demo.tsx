@@ -190,8 +190,8 @@ const DiffPlugin = definePlatePlugin('diff', {
 })
   .extend(excludeDiffFragment())
   .extend({
-    render: {
-      aboveNodes:
+    slots: {
+      wrapNode:
         () =>
         ({ children, editor, element }) => {
           if (!element.diff) return children;

@@ -25,6 +25,7 @@ export const ListKit = [
       TaskListRules.markdown({ checked: true }),
     ],
     inject: {
+      isElement: true,
       nodeProps: {
         nodeKey: 'listType',
         query: ({ nodeProps }) => {
@@ -44,8 +45,8 @@ export const ListKit = [
         }),
       },
     },
-    render: {
-      belowNodes: BlockList,
+    slots: {
+      wrapNodeChildren: BlockList,
     },
     targetPlugins: [
       PLUGINS.heading,

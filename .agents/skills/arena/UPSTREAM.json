@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "arena",
+  "files": [
+    {
+      "upstream": "skills/arena/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "c090878efc50d71605e8be518d12e71d00b451b76c2fd38ea9e0bb2a3e2f6cda",
+      "destinationSha256": "6041a5fb38d9c1623e3319d643c6c909027ab4b123362a1eef5f0b69a808bfc2",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/arena/SKILL.md\n+++ skills/arena/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: arena\n description: \"Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. Use for /arena, 'arena this', 'throw it in the arena', or when one attempt at a non-trivial artifact would lock in the wrong shape.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Arena\n \n@@ -25,7 +26,7 @@\n \n 1. State the artifact each candidate is producing.\n 2. Derive the rubric. State what success looks like for *this* task, then turn it into 3-6 concrete gradeable criteria. Concrete: `Adds a --dry-run flag that skips writes`. Vague: `code is correct`. The rubric is the picker's tool in Phase D; candidates only see the task.\n-3. Pick the runners. Use `arena runners` from `~/.cursor/rules/pstack-models.mdc` when present. Otherwise default to one each on `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`. Spawn more when the arena covers multiple design directions. Same model N times when the work is generation-bound rather than judgment-sensitive.\n+3. Pick the runners. Use `arena runners` from `.agents/pstack-models.md` when present. Otherwise default to one each on `inherit-parent`, `inherit-parent`, `inherit-parent`, `inherit-parent`. Spawn more when the arena covers multiple design directions. Same model N times when the work is generation-bound rather than judgment-sensitive.\n 4. Assign output paths. Each candidate writes to its own location (a git worktree where possible, otherwise `/tmp/arena-<slug>/candidate-<n>/`). N candidates writing to the same path is shared mutable state and fails the the **separate-before-serializing-shared-state** principle skill test.\n \n ## Phase B: Fan out\n@@ -38,7 +39,7 @@\n \n ## Phase C: Cross-judge\n \n-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` in `~/.cursor/rules/pstack-models.mdc` when present. Otherwise use `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and reports them as dropouts.\n+After all Phase B candidates complete, choose one model from the `arena cross-judge pool` in `.agents/pstack-models.md` when present. Otherwise inherit the parent model for one independent judge. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and reports them as dropouts.\n \n ## Phase D: Pick a base\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

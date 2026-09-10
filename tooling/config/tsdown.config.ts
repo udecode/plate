@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import pluginBabel from '@rollup/plugin-babel';
+import { esmExternalRequirePlugin } from 'rolldown/plugins';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
@@ -88,11 +89,13 @@ const enableSourcemaps = !process.env.CI;
 
 export const createPlatePackageConfig = ({
   additionalEntries = [],
+  bundleDependencies = [],
   directDeclarations = false,
   runtimeImportBoundaries = [],
   unbundle = false,
 }: {
   additionalEntries?: string[];
+  bundleDependencies?: string[];
   directDeclarations?: boolean;
   runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
   unbundle?: boolean;
@@ -101,7 +104,7 @@ export const createPlatePackageConfig = ({
     const config = {
       ...opts,
       cwd: PACKAGE_ROOT_PATH,
-      deps: { neverBundle: true },
+      deps: { alwaysBundle: bundleDependencies, neverBundle: true },
       entry: [
         ...entry,
         ...additionalEntries.map((input) =>
@@ -116,6 +119,9 @@ export const createPlatePackageConfig = ({
       exports: false,
       failOnWarn: 'ci-only',
       plugins: [
+        ...(bundleDependencies.length > 0
+          ? [esmExternalRequirePlugin({ external: ['react'] })]
+          : []),
         pluginBabel({
           babelHelpers: 'bundled',
           exclude: '**/static/**',

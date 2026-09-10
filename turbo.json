@@ -1,7 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "dev": { "cache": false, "persistent": true },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "build": {
       "dependsOn": ["^build"],
       "env": [
@@ -16,14 +19,43 @@
       "outputs": ["dist/**", ".next/**"],
       "cache": false
     },
-    "build:watch": { "cache": false, "persistent": true },
-    "brl": { "outputs": [], "cache": false },
-    "clean": { "cache": false, "outputs": [] },
-    "lint": { "cache": true, "dependsOn": [], "outputs": [] },
-    "www#lint": { "dependsOn": ["prebuild"], "outputs": [] },
-    "prebuild": { "outputs": [] },
-    "test": { "outputs": [], "cache": false, "env": ["CI"] },
-    "typecheck": { "dependsOn": ["^build"], "outputs": [], "cache": true },
-    "www#typecheck": { "dependsOn": ["^build"], "outputs": [] }
+    "build:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "brl": {
+      "outputs": [],
+      "cache": false
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "lint": {
+      "cache": true,
+      "dependsOn": [],
+      "outputs": []
+    },
+    "www#lint": {
+      "dependsOn": ["prebuild"],
+      "outputs": []
+    },
+    "prebuild": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": [],
+      "cache": false,
+      "env": ["CI"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": [],
+      "cache": true
+    },
+    "www#typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
   }
 }

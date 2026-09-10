@@ -1690,7 +1690,7 @@ const setVersion = (editor: Editor, version: number) => {
   clearSnapshotCache(editor);
 };
 
-const withUpdateTagContext = <T>(
+export const withUpdateTagContext = <T>(
   editor: Editor,
   tags: readonly EditorUpdateTag[],
   fn: () => T
@@ -1924,7 +1924,7 @@ export const getEditorNodeKeyForNode = (
 ): NodeKey => {
   const owner = getEditorRuntimeOwner(editor);
   let nodeKey = getNodeKeyForNode(node, owner);
-  const index = getCurrentRuntimeIndex(editor);
+  const index = getCurrentRuntimeIndex(owner);
   const resolvesIn = (candidate: SnapshotIndex) => {
     if (nodeKey && candidate.pathOf(nodeKey)) return true;
 
@@ -1935,7 +1935,7 @@ export const getEditorNodeKeyForNode = (
   };
 
   if (resolvesIn(index)) return getDefined(nodeKey);
-  const currentRoot = getCurrentChildrenRoot(editor);
+  const currentRoot = getCurrentChildrenRoot(owner);
   const transactionSnapshot = getTransactionSnapshot(owner);
 
   for (const root of getEditorRuntimeRootKeys(owner)) {
@@ -4319,19 +4319,45 @@ const getUpdateView = <
     nodes,
     inputOptions = {}
   ) => {
-    const { at: explicitAt, ...options } = inputOptions;
+    const { at: explicitAt, replaceEmpty = false, ...options } = inputOptions;
+    if (Array.isArray(nodes) && nodes.length === 0) return undefined;
     const at = explicitAt ?? getCurrentSelection(editor) ?? undefined;
 
+    const insertAt = (path: Path) => {
+      const parentPath = PathApi.parent(path);
+      const childCount = () => {
+        if (parentPath.length === 0) return getChildren(editor).length;
+        const parent = state.nodes.get(parentPath)?.[0];
+        return NodeApi.isElement(parent) ? parent.children.length : 0;
+      };
+      const count = childCount();
+      txRecord.nodes.insert(nodes, { ...options, at: path });
+      return childCount() > count ? path : undefined;
+    };
+    const insertAfterBlock = (block: NodeEntry<Element>) => {
+      const replace =
+        replaceEmpty &&
+        NodeApi.isText(block[0].children[0]) &&
+        !state.schema.isAtom(block[0]) &&
+        !state.schema.isReadOnly(block[0]) &&
+        state.nodes.isEmpty(block[0]);
+      const path = insertAt(PathApi.next(block[1]));
+      if (!path || !replace) return path;
+
+      // Empty-source cleanup is structural, not a suggested document deletion.
+      removeNodes(editor, { at: block[1] });
+      return block[1];
+    };
+
     if (!at) {
-      txRecord.nodes.insert(nodes, options);
-      return;
+      return insertAt([getChildren(editor).length]);
     }
 
     if (SelectionApi.isNode(at)) {
       const target = at.paths.at(-1);
 
-      if (!target) return;
-      runWithMutationRoot(editor, at.root ?? MAIN_ROOT_KEY, () => {
+      if (!target) return undefined;
+      return runWithMutationRoot(editor, at.root ?? MAIN_ROOT_KEY, () => {
         const exactEntry = state.nodes.get(target);
         const block =
           exactEntry &&
@@ -4340,25 +4366,21 @@ const getUpdateView = <
             ? (exactEntry as NodeEntry<Element>)
             : state.nodes.block({ at: target });
 
-        if (!block) return;
-        txRecord.nodes.insert(nodes, {
-          ...options,
-          at: PathApi.next(block[1]),
-        });
+        if (!block) return undefined;
+        return insertAfterBlock(block);
       });
-      return;
     }
 
-    runTargetMutation({ at }, (resolvedOptions) => {
+    return runTargetMutation({ at }, (resolvedOptions) => {
       const targetAt = resolvedOptions?.at;
 
-      if (!targetAt) return;
+      if (!targetAt) return undefined;
 
       const target = LocationApi.isRange(targetAt)
         ? state.points.end(targetAt)
         : targetAt;
 
-      if (!target) return;
+      if (!target) return undefined;
 
       const exactEntry = LocationApi.isPath(target)
         ? state.nodes.get(target)
@@ -4375,12 +4397,9 @@ const getUpdateView = <
         block = state.nodes.block({ at: target });
       }
 
-      if (!block) return;
+      if (!block) return undefined;
 
-      txRecord.nodes.insert(nodes, {
-        ...options,
-        at: PathApi.next(block[1]),
-      });
+      return insertAfterBlock(block);
     });
   };
   const setTransactionNodes = defineSemanticUpdateMethod<
@@ -5633,12 +5652,15 @@ const applyTransactionSpecContents = <V extends Value>(
     emitEditorEffect(editor, effect.type, effect.value);
   }
 
-  const tx = getUpdateView(editor);
-  for (const annotation of spec.annotations) {
-    tx.annotations.set(annotation.type, annotation.value);
-  }
-  for (const tag of spec.tags) {
-    tx.tags.add(tag);
+  if (spec.annotations.length > 0 || spec.tags.length > 0) {
+    const tx = getUpdateView(editor);
+
+    for (const annotation of spec.annotations) {
+      tx.annotations.set(annotation.type, annotation.value);
+    }
+    for (const tag of spec.tags) {
+      tx.tags.add(tag);
+    }
   }
 };
 
@@ -6202,25 +6224,31 @@ const selectionPositionEquals = (left: Selection, right: Selection) => {
   );
 };
 
+const setEditorViewStateFlag = (
+  editor: AnyExtensionEditor,
+  key: 'composing' | 'focused' | 'readOnly',
+  value: boolean,
+  fallback: WeakMap<AnyExtensionEditor, boolean>
+) => {
+  const { setViewState } = getEditorRuntime(editor);
+  if (setViewState) {
+    if (setViewState(key, value)) notifyEditorViewState(editor);
+    return;
+  }
+  if ((fallback.get(editor) ?? false) === value) return;
+  fallback.set(editor, value);
+  notifyEditorViewState(editor);
+};
+
 export const setEditorComposing = (
   editor: AnyExtensionEditor,
   composing: boolean
-) => {
-  if ((EDITOR_COMPOSING.get(editor) ?? false) === composing) return;
-
-  EDITOR_COMPOSING.set(editor, composing);
-  notifyEditorViewState(editor);
-};
+) => setEditorViewStateFlag(editor, 'composing', composing, EDITOR_COMPOSING);
 
 export const setEditorFocused = (
   editor: AnyExtensionEditor,
   focused: boolean
-) => {
-  if ((EDITOR_FOCUSED.get(editor) ?? false) === focused) return;
-
-  EDITOR_FOCUSED.set(editor, focused);
-  notifyEditorViewState(editor);
-};
+) => setEditorViewStateFlag(editor, 'focused', focused, EDITOR_FOCUSED);
 
 const normalizeEditorMaxLength = (maxLength: number | undefined) => {
   if (maxLength === undefined) {
@@ -6248,12 +6276,7 @@ export const setEditorMaxLength = (
 export const setEditorReadOnly = (
   editor: AnyExtensionEditor,
   readOnly: boolean
-) => {
-  if ((EDITOR_READ_ONLY.get(editor) ?? false) === readOnly) return;
-
-  EDITOR_READ_ONLY.set(editor, readOnly);
-  notifyEditorViewState(editor);
-};
+) => setEditorViewStateFlag(editor, 'readOnly', readOnly, EDITOR_READ_ONLY);
 
 const notifyEditorViewState = (editor: AnyExtensionEditor) => {
   scheduleMicrotask(() => {
@@ -8689,8 +8712,8 @@ export const initializePublicState = <
   options: CreateEditorOptions<V, TExtensions> = {}
 ) => {
   const initialValue = normalizeEditorValue(options.initialValue);
-  const initialChildren = cloneFrozen(initialValue.children);
-  const initialRoots = cloneFrozen(initialValue.roots);
+  const initialChildren = initialValue.children;
+  const initialRoots = initialValue.roots;
 
   if (!NodeApi.isNodeList(initialChildren)) {
     throw new Error(
@@ -8714,7 +8737,6 @@ export const initializePublicState = <
   EDITOR_FOCUSED.set(editor, false);
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
-  seedNodeKeys(initialChildren, editor);
   for (const children of Object.values(initialRoots)) {
     seedNodeKeys(children, editor);
   }

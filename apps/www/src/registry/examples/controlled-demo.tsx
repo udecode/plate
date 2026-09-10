@@ -74,8 +74,7 @@ function AsyncControlledEditorDemo() {
   const editor = useCreateEditor();
 
   React.useEffect(() => {
-    // Simulate async fetch
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setInitialValue([
         {
           children: [{ text: 'Loaded async value!' }],
@@ -84,6 +83,8 @@ function AsyncControlledEditorDemo() {
       ]);
       setLoading(false);
     }, 1000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   React.useEffect(() => {

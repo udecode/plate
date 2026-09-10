@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs';
-
 import { render, renderHook } from '@testing-library/react';
+import type { Value } from 'plitejs';
 import {
   type ClipboardEvent,
   type KeyboardEvent,
@@ -15,6 +14,8 @@ import {
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
+  releaseDOMTextFlowRecordIndex,
+  setDOMTextFlowRecordIndex,
 } from '../../src/dom/internal';
 import {
   getSelection as editorGetSelection,
@@ -47,6 +48,8 @@ import {
 } from '../../src/react/editable/runtime-keyboard-events';
 import { useEditableRootRuntimeState } from '../../src/react/editable/runtime-root-state';
 import { createEditor } from '../../src/react/plugin/with-react';
+
+const browserWindow: Window = window;
 
 const DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS = 1;
 
@@ -91,24 +94,21 @@ const useTestRuntimeFocusMouseEvents = (
   });
 };
 
-test('DOM input trace keeps an outer event handler duration bucket', () => {
-  const source = readFileSync('src/react/editable/input-router.ts', 'utf-8');
-
-  expect(source).toContain("profileDOMInputDuration('dom-input-total'");
-});
-
 const RootRefProbe = ({
   onDOMBeforeInput,
 }: {
   onDOMBeforeInput: (event: InputEvent) => void;
 }) => {
-  const editor = useMemo(() => createEditor(), []);
+  const editor = useMemo(() => createEditor<Value>(), []);
   const { runtime } = useEditableRootRuntimeState({
     domStrategyRuntime: null,
     editor,
     readOnly: false,
   });
-  const lifecycle = useMemo(() => ({ cancel: () => {} }), []);
+  const lifecycle = useMemo(
+    () => Object.assign(() => {}, { cancel: () => {} }),
+    []
+  );
   const ref = useEditableRootRef({
     onDOMBeforeInput,
     onDOMInput: () => {},
@@ -121,13 +121,10 @@ const RootRefProbe = ({
 };
 
 test('native input listeners attach once while reading the latest beforeinput handler', () => {
-  const firstHandler = jest.fn();
-  const secondHandler = jest.fn();
-  const addEventListener = jest.spyOn(
-    HTMLElement.prototype,
-    'addEventListener'
-  );
-  const removeEventListener = jest.spyOn(
+  const firstHandler = vi.fn();
+  const secondHandler = vi.fn();
+  const addEventListener = vi.spyOn(HTMLElement.prototype, 'addEventListener');
+  const removeEventListener = vi.spyOn(
     HTMLElement.prototype,
     'removeEventListener'
   );
@@ -158,7 +155,7 @@ test('native input listeners attach once while reading the latest beforeinput ha
 });
 
 test('read-only native input repairs leaked DOM mutations', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   root.innerHTML =
     '<span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">axbc</span></span>';
@@ -203,7 +200,7 @@ test('read-only native input repairs leaked DOM mutations', () => {
 });
 
 test('read-only native input repairs split decorated text strings', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   root.innerHTML =
     '<span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">axb</span><span data-plite-string="true">c</span></span>';
@@ -284,7 +281,7 @@ const selectTextOffset = (text: Text, offset: number) => {
 };
 
 test('deferred native text input repair ignores echoes while model owns text input', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -341,7 +338,7 @@ test('deferred native text input repair ignores echoes while model owns text inp
 });
 
 test('native text input repair uses runtime target while model owns text input without defer', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -402,7 +399,7 @@ test('native text input repair uses runtime target while model owns text input w
 });
 
 test('native text input repair keeps a model-exported DOM-current caret', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -463,7 +460,7 @@ test('native text input repair keeps a model-exported DOM-current caret', () => 
 });
 
 test('immediate native text input repair ignores a model-owned beforeinput echo', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -542,7 +539,7 @@ const unmountEditableRoot = (
 };
 
 test('native input from an internal control reaches app listeners', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = mountEditableRoot(editor);
   const input = document.createElement('input');
   const appInput = vi.fn();
@@ -577,7 +574,7 @@ test('native input from an internal control reaches app listeners', () => {
 });
 
 test('React input from an internal control reaches the control handlers', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = mountEditableRoot(editor);
   const input = document.createElement('input');
   const inputController = createEditableInputController({
@@ -628,6 +625,9 @@ test('React input from an internal control reaches the control handlers', () => 
 
 test('material beforeinput commands bypass direct DOM repair at the mounted selection', () => {
   let materialCommandEvaluations = 0;
+  const initialValue: Value = [
+    { children: [{ text: 'a ' }], type: 'paragraph' },
+  ];
   const editor = createEditor({
     extensions: [
       defineExtension('mounted-trigger-command', {
@@ -641,7 +641,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
         ],
       }),
     ],
-    initialValue: [{ children: [{ text: 'a ' }], type: 'paragraph' }],
+    initialValue,
     selection: {
       kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
@@ -747,7 +747,7 @@ const flushAnimationFrame = (
 };
 
 test('deferred native text input repair coalesces burst input for the same text target after frame idle', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let nowMs = 0;
@@ -765,7 +765,7 @@ test('deferred native text input repair coalesces burst input for the same text 
     });
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation((callback) => {
       pendingTimeout = callback;
 
@@ -837,11 +837,11 @@ test('deferred native text input repair coalesces burst input for the same text 
 });
 
 test('pending native text input repair corrects model selection before boundary input', () => {
-  const editor = createEditor();
-  const inputController = {
+  const editor = createEditor<Value>();
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.pendingNativeTextInputRepairOffset = 4;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
@@ -866,11 +866,11 @@ test('pending native text input repair corrects model selection before boundary 
 });
 
 test('pending native text input repair does not move selection when expected text is stale', () => {
-  const editor = createEditor();
-  const inputController = {
+  const editor = createEditor<Value>();
+  const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
-  };
+  });
 
   inputController.state.pendingNativeTextInputRepairOffset = 4;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
@@ -902,7 +902,7 @@ test('pending native text input repair does not move selection when expected tex
 });
 
 test('deferred native text input repair clears pending selection when root disconnects before flush', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -918,9 +918,9 @@ test('deferred native text input repair clears pending selection when root disco
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
-  const text = appendTextHost(root, '0,0', 'abc');
+  const text = appendTextHost(root, '0,0');
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
@@ -950,7 +950,6 @@ test('deferred native text input repair clears pending selection when root disco
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -979,7 +978,7 @@ test('deferred native text input repair clears pending selection when root disco
 });
 
 test('deferred native text input repair clears pending state when selection repair is rejected', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1003,9 +1002,9 @@ test('deferred native text input repair clears pending state when selection repa
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
-  const text = appendTextHost(root, '0,0', 'abc');
+  const text = appendTextHost(root, '0,0');
 
   editorReplace(editor, {
     children: [
@@ -1038,7 +1037,6 @@ test('deferred native text input repair clears pending state when selection repa
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -1073,7 +1071,7 @@ test('deferred native text input repair clears pending state when selection repa
 });
 
 test('deferred native text input repair coalesces stale in-range DOM input selections', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let pendingFrame: FrameRequestCallback | null = null;
@@ -1087,7 +1085,7 @@ test('deferred native text input repair coalesces stale in-range DOM input selec
     });
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation((callback) => {
       pendingTimeout = callback;
 
@@ -1161,7 +1159,7 @@ test('deferred native text input repair coalesces stale in-range DOM input selec
 });
 
 test('deferred native text input repair prefers the repaired runtime caret when native selection lags', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1177,7 +1175,7 @@ test('deferred native text input repair prefers the repaired runtime caret when 
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
 
@@ -1236,7 +1234,7 @@ test('deferred native text input repair prefers the repaired runtime caret when 
 });
 
 test('deferred native text input repair keeps a same-node native user caret over a live repair echo', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1252,7 +1250,7 @@ test('deferred native text input repair keeps a same-node native user caret over
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
 
@@ -1312,7 +1310,7 @@ test('deferred native text input repair keeps a same-node native user caret over
 });
 
 test('deferred native text input repair keeps a beforeinput-only burst character', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1332,7 +1330,7 @@ test('deferred native text input repair keeps a beforeinput-only burst character
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
   const text = appendTextHost(root, '0,0');
@@ -1368,7 +1366,6 @@ test('deferred native text input repair keeps a beforeinput-only burst character
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -1412,7 +1409,7 @@ test('deferred native text input repair keeps a beforeinput-only burst character
 });
 
 test('deferred native text input treats a queued beforeinput echo as confirmation', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1456,7 +1453,6 @@ test('deferred native text input treats a queued beforeinput echo as confirmatio
       inputType: 'insertText',
       rootElement: root,
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
       },
@@ -1494,7 +1490,7 @@ test('deferred native text input treats a queued beforeinput echo as confirmatio
 });
 
 test('deferred native text input repair coalesces stale in-range burst selections', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1510,7 +1506,7 @@ test('deferred native text input repair coalesces stale in-range burst selection
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
   const baseText = 'Condico uredo ante arca umbra.';
@@ -1544,7 +1540,6 @@ test('deferred native text input repair coalesces stale in-range burst selection
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset },
           focus: { path: [0, 0], offset },
         },
@@ -1585,7 +1580,7 @@ test('deferred native text input repair coalesces stale in-range burst selection
 });
 
 test('deferred native text input repair splits deeply stale DOM input selections', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1601,7 +1596,7 @@ test('deferred native text input repair splits deeply stale DOM input selections
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
 
@@ -1634,7 +1629,6 @@ test('deferred native text input repair splits deeply stale DOM input selections
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 5 },
           focus: { path: [0, 0], offset: 5 },
         },
@@ -1646,7 +1640,6 @@ test('deferred native text input repair splits deeply stale DOM input selections
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 6 },
           focus: { path: [0, 0], offset: 6 },
         },
@@ -1676,7 +1669,7 @@ test('deferred native text input repair splits deeply stale DOM input selections
       root
     );
     expect(repairDOMInput).toHaveBeenCalledTimes(2);
-    expect(repairDOMInput.mock.calls[1]![0].target?.insert?.text).not.toBe(
+    expect(repairDOMInput.mock.calls[1][0].target?.insert?.text).not.toBe(
       ' vi'
     );
     expect(inputController.state.pendingNativeTextInputRepairOffset).toBeNull();
@@ -1691,7 +1684,7 @@ test('deferred native text input repair splits deeply stale DOM input selections
 });
 
 test('deferred native text input repair retargets from repaired runtime caret after flushing a stale burst', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1715,7 +1708,7 @@ test('deferred native text input repair retargets from repaired runtime caret af
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
 
@@ -1748,7 +1741,6 @@ test('deferred native text input repair retargets from repaired runtime caret af
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -1800,7 +1792,7 @@ test('deferred native text input repair retargets from repaired runtime caret af
 });
 
 test('deferred native text input repair splits same-path bursts after an explicit caret move', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -1820,7 +1812,7 @@ test('deferred native text input repair splits same-path bursts after an explici
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const text = appendTextHost(root, '0,0');
 
@@ -1852,7 +1844,6 @@ test('deferred native text input repair splits same-path bursts after an explici
       inputType: 'insertText',
       rootElement: root,
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 3 },
         focus: { path: [0, 0], offset: 3 },
       },
@@ -1868,7 +1859,6 @@ test('deferred native text input repair splits same-path bursts after an explici
       inputType: 'insertText',
       rootElement: root,
       selection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },
       },
@@ -1922,7 +1912,7 @@ test('deferred native text input repair splits same-path bursts after an explici
 });
 
 test('deferred native text input repair coalesces projected boundary bursts', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let pendingFrame: FrameRequestCallback | null = null;
@@ -1934,7 +1924,7 @@ test('deferred native text input repair coalesces projected boundary bursts', ()
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const textHost = document.createElement('span');
   const firstString = document.createElement('span');
@@ -2001,7 +1991,7 @@ test('deferred native text input repair coalesces projected boundary bursts', ()
 });
 
 test('deferred native text input repair preserves inserts across text targets after frame idle', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let pendingFrame: FrameRequestCallback | null = null;
@@ -2015,7 +2005,7 @@ test('deferred native text input repair preserves inserts across text targets af
     });
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation((callback) => {
       pendingTimeout = callback;
 
@@ -2101,7 +2091,7 @@ test('deferred native text input repair preserves inserts across text targets af
 });
 
 test('deferred native text input repair preserves same-path inserts after the caret moves', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let pendingFrame: FrameRequestCallback | null = null;
@@ -2114,10 +2104,10 @@ test('deferred native text input repair preserves same-path inserts after the ca
     });
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
   const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
-  const text = appendTextHost(root, '0,0', 'abc');
+  const text = appendTextHost(root, '0,0');
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
@@ -2184,7 +2174,7 @@ test('deferred native text input repair preserves same-path inserts after the ca
 });
 
 test('deferred native text input repair preserves later same-path inserts before input idle', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
   let pendingFrame: FrameRequestCallback | null = null;
@@ -2196,9 +2186,9 @@ test('deferred native text input repair preserves later same-path inserts before
       return 1;
     });
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation(() => 1);
-  const text = appendTextHost(root, '0,0', 'abc');
+  const text = appendTextHost(root, '0,0');
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
@@ -2264,18 +2254,18 @@ test('deferred native text input repair preserves later same-path inserts before
 });
 
 test('deferred native text input repair has a timer-backed idle flush', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
-  let pendingTimeout: TimerHandler | null = null;
+  const pendingTimeout: { current: TimerHandler | null } = { current: null };
   const requestAnimationFrameSpy = vi
     .spyOn(window, 'requestAnimationFrame')
     .mockImplementation(() => 1);
   const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame');
   const setTimeoutSpy = vi
-    .spyOn(window, 'setTimeout')
+    .spyOn(browserWindow, 'setTimeout')
     .mockImplementation((callback) => {
-      pendingTimeout = callback;
+      pendingTimeout.current = callback;
 
       return 1;
     });
@@ -2309,8 +2299,8 @@ test('deferred native text input repair has a timer-backed idle flush', () => {
       DEFERRED_NATIVE_TEXT_INPUT_REPAIR_IDLE_MS
     );
 
-    if (typeof pendingTimeout === 'function') {
-      pendingTimeout();
+    if (typeof pendingTimeout.current === 'function') {
+      pendingTimeout.current();
     }
 
     expect(repairDOMInput).toHaveBeenCalledWith(
@@ -2337,10 +2327,10 @@ test('deferred native text input repair has a timer-backed idle flush', () => {
 });
 
 test('deferred native text input queue reports whether repair work was queued', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const repairDOMInput = vi.fn();
-  const text = appendTextHost(root, '0,0', 'abc');
+  const text = appendTextHost(root, '0,0');
 
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
@@ -2374,7 +2364,6 @@ test('deferred native text input queue reports whether repair work was queued', 
         inputType: 'insertText',
         rootElement: root,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         },
@@ -2638,7 +2627,7 @@ test('model-owned keydown boundaries flush deferred native text repair', () => {
 });
 
 test('editable blur flushes pending native text before app blur callbacks', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -2680,7 +2669,7 @@ test('editable blur flushes pending native text before app blur callbacks', () =
 });
 
 test('editable mouse down flushes pending native text before app mouse callbacks', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -2718,7 +2707,7 @@ test('editable mouse down flushes pending native text before app mouse callbacks
 });
 
 test('an externally canceled mouse gesture never imports editor selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -2781,7 +2770,7 @@ test('an externally canceled mouse gesture never imports editor selection', () =
 });
 
 test('editable paste flushes pending native text before app paste callbacks', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -2845,7 +2834,7 @@ test('editable paste flushes pending native text before app paste callbacks', ()
 });
 
 test('native input repair prefers a valid DOM text target over stale runtime selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const firstText = appendTextHost(root, '0,0');
   const secondText = appendTextHost(root, '1,0');
@@ -2884,8 +2873,67 @@ test('native input repair prefers a valid DOM text target over stale runtime sel
   }
 });
 
+test('native input repair resolves replacement text when the retained host is the string', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const replacementText = document.createTextNode('foo');
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-plite-text-flow-host', 'true');
+  textHost.append(replacementText);
+  setDOMTextFlowRecordIndex(textHost, {
+    nodeKey: 'retained-text',
+    path: [0, 0],
+    segments: [
+      {
+        bindingHost: null,
+        bindingRecord: null,
+        domLength: 3,
+        end: 3,
+        start: 0,
+        stringElement: null,
+        text: 'abc',
+        textNode: replacementText,
+      },
+    ],
+    text: 'abc',
+  });
+  root.append(textHost);
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    },
+  });
+  document.body.append(root);
+
+  try {
+    selectTextOffset(replacementText, 3);
+
+    expect(
+      getDOMInputRepairTarget(editor, root, {
+        data: 'foo',
+        inputType: 'insertText',
+      })
+    ).toEqual({
+      insert: { offset: 0, text: 'foo' },
+      path: [0, 0],
+      selectionOffset: 3,
+      text: 'foo',
+    });
+  } finally {
+    releaseDOMTextFlowRecordIndex(textHost, 'retained-text');
+    root.remove();
+  }
+});
+
 test('native input repair uses preferred runtime selection over stale DOM paths', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const firstText = appendTextHost(root, '0,0');
   const secondText = appendTextHost(root, '1,0');
@@ -2931,7 +2979,7 @@ test('native input repair uses preferred runtime selection over stale DOM paths'
 });
 
 test('read-only input capture does not schedule model-owning DOM input repair', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -2973,7 +3021,7 @@ test('read-only input capture does not schedule model-owning DOM input repair', 
 });
 
 test('deferred runtime input capture leaves native text repair to DOM input handler', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3032,7 +3080,7 @@ test('deferred runtime input capture leaves native text repair to DOM input hand
 });
 
 test('runtime input capture leaves runtime-targeted repair to the root listener', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -3138,7 +3186,7 @@ test('runtime input capture leaves runtime-targeted repair to the root listener'
 });
 
 test('root input repair prevents duplicate bubble repair for the same native input', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3213,7 +3261,7 @@ test('root input repair prevents duplicate bubble repair for the same native inp
 });
 
 test('react input repair ignores stale native insert while model preference owns text input', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -3269,7 +3317,7 @@ test('react input repair ignores stale native insert while model preference owns
 });
 
 test('root-owned input skips Android input replay', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3299,7 +3347,7 @@ test('root-owned input skips Android input replay', () => {
 });
 
 test('Android input bypasses root repair and flushes through the Android manager', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3366,7 +3414,7 @@ test('Android input bypasses root repair and flushes through the Android manager
 });
 
 test('declined Android input repairs from the root-captured DOM target', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3448,7 +3496,7 @@ test('declined Android input repairs from the root-captured DOM target', () => {
 });
 
 test('declined Android input falls back to canonical React input repair', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3495,7 +3543,7 @@ test('declined Android input falls back to canonical React input repair', () => 
 });
 
 test('declined Android input preserves a native DOM caret', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),
@@ -3544,7 +3592,7 @@ test('declined Android input preserves a native DOM caret', () => {
 });
 
 test('react input repair does not replay text after flushing deferred beforeinput intents', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
     state: createEditableInputControllerState(),

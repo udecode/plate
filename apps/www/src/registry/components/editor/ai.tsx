@@ -1,8 +1,6 @@
 'use client';
 
-import cloneDeep from 'lodash/cloneDeep.js';
-import { ElementApi, PathApi, PLUGINS } from 'platejs';
-import { AIChatPlugin, AIPlugin, useChatChunk } from 'platejs/ai/react';
+import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
 import {
   PlateElement,
   PlateText,
@@ -10,7 +8,6 @@ import {
   type PlateElementProps,
   type PlateTextProps,
 } from 'platejs/react';
-import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { AILoadingBar, AIMenu } from '@/registry/components/editor/ai-menu';
@@ -47,70 +44,29 @@ export function AIAnchorElement(props: PlateElementProps<typeof AIChatPlugin>) {
   );
 }
 
-export const aiChatPlugin = AIChatTransportPlugin.extend({
-  render: {
-    afterContainer: AILoadingBar,
-    afterEditable: AIMenu,
-  },
-  shortcuts: { show: { keys: 'mod+j' } },
-  useHooks: ({ api, editor, read, store }) => {
-    useEditorChat();
-
-    const mode = usePluginStore(AIChatPlugin, 'mode');
-    const toolName = usePluginStore(AIChatPlugin, 'toolName');
-    useChatChunk({
-      onChunk: ({ chunk, isFirst, nodes, text: content }) => {
-        if (isFirst && mode === 'insert') {
-          const selection = editor.read.selection();
-
-          if (!selection) return;
-
-          const { path, startBlock, startInEmptyParagraph } =
-            read.insertStart();
-
-          editor.update.ai.beginPreview({
-            originalBlocks:
-              startInEmptyParagraph &&
-              startBlock &&
-              ElementApi.isElement(startBlock)
-                ? [cloneDeep(startBlock)]
-                : [],
-          });
-
-          editor.update({ history: 'skip' }).nodes.insert(
-            {
-              children: [{ text: '' }],
-              type: editor.plugin(PLUGINS.aiChat).schema.type,
-            },
-            {
-              at: PathApi.next(path),
-            }
-          );
-          store.set({ streaming: true });
-        }
-
-        if (mode === 'insert' && nodes.length > 0) {
-          if (!store.get('streaming')) return;
-
-          editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
-            autoScroll: true,
-            textProps: {
-              [editor.plugin(PLUGINS.ai).schema.key]: true,
-            },
-          });
-        }
-
-        if (toolName === 'edit' && mode === 'chat') {
-          editor
-            .plugin(AIChatPlugin)
-            .update.applySuggestions(content, { split: isFirst });
-        }
+export const AIKit = [
+  AIPlugin.configure({ component: AILeaf }),
+  AIChatTransportPlugin.extend(({ api, store }) => ({
+    slots: {
+      afterContainer: AILoadingBar,
+      afterEditable: AIMenu,
+      // oxlint-disable-next-line eslint/func-name-matching -- Hooks require a named React component in this slot.
+      wrapRoot: function AIIntegration({ children, editableRef }) {
+        useEditorChat(editableRef);
+        return children;
       },
-      onFinish: () => {
-        api.stop();
+    },
+    shortcuts: {
+      show: { keys: 'mod+j' },
+      stop: {
+        keys: 'escape',
+        handler: () => {
+          const status = store.get().chat?.status;
+          if (status !== 'streaming' && status !== 'submitted') return false;
+          api.stop();
+          return true;
+        },
       },
-    });
-  },
-}).configure({ component: AIAnchorElement });
-
-export const AIKit = [AIPlugin.configure({ component: AILeaf }), aiChatPlugin];
+    },
+  })).configure({ component: AIAnchorElement }),
+];

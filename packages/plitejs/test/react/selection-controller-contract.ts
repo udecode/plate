@@ -1,4 +1,5 @@
 import {
+  type Value,
   createEditor as createCoreEditor,
   createEditorView,
   defineEditorSchema,
@@ -14,6 +15,7 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
+import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
@@ -27,7 +29,10 @@ import {
   isInteractiveInternalTarget,
   isNestedEditableDOMTarget,
 } from '../../src/react/editable/input-controller';
-import { createEditableInputController } from '../../src/react/editable/input-state';
+import {
+  createEditableInputControllerState,
+  createEditableInputController,
+} from '../../src/react/editable/input-state';
 import { writeCollapsedModelSelectionDOMPreference } from '../../src/react/editable/model-selection-dom-preference';
 import {
   applyEditableDOMSelectionChange,
@@ -49,7 +54,7 @@ import {
 } from '../../src/react/editable/selection-controller';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor, react } from '../../src/react/plugin/with-react';
-import { createPliteProjectionGraph } from '../../src/react/projection-graph';
+import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -100,11 +105,10 @@ const projectedSelectionSchema = defineEditorSchema(
         content: schema.content.text({ default: 'text', min: 1 }),
       },
       'content-card': {
-        content: schema.content.open(),
         contentRoots: {
           body: schema.content.not(schema.content.text()),
         },
-        void: 'editable-island',
+        void: 'block',
       },
     },
     id: 'selection-controller-projected-selection',
@@ -146,12 +150,12 @@ test('selection import executes only for import-dom policy', () => {
 
 test('model-owned text input guard rejects stale native collapsed ranges', () => {
   const modelSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 8 },
   };
   const staleRange = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
   };
@@ -213,7 +217,6 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
       modelOwnedTextInputGuard: 1,
       modelSelection,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 9 },
         focus: { path: [0, 0], offset: 9 },
       },
@@ -226,7 +229,6 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
       modelOwnedTextInputGuard: 1,
       modelSelection,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 9 },
         focus: { path: [0, 0], offset: 9 },
       },
@@ -240,7 +242,6 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
       modelOwnedTextInputGuard: 0,
       modelSelection,
       range: {
-        kind: 'text',
         anchor: { path: [12, 0], offset: 4 },
         focus: { path: [12, 0], offset: 4 },
       },
@@ -253,7 +254,6 @@ test('model-owned text input guard rejects stale native collapsed ranges', () =>
       modelOwnedTextInputGuard: 1,
       modelSelection,
       range: {
-        kind: 'text',
         anchor: { path: [12, 0], offset: 4 },
         focus: { path: [12, 0], offset: 4 },
       },
@@ -301,7 +301,7 @@ test('nested editable DOM targets are owned by their closest editor root', () =>
 });
 
 test('nested editable DOM targets are interactive boundaries for containing editors', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const outerEditor = document.createElement('div');
   const childEditor = document.createElement('div');
   const childText = document.createTextNode('child');
@@ -321,7 +321,7 @@ test('nested editable DOM targets are interactive boundaries for containing edit
 test('failed DOM selection export clears the updating guard', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const textNode = document.createTextNode('abc');
   const domSelection = document.getSelection();
@@ -348,15 +348,15 @@ test('failed DOM selection export clears the updating guard', () => {
 
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+  vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   vi.spyOn(domSelection, 'setBaseAndExtent').mockImplementation(() => {
     throw new Error('stale DOM bridge');
   });
 
-  const state = {
+  const state = Object.assign(createEditableInputControllerState(), {
     isUpdatingSelection: false,
     selectionChangeOrigin: null,
-  };
+  });
 
   try {
     syncEditableDOMSelectionToEditor({
@@ -380,7 +380,7 @@ test('failed DOM selection export clears the updating guard', () => {
 });
 
 test('model selection export preserves a focused editor control', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const input = document.createElement('input');
 
@@ -396,7 +396,7 @@ test('model selection export preserves a focused editor control', () => {
   });
 
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
+  const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
   input.focus();
 
   try {
@@ -423,7 +423,7 @@ test('model selection export preserves a focused editor control', () => {
 test('native selection drag keeps DOM selection and scroll under browser ownership', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const textNode = document.createTextNode('abc');
   const domSelection = document.getSelection();
@@ -453,7 +453,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
 
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+  vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
   const addRange = vi.spyOn(domSelection, 'addRange');
   const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
@@ -464,11 +464,11 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   testRuntimes.add(runtime);
 
   try {
-    const state = {
+    const state = Object.assign(createEditableInputControllerState(), {
       isUpdatingSelection: false,
       outsideFocusBoundarySettleUntil: 0,
       selectionChangeOrigin: null,
-    };
+    });
 
     runtime.inputController.state.isNativeSelectionDragActive = true;
     editorElement.scrollTop = 100;
@@ -513,7 +513,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
 test('view selection export clears stale native selection ranges', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const staleText = document.createTextNode('stale native highlight');
   const domSelection = document.getSelection();
@@ -543,9 +543,8 @@ test('view selection export clears stale native selection ranges', () => {
   writePliteViewSelection(
     editor,
     createPliteViewSelection(
-      createPliteProjectionGraph([{ path: [0], root: 'main' }]),
+      createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]),
       {
-        kind: 'text',
         anchor: { point: { path: [0, 0], offset: 0 } },
         focus: { point: { path: [0, 0], offset: 'model selection'.length } },
       }
@@ -555,10 +554,10 @@ test('view selection export clears stale native selection ranges', () => {
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
 
-  const state = {
+  const state = Object.assign(createEditableInputControllerState(), {
     isUpdatingSelection: false,
     selectionChangeOrigin: null,
-  };
+  });
 
   try {
     syncEditableDOMSelectionToEditor({
@@ -584,7 +583,7 @@ test('view selection export clears stale native selection ranges', () => {
 });
 
 test('model selection export is owned by the matching root view only', () => {
-  const runtime = createCoreEditor({
+  const runtime = createEditor<Value>({
     initialValue: {
       children: [{ type: 'paragraph', children: [{ text: 'main' }] }],
       roots: { child: [{ type: 'paragraph', children: [{ text: 'child' }] }] },
@@ -606,13 +605,14 @@ test('model selection export is owned by the matching root view only', () => {
   expect(isSelectionInEditorView(mainEditor, childSelection)).toBe(false);
   expect(isSelectionInEditorView(childEditor, childSelection)).toBe(true);
 
-  const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
+  const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
 
   syncEditableDOMSelectionToEditor({
     editor: mainEditor,
     scrollSelectionIntoView: vi.fn(),
     partialDOMBackedSelection: false,
     state: {
+      outsideFocusBoundarySettleUntil: 0,
       isUpdatingSelection: false,
       selectionChangeOrigin: null,
     },
@@ -625,13 +625,13 @@ test('model selection export is owned by the matching root view only', () => {
 test('model selection export preserves preferred collapsed DOM point', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const firstLine = document.createTextNode('first line');
   const secondLine = document.createTextNode('second line');
   const domSelection = document.getSelection();
   const selection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: firstLine.textContent.length },
     focus: { path: [0, 0], offset: firstLine.textContent.length },
   };
@@ -658,7 +658,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
 
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
-  vi.spyOn(ReactEditor, 'resolveDOMRange').mockImplementation(() => {
+  vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockImplementation(() => {
     const fallbackRange = document.createRange();
 
     fallbackRange.setStart(firstLine, firstLine.textContent.length);
@@ -702,7 +702,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
 test('native editor-owned selectionchange clears model preference before DOM import', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -711,7 +711,7 @@ test('native editor-owned selectionchange clears model preference before DOM imp
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   expect(
@@ -728,7 +728,7 @@ test('native editor-owned selectionchange clears model preference before DOM imp
 test('native selectionchange outside the editor does not clear model preference', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -737,7 +737,7 @@ test('native selectionchange outside the editor does not clear model preference'
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   expect(
@@ -754,7 +754,7 @@ test('native selectionchange outside the editor does not clear model preference'
 test('native editor-owned selectionchange with unresolved Plite range keeps model preference', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -763,7 +763,7 @@ test('native editor-owned selectionchange with unresolved Plite range keeps mode
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   expect(
@@ -781,7 +781,7 @@ test('native editor-owned selectionchange with unresolved Plite range keeps mode
 test('repair-induced editor-owned selectionchange does not clear model preference', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -790,7 +790,7 @@ test('repair-induced editor-owned selectionchange does not clear model preferenc
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   expect(
@@ -813,7 +813,6 @@ test('changed expanded DOM selection can override stale programmatic origin', ()
         focus: { path: [0, 1], offset: 8 },
       },
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 8 },
       },
@@ -823,7 +822,7 @@ test('changed expanded DOM selection can override stale programmatic origin', ()
 });
 
 test('changed expanded DOM selection import publishes a selection commit', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const textNode = document.createTextNode('selection');
   const nextSelection = {
@@ -847,7 +846,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
   } as unknown as Document;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -856,7 +855,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'dom-current',
-    },
+    }),
   });
 
   editorElement.setAttribute('data-plite-editor', 'true');
@@ -955,7 +954,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
   } as unknown as Document;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -964,7 +963,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'dom-current',
-    },
+    }),
   });
 
   editorElement.setAttribute('data-plite-editor', 'true');
@@ -1038,7 +1037,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
 
 test('changed expanded DOM import ignores same, collapsed, and repair ranges', () => {
   const currentSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 1], offset: 8 },
     focus: { path: [0, 1], offset: 8 },
   };
@@ -1054,7 +1053,6 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
     shouldImportChangedExpandedDOMSelection({
       currentSelection,
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 1], offset: 7 },
         focus: { path: [0, 1], offset: 7 },
       },
@@ -1065,7 +1063,6 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
     shouldImportChangedExpandedDOMSelection({
       currentSelection,
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 1], offset: 0 },
         focus: { path: [0, 1], offset: 8 },
       },
@@ -1076,7 +1073,7 @@ test('changed expanded DOM import ignores same, collapsed, and repair ranges', (
 
 test('selection-move guard allows native collapse inside expanded selection', () => {
   const currentSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 8 },
     focus: { path: [0, 0], offset: 16 },
   };
@@ -1086,7 +1083,6 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'native-selection-move',
       currentSelection,
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 12 },
         focus: { path: [0, 0], offset: 12 },
       },
@@ -1097,7 +1093,6 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'native-selection-move',
       currentSelection,
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 20 },
         focus: { path: [0, 0], offset: 20 },
       },
@@ -1108,7 +1103,6 @@ test('selection-move guard allows native collapse inside expanded selection', ()
       activeIntent: 'text-insert',
       currentSelection,
       nextSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 20 },
         focus: { path: [0, 0], offset: 20 },
       },
@@ -1146,7 +1140,7 @@ test('DOM selectionchange import only accepts native collapsed changes', () => {
 test('model-owned programmatic selectionchange keeps its ownership guard', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1155,7 +1149,7 @@ test('model-owned programmatic selectionchange keeps its ownership guard', () =>
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'programmatic-export',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   completeEditableSelectionChangeImport({
@@ -1170,13 +1164,13 @@ test('model-owned programmatic selectionchange keeps its ownership guard', () =>
 });
 
 test('model-owned collapsed programmatic selectionchange skips DOM range resolution', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const textNode = document.createTextNode('abc');
   const domSelection = document.getSelection();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1185,7 +1179,7 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'programmatic-export',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   if (!domSelection) {
@@ -1223,13 +1217,13 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
 });
 
 test('selectionchange ignores detached DOM endpoints before resolving Plite range', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const staleTextHost = document.createElement('span');
   const staleTextNode = document.createTextNode('abc');
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1238,7 +1232,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'dom-current',
-    },
+    }),
   });
 
   editorReplace(editor, {
@@ -1316,7 +1310,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
 });
 
 test('selectionchange ignores host-removal collapse outside the editor', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const container = document.createElement('div');
   const editorElement = document.createElement('div');
   const textHost = document.createElement('span');
@@ -1324,7 +1318,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
   const domSelection = document.getSelection();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1333,7 +1327,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   if (!domSelection) {
@@ -1406,14 +1400,14 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
 });
 
 test('selectionchange ignores removed shadow host empty native selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const editorElement = document.createElement('div');
   const host = document.createElement('div');
   const shadowRoot = host.attachShadow({ mode: 'open' });
   const shadowText = document.createTextNode('abc');
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1422,7 +1416,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   editorReplace(editor, {
@@ -1499,7 +1493,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
 test('model-owned browser-handle selectionchange keeps its ownership guard', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1508,7 +1502,7 @@ test('model-owned browser-handle selectionchange keeps its ownership guard', () 
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'browser-handle',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   completeEditableSelectionChangeImport({
@@ -1523,7 +1517,7 @@ test('model-owned browser-handle selectionchange keeps its ownership guard', () 
 test('repair-induced selectionchange clears its origin after model repair', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1532,7 +1526,7 @@ test('repair-induced selectionchange clears its origin after model repair', () =
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'repair-induced',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   completeEditableSelectionChangeImport({
@@ -1548,7 +1542,7 @@ test('repair-induced selectionchange clears its origin after model repair', () =
 test('repair-induced text input selectionchange can keep DOM-current ownership', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1557,7 +1551,7 @@ test('repair-induced text input selectionchange can keep DOM-current ownership',
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'repair-induced',
       selectionSource: 'dom-current',
-    },
+    }),
   });
 
   completeEditableSelectionChangeImport({
@@ -1573,7 +1567,7 @@ test('repair-induced text input selectionchange can keep DOM-current ownership',
 test('native selectionchange clears its origin after import handling', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1582,7 +1576,7 @@ test('native selectionchange clears its origin after import handling', () => {
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'native-user',
       selectionSource: 'dom-current',
-    },
+    }),
   });
 
   completeEditableSelectionChangeImport({
@@ -1595,17 +1589,17 @@ test('native selectionchange clears its origin after import handling', () => {
 
 test('pending native repair selectionchange policy suppresses stale same-path offsets and allows deliberate selections', () => {
   const samePendingPathSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [0, 0], offset: 1 },
   };
   const otherPathClickSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
   };
   const samePathExpandedSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 2 },
   };
@@ -1639,7 +1633,6 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
@@ -1647,7 +1640,6 @@ test('pending native repair selectionchange policy suppresses stale same-path of
       pendingNativeTextInputRepairOffset: 6,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       },
@@ -1658,14 +1650,12 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
-        kind: 'text',
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 0 },
       },
@@ -1676,14 +1666,12 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1694,7 +1682,6 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
@@ -1702,7 +1689,6 @@ test('pending native repair selectionchange policy suppresses stale same-path of
       pendingNativeTextInputRepairOffset: 8,
       pendingNativeTextInputRepairPathKey: '0,0',
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -1713,13 +1699,11 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       },
@@ -1730,13 +1714,11 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1747,13 +1729,11 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
       },
       pendingNativeTextInputRepairPathKey: null,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 8 },
         focus: { path: [0, 0], offset: 8 },
       },
@@ -1764,14 +1744,12 @@ test('pending native repair selectionchange policy suppresses stale same-path of
     getPendingNativeTextInputRepairSelectionChangePolicy({
       activeIntent: 'text-insert',
       currentSelection: {
-        kind: 'text',
         anchor: { path: [2500, 0], offset: 1 },
         focus: { path: [2500, 0], offset: 1 },
       },
       domSelectionTextBacked: false,
       pendingNativeTextInputRepairPathKey: null,
       range: {
-        kind: 'text',
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       },
@@ -1804,7 +1782,7 @@ test('pending native repair selectionchange policy suppresses stale same-path of
 test('native selection handoff clears stale programmatic text input guards', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1813,7 +1791,7 @@ test('native selection handoff clears stale programmatic text input guards', () 
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: 'programmatic-export',
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   setEditableModelSelectionPreference({
@@ -1840,7 +1818,7 @@ test('native selection handoff clears stale programmatic text input guards', () 
 test('native selection preference preserves short model-owned input guard', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1849,7 +1827,7 @@ test('native selection preference preserves short model-owned input guard', () =
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   setEditableModelSelectionPreference({
@@ -1887,7 +1865,7 @@ test('native insertText preserves explicit model-owned input guards', () => {
   ] as const) {
     const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: true },
-      state: {
+      state: Object.assign(createEditableInputControllerState(), {
         activeIntent: null,
         isComposing: false,
         isDraggingInternally: false,
@@ -1896,7 +1874,7 @@ test('native insertText preserves explicit model-owned input guards', () => {
         pendingDOMSelectionImport: false,
         selectionChangeOrigin: null,
         selectionSource: 'model-owned',
-      },
+      }),
     });
 
     setEditableModelSelectionPreference({
@@ -1918,7 +1896,7 @@ test('native insertText preserves explicit model-owned input guards', () => {
 test('model-command text input forces model ownership', () => {
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
-    state: {
+    state: Object.assign(createEditableInputControllerState(), {
       activeIntent: null,
       isComposing: false,
       isDraggingInternally: false,
@@ -1927,7 +1905,7 @@ test('model-command text input forces model ownership', () => {
       pendingDOMSelectionImport: false,
       selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    },
+    }),
   });
 
   setEditableModelSelectionPreference({
@@ -1950,7 +1928,7 @@ test('browser-handle and repair-induced text input can keep the native fast path
   for (const reason of ['browser-handle', 'repair-induced'] as const) {
     const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: true },
-      state: {
+      state: Object.assign(createEditableInputControllerState(), {
         activeIntent: null,
         isComposing: false,
         isDraggingInternally: false,
@@ -1959,7 +1937,7 @@ test('browser-handle and repair-induced text input can keep the native fast path
         pendingDOMSelectionImport: false,
         selectionChangeOrigin: null,
         selectionSource: 'model-owned',
-      },
+      }),
     });
 
     setEditableModelSelectionPreference({
@@ -1982,7 +1960,7 @@ test('browser-handle and repair-induced selection preferences clear stale model-
   for (const reason of ['browser-handle', 'repair-induced'] as const) {
     const inputController = createEditableInputController({
       preferModelSelectionForInputRef: { current: true },
-      state: {
+      state: Object.assign(createEditableInputControllerState(), {
         activeIntent: null,
         isComposing: false,
         isDraggingInternally: false,
@@ -1991,7 +1969,7 @@ test('browser-handle and repair-induced selection preferences clear stale model-
         pendingDOMSelectionImport: false,
         selectionChangeOrigin: null,
         selectionSource: 'model-owned',
-      },
+      }),
     });
 
     setEditableModelSelectionPreference({

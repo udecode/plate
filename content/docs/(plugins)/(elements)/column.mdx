@@ -13,11 +13,10 @@ docs:
 
 - Add columns to your document.
 - Choose from a variety of column layouts using `column-group-node` toolbar.
-- [ ] Resizable columns
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -30,7 +29,7 @@ The fastest way to add column functionality is with the `ColumnKit`, which inclu
 - [`ColumnGroupElement`](/docs/components/column): Renders column group containers.
 - [`ColumnElement`](/docs/components/column): Renders individual column items.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -48,7 +47,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -58,7 +57,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 Add `ColumnPlugin` to the editor. It installs `ColumnItemPlugin` as the required structural dependency.
 
@@ -74,7 +73,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
 Configure the group and add a complete `ColumnItemPlugin` descriptor when you need to replace the dependency's render component.
 
@@ -94,7 +93,7 @@ const editor = createEditor({
 
 - `component`: Assigns [`ColumnGroupElement`](/docs/components/column) to render column group containers and [`ColumnElement`](/docs/components/column) to render individual columns.
 
-### Turn Into Toolbar Button
+### Turn into toolbar button
 
 You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into column layouts:
 
@@ -154,7 +153,10 @@ column.update.selectAll();
 Group commands are also available through `editor.update.columnGroup`; item
 commands are available through `editor.update.column`.
 
-- `insert` inserts a group of equal-width column items.
+- `insert` inserts a group of equal-width column items after the current block.
+  `select: true` selects its first paragraph; `replaceEmpty: true` replaces an
+  empty source in the same history step. Use `after` to identify another source
+  block or `at` for explicit node-insertion placement.
 - `setColumns` changes the count and widths of an existing group.
 - `toggle` converts the active block to a column group or updates its layout.
 - `moveMiddle` moves the middle column's content into the first column.

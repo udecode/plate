@@ -1,0 +1,18 @@
+repo_key	source_ref	lines_or_id	read_reason	takeaway	lead_key
+prosemirror-tables	src/copypaste.ts	1-11	Find copy/paste invariant summary.	Table copy/paste is explicitly a table-cell rectangle operation, not generic paste.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/copypaste.ts	38-78	Understand when a pasted slice becomes table cells.	Only row/cell/header-cell slices become table-cell areas; other slices fall back.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/copypaste.ts	83-107	Understand normalization.	Pasted rows are padded to a rectangular area accounting for row/col spans.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/copypaste.ts	122-179	Understand selection-size matching.	Cell areas clip/repeat to the destination rectangle and adjust excess spans.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/copypaste.ts	235-383	Understand insertion.	Destination grows, interfering row/col spans split, rows are replaced, and selection becomes a cell rectangle.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/cellselection.ts	104-180	Understand copy serialization.	Cell selection serializes a rectangular row slice and clips spans that cross selected edges.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	src/input.ts	129-170	Understand paste routing.	CellSelection paste clips to selection; cell-area paste into a collapsed cell inserts starting at that cell.	table-fragment:rectangle-algebra:core-browser-proof
+prosemirror-tables	test/copypaste.test.ts	31-262	Find executable invariant rows.	Tests cover pasted cells, rectangular padding, clipping, table growth, header preservation, span splitting, and width preservation.	table-fragment:rectangle-algebra:core-browser-proof
+tiptap	packages/pm/tables/index.ts	1	Confirm wrapper boundary.	Tiptap re-exports prosemirror-tables for table semantics.	none
+tiptap	packages/extension-table/src/table/table.ts	18-28,426-496	Confirm extension wiring.	Tiptap table commands/plugins route through ProseMirror table editing, CellSelection, fixTables, and columnResizing.	none
+lexical	packages/lexical-table/src/LexicalTableSelection.ts	241-365	Contrast selection semantics.	Lexical TableSelection inserts through focus-cell range and enumerates selected table/rows/cells via a computed table map.	table-fragment:selection-shape-json-html-proof
+lexical	packages/lexical-table/src/LexicalTableCellNode.ts	96-207	Contrast import/export.	Lexical imports td/th and exports colSpan/rowSpan/width/background/vertical align.	table-fragment:selection-shape-json-html-proof
+lexical	packages/lexical-clipboard/src/clipboard.ts	311-395	Contrast clipboard JSON generation.	Lexical selected-node export walks top-level children and includes parents when child extraction says so.	table-fragment:selection-shape-json-html-proof
+slate-v2	packages/slate/test/transforms/insertFragment/of-tables/*.tsx	1-69	Inspect current skipped rows.	Three rows explicitly defer table-merge policy and remain skipped.	table-fragment:rectangle-algebra:core-browser-proof
+slate-v2	playwright/integration/examples/tables.test.ts	281-397	Inspect adjacent browser proof.	Plain-text paste into one cell and cell keyboard navigation are covered.	table-fragment:rectangle-algebra:core-browser-proof
+slate-v2	playwright/integration/examples/paste-html.test.ts	1831-2010	Inspect adjacent browser proof.	Full table HTML import from external producers is covered, but selected-cell fragment semantics are not.	table-fragment:rectangle-algebra:core-browser-proof
+

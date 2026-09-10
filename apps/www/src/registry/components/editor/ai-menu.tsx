@@ -18,16 +18,15 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { ElementApi, isHotkey, NodeApi } from 'platejs';
+import { createEditorView, ElementApi, isHotkey, NodeApi } from 'platejs';
 import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
-import { CommentPlugin } from 'platejs/comment/react';
+import { CommentsPlugin } from 'platejs/comments/react';
 import {
   useEditorPlugin,
   useEditorRuntimeState,
   useCreateEditor,
   useEditorSelector,
   useFocusedLast,
-  useHotkeys,
   usePluginStore,
   type Editor,
   useEditor,
@@ -43,6 +42,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { useDraftCommentThreadIds } from '@/registry/components/editor/comment';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
@@ -52,24 +52,25 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-export function AIChatEditor({ content }: { content: string }) {
+export function AIChatEditor() {
   const aiEditor = useCreateEditor({
     plugins: BaseEditorKit,
   });
-  const { store } = useEditorPlugin(AIChatPlugin);
-  const document = React.useMemo(
-    () => aiEditor.api.markdown.deserialize(content),
-    [aiEditor, content]
+  const document = usePluginStore(AIChatPlugin, 'previewValue');
+
+  const preview = useEditorRuntimeState(
+    aiEditor,
+    React.useCallback(
+      () => createEditorView(aiEditor, { readOnly: true }),
+      [aiEditor]
+    )
   );
 
-  useEditorRuntimeState(aiEditor, (state) => state.children());
-
   React.useEffect(() => {
-    aiEditor.update({ history: 'skip' }).value.replace(document);
-    store.set({ previewValue: aiEditor.read.children() });
-  }, [aiEditor, document, store]);
+    aiEditor.update({ history: 'skip' }).value.replace({ children: document });
+  }, [aiEditor, document]);
 
-  return <EditorStatic variant="aiChat" editor={aiEditor} />;
+  return <EditorStatic variant="aiChat" editor={preview} />;
 }
 
 export function AIMenu() {
@@ -92,20 +93,13 @@ export function AIMenu() {
   const [input, setInput] = React.useState('');
 
   const chat = usePluginStore(AIChatPlugin, 'chat');
-  const lastAssistantMessage = usePluginStore(
-    AIChatPlugin,
-    'lastAssistantMessage'
-  );
+  const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
 
   const messages = chat?.messages;
   const status = chat?.status ?? 'ready';
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
     null
   );
-
-  const content = lastAssistantMessage?.parts.find(
-    (part) => part.type === 'text'
-  )?.text;
 
   React.useEffect(() => {
     if (!streaming) return undefined;
@@ -182,10 +176,6 @@ export function AIMenu() {
     };
   }, [chatOpen, editor]);
 
-  useHotkeys('esc', () => {
-    api.stop();
-  });
-
   const isLoading = status === 'streaming' || status === 'submitted';
 
   React.useEffect(() => {
@@ -230,13 +220,11 @@ export function AIMenu() {
       <FloatingPopoverAnchor element={anchorElement} />
 
       <FloatingPopoverContent
-        className="border-none bg-transparent p-0 shadow-none ring-0"
-        style={{
-          width: anchorElement?.offsetWidth,
-        }}
+        className="w-(--floating-popover-anchor-width) max-w-[calc(100vw-16px)] border-none bg-transparent p-0 shadow-none ring-0"
         onEscapeKeyDown={(e) => {
           e.preventDefault();
 
+          api.stop();
           api.hide();
         }}
         align="center"
@@ -249,8 +237,8 @@ export function AIMenu() {
         >
           {mode === 'chat' &&
             isSelecting &&
-            content &&
-            toolName === 'generate' && <AIChatEditor content={content} />}
+            previewValue.length > 0 &&
+            toolName === 'generate' && <AIChatEditor />}
 
           {isLoading ? (
             <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
@@ -615,6 +603,7 @@ export const AIMenuItems = ({
   setValue: (value: string) => void;
 }) => {
   const editor = useEditor();
+  const comments = editor.plugin(CommentsPlugin);
   const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
   const isSelecting = useEditorSelector(
     (innerEditor2) =>
@@ -630,15 +619,17 @@ export const AIMenuItems = ({
       : isSelecting
         ? 'selectionCommand'
         : 'cursorCommand';
-  const menuGroups = menuStateItems[menuState];
+  const menuGroups = comments.installed
+    ? menuStateItems[menuState]
+    : menuStateItems[menuState].map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item !== aiChatItems.comment),
+      }));
+  const firstItemValue = menuGroups[0]?.items[0]?.value;
 
   React.useEffect(() => {
-    const firstItem = menuStateItems[menuState][0]?.items[0];
-
-    if (firstItem) {
-      setValue(firstItem.value);
-    }
-  }, [menuState, setValue]);
+    if (firstItemValue) setValue(firstItemValue);
+  }, [firstItemValue, setValue]);
 
   return (
     <>
@@ -669,32 +660,17 @@ export const AIMenuItems = ({
 
 export function AILoadingBar() {
   const editor = useEditor();
-
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
   const chat = usePluginStore(AIChatPlugin, 'chat');
   const mode = usePluginStore(AIChatPlugin, 'mode');
+  const comments = editor.plugin(CommentsPlugin);
+  const draftThreadIds = useDraftCommentThreadIds();
 
   const status = chat?.status ?? 'ready';
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
   const isLoading = status === 'streaming' || status === 'submitted';
-
-  const handleComments = (type: 'accept' | 'reject') => {
-    if (type === 'accept') {
-      editor.plugin(CommentPlugin).update.clearTransient();
-    }
-
-    if (type === 'reject') {
-      editor.plugin(CommentPlugin).update.unsetMark({ transient: true });
-    }
-
-    api.hide();
-  };
-
-  useHotkeys('esc', () => {
-    api.stop();
-  });
 
   if (
     isLoading &&
@@ -705,7 +681,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          '-translate-x-1/2 absolute bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
+          'fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -714,6 +690,12 @@ export function AILoadingBar() {
           size="sm"
           variant="ghost"
           className="flex items-center gap-1 text-xs"
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
+            event.preventDefault();
+            event.stopPropagation();
+            api.stop();
+          }}
           onClick={() => {
             api.stop();
           }}
@@ -728,38 +710,44 @@ export function AILoadingBar() {
     );
   }
 
-  if (toolName === 'comment' && status === 'ready') {
+  if (
+    toolName === 'comment' &&
+    status === 'ready' &&
+    comments.installed &&
+    draftThreadIds.length > 0
+  ) {
     return (
       <div
-        className={cn(
-          '-translate-x-1/2 absolute bottom-4 left-1/2 z-50 flex flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
-          'p-3'
-        )}
+        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
+        data-ai-comment-review=""
+        data-plite-keep-selection-visible
       >
-        {/* Header with controls */}
-        <div className="flex w-full items-center justify-between gap-3">
-          <div className="flex items-center gap-5">
-            <Button
-              size="sm"
-              disabled={isLoading}
-              onClick={() => {
-                handleComments('accept');
-              }}
-            >
-              Accept
-            </Button>
-
-            <Button
-              size="sm"
-              disabled={isLoading}
-              onClick={() => {
-                handleComments('reject');
-              }}
-            >
-              Reject
-            </Button>
-          </div>
-        </div>
+        <span className="px-1 text-muted-foreground">
+          Keep {draftThreadIds.length === 1 ? 'this comment' : 'these comments'}
+          ?
+        </span>
+        <Button
+          onClick={() => {
+            draftThreadIds.forEach(comments.api.publishDraft);
+            api.hide();
+          }}
+          size="sm"
+        >
+          <Check data-icon="inline-start" />
+          Accept
+        </Button>
+        <Button
+          onClick={() => {
+            draftThreadIds.forEach(comments.api.discardDraft);
+            comments.api.setActive([]);
+            api.hide();
+          }}
+          size="sm"
+          variant="outline"
+        >
+          <X data-icon="inline-start" />
+          Reject
+        </Button>
       </div>
     );
   }

@@ -1,0 +1,3 @@
+lead_key	source_key	reason	disposition
+generic-nested-block-unskip	prosemirror-tables-readme	External evidence reinforces a dedicated table owner; unskipping anonymous nested-block fixtures would prove the wrong thing.	Rejected.
+custom-view-clipboard-runtime	pm-canvas-view-copy-paste	The Slate v2 current route is still DOM/contenteditable-based; canvas hidden-textarea bridge details are not directly portable.	Use only as owner-boundary support.

@@ -13,7 +13,6 @@ import {
   defineExtensionSlot,
 } from '../../../../../packages/plitejs/src/index.ts';
 import {
-  defineHostCodec,
   dom,
   hostCodecs,
   writeHostFragmentData,
@@ -168,7 +167,7 @@ const plateCodecReconfigurationSlot = defineExtensionSlot(
 const hostCodecParseDurations = [];
 const hostCodecSerializeDurations = [];
 const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
-  defineHostCodec({
+  {
     format: benchmarkHostFormat,
     key: 'benchmark:json',
     parse: ({ data }) => {
@@ -191,7 +190,7 @@ const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
         hostCodecSerializeDurations.push(performance.now() - start);
       }
     },
-  }),
+  },
 ]);
 
 const createPlateCodecCounters = () => ({
@@ -207,7 +206,7 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
   counters.compilation += 1;
 
   return hostCodecs(`benchmark-plate-codec-reconfiguration:${label}`, [
-    defineHostCodec({
+    {
       format: benchmarkPlateReconfigurationFormat,
       key: `benchmark:plate-codec-reconfiguration:${label}`,
       parse: ({ data }) => {
@@ -227,7 +226,7 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
 
         return JSON.stringify({ label, slice });
       },
-    }),
+    },
   ]);
 };
 

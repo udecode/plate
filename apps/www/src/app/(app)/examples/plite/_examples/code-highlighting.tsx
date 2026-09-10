@@ -1,14 +1,22 @@
-import { type Descendant, NodeApi, type Point, type Range } from 'plitejs';
+import {
+  type Descendant,
+  type Element,
+  NodeApi,
+  type NodeEntry,
+  type Path,
+  type Point,
+  type Range,
+} from 'plitejs';
 import { isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
   Plite,
-  type PliteRangeDecoration,
+  type PliteDecoration,
+  type PliteDecorationSource,
   type RenderElementProps,
   useEditor,
   useEditorContext,
-  usePliteRangeDecorationSource,
 } from 'plitejs/react';
 import type React from 'react';
 import type { ChangeEvent, PointerEvent } from 'react';
@@ -22,7 +30,6 @@ import { cn } from '@/utils/cn';
 import { Button, Icon, Toolbar } from './components';
 import type {
   CodeBlockElement,
-  CodeLineElement,
   CustomEditor,
   CustomElement,
   CustomText,
@@ -33,7 +40,6 @@ import { Prism } from './utils/prism-runtime';
 
 const ParagraphType = 'paragraph';
 const CodeBlockType = 'code-block';
-const CodeLineType = 'code-line';
 const CodeIndent = '  ';
 
 const CodeHighlightingExample = () => {
@@ -47,7 +53,7 @@ const CodeHighlightingExample = () => {
     {
       type: CodeBlockType,
       language: 'jsx',
-      children: toCodeLines(`// Add the initial value.
+      children: toChildren(`// Add the initial value.
 const initialValue = [
   {
     type: 'paragraph',
@@ -76,7 +82,7 @@ const App = () => {
     {
       type: CodeBlockType,
       language: 'typescript',
-      children: toCodeLines(`// TypeScript users only add this code
+      children: toChildren(`// TypeScript users only add this code
 import { Descendant } from 'plitejs'
 import { useEditor } from 'plitejs/react'
 
@@ -92,19 +98,18 @@ const editor = useEditor<CustomValue>({ initialValue })`),
     },
   ];
   const editor = useEditor({ extensions: [history()], initialValue });
-  const codeHighlightingSource = usePliteRangeDecorationSource(editor, {
-    id: 'code-highlighting',
-    dirtiness: 'always',
-    read: ({ snapshot }) => collectCodeRanges(snapshot.children),
-  });
 
   return (
-    <Plite decorationSources={[codeHighlightingSource]} editor={editor}>
+    <Plite decorations={[codeHighlightingSource]} editor={editor}>
       <ExampleToolbar />
       <Editable
         onKeyDown={(event) => {
           if (isHotkey(['mod+shift+c', 'mod+alt+c'], event)) {
             convertSelectionToCodeBlock(editor);
+            return true;
+          }
+
+          if (insertCodeBlockBreak(editor, event)) {
             return true;
           }
 
@@ -119,19 +124,18 @@ const editor = useEditor<CustomValue>({ initialValue })`),
             return undefined;
           }
 
-          const handledCodeLines = updateSelectedCodeLines(
+          const handledCode = updateSelectedCode(
             editor,
             isShiftTab ? 'outdent' : 'indent'
           );
 
-          if (!handledCodeLines && isTab) {
+          if (!handledCode && isTab) {
             editor.update.text.insert(CodeIndent);
           }
 
           return true;
         }}
         renderElement={ElementWrapper}
-        renderSegment={CodeSegment}
       />
       <style>{prismThemeStyles}</style>
     </Plite>
@@ -164,43 +168,11 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
     );
   }
 
-  if (element.type === CodeLineType) {
-    return (
-      <div {...attributes} className="plite-code-highlighting-positioned">
-        {children}
-      </div>
-    );
-  }
-
   const Tag = editor.read.schema.isInline(element) ? 'span' : 'div';
   return (
     <Tag {...attributes} className="plite-code-highlighting-positioned">
       {children}
     </Tag>
-  );
-};
-
-const CodeSegment: NonNullable<
-  React.ComponentProps<
-    typeof Editable<CustomText, CustomElement>
-  >['renderSegment']
-> = (segment, children) => {
-  const data = Object.assign(
-    {},
-    ...segment.slices.map((slice) => slice.data ?? {})
-  );
-  const hasTokenClass = Object.values(data).some((value) => value === true);
-
-  return hasTokenClass ? (
-    <span
-      className={cn(
-        Object.entries(data).map(([key, value]) => value === true && key)
-      )}
-    >
-      {children}
-    </span>
-  ) : (
-    children
   );
 };
 
@@ -231,53 +203,90 @@ const CodeBlockButton = () => {
 
 const convertSelectionToCodeBlock = (editor: CustomEditor) => {
   editor.update((tx) => {
-    tx.nodes.wrap(
-      { type: CodeBlockType, language: 'html', children: [] },
-      {
-        match: (node) => NodeApi.isElement(node) && node.type === ParagraphType,
-        split: true,
-      }
-    );
-    tx.nodes.set(
-      { type: CodeLineType },
-      {
-        match: (node) => NodeApi.isElement(node) && node.type === ParagraphType,
-      }
-    );
-  });
-};
+    const selection = tx.selection();
 
-const collectCodeRanges = (
-  nodes: readonly Descendant[],
-  language?: string,
-  path: number[] = []
-): Array<PliteRangeDecoration<Record<string, true>>> => {
-  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
+    if (!selection) return;
 
-  nodes.forEach((node, nodeIndex) => {
-    const nodePath = [...path, nodeIndex];
-    const nodeLanguage =
-      NodeApi.isElement(node) && node.type === CodeBlockType
-        ? (node as CodeBlockElement).language
-        : language;
+    const [start, end] = getOrderedPoints(selection);
+    const startBlock = tx.nodes.block({ at: start });
+    const endBlock = tx.nodes.block({ at: end });
 
-    if (NodeApi.isText(node) && nodeLanguage) {
-      ranges.push(...collectCodeTextRanges(node.text, nodePath, nodeLanguage));
+    if (!startBlock || !endBlock) return;
+
+    const parentPath = startBlock[1].slice(0, -1);
+    const endParentPath = endBlock[1].slice(0, -1);
+    const startIndex = startBlock[1].at(-1);
+    const endIndex = endBlock[1].at(-1);
+
+    if (
+      startIndex == null ||
+      endIndex == null ||
+      !isSamePath(parentPath, endParentPath)
+    ) {
+      return;
     }
 
-    if (NodeApi.isElement(node)) {
-      ranges.push(...collectCodeRanges(node.children, nodeLanguage, nodePath));
-    }
-  });
+    const blocks: Array<NodeEntry<Element>> = [];
 
-  return ranges;
+    for (let index = startIndex; index <= endIndex; index++) {
+      const entry = tx.nodes.get([...parentPath, index]);
+
+      if (entry && NodeApi.isElement(entry[0])) {
+        blocks.push(entry as NodeEntry<Element>);
+      }
+    }
+
+    const firstBlock = blocks[0];
+
+    if (!firstBlock) return;
+
+    const values = blocks.map(([block]) => NodeApi.string(block));
+    const mapPoint = (point: Point) => {
+      let offset = 0;
+
+      for (let index = 0; index < blocks.length; index++) {
+        const [, blockPath] = blocks[index];
+
+        if (isAncestorPath(blockPath, point.path)) {
+          const blockStart = tx.points.start(blockPath);
+          const range = blockStart && tx.ranges.get(blockStart, point);
+
+          offset += range ? tx.text.string(range).length : 0;
+
+          return { offset, path: [...firstBlock[1], 0] };
+        }
+
+        offset += values[index].length + 1;
+      }
+
+      return point;
+    };
+    const nextSelection = {
+      anchor: mapPoint(selection.anchor),
+      focus: mapPoint(selection.focus),
+    };
+
+    for (const [, blockPath] of blocks.slice(1).reverse()) {
+      tx.nodes.remove({ at: blockPath });
+    }
+
+    tx.nodes.replace(
+      {
+        children: toChildren(values.join('\n')),
+        language: 'html',
+        type: CodeBlockType,
+      },
+      { at: firstBlock[1] }
+    );
+    tx.selection.set(nextSelection);
+  });
 };
 
 const collectCodeTextRanges = (
   text: string,
-  path: number[],
+  path: Path,
   language = 'jsx'
-): Array<PliteRangeDecoration<Record<string, true>>> => {
+): PliteDecoration[] => {
   const grammar = Prism.languages[language];
 
   if (!grammar) {
@@ -286,7 +295,7 @@ const collectCodeTextRanges = (
 
   const tokens = Prism.tokenize(text, grammar);
   const normalizedTokens = normalizeTokens(tokens);
-  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
+  const ranges: PliteDecoration[] = [];
   let start = 0;
 
   normalizedTokens.forEach((lineTokens, lineIndex) => {
@@ -299,9 +308,9 @@ const collectCodeTextRanges = (
       const end = start + length;
 
       ranges.push({
-        data: {
-          token: true,
-          ...Object.fromEntries(token.types.map((type) => [type, true])),
+        attributes: {
+          className: cn('token', token.types),
+          'data-token': true,
         },
         key: `code:${path.join('.')}:${start}:${end}`,
         range: {
@@ -321,10 +330,72 @@ const collectCodeTextRanges = (
   return ranges;
 };
 
+const codeHighlightingSource = {
+  id: 'code-highlighting',
+  read: ({ entry: [node, path] }) =>
+    NodeApi.isElement(node) && node.type === CodeBlockType
+      ? collectCodeTextRanges(
+          NodeApi.string(node),
+          [...path, 0],
+          (node as CodeBlockElement).language
+        )
+      : [],
+} satisfies PliteDecorationSource<CustomEditor>;
+
 type CodeIndentAction = 'indent' | 'outdent';
 
 type EditorPoint = Point;
 type EditorRange = Range;
+
+const insertCodeBlockBreak = (
+  editor: CustomEditor,
+  event: React.KeyboardEvent
+) => {
+  if (!isHotkey('enter', event)) {
+    return false;
+  }
+
+  const snapshot = editor.read((state) => ({
+    children: state.children(),
+    selection: state.selection(),
+  }));
+  const { selection } = snapshot;
+
+  if (!selection) return false;
+
+  const [start, end] = getOrderedPoints(selection);
+  const codeBlockPath = getCodeBlockPath(snapshot.children, start.path);
+  const endCodeBlockPath = getCodeBlockPath(snapshot.children, end.path);
+
+  if (
+    !codeBlockPath ||
+    !endCodeBlockPath ||
+    !isSamePath(codeBlockPath, endCodeBlockPath) ||
+    !isSamePath(start.path, end.path)
+  ) {
+    return false;
+  }
+
+  const textNode = getDescendant(snapshot.children, start.path);
+
+  if (!textNode || !NodeApi.isText(textNode)) return false;
+
+  const lineStart =
+    textNode.text.lastIndexOf('\n', Math.max(0, start.offset - 1)) + 1;
+  const lineBreak = textNode.text.indexOf('\n', start.offset);
+  const line = textNode.text.slice(
+    lineStart,
+    lineBreak === -1 ? textNode.text.length : lineBreak
+  );
+  const indentDepth = line.search(/\S|$/);
+  const suffixIndent =
+    textNode.text.slice(end.offset).match(/^[ \t]*/)?.[0].length ?? 0;
+  const indent = ' '.repeat(Math.max(0, indentDepth - suffixIndent));
+
+  editor.update.text.insert(`\n${indent}`, { at: selection });
+
+  return true;
+};
 
 const preventLeadingCodeBlockBackspace = (
   editor: CustomEditor,
@@ -348,16 +419,13 @@ const preventLeadingCodeBlockBackspace = (
     return false;
   }
 
-  const codeLinePath = getCodeLinePath(
+  const codeBlockPath = getCodeBlockPath(
     snapshot.children,
     selection.anchor.path
   );
 
-  if (!codeLinePath || codeLinePath.at(-1) !== 0) {
-    return false;
-  }
+  if (!codeBlockPath) return false;
 
-  const codeBlockPath = codeLinePath.slice(0, -1);
   const codeBlock = getDescendant(snapshot.children, codeBlockPath);
 
   if (
@@ -373,10 +441,7 @@ const preventLeadingCodeBlockBackspace = (
   return true;
 };
 
-const updateSelectedCodeLines = (
-  editor: CustomEditor,
-  action: CodeIndentAction
-) => {
+const updateSelectedCode = (editor: CustomEditor, action: CodeIndentAction) => {
   const snapshot = editor.read((state) => ({
     children: state.children(),
     selection: state.selection(),
@@ -393,32 +458,48 @@ const updateSelectedCodeLines = (
     return false;
   }
 
-  const codeLinePaths = getSelectedCodeLinePaths(snapshot.children, selection);
+  const [start, end] = getOrderedPoints(selection);
+  const codeBlockPath = getCodeBlockPath(snapshot.children, start.path);
+  const endCodeBlockPath = getCodeBlockPath(snapshot.children, end.path);
 
-  if (!codeLinePaths.length) {
+  if (
+    !codeBlockPath ||
+    !endCodeBlockPath ||
+    !isSamePath(codeBlockPath, endCodeBlockPath) ||
+    !isSamePath(start.path, end.path)
+  ) {
     return false;
   }
 
+  const textNode = getDescendant(snapshot.children, start.path);
+
+  if (!textNode || !NodeApi.isText(textNode)) return false;
+
+  const lineStarts = getSelectedLineStarts(
+    textNode.text,
+    start.offset,
+    end.offset
+  ).reverse();
+
   editor.update((tx) => {
-    for (const linePath of [...codeLinePaths].reverse()) {
-      const textPath = getFirstTextPath(snapshot.children, linePath);
-
-      if (!textPath) {
-        continue;
-      }
-
+    for (const lineStart of lineStarts) {
       if (action === 'indent') {
-        tx.text.insert(CodeIndent, { at: { path: textPath, offset: 0 } });
+        tx.text.insert(CodeIndent, {
+          at: { path: start.path, offset: lineStart },
+        });
         continue;
       }
 
-      const outdentWidth = getOutdentWidth(snapshot.children, textPath);
+      const outdentWidth = getOutdentWidth(textNode.text, lineStart);
 
       if (outdentWidth > 0) {
         tx.text.delete({
           at: {
-            anchor: { path: textPath, offset: 0 },
-            focus: { path: textPath, offset: outdentWidth },
+            anchor: { path: start.path, offset: lineStart },
+            focus: {
+              path: start.path,
+              offset: lineStart + outdentWidth,
+            },
           },
         });
       }
@@ -428,100 +509,38 @@ const updateSelectedCodeLines = (
   return true;
 };
 
-const getSelectedCodeLinePaths = (
-  children: readonly Descendant[],
-  selection: EditorRange
-) => {
-  const [start, end] = getOrderedPoints(selection);
-  const startLinePath = getCodeLinePath(children, start.path);
-  const endLinePath = getCodeLinePath(children, end.path);
-
-  if (!startLinePath || !endLinePath) {
-    return [];
-  }
-
-  const startCodeBlockPath = startLinePath.slice(0, -1);
-  const endCodeBlockPath = endLinePath.slice(0, -1);
-
-  if (!isSamePath(startCodeBlockPath, endCodeBlockPath)) {
-    return [];
-  }
-
-  const codeBlock = getDescendant(children, startCodeBlockPath);
-  const startIndex = startLinePath.at(-1);
-  const endIndex = endLinePath.at(-1);
-
-  if (
-    startIndex == null ||
-    endIndex == null ||
-    !codeBlock ||
-    !NodeApi.isElement(codeBlock) ||
-    codeBlock.type !== CodeBlockType
-  ) {
-    return [];
-  }
-
-  const codeLinePaths: number[][] = [];
-
-  codeBlock.children.slice(startIndex, endIndex + 1).forEach((node, index) => {
-    if (NodeApi.isElement(node) && node.type === CodeLineType) {
-      codeLinePaths.push([...startCodeBlockPath, startIndex + index]);
-    }
-  });
-
-  return codeLinePaths;
-};
-
-const getCodeLinePath = (
+const getCodeBlockPath = (
   children: readonly Descendant[],
   path: readonly number[]
 ) => {
-  const node = getDescendant(children, path);
-
-  if (node && NodeApi.isElement(node) && node.type === CodeLineType) {
-    return [...path];
-  }
-
   const parentPath = path.slice(0, -1);
   const parent = getDescendant(children, parentPath);
 
-  if (parent && NodeApi.isElement(parent) && parent.type === CodeLineType) {
+  if (parent && NodeApi.isElement(parent) && parent.type === CodeBlockType) {
     return parentPath;
   }
 
   return null;
 };
 
-const getFirstTextPath = (
-  children: readonly Descendant[],
-  linePath: readonly number[]
-) => {
-  const line = getDescendant(children, linePath);
+const getSelectedLineStarts = (text: string, start: number, end: number) => {
+  const starts = [text.lastIndexOf('\n', Math.max(0, start - 1)) + 1];
+  let nextBreak = text.indexOf('\n', starts[0]);
 
-  if (!line || !NodeApi.isElement(line)) {
-    return null;
+  while (nextBreak !== -1 && nextBreak < end) {
+    starts.push(nextBreak + 1);
+    nextBreak = text.indexOf('\n', nextBreak + 1);
   }
 
-  const textIndex = line.children.findIndex((child) => NodeApi.isText(child));
-
-  return textIndex === -1 ? null : [...linePath, textIndex];
+  return starts;
 };
 
-const getOutdentWidth = (
-  children: readonly Descendant[],
-  textPath: readonly number[]
-) => {
-  const textNode = getDescendant(children, textPath);
-
-  if (!textNode || !NodeApi.isText(textNode)) {
-    return 0;
-  }
-
-  if (textNode.text.startsWith(CodeIndent)) {
+const getOutdentWidth = (text: string, lineStart: number) => {
+  if (text.startsWith(CodeIndent, lineStart)) {
     return CodeIndent.length;
   }
 
-  if (textNode.text.startsWith('\t') || textNode.text.startsWith(' ')) {
+  if (text.startsWith('\t', lineStart) || text.startsWith(' ', lineStart)) {
     return 1;
   }
 
@@ -579,6 +598,10 @@ const isSamePath = (path: readonly number[], another: readonly number[]) =>
   path.length === another.length &&
   path.every((segment, index) => segment === another[index]);
 
+const isAncestorPath = (path: readonly number[], another: readonly number[]) =>
+  path.length < another.length &&
+  path.every((segment, index) => segment === another[index]);
+
 const LanguageSelect = (
   props: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> & {
     value?: string;
@@ -605,11 +628,7 @@ const LanguageSelect = (
   </NativeSelect>
 );
 
-const toChildren = (content: string): CustomText[] => [{ text: content }];
-const toCodeLines = (content: string): CodeLineElement[] =>
-  content
-    .split('\n')
-    .map((line) => ({ type: CodeLineType, children: toChildren(line) }));
+const toChildren = (content: string): [CustomText] => [{ text: content }];
 
 // Prismjs theme stored as a string for copy/pasting alternate themes.
 // It is useful for copy/pasting different themes. Also lets keeping simpler Leaf implementation

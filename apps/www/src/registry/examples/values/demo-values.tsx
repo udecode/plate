@@ -20,7 +20,6 @@ import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
 import { deserializeHtmlValue } from './deserialize-html-value';
 import { deserializeMdValue } from './deserialize-md-value';
-import { discussionValue } from './discussion-value';
 import { dndValue } from './dnd-value';
 import { editableVoidsValue } from './editable-voids-value';
 import { emojiValue } from './emoji-value';
@@ -46,6 +45,10 @@ import { tabbableValue } from './tabbable-value';
 import { tableValue } from './table-value';
 import { tocValue } from './toc-value';
 import { detailsValue } from './details-value';
+import {
+  codeBlockPreviewValue,
+  hugeCodeBlockValue,
+} from './huge-code-block-value';
 
 const values = {
   ai: aiValue,
@@ -59,11 +62,13 @@ const values = {
   'node-selection': nodeSelectionValue,
   callout: calloutValue,
   'code-block': codeBlockValue,
+  'code-block-codemirror': hugeCodeBlockValue,
+  'code-block-huge': hugeCodeBlockValue,
+  'code-block-preview': codeBlockPreviewValue,
   column: columnValue,
   copilot: copilotValue,
   csv: deserializeCsvValue,
   date: dateValue,
-  discussion: discussionValue,
   dnd: dndValue,
   docx: deserializeDocxValue,
   'editable-voids': editableVoidsValue,

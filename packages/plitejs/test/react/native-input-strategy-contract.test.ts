@@ -1,11 +1,13 @@
-import { IS_NODE_MAP_DIRTY } from '../../src/dom/internal';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
+  IS_NODE_MAP_DIRTY,
+  releaseDOMTextFlowRecordIndex,
+  setDOMTextFlowRecordIndex,
+} from '../../src/dom/internal';
+import { replace as editorReplace } from '../../src/internal';
 import { canUseNativeSingleCharacterInput } from '../../src/react/editable/native-input-strategy';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import { readTextSelection } from './read-text-selection';
 
 const createFrameDocument = () => {
   const frame = document.createElement('iframe');
@@ -62,7 +64,6 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -75,7 +76,6 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         },
@@ -121,7 +121,6 @@ test('native single-character input allows synced printable ASCII', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -134,7 +133,6 @@ test('native single-character input allows synced printable ASCII', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => false,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -147,7 +145,6 @@ test('native single-character input allows synced printable ASCII', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },
@@ -191,7 +188,7 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
         eventData: '5',
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
-        selection: editorGetSelection(editor),
+        selection: readTextSelection(editor),
       })
     ).toBe(false);
     expect(
@@ -201,11 +198,71 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
         eventData: '5',
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
-        selection: editorGetSelection(editor),
+        selection: readTextSelection(editor),
       })
     ).toBe(true);
   } finally {
     IS_NODE_MAP_DIRTY.delete(editor);
+    textHost.remove();
+    vi.restoreAllMocks();
+  }
+});
+
+test('native input resolves a dirty retained-flow host through its private index', () => {
+  const editor = createEditor();
+  const textHost = document.createElement('span');
+  const text = document.createTextNode('alpha');
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-dom-sync', 'true');
+  textHost.append(text);
+  document.body.append(textHost);
+  setDOMTextFlowRecordIndex(textHost, {
+    nodeKey: 'retained',
+    path: [0, 0],
+    segments: [
+      {
+        bindingHost: null,
+        bindingRecord: null,
+        domLength: 5,
+        end: 5,
+        start: 0,
+        stringElement: null,
+        text: 'alpha',
+        textNode: text,
+      },
+    ],
+    text: 'alpha',
+  });
+  IS_NODE_MAP_DIRTY.set(editor, true);
+
+  vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([text, 1]);
+  vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
+  vi.spyOn(ReactEditor, 'hasDOMNode').mockReturnValue(false);
+
+  try {
+    const input = {
+      editor,
+      eventData: '5',
+      hasAppDOMInputPolicy: false,
+      isCommandNativeEquivalent: () => true,
+      selection: readTextSelection(editor),
+    };
+
+    expect(canUseNativeSingleCharacterInput(input)).toBe(true);
+    text.nodeValue = 'alXpha';
+    expect(canUseNativeSingleCharacterInput(input)).toBe(false);
+  } finally {
+    IS_NODE_MAP_DIRTY.delete(editor);
+    releaseDOMTextFlowRecordIndex(textHost, 'retained');
     textHost.remove();
     vi.restoreAllMocks();
   }
@@ -224,7 +281,7 @@ test('native single-character input rejects projected text hosts', () => {
   } as any;
 
   textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'projection');
+  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
   textHost.append(text);
   document.body.append(textHost);
 
@@ -240,7 +297,6 @@ test('native single-character input rejects projected text hosts', () => {
         hasAppDOMInputPolicy: false,
         isCommandNativeEquivalent: () => true,
         selection: {
-          kind: 'text',
           anchor: { path: [0, 0], offset: 1 },
           focus: { path: [0, 0], offset: 1 },
         },

@@ -3,33 +3,24 @@ title: Local Docs
 description: Set up Plate's documentation locally for version-controlled, AI-enhanced development.
 ---
 
-Host Plate's documentation locally to integrate it directly with your project. This setup ensures your team works with documentation that matches your Plate version while enabling AI tools to better understand and assist with your codebase.
+Copy Plate documentation into your project to review, customize, and version
+it alongside the application. Use a registry built from the matching Plate
+version when you need version-specific API documentation.
 
-## Why Host Documentation Locally?
+Local files let developers and coding tools open the relevant guide directly.
+You can also host them alongside documentation for other libraries.
 
-Local documentation provides distinct advantages over external sites:
-
-- **Version Lock-In:** Keep documentation synchronized with your project's Plate version. Avoid confusion from features or APIs in newer, unadopted Plate releases.
-- **AI-Ready Development:**
-  - **Better than `llms.txt`:** While dumping docs into a single text file is common for LLM context, this breaks down with large documentation (exceeding typical 100k token limits). Our structured, local setup lets AI tools access exactly what they need.
-  - **Direct Access for AI Tools:** Your AI-assisted IDE gets direct access to version-specific documentation, enabling accurate code generation and contextual help with your Plate setup.
-  - **Structured for AI Tasks:** AI tools can help with tasks like translating docs, creating summaries, or updating documentation between Plate versions.
-- **Customization & Control:** Modify documentation appearance and structure to match your project needs.
-- **Easy Updates:** Treat documentation like code - review, update, and version control it with your codebase.
-- **Fast Access:** Get reliable, quick access to documentation.
-- **Central Hub:** Keep Plate docs alongside documentation for other libraries in one place.
-
-## Setup Guide
+## Setup guide
 
 There are two ways to set up local documentation:
 
-### Option 1: Docs App
+### Option 1: docs app
 
 This option sets up a complete documentation site using Fumadocs, providing a searchable, navigable interface.
 
 <Steps>
 
-#### Create Fumadocs App
+#### Create Fumadocs app
 
 Set up a Fumadocs app which provides the Next.js-based framework for your documentation site:
 
@@ -53,17 +44,7 @@ For detailed Fumadocs setup, see the [Fumadocs UI documentation](https://fumadoc
 
 #### Create `components.json`
 
-In your docs directory, create a `components.json` file. You have two options:
-
-**Option A: Command line**
-
-```bash
-echo '{\n  "$schema": "https://ui.shadcn.com/schema.json",\n  "style": "base-nova",\n  "rsc": true,\n  "tsx": true,\n  "tailwind": {\n    "config": "",\n    "css": "app/global.css",\n    "baseColor": "neutral",\n    "cssVariables": true,\n    "prefix": ""\n  },\n  "aliases": {\n    "components": "@/components",\n    "utils": "@/lib/utils",\n    "ui": "@/components/ui",\n    "lib": "@/lib",\n    "hooks": "@/hooks"\n  },\n  "iconLibrary": "lucide"\n}' > components.json
-```
-
-**Option B: Copy and paste**
-
-Create a new file called `components.json` in your docs directory with this content:
+Create `components.json` in your docs directory:
 
 ```json
 {
@@ -85,11 +66,14 @@ Create a new file called `components.json` in your docs directory with this cont
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "iconLibrary": "lucide"
+  "iconLibrary": "lucide",
+  "registries": {
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
+  }
 }
 ```
 
-#### Add Plate Documentation
+#### Add Plate documentation
 
 Fetch the Plate documentation files and necessary MDX components from the `@plate` registry.
 
@@ -110,7 +94,7 @@ version.
 
 </Callout>
 
-#### Run Fumadocs App
+#### Run Fumadocs app
 
 Start the development server:
 
@@ -128,7 +112,7 @@ Enhance your docs with [Fumadocs features](https://fumadocs.dev/docs/ui#writing-
 
 </Steps>
 
-### Option 2: MDX Files Only
+### Option 2: MDX files only
 
 If you just want the documentation files without setting up a full site, you can add them directly to your existing project:
 
@@ -149,11 +133,11 @@ Use cases:
 - Integrate with your existing documentation setup
 - Make docs available to AI tools for better context
 
-## Advanced Integration
+## Advanced integration
 
-### MCP Integration
+### MCP integration
 
-Enable AI tools to work with your local documentation by adding the Plate server to your `.cursor/mcp.json` (or equivalent).
+Connect coding tools to the shadcn MCP server through `.cursor/mcp.json` (or your tool's equivalent configuration).
 
 ```json
 {
@@ -177,12 +161,14 @@ Your AI tools can then:
 See the [MCP Guide](/docs/installation/mcp) for more details.
 
 <Callout>
-  Once configured, try asking your AI: ```bash "Help me understand how the Plate
-  AI plugin works" "How to create a custom plugin?" "What's new in the latest
-  Plate version?" ```
+Once configured, try asking your AI:
+
+- "Help me understand how the Plate AI plugin works"
+- "How to create a custom plugin?"
+- "What's new in the latest Plate version?"
 </Callout>
 
-### Centralizing Multiple Documentations
+### Centralizing multiple documentations
 
 Your `content/docs/` directory can host documentation for multiple libraries. Replicate the process for Plate to add docs for other internal or external tools:
 

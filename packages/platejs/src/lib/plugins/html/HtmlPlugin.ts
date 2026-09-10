@@ -10,7 +10,7 @@ import {
   ContentSlice,
   ElementApi,
   getCompiledEditorSchemaFromApi,
-  getCompiledSchemaPropertyId,
+  schema as schemaDefinition,
   reportEditorLifecycleError,
   TextApi,
   toEditorCoreStateView,
@@ -865,7 +865,7 @@ const compileProperties = (
         `Plate HTML codec "${owner}" cannot claim prefix schema properties.`
       );
     }
-    const id = getCompiledSchemaPropertyId(property);
+    const { id } = schemaDefinition.handle.property(property);
 
     byId.set(
       id,

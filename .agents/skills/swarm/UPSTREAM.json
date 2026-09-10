@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "swarm",
+  "files": [
+    {
+      "upstream": "skills/swarm/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "8e6494e296af5496cacb0fb83f33f647c84286d2e1d1b85580bc0f0f577a81cd",
+      "destinationSha256": "efaa9d7f8d8f7856309ec140eb4acca0643faee28f6268b2b49669e466bcb85e",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/swarm/SKILL.md\n+++ skills/swarm/SKILL.md\n@@ -1,12 +1,13 @@\n ---\n name: swarm\n description: \"Fan out N parallel workers, drain them, and return one report. Use for /swarm, 'swarm this', or parallel coverage, races, gauntlets, and exploration.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Swarm\n \n-Fan out N parallel cloud workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.\n+Fan out N independent native workers when delegation is permitted. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.\n \n ## Start\n \n@@ -22,14 +23,12 @@\n 1. State the done predicate and the artifact or report the swarm must return.\n 2. Choose the shape. Partition into slices, race N workers on identical briefs, or mix both. For a race or mixed shape, declare `first pass`, `rank all`, or `best-of` before spawning.\n 3. Set N from the user or derive it from the shape. N is total workers, not the cloud concurrency limit.\n-4. Pick the worker model from `swarm workers` in `~/.cursor/rules/pstack-models.mdc` when present. Otherwise use `grok-4.6-fast-xhigh`. For a model race, name each arm's model up front.\n+4. Pick the worker model from `swarm workers` in `.agents/pstack-models.md` when present. Otherwise use `inherit-parent`. For a model race, name each arm's model up front.\n 5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`.\n \n ## Phase B: Fan out\n \n-Spawn all N workers in one message with `subagent_type: generalPurpose`, `environment: \"cloud\"`, `run_in_background: true`, and the configured model. Use `environment: \"local\"` only when the worker needs access to something on the user's computer.\n-\n-When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.\n+Launch workers through native collaboration in batches within the concurrency limit. Preserve every named slice or candidate arm. The configured model must be available; omit model overrides for inherit-parent. Use only supported tool parameters. Another checkout or durable task requires the active request's authority. If delegation is prohibited, cover the same questions sequentially and explicitly report that independent execution was unavailable.\n \n Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence.\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

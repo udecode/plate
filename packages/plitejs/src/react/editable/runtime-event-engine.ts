@@ -84,9 +84,11 @@ export type EditableEventRuntime = EditableEventRuntimeCore & {
 export const useEditableEventRuntime = ({
   callbacks,
   deferNativeTextInputRepair = false,
+  domStrategyRuntime,
   onDOMBeforeInput,
   onKeyDown,
   partialDOMBackedSelection,
+  readOnly,
   repair,
   runtime,
   selection,
@@ -95,9 +97,11 @@ export const useEditableEventRuntime = ({
 }: {
   callbacks: EditableRootCallbackProps;
   deferNativeTextInputRepair?: boolean;
+  domStrategyRuntime: EditableDOMRuntime['domStrategyRuntime'];
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
   partialDOMBackedSelection: boolean;
+  readOnly: boolean;
   repair: EditableRepairRuntime;
   runtime: EditableDOMRuntime;
   selection: RuntimeSelectionImportController;
@@ -110,12 +114,10 @@ export const useEditableEventRuntime = ({
     browserHandleRangeAnchors,
     deferredMutations,
     domPhaseScheduler,
-    domStrategyRuntime,
     editor,
     handledDOMBeforeInputRef,
     inputController,
     processing,
-    readOnly,
     rootRef,
     state,
   } = runtime;

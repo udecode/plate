@@ -52,7 +52,7 @@ test('PliteInlineVoidShell hydrates with the same initial order on Mac clients',
     setNavigator({ userAgent: MAC_OS_USER_AGENT });
 
     await act(async () => {
-      root = hydrateRoot(container, <InlineVoidFixture />, {
+      root = hydrateRoot(container!, <InlineVoidFixture />, {
         onRecoverableError(error) {
           recoverableErrors.push(error);
         },

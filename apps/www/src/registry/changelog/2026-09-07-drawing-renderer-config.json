@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-07-drawing-renderer-config",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-07-drawing-renderer-config.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Configure diagram rendering and PNG downloads",
+  "targets": [
+    {
+      "name": "code-drawing",
+      "files": ["apps/www/src/registry/components/editor/code-drawing.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-07-code-drawing-configure-diagram-png-downloads-d988a1e2",
+      "kind": "wiring",
+      "summary": "Choose the PlantUML server with `plantUmlServer` and customize PNG downloads, preview height, and debounce in the copied component.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-07",
+          "entry": "2026-09-07-drawing-renderer-config",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -68,13 +68,13 @@ export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
   },
   {
     assertions: [
-      'editable island visible content stays inside a runtime-owned block void',
+      'native controls stay inside a runtime-owned block void',
       'internal input focus remains native-owned',
       'internal input range selection stays visible without becoming editor selection',
       'outer editor selection is preserved while the native control edits',
       'follow-up editor typing records a legal insert-text transition',
     ],
-    family: 'editable-island-native-focus',
+    family: 'true-void-native-focus',
     routes: ['editable-voids'],
   },
   {
@@ -342,8 +342,8 @@ export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
       ]),
     }),
     definePliteBrowserFeatureContract({
-      feature: 'editable-island',
-      rows: rowsByFamily(['editable-island-native-focus']),
+      feature: 'editable-voids',
+      rows: rowsByFamily(['true-void-native-focus']),
     }),
     definePliteBrowserFeatureContract({
       feature: 'table',

@@ -25,11 +25,19 @@ export const pipeInjectNodeProps = <
   let attributes: TNodeProps['attributes'] & GetInjectNodePropsReturnType =
     nodeProps.attributes;
 
-  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((name) => {
+  const injectionNames = nodeProps.element
+    ? getPlateRuntime(editor).pluginCache.inject.nodeProps.element
+    : nodeProps.text
+      ? getPlateRuntime(editor).pluginCache.inject.nodeProps.text
+      : [];
+
+  injectionNames.forEach((name) => {
     const plugin = getCompiledPlatePlugin(
       editor,
       name
     ) as unknown as AnyPluginBase;
+
+    if (isEditOnly(readOnly, plugin, 'inject')) return;
 
     const newAttributes = pluginInjectNodeProps(
       editor,
@@ -37,11 +45,6 @@ export const pipeInjectNodeProps = <
       nodeProps,
       getElementPath
     );
-
-    // Since `inject.nodeProps` can have hooks, we can't return early.
-    if (isEditOnly(readOnly, plugin, 'inject')) {
-      return;
-    }
 
     if (!newAttributes) return;
 

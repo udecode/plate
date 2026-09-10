@@ -1,4 +1,3 @@
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -60,19 +59,6 @@ export type AIChatAdapter = {
   status: ChatStatus;
   stop: () => Promise<void> | void;
 };
-
-export const createAIChatAdapter = <TMessage extends UIMessage>(
-  chat: UseChatHelpers<TMessage>
-): AIChatAdapter => ({
-  clear: () => {
-    chat.setMessages([]);
-  },
-  messages: chat.messages,
-  regenerate: chat.regenerate,
-  sendMessage: (text, options) => chat.sendMessage({ text }, options),
-  status: chat.status,
-  stop: chat.stop,
-});
 
 export type EditorPromptParams = {
   editor: Editor;
@@ -157,12 +143,14 @@ const initialState: AIChatPluginState = {
   chat: null,
   chatNodes: [],
   chatSelection: null,
+  createComboboxInput: null,
   mode: 'insert',
   open: false,
   previewValue: [],
   streaming: false,
   toolName: null,
   trigger: ' ',
+  triggerQuery: null,
   triggerPreviousCharPattern: /^\s?$/,
 };
 
@@ -995,7 +983,9 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             context.store.get();
 
           context.store.set({ previewValue: [] });
-          if (!editor.plugin(BaseAIPlugin).update.undo()) return;
+          const hadPreview = ai.read.hasPreview();
+
+          if (!ai.update.undo() && hadPreview) return;
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
             const anchor = chatNodes.find(
@@ -1438,19 +1428,13 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         const reviewSuggestions = (action: 'accept' | 'reject') => {
           const suggestion = editor.plugin(SuggestionPlugin);
 
-          tx.suggestion.nodes({ transient: true }).forEach(([node]) => {
-            const data = suggestion.api.suggestionData(node);
-
-            if (!data) return;
-
-            tx.suggestion[action]({
-              createdAt: new Date(data.createdAt),
-              keyId: suggestion.api.key(data.id),
-              suggestionId: data.id,
-              type: data.type,
-              userId: data.userId,
-            });
-          });
+          const ids = new Set(
+            tx.suggestion.nodes({ transient: true }).flatMap(([node]) => {
+              const data = suggestion.api.suggestionData(node);
+              return data ? [data.id] : [];
+            })
+          );
+          for (const id of ids) tx.suggestion[action](id);
           tx.suggestion.clearTransient({
             at: [],
             mode: 'all',
@@ -1923,19 +1907,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
                 if (!blocks) return;
 
-                const codeLine = editor.plugin(PLUGINS.codeLine);
-
-                if (
-                  codeLine.installed &&
-                  codeBlock.installed &&
-                  block[0].type === codeLine.schema.type &&
-                  source[0].type === codeBlock.schema.type &&
-                  source.length === 1
-                ) {
-                  tx.fragment.replace(blocks[0].children);
-                } else {
-                  tx.fragment.replace(blocks);
-                }
+                tx.fragment.replace(blocks);
               } else {
                 tx.fragment.replace(source);
               }

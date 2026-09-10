@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "typescript-best-practices",
+  "files": [
+    {
+      "upstream": "skills/typescript-best-practices/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "b854da40f946f1cd4681785d3e802a2a592322d351f770f5057b56430edb35d0",
+      "destinationSha256": "1b00ad93df0b6fa5292b08cfc8e3f7f43dfb3a902eaaabef15247f399f37f350",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Correct interval modeling with a validated finite nonnegative duration, and computed tuple indexing under noUncheckedIndexedAccess. Preserve the TypeScript path trigger in the description and metadata because Codex does not accept a top-level paths field."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/typescript-best-practices/SKILL.md\n+++ skills/typescript-best-practices/SKILL.md\n@@ -1,9 +1,11 @@\n ---\n name: typescript-best-practices\n description: TypeScript best practices. Use when reading or editing any .ts or .tsx file.\n-paths: [\"**/*.ts\", \"**/*.tsx\"]\n-disable-model-invocation: true\n+metadata:\n+  upstream-paths: [\"**/*.ts\", \"**/*.tsx\"]\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # TypeScript best practices\n \n@@ -13,7 +15,7 @@\n |------|---------|\n | Discriminated unions | Model variants with a `kind` literal discriminant so impossible states can't be represented. No optional-field bags. |\n | Branded types | Brand primitives with `& { readonly __brand: \"X\" }` so they can't be mixed up. Validate once at the boundary. |\n-| Constructive modeling | Build the shape so the illegal value can't be constructed. `[T, ...T[]]` for non-empty, `[T, T][]` for even length, `start` plus `duration` for a range. Not a runtime guard, not a wish for refinement types. |\n+| Constructive modeling | Build the shape so the illegal value can't be constructed. `[T, ...T[]]` for non-empty, `[T, T][]` for even length, `start` plus a validated nonnegative `duration` for a range. Not a runtime guard, not a wish for refinement types. |\n | Simplest total type | Keep `T[]` while every operation on it stays total. Strengthen to `NonEmpty<T>` only where the loose type forces `!`, a cast, or a \"should never happen\" throw. |\n | `unknown` over `any` | External data is `unknown`. `any` disables type checking everywhere it touches. |\n | Schemas before guards | Before hand-writing a property-by-property type guard, use the repository's runtime schema library and infer the type from the schema, such as `z.infer`. |\n"
+    },
+    {
+      "upstream": "skills/typescript-best-practices/references/patterns.md",
+      "destination": "references/patterns.md",
+      "upstreamSha256": "eb73b5f3514c0c14d14bafca59ffb54b161422ea5fc5fe65e60c5b4d71c40178",
+      "destinationSha256": "ff21ada6eb172e3cc3d524058acf5cac3288bbdc0a7b0d70d011f8e28b8ccdb2",
+      "status": "adapted",
+      "reasons": [
+        "Correct interval modeling with a validated finite nonnegative duration, and computed tuple indexing under noUncheckedIndexedAccess. Preserve the TypeScript path trigger in the description and metadata because Codex does not accept a top-level paths field."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/typescript-best-practices/references/patterns.md\n+++ skills/typescript-best-practices/references/patterns.md\n@@ -55,9 +55,11 @@\n \n // Do: an empty value of the type can't exist\n function pickWinner(entries: NonEmpty<string>): string {\n-  return entries[Math.floor(Math.random() * entries.length)];\n-}\n-```\n+  return entries[Math.floor(Math.random() * entries.length)] ?? entries[0];\n+}\n+```\n+\n+With `noUncheckedIndexedAccess`, a computed index still returns `T | undefined`; the known first element makes the result total without a non-null assertion. At an external boundary, validate a dense collection before relying on this type.\n \n Where a plain `T[]` arrives, narrow once with a guard. The fact then travels in the type:\n \n@@ -77,11 +79,20 @@\n // Don't: a comment holds the invariant\n type TimeRange = { start: Date; end: Date }; // start <= end\n \n-// Do: a negative range can't be written; derive end when needed\n-type TimeRange = { start: Date; durationMs: number };\n-```\n-\n-Keep `durationMs` a plain number. Brand it (per Branded types) only if a raw number could be passed where a duration is expected, not by reflex. A `Pairs<T>` is an even-length list under the interpretation you give it, the same way `{ start, durationMs }` is a range. Pick the representation that makes the bad state unconstructable, then expose the reading you need on top (`pairs.flat()`, a `rangeEnd()` helper).\n+// Do: validate duration once at the input boundary; derive end when needed\n+type NonNegativeMs = number & { readonly __brand: \"NonNegativeMs\" };\n+\n+function durationMs(value: number): NonNegativeMs {\n+  if (!Number.isFinite(value) || value < 0) {\n+    throw new Error(\"duration must be finite and nonnegative\");\n+  }\n+  return value as NonNegativeMs;\n+}\n+\n+type TimeRange = { start: Date; durationMs: NonNegativeMs };\n+```\n+\n+A plain number permits a negative duration, so it does not enforce this invariant. The boundary constructor earns the brand; validate the start and computed endpoint against the supported date range too. A `Pairs<T>` is an even-length list under its interpretation. Choose the simplest representation that carries the actual invariant and expose the needed reading (`pairs.flat()`, a `rangeEnd()` helper).\n \n ## Simplest total type\n \n@@ -311,3 +322,5 @@\n ```\n \n Skip on hot paths: per-frame render, tokenizers, parsers, anything in a tight loop where the allocation cost matters.\n+\n+Reference: [TypeScript noUncheckedIndexedAccess](https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html).\n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

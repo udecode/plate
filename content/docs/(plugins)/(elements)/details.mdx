@@ -23,7 +23,7 @@ Details adds semantic disclosure blocks with one editable Summary and any number
 
 </PackageInfo>
 
-## Document Model
+## Document model
 
 A Details node always starts with exactly one Summary. Every following child is a direct body block:
 
@@ -41,7 +41,7 @@ const value = [
 
 `open` and `name` are not document properties. Use the plugin state when the application needs to expand or collapse a Details node.
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -53,7 +53,7 @@ Install the copied `DetailsKit`, React elements, and toolbar button with the Pla
 
 The kit contains `DetailsPlugin`, `DetailsSummaryPlugin`, `DetailsElement`, and `DetailsSummaryElement`.
 
-### Add Kit
+### Add kit
 
 Add `DetailsKit` to the editor plugins:
 
@@ -71,7 +71,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -81,7 +81,7 @@ const editor = createEditor({
 npm install platejs
 ```
 
-### Add Plugins
+### Add plugins
 
 Configure both node components. `DetailsPlugin` owns the container behavior; `DetailsSummaryPlugin` owns the editable first child.
 
@@ -105,7 +105,7 @@ const editor = createEditor({
 });
 ```
 
-### Add Headless Support
+### Add headless support
 
 Server transforms and serialization only need `BaseDetailsPlugin`:
 
@@ -124,7 +124,10 @@ const editor = createEditor({
 
 ### `editor.plugin(BaseDetailsPlugin).update.insert`
 
-Insert an open Details node with an empty Summary and body paragraph. Pass `select: true` to place the selection in the Summary.
+Insert an open Details node with an empty Summary and body paragraph after the
+current block. Pass `select: true` to place the selection in the Summary and
+`replaceEmpty: true` to replace an empty source in the same history step.
+An explicit `at` keeps node-insertion placement; `after` identifies the source block.
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
@@ -146,7 +149,7 @@ Unwrap the selected Details nodes. The Summary becomes the editor's default text
 editor.plugin(BaseDetailsPlugin).update.unwrap();
 ```
 
-## Open State
+## Open state
 
 Read and update disclosure state through `BaseDetailsPlugin`. The state uses `NodeKey`, not a serialized element property.
 
@@ -174,7 +177,7 @@ Use [`DetailsToolbarButton`](/docs/components/details-toolbar-button) to wrap th
 
 ### `BaseDetailsPlugin`
 
-Headless schema, codecs, corrections, transient state, and transforms for `details` nodes.
+Headless schema, codecs, corrections, transient state, transforms, and Enter, Backspace, and Delete behavior for `details` nodes.
 
 ### `BaseDetailsSummaryPlugin`
 
@@ -182,7 +185,7 @@ Headless text-block schema and codecs for the persisted `summary` node type.
 
 ### `DetailsPlugin`
 
-React adapter with Enter, Backspace, and Delete behavior.
+React adapter for Details rendering.
 
 ### `DetailsSummaryPlugin`
 

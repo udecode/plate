@@ -498,7 +498,7 @@ export class ChangeDraft {
 
   /** Apply an externally supplied change that must already be publishable. */
   applyCanonical(change: DocumentChange): DocumentChangeStep {
-    if (!this.validate && !this.assertCanonical) {
+    if (!this.validate && !this.validateConstructed && !this.assertCanonical) {
       const step = this.apply(change);
 
       this.canonical = true;
@@ -516,7 +516,36 @@ export class ChangeDraft {
       ? candidate.change
       : this.accumulated.compose(candidate.change, this.source);
 
-    this.validate?.(candidate.after, accumulated);
+    if (this.validateConstructed) {
+      // Earlier draft steps may be unvalidated; retain the transaction baseline.
+      const indexedAfter = candidateBuilder.indexedAfter(accumulated);
+      const indexedBefore = new Map<string, DocumentIndex>();
+      const hasRestoredRoot =
+        (candidate.after.children !== this.source.children &&
+          !indexedAfter.has('main')) ||
+        Object.entries(candidate.after.roots ?? {}).some(
+          ([root, children]) =>
+            children !== this.source.roots?.[root] && !indexedAfter.has(root)
+        );
+
+      for (const root of indexedAfter.keys()) {
+        indexedBefore.set(root, this.getSourceIndex(root));
+      }
+      if (hasRestoredRoot && this.validate) {
+        // Cancellation can restore content without its validated root identity.
+        this.validate(candidate.after, accumulated);
+      } else {
+        this.validateConstructed({
+          after: candidate.after,
+          before: this.source,
+          change: accumulated,
+          indexedAfter,
+          indexedBefore,
+        });
+      }
+    } else {
+      this.validate?.(candidate.after, accumulated);
+    }
     this.assertCanonical?.(candidate.after, accumulated);
 
     return this.applyTrustedCanonical(candidate.change, {

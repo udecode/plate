@@ -1,5 +1,9 @@
 import { act, render } from '@testing-library/react';
-import { type Descendant, screenReaderAnnouncementEffect } from 'plitejs';
+import {
+  type Value,
+  type Element,
+  screenReaderAnnouncementEffect,
+} from 'plitejs';
 import type { ReactNode } from 'react';
 
 import {
@@ -11,7 +15,7 @@ import {
 } from '../../src/react';
 import { EditorAnnouncementLiveRegion } from '../../src/react/components/editor-announcement-live-region';
 
-const paragraph = (text: string): Descendant => ({
+const paragraph = (text: string): Element => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -54,7 +58,7 @@ describe('screen-reader announcement live region', () => {
     let runtime!: ReturnType<typeof usePliteRuntime>;
 
     const Runtime = ({ children }: { children: ReactNode }) => {
-      runtime = usePliteRuntime({
+      runtime = usePliteRuntime<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: { header: [paragraph('header')] },
@@ -91,7 +95,7 @@ describe('screen-reader announcement live region', () => {
 
   it('does not add a second consumer when Plite receives its enclosing runtime editor', () => {
     const Runtime = ({ children }: { children: ReactNode }) => {
-      const runtime = usePliteRuntime({
+      const runtime = usePliteRuntime<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: { header: [paragraph('header')] },

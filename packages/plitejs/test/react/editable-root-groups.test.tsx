@@ -11,6 +11,17 @@ const groups = createRootGroups(nodeKeys, 2);
 
 describe('mounted editable root groups', () => {
   test('retains mounted groups until a document replacement resets them', () => {
+    const initialProps: {
+      activeGroupIds: Set<string>;
+      documentEpoch: number;
+      renderedGroups: typeof groups | null;
+      planKey: string | null;
+    } = {
+      activeGroupIds: new Set(['0-1']),
+      documentEpoch: 0,
+      renderedGroups: groups,
+      planKey: 'plan:a',
+    };
     const { result, rerender } = renderHook(
       ({ activeGroupIds, documentEpoch, renderedGroups, planKey }) =>
         useMountedRootGroupIds({
@@ -20,12 +31,7 @@ describe('mounted editable root groups', () => {
           planKey,
         }),
       {
-        initialProps: {
-          activeGroupIds: new Set(['0-1']),
-          documentEpoch: 0,
-          renderedGroups: groups,
-          planKey: 'plan:a',
-        },
+        initialProps,
       }
     );
 

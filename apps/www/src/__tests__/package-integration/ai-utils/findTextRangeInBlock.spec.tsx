@@ -1,6 +1,7 @@
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHighlightPlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
   BaseStrikethroughPlugin,
@@ -11,7 +12,6 @@ import {
   type Value,
 } from 'platejs';
 import { BaseAIPlugin } from 'platejs/ai';
-import { BaseCommentPlugin } from 'platejs/comment';
 
 const plugins = [
   BaseParagraphPlugin,
@@ -21,7 +21,7 @@ const plugins = [
   BaseUnderlinePlugin,
   BaseCodePlugin,
   BaseStrikethroughPlugin,
-  BaseCommentPlugin,
+  BaseHighlightPlugin,
   BaseKbdPlugin,
   BaseAIPlugin,
 ];
@@ -69,7 +69,7 @@ describe('findTextRangeInBlock', () => {
           { text: 'This is a tes1texst' },
           { bold: true, text: 't' },
           { italic: true, text: 'e' },
-          { comment: true, text: 's' },
+          { highlight: true, text: 's' },
           { kbd: true, text: 't' },
         ],
         type: 'paragraph',

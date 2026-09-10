@@ -77,6 +77,8 @@ const CAPTURE_ROUTING_PATH_PATTERN = /\bcapture-routing-path:\s*\S/i;
 const INTERACTION_INTERCEPTOR_PATH_PATTERN =
   /\binteraction-interceptor-path:\s*\S/i;
 const REPORTER_PROFILE_PATTERN = /\breporter-profile:\s*[^;|]+/i;
+const ROUTE_REPORT_PATTERN =
+  /\bexact[- ]route\b|https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/|(?:^|[\s`'"(])\/(?:blocks|docs)\//i;
 const ADOPTED_CANDIDATE_STATUS_PATTERN =
   /\badopted-(?:candidate-local|kept|completed)\b/i;
 const hasFocusFirstEventOrder = (value) => {
@@ -114,6 +116,10 @@ const SELECTIVE_INVALIDATION_PATTERN =
   /\b(?:selective[- ]invalidation|affected[- ]only|fan[- ]out)\b/i;
 const RUNTIME_IDENTITY_PATTERN =
   /\b(?:runtime[- ]identity|identity[- ]mapping|node[- ]key (?:mapping|continuation))\b/i;
+const RENDER_MEASUREMENT_PATTERN =
+  /\b(?:re-?renders?|rerender(?:ed|ing|s)?|render(?:er)?[- ]counts?|render[- ]storm|repeated component work|render[- ]profiler|profiler[- ]events?)\b/i;
+const MEASUREMENT_OWNER_INPUTS_PATTERN =
+  /\bmeasurement-owner-inputs:\s*([^;|]+)/i;
 const REGRESSION_SOURCE_PATTERN =
   /(?:\.agents\/rules\/regression(?:\.mdc|\/)|docs\/plans\/templates\/regression\.md)/;
 const isBrowserCommandCase = (selected) =>
@@ -124,6 +130,26 @@ const isBrowserCommandCase = (selected) =>
       selected?.expected_outcome,
     ].join(' ')
   ) && /\b(?:browser|chrome)\b/i.test(selected?.exact_environment ?? '');
+const getExactRoute = (value) => {
+  const route = String(value).match(/\bexact-route:\s*([^;|]+)/i)?.[1]?.trim();
+
+  if (
+    !route ||
+    /[<>{}]/.test(route) ||
+    /^(?:pending|todo|tbd|unknown|unspecified)$/i.test(route)
+  ) {
+    return null;
+  }
+
+  return route;
+};
+const getRoutePath = (route) => {
+  try {
+    return new URL(route, 'http://localhost').pathname;
+  } catch {
+    return route;
+  }
+};
 const normalizeHeader = (value) =>
   value
     .toLowerCase()
@@ -159,6 +185,21 @@ const parseTimestamp = (value) => {
   const timestamp = Date.parse(value ?? "");
 
   return Number.isFinite(timestamp) ? timestamp : null;
+};
+const getMeasurementOwnerInputs = (value) => {
+  const raw = String(value).match(MEASUREMENT_OWNER_INPUTS_PATTERN)?.[1];
+
+  if (!raw) return [];
+
+  return raw
+    .split(",")
+    .map((input) => input.trim())
+    .filter(
+      (input) =>
+        input.length > 0 &&
+        !/[<>{}]/.test(input) &&
+        !/^(?:pending|todo|tbd|unknown|unspecified)$/i.test(input)
+    );
 };
 
 const parseCells = (line) => {
@@ -388,6 +429,7 @@ export const validateRegressionPlan = (
   }
 
   const cases = new Map();
+  const exactRoutes = new Map();
 
   for (const row of selectedTable.rows) {
     const caseId = row.case_id;
@@ -475,6 +517,15 @@ export const validateRegressionPlan = (
     if (!isSourceIdentity(row.tested_ref)) {
       errors.push(`${label} requires Tested ref commit:<sha> or dirty:<sha>`);
     }
+    const routeBound = ROUTE_REPORT_PATTERN.test(
+      [row.source_reference, row.setup_action, row.expected_outcome].join(' ')
+    );
+    const exactRoute = getExactRoute(row.exact_environment);
+
+    if (routeBound && !exactRoute) {
+      errors.push(`${label} reporter route requires exact-route: in Exact environment`);
+    }
+    if (exactRoute) exactRoutes.set(caseId, exactRoute);
     if (
       complete &&
       !["completed", "kept"].includes(row.status?.toLowerCase())
@@ -483,6 +534,76 @@ export const validateRegressionPlan = (
     }
 
     cases.set(caseId, row);
+  }
+
+  const proofHostTable = parseTable(markdown, 'Proof-host readiness');
+  const proofHostHeaders = [
+    'case_id',
+    'source_owner',
+    'runner_route_host',
+    'freshness_evidence',
+    'generated_export_boundary',
+    'result',
+  ];
+
+  if (
+    requireHeaders(
+      proofHostTable,
+      'Proof-host readiness',
+      proofHostHeaders,
+      errors
+    )
+  ) {
+    const proofHosts = new Map();
+
+    for (const row of proofHostTable.rows) {
+      const caseId = row.case_id;
+      const label = `proof host ${caseId || '<missing>'}`;
+
+      if (!cases.has(caseId)) {
+        errors.push(`${label} references an unknown case`);
+        continue;
+      }
+      if (proofHosts.has(caseId)) {
+        errors.push(`${label} is duplicated`);
+        continue;
+      }
+      proofHosts.set(caseId, row);
+
+      for (const field of [
+        'source_owner',
+        'runner_route_host',
+        'freshness_evidence',
+        'generated_export_boundary',
+        'result',
+      ]) {
+        if (!isResolved(row[field]) && !isNotApplicable(row[field])) {
+          errors.push(`${label} requires ${field.replaceAll('_', ' ')}`);
+        }
+      }
+
+      const exactRoute = exactRoutes.get(caseId);
+      if (exactRoute) {
+        const routePath = getRoutePath(exactRoute);
+        if (
+          !row.runner_route_host?.includes(exactRoute) &&
+          !row.runner_route_host?.includes(routePath)
+        ) {
+          errors.push(
+            `${label} must bind the selected exact route ${exactRoute}`
+          );
+        }
+      }
+      if (complete && !isPass(row.result)) {
+        errors.push(`${label} requires Result pass: <evidence>`);
+      }
+    }
+
+    for (const caseId of cases.keys()) {
+      if (!proofHosts.has(caseId)) {
+        errors.push(`${caseId} is missing Proof-host readiness`);
+      }
+    }
   }
 
   const evidenceTable = parseTable(markdown, "Reporter evidence inventory");
@@ -847,6 +968,97 @@ export const validateRegressionPlan = (
       ]),
     ].join(" ");
     const focusTransfer = FOCUS_TRANSFER_PATTERN.test(pointerCaseText);
+    if (/\btoolbar\b/i.test(pointerCaseText) && /\bfield\b/i.test(pointerCaseText) && /\bfocus retr(?:y|ies)\b/i.test(pointerCaseText)) {
+      const focusRows = Array.from(rows?.values() ?? []).filter(
+        (row) => row.observation?.toLowerCase() === "focus" && row.applies?.toLowerCase() === "yes"
+      );
+      if (!focusRows.some((row) => /\bfield-focus-handoff:\s*\S/i.test(row.positive_assertion ?? ""))) {
+        errors.push(`${caseId} toolbar field focus requires field-focus-handoff:`);
+      }
+      if (complete && !focusRows.some((row) => /\bfield-focus-handoff:\s*pass\b/i.test(row.result ?? ""))) {
+        errors.push(`${caseId} toolbar field focus requires field-focus-handoff: pass`);
+      }
+    }
+    if (/\btoolbar\b/i.test(pointerCaseText) && /\bfield\b/i.test(pointerCaseText) && /\benter\b/i.test(pointerCaseText) && /\bundo\b/i.test(pointerCaseText)) {
+      const modelRows = Array.from(rows?.values() ?? []).filter(
+        (row) => row.observation?.toLowerCase() === "model" && row.applies?.toLowerCase() === "yes"
+      );
+      if (!modelRows.some((row) => /\bfield-commit-once:\s*\S/i.test(row.positive_assertion ?? ""))) {
+        errors.push(`${caseId} toolbar field history requires model field-commit-once:`);
+      }
+      if (complete && !modelRows.some((row) => /\bfield-commit-once:\s*pass\b/i.test(row.result ?? ""))) {
+        errors.push(`${caseId} toolbar field history requires model field-commit-once: pass`);
+      }
+    }
+    if (/\bmulti[- ]root\b/i.test(pointerCaseText) && /\b(?:history|undo|redo)\b/i.test(pointerCaseText)) {
+      const focusRows = Array.from(rows?.values() ?? []).filter(
+        (row) => row.observation?.toLowerCase() === "focus" && row.applies?.toLowerCase() === "yes"
+      );
+      for (const marker of ["history-root-transition", "history-target-retirement"]) {
+        if (!focusRows.some((row) => new RegExp(`\\b${marker}:\\s*\\S`, "i").test(row.positive_assertion ?? ""))) {
+          errors.push(`${caseId} multi-root history requires focus ${marker}:`);
+        }
+        if (complete && !focusRows.some((row) => new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(row.result ?? ""))) {
+          errors.push(`${caseId} multi-root history completion requires focus ${marker}: pass`);
+        }
+      }
+    }
+    if (
+      /\b(?:same[- ](?:model|root)|multi[- ]view|views of (?:one|the same)|shared[- ]document views)\b/i.test(pointerCaseText) &&
+      /\b(?:focus|toolbar|controller|read[- ]only)\b/i.test(pointerCaseText)
+    ) {
+      for (const [observation, markers] of [
+        ["model", ["view-bindings", "current-view-permissions", "stale-mount"]],
+        ["focus", ["view-bindings", "exact-view-focus"]],
+      ]) {
+        const bindingRows = Array.from(rows?.values() ?? []).filter(
+          (row) => row.observation?.toLowerCase() === observation && row.applies?.toLowerCase() === "yes"
+        );
+        for (const marker of markers) {
+          if (!bindingRows.some((row) => new RegExp(`\\b${marker}:\\s*\\S`, "i").test(row.positive_assertion ?? ""))) {
+            errors.push(`${caseId} multi-view controls require ${observation} ${marker}:`);
+          }
+          if (complete && !bindingRows.some((row) => new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(row.result ?? ""))) {
+            errors.push(`${caseId} multi-view controls completion requires ${observation} ${marker}: pass`);
+          }
+        }
+      }
+    }
+    if (/\bpackage-dependency-change:/i.test(pointerCaseText)) {
+      const packageRows = Array.from(rows?.values() ?? []).filter(
+        (row) => row.observation?.toLowerCase() === "runtime-errors" && row.applies?.toLowerCase() === "yes" && /\bpacked package\b/i.test(row.proof_layer ?? "")
+      );
+      if (packageRows.length === 0) {
+        errors.push(`${caseId} package dependency changes require an applicable packed package runtime-errors oracle`);
+      }
+      for (const marker of ["react-free-headless", "react-consumer"]) {
+        if (!packageRows.some((row) => new RegExp(`\\b${marker}:\\s*\\S`, "i").test(row.positive_assertion ?? ""))) {
+          errors.push(`${caseId} package dependency changes require ${marker}:`);
+        }
+        if (complete && !packageRows.some((row) => new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(row.result ?? ""))) {
+          errors.push(`${caseId} package dependency changes completion requires ${marker}: pass`);
+        }
+      }
+    }
+    if (/\bindependent editors\b/i.test(pointerCaseText)) {
+      for (const observation of ["model", "dom-native"]) {
+        const bindingRows = Array.from(rows?.values() ?? []).filter(
+          (row) => row.observation?.toLowerCase() === observation && row.applies?.toLowerCase() === "yes"
+        );
+        const evidence = ["editor-bindings", ...(observation === "model" ? ["isolated-edit-and-undo"] : [])];
+        if (bindingRows.length === 0) {
+          errors.push(`${caseId} independent editors require an applicable ${observation} oracle`);
+        }
+        for (const marker of evidence) {
+          if (!bindingRows.some((row) => new RegExp(`\\b${marker}:\\s*\\S`, "i").test(row.positive_assertion ?? ""))) {
+            errors.push(`${caseId} independent editors require ${observation} ${marker}:`);
+          }
+          if (complete && !bindingRows.some((row) => new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(row.result ?? ""))) {
+            errors.push(`${caseId} independent editors completion requires ${observation} ${marker}: pass`);
+          }
+        }
+      }
+    }
     const shortcutTrigger = SHORTCUT_TRIGGER_PATTERN.test(pointerCaseText);
     const disposableEffectLifecycle =
       DISPOSABLE_EFFECT_LIFECYCLE_PATTERN.test(pointerCaseText);
@@ -1512,6 +1724,58 @@ export const validateRegressionPlan = (
     }
   }
 
+  const measurementOwnerInputsByCase = new Map();
+
+  for (const [caseId, selected] of cases) {
+    const evidenceRows = evidenceByCase.get(caseId) ?? [];
+    const oracleRows = Array.from(oracleByCase.get(caseId)?.values() ?? []);
+    const measurementText = [
+      selected.source_reference,
+      selected.setup_action,
+      selected.expected_outcome,
+      ...evidenceRows.flatMap((row) => [row.source_reference, row.claim]),
+      ...oracleRows.flatMap((row) => [
+        row.positive_assertion,
+        row.forbidden_state,
+        row.proof_layer,
+      ]),
+    ].join(" ");
+
+    if (!RENDER_MEASUREMENT_PATTERN.test(measurementText)) continue;
+
+    const applicableOracleRows = oracleRows.filter(
+      (row) => row.applies?.toLowerCase() === "yes"
+    );
+    const ownerInputs = Array.from(
+      new Set(
+        applicableOracleRows.flatMap((row) =>
+          getMeasurementOwnerInputs(row.positive_assertion)
+        )
+      )
+    );
+
+    if (ownerInputs.length === 0) {
+      errors.push(
+        `${caseId} render measurement requires measurement-owner-inputs: <comma-separated paths>`
+      );
+      continue;
+    }
+
+    measurementOwnerInputsByCase.set(caseId, ownerInputs);
+
+    if (
+      complete &&
+      !applicableOracleRows.some(
+        (row) =>
+          /\bmeasurement-owner-closure:\s*pass\b/i.test(row.result ?? "")
+      )
+    ) {
+      errors.push(
+        `${caseId} render measurement requires measurement-owner-closure: pass`
+      );
+    }
+  }
+
   const failedTable = parseTable(markdown, "Failed fix history");
   const failedHeaders = [
     "case_id",
@@ -1624,6 +1888,17 @@ export const validateRegressionPlan = (
         );
       }
       if (
+        failureKind === 'reporter-contradiction' &&
+        exactRoutes.has(caseId) &&
+        !/\bexact-route-reproduction:\s*(?:red|pass)\b/i.test(
+          row.resume_state ?? ''
+        )
+      ) {
+        errors.push(
+          `${label} reporter route contradiction requires exact-route-reproduction: red or pass`
+        );
+      }
+      if (
         ["exact-replay", "final-verification"].includes(failureKind) &&
         !/\bdiagnostic:\s*\S/i.test(row.resume_state ?? "")
       ) {
@@ -1633,6 +1908,26 @@ export const validateRegressionPlan = (
       }
 
       const caseOracles = oracleByCase.get(caseId);
+      const hasFocusState = Array.from(caseOracles?.values() ?? []).some(
+        (oracle) =>
+          oracle.observation?.toLowerCase() === "focus" &&
+          oracle.applies?.toLowerCase() === "yes" &&
+          /\bfocus(?:ed)?[- ](?:state|context|subscription)/i.test(
+            oracle.positive_assertion ?? ""
+          )
+      );
+
+      if (
+        hasFocusState &&
+        !/\bfocus-state-trace:\s*native\s*\+\s*dom-api\s*\+\s*react-context\b/i.test(
+          row.resume_state ?? ""
+        )
+      ) {
+        errors.push(
+          `${label} failed focus-state fix requires focus-state-trace: native + dom-api + react-context`
+        );
+      }
+
       const hasPopupFocus = Array.from(caseOracles?.values() ?? []).some(
         (oracle) => {
           if (
@@ -2021,6 +2316,8 @@ export const validateRegressionPlan = (
 
   for (const [caseId, selected] of cases) {
     const receipts = receiptsByCase.get(caseId) ?? [];
+    const exactRoute = exactRoutes.get(caseId);
+    const routePath = exactRoute ? getRoutePath(exactRoute) : null;
     const oracleRows = oracleByCase.get(caseId);
     const geometryPaintApplies = Array.from(oracleRows?.values() ?? []).some(
       (row) =>
@@ -2038,6 +2335,58 @@ export const validateRegressionPlan = (
 
     if (complete && receipts.length === 0) {
       errors.push(`${caseId} is missing a completed Proof receipt`);
+    }
+    const measurementOwnerInputs =
+      measurementOwnerInputsByCase.get(caseId) ?? [];
+
+    if (
+      complete &&
+      measurementOwnerInputs.length > 0 &&
+      !receipts.some((receipt) => {
+        const inputs = new Set(splitInputs(receipt.inputs));
+
+        return measurementOwnerInputs.every((input) => inputs.has(input));
+      })
+    ) {
+      errors.push(
+        `proof receipt ${caseId} Inputs must include every measurement-owner-inputs path: ${measurementOwnerInputs.join(", ")}`
+      );
+    }
+    if (complete && exactRoute) {
+      for (const receipt of receipts) {
+        if (
+          !receipt.command.includes(exactRoute) &&
+          !receipt.command.includes(routePath)
+        ) {
+          errors.push(
+            `proof receipt ${caseId} exact-route command must reference ${exactRoute}`
+          );
+        }
+
+        const ownsExactRoute = splitInputs(receipt.inputs).some((input) => {
+          const inputPath = isAbsolute(input) ? input : resolve(rootDir, input);
+
+          if (
+            !/(?:browser|e2e|playwright|spec|test)/i.test(input) ||
+            !existsSync(inputPath)
+          ) {
+            return false;
+          }
+
+          const source = readFileSync(inputPath, 'utf8');
+
+          return (
+            source.includes(routePath) &&
+            /\b(?:goto|navigate|open|visit)\b/i.test(source)
+          );
+        });
+
+        if (!ownsExactRoute) {
+          errors.push(
+            `proof receipt ${caseId} inputs must contain the selected exact route ${routePath}`
+          );
+        }
+      }
     }
     if (browserSpecific) {
       if (!/^exact-chrome:\s*\S/i.test(selected.exact_environment ?? "")) {

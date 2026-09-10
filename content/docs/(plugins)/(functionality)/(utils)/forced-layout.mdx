@@ -26,7 +26,7 @@ Forced Layout is the `NormalizeTypesPlugin` pattern for pinning document positio
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific block type.
 
@@ -70,7 +70,7 @@ This keeps the first block as an H1 and inserts a paragraph at path `[1]` when t
 
 There is no `ForcedLayoutPlugin` and no `forced-layout`. The public plugin is `NormalizeTypesPlugin`.
 
-## Rule Semantics
+## Rule semantics
 
 `NormalizeTypesPlugin` runs its root-level correction when root children change. It evaluates every configured rule in order during that correction.
 
@@ -81,7 +81,7 @@ There is no `ForcedLayoutPlugin` and no `forced-layout`. The public plugin is `N
 
 Use `strictType` for required slots. Use `type` for optional slots that should be filled only when empty.
 
-## Error Handling
+## Error handling
 
 If inserting a missing node fails, the correction calls `onError(error)` and leaves the failed rule unchanged.
 
@@ -100,7 +100,7 @@ export const requiredTitle = NormalizeTypesPlugin.configure({
 
 Keep `onError` small. A normalization callback should report or collect the failure, not mutate the same path again.
 
-## Choosing The Right Utility
+## Choosing the right utility
 
 | Need | Use |
 |------|-----|
@@ -112,7 +112,7 @@ Keep `onError` small. A normalization callback should report or collect the fail
 
 Forced layout is for absolute paths. It is not a schema engine for every possible nested node shape.
 
-## Playground Toggle
+## Playground toggle
 
 The registry playground demonstrates this pattern by enabling the plugin only for the `forced-layout` example id.
 

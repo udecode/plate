@@ -19,23 +19,16 @@ import {
   SelectionApi,
   type Value,
 } from '..';
-import {
-  defaultScrollSelectionIntoView,
-  Editable,
-  type EditableProps,
-  useEditorState,
-  useElementPath,
-} from '../react';
+import { Editable, type EditableProps, useEditorState } from '../react';
+import { defaultScrollSelectionIntoView } from '../react/components/editable';
 import {
   createPliteLayout,
-  createPlitePageLayout,
   getPlitePageLayoutGeometry,
   getPlitePageLayoutProjection,
   type PliteLayoutOptions,
   type PlitePageLayout,
   type PlitePageLayoutFragment,
   type PlitePageLayoutMode,
-  type PlitePageLayoutOptions,
   type PlitePageLayoutPage,
   type PlitePageLayoutProjectedLine,
   type PlitePageLayoutProjectedUnit,
@@ -119,15 +112,11 @@ const getPageSourceDependency = <
   return page;
 };
 
-export type UsePlitePageLayoutOptions<
-  TSettings extends PlitePageSettings = PlitePageSettings,
-> = PlitePageLayoutOptions<TSettings>;
-
 export type UsePliteLayoutOptions<
   TSettings extends PlitePageSettings = PlitePageSettings,
 > = PliteLayoutOptions<TSettings>;
 
-/** Create and subscribe a derived layout reader with the default engine. */
+/** Create and subscribe a derived layout reader with built-in or caller-owned measurement. */
 export const usePliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
   V extends Value = Value,
@@ -195,78 +184,6 @@ export const usePliteLayout = <
   return layout;
 };
 
-/** Create and subscribe a derived layout reader with an explicit engine. */
-export const usePlitePageLayout = <
-  TSettings extends PlitePageSettings = PlitePageSettings,
->(
-  editor: Editor,
-  options: UsePlitePageLayoutOptions<TSettings>
-): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
-  const layout = useMemo(
-    () => createPlitePageLayout(editor, deferLayoutRuntimeConnection(options)),
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the layout; the committed reconfiguration effect applies option changes without replacing subscriptions.
-    [editor]
-  );
-  const committedConfigurationRef = useRef({ layout, options });
-  const pageDependency = getPageSourceDependency(options.page);
-  const pageBreakMode = options.pageBreaks?.mode;
-  const pageBreakSource = options.pageBreaks?.source;
-  const pageBreakWriterId =
-    pageBreakMode === 'write' ? options.pageBreaks?.writerId : null;
-  const { textChangeRefresh } = options;
-  const textChangeRefreshDelay =
-    typeof textChangeRefresh === 'object'
-      ? textChangeRefresh.delayMs
-      : textChangeRefresh;
-  const textChangeRefreshMaxDelay =
-    typeof textChangeRefresh === 'object' ? textChangeRefresh.maxDelayMs : null;
-  const textChangeRefreshMode =
-    typeof textChangeRefresh === 'object' ? textChangeRefresh.mode : null;
-
-  useEffect(() => connectLayoutRuntime(layout), [layout]);
-
-  useEffect(() => {
-    const committedConfiguration = committedConfigurationRef.current;
-
-    if (committedConfiguration.layout !== layout) {
-      committedConfigurationRef.current = { layout, options };
-      return;
-    }
-
-    if (committedConfiguration.options === options) return;
-
-    layout.reconfigure(options);
-    committedConfigurationRef.current = { layout, options };
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The explicit dependency projection controls reconfiguration while the effect applies the latest complete options object.
-  }, [
-    layout,
-    options.engine,
-    options.nodeLayout,
-    options.onError,
-    pageBreakMode,
-    pageBreakSource,
-    pageBreakWriterId,
-    options.root,
-    textChangeRefreshDelay,
-    textChangeRefreshMaxDelay,
-    textChangeRefreshMode,
-    options.typography,
-    pageDependency,
-  ]);
-
-  return layout;
-};
-
-/** Read a `PlitePageLayout` snapshot with React external-store semantics. */
-export const usePlitePageLayoutSnapshot = (
-  layout: PlitePageLayout
-): PlitePageLayoutSnapshot =>
-  useSyncExternalStore(
-    layout.subscribe,
-    layout.getSnapshot,
-    layout.getSnapshot
-  );
-
 /** Read a `PlitePageLayout` snapshot with React external-store semantics. */
 export const usePliteLayoutSnapshot = (
   layout: PlitePageLayout
@@ -279,9 +196,6 @@ export const usePliteLayoutSnapshot = (
 
 /**
  * Reads rendered layout fragments for a known Plite path.
- *
- * Use this when a renderer already has the element path and should avoid an
- * extra `useElementPath()` subscription.
  */
 export const usePliteLayoutFragmentsAtPath = (
   targetPath: Path | null | undefined
@@ -347,14 +261,6 @@ export const usePliteLayoutFragmentsAtPath = (
       };
     });
   }, [context, targetPath]);
-};
-
-export const usePliteLayoutFragments = (
-  path?: Path | null
-): readonly PliteLayoutRenderedFragment[] => {
-  const elementPath = useElementPath();
-
-  return usePliteLayoutFragmentsAtPath(path ?? elementPath);
 };
 
 const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
@@ -681,8 +587,6 @@ export type PagedEditablePageView = {
 export type PagedEditableProps = EditableProps & {
   layout: PlitePageLayout;
   pageView?: PagedEditablePageView;
-  pageLayoutMode?: PlitePageLayoutMode;
-  pageGap?: number;
   renderPage?: (props: PagedEditableRenderPageProps) => ReactNode;
 };
 
@@ -694,9 +598,6 @@ const defaultRenderPage = ({
   <div
     {...attributes}
     style={{
-      background: 'white',
-      border: '1px solid #d1d5db',
-      boxShadow: '0 12px 24px rgba(15, 23, 42, 0.12)',
       boxSizing: 'border-box',
       height: page.height,
       overflow: 'hidden',
@@ -708,19 +609,6 @@ const defaultRenderPage = ({
     {children}
   </div>
 );
-
-const normalizePagedEditablePageView = ({
-  pageGap,
-  pageLayoutMode,
-  pageView,
-}: {
-  pageGap?: number;
-  pageLayoutMode?: PlitePageLayoutMode;
-  pageView?: PagedEditablePageView | null;
-}) => ({
-  gap: pageView?.gap ?? pageGap ?? 24,
-  mode: pageView?.mode ?? pageLayoutMode ?? 'single',
-});
 
 const createPagedEditableTopLevelLayoutItems = ({
   fragments,
@@ -777,8 +665,6 @@ const createPagedEditableTopLevelLayoutItems = ({
 export const PagedEditable = ({
   ignoreBlankEditableRootClicks = true,
   layout,
-  pageGap,
-  pageLayoutMode,
   pageView,
   renderPage = defaultRenderPage,
   style,
@@ -805,34 +691,31 @@ export const PagedEditable = ({
       shouldUpdate: shouldUpdatePagedEditableSelectedPaths,
     }
   );
-  const snapshot = usePlitePageLayoutSnapshot(layout);
+  const snapshot = usePliteLayoutSnapshot(layout);
   // Preserve page-list identity because it feeds DOM subscription boundaries.
   const pages = useMemo(
     () => (snapshot.pages.length === 0 ? [snapshot.page] : snapshot.pages),
     [snapshot.page, snapshot.pages]
   );
-  const normalizedPageView = normalizePagedEditablePageView({
-    pageGap,
-    pageLayoutMode,
-    pageView,
-  });
+  const gap = pageView?.gap ?? 24;
+  const mode = pageView?.mode ?? 'single';
   const geometry = useMemo(
     () =>
       getPlitePageLayoutGeometry(pages, {
-        pageGap: normalizedPageView.gap,
-        pageLayoutMode: normalizedPageView.mode,
+        pageGap: gap,
+        pageLayoutMode: mode,
       }),
-    [normalizedPageView.gap, normalizedPageView.mode, pages]
+    [gap, mode, pages]
   );
   const pageMountPlan = useMemo(
     () =>
       createPagedEditablePageMountPlan({
         fragments: snapshot.fragments,
         geometry,
-        mode: normalizedPageView.mode,
+        mode,
         pages,
       }),
-    [geometry, normalizedPageView.mode, pages, snapshot.fragments]
+    [geometry, mode, pages, snapshot.fragments]
   );
   const pageRenderDataByIndex = useMemo(
     () =>
@@ -896,7 +779,7 @@ export const PagedEditable = ({
   const pageSurfaceItems = useMemo(
     () =>
       getPagedEditableVisiblePageMountItems(pageMountPlan, {
-        gap: normalizedPageView.gap,
+        gap,
         overscan: pageSurfaceOverscan,
         pages,
         virtualizes: virtualizesPageSurfaces && canTrackContentViewport,
@@ -904,7 +787,7 @@ export const PagedEditable = ({
       }),
     [
       canTrackContentViewport,
-      normalizedPageView.gap,
+      gap,
       pageMountPlan,
       pageSurfaceOverscan,
       pages,
@@ -918,7 +801,7 @@ export const PagedEditable = ({
     }
 
     return getPagedEditableVisiblePageMountItems(pageMountPlan, {
-      gap: normalizedPageView.gap,
+      gap,
       overscan: pageSurfaceOverscan,
       pages,
       virtualizes: true,
@@ -926,7 +809,7 @@ export const PagedEditable = ({
     });
   }, [
     canTrackContentViewport,
-    normalizedPageView.gap,
+    gap,
     pageMountPlan,
     pageSurfaceOverscan,
     pages,

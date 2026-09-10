@@ -1,0 +1,3 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+inline-void-expanded-replacement	P159	slate-patch	Firefox mentions select-all replacement diagnostic/fix packet	PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/mentions.test.ts --project=firefox --grep "keyboard undo restores select-all replacement content"	promoted-kept
+select-all-cefalse-removal	P159	slate-patch	Optional delete companion if insertText diagnostic implicates deletion semantics	PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/mentions.test.ts --project=firefox --grep "keyboard undo restores select-all replacement content"	rejected-after-diagnostic

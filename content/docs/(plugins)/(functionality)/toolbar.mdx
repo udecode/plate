@@ -24,7 +24,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -40,7 +40,7 @@ The fastest way to add toolbar functionality is with the `FixedToolbarKit` and `
 - [`FloatingToolbar`](/docs/components/floating-toolbar): Renders a contextual toolbar on text selection
 - [`FloatingToolbarButtons`](/docs/components/floating-toolbar): Pre-configured button set for the floating toolbar
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -58,11 +58,11 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
-### Create Plugins
+### Create plugins
 
 ```tsx
 import { definePlatePlugin } from 'platejs/react';
@@ -71,7 +71,7 @@ import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbar } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
-  render: {
+  slots: {
     beforeEditable: () => (
       <FixedToolbar>
         <FixedToolbarButtons />
@@ -81,7 +81,7 @@ const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
 });
 
 const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
-  render: {
+  slots: {
     afterEditable: FloatingToolbar,
   },
 });
@@ -95,10 +95,10 @@ const editor = createEditor({
 });
 ```
 
-- `render.beforeEditable`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) above the editor content
-- `render.afterEditable`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor
+- `slots.beforeEditable`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) above the editor content
+- `slots.afterEditable`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor
 
-### Customizing Fixed Toolbar Buttons
+### Customizing fixed toolbar buttons
 
 The `FixedToolbarButtons` component contains the default set of buttons for the fixed toolbar.
 
@@ -106,13 +106,13 @@ The `FixedToolbarButtons` component contains the default set of buttons for the 
 
 To customize it, you can edit `components/editor/fixed-toolbar.tsx`.
 
-### Customizing Floating Toolbar Buttons
+### Customizing floating toolbar buttons
 
 Similarly, you can customize the floating toolbar by editing `components/editor/floating-toolbar.tsx`.
 
 <ComponentSource name="floating-toolbar" />
 
-### Creating Custom Button
+### Creating custom button
 
 This example shows a button that inserts custom text into the editor.
 
@@ -140,7 +140,7 @@ export function CustomToolbarButton() {
 }
 ```
 
-### Creating Mark Button
+### Creating mark button
 
 For toggling marks like bold or italic, you can use the [`MarkToolbarButton`](/docs/components/mark-toolbar-button) component. It simplifies the process by handling the toggle state and action automatically.
 
@@ -165,7 +165,7 @@ export function BoldToolbarButton() {
 - `tooltip`: Provides a helpful tooltip for the button.
 - `MarkToolbarButton` reads mark state and handles toggling directly in the component.
 
-### Turn Into Toolbar Button
+### Turn into toolbar button
 
 The [`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button) provides a dropdown menu to convert the current block into different types (headings, lists, quotes, etc.).
 
@@ -185,7 +185,7 @@ const turnIntoItems = [
 ];
 ```
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 The [`InsertToolbarButton`](/docs/components/insert-toolbar-button) provides a dropdown menu to insert various elements (blocks, lists, media, inline elements).
 
@@ -226,7 +226,7 @@ Plugin that renders a fixed toolbar above the editor content.
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="render.beforeEditable" type="EditableSiblingComponent">
+  <APIItem name="slots.beforeEditable" type="EditableSiblingComponent">
     Renders the fixed toolbar before the editor content. Contains FixedToolbarButtons by default.
   </APIItem>
 </APIOptions>
@@ -238,7 +238,7 @@ Plugin that renders a floating toolbar that appears on text selection.
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="render.afterEditable" type="EditableSiblingComponent">
+  <APIItem name="slots.afterEditable" type="EditableSiblingComponent">
     Renders the floating toolbar as an overlay after the editor. Contains FloatingToolbarButtons by default.
   </APIItem>
 </APIOptions>

@@ -8,7 +8,7 @@ history, plugin state, and normalization. This guide shows the safe control
 points: synchronous initial values, change persistence, explicit replacement,
 reset, and externally owned loading.
 
-## Value Ownership
+## Value ownership
 
 <Callout type="warning" title="Do not control every keystroke">
   Do not mirror `editor.children` into React state and pass it back on every
@@ -26,7 +26,7 @@ reset, and externally owned loading.
 
 <Steps>
 
-### Set the Initial Value
+### Set the initial value
 
 Pass a `Value` or a synchronous initializer to `initialValue`. A synchronous
 initializer can read the compiled editor when decoding HTML or another
@@ -60,7 +60,7 @@ export function MyEditor() {
 }
 ```
 
-### Persist Changes
+### Persist changes
 
 Use `onValueChange` when you only need the document value.
 
@@ -124,7 +124,7 @@ identity stay together.
 />
 ```
 
-### Replace or Reset Content
+### Replace or reset content
 
 Use a transaction group for external changes. `tx.value.replace(...)` replaces
 the document with an explicit value.
@@ -185,7 +185,7 @@ export function ReplaceControls() {
 
 <ComponentPreview name="controlled-demo" padding="md" />
 
-### Load Initial Content
+### Load initial content
 
 Load remote content before constructing the editor. The loader owns aborts,
 stale responses, retries, and errors; the editor receives one synchronous
@@ -234,7 +234,7 @@ export function AsyncEditor() {
 }
 ```
 
-### Initialize Manually
+### Initialize manually
 
 Use `skipInitialization` when another system owns the startup moment, such as
 collaboration or a multi-step loader. A complete replacement runs configured

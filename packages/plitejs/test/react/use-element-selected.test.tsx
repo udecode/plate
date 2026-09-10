@@ -1,5 +1,6 @@
 import { act, render } from '@testing-library/react';
-import { SelectionApi } from 'plitejs';
+import type { Value } from 'plitejs';
+import { defineEditorSchema, schema, SelectionApi } from 'plitejs';
 import React from 'react';
 
 import { hasPath as editorHasPath } from '../../src/internal';
@@ -8,6 +9,7 @@ import {
   Editable,
   type Editor,
   Plite,
+  useEditorFocused,
   useElementSelected,
 } from '../../src/react';
 import {
@@ -36,9 +38,77 @@ const initialValue = () => [
 ];
 
 describe('useElementSelected', () => {
+  it('updates focused inline selection when the DOM API focuses an active root', async () => {
+    const definition = defineEditorSchema('inline-void-selection', {
+      elements: {
+        mention: { void: 'markable-inline' },
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const localEditor = createEditor({
+      extensions: [definition],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'before ' },
+            { type: 'mention', children: [{ text: '' }] },
+            { text: ' after' },
+          ],
+        },
+      ],
+    });
+    const Mention = () => {
+      const focused = useEditorFocused();
+      const selected = useElementSelected();
+
+      return (
+        <span data-focused={focused} data-selected={selected}>
+          mention
+        </span>
+      );
+    };
+    const view = render(
+      <Plite editor={localEditor}>
+        <Editable renderVoid={() => <Mention />} />
+      </Plite>
+    );
+    const root = view.container.querySelector<HTMLDivElement>(
+      '[data-plite-editor="true"]'
+    )!;
+
+    await act(async () => {
+      localEditor.update((tx) => tx.selection.set({ path: [0, 0], offset: 7 }));
+      root.focus();
+      localEditor.api.dom.focus({ retries: 1 });
+    });
+    expect(document.activeElement).toBe(root);
+    expect(localEditor.api.dom.isFocused()).toBe(true);
+    expect(view.getByText('mention').dataset.focused).toBe('true');
+
+    await act(async () => {
+      localEditor.update((tx) =>
+        tx.selection.set({ path: [0, 1, 0], offset: 0 })
+      );
+    });
+    expect(localEditor.read.selection.intersects([0, 1])).toBe(true);
+    expect(view.getByText('mention').dataset.focused).toBe('true');
+    expect(view.getByText('mention').dataset.selected).toBe('true');
+  });
+
   const withEditor = () => {
     beforeEach(() => {
-      editor = createEditor({ initialValue: initialValue() });
+      editor = createEditor<Value>({ initialValue: initialValue() });
 
       latestSelectedById = {};
       latestCollapsedSelectedById = {};
@@ -150,7 +220,7 @@ describe('useElementSelected', () => {
 
     it('does not rerender an unselected element when only its path changes', async () => {
       const renderCounts = new Map<string, number>();
-      const localEditor = createEditor({ initialValue: initialValue() });
+      const localEditor = createEditor<Value>({ initialValue: initialValue() });
 
       render(
         <Plite editor={localEditor}>
@@ -243,7 +313,7 @@ describe('useElementSelected', () => {
   });
 
   it('unmounts cleanly when the selected rendered element removes itself', async () => {
-    editor = createEditor({ initialValue: initialValue() });
+    editor = createEditor<Value>({ initialValue: initialValue() });
 
     const removedIds = new Set<string>();
     const unmountedIds = new Set<string>();
@@ -278,7 +348,7 @@ describe('useElementSelected', () => {
   });
 
   it('returns false when an explicit watched path is removed', async () => {
-    editor = createEditor({ initialValue: initialValue() });
+    editor = createEditor<Value>({ initialValue: initialValue() });
 
     const watchedPath = [2];
     const selectedValues: boolean[] = [];
@@ -322,7 +392,7 @@ describe('useElementSelected', () => {
   });
 
   it('updates an explicit watched path from inside another rendered element', async () => {
-    editor = createEditor({ initialValue: initialValue() });
+    editor = createEditor<Value>({ initialValue: initialValue() });
 
     const watchedPath = [2];
     const selectedByHostId: Record<string, boolean | undefined> = {};
@@ -349,7 +419,7 @@ describe('useElementSelected', () => {
   });
 
   it('tracks exact node selection by explicit node key', async () => {
-    editor = createEditor({ initialValue: initialValue() });
+    editor = createEditor<Value>({ initialValue: initialValue() });
 
     const watchedKey = editor.key([2]);
     const selectedValues: boolean[] = [];
@@ -386,7 +456,7 @@ describe('useElementSelected', () => {
   });
 
   it('supports collapsed-only mode with an explicit watched path', async () => {
-    editor = createEditor({ initialValue: initialValue() });
+    editor = createEditor<Value>({ initialValue: initialValue() });
 
     const watchedPath = [2];
     const selectedValues: boolean[] = [];

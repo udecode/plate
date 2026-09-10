@@ -1,0 +1,23 @@
+[
+  {
+    "command": "bun test ./src/docx/export/lib/internal/html-to-docx.slow.ts -t \"handle Unicode characters|handle CJK characters|handle emojis\"",
+    "cwd": "packages/platejs",
+    "exit": 0,
+    "output": "bun test v1.3.12 (700fc117)\n\n 3 pass\n 24 filtered out\n 0 fail\n 3 expect() calls\nRan 3 tests across 1 file. [368.00ms]\n"
+  },
+  {
+    "command": "bun test ./src/internal/plugin/pipePrepareDocument.spec.tsx ./src/markdown/lib/serializer/serializeMention.spec.ts",
+    "cwd": "packages/platejs",
+    "exit": 0,
+    "output": "bun test v1.3.12 (700fc117)\n\n 19 pass\n 0 fail\n 20 expect() calls\nRan 19 tests across 2 files. [662.00ms]\n"
+  },
+  {
+    "command": "node --test --test-name-pattern=\"reviewed Plate adopters\" tooling/scripts/check-plite.test.mjs",
+    "cwd": ".",
+    "exit": 0,
+    "observedTests": 1,
+    "observedPasses": 1,
+    "assertionsExecutedByInspectedCallback": 0,
+    "assertionEvidence": "Every assertion is inside a loop over plateAdopterPackages, a frozen empty array."
+  }
+]

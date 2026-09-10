@@ -1,0 +1,2 @@
+dedupe_key	source	reason	reopen_condition
+generic-virtual-list-dropdown	web search	Rejected as unrelated UI virtualization; no editor selection/native-selection invariant.	Reopen only if it contains editor caret/selection proof with DOM endpoints.

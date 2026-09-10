@@ -7,4 +7,7 @@ Create an anchor through `editor.anchor(value, options)`. The anchor maps
 its path, point, or range through each committed `DocumentChange` until
 `release()` detaches it.
 
+Persistent anchors with `deletion: "nearest"` restore their exact before and
+after locations through saved undo and redo history.
+
 See the canonical [Anchor API](/docs/plite/api/locations/anchor).

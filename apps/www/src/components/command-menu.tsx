@@ -11,6 +11,7 @@ import {
 } from '@/hooks/use-lazy-sidebar-nav';
 import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
+import { useMounted } from '@/registry/hooks/use-mounted';
 import type { MainNavItem } from '@/types/nav';
 
 const i18n = {
@@ -24,10 +25,6 @@ const i18n = {
   },
 };
 
-const getHydratedSnapshot = () => true;
-const getServerSnapshot = () => false;
-const subscribeHydration = () => () => {};
-
 export function CommandMenu({
   navItems,
   ...props
@@ -37,11 +34,7 @@ export function CommandMenu({
   const locale = useLocale();
   const content = i18n[locale];
   const [open, setOpen] = React.useState(false);
-  const isHydrated = React.useSyncExternalStore(
-    subscribeHydration,
-    getHydratedSnapshot,
-    getServerSnapshot
-  );
+  const isHydrated = useMounted();
   const openRef = React.useRef(open);
   const { sidebarNav } = useLazySidebarNav(locale, open);
 

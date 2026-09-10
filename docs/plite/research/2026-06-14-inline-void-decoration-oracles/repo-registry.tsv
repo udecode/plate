@@ -1,0 +1,7 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github/prosemirror/prosemirror	https://github.com/ProseMirror/prosemirror	github	MIT	local-source	2026-06-14	inline-atom,decorations,composition	/Users/zbeyens/git/prosemirror	active	0	sibling checkout available
+github/facebook/lexical	https://github.com/facebook/lexical	github	MIT	local-source	2026-06-14	inline-atom,decorations,composition,clipboard	/Users/zbeyens/git/lexical	active	0	sibling checkout available
+github/ueberdosis/tiptap	https://github.com/ueberdosis/tiptap	github	MIT	local-source	2026-06-14	mentions,extensions,prosemirror	/Users/zbeyens/git/tiptap	active	0	sibling checkout available
+github/ianstormtaylor/slate	https://github.com/ianstormtaylor/slate	github	MIT	local-source	2026-06-14	upstream-slate,examples,mentions	/Users/zbeyens/git/slate	active	0	sibling checkout available
+github/milkdown/milkdown	https://github.com/Milkdown/milkdown	github	MIT	local-source	2026-06-14	prosemirror,plugins,decorations	/Users/zbeyens/git/milkdown	active	0	sibling checkout available
+

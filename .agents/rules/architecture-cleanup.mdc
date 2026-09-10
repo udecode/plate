@@ -1,10 +1,13 @@
 ---
 description: Clean architecture, code shape, and AI-generated sludge across Plate and Slate with source-backed delete/merge/inline/split decisions, anti-confetti proof, and agent-navigation scoring.
-argument-hint: '[surface | package | docs path | broad] [audit | loop | timed <duration>]'
+argument-hint: '[surface | package | docs path | broad] [audit | implement | loop | timed <duration>]'
 disable-model-invocation: true
 ---
 
 # Architecture Cleanup
+
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
 
 Handle $ARGUMENTS.
 
@@ -13,10 +16,27 @@ no separate candidate-only wrapper. The job is to find, rank, and, when safe,
 clean source-backed architecture sludge so the codebase is easier for humans
 and agents to understand.
 
-This is not `task`, not `maintainer`, not `auto`, and not a generic
+This is not `task`, not `maintainer`, not `task autonomous`, and not a generic
 refactor license. It owns architecture cleanliness: delete, merge, inline,
 simplify, hard-cut stale compatibility, or split only when the split earns its
 keep.
+
+## Modes And Authority
+
+Resolve mutation authority before source work:
+
+- **Audit:** explicit `audit`, review, explain, plan, or a read-only supervisor
+  delegation. Inspect, rank, and route candidates, and write only goal/evidence
+  artifacts. Do not change product/runtime source, public API, tests, or docs.
+- **Implement:** explicit implement, execute, change, fix, or cleanup authority.
+  Apply only packets that pass the implementation law below.
+- **Loop/timed:** controls repetition only. It never grants mutation authority;
+  inherit audit or implement authority from the user or primary supervisor.
+
+A primary supervisor must pass its current goal/plan, scope, and mutation
+authority. Keep that goal and return findings to the supervisor internally. Do
+not create another goal, broaden authority, or ask the user to invoke the next
+worker.
 
 ## Use When
 
@@ -36,15 +56,15 @@ keep.
 - The task is one local Plate/Plite behavior bug or regression: use `patch`.
   For other ordinary tasks, use `task` or the package owner.
 - The task is public call-shape design/review: use `best-api`. For an accepted
-  target needing runtime/product adoption, use `major-task`, `plite-plan`, or
+  target needing runtime/product adoption, use `task`, `plite-plan`, or
   `plate-plan`.
 - The task is performance measurement, profiling, comparison, or iterative
   optimization: use `benchmark`, which may invoke this skill after proving an
   architecture/code-shape owner.
-- The task is internal Plate/Slate quality/browser/API supervision: use `auto`,
+- The task is internal Plate/Slate quality/browser/API supervision: use `task autonomous`,
   which may invoke this skill when architecture cleanup is the right packet.
 - The task is post-merge/current-tree until-clean closure: use
-  `autoclosure`, which may invoke this skill for source-shape findings.
+  `task closure`, which may invoke this skill for source-shape findings.
 - The task is public queue selection: use `maintainer`.
 - The task is broad OSS/source discovery: use `plite-research` first.
 
@@ -65,8 +85,7 @@ keep.
 
 ## Goal Contract
 
-Use `autogoal` for non-trivial cleanup runs. If no active goal already exists,
-create the dedicated cleanup plan:
+Reuse the current Task plan for non-trivial cleanup. If no plan exists and a durable record is useful, create the dedicated file plan:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -153,7 +172,7 @@ current user job.
 3. **Interface-depth test:** prefer the shape where callers learn less while
    real behavior and proof become more local.
 4. **VISION fit test:** if the cleanup does not fit `VISION.md` or reusable
-   taste is missing, route to `vision` / `sync-vision`; if the unresolved
+   taste is missing, route to `VISION.md` / `sync-vision`; if the unresolved
    question is public call shape, route it to `best-api`.
 
 Prefer source facts over vibes. A candidate needs concrete friction:
@@ -215,7 +234,8 @@ facts, owner, proof path, and the cleanup action.
 
 ## Implementation Packet Law
 
-This skill may implement a small cleanup only when all are true:
+Outside audit/read-only mode, this skill may implement a small cleanup only
+when all are true:
 
 - behavior-neutral;
 - no public API change;
@@ -237,7 +257,7 @@ the cleanup complete.
 
 For public call shape, stop at ranked recommendation and route to `best-api`.
 For behavior, runtime boundary, product UX, or large-blast-radius adoption,
-route to `major-task`, `plite-plan`, `plate-plan`, `auto`, or the package
+route to `task`, `plite-plan`, `plate-plan`, `task autonomous`, or the package
 owner.
 
 ## Deslop Inventory
@@ -261,13 +281,13 @@ more files.
 
 - User explicitly asks architecture cleanup / deslop / simplify: use this
   skill first.
-- `auto`: may invoke this when repeated Plate/Slate quality/test/docs work
+- `task autonomous`: may invoke this when repeated Plate/Slate quality/test/docs work
   proves architecture or cleanup friction.
 - `benchmark`: may invoke this when measured evidence proves architecture or
   code-shape friction at one hot owner.
-- `autoclosure`: may invoke this when already-applied work has source-shape,
+- `task closure`: may invoke this when already-applied work has source-shape,
   over-split, fake-wrapper, or agent-navigation findings during closure.
-- `major-task`: owns broad decision, rollout, and implementation plan when the
+- `task`: owns broad decision, rollout, and implementation plan when the
   cleanup has meaningful blast radius.
 - `best-api`: owns public call-shape design/review after this skill identifies
   the problem.
@@ -290,6 +310,10 @@ Stop when:
 Do not stop just because the first candidate looks plausible. Rank the set,
 pick the cleanup action, then either implement a safe packet or route the
 owner.
+
+When a primary supervisor delegated the work, a worker stop returns the ranked
+evidence and next owner to that supervisor. It does not end the supervisor's
+workflow.
 
 ## Final Handoff
 

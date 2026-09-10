@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "show-me-your-work",
+  "files": [
+    {
+      "upstream": "skills/show-me-your-work/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "b99833c41a8781a6af191487f1af37711a3198b98f9373e3c02292b8a6e09aba",
+      "destinationSha256": "6659ded2b92806b57d119b8fc69fa1f9a6e0a8a685723a9a9109e44e3cf32e6f",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Preserve original decision evidence through append-only corrections; do not silently rewrite or delete history.",
+        "Route the former Unslop call to the unified Technical Writing owner, which includes the same preservation and anti-slop pass; do not retain a second writing invocation or stale numbered-rule reference.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/show-me-your-work/SKILL.md\n+++ skills/show-me-your-work/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: show-me-your-work\n description: \"Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit it when a reviewer needs the trail to trust the result. Use for /show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Show me your work\n \n@@ -33,7 +34,7 @@\n \n ## Logging a row\n \n-Write each entry the way you'd tell a teammate what you did. Plain words, concrete actions, no AI speak or abstract jargon (the **unslop** skill applies to log text too). A reviewer should understand each row without decoding it.\n+Write each entry the way you'd tell a teammate what you did. Plain words, concrete actions, no AI speak or abstract jargon (the **technical-writing** skill applies to log text too). A reviewer should understand each row without decoding it.\n \n Use the helper so rows stay well-formed: `scripts/log.sh <logfile> <phase> <decision> <why> <evidence> <result>`. It stamps `ts`, writes the header on first use, strips stray tabs/newlines, and prefixes any cell starting with `=`, `+`, `-`, or `@` with a single quote so a reviewer opening the log in a spreadsheet doesn't trigger formula execution. A bare `printf` appending a row works too, but mind those same bytes if cells come from generated or user-supplied text.\n \n@@ -55,23 +56,23 @@\n \n At the end of the run, before handing back, check the log told the truth. Read this run's transcript under the active workspace's `agent-transcripts/` directory (the system prompt names the path). Don't glob across `~/.cursor/projects/*/`; that reads unrelated private chats. Walk the log against what actually happened:\n \n-- Every row maps to a real action. Cut invented or aspirational entries.\n+- Every row maps to a real action. Append a correction for an invented or aspirational entry; retain the original history.\n - Each row's evidence resolves and shows what the row claims.\n - A fork, pivot, or abandoned approach that shaped the work but isn't logged is a gap. Add it.\n-- Drop padding. If nobody would audit a row, it doesn't earn its place.\n+- Keep new rows free of padding. A corrected review view may omit padding only while retaining the original append-only trail.\n \n Fix the log, not the story. If the work diverged from what a row claims, the row is wrong.\n \n ## Cross-model review of the trail\n \n-Before handing back, you must spawn a subagent on a different model family from the one that did the work. Self-review is not a substitute; the point is fresh eyes you cannot bring yourself. The subagent reads the audit trail and the run's transcript, then flags what the user should pay attention to. Not a redo of the work, a scan for what's suboptimal or risky.\n+Use an independent trail review when explicitly requested or when consequential unresolved decisions justify it within the project review policy. Prefer a different model family when available. The reviewer reads the trail and transcript for the risks below. The source/evidence self-audit remains required; an independent review is a separate claim, not a routine handoff gate. If required independence is unavailable, report the gap without inventing a reviewer.\n \n - Decisions logged with weak or absent evidence.\n - Verification steps skipped or claimed without proof in the transcript.\n - Choices that look risky in hindsight (premature, scope-creeping, papering over a symptom).\n - Gaps the user would otherwise miss on a casual skim.\n \n-Every reply for a run that produced a trail ends with an \"Attention\" section. Lead with the reviewer's model on its own line (`reviewed by <model>`), then list each flag pointing to specific rows or moments. \"No flags\" is a valid value; the model name is not. The self-audit asks if the log told the truth; this asks what the user should still scrutinize even when it did.\n+When a trail review runs, report its actual reviewer and actionable flags with evidence pointers. Report unresolved risks from the self-audit even when no independent review ran. Do not add an empty Attention section or claim another model reviewed the work without an actual result.\n \n ## Reviewing the trail\n \n"
+    },
+    {
+      "upstream": "skills/show-me-your-work/references/decision-log-template.tsv",
+      "destination": "references/decision-log-template.tsv",
+      "upstreamSha256": "6779378006a2f5225e8c06deb84f1d913fb532041ebbb6e50d94600bfe3f4b76",
+      "destinationSha256": "6779378006a2f5225e8c06deb84f1d913fb532041ebbb6e50d94600bfe3f4b76",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/show-me-your-work/scripts/log.sh",
+      "destination": "scripts/log.sh",
+      "upstreamSha256": "1601bc18f9aba0af3f5d6375e4f2d5dc6102334d1bca935026c0e3547cdadbbf",
+      "destinationSha256": "1601bc18f9aba0af3f5d6375e4f2d5dc6102334d1bca935026c0e3547cdadbbf",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

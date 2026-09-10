@@ -1,0 +1,4 @@
+kind	count	decision	notes
+test-level fake green return	11	repaired	Converted top-level project/browser returns to explicit test.skip in mentions, paste-html, and embeds.
+mobile early return after paste	1	repaired	Removed return so mobile paste-html path proves follow-up typing/editability.
+helper branch return	4	kept	Remaining browser/project return hits are stress-case factory or typed-input/text-insertion helper branches, not skipped tests.

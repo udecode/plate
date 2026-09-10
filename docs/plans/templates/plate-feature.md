@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: State the end-to-end Plate feature outcome in one sentence.
 
@@ -9,10 +11,7 @@ Goal plan:
 Template:
 {{TEMPLATE_PATH}}
 
-Primary template:
-docs/plans/templates/plate-feature.md
-
-Applied packs:
+Optional packs:
 
 - TODO: Add only the packs required by the Feature Manifest.
 
@@ -24,7 +23,7 @@ Completion threshold:
 
 - Every applicable Feature Manifest row is complete with evidence.
 - Every excluded row has an explicit N/A reason.
-- Selected packs, applicable Plate Next attestation, P1 review, feature
+- Selected packs, applicable Plate Next attestation, Task review decision, feature
   checker, and goal checker are closed.
 
 Verification surface:
@@ -68,7 +67,7 @@ Feature Manifest:
 | Release artifacts | pending | pending | pending | pending | pending | pending |
 | Proof | yes | plate-feature | pending | maintainers | pending | pending |
 | Plate Next attestation | pending | plate-next | pending | maintainers | pending | pending |
-| Review/handoff | yes | autoreview | pending | user | pending | pending |
+| Review/handoff | yes | task | pending | user | pending | pending |
 
 Package file evidence:
 
@@ -107,7 +106,7 @@ Start Gates:
 | Pre-acceptance Benchmark receipt selected | pending | Name current baseline, target path or disposable prototype, frozen cohorts/budget, deterministic counters, timing/noise, source identities, and correctness guard, or N/A |
 | Manual package decision recorded | pending | pending |
 | Conditional packs selected | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 
 Work Checklist:
 
@@ -127,7 +126,7 @@ Work Checklist:
 - [ ] Write current-state docs and classify release artifacts.
 - [ ] Run selected package, app, registry, docs, browser, and stale-surface proof.
 - [ ] Reuse this manifest for Plate Next attestation without mass-attesting packages.
-- [ ] Run P1 autoreview and close accepted findings before goal completion.
+- [ ] Resolve Task's applicable review gate and known findings before completion.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -140,8 +139,8 @@ Completion Gates:
 | Registry/browser proof | pending | Verify runnable copied UI or record N/A | pending |
 | Docs/release proof | pending | Verify docs and release classification | pending |
 | Plate Next attestation | pending | Validate reviewed package version/evidence or record N/A | pending |
-| P1 autoreview | yes | Run P1 autoreview and close accepted findings | pending |
-| Goal plan complete | yes | Run the autogoal completion checker after autoreview | pending |
+| P1 autoreview | pending | Apply Task's shared review gate and budget; never on next; otherwise N/A with reason | pending |
+| Goal plan complete | yes | Run the file-plan completion checker after applicable proof and review | pending |
 
 Findings:
 

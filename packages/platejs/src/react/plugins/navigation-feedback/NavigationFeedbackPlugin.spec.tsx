@@ -1,392 +1,239 @@
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import { DOMEditor } from '../../../dom';
-import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
-import { Plate } from '../../components/Plate';
+import { createEditorView, schema } from '../../../facade';
+import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { PlateContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
+import { definePlatePlugin } from '../../plugin';
+import { useEditor } from '../../stores';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 
-const flushMicrotasks = async (count = 3) => {
-  for (let index = 0; index < count; index += 1) {
-    await Promise.resolve();
+const mount = (readOnly = false, duration = 1600) => {
+  const editor = createEditor({
+    navigationFeedback: { duration },
+    initialValue: [
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+    ],
+  });
+  const views: Array<ReturnType<typeof useEditor>> = [];
+  function Capture({ index }: { index: number }) {
+    const view = useEditor();
+    React.useLayoutEffect(() => {
+      views[index] = view;
+    }, [index, view]);
+    return <PlateContent readOnly={readOnly} />;
   }
+  const rendered = render(
+    <>
+      <Plate editor={editor} readOnly={readOnly}>
+        <Capture index={0} />
+      </Plate>
+      <Plate editor={editor} readOnly={readOnly}>
+        <Capture index={1} />
+      </Plate>
+    </>
+  );
+  const roots = rendered.getAllByRole('textbox');
+  const key = editor.key([0]);
+  if (!key) throw new Error('Missing fixture key');
+  return { editor, key, rendered, roots, views };
 };
 
 describe('NavigationFeedbackPlugin', () => {
-  afterEach(() => {
-    mock.restore();
-  });
+  afterEach(() => mock.restore());
 
-  it('updates navigation highlight attributes without a selection change', async () => {
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+  it.each([false, true])(
+    'paints only the calling view without a model change (readonly: %s)',
+    (readOnly) => {
+      const { editor, key, rendered, roots, views } = mount(readOnly);
+      const commit = mock();
+      const unsubscribe = editor.subscribeCommit(commit);
+      const before = editor.read.selection();
+      const attributes = { className: 'target', style: { color: 'red' } };
+      act(() => {
+        expect(
+          views[0]
+            .plugin(NavigationFeedbackPlugin)
+            .api.flashTarget({ key, attributes })
+        ).toBe(true);
+      });
+      attributes.style.color = 'blue';
+
+      const target = roots[0].querySelector('[data-nav-target]');
+      expect(target?.classList.contains('target')).toBe(true);
+      expect(target?.getAttribute('style')).toContain('color: red');
+      expect(target?.getAttribute('data-nav-pulse')).toBe('1');
+      expect(roots[1].querySelector('[data-nav-target]')).toBeNull();
+      expect(editor.read.selection()).toEqual(before);
+      expect(commit).not.toHaveBeenCalled();
+
+      act(() => {
+        expect(
+          views[1].plugin(NavigationFeedbackPlugin).api.flashTarget({ key })
+        ).toBe(true);
+        expect(views[0].plugin(NavigationFeedbackPlugin).api.clear()).toBe(
+          true
+        );
+        expect(views[0].plugin(NavigationFeedbackPlugin).api.clear()).toBe(
+          false
+        );
+      });
+      expect(roots[0].querySelector('[data-nav-target]')).toBeNull();
+      expect(roots[1].querySelector('[data-nav-target]')).not.toBeNull();
+      expect(commit).not.toHaveBeenCalled();
+      unsubscribe();
+      rendered.unmount();
+    }
+  );
+
+  it('rejects unmounted, text and foreign targets without replacing valid feedback', () => {
+    const { editor, key, rendered, roots, views } = mount();
+    const textKey = editor.key([0, 0]);
+    const foreign = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'foreign' }] }],
     });
-    const initialSelection = editor.read.selection();
-
-    const { getByText } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
-    );
-
-    const getHighlightedElement = () =>
-      getByText('one').closest('[data-plite-node="element"]') as HTMLElement;
-
+    const foreignKey = foreign.key([0]);
+    if (!textKey || !foreignKey) throw new Error('Missing fixture key');
+    const { api } = views[0].plugin(NavigationFeedbackPlugin);
     expect(
-      getHighlightedElement().getAttribute('data-nav-highlight')
-    ).toBeNull();
-
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(typeof editor.api.react.refreshDecorations).toBe('function');
-
+      editor.plugin(NavigationFeedbackPlugin).api.flashTarget({ key })
+    ).toBe(false);
     act(() => {
-      editor.update((tx) => {
-        tx.navigation.flashTarget({
-          target: {
-            path: [0],
-            type: 'node',
-          },
-        });
-      });
-    });
-
-    expect(editor.read.selection()).toEqual(initialSelection);
-
-    await act(async () => {
-      await flushMicrotasks();
-    });
-    expect(getHighlightedElement().getAttribute('data-nav-highlight')).toBe(
-      'navigated'
-    );
-    expect(getHighlightedElement().getAttribute('data-nav-pulse')).toBe('1');
-
-    act(() => {
-      editor.update((tx) => {
-        tx.navigation.clear();
-      });
-    });
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toBeNull();
-
-    await act(async () => {
-      await flushMicrotasks();
-    });
-    expect(
-      getHighlightedElement().getAttribute('data-nav-highlight')
-    ).toBeNull();
-  });
-
-  it('flashTarget sets and clears the active target', () => {
-    let timeoutCallback: (() => void) | undefined;
-    const setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
-      callback: () => void
-    ) => {
-      timeoutCallback = callback;
-      return 1;
-    }) as typeof setTimeout);
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-    editor.update((tx) => {
-      tx.navigation.flashTarget({
-        duration: 25,
-        target: {
-          path: [0],
-          type: 'node',
-        },
-      });
-    });
-
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toEqual({
-      cycle: 1,
-      duration: 25,
-      path: [0],
-      pulse: 1,
-      type: 'node',
-      variant: 'navigated',
-    });
-    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 25);
-    expect(editor.read.lastCommit()?.tags).toContain('skip-scroll-into-view');
-
-    timeoutCallback?.();
-
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toBeNull();
-  });
-
-  it('a new flash replaces the previous timer and increments the pulse', () => {
-    const clearTimeoutSpy = spyOn(
-      globalThis,
-      'clearTimeout'
-    ).mockImplementation(() => {});
-    let timeoutId = 0;
-    spyOn(globalThis, 'setTimeout').mockImplementation(((_: () => void) => {
-      timeoutId += 1;
-      return timeoutId;
-    }) as typeof setTimeout);
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-    editor.update((tx) => {
-      tx.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
-      });
-    });
-    editor.update((tx) => {
-      tx.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
-      });
-    });
-
-    expect(clearTimeoutSpy).toHaveBeenCalledWith(1);
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toEqual({
-      cycle: 0,
-      duration: 1600,
-      path: [0],
-      pulse: 2,
-      type: 'node',
-      variant: 'navigated',
-    });
-  });
-
-  it('navigate selects, focuses, scrolls, and flashes the target', () => {
-    const editor = createEditor({
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-    const focusSpy = spyOn(DOMEditor, 'focus').mockImplementation(() => {});
-    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
-      () => {}
-    );
-    editor.update((tx) => {
-      tx.navigation.navigate({
-        scrollTarget: {
-          offset: 1,
-          path: [0, 0],
-        },
-        select: {
-          anchor: { offset: 1, path: [0, 0] },
-          focus: { offset: 1, path: [0, 0] },
-        },
-        target: {
-          path: [0],
-          type: 'node',
-        },
-      });
-    });
-
-    expect(editor.read.selection()).toEqual({
-      anchor: { offset: 1, path: [0, 0] },
-      focus: { offset: 1, path: [0, 0] },
-    });
-    expect(focusSpy).toHaveBeenCalled();
-    expect(scrollSpy).toHaveBeenCalledWith(
-      editor,
-      {
-        offset: 1,
-        path: [0, 0],
-      },
-      undefined
-    );
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toEqual({
-      cycle: 1,
-      duration: 1600,
-      path: [0],
-      pulse: 1,
-      type: 'node',
-      variant: 'navigated',
-    });
-  });
-
-  it('navigates to a node inserted earlier in the same transaction', () => {
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-    let navigated = false;
-
-    editor.update((tx) => {
-      tx.nodes.insert(
-        { children: [{ text: 'two' }], type: 'paragraph' },
-        { at: [1] }
-      );
-      navigated = tx.navigation.navigate({
-        focus: false,
-        scroll: false,
-        select: { offset: 0, path: [1, 0] },
-        target: {
-          path: [1],
-          type: 'node',
-        },
-      });
-    });
-
-    expect(navigated).toBe(true);
-    expect(editor.read.selection()).toEqual({
-      anchor: { offset: 0, path: [1, 0] },
-      focus: { offset: 0, path: [1, 0] },
-    });
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [1])
-    ).toBe(true);
-  });
-
-  it('keeps the active target and rendered highlight synced when the target node moves', async () => {
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-    const { getByText } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
-    );
-    const getElement = (text: string) =>
-      getByText(text).closest('[data-plite-node="element"]') as HTMLElement;
-
-    await act(async () => {
-      await flushMicrotasks();
-    });
-    act(() => {
-      editor.update((tx) => {
-        tx.navigation.flashTarget({
-          target: {
-            path: [0],
-            type: 'node',
-          },
-        });
-      });
-    });
-    await act(async () => {
-      await flushMicrotasks();
-    });
-
-    expect(getElement('one').getAttribute('data-nav-highlight')).toBe(
-      'navigated'
-    );
-
-    act(() => {
-      editor.update.nodes.insert(
-        { children: [{ text: 'zero' }], type: 'paragraph' },
-        {
-          at: [0],
-        }
+      expect(api.flashTarget({ key })).toBe(true);
+      expect(api.flashTarget({ key: textKey })).toBe(false);
+      expect(api.flashTarget({ key: foreignKey })).toBe(false);
+      expect(() => api.flashTarget({ key, duration: -1 })).toThrow(RangeError);
+      expect(() => api.flashTarget({ key, duration: Number.NaN })).toThrow(
+        RangeError
       );
     });
-    await act(async () => {
-      await flushMicrotasks();
-    });
+    expect(roots[0].querySelector('[data-nav-target]')?.textContent).toBe(
+      'one'
+    );
+    rendered.unmount();
+    expect(api.flashTarget({ key })).toBe(false);
+    expect(api.clear()).toBe(false);
+  });
 
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toEqual({
-      cycle: 1,
-      duration: 1600,
-      path: [1],
-      pulse: 1,
-      type: 'node',
-      variant: 'navigated',
+  it('retains the element identity through movement and clears a removed target', () => {
+    const { editor, key, rendered, roots, views } = mount();
+    act(() => {
+      views[0].plugin(NavigationFeedbackPlugin).api.flashTarget({ key });
     });
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toMatchObject({
-      cycle: 1,
-      duration: 1600,
-      pulse: 1,
-      type: 'node',
-      variant: 'navigated',
+    act(() => {
+      editor.update.nodes.move({ at: [0], to: [2] });
     });
-    expect(editor.plugin(NavigationFeedbackPlugin).store.get()).toEqual({
-      duration: 1600,
-      target: {
-        cycle: 1,
-        duration: 1600,
-        path: [1],
-        pulse: 1,
-        type: 'node',
-        variant: 'navigated',
+    expect(roots[0].querySelector('[data-nav-target]')?.textContent).toBe(
+      'one'
+    );
+    expect(editor.read.nodes.path(key)).toEqual([1]);
+    act(() => {
+      editor.update.nodes.remove({ at: key });
+    });
+    expect(roots[0].querySelector('[data-nav-target]')).toBeNull();
+    expect(
+      views[0].plugin(NavigationFeedbackPlugin).api.flashTarget({ key })
+    ).toBe(false);
+    rendered.unmount();
+  });
+
+  it('rejects keys from another content root without replacing the current target', () => {
+    const FigurePlugin = definePlatePlugin('figure', {
+      schema: {
+        element: {
+          void: 'block',
+          contentRoots: {
+            caption: {
+              content: schema.content.type('paragraph', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+        },
       },
     });
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [1])
-    ).toBe(true);
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [0])
-    ).toBe(false);
-    expect(getElement('zero').getAttribute('data-nav-highlight')).toBeNull();
-    expect(getElement('one').getAttribute('data-nav-highlight')).toBe(
-      'navigated'
-    );
-  });
-
-  it('clears the active target when the target node is removed', () => {
     const editor = createEditor({
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-
-    editor.update((tx) => {
-      tx.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
+      plugins: [FigurePlugin],
+      initialValue: {
+        children: [
+          { type: 'paragraph', children: [{ text: 'main' }] },
+          {
+            type: 'figure',
+            childRoots: { caption: 'caption' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          caption: [{ type: 'paragraph', children: [{ text: 'caption' }] }],
         },
-      });
+      },
     });
-
-    editor.update.nodes.remove({ at: [0] });
-
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
-    ).toBeNull();
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('target')
-    ).toBeNull();
-    expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [0])
-    ).toBe(false);
-  });
-
-  it('uses the top-level navigationFeedback option to override duration', () => {
-    const editor = createEditor({
-      navigationFeedback: { duration: 1200 },
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-    });
-
-    expect(editor.plugin(NavigationFeedbackPlugin).store.get('duration')).toBe(
-      1200
+    let view: ReturnType<typeof useEditor> | undefined;
+    function Capture() {
+      view = useEditor();
+      return <PlateContent />;
+    }
+    const rendered = render(
+      <Plate editor={editor}>
+        <Capture />
+      </Plate>
     );
+    if (!view) throw new Error('Missing mounted view');
+    const { api } = view.plugin(NavigationFeedbackPlugin);
+    const key = editor.key([0]);
+    const otherKey = createEditorView(editor, { root: 'caption' }).key([0]);
+    if (!key || !otherKey) throw new Error('Missing fixture keys');
+    const before = editor.read.lastCommit();
+    act(() => {
+      expect(api.flashTarget({ key })).toBe(true);
+      expect(api.flashTarget({ key: otherKey })).toBe(false);
+    });
+    expect(
+      rendered.container.querySelector('[data-nav-target]')?.textContent
+    ).toBe('main');
+    expect(editor.read.lastCommit()).toBe(before);
+    rendered.unmount();
   });
 
-  it('can disable the navigation feedback plugin from editor options', () => {
-    const editor = createEditor({
-      navigationFeedback: false,
-      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+  it('replaces the timer and ignores retired callbacks', () => {
+    const { key, rendered, roots, views } = mount(false, 100_000);
+    const timer = spyOn(globalThis, 'setTimeout');
+    const { api } = views[0].plugin(NavigationFeedbackPlugin);
+    act(() => {
+      api.flashTarget({ key });
     });
-
+    act(() => {
+      api.flashTarget({ key });
+    });
+    const callbacks = timer.mock.calls
+      .filter((call) => call[1] === 100_000)
+      .map((call) => call[0]);
+    expect(callbacks).toHaveLength(2);
     expect(
-      getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
-    ).not.toContain(NavigationFeedbackPlugin.name);
-    expect(editor.plugin(NavigationFeedbackPlugin).installed).toBe(false);
+      roots[0]
+        .querySelector('[data-nav-target]')
+        ?.getAttribute('data-nav-pulse')
+    ).toBe('2');
+    const [previous, current] = callbacks;
+    if (typeof previous !== 'function' || typeof current !== 'function') {
+      throw new Error('Missing timers');
+    }
+    act(() => {
+      previous();
+    });
+    expect(roots[0].querySelector('[data-nav-target]')).not.toBeNull();
+    act(() => {
+      current();
+    });
+    expect(roots[0].querySelector('[data-nav-target]')).toBeNull();
+    rendered.unmount();
+    act(() => {
+      current();
+    });
+    expect(api.flashTarget({ key })).toBe(false);
   });
 });

@@ -8,13 +8,16 @@ metadata:
 
 # Registry Changelog
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Use this when a task changes user-visible Plate registry output under
 `apps/www/src/registry/**`: UI components, node renderers, kits, examples,
 registry metadata, style dependencies, or install behavior.
 
 This skill owns the registry changelog contract. `plate-ui` owns the trigger,
 `changeset` owns package-vs-registry release-artifact classification,
-`docs-creator` owns release-page topology, and `task` owns closeout. Do not
+Plate Docs owns release-page topology, and `task` owns closeout. Do not
 copy this schema into those skills.
 
 ## Source

@@ -20,7 +20,6 @@
     {
       "name": "select-editor",
       "files": [
-        "apps/www/src/registry/components/editor/select-command-score.ts",
         "apps/www/src/registry/components/editor/select-command.tsx",
         "apps/www/src/registry/components/editor/select-editor.tsx"
       ],

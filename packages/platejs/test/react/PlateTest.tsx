@@ -2,12 +2,12 @@ import React from 'react';
 
 import {
   type Editor,
-  type EditorReference,
   type PlateContentProps,
   type PlateProps,
   Plate,
   PlateContent,
 } from '../../src/react';
+import type { EditorReference } from '../../src/react/editor/Editor';
 
 export function PlateTest<E extends EditorReference = Editor>({
   editableProps,

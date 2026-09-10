@@ -1,0 +1,7 @@
+source	path	lines	read_type	summary
+lexical-changelog	/Users/zbeyens/git/lexical/CHANGELOG.md	660-675;1740-1760	exact-slice	Changelog records fixes for triple-click around inline links, DOM range normalization for Firefox, and selection adjustment after triple-click.
+lexical-selection	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalSelection.ts	648-680;2634-2648	exact-slice	DOM range import sets model anchor/focus then normalizes because Firefox can use element points; triple-click is a DOM-selection import trigger.
+lexical-events	/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts	517-533	exact-slice	Triple-click over-selection is corrected to the intended parent block when focus leaks into another node.
+lexical-link	/Users/zbeyens/git/lexical/packages/lexical-link/src/LexicalLinkNode.ts	596-638	exact-slice	Link transform logic saves/restores selection and normalizes final boundary points.
+classic-slate-docs	/Users/zbeyens/git/slate/docs/api/nodes/editor.md	279-289	exact-slice	Classic Slate treats triple-click hanging ranges as an editor-level range correction concern.
+slate-v2-local	/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/visual-native-selection-smoke.test.ts	269-307	local-promotion	Visual-native inline triple-click row now runs on all desktop engines with normalized selected text, model endpoint assertion, no-double-highlight assertion, and screenshot artifact.

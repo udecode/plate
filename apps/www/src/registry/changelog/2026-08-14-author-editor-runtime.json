@@ -55,10 +55,7 @@
     },
     {
       "name": "playground-demo",
-      "files": [
-        "apps/www/src/registry/examples/demo.tsx",
-        "apps/www/src/registry/examples/playground-demo.tsx"
-      ],
+      "files": ["apps/www/src/registry/examples/playground-demo.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
       "diagnostics": []
     },

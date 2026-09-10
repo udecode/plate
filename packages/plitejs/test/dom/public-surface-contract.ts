@@ -75,7 +75,6 @@ const expectedPliteDOMRuntimeRootExports = [
   'closestShadowAware',
   'containsShadowAware',
   'createCompiledHotkeyMatcher',
-  'defineHostCodec',
   'dom',
   'getActiveElement',
   'getDOMClipboardFormatKey',
@@ -94,7 +93,6 @@ const expectedPliteDOMRuntimeRootExports = [
   'isDOMText',
   'isEditor',
   'isElement',
-  'isElementDecorationsEqual',
   'isGeckoDOMHost',
   'isHotkey',
   'isLeaf',
@@ -102,7 +100,6 @@ const expectedPliteDOMRuntimeRootExports = [
   'isPlainTextOnlyPaste',
   'isString',
   'isText',
-  'isTextDecorationsEqual',
   'isTrackedMutation',
   'isVoid',
   'keyToDataAttribute',
@@ -112,7 +109,6 @@ const expectedPliteDOMRuntimeRootExports = [
   'normalizeRange',
   'normalizeStringDiff',
   'parseDOMClipboardHtml',
-  'splitDecorationsByChild',
   'targetRange',
   'usesAppleDOMHotkeys',
   'verifyDiffState',
@@ -241,9 +237,6 @@ describe('plite-dom public surface contract', () => {
       'targetRange',
       'verifyDiffState',
       'CAN_USE_DOM',
-      'isElementDecorationsEqual',
-      'isTextDecorationsEqual',
-      'splitDecorationsByChild',
       'PliteDOMResolutionError',
       'DOMApi',
       'DOMClipboardApi',
@@ -459,9 +452,11 @@ describe('plite-dom public surface contract', () => {
 
   it('publishes DOM coverage boundaries for public examples and docs', () => {
     assert.equal(typeof PliteDOM.DOMCoverage, 'object');
-    assert.equal(typeof PliteDOM.DOMCoverage.registerBoundary, 'function');
-    assert.equal(typeof PliteDOM.DOMCoverage.getBoundaries, 'function');
-    assert.equal(typeof PliteDOM.DOMCoverage.materializeBoundary, 'function');
+    const coverage = PliteDOM.DOMCoverage.create(createEditor());
+    assert.equal(typeof coverage.registerBoundary, 'function');
+    assert.equal(typeof coverage.getBoundaries, 'function');
+    assert.equal(typeof coverage.materializeBoundary, 'function');
+    coverage.destroy();
   });
 
   it('publishes Hotkeys as a named export without a default-export alias', () => {

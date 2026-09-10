@@ -11,7 +11,6 @@ import {
   createEstimatedPageLayoutEngine,
   createPliteLayout,
   createPlitePage,
-  createPlitePageLayout,
   getPlitePageLayoutDecorations,
   getPlitePageLayoutGeometry,
   getPlitePageLayoutProjection,
@@ -30,7 +29,7 @@ import {
   getPagedEditableVisiblePageMountItems,
 } from '../../src/pagination/page-mount-plan';
 import * as PliteLayoutReact from '../../src/pagination/react';
-import { usePliteLayout, usePlitePageLayout } from '../../src/pagination/react';
+import { usePliteLayout } from '../../src/pagination/react';
 
 const registeredDom = typeof document === 'undefined';
 
@@ -108,7 +107,6 @@ const expectedPliteLayoutRuntimeRootExports = [
   'createPliteLayout',
   'createPlitePage',
   'createPlitePageBreakSnapshot',
-  'createPlitePageLayout',
   'getPlitePageLayoutDecorations',
   'getPlitePageLayoutFragments',
   'getPlitePageLayoutGeometry',
@@ -125,11 +123,8 @@ const expectedPliteLayoutRuntimeRootExports = [
 const expectedPliteLayoutRuntimeReactExports = [
   'PagedEditable',
   'usePliteLayout',
-  'usePliteLayoutFragments',
   'usePliteLayoutFragmentsAtPath',
   'usePliteLayoutSnapshot',
-  'usePlitePageLayout',
-  'usePlitePageLayoutSnapshot',
 ];
 
 describe('pagination public runtime exports', () => {
@@ -167,7 +162,7 @@ describe('pagination public docs', () => {
 
     expect(libraryReadme).toContain('explicit flags');
     expect(libraryReadme).toContain('authoritative page breaks');
-    expect(libraryReadme).toContain('Headless And Static Use');
+    expect(libraryReadme).toMatch(/^## Headless and static use$/im);
     expect(libraryReadme).toContain(
       'authoritative PDF, print, or collaboration'
     );
@@ -177,8 +172,8 @@ describe('pagination public docs', () => {
   });
 });
 
-describe('createPlitePageLayout', () => {
-  it('balances usePliteLayout commit subscriptions under StrictMode', async () => {
+describe('createPliteLayout', () => {
+  it('balances default-engine subscriptions under StrictMode', async () => {
     const editor = createEditor({
       initialValue: [
         {
@@ -224,7 +219,7 @@ describe('createPlitePageLayout', () => {
     });
   });
 
-  it('balances usePlitePageLayout commit subscriptions under StrictMode', async () => {
+  it('balances custom-engine subscriptions under StrictMode', async () => {
     const editor = createEditor({
       initialValue: [
         {
@@ -249,7 +244,7 @@ describe('createPlitePageLayout', () => {
 
     const { unmount } = renderHook(
       () =>
-        usePlitePageLayout(editor, {
+        usePliteLayout(editor, {
           engine: createEstimatedPageLayoutEngine(),
           page: { margins: 72, preset: 'letter' },
         }),
@@ -548,7 +543,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: pretextPageLayoutEngine({ whiteSpace: 'normal' }),
       page: pageSettings,
     });
@@ -598,7 +593,7 @@ describe('createPlitePageLayout', () => {
     });
 
     expect(() =>
-      createPlitePageLayout(editor, {
+      createPliteLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         page: pageSettings,
         root: 'main',
@@ -616,7 +611,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -814,7 +809,7 @@ describe('createPlitePageLayout', () => {
         },
       },
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -854,7 +849,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -873,7 +868,7 @@ describe('createPlitePageLayout', () => {
 
     layout.destroy();
 
-    const reader = createPlitePageLayout(editor, {
+    const reader = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -897,7 +892,7 @@ describe('createPlitePageLayout', () => {
       });
     });
 
-    const staleReader = createPlitePageLayout(editor, {
+    const staleReader = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -984,7 +979,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1019,7 +1014,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: 'deferred',
@@ -1053,7 +1048,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: { delayMs: 25, maxDelayMs: 100, mode: 'deferred' },
@@ -1103,7 +1098,7 @@ describe('createPlitePageLayout', () => {
         },
       },
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       root: 'header',
       page: pageSettings,
@@ -1155,7 +1150,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1207,7 +1202,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1258,7 +1253,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1288,7 +1283,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       typography: {
@@ -1397,7 +1392,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1492,7 +1487,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       nodeLayout({ defaults, element, path }) {
         if (element.type === 'image') {
           return {
@@ -1581,7 +1576,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path }) {
         if (element.type !== 'table') {
@@ -1692,7 +1687,7 @@ describe('createPlitePageLayout', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ element, path, pageSettings: innerPageSettings }) {
         if (element.type !== 'table') {
@@ -1782,7 +1777,7 @@ describe('createPlitePageLayout', () => {
       ],
     });
     const createLayout = (mode: 'read' | 'write') =>
-      createPlitePageLayout(editor, {
+      createPliteLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         nodeLayout({
           defaults,
@@ -1855,7 +1850,7 @@ describe('createPlitePageLayout', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({
         defaults,
@@ -2099,7 +2094,7 @@ describe('getPlitePageLayoutProjection', () => {
         },
       ],
     });
-    const layout = createPlitePageLayout(editor, {
+    const layout = createPliteLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });

@@ -6,7 +6,7 @@ description: Install, customize, and sync copied Plate UI components.
 Plate UI is the copied component layer for Plate. Use the shadcn CLI for the
 fastest setup, or install components manually when you need more control.
 
-## CLI Installation (Recommended)
+## CLI installation (recommended)
 
 This is the fastest way to integrate Plate UI's core dependencies and base styles.
 
@@ -22,7 +22,7 @@ This is the fastest way to integrate Plate UI's core dependencies and base style
 npx shadcn@latest add @plate/plate-ui
 ```
 
-### Basic Usage 
+### Basic usage 
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
@@ -31,7 +31,7 @@ With Plate UI's core installed, proceed to the guide specific to your framework:
 
 </Steps>
 
-## Manual Installation
+## Manual installation
 
 If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:
 
@@ -50,7 +50,7 @@ npm install platejs @tanstack/react-virtual
   lists its peers; the CLI installs them with copied components.
 </Callout>
 
-### Configure CSS Variables
+### Configure CSS variables
 
 Add the following CSS variables to your global stylesheet:
 
@@ -65,7 +65,7 @@ Add the following CSS variables to your global stylesheet:
 }
 ```
 
-### Add Components
+### Add components
 
 With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
 
@@ -97,7 +97,7 @@ export function MyEditor() {
 
 Explore the available [UI Components](/docs/components) and [Plugin Components](/docs/plugin-components) to customize your editor nodes (like paragraphs, headings, etc.) and build a feature-rich editing experience.
 
-### Basic Usage 
+### Basic usage 
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
@@ -148,11 +148,11 @@ https://platejs.org/registry/changelog/index.json
   notes.
 - Merge upstream file changes into the app copy; keep intentional local changes.
 
-## Component Types
+## Component types
 
 When installing Plate UI components, you'll encounter different types of components with consistent naming patterns. Here's what they mean:
 
-### Feature Kits
+### Feature kits
 
 Feature kits are the easiest way to add complete functionality to your editor. They bundle all necessary plugin configurations, UI components (including node renderers and toolbar items), and their underlying npm dependencies for a specific feature.
 
@@ -170,7 +170,7 @@ npx shadcn@latest add @plate/dnd
 
 ### Components
 
-#### Node Components
+#### Node components
 
 These components are responsible for rendering specific types of content (elements or leaves) in your editor. If you need to create your own or customize existing ones, see the [Plugin Components guide](/docs/plugin-components).
 
@@ -182,7 +182,7 @@ npx shadcn@latest add @plate/blockquote
 npx shadcn@latest add @plate/code
 ```
 
-#### Toolbar Components
+#### Toolbar components
 
 Toolbar components add interactive controls like buttons and dropdowns to your editor's toolbar.
 
@@ -197,7 +197,7 @@ npx shadcn@latest add @plate/ai-toolbar-button
 npx shadcn@latest add @plate/font-color-toolbar-button
 ```
 
-#### Other Components
+#### Other components
 
 Finally, Plate UI includes more advanced editor components as overlays, menus, block wrappers, etc.
 
@@ -211,7 +211,7 @@ npx shadcn@latest add @plate/dnd
 
 These components are typically included as part of their respective Feature Kits but can be installed individually for custom setups.
 
-### Editor Templates
+### Editor templates
 
 These are pre-configured editor setups, often tailored for specific use cases or as a comprehensive starting point. You can explore all available [Editor Templates](/editors).
 
@@ -223,7 +223,7 @@ npx shadcn@latest add @plate/editor-ai
 npx shadcn@latest add @plate/editor-basic
 ```
 
-### API Routes
+### API routes
 
 These items provide server-side components or API route handlers necessary for certain features.
 

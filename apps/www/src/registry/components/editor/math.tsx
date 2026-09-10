@@ -3,7 +3,7 @@
 import 'platejs/math/katex.css';
 import katex, { type KatexOptions } from 'katex';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
-import { isHotkey } from 'platejs';
+import { isHotkey, NodeApi } from 'platejs';
 import { MathRules } from 'platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 import {
@@ -229,117 +229,7 @@ export function InlineEquationElement(
   );
 }
 
-function EquationInput({
-  isInline,
-  onClose,
-  open,
-  ...props
-}: TextareaAutosizeProps & {
-  isInline?: boolean;
-  open?: boolean;
-  onClose?: () => void;
-}) {
-  const editor = useEditor();
-  const element = useElement(isInline ? InlineEquationPlugin : EquationPlugin);
-  const ref = React.useRef<HTMLTextAreaElement>(null);
-  const initialExpressionRef = React.useRef(element.latex);
-  const effectContextRef = React.useRef({ editor, element, isInline });
-
-  React.useEffect(() => {
-    effectContextRef.current = { editor, element, isInline };
-  }, [editor, element, isInline]);
-
-  React.useEffect(() => {
-    if (!open) return undefined;
-
-    const timeoutId = window.setTimeout(() => {
-      ref.current?.focus();
-      ref.current?.select();
-
-      const context = effectContextRef.current;
-
-      if (context.isInline) {
-        initialExpressionRef.current = context.element.latex;
-      }
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [open]);
-
-  const setExpression = (latex: string) => {
-    const at = editor.read.nodes.path(element);
-
-    if (!at) return;
-
-    if (isInline) {
-      editor
-        .plugin(InlineEquationPlugin)
-        .update({ history: 'merge' })
-        .set({ latex }, { at });
-    } else {
-      editor.plugin(EquationPlugin).update.set({ latex }, { at });
-    }
-  };
-
-  const dismiss = () => {
-    if (isInline) setExpression(initialExpressionRef.current);
-
-    onClose?.();
-  };
-
-  const selectOutside = (direction: 'after' | 'before') => {
-    const point = editor.read.points[direction](element);
-
-    if (!point) return;
-
-    editor.update.selection.set(point);
-    editor.api.dom.focus();
-  };
-
-  return (
-    <TextareaAutosize
-      ref={ref}
-      value={element.latex}
-      onChange={(event) => {
-        setExpression(event.currentTarget.value);
-      }}
-      onKeyDown={(event) => {
-        if (isHotkey('enter')(event)) {
-          event.preventDefault();
-          onClose?.();
-        } else if (isHotkey('escape')(event)) {
-          event.preventDefault();
-          dismiss();
-        }
-        if (!isInline) return;
-
-        const { selectionEnd, selectionStart } = event.currentTarget;
-
-        if (
-          selectionStart === 0 &&
-          selectionEnd === 0 &&
-          isHotkey('ArrowLeft')(event)
-        ) {
-          event.preventDefault();
-          selectOutside('before');
-        }
-        if (
-          selectionEnd === element.latex.length &&
-          selectionStart === element.latex.length &&
-          isHotkey('ArrowRight')(event)
-        ) {
-          event.preventDefault();
-          selectOutside('after');
-        }
-      }}
-      {...props}
-    />
-  );
-}
-
-const EquationPopoverContent = ({
+function EquationPopoverContent({
   className,
   isInline,
   open,
@@ -349,28 +239,60 @@ const EquationPopoverContent = ({
   isInline: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
-} & TextareaAutosizeProps) => {
+} & TextareaAutosizeProps) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const element = useElement(isInline ? InlineEquationPlugin : EquationPlugin);
+  const key = editor.key(element);
+  const ref = React.useRef<HTMLTextAreaElement>(null);
+  const [draft, setDraft] = React.useState({
+    open,
+    source: element.latex,
+    value: element.latex,
+  });
+  const changedSource = draft.source !== element.latex || draft.open !== open;
+  const value = changedSource ? element.latex : draft.value;
+
+  if (changedSource) {
+    setDraft({ open, source: element.latex, value: element.latex });
+  }
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const window = ref.current?.ownerDocument.defaultView;
+    const timeout = window?.setTimeout(() => {
+      ref.current?.focus();
+      ref.current?.select();
+    }, 0);
+    return () => window?.clearTimeout(timeout);
+  }, [open]);
 
   if (readOnly) return null;
 
-  const onClose = () => {
+  const close = (commit: boolean, direction: 'after' | 'before' = 'after') => {
+    const current = editor.read.nodes.get(key);
+    if (
+      commit &&
+      current &&
+      NodeApi.isElement(current[0]) &&
+      current[0].type === element.type &&
+      current[0].latex === element.latex &&
+      value !== element.latex &&
+      !editor.read.view.isReadOnly() &&
+      !editor.read.nodes.elementReadOnly({ at: key })
+    ) {
+      const plugin = isInline ? InlineEquationPlugin : EquationPlugin;
+      editor
+        .plugin(plugin)
+        .update({ history: 'new-batch' })
+        .set({ latex: value }, { at: current[1] });
+    }
     setOpen(false);
-
     if (isInline) {
-      const nextPoint = editor.read.points.after(element);
-
-      if (nextPoint) {
-        editor.update.selection.set(nextPoint);
-      }
-    } else {
-      const path = editor.read.nodes.path(element);
-
-      if (path) {
-        editor.update.selection.setNodes([path]);
-      }
+      const point = editor.read.points[direction](element);
+      if (point) editor.update.selection.set(point);
+    } else if (current) {
+      editor.update.selection.setNodes([current[1]]);
     }
     editor.api.dom.focus();
   };
@@ -381,26 +303,56 @@ const EquationPopoverContent = ({
       onFinalFocus={(event) => {
         if (isInline) event.preventDefault();
       }}
-      onEscapeKeyDown={(e) => {
-        e.preventDefault();
-      }}
+      onEscapeKeyDown={(event) => event.preventDefault()}
       contentEditable={false}
     >
-      <EquationInput
+      <TextareaAutosize
+        ref={ref}
         className={cn('max-h-[50vh] grow resize-none p-2 text-sm', className)}
-        isInline={isInline}
-        onClose={onClose}
-        open={open}
+        value={value}
+        onChange={(event) =>
+          setDraft({
+            open,
+            source: element.latex,
+            value: event.currentTarget.value,
+          })
+        }
+        onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing) return;
+          if (isHotkey('enter')(event)) {
+            event.preventDefault();
+            close(true);
+          } else if (isHotkey('escape')(event)) {
+            event.preventDefault();
+            close(false);
+          } else if (isInline) {
+            const { selectionEnd, selectionStart } = event.currentTarget;
+            if (
+              selectionStart === 0 &&
+              selectionEnd === 0 &&
+              isHotkey('ArrowLeft')(event)
+            ) {
+              event.preventDefault();
+              close(true, 'before');
+            } else if (
+              selectionStart === value.length &&
+              selectionEnd === value.length &&
+              isHotkey('ArrowRight')(event)
+            ) {
+              event.preventDefault();
+              close(true);
+            }
+          }
+        }}
         autoFocus
         {...props}
       />
-
-      <Button variant="secondary" className="px-3" onClick={onClose}>
+      <Button variant="secondary" className="px-3" onClick={() => close(true)}>
         Done <CornerDownLeftIcon className="size-3.5" />
       </Button>
     </FloatingPopoverContent>
   );
-};
+}
 
 export const MathKit = [
   InlineEquationPlugin.configure({

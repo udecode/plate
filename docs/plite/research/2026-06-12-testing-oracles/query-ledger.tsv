@@ -1,0 +1,4 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+local-slate-browser-oracles	local-rg	attachPageScreenshot noDoubleSelectionHighlight dragTextRange Clipboard paste selectedText displayedSelection IME scenario	slate-browser src/test	many	8	local/slate-v2	testing-oracle:huge-doc-repeated-vertical-selection:contract-row,testing-oracle:slate-browser-existing-primitives:none	source slices
+local-prosemirror-view-tests	local-rg	composition selection clipboard domchange	prosemirror/view/test	41	5	github/prosemirror/prosemirror-view	testing-oracle:ime-composition-edge-matrix:scenario-gap,testing-oracle:geometry-coords-roundtrip:browser-gap,testing-oracle:domchange-selection-repair:scenario-gap	future IME/geometry packet
+local-tiptap-cypress-paste	local-rg	Cypress paste DataTransfer ClipboardEvent	tiptap/tests/cypress/support	1	1	github/ueberdosis/tiptap	testing-oracle:tiptap-paste-datatransfer:duplicate	none

@@ -193,7 +193,7 @@ Bare plugin names cannot infer another package's option contract without a
 central plugin-name registry; do not add that machinery. When a plugin does not
 own another
 capability's membership in the consumer's final composition, it may use
-`override.plugins[name]` as a narrow weak-peer adaptation of an
+`override[name]` as a narrow weak-peer adaptation of an
 already-installed target. This applies even when the adapting plugin can import
 the target.
 A missing target is a no-op. Weak peers may change runtime configuration or
@@ -453,7 +453,7 @@ conversion operation rather than in shared state.
 
 `component` is ordinary render publication data, not a Plate-only capability.
 Both `defineBasePlugin()` and `definePlatePlugin()` accept it beside the rest of
-the declaration, so Base descriptors render directly in static/RSC and live
+the declaration, including intrinsic HTML tags, so Base descriptors render directly in static/RSC and live
 Plate consumers. Replace it through one terminal `.configure({ component })`.
 Base `.extend()` rejects it because an independent default belongs in the
 constructor and consumer replacement belongs in `.configure()`. Use
@@ -461,8 +461,9 @@ constructor and consumer replacement belongs in `.configure()`. Use
 descriptor or add genuine Plate-only authoring. A terminal consumer never
 inserts conversion merely to set `component`. Static/base owners may import a
 server-safe component, but never a Plate React entrypoint just to bind it. Do
-not expose `.withComponent()` or direct public
-`render.node` authoring. `.configure()` is terminal and never widens.
+not expose `.withComponent()` or a second node-component channel. `render`
+owns attributes and mark placement; `slots` owns structural composition.
+`.configure()` is terminal and never widens.
 
 Do not publish a private implementation fragment merely so two builder stages
 can share it. Staging is for an honest scoped capability that a consumer,

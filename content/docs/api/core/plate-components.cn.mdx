@@ -59,32 +59,33 @@ export function ReadOnlyEditor() {
 }
 ```
 
-`PlateView` 包装 `PlateStatic`。默认 `onCopy` 会将 Plate fragment 数据写入剪贴板；传入自定义 `onCopy` prop 后则使用你的处理器。
+`PlateView` 默认通过 `onCopy` 将 Plate fragment 数据写入剪贴板；传入自定义 `onCopy` prop 后则使用你的处理器。
 
 ## 组件映射
 
 | 组件             | 用途                                                                                |
 | ---------------- | ----------------------------------------------------------------------------------- |
-| `Plate`          | 单个编辑器实例的 store provider。                                                   |
-| `PlateContent`   | 可编辑 Plite 区域，支持插件 `on` 回调、decorator、renderer、快捷键和编辑器 effect。 |
+| `Plate`          | 单个编辑器实例的 context provider。                                                   |
+| `PlateContent`   | 可编辑 Plite 区域，支持插件事件、Decoration、renderer、快捷键和编辑器 effect。      |
 | `PlateView`      | 支持 Plate fragment 复制的静态只读渲染。                                            |
 | `PlateContainer` | 编辑器容器 `div`，并提供 `beforeContainer` 和 `afterContainer` 插件 slot。          |
-| `Plite`          | `PlateContent` 使用的 Plite provider 包装器，也会应用 `abovePlite` 插件包装器。     |
 | `PlateElement`   | block 和 inline 元素的默认 renderer。                                               |
-| `PlateLeaf`      | 带 decoration 的文本 leaf 默认 renderer。                                           |
-| `PlateText`      | 不经过 decoration leaf 渲染的默认文本节点 renderer。                                |
+| `PlateLeaf`      | 文本片段的默认持久 mark renderer。                                                    |
+| `PlateText`      | 单个文本节点全部渲染片段的默认外层 wrapper。                                         |
 
 ## 渲染管线
 
-`PlateContent` 直接组合 store 级 renderer、自身 render prop、插件 decorator 和插件 DOM 事件。
+`PlateContent` 通过自身的编辑区域 props 和已安装插件组合行为。结构 renderer 和 Decoration source 由插件持有。通过公开的组件和插件 slot 组合界面；`PlateContent` 负责内部生命周期。
+
+`PlateContent` 将 `slots.wrapRoot` 组合在每个可编辑视图的外层，并向每个根 slot 提供该视图的 `editableRef`。挂载前和卸载后，ref 为 `null`；集成在提交后读取它，并清理当时捕获的元素。功能 kit 使用此边界管理必需的 React 集成。
 
 | 阶段           | 来源                                                                                                |
 | -------------- | --------------------------------------------------------------------------------------------------- |
-| Plite provider | `Plite` 接收编辑器实例和 store 回调。                                                               |
-| Editable props | `PlateContent` 串联 decorator、DOM 事件、`renderElement`、`renderLeaf` 和 `renderText`。             |
-| 插件 slot      | `beforeEditable`、`aboveEditable` 和 `afterEditable` 包裹可编辑区域或渲染在其周围。                 |
-| Effect         | `EditorShortcutDispatcher`、`EditorRefEffect` 和 `PlateControllerEffect` 在 `PlateContent` 内运行。 |
-| 只读状态       | `disabled` 强制只读；`readOnly` 会同步回 Plate store。                                              |
+| 编辑器上下文 | `Plate` 提供编辑器及插件 Decoration source，`PlateContent` 选择内容根。 |
+| Editable props | `PlateContent` 串联插件 DOM 事件，以及插件持有的 element、leaf 和 text renderer。                    |
+| 插件 slot      | `slots.wrapRoot`、`slots.wrapContent`、`slots.beforeEditable` 和 `slots.afterEditable` 组合可编辑区域。               |
+| 生命周期 | `PlateContent` 自动管理快捷键、编辑器引用、控制器注册和清理。 |
+| 只读状态 | `disabled` 强制只读；`PlateContent` 的 `readOnly` 优先于 `Plate` 提供的值。 |
 
 ## 节点原语
 
@@ -150,8 +151,8 @@ export function FigureElement({
 | 原语                | 行为                                                                                                                                                                                          |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PlateElement`      | 添加 `data-plite-node="element"`，保留 Plite 的 `data-plite-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
-| `PlateLeaf`         | 渲染文本 leaf，并在需要时添加 hard-affinity spacer。                                                                                                                                          |
-| `PlateText`         | 渲染文本节点，不匹配 leaf decoration。                                                                                                                                                        |
+| `PlateLeaf`         | 在文本片段外渲染持久 mark，并在需要时添加 hard-affinity spacer。                                                                                                                              |
+| `PlateText`         | 在所有 mark 和 Decoration 片段外渲染单个文本节点 wrapper。                                                                                                                                   |
 
 ## API 参考
 
@@ -167,24 +168,11 @@ export function FigureElement({
     <APIItem name="children" type="React.ReactNode">
       可读取 Plate store 的 React 子节点。
     </APIItem>
-    <APIItem name="decorate" type="({ editor, entry }) => Range[]" optional>
-      `PlateContent` 使用的 store 级 decorate 函数。
-    </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
-      Store 级只读状态。默认为 `editor.dom.readOnly`。
+      提供给内容区域的只读状态。默认为 `editor.read.view.isReadOnly()`。
     </APIItem>
     <APIItem name="primary" type="boolean" optional>
       将编辑器注册为 `PlateController` 的主编辑器。
-    </APIItem>
-    <APIItem
-      name="renderElement"
-      type="EditableProps['renderElement']"
-      optional
-    >
-      保存在 Plate store 中的后备元素 renderer。
-    </APIItem>
-    <APIItem name="renderLeaf" type="EditableProps['renderLeaf']" optional>
-      保存在 Plate store 中的后备 leaf renderer。
     </APIItem>
     <APIItem
       name="onCommit"
@@ -210,20 +198,20 @@ export function FigureElement({
     </APIItem>
     <APIItem
       name="onNodeChange"
-      type="({ editor, node, operation, previousNode }) => void"
+      type="({ editor, kind, node, path, previousNode, previousPath, commit }) => void"
       optional
     >
       在 `Plate` provider 的生命周期内观察规范化节点变更。
     </APIItem>
     <APIItem
       name="onTextChange"
-      type="({ editor, node, operation, previousText, text }) => void"
+      type="({ editor, node, path, previousPath, previousText, text, commit }) => void"
       optional
     >
       在 `Plate` provider 的生命周期内观察规范化文本变更。
     </APIItem>
     <APIItem name="suppressInstanceWarning" type="boolean" optional>
-      禁用 `usePlateInstancesWarn` 的多实例警告。
+      禁止对同一编辑器实例的多次挂载发出警告。
     </APIItem>
   </APIProps>
 </API>
@@ -234,9 +222,6 @@ export function FigureElement({
 
 <API name="PlateContent">
   <APIProps>
-    <APIItem name="id" type="string" optional>
-      `useEditor({id})` 和 `usePlateStore(id)` 使用的编辑器 scope。
-    </APIItem>
     <APIItem name="autoFocusOnEditable" type="boolean" optional>
       `readOnly` 从 `true` 变为 `false` 时，将焦点移到编辑器末尾。
     </APIItem>
@@ -244,36 +229,10 @@ export function FigureElement({
       强制只读状态并设置 `aria-disabled`。
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
-      覆盖 store 的只读值，并同步回 store。
+      覆盖 `Plate` 提供的只读值。`disabled` 为 `true` 时始终只读。
     </APIItem>
-    <APIItem name="decorate" type="({ editor, entry }) => Range[]" optional>
-      Editable 级 decorate 函数。存在 store 级 `decorate` 时，后者优先。
-    </APIItem>
-    <APIItem
-      name="renderEditable"
-      type="(editable: React.ReactElement) => React.ReactNode"
-      optional
-    >
-      包装或替换生成的 `Editable` 元素。
-    </APIItem>
-    <APIItem name="renderElement" type="RenderElementFn" optional>
-      插件 renderer 之后使用的后备元素 renderer。
-    </APIItem>
-    <APIItem name="renderLeaf" type="RenderLeafFn" optional>
-      插件 leaf renderer 之后使用的后备 leaf renderer。
-    </APIItem>
-    <APIItem name="renderText" type="RenderTextFn" optional>
-      非 decoration 文本 renderer 之后使用的后备文本 renderer。
-    </APIItem>
-    <APIItem
-      name="renderPlaceholder"
-      type="EditableProps['renderPlaceholder']"
-      optional
-    >
-      传给 Plite `Editable` 的 placeholder renderer。
-    </APIItem>
-    <APIItem name="placeholder" type="string" optional>
-      传给 Plite `Editable` 的 placeholder 文本。
+    <APIItem name="placeholder" type="React.ReactNode" optional>
+      可编辑区域的占位内容。
     </APIItem>
     <APIItem
       name="scrollSelectionIntoView"
@@ -295,9 +254,6 @@ export function FigureElement({
       optional
     >
       通过插件 handler 管线传递的键盘 handler。
-    </APIItem>
-    <APIItem name="as" type="React.ElementType" optional>
-      传给 Plite `Editable` 的元素类型。
     </APIItem>
     <APIItem name="disableDefaultStyles" type="boolean" optional>
       传给 Plite `Editable`。

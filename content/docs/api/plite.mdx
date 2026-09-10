@@ -26,7 +26,7 @@ Optional entrypoints declare their own peers:
 | `plitejs/pagination/react` | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
 | `plitejs/react` | `@tanstack/react-virtual`, React, and React DOM |
 
-## Quick Use
+## Quick use
 
 ```ts title="Create a framework-free editor"
 import { createEditor } from "plitejs";
@@ -48,7 +48,7 @@ boundaries. Reads observe committed state. Writes run inside transaction groups.
 `maxLength` caps user-facing insertions without changing imported document
 changes.
 
-## Package Surface
+## Package surface
 
 | Surface | Export | Use |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ changes.
 | Dependency references | `EditorExtensionDependencyReference` | Describe one shallow extension identity with `name` and optional `enabled`; finite capability/provider contracts use clean public types from `plitejs`. |
 | Value codecs | `defineValueCodec`, `valueCodecs`, `encodeEditorEffect`, `decodeEditorEffect` | Version persisted fields and keyed shared effects. |
 
-## Editor Shape
+## Editor shape
 
 An `Editor` exposes committed state through explicit read and update entrypoints.
 
@@ -78,7 +78,7 @@ An `Editor` exposes committed state through explicit read and update entrypoints
 | `subscribeCommit` | `(listener) => () => void` | Observe committed changes. |
 | `update` | `EditorUpdate<Value, TExtensions>` | Run direct, configured direct, or atomic model writes. |
 
-## API Map
+## API map
 
 | Page | Covers |
 | ------------------------------------------------------ | -------------------------------------------------------------------- |
@@ -109,7 +109,7 @@ History is a Plite extension. It stores undo and redo batches, exposes history
 state through its read group, and exposes undo/redo plus batching helpers
 through its update group.
 
-## Extension Authoring
+## Extension authoring
 
 Extensions register schema facts, owner-local read and update groups,
 corrections, commands, read middleware, lifecycle listeners, and runtime APIs.
@@ -128,7 +128,7 @@ import {
 } from "plitejs";
 ```
 
-## Helper Namespaces
+## Helper namespaces
 
 Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
 `PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. `ChangeSet`

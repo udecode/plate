@@ -1,0 +1,4 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+migration:target-version-chain:runtime	plate-v53-v55-version-chain	best-api	Compile/runtime step selection for 53->54, 54->55, 53->55, no-op, gap, downgrade, and wrong-lineage cases	focused Core/Plate migration chain tests	Adopt Dexie-style target-version steps with stricter typing and fail-closed gaps
+migration:version-envelope:storage	plate-versioned-document-envelope	plate-plan	Persisted document source identity, current target identity, post-migration writeback handoff	focused persisted-envelope/schema identity tests	Adopt Zustand's envelope principle without moving storage into editor core
+migration:dry-run-runner:cli	plate-migration-runner	plate-plan	Same chain through dry-run/check/write with streaming and exact outcome reports	@platejs/cli migration runner suite	Adapt Sanity runner laws; reject its generic patch DSL

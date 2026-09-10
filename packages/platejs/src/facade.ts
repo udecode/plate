@@ -1,5 +1,5 @@
 export {
-  compileEditorExtension,
+  compileEditorSchemaContract,
   containsCompleteEditorSchema,
   ContentSlice,
   createEditor,
@@ -11,9 +11,7 @@ export {
   editorCommands,
   editorReads,
   ElementApi,
-  getCandidateEditorExtensionApi,
   getCompiledEditorSchemaFromApi,
-  getCompiledSchemaPropertyId,
   getEditorCommitSnapshot,
   getEditorRuntimeOwner,
   getSchemaElementSourceReference,
@@ -48,7 +46,6 @@ export {
 
 export type {
   Anchor,
-  DecoratedRange,
   DefinitionOf,
   Descendant,
   DescendantIn,
@@ -89,6 +86,7 @@ export type {
   EditorReadMethods,
   EditorReadMethodTree,
   EditorSchemaContribution,
+  EditorSchemaContract,
   EditorSchemaDerivedDefinition,
   EditorSchemaElement,
   EditorSchemaExtension,
@@ -138,6 +136,9 @@ export type {
   NodeTypeSelector,
   Path,
   PersistedDocumentInput,
+  PliteDecoration,
+  PliteDecorationAttributes,
+  PliteDecorationRefresh,
   Point,
   PropertyJsonValue,
   PropertyOptionsOf,

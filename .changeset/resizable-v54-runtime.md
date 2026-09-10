@@ -10,4 +10,4 @@ Move resize components to the current editor hooks and feature-owned commit APIs
 
 Use a neutral zero minimum width and generic `Resize` accessible label in the package. Media registry components own their media-specific limits and label.
 
-**Migration:** Remove the unused `readOnly` resizable option and `isTouchEvent` helper, and use percentage strings for relative lengths. `resizeLengthClamp` returns the widened `number` or percentage-string kind instead of the input literal.
+**Migration:** Use percentage strings for relative lengths. The shared pointer lifecycle and length-clamping helpers are private. Pointer cancellation restores the starting width, and keyboard bounds track the current responsive container.

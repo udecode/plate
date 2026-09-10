@@ -88,7 +88,6 @@ const QueryContractSchema = defineEditorSchema('schema:query-contract', {
     chip: { content: inlineContent, inline: true },
     'editable-embed': {
       content: schema.content.open(),
-      void: 'editable-island',
     },
     element: { content: schema.content.open() },
     inline: { content: inlineContent, inline: true },
@@ -1048,6 +1047,27 @@ it('mirrors the legacy has*/is* editor predicate oracle rows', () => {
     true
   );
   assert.equal(editorIsEmpty(editor, { type: 'block', children: [] }), true);
+  assert.equal(
+    editorIsEmpty(editor, {
+      type: 'block',
+      children: [{ text: '' }, { text: '', bold: true }],
+    }),
+    true
+  );
+  assert.equal(
+    editorIsEmpty(editor, {
+      type: 'block',
+      children: [{ text: '' }, { text: 'x' }],
+    }),
+    false
+  );
+  assert.equal(
+    editorIsEmpty(editor, {
+      type: 'block',
+      children: [{ text: '' }, { type: 'inline', children: [{ text: '' }] }],
+    }),
+    false
+  );
   assert.equal(editorIsEmpty(editor, block), false);
   assert.equal(editorIsStart(editor, { path: [0, 0], offset: 0 }, [0]), true);
   assert.equal(editorIsStart(editor, { path: [0, 0], offset: 2 }, [0]), false);
@@ -2342,7 +2362,7 @@ it('positions exposes selectable voids atomically and enters void content only w
   assert.deepEqual(voidPositions.at(-1), { path: [0, 0], offset: 11 });
 });
 
-it('positions uses element spec atom and editable-island policies', () => {
+it('positions skips atoms and traverses ordinary editable content', () => {
   const editor = createEditor();
 
   editorReplace(editor, {

@@ -1,18 +1,23 @@
 import { cva } from 'class-variance-authority';
-import { type EditorSnapshot, NodeApi, type Range } from 'plitejs';
+import {
+  type Ancestor,
+  type EditorSnapshot,
+  NodeApi,
+  type Path,
+  type Range,
+} from 'plitejs';
 import {
   Editable,
   Plite,
-  type PliteRangeDecoration,
+  type PliteDecoration,
+  type PliteDecorationSource,
   useEditorContext,
   useEditorState,
   useEditor,
-  usePliteRangeDecorationSource,
 } from 'plitejs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/utils/cn';
 
 import { Instruction } from './components';
 
@@ -28,13 +33,13 @@ type LintIssue = {
 
 type LintMode = 'local' | 'off' | 'server';
 
-type LintIssueDecoration = {
-  data: LintIssue;
+type LintIssueMatch = {
+  issue: LintIssue;
   key: string;
   range: Range;
 };
 
-const NO_LINT_ISSUES: readonly LintIssueDecoration[] = [];
+const NO_LINT_ISSUES: readonly LintIssueMatch[] = [];
 
 const lintSegmentVariants = cva('plite-linting-segment', {
   variants: {
@@ -52,11 +57,11 @@ const keyFor = (ruleId: string, range: Range) =>
 const createIssue = (
   range: Range,
   issue: Omit<LintIssue, 'id'>
-): LintIssueDecoration => {
+): LintIssueMatch => {
   const id = keyFor(issue.ruleId, range);
 
   return {
-    data: {
+    issue: {
       ...issue,
       id,
     },
@@ -72,72 +77,84 @@ const collectLintIssues = (
   }: {
     includeServerDiagnostics?: boolean;
   } = {}
-): LintIssueDecoration[] => {
-  const root = { children };
-  const issues: LintIssueDecoration[] = [];
+): LintIssueMatch[] => {
+  const root = { children } as Ancestor;
+  const issues: LintIssueMatch[] = [];
 
-  issues.push(
-    ...NodeApi.findTextRanges(
-      root,
-      /\b(obviously|clearly|evidently|simply)\b/gi
-    ).map((range) =>
-      createIssue(range, {
-        message: 'Avoid filler words in product copy.',
-        ruleId: 'style-filler-word',
-        severity: 'warning',
-      })
-    )
-  );
-
-  issues.push(
-    ...NodeApi.findTextRanges(root, / , ?/g).map((range) =>
-      createIssue(range, {
-        fixText: ', ',
-        message: 'Remove the space before commas.',
-        ruleId: 'comma-spacing',
-        severity: 'error',
-      })
-    )
-  );
-
-  if (includeServerDiagnostics) {
-    issues.push(
-      ...NodeApi.findTextRanges(root, 'server diagnostics', {
-        caseSensitive: false,
-      }).map((range) =>
-        createIssue(range, {
-          message: 'Server rule prefers "remote lint results" here.',
-          ruleId: 'server-terminology',
-          severity: 'info',
-        })
-      )
-    );
+  for (const [node, path] of NodeApi.nodes(root)) {
+    if (NodeApi.isText(node)) {
+      issues.push(
+        ...collectTextLintIssues(node.text, path, includeServerDiagnostics)
+      );
+    }
   }
 
   return issues;
 };
 
-const formatIssues = (issues: readonly LintIssueDecoration[]) =>
+const formatIssues = (issues: readonly LintIssueMatch[]) =>
   issues.length === 0
     ? 'none'
     : issues
-        .map((issue) => `${issue.data.ruleId}:${issue.data.severity}`)
+        .map((match) => `${match.issue.ruleId}:${match.issue.severity}`)
         .join('|');
 
-const getSegmentIssue = (
-  slices: ReadonlyArray<{ data?: unknown }>
-): LintIssue | null => {
-  const issues = slices
-    .map((slice) => slice.data as LintIssue | undefined)
-    .filter((issue): issue is LintIssue => Boolean(issue));
+const toLintDecoration = (match: LintIssueMatch): PliteDecoration => ({
+  attributes: {
+    className: lintSegmentVariants({ severity: match.issue.severity }),
+    'data-lint-rule': match.issue.ruleId,
+    'data-lint-severity': match.issue.severity,
+  },
+  key: match.key,
+  range: match.range,
+});
 
-  return (
-    issues.find((issue) => issue.severity === 'error') ??
-    issues.find((issue) => issue.severity === 'warning') ??
-    issues[0] ??
-    null
-  );
-};
+function collectTextLintIssues(
+  text: string,
+  path: Path,
+  includeServerDiagnostics: boolean
+) {
+  const issues: LintIssueMatch[] = [];
+  const addMatches = (pattern: RegExp, issue: Omit<LintIssue, 'id'>) => {
+    for (const match of text.matchAll(pattern)) {
+      const start = match.index;
+
+      if (start === undefined) continue;
+
+      issues.push(
+        createIssue(
+          {
+            anchor: { offset: start, path },
+            focus: { offset: start + match[0].length, path },
+          },
+          issue
+        )
+      );
+    }
+  };
+
+  addMatches(/\b(obviously|clearly|evidently|simply)\b/gi, {
+    message: 'Avoid filler words in product copy.',
+    ruleId: 'style-filler-word',
+    severity: 'warning',
+  });
+  addMatches(/ , ?/g, {
+    fixText: ', ',
+    message: 'Remove the space before commas.',
+    ruleId: 'comma-spacing',
+    severity: 'error',
+  });
+
+  if (includeServerDiagnostics) {
+    addMatches(/server diagnostics/gi, {
+      message: 'Server rule prefers "remote lint results" here.',
+      ruleId: 'server-terminology',
+      severity: 'info',
+    });
+  }
+
+  return issues;
+}
 
 const LintingPanel = ({
   lintMode,
@@ -174,10 +191,10 @@ const LintingPanel = ({
   const applyFirstFix = () => {
     const mode = lintMode === 'off' ? 'local' : lintMode;
     const fix = collectFromEditor(mode).find(
-      (diagnostic) => diagnostic.data.fixText
+      (diagnostic) => diagnostic.issue.fixText
     );
 
-    const fixText = fix?.data.fixText;
+    const fixText = fix?.issue.fixText;
 
     if (!fixText) {
       return;
@@ -205,16 +222,15 @@ const LintingPanel = ({
     <div className="plite-linting-panel">
       <Instruction>
         This linter keeps findings outside the Plite document.{' '}
-        <code>usePliteRangeDecorationSource</code> reads the current editor
-        snapshot, maps lint findings to ranges, and refreshes on text edits or
-        external source changes.
+        <code>decorations</code> maps lint findings to range attributes and
+        refreshes on text edits or external source changes.
       </Instruction>
       <div className="plite-linting-controls">
         <Button onClick={runLocalLint} type="button" variant="outline">
           Run linter
         </Button>
         <Button
-          disabled={!diagnostics.some((diagnostic) => diagnostic.data.fixText)}
+          disabled={!diagnostics.some((diagnostic) => diagnostic.issue.fixText)}
           onClick={applyFirstFix}
           type="button"
           variant="outline"
@@ -247,33 +263,15 @@ const LintingPanel = ({
         {diagnostics.map((diagnostic) => (
           <li
             className="plite-linting-issue"
-            data-lint-issue={diagnostic.data.id}
-            key={diagnostic.data.id}
+            data-lint-issue={diagnostic.issue.id}
+            key={diagnostic.issue.id}
           >
-            <strong>{diagnostic.data.severity}</strong>:{' '}
-            {diagnostic.data.message}
+            <strong>{diagnostic.issue.severity}</strong>:{' '}
+            {diagnostic.issue.message}
           </li>
         ))}
       </ul>
-      <Editable
-        className="plite-linting-editor"
-        id="linting"
-        renderSegment={(segment, children) => {
-          const issue = getSegmentIssue(segment.slices);
-
-          return issue ? (
-            <span
-              className={cn(lintSegmentVariants({ severity: issue.severity }))}
-              data-lint-rule={issue.ruleId}
-              data-lint-severity={issue.severity}
-            >
-              {children}
-            </span>
-          ) : (
-            children
-          );
-        }}
-      />
+      <Editable className="plite-linting-editor" id="linting" />
     </div>
   );
 };
@@ -302,20 +300,21 @@ const LintingExample = () => {
   const [lintMode, setLintMode] = useState<LintMode>('off');
   const [sourceLabel, setSourceLabel] = useState('idle');
 
-  const lintingSource = usePliteRangeDecorationSource(editor, {
-    id: 'linting',
-    dirtiness: ['text', 'external'],
-    revision: lintMode,
-    read: ({ snapshot }): ReadonlyArray<PliteRangeDecoration<LintIssue>> =>
-      lintMode === 'off'
-        ? []
-        : collectLintIssues(snapshot.children, {
-            includeServerDiagnostics: lintMode === 'server',
-          }),
-  });
+  const lintingSource = useMemo<PliteDecorationSource<typeof editor>>(
+    () => ({
+      id: 'linting',
+      read: ({ entry: [node, path] }) =>
+        lintMode === 'off' || !NodeApi.isText(node)
+          ? []
+          : collectTextLintIssues(node.text, path, lintMode === 'server').map(
+              toLintDecoration
+            ),
+    }),
+    [lintMode]
+  );
 
   return (
-    <Plite decorationSources={[lintingSource]} editor={editor}>
+    <Plite decorations={[lintingSource]} editor={editor}>
       <LintingPanel
         lintMode={lintMode}
         setLintMode={setLintMode}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "interrogate",
+  "files": [
+    {
+      "upstream": "skills/interrogate/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "c9a42c706a84cab50d3cf1c7cf91149bac2e0d2ad24da2b8ff518ea0918ae3bb",
+      "destinationSha256": "d40a5310f1cd3aaa48e34022b6e9b49e64b821e0be3663f3600f20c82407da74",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/interrogate/SKILL.md\n+++ skills/interrogate/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: interrogate\n description: \"Use for \\\"interrogate\\\", \\\"adversarial review\\\", \\\"multi-model review\\\", \\\"challenge this\\\", \\\"stress test this code\\\", \\\"find blind spots\\\", or \\\"tear this apart\\\". Multiple LLM reviewers challenge changes from independent angles.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Interrogate\n \n@@ -33,19 +34,19 @@\n \n ## Step 3, Spawn Reviewers\n \n-Launch all reviewers in a single message using the Task tool. Use the `interrogate reviewers` list from `~/.cursor/rules/pstack-models.mdc` when present, one reviewer per entry, extending or shrinking the Reviewer A/B/C/D labels below to the configured entry count; otherwise use the table defaults.\n+Launch all reviewers in a single message using the Task tool. Use the `interrogate reviewers` list from `.agents/pstack-models.md` when present, one reviewer per entry, extending or shrinking the Reviewer A/B/C/D labels below to the configured entry count; otherwise use the table defaults.\n \n | Subagent | Default model |\n |----------|---------------|\n-| Reviewer A | `claude-fable-5-1-thinking-max` |\n-| Reviewer B | `gpt-5.6-sol-max` |\n-| Reviewer C | `grok-4.6-fast-xhigh` |\n-| Reviewer D | `claude-opus-5-thinking-xhigh` |\n+| Reviewer A | `inherit-parent` |\n+| Reviewer B | `inherit-parent` |\n+| Reviewer C | `inherit-parent` |\n+| Reviewer D | `inherit-parent` |\n \n For each reviewer:\n-- `subagent_type`: `generalPurpose`\n+- native worker role: independent adversarial reviewer\n - `model`: the configured `interrogate reviewers` entry, or the table default with no configured line\n-- `readonly`: `true`\n+- permitted operations: read-only evidence inspection\n \n If a model slug is rejected as unresolvable when you try to spawn the subagent, check the valid slugs in the Task tool's error message, pick the closest equivalent (prefer the highest-reasoning tier of the same family), spawn with the valid slug, and open a separate PR to update the configured value or default table. Do not block the review on the slug issue. If the configured value is `inherit-parent` or `auto`, omit `model` instead; never treat those aliases as broken slugs or enter this fallback for them.\n \n"
+    },
+    {
+      "upstream": "skills/interrogate/references/code-quality-review.md",
+      "destination": "references/code-quality-review.md",
+      "upstreamSha256": "2462f1347b99b412b04fcb0577b96d8744c801f792f2651746f9409fd4465dc9",
+      "destinationSha256": "2462f1347b99b412b04fcb0577b96d8744c801f792f2651746f9409fd4465dc9",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/interrogate/references/lead-judgment.md",
+      "destination": "references/lead-judgment.md",
+      "upstreamSha256": "d2cea6cc308758201c6b8b82baf780947645f1ab752707ddf97fab374bf473f9",
+      "destinationSha256": "d2cea6cc308758201c6b8b82baf780947645f1ab752707ddf97fab374bf473f9",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/interrogate/references/reviewer-prompt.md",
+      "destination": "references/reviewer-prompt.md",
+      "upstreamSha256": "a397cc61102add709803d917fb23d726920525bf23e7c06dc4ed0b5cbeb00e54",
+      "destinationSha256": "a397cc61102add709803d917fb23d726920525bf23e7c06dc4ed0b5cbeb00e54",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/interrogate/references/rubric.md",
+      "destination": "references/rubric.md",
+      "upstreamSha256": "a67bf02426f88714634ff481d667db821d4b2cea7b335bcd165fe3126e427fb5",
+      "destinationSha256": "a67bf02426f88714634ff481d667db821d4b2cea7b335bcd165fe3126e427fb5",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

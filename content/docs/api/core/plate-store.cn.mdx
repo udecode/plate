@@ -1,160 +1,96 @@
 ---
-title: 存储
-description: Plate 存储的 API 参考文档。
+title: 编辑器上下文
+description: 通过 Plate React hook 读取编辑器、插件和焦点状态。
 ---
 
-`Plate` 使用 [jotai-x](https://github.com/udecode/jotai-x) 来存储编辑器的状态。
+从 `platejs/react` 导入 Plate 状态 hook。文档状态使用编辑器 hook，插件状态使用
+`usePluginStore`，焦点记录使用事件 hook。
 
-## Plate 存储
+## 编辑器状态
 
-<API name="Store">
-`PlateStoreState` 对象存储 Plate 编辑器周围的 React 外壳状态：编辑器引用、容器 ref、挂载状态、渲染回调和 decorations。Commit callbacks 是 `Plate` props，不属于可变 store state。
+编辑器 hook 需要位于 `Plate` 下，或位于连接共享 UI 和编辑器的
+[PlateController](/docs/api/core/plate-controller) 下。
 
-<APIState>
-<APIItem name="editor" type="Editor">
-Plate 编辑器的引用。
-内部 fallback 只用于保持 Hooks 调用结构。`useEditor()` 需要活动编辑器；`useOptionalEditor()` 在没有活动编辑器时返回 `null`。
-</APIItem>
+| Hook | 返回值 |
+| --- | --- |
+| `useEditor()` | 匹配的编辑器；没有活动编辑器时抛出错误。 |
+| `useOptionalEditor()` | 匹配的编辑器；控制器中没有匹配编辑器时返回 `null`。 |
+| `useEditorId()` | 解析到的编辑器 ID。 |
+| `useEditorMounted()` | 编辑器的可编辑区域是否已挂载。 |
+| `useEditorSelection()` | 当前所选根的范围选区，或 `null`。 |
+| `useEditorHasSelection()` | 所选根是否有文本选区，包括折叠的光标。仅在选区存在状态变化时重新渲染。 |
+| `useEditorValue()` | 当前所选根的子节点。 |
+| `useEditorState(selector, options?)` | 从不可变编辑器状态派生并订阅的值。 |
 
-<APIItem name="containerRef" type="React.RefObject<HTMLDivElement>">
-Plate shell 容器元素的引用。
-</APIItem>
+hook 使用最近的 `PlateContent`、`Plate`、`PlateController` 或 `EditorProvider` 所选的编辑器。`useOptionalEditor()` 在没有 provider 或没有所选编辑器时返回 `null`。应用 ID 不参与挂载视图的查找。
 
-<APIItem name="decorate" type="function" optional>
-用于装饰编辑器中范围的函数。
+```tsx
+import { useEditorMounted, useEditorValue } from 'platejs/react';
 
-```ts
-(options: { editor: Editor; entry: NodeEntry }) => Range[]
-```
-</APIItem>
+export function EditorStatus() {
+  const mounted = useEditorMounted();
+  const value = useEditorValue();
 
-<APIItem name="isMounted" type="boolean" optional>
-`Editable` 是否已渲染，以便 Plite DOM 可解析。
-</APIItem>
-
-<APIItem name="primary" type="boolean" optional>
-编辑器是否是主要的。如果没有活跃的编辑器，PlateController 将使用第一个挂载的主要编辑器。
-
-- **默认值:** `true`
-</APIItem>
-
-<APIItem name="renderElement" type="function" optional>
-渲染编辑器中元素的函数。
-</APIItem>
-
-<APIItem name="renderLeaf" type="function" optional>
-渲染编辑器中叶子节点的函数。
-</APIItem>
-
-<APIItem name="renderText" type="function" optional>
-渲染编辑器中文本节点的函数。
-</APIItem>
-</APIState>
-</API>
-
-## 访问存储
-
-```ts
-import { useEditorPlugin, usePlateStore } from 'platejs/react'
-
-// 直接访问存储
-const store = usePlateStore(id?)
-
-// 通过插件 portal 访问
-const store = useEditorPlugin(myPlugin).store
+  return <p>{mounted ? `${value.length} 个顶层节点` : '正在加载编辑器…'}</p>;
+}
 ```
 
-注意：`id` 参数是可选的，默认使用最近的编辑器。
+## 容器和生命周期
 
-## 存储钩子
+`useEditorContainerRef()` 返回匹配的 `PlateContainer` 引用。挂载前和卸载后，
+其 `current` 值为 `null`。使用它将编辑器 UI 锚定到容器；它不代表可编辑 DOM 元素。
 
-以下钩子可用于与 Plate 存储交互：
+`Plate` 和 `PlateContent` 管理编辑器注册及挂载状态。通过 `Plate` 的 `primary`
+prop 设置主编辑器资格，通过它们的 `readOnly` prop 传入只读状态。
 
-```ts
-import { usePlateState, usePlateValue, usePlateSet } from 'platejs/react'
+## 插件状态
+
+插件状态属于已安装的描述符及其编辑器。让描述符推断状态键和 selector 返回值。
+
+```tsx
+import { definePlatePlugin, usePluginStore } from 'platejs/react';
+
+export const PanelPlugin = definePlatePlugin('panel', {
+  initialState: { open: false },
+});
+
+export function PanelStatus() {
+  const open = usePluginStore(PanelPlugin, 'open');
+
+  return <p>{open ? '面板已打开' : '面板已关闭'}</p>;
+}
 ```
 
-### usePlateState
+在编辑器的 `plugins` 数组中加入 `PanelPlugin`。需要 selector 回调时，使用
+`usePluginStore(PanelPlugin, (state) => state.open)`。
+`useEditorPlugin(PanelPlugin)` 返回从描述符推断的 portal，供调用 API；它不会
+订阅插件状态。在 React 渲染之外，通过
+`editor.plugin(PanelPlugin).store.get('open')` 读取当前值。
 
-获取和设置存储属性的值。
+## 焦点记录
 
-```ts
-const [primary, setPrimary] = usePlateState('primary', id?)
+`useEditorFocused()` 读取当前可编辑区域是否拥有焦点。
+`useFocusedLast()` 判断 provider 中的编辑器是否是所属文档中最近获得焦点的编辑器。
+工具栏输入框获得焦点时，结果保持 `true`；同一文档中的另一个编辑器获得焦点，
+或该视图卸载时，结果变为 `false`。不同文档各自维护焦点记录，编辑器 ID 相同
+也不会混淆实例。
+
+```tsx
+import { useFocusedLast } from 'platejs/react';
+
+export function EditorTools() {
+  const focusedLast = useFocusedLast();
+
+  return <div hidden={!focusedLast}>Editor tools</div>;
+}
 ```
 
-### usePlateValue
+在 `Plate` 下使用此 hook，或在拥有活动编辑器的 `PlateController` 下使用。
+控制器为空时，先用 `useOptionalEditor()` 判断是否挂载包含严格编辑器 hook 的子组件。
+状态、值和选区 hook 都需要活动编辑器。
 
-订阅存储属性的值。
+## 显式编辑器
 
-```ts
-const isMounted = usePlateValue('isMounted', id?)
-```
+用 `<EditorProvider editor={editor}>` 将 UI 绑定到已有编辑器；`editor={null}` 表示没有目标。此 provider 不创建文档、历史或可编辑视图。需要保留具体编辑器类型时，使用 `useEditorRuntimeState(editor, selector)`、`useEditorViewState(editor, selector)` 或 `useEditorPluginStore(editor, Plugin, selector)`。
 
-### usePlateSet
-
-设置存储属性的值。
-
-```ts
-const setPrimary = usePlateSet('primary', id?)
-```
-
-## 事件编辑器存储
-
-该存储是一个对象，其属性键是事件名称（例如 `'focus'`），属性值是[编辑器 ID](Plate#id)。
-
-- 这在有[多个编辑器](multiple-editors)时非常有用，可以根据 DOM 事件（例如最近聚焦的编辑器）获取一个编辑器。
-- [Plate](Plate) 的核心插件之一将存储以下事件。
-
-<API name="EventEditorStore">
-<APIState>
-<APIItem name="blur" type="string | null">
-
-最近失去焦点的编辑器 ID。
-
-</APIItem>
-
-<APIItem name="focus" type="string | null">
-
-当前正在聚焦的编辑器 ID。
-
-</APIItem>
-
-<APIItem name="last" type="string | null">
-
-最近的编辑器 ID。
-
-</APIItem>
-</APIState>
-</API>
-
-
-```ts
-import { EventEditorStore, useEventEditorValue } from 'platejs'
-
-// 获取值
-const focusedId = EventEditorStore.get('focus')
-
-// 设置值
-EventEditorStore.set('focus', editorId)
-
-// 订阅变化
-const focusedId = useEventEditorValue('focus')
-```
-
-### `useEventPlateId`
-
-获取最近的事件编辑器 ID。
-
-<API name="useEventPlateId">
-<APIParameters>
-<APIItem name="id" type="string | null">
-
-如果定义了，则返回该 ID。
-
-</APIItem>
-</APIParameters>
-
-<APIReturns type="string">
-  如果可用，则返回上下文中的 plate id，否则返回最近的事件编辑器 ID 或 `PLATE_SCOPE`。
-</APIReturns>
-</API>
+`useEditorReadOnly()` 读取所选视图当前的只读状态；捕获的视图卸载后会拒绝写入。一个模型的多个视图共享文档、插件 store 和撤销历史。

@@ -27,11 +27,12 @@ npm install -D react react-dom @testing-library/react
 | `@platejs/test/playwright` | Playwright editor harnesses |
 | `@platejs/test/proof` | Pure proof contracts, classifiers, replay validation, and mobile receipts |
 
-## Setting Up Tests
+## Setting up tests
 
-Add the JSX pragma at the top of your test file:
+Use a `.tsx` file and select the classic JSX runtime with the fixture factory:
 
 ```typescript
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import {
@@ -45,7 +46,7 @@ jsx; // so Biome doesn't remove unused imports
 
 This allows you to use JSX syntax for creating editor values.
 
-## Testing React Components
+## Testing React components
 
 Use the React entrypoint when the test mounts `PlateContent` or interacts with
 the rendered editor:
@@ -67,9 +68,9 @@ expect(editor.read.children()).toEqual([
 ]);
 ```
 
-## Creating Test Cases
+## Creating test cases
 
-### Editor State Representation
+### Editor state representation
 
 Use JSX to represent editor states:
 
@@ -87,7 +88,7 @@ Node elements like `<hp />`, `<hul />`, `<hli />` represent different types of n
 
 Special elements like `<cursor />`, `<anchor />`, and `<focus />` represent selection states.
 
-### Testing Transforms
+### Testing transforms
 
 1. Create an input state
 2. Define the expected output state
@@ -131,7 +132,7 @@ it('should apply bold formatting', () => {
 });
 ```
 
-### Testing Selection
+### Testing selection
 
 Test how operations affect the editor's selection:
 
@@ -169,7 +170,7 @@ it('should collapse selection on backspace', () => {
 });
 ```
 
-## Testing Key Events
+## Testing key events
 
 When you need to test keyboard handlers directly:
 
@@ -218,7 +219,7 @@ it('should call the keyDown handler', () => {
 });
 ```
 
-## Testing Complex Scenarios
+## Testing complex scenarios
 
 For complex plugins like tables, test various scenarios by directly applying transforms:
 
@@ -277,7 +278,7 @@ describe('Table plugin', () => {
 });
 ```
 
-## Testing Plugin State
+## Testing plugin state
 
 Test how different initial state affects behavior:
 
@@ -324,6 +325,6 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
 });
 ```
 
-## Mocking vs. Real Transforms
+## Mocking vs. real transforms
 
 While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.

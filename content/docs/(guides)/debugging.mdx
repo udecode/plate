@@ -18,7 +18,7 @@ editor.api.debug.warn('This is a warning');
 editor.api.debug.error('This is an error');
 ```
 
-### Log Levels
+### Log levels
 
 The `DebugPlugin` supports four log levels:
 
@@ -41,7 +41,7 @@ const editor = createEditor({
 });
 ```
 
-### Initial State
+### Initial state
 
 Seed the `DebugPlugin` store with these fields:
 
@@ -73,7 +73,7 @@ const editor = createEditor({
 });
 ```
 
-### Error Handling
+### Error handling
 
 By default, the `DebugPlugin` throws errors when `error` is called. You can catch these errors and handle them as needed:
 
@@ -90,7 +90,7 @@ try {
 
 To log errors instead of throwing them, set `throwErrors` to `false` in the configuration.
 
-### Best Practices
+### Best practices
 
 1. Use appropriate log levels for different types of messages.
 2. In production, set `isProduction` to `true` to disable non-essential logging.
@@ -98,11 +98,11 @@ To log errors instead of throwing them, set `throwErrors` to `false` in the conf
 4. Include relevant details when logging to make debugging easier.
 5. Use error types to categorize and handle different error scenarios.
 
-## Additional Debugging Strategies
+## Additional debugging strategies
 
 Besides using the DebugPlugin, there are other effective ways to debug your Plate editor:
 
-### 1. Inspect Committed Changes
+### 1. Inspect committed changes
 
 Subscribe to commits when you need to inspect editor writes. Each commit exposes the canonical `DocumentChange`, tags, version, and changed-state queries without patching editor methods:
 
@@ -129,7 +129,7 @@ snapshot. For a reusable editing policy, contribute a Plite command handler or
 correction through the constructor's root `commands` or `corrections` field and
 test that behavior directly.
 
-### 2. Remove Suspected Plugins
+### 2. Remove suspected plugins
 
 If you're experiencing issues, try removing plugins one by one to isolate the problem:
 
@@ -155,7 +155,7 @@ React DevTools can be invaluable for debugging Plate components:
 3. Navigate to the Components tab.
 4. Inspect Plate components, their props, and state.
 
-### 4. Use Browser DevTools Breakpoints
+### 4. Use browser DevTools breakpoints
 
 Set breakpoints in your code using browser DevTools:
 
@@ -165,7 +165,7 @@ Set breakpoints in your code using browser DevTools:
 4. Interact with your editor to trigger the breakpoint.
 5. Inspect variables and step through the code.
 
-### 5. Create Minimal Reproducible Examples
+### 5. Create minimal reproducible examples
 
 If you're facing a complex issue:
 
@@ -180,34 +180,22 @@ Zustand and thus zustand-x works with the Redux DevTools browser extension. It c
 Follow the [zustand documentation](https://zustand.docs.pmnd.rs/middlewares/devtools) to get going with Redux DevTools and zustand.
 
 
-## Debug Error Types
+## Debug error types
 
-Plate uses several predefined error types to help identify specific issues during development. Here's a list of these error types and their descriptions:
+`editor.api.debug.error(message, type, details)` uses the supplied type as
+a log prefix. In development, enabling `throwErrors` makes it throw a `PlateError`;
+the default type is `DEFAULT`. You can supply an application-specific
+string for your own diagnostics.
 
-### DEFAULT
+Plugin setup also validates descriptors, dependencies, and schema ownership:
 
-A general error that doesn't fit into other specific categories. Used when no other error type is applicable to the situation.
+| Message | Check |
+| --- | --- |
+| `USE_CREATE_PLUGIN` | Create plugins with `defineBasePlugin` or `definePlatePlugin`. |
+| `Pass a plugin descriptor, not its name.` | Put descriptors in `dependencies`, not strings. |
+| `requires disabled plugin` | Keep required dependencies enabled. |
+| `Circular plugin dependency` | Remove the dependency cycle shown in the error. |
+| `cannot declare both schema.element and schema.mark` | Give each plugin one schema role. |
 
-### OVERRIDE_MISSING
-
-Indicates that an expected override is missing in a plugin configuration. This happens when a plugin expects certain overrides to be provided, but they are not present in the configuration.
-
-### PLUGIN_DEPENDENCY_MISSING
-
-Occurs when a required plugin dependency is not found. This error is thrown when a plugin depends on another plugin that hasn't been registered or included in the editor configuration.
-
-### PLUGIN_MISSING
-
-Indicates an attempt to use a plugin that hasn't been registered. This happens when trying to access or use a plugin that is not part of the current editor configuration.
-
-### USE_CREATE_PLUGIN
-
-Thrown when a plugin wasn't created using `defineBasePlugin` or `definePlatePlugin` function. This error occurs when a plugin is added to the editor without being properly created using the designated function.
-
-### USE_ELEMENT_CONTEXT
-
-Indicates that the `useElement` hook is being used outside of the appropriate element context. This occurs when trying to access element-specific data or functionality outside of the correct component context.
-
-### PLUGIN_NODE_TYPE
-
-Thrown when a plugin declares both `schema.element` and `schema.mark`. A plugin owns either an element type or a text property, never both.
+Dependencies are installed from their descriptors. A required dependency does
+not need a duplicate entry in the application's plugin list.

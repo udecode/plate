@@ -7,7 +7,7 @@ import React, {
   useContext,
 } from 'react';
 
-import { ElementContext, ElementPathContext, NodeKeyContext } from '../context';
+import { ElementContext } from '../context';
 import {
   usePliteNodeKeyDOMValue,
   usePliteNodeRef,
@@ -59,9 +59,10 @@ export const PliteElement = ({
   ref?: Ref<HTMLElement>;
 }) => {
   const Component = as as ElementType<PliteElementComponentProps>;
-  const path = useContext(ElementPathContext);
-  const pliteNode = useContext(ElementContext);
-  const nodeKey = useContext(NodeKeyContext);
+  const element = useContext(ElementContext);
+  const path = element?.path ?? null;
+  const pliteNode = element?.element ?? null;
+  const nodeKey = element?.nodeKey ?? null;
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
   const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
 

@@ -21,7 +21,6 @@ import React, {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from 'react';
 import type { Editor } from 'slate';
 import { createEditor as createSlateEditor } from 'slate';
@@ -29,12 +28,7 @@ import { Slate, Editable as SlateEditable, withReact } from 'slate-react';
 
 import { Button } from '@/components/ui/button';
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
-
-const subscribeBrowserPerformanceSupport = () => () => {};
-
-const getUnsupportedBrowserFeature = () => false;
-
-const getBrowserReady = () => true;
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 const getBrowserSupportsEventTiming = () =>
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
@@ -620,16 +614,8 @@ function PerformanceControls({
   statistics: Record<EngineKind, EngineStatistics>;
 }) {
   const [configurationOpen, setConfigurationOpen] = useState(true);
-  const supportsEventTiming = useSyncExternalStore(
-    subscribeBrowserPerformanceSupport,
-    getBrowserSupportsEventTiming,
-    getUnsupportedBrowserFeature
-  );
-  const supportsLoafTiming = useSyncExternalStore(
-    subscribeBrowserPerformanceSupport,
-    getBrowserSupportsLoafTiming,
-    getUnsupportedBrowserFeature
-  );
+  const supportsEventTiming = getBrowserSupportsEventTiming();
+  const supportsLoafTiming = getBrowserSupportsLoafTiming();
 
   const renderStatisticValue = (
     mounted: boolean,
@@ -916,11 +902,7 @@ function PerformanceControls({
 }
 
 export default function HugeDocumentDemo() {
-  const browserReady = useSyncExternalStore(
-    subscribeBrowserPerformanceSupport,
-    getBrowserReady,
-    getUnsupportedBrowserFeature
-  );
+  const browserReady = useMounted();
   const [activePane, setActivePane] = useState<EngineKind>('upstream-slate');
   const [config, baseSetConfig] = useState<Config>(() =>
     getInitialHugeDocumentConfig()

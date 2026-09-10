@@ -1,0 +1,18 @@
+---
+id: 2026-09-08-editor-ui-lifetime
+date: 2026-09-08
+status: draft
+kind: fix
+summary: 'Limit floating toolbar positioning to visible controls and restore the multiple-editor image demo'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-08-floating-toolbar-visible-positioning","kind":"fix","migrationNotes":[]} -->
+
+- **`floating-toolbar`**: Measure selection geometry while the toolbar is visible, preserving dismissal, focus and reopening after selection changes.
+
+<!-- entry: {"id":"2026-09-08-multiple-editor-media-dnd","kind":"wiring","migrationNotes":[]} -->
+
+- **`multiple-editors-demo`**: Bind each editor to its own document, share formatting through the active editor, and include the image editor's drag-and-drop integration.

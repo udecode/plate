@@ -1,0 +1,15 @@
+---
+id: 2026-09-08-ai-session
+date: 2026-09-08
+status: draft
+kind: wiring
+summary: 'Bind AI streams to the editor session'
+change: { 'type': 'source', 'date': '2026-09-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+- **`use-chat`**: Bind the shared SDK transport with `useAIChat`. Share one session across mounted views and keep streaming while a writable view remains. Keep endpoint configuration and comment persistence in the application.
+- **`ai-menu`**: Render the session preview through a read-only editor view and size the menu within the viewport.
+- **`copilot`**: Render ghost text without changing the accepted completion. Keep demo responses in the application route.
+- **`copilot-api`**: Return completion text and pass the configured gateway key to the provider.

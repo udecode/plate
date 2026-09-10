@@ -87,36 +87,6 @@ const seededFactory = (prefix: string): TableCellFactory => {
 };
 
 describe('planTableMutation', () => {
-  it('plans table creation through the same mutation dispatcher', () => {
-    const input = table([[cell('a')]]);
-    const result = planTableMutation(context(input, [3]), {
-      kind: 'insert-table',
-      options: {
-        select: true,
-        split: { type: 'paragraph' },
-      },
-    });
-
-    expect(result).toMatchObject({
-      kind: 'plan',
-      operations: [
-        {
-          kind: 'insert-node',
-          node: input,
-          options: {
-            split: { type: 'paragraph' },
-          },
-          path: [3],
-        },
-      ],
-      selection: {
-        anchor: { offset: 0, path: [3, 0, 0, 0] },
-        focus: { offset: 0, path: [3, 0, 0, 0] },
-        kind: 'text',
-      },
-    });
-  });
-
   it('emits frozen deterministic focused operations for column insertion', () => {
     const input = table([[cell('a', { rowSpan: 2 }), cell('b')], [cell('c')]]);
     const intent = {

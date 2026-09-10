@@ -148,10 +148,6 @@ mock.module('@/registry/hooks/use-mounted', () => ({
   useMounted: useMountedMock,
 }));
 
-mock.module('@/registry/components/editor/comment', () => ({
-  commentPlugin: {},
-}));
-
 mock.module('@/registry/components/editor/suggestion', () => ({
   suggestionPlugin: {},
 }));
@@ -177,6 +173,7 @@ mock.module('./inline-combobox', () => ({
 
 describe('inline void suggestion styling', () => {
   const editor = {
+    key: () => 'inline-suggestion-test',
     plugin: () => ({
       api: {
         getAttributes: () => ({ href: 'https://example.com' }),

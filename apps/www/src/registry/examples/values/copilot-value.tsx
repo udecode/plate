@@ -30,7 +30,7 @@ export const copilotValue: Value = (
     </hp>
     <hp indent={2} listType="bulleted">
       <htext bold>Command + Right Arrow</htext>
-      <htext>: Complete one character at a time</htext>
+      <htext>: Complete one word at a time</htext>
     </hp>
     <hp indent={2} listType="bulleted">
       <htext bold>Escape</htext>

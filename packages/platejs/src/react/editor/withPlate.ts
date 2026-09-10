@@ -25,9 +25,7 @@ import type {
   InternalPlateEditorWithInstalledPlugins,
   Editor,
 } from './Editor';
-import { getPlateCorePlugins } from './getPlateCorePlugins';
-
-export type { PlateCorePlugin } from './getPlateCorePlugins';
+import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 
 type PlatePluginInput = BasePluginInput;
 
@@ -54,7 +52,6 @@ type ReactEditorOptions<
         | 'override'
         | 'render'
         | 'shortcuts'
-        | 'useHooks'
       >
     >,
     'shortcuts'
@@ -71,16 +68,6 @@ type ReactEditorOptions<
      */
     navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
     shortcuts?: Shortcuts;
-    // override?: {
-    //   /** Enable or disable plugins */
-    //   enabled?: Partial<Record<string, boolean>>;
-    //   plugins?: Partial<
-    //     Record<
-    //       string,
-    //       Partial<ResolvedPlatePlugin<AnyBasePluginDefinition>>
-    //     >
-    //   >;
-    // };
     initialValue?:
       | ((context: {
           editor: Editor<V, TExtensions, TPlugins, TSchema>;
@@ -200,8 +187,10 @@ export function createEditorWithEditor<
  *
  * // Editor with custom components
  * const editor = createEditor({
- *   plugins: [ParagraphPlugin.configure({ component: ParagraphElement })],
- *   components: { [CodePlugin.name]: CodeLeaf },
+ *   plugins: [
+ *     ParagraphPlugin.configure({ component: ParagraphElement }),
+ *     CodePlugin.configure({ component: CodeLeaf }),
+ *   ],
  * });
  *
  * // Editor with React-specific options

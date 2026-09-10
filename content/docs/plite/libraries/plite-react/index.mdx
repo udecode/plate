@@ -4,13 +4,13 @@ description: "Use the React editor runtime, provider, Editable surface, hooks, o
 ---
 
 `plitejs/react` owns the React editor runtime: editor creation, the `Plite`
-provider, the `Editable` surface, browser event handling, native selection
-sync, void shells, hidden DOM coverage, decoration sources, annotations,
-widgets, and large-document DOM strategies.
+  provider, the `Editable` surface, browser event handling, native selection
+sync, void shells, hidden DOM coverage, decorations, annotations,
+external text views, widgets, and large-document DOM strategies.
 
 Start with `useEditor`, `Plite`, and `Editable`.
 
-## Minimal Usage
+## Minimal usage
 
 ```tsx
 import { Plite, Editable, useEditor } from "plitejs/react";
@@ -28,38 +28,39 @@ const Editor = () => {
 };
 ```
 
-## Stable Runtime Path
+## Stable runtime path
 
-- [React Editor Setup](./react-editor-setup): create an editor and install
+- [React Editor Setup](/docs/plite/libraries/plite-react/react-editor-setup): create an editor and install
   the React, DOM, clipboard, and history extensions.
-- [Plite Component](./plite): provide the editor, value changes, decoration
-  sources, annotation stores, and widget stores.
-- [Editable Component](./editable): render content, marks, voids,
+- [Plite Component](./plite): provide the editor, value changes, and
+  decorations.
+- [Editable Component](/docs/plite/libraries/plite-react/editable): render content, marks, voids,
   placeholders, DOM strategies, and editor event handlers.
-- [Event Handling](./event-handling): customize copy, paste, drop, keyboard,
+- [Event Handling](/docs/plite/libraries/plite-react/event-handling): customize copy, paste, drop, keyboard,
   input, selection, focus, and drag behavior without replacing Plite's runtime.
-- [Hooks](./hooks): subscribe to editor state, runtime state, roots,
+- [Hooks](/docs/plite/libraries/plite-react/hooks): subscribe to editor state, runtime state, roots,
   mounted nodes, decorations, annotations, widgets, focus, read-only state, and
   selection.
 
-## Runtime Boundaries
+## Runtime boundaries
 
-- [React Editor](./react-editor): DOM, focus, selection, clipboard, and
+- [React Editor](/docs/plite/libraries/plite-react/react-editor): DOM, focus, selection, clipboard, and
   React-specific editor APIs.
 - Rendering primitives `PliteElement`, `PliteText`, `PliteLeaf`, and
   `PlitePlaceholder` carry Plite's DOM attributes when custom renderers need to
   keep the native editing contract intact.
-- [DOM Coverage Boundaries](./dom-coverage-boundaries): represent hidden or
+- [DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries): represent hidden or
   summarized DOM regions for selection, copy, find, and materialization.
-- [Annotations](./annotations): durable anchored ranges for comments,
+- [External Text Views](/docs/plite/libraries/plite-react/external-text): let an adapter own one Text's DOM and
+  local input while Plite retains the canonical model, selection, and history.
+- [Annotations](/docs/plite/libraries/plite-react/annotations): durable anchored ranges for comments,
   suggestions, diagnostics, and review markers.
-- [Hooks](./hooks): runtime/root hooks and widget hooks for external chrome
+- [Hooks](/docs/plite/libraries/plite-react/hooks): runtime/root hooks and widget hooks for external chrome
   and overlay UI anchored to roots, nodes, selections, and annotations. Advanced
-  hooks include `usePliteNodeRef`, `useDOMStrategyVirtualOffset`, and
-  `usePliteRangeDecorationSource`.
+  hooks include `useDOMStrategyVirtualOffset`.
 
-## Advanced Lanes
+## Advanced lanes
 
-- [Virtualized Rendering](./experimental-virtualized-rendering):
+- [Virtualized Rendering](/docs/plite/libraries/plite-react/experimental-virtualized-rendering):
   large-document stress and DOM-budget work. Keep production use behind explicit
   product proof.

@@ -15,6 +15,36 @@ import {
   readPliteViewSelection,
 } from '../view-selection';
 
+type EditableFocusRequest = Readonly<{
+  root: globalThis.Node;
+  token: object;
+}>;
+
+const ROOT_TO_EDITABLE_FOCUS_REQUEST = new WeakMap<globalThis.Node, object>();
+
+const createEditableFocusRequest = <
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>
+): EditableFocusRequest | null => {
+  try {
+    const element = editor.api.dom.assertDOMNode(editor as unknown as Node);
+    const root = element.getRootNode();
+    const token = {};
+
+    ROOT_TO_EDITABLE_FOCUS_REQUEST.set(root, token);
+
+    return { root, token };
+  } catch {
+    return null;
+  }
+};
+
+const ownsEditableFocusRequest = (request: EditableFocusRequest | null) =>
+  !request ||
+  ROOT_TO_EDITABLE_FOCUS_REQUEST.get(request.root) === request.token;
+
 const syncPreferredModelSelectionToDOM = <
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
@@ -88,12 +118,15 @@ const syncPreferredModelSelectionToDOM = <
   }
 };
 
-export const focusPliteEditable = <
+const focusPliteEditableForRequest = <
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TExtensions>,
+  request: EditableFocusRequest | null
 ) => {
+  if (!ownsEditableFocusRequest(request)) return;
+
   let element: HTMLElement | null = null;
 
   try {
@@ -128,32 +161,46 @@ export const focusPliteEditable = <
   }
 };
 
+export const focusPliteEditable = <
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TExtensions>
+) => {
+  focusPliteEditableForRequest(editor, createEditableFocusRequest(editor));
+};
+
 export const focusPliteEditableAfterEventFrame = <
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 >(
   editor: ReactRuntimeEditor<V, TExtensions>
 ) => {
-  focusPliteEditable(editor);
+  const request = createEditableFocusRequest(editor);
+
+  focusPliteEditableForRequest(editor, request);
   const domPhaseScheduler =
     getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
 
   if (!domPhaseScheduler) return () => {};
 
+  const focusRoot = request?.root as Document | ShadowRoot | undefined;
+  const focusOwner = focusRoot?.activeElement;
+  const retryFocus = () => {
+    // Native field focus supersedes retries without another editor request.
+    if (focusRoot?.activeElement !== focusOwner) return;
+    focusPliteEditableForRequest(editor, request);
+  };
   const cancelFrame = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-frame',
-    () => {
-      focusPliteEditable(editor);
-    },
+    retryFocus,
     { timing: 'animation-frame' }
   );
   const cancelSettle = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-settle',
-    () => {
-      focusPliteEditable(editor);
-    },
+    retryFocus,
     { timing: 'timeout' }
   );
 

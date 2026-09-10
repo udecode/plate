@@ -1,7 +1,9 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
-TODO: Write the short create_goal objective, under 240 characters. Put the full contract in the sections below.
+TODO: State the concrete outcome. Put the full contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -17,9 +19,9 @@ First checkpoint:
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
-- initial confidence score: pending
+- initial evidence or measured baseline: pending
 - improvement loop: pending
-- final score / loop closure: pending
+- final evidence / loop closure: pending
 
 Completion threshold:
 - TODO: Define the exact measurable or auditable done state.
@@ -63,7 +65,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | Skill analysis before edits | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Source of truth read before edits | pending | pending |
 | `docs/solutions` checked for non-trivial existing-code work | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
@@ -71,9 +73,9 @@ Start Gates:
 | Output budget strategy recorded | pending | pending |
 
 Work Checklist:
-- [ ] If a duration was requested, it is recorded as minimum active work unless
-      explicitly marked hard stop; when no better metric exists, initial and
-      final confidence scores are recorded.
+- [ ] Every applicable user, method, reference and template obligation maps to a source-linked row here or an existing linked ledger; exclusions have reasons.
+- [ ] Final reconciliation against the original checklists found no omitted requirement; evidence and applicable semantic/completion checks cover the full scope.
+- [ ] If a duration was requested, it is recorded as the user-stated deadline or minimum; record actual evidence rather than invented confidence scores.
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
       boundary, timing constraint, stop condition, deliverable, final handoff
       section, verification surface, and success criterion is copied into this
@@ -83,7 +85,7 @@ Work Checklist:
 - [ ] Work phases/pass rows below are updated with evidence.
 - [ ] Workspace authority recorded: verification runs in the repo/package/app/
       route/tool that owns the changed behavior.
-- [ ] Review/P1 autoreview target selected for non-trivial implementation work, or
+- [ ] Task review applicability and remaining budget resolved, or
       marked N/A with reason.
 - [ ] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
@@ -107,11 +109,11 @@ Completion Gates:
 | CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
 | Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
 | High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| P1 autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; pass `--max-priority P1` with dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>`; fix and rerun within the hard cap of three helper invocations for one unchanged scope, then stop and report any remaining accepted/actionable findings; use P2 or P3 only when explicitly requested, or record N/A for docs-only/planning-only/trivial/no local patch | pending |
+| Task-owned review when explicitly requested or closing a PR | pending | Load `.agents/skills/autoreview/SKILL.md`; pass `--max-priority P1` with dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>`; fix and rerun within the hard cap of three helper invocations for one unchanged scope, then continue authorized repairs with focused proof and disclose the exhausted review budget; use P2 or P3 only when explicitly requested, or record N/A under Task, including the next branch prohibition | pending |
 | PR create or update | pending | Run `check` before PR work | pending |
 | Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
+| Timed checkpoint | pending | Honor the stated deadline or explicit minimum within scope; reserve final proof and cleanup; otherwise N/A | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

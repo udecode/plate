@@ -196,7 +196,7 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
   }),
   effectTypes: [aiBatchEffect, aiPreviewField.effect],
   stateFields: [aiBatchField, aiPreviewField],
-  render: { isDecoration: false },
+  render: { mark: { placement: 'text' } },
   rules: { selection: { affinity: 'outward' } },
   schema: {
     mark: {

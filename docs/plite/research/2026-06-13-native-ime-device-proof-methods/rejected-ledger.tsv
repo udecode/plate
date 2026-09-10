@@ -1,0 +1,5 @@
+lead_key	source_key	reason	status
+webdriver-actions-as-ime-proof	w3c-webdriver-ime	WebDriver actions do not currently simulate IME composition.	rejected
+appium-unicode-as-composition-proof	appium-unicode	Unicode text insertion can bypass or replace the user's native keyboard/composition behavior.	rejected
+playwright-cdp-as-raw-device-proof	cdp-input-domain	CDP IME composition is Chromium-scoped desktop/browser proof, not OS/device keyboard proof.	rejected
+js-only-composition-events	wpt-input-events-untestable	JS-dispatched events do not prove the trusted input-event chain for native composition.	rejected

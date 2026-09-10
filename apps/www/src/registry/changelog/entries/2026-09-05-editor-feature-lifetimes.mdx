@@ -1,0 +1,18 @@
+---
+id: 2026-09-05-editor-feature-lifetimes
+date: 2026-09-05
+status: draft
+kind: wiring
+summary: 'Install AI and drag-and-drop integration with feature kits'
+change: { 'type': 'source', 'date': '2026-09-05', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-05-ai-mount-sessions-drag-cleanup-72ebb341","kind":"wiring","migrationNotes":[]} -->
+
+- **`ai`**, **`dnd`**, **`editor-ai`**, **`editor-plugins`**: Use `AIKit` and `DndKit` to enable AI commands and drag and drop with ordinary `Plate` and `Editor` composition. Share one AI stream across editor views and retain custom transports and drag managers.
+
+- **`editor-ai`**, **`dnd`**: Provide tooltips in standalone installs.
+- **`date`**: Focus the calendar when opening the date picker.
+- **`emoji-picker`**, **`font-size-toolbar-button`**: Preserve server rendering and input semantics in Base UI editors.

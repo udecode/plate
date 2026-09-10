@@ -89,7 +89,7 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
               }}
             >
               <a
-                href={`#plate_${item.key.replaceAll(/[^A-Za-z0-9_]/g, '_')}`}
+                href={`#${item.key}`}
                 style={{
                   color: '#0066cc',
                   textDecoration: 'underline',

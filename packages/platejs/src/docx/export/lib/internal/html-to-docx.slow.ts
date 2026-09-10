@@ -10,7 +10,7 @@
 
 import JSZip from 'jszip';
 
-import { htmlToDocxBlob } from '../html-to-docx';
+import { htmlToDocxBlob } from '../html-to-docx.internal';
 
 // Helper to load zip from Blob
 async function loadZipFromBlob(blob: Blob): Promise<JSZip> {
@@ -277,32 +277,25 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('special characters', () => {
-    it('handle Unicode characters', async () => {
-      const html = '<p>Hello World</p>';
-      const result = await htmlToDocxBlob(html);
-      const zip = await loadZipFromBlob(result);
+    it.each(['Café naïve résumé', '你好世界 日本語 한국어', 'Hello 👋🌍🧑‍💻'])(
+      'preserves %s in document text',
+      async (text) => {
+        const result = await htmlToDocxBlob(`<p>${text}</p>`);
+        const zip = await loadZipFromBlob(result);
+        const docXml = await zip.file('word/document.xml')!.async('string');
+        const document = new DOMParser().parseFromString(
+          docXml,
+          'application/xml'
+        );
 
-      const docXml = await zip.file('word/document.xml')!.async('string');
-      expect(docXml).toContain('Hello World');
-    });
-
-    it('handle CJK characters', async () => {
-      const html = '<p>Hello World</p>';
-      const result = await htmlToDocxBlob(html);
-      const zip = await loadZipFromBlob(result);
-
-      const docXml = await zip.file('word/document.xml')!.async('string');
-      expect(docXml).toContain('Hello World');
-    });
-
-    it('handle emojis', async () => {
-      const html = '<p>Hello World</p>';
-      const result = await htmlToDocxBlob(html);
-      const zip = await loadZipFromBlob(result);
-
-      const docXml = await zip.file('word/document.xml')!.async('string');
-      expect(docXml).toContain('Hello World');
-    });
+        expect(
+          Array.from(
+            document.getElementsByTagName('w:t'),
+            (node) => node.textContent
+          ).join('')
+        ).toBe(text);
+      }
+    );
   });
 
   describe('code blocks', () => {

@@ -171,16 +171,16 @@ RIGHT (vertical):
 
 Before writing any code:
 
-- [ ] Confirm with user what interface changes are needed
-- [ ] Confirm with user which behaviors to test (prioritize)
+- [ ] Establish interface changes from the active request and source
+- [ ] Prioritize the requested behavior and high-value regressions
 - [ ] Identify opportunities for deep modules (small interface, deep implementation)
 - [ ] Design interfaces for testability
 - [ ] List the behaviors to test (not implementation steps)
-- [ ] Get user approval on the plan
+- [ ] Reuse existing implementation authority; ask only for a missing product decision or new scope
 
-Ask: "What should the public interface look like? Which behaviors are most important to test?"
+Investigate source-answerable interface and behavior questions before asking the user.
 
-**You can't test everything.** Confirm with the user exactly which behaviors matter most. Focus testing effort on critical paths and complex logic, not every possible edge case.
+**You can't test everything.** Focus on the requested behavior, critical paths and complex logic. Follow the project's test-value policy.
 
 ### 2. Tracer Bullet
 

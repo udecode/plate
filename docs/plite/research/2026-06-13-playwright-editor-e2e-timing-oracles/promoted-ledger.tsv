@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+lexical:playwright-editor-e2e-timing:clipboard-selection-waits	lexical-playwright-e2e-timing-001	.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts	Existing `withExclusiveClipboardAccess`, `copyPayload`, `pasteNativeText`, `pasteText`, `pasteHtml`, scenario `expect.poll` assertions	`cd .tmp/slate-v2/packages/slate-browser && bun test ./test/core/scenario.test.ts`; `cd .tmp/slate-v2 && bun --filter ./packages/slate-browser typecheck`	kept-existing

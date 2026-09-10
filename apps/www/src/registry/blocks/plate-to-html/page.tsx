@@ -20,7 +20,6 @@ import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value'
 import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
 import { columnValue } from '@/registry/examples/values/column-value';
 import { dateValue } from '@/registry/examples/values/date-value';
-import { discussionValue } from '@/registry/examples/values/discussion-value';
 import { equationValue } from '@/registry/examples/values/equation-value';
 import { fontValue } from '@/registry/examples/values/font-value';
 import { indentValue } from '@/registry/examples/values/indent-value';
@@ -29,6 +28,7 @@ import { linkValue } from '@/registry/examples/values/link-value';
 import { listValue } from '@/registry/examples/values/list-value';
 import { mediaValue } from '@/registry/examples/values/media-value';
 import { mentionValue } from '@/registry/examples/values/mention-value';
+import { suggestionValue } from '@/registry/examples/values/suggestion-value';
 import { tableValue } from '@/registry/examples/values/table-value';
 import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
 
@@ -90,7 +90,7 @@ const createValue = (): EditorDocumentValue => ({
     ...mentionValue,
     ...dateValue,
     ...fontValue,
-    ...discussionValue,
+    ...suggestionValue,
     ...alignValue,
     ...lineHeightValue,
     ...indentValue,

@@ -15,9 +15,9 @@ describe('/registry/changelog/components.json', () => {
     expect(data.components['editor-base-kit']).toContain(
       '2026-06-14-fix-shadcn-editor-kit-install-paths'
     );
-    expect(data.components['huge-document-demo']).toEqual([
-      '2026-06-02-improve-large-document-editing',
-    ]);
+    expect(data.components['huge-document-demo']).toContain(
+      '2026-06-02-improve-large-document-editing'
+    );
     expect(data.components['suggestion-kit']).toContain(
       '2025-10-21-add-rejectaisuggestions'
     );

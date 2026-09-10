@@ -3,7 +3,6 @@ import {
   type ElementWith,
   type RenderStaticNodeWrapperProps,
   PLUGINS,
-  TextApi,
 } from 'platejs';
 import { type PliteLeafProps, PliteLeaf } from 'platejs/static';
 import { BaseSuggestionPlugin } from 'platejs/suggestion';
@@ -114,16 +113,7 @@ export const BaseSuggestionKit = [
         transformProps: ({ api, element, props }) => {
           if (!element) return props;
 
-          let suggestionData = api.suggestionData(element);
-
-          if (!suggestionData) {
-            for (const child of element.children) {
-              if (!TextApi.isText(child)) continue;
-
-              suggestionData = api.dataList(child).at(-1);
-              if (suggestionData) break;
-            }
-          }
+          const suggestionData = api.suggestionData(element);
 
           if (!suggestionData) return props;
 
@@ -135,8 +125,8 @@ export const BaseSuggestionKit = [
         transformStyle: () => ({}),
       },
     },
-    render: {
-      belowRootNodes: VoidRemoveSuggestionOverlayStatic,
+    slots: {
+      afterNodeChildren: VoidRemoveSuggestionOverlayStatic,
     },
     targetPlugins: INLINE_SUGGESTION_RENDER_TARGETS,
   }),

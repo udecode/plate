@@ -73,6 +73,38 @@ describe('plugin store', () => {
     });
   });
 
+  it('shares owned immutable input while keeping caller data and editor writes isolated', () => {
+    const records = Object.freeze([{ nested: { value: 1 } }]);
+    const Plugin = defineBasePlugin('records', {
+      initialState: {
+        records: [] as typeof records,
+        selection: null as string | null,
+      },
+    }).configure({ initialState: { records } });
+    const first = createStoreEditor([Plugin]);
+    const second = createStoreEditor([Plugin]);
+    const firstStore = first.plugin(Plugin).store;
+    const secondStore = second.plugin(Plugin).store;
+    const ownedRecords = firstStore.get('records');
+
+    expect(ownedRecords).not.toBe(records);
+    expect(ownedRecords).toBe(secondStore.get('records'));
+    expect(Object.isFrozen(ownedRecords[0].nested)).toBe(true);
+    records[0].nested.value = 20;
+    expect(ownedRecords[0].nested.value).toBe(1);
+
+    firstStore.set({ selection: 'first' });
+    expect(firstStore.get('records')).toBe(ownedRecords);
+    expect(secondStore.get('selection')).toBeNull();
+
+    firstStore.set((draft) => {
+      draft.records[0].nested.value = 2;
+    });
+    expect(firstStore.get('records')[0].nested.value).toBe(2);
+    expect(secondStore.get('records')).toBe(ownedRecords);
+    expect(secondStore.get('records')[0].nested.value).toBe(1);
+  });
+
   it('owns and freezes writes without leaking caller mutation', () => {
     const Plugin = defineBasePlugin('plugin', {
       initialState: { nested: { value: 1 } },

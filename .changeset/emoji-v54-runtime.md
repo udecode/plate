@@ -4,7 +4,7 @@
 
 Require React and React DOM 19.2 or newer.
 
-Keep emoji picker state, search, category focus, preview, and frequent storage in the copied `emoji-toolbar-button` registry item.
+Keep emoji picker state, category focus, preview, and frequent storage in the copied `emoji-toolbar-button` registry item. Use `createEmojiSearch(data)` from `platejs/emoji` for dataset-scoped search with ordered, independent results. Custom dataset names, IDs, and keywords are matched without case sensitivity.
 
 Export `EmojiPluginState` as the complete mutable state contract for `BaseEmojiPlugin`.
 
@@ -14,4 +14,4 @@ Install the emoji input descriptor as a required plugin dependency. Its capabili
 
 Always render the frequent section when `showFrequent.value` is enabled, including before category data is populated.
 
-Keep the package React surface limited to `EmojiPlugin` and `EmojiInputPlugin`. Copy `emoji-toolbar-button` for the complete picker and `emoji-node` for inline search. Replace the removed `EmojiInputConfig` type with `DefinitionOf<typeof BaseEmojiPlugin>`.
+Keep the package React surface limited to `EmojiPlugin` and `EmojiInputPlugin`. Copy `emoji-toolbar-button` for the complete picker and `emoji` for inline search. Replace `EmojiInputConfig` with `DefinitionOf<typeof BaseEmojiPlugin>`. Search uses the supplied dataset without shared singleton state; grid construction and frequent-item ranking stay in the copied picker.

@@ -6,6 +6,9 @@ disable-model-invocation: true
 
 # Editor Audit
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Own source-level architecture comparison between live Plite/Plate and one or
@@ -32,7 +35,7 @@ Adjacent owners remain separate:
 - `best-api`: decide final public call shapes.
 - `plite-plan`: plan accepted substrate architecture, adoption, and proof.
 - `plate-plan`: plan accepted product/plugin architecture, adoption, and proof.
-- `major-task`, `auto`, `task`, or a package owner: implement accepted work.
+- `task`, `task autonomous`, or a package owner: implement accepted work.
 
 ## Value Rule
 
@@ -77,10 +80,11 @@ Resolve:
 - local owners: Plite substrate, Plate product layer, or both;
 - output: a narrow answer or exhaustive planning-only artifact.
 
-For `full`, `all`, `exhaustive`, or multiple repositories, load `autogoal`,
-read `.agents/rules/editor-audit/references/feature-matrix.md`, and use one
-`major-task` goal plan as the durable audit artifact. Write one coverage
-manifest and strict concept matrix per reference under
+For standalone `full`, `all`, `exhaustive`, or multiple-repository work, read
+`.agents/rules/editor-audit/references/feature-matrix.md` and use one Task file
+plan as the durable audit artifact. Reuse a supervising Task plan and record
+the comparison as one evidence packet. Apply the project's standing Autogoal request for long-running audits. Write
+one coverage manifest and strict concept matrix per reference under
 `docs/plans/artifacts/<slug>/`. Each matrix is that reference's complete
 comparison ledger; the plan summarizes decisions and links material dossiers.
 Do not mirror the same decisions across several ledgers.
@@ -439,10 +443,14 @@ Then provide ideal accepted shapes, internal invariants, ownership changes,
 adoption/deletion impact, a dependency-ordered packet list, per-packet skill
 routing, explicit keep/reject/defer decisions, and coverage closure counts.
 
-The packet list is a planning handoff, not an implementation plan. After user
-acceptance, invoke the named layer plan for each packet or coherent packet
-group. Cross-layer work has one primary plan owner and one explicit dependent
-owner; never duplicate the same plan in both.
+The packet list is a planning handoff, not an implementation plan. After
+standalone user acceptance, or when a primary supervisor completes its own
+required target challenge, invoke the named layer plan privately for each
+packet or coherent packet group. The supervisor may finish planning without
+execution authority; only product/source implementation requires it.
+Cross-layer work has one primary plan owner and one explicit dependent owner;
+never duplicate the same plan in both or return a worker-invocation chore to
+the user.
 
 ## Verification
 
@@ -504,8 +512,11 @@ The audit is complete only when:
 - zero concept, candidate, or routing rows remain unresolved except explicit
   evidence-backed defers;
 - zero canned qualitative profiles are reused across distinct concepts;
-- the goal plan records expected/reviewed/excluded counts and
+- the Task plan records expected/reviewed/excluded counts and
   `check-complete.mjs` passes.
 
-Stop after the planning-only audit and request acceptance. Do not implement,
-open a PR, or start a layer plan without explicit user direction.
+Standalone mode returns the completed planning-only audit.
+When Task autonomous mode architecture delegates the audit, return the evidence and packet list
+to Task autonomous mode inside the same Task. Task autonomous mode continues into private layer planning in
+audit and execute modes; only implementation requires explicit `execute`
+authority. Editor Audit itself does not implement or open a PR.

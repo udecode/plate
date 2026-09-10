@@ -268,7 +268,7 @@ const hasNestedOwner = (
       PathApi.isAncestor(path, owner.ownerPath)
   );
 
-export const createContentRootProjectionGraph = (
+export const createContentRootViewBoundaryGraph = (
   editor: ContentRootNavigationEditor,
   owners: readonly ContentRootOwner[]
 ) =>

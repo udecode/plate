@@ -14,7 +14,7 @@ Plite doctrine after the lane is selected.
 3. `docs/plite/agent-start.md`.
 4. Relevant `plite-*` source rule under `.agents/rules`.
 5. Transplanted Plite package source/tests/benchmarks in this Plate checkout:
-   `packages/plitejs`, `packages/test`, `packages/platejs/src/yjs`,
+   `packages/plitejs`, `packages/test`, `packages/plitejs/src/yjs`,
    `apps/plite/tests/plite-browser/**`, and `benchmarks/plite/**`.
 6. `docs/plite/**` for accepted claim width.
 7. `benchmarks/targets/slate-v2.json` for perf target authority.
@@ -28,7 +28,17 @@ donor checkout as proof after the transplant.
   sole mutation and commit truth. Transactions construct canonical changes
   directly; React does not define the core ontology.
 - Public API should teach `editor.read`, `editor.update`, `state`, `tx`,
-  extension groups, commit listeners, and projection sources.
+  extension groups, commit listeners, and decoration sources.
+- `<Plite decorations>` is the sole raw Plite input for transient inline paint.
+  A source returns keyed ranges with `className`, `style`, `aria-*`, or `data-*`
+  attributes and may observe an external owner for targeted node-key refresh.
+  `Editable` renders the result without another callback. Annotation stores use
+  `PliteAnnotationProvider`; the owning feature adapts resolved annotations into
+  decorations only when it needs inline paint.
+- React components own annotations through `usePliteAnnotationStore` and
+  `PliteAnnotationProvider`. Framework adapters with an independent lifetime
+  use `createPliteAnnotationStore` from `plitejs/annotations`. Keep that
+  constructor out of `plitejs/react` and reject public `/internal` bridges.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
 - Do not make child-count chunking foundational again.
@@ -188,7 +198,10 @@ donor checkout as proof after the transplant.
 - One descriptor-owned `api` projects under `name` to
   `editor.api.<name>` and `editor.extension(Extension).api`. Do not root-merge
   methods or expose `getApi`. `api` is always a factory, even for
-  context-free values, and receives one context object.
+  context-free values, and receives one context object. A mounted view evaluates
+  those factories with its exact editor identity. Its root API and descriptor
+  portal expose the same current capability and retire together on
+  reconfiguration; shared document state keeps its model owner.
 - Public update policy is semantic and narrow: history behavior plus ordered
   tags. Raw provenance and normalization authority stay internal to runtime and
   adapter owners.
@@ -209,6 +222,22 @@ donor checkout as proof after the transplant.
   Structural child elements require their own grammar, properties, commands,
   or multiple real semantic regions. Explicit roots require independent
   addressing, lifecycle, sharing, or transaction semantics.
+- Physical or visual lines are not structural children. Multiline source whose
+  lines own no independent semantics stays in one newline-bearing Text. Derive
+  line operations from offsets and native syntax paint from Decorations; solve scale
+  in the renderer or runtime without public chunk controls or a second
+  persisted schema.
+- A non-void block with exactly one Text may replace native child DOM with one
+  external editable-text view. Plite still owns canonical text, selection,
+  history, schema, and collaboration. The adapter owns its DOM, input, layout,
+  and local native features through versioned patches and narrow actions. The
+  two render branches are exclusive: never keep hidden duplicate text DOM,
+  expose editor internals, or turn adapter-local virtualization into document
+  virtualization. A mounted code editor can own incremental syntax parsing;
+  it retains neutral document decorations and does not duplicate native syntax
+  contributions. Keep parser configuration inside the adapter.
+  External text does not make Plite a code editor and does not
+  require fixed height.
 - Primitive editor methods are power/runtime tools, not the final normal
   authoring story.
 - `tx.*` is the current public API authority for normal writes. Primitive
@@ -306,6 +335,8 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   post-selection navigation` order, coalesces by semantic key, and reports
   recursive loop-limit hits. Explicit navigation scrolls are final writes;
   selection-preservation restores never override them.
+  Scheduled scrolling returns request cleanup from that same owner;
+  consumer cleanup cancels only its request, including any deferred stages.
 - Browser/OS policy clocks such as composition guard lifetimes and native event
   settling may use timers, but DOM mutation, scroll restoration, focus writes,
   and selection repair re-enter the root scheduler. Standalone internal test
@@ -331,26 +362,26 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - `maintainer`: public GitHub issue/PR/security queue control plane for the
   merged Plate + Plite repo; routes work to narrower owners and stops at
   authority boundaries.
-- `auto`: internal Plate/Plite overnight supervisor and checkpoint cadence; use
-  the Plite lane for Plite package/runtime/browser/proof work and route measured
-  work to `benchmark`.
+- `task autonomous`: internal Plate/Plite quality supervision; `improve`
+  supplies the recurring whole-project preset. Plite package/runtime/browser
+  work stays with its technical owners; measured work routes to `benchmark`.
 - `benchmark`: sole ordered performance diagnosis/execution owner for Plite,
   Plate, current/main, pinned Slate, mount/editing, example breadth, and stress;
   pauses at a causal owner, fixes/reruns, then resumes remaining lanes.
-- `autoclosure`: post-merge/current-tree until-clean closure after Plite work is
+- `task closure`: post-merge/current-tree until-clean closure after Plite work is
   already applied.
 - `plite-research`: external discovery, OSS/GitHub source synthesis, durable
   research ledgers, and promotion into owners.
 - `editor-audit`: exhaustive comparison of selected local editor source trees,
   verified commit tracking, incremental sync, and material change dossiers
   routed to `best-api`, `plite-plan`, or `plate-plan`.
-- `resolve-slate-issue`: one public Slate issue coordinated through a local
+- `maintainer slate-issue`: one public Slate issue coordinated through a local
   Plite repair, Plate PR targeting `next`, verified issue update, and honest
   integration/release state.
 - `patch`: sole local Plate/Plite behavior-bug and regression owner; the Plite
   lane provides reproduction, class-level behavior coverage, durable substrate
-  repair, architecture pressure, proof, and P1 autoreview without public
-  GitHub mutation.
+  repair, architecture pressure and exact proof without public GitHub
+  mutation. Structured review follows Task's existing gate and budget.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.
 - `plite-plan`: substrate architecture, adoption/proof planning, and accepted

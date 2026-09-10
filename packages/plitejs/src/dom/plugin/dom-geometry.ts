@@ -1,4 +1,5 @@
 import { failInvariant } from '../../internal';
+import { resolveDOMTextFlowStringOffset } from './dom-text-flow-index';
 
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
 const BLOCK_EDGE_HIT_SLOP = 16;
@@ -134,6 +135,13 @@ export const getPliteStringLength = (string: HTMLElement) => {
 
   return string.textContent?.length ?? 0;
 };
+
+const PLITE_STRING_SELECTOR = '[data-plite-string], [data-plite-zero-width]';
+
+export const getPliteTextHostStrings = (textHost: Element): HTMLElement[] =>
+  textHost instanceof HTMLElement && textHost.matches(PLITE_STRING_SELECTOR)
+    ? [textHost]
+    : Array.from(textHost.querySelectorAll<HTMLElement>(PLITE_STRING_SELECTOR));
 
 const graphemeSegmenter =
   typeof Intl !== 'undefined' && 'Segmenter' in Intl
@@ -860,10 +868,10 @@ const getOwnedPliteStrings = ({
   const targetTextHost = target?.closest<HTMLElement>(
     '[data-plite-node="text"]'
   );
-  const targetVoidHost = target?.closest<HTMLElement>(
-    '[data-plite-node="element"][data-plite-void="true"]'
+  const targetElementHost = target?.closest<HTMLElement>(
+    '[data-plite-node="element"]'
   );
-  const targetHost = targetTextHost ?? targetVoidHost;
+  const targetHost = targetTextHost ?? targetElementHost;
   const targetOwner = targetHost?.closest<HTMLElement>(
     '[data-plite-editor="true"]'
   );
@@ -1043,6 +1051,13 @@ export const getPliteStringDocumentOffset = ({
   string: HTMLElement;
   textHost: HTMLElement;
 }) => {
+  const textFlowOffset = resolveDOMTextFlowStringOffset(
+    textHost,
+    string,
+    stringOffset
+  );
+
+  if (textFlowOffset != null) return textFlowOffset;
   const leaf = string.closest<HTMLElement>('[data-plite-leaf]');
   const leafStartAttribute = leaf?.getAttribute('data-plite-leaf-start');
   const leafEndAttribute = leaf?.getAttribute('data-plite-leaf-end');
@@ -1058,11 +1073,7 @@ export const getPliteStringDocumentOffset = ({
 
   let offset = 0;
 
-  for (const candidate of Array.from(
-    textHost.querySelectorAll<HTMLElement>(
-      '[data-plite-string], [data-plite-zero-width]'
-    )
-  )) {
+  for (const candidate of getPliteTextHostStrings(textHost)) {
     const length = getPliteStringLength(candidate);
 
     if (candidate === string) return offset + stringOffset;

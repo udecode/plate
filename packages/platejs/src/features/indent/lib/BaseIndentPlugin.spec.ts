@@ -2,7 +2,6 @@ import {
   BaseParagraphPlugin,
   createEditor as createHeadlessEditor,
   defineBasePlugin,
-  createPluginContext,
   ContentSlice,
   EditorSchemaValidationError,
   type Value,
@@ -11,6 +10,7 @@ import {
   target,
 } from '../../../core';
 import { writeHostFragmentData } from '../../../dom';
+import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import { createEditor } from '../../../react/core';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
@@ -40,6 +40,7 @@ describe('BaseIndentPlugin', () => {
     const nodeProps = editor.plugin(BaseIndentPlugin).inject.nodeProps!;
 
     expect(editor.plugin(BaseIndentPlugin).store.get()).toEqual({
+      indentMax: null,
       offset: 24,
       unit: 'px',
     });

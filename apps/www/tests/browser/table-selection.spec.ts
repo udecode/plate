@@ -111,7 +111,10 @@ const setTableSelectionLayerControl = async (
 ) => {
   await page.evaluate((nextControl) => {
     const id = 'table-selection-layer-control';
-    const table = document.querySelector('[data-plite-editor="true"] table');
+    // Inert drag previews have no node keys; controls must target the live table.
+    const table = document.querySelector(
+      '[data-plite-editor="true"] table:has(td[data-plite-node-key], th[data-plite-node-key])'
+    );
     const wrapper = table?.parentElement;
 
     document.getElementById(id)?.remove();
@@ -148,6 +151,7 @@ const setTableSelectionLayerControl = async (
 
       duplicate.className = cellLayer?.className ?? '';
       duplicate.contentEditable = 'false';
+      duplicate.dataset.pliteRootChromeIgnore = 'true';
       duplicate.dataset.slot = 'node-selection-highlight';
       duplicate.dataset.testTableSelectionDuplicate = 'true';
       wrapper.append(duplicate);
@@ -226,7 +230,9 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
 
     const paintLayers = () =>
       root.evaluate((element) => {
-        const table = element.querySelector('table');
+        const table = element.querySelector(
+          'table:has(td[data-plite-node-key], th[data-plite-node-key])'
+        );
         const wrapper = table?.parentElement;
         const layers = Array.from(
           element.querySelectorAll('[data-slot="node-selection-highlight"]')
@@ -301,7 +307,7 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       .toBe(1);
 
     const clip = await root
-      .locator('table')
+      .locator('table:has(td[data-plite-node-key], th[data-plite-node-key])')
       .first()
       .evaluate((table) => {
         const rect = table.parentElement!.getBoundingClientRect();
@@ -363,6 +369,45 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       actualSignal,
       'selected table paint matches the cell-only control'
     ).toBeLessThanOrEqual(allowedSignal);
+
+    await setTableSelectionLayerControl(page, 'actual');
+    await page.mouse.up();
+    await afterPaint(page);
+    await expect.poll(paintLayers).toEqual({ cell: 16, table: 0 });
+
+    const released = await capturePixels(page, clip);
+    const releasedSignal = changedPixelCount(released.image, single.image);
+
+    expect(
+      releasedSignal,
+      'released table paint matches the cell-only control'
+    ).toBeLessThanOrEqual(allowedSignal);
+    await testInfo.attach('table-selection-released', {
+      body: released.png,
+      contentType: 'image/png',
+    });
+    await testInfo.attach('table-selection-pixel-signals', {
+      body: Buffer.from(
+        JSON.stringify({
+          actualSignal,
+          allowedSignal,
+          duplicateSignal,
+          negativeSignal,
+          positiveSignal,
+          releasedSignal,
+        })
+      ),
+      contentType: 'application/json',
+    });
+
+    const originalValue = await editor.get.modelValue();
+
+    await cells.nth(0).click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('x');
+    await expect(cells.nth(0)).toHaveText('Pluginx');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(() => editor.get.modelValue()).toEqual(originalValue);
 
     runtimeErrors.assertNone();
   } finally {

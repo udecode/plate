@@ -60,6 +60,12 @@ Current priorities:
 - Keep Plate core unopinionated enough for framework use. Feature capability
   belongs in its entrypoint; product policy belongs in app/registry kits and
   examples.
+- One-shot file conversion is a standalone operation. An installed plugin must
+  own editor integration, state, or lifecycle beyond capturing an editor for a
+  call. Independently used converters have independent dependency entrypoints.
+- Plite owns neutral Yjs collaboration and cursor reads in `plitejs/yjs` and
+  `plitejs/yjs/react`. Plate's matching facades preserve exact identity and add
+  plugin authoring and selection decoration policy.
 - A behavior, API, or gate change needs an adoption story. "Cleaner" alone is
   not enough.
 - For current Plate features, parity and protocol matter. For deferred
@@ -106,8 +112,13 @@ Current priorities:
   expose only guaranteed Core capabilities. `platejs` and `platejs/react` call
   the live editor type `Editor`; package and entrypoint establish the layer.
   React creation uses `useCreateEditor(options, deps?)`, while
-  `useEditor({ id? })` and `useOptionalEditor({ id? })` retrieve mounted
-  editors without caller generics. Selector hooks infer only their
+  `useEditor()` and `useOptionalEditor()` retrieve the provider-selected
+  command editor without caller generics. Mounted content supplies an exact
+  view; controller selection is private, scoped, and independent of application
+  IDs. A passive `EditorProvider` binds controls to an existing command editor
+  without constructing another runtime. Interactions retain that target and
+  read its current permissions; a detached target rejects writes. Schema,
+  plugin stores and history remain model-owned across views. Selector hooks infer only their
   selected result. Exact feature capabilities come from descriptor portals.
   Keep an editor generic only when typed constructor/options input or an
   explicit editor argument correlates it with the result. Do not pass an
@@ -186,24 +197,59 @@ Current priorities:
   renderer infrastructure uses the node-level `Render*Props`, inferred wrapper
   callbacks, or named wrapper prop contracts instead. One type parameter never
   switches between plugin ownership and raw node shape.
-  The rendered leaf combines schema text with optional transient fields
-  inferred from the owning plugin's `decorate` callback; the source `text`
-  remains schema-only. Known decoration fields never require `Reflect.get`, a
-  cast, or a duplicated leaf shape.
+  Rendered leaf props contain schema marks only. The owning plugin's
+  `decorate: { read, observe?, attributes? }` descriptor returns keyed ranges with
+  render-safe attributes. Decorations never add fields to `props.leaf` or
+  `props.text`, and they never activate a leaf renderer.
   Wrapper and selector consumers pass the owning descriptor directly:
   `RenderNodeWrapper<typeof FooPlugin>`,
   `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and
   `useElementSelector(FooPlugin, selector)`. They infer the local schema node
   and plugin context without a manual `DefinitionOf` extraction or node cast.
+  Element payload and position are independent subscriptions:
+  `useElementSelector(FooPlugin, node => node.field)` derives node data, while
+  `usePath(path => path.at(-1))` derives position. A path-only move does not
+  invalidate payload reads, and an unchanged path projection does not rerender
+  its consumer.
   A consumer plugin that installs the component uses the stable imported owner
   descriptor for component props, avoiding a self-referential configured
   descriptor; consumer-local capabilities remain available through scoped
   hooks.
-- Transient product rendering uses the owning plugin's `decorate` callback and
-  render slots. Plate privately combines installed contributions and refreshes
-  only the plugin whose store changed. Ordinary callers never assemble
-  Decoration sources, renderer registries, Widget stores, or manual decoration
-  refreshes to install a feature.
+- Copied feature files own decoration colors and classes through
+  `decorate.attributes`. Presentation configuration preserves semantic range
+  readers and their observation; it does not add subscriptions. Shared Editor
+  skins contain only general editor presentation. Static feature presets stay
+  server-safe and express their own presentation needs.
+- Inline transient product paint uses the owning plugin's
+  `decorate: { read, observe?, attributes? }` descriptor. Sparse attributes on whole element
+  hosts use `render.useViewElementAttributes`, one React hook host per enabled
+  plugin per mounted view. It returns `{ key, attributes }[]`; Plate privately
+  owns source identity, compiled-plugin precedence, publication, cleanup, and
+  per-`NodeKey` subscriptions. Per-node `render.attributes` and
+  `inject.nodeProps.transformProps` stay pure and hook-free. Structural product
+  rendering uses components and plugin render slots. Ordinary callers never
+  assemble Decoration sources, attribute stores, providers, publishers,
+  renderer registries, Widget stores, or manual refreshes to install a feature.
+- Comments owns one keyed model of serializable thread records, actions,
+  subscriptions and private native range handles per editor. Applications load
+  fetched records through `initialState.initialThreads`, replace live records
+  with `api.setThreads`, and persist `api.getThreads()` with the matching document
+  value. The seed is not a second live store. Database I/O and server permissions
+  stay with the application; copied Comment/Discussion UI owns presentation.
+  BaseCommentsPlugin owns semantics and CommentsPlugin adds live interactions.
+  Consumers do not assemble a channel, provider, factory or anchor-binding effect.
+  Reuse Plite Annotation plus plugin Decoration for mapped locations and paint.
+  Body or metadata changes perform zero annotation resolution and zero editor-node
+  refreshes. Independent editors bind their own native handles from plain records.
+  Activation stores selected IDs; keyed writes retain unrelated records and
+  membership lists. Composers clear only after successful actions, including async
+  overrides. Loading preserves identity, authorship, timestamps and status without
+  replaying user commands.
+- Application replies attached to a document-owned entity use that entity's
+  identity and location. Accepting, rejecting, undoing, or restoring the entity
+  changes derived visibility, not the application's explicit resolution state.
+  The combined UI owns reply composition; document mutation owners do not
+  acquire an application thread lifecycle or allocate duplicate reply anchors.
 - Sibling render slots expose only the lifecycle input owned by their placement:
   the exact Editable ref or the exact container ref. They never inherit the
   host Editable or container DOM props. Register a complete component directly;
@@ -248,6 +294,10 @@ Current priorities:
   derive export-local references. Serialized Markdown block identity uses the
   optional plugin. Registries install it explicitly as product policy, never
   transitively through an unrelated feature.
+- Transient input completion uses the live input's node key. The feature checks
+  current liveness and edit eligibility, then removes and replaces the input in
+  one transaction. Copied controls own query text, composition, navigation, and
+  DOM focus without duplicating the document's location or completion state.
 - Low-level React composition is `react({ dom })`: one required object with the
   exact DOM descriptor. Keep one explicit erased implementation boundary only
   for the TypeScript 7 invariant-union reduction limit.
@@ -297,7 +347,9 @@ Current priorities:
   envelope version. `migrateDocument` runs it for runtime or offline callers
   before installed-plugin preparation and schema fitting; missing versions and
   identity drift fail closed. Only an explicit unversioned floor may omit
-  historical fingerprint proof.
+  historical fingerprint proof. The persistence owner allocates each released
+  boundary; implementation batches amend an unreleased target instead of
+  inventing later schema versions.
 - `prepareDocument` is an installed-plugin invariant hook for current-schema
   documents. It is not a release migration, normalizer, source-version
   selector, or replacement for an application migration chain. History and
@@ -392,9 +444,15 @@ Current priorities:
 - Plugin state has one public channel: `initialState` declares defaults,
   `.configure({ initialState })` overrides descriptor defaults, builder
   callbacks use inferred `store`, and consumers use
-  `editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` or
-  `useEditorPluginStore`. Do not restore deleted option accessors or add a
-  parallel immutable `config` channel.
+  `editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` with
+  an installed typed descriptor; its selector `{ id }` option targets another
+  registered editor. Optional feature composition checks installation before
+  mounting the subscribing child.
+  Do not hand-roll portal and external-store subscription plumbing, restore
+  deleted option accessors, or add a parallel immutable `config` channel.
+  Writes retain unchanged immutable branch references and own newly supplied
+  caller data. Repeated consumers subscribe to their visible result; indexes
+  derive from stable result references.
 - Plite definitions have no separate `config` channel either. Immutable
   construction inputs and runtime resources stay in the extension factory
   closure or their honest host owner.
@@ -402,7 +460,10 @@ Current priorities:
   with an exported descriptor. Owner defaults are checked against that contract
   through a typed constant or explicit factory return type; they never define
   the contract by inference, `as`, or `satisfies`. Consumer configuration stays
-  partial and inline.
+  partial and inline. Top-level state fields are required and exclude
+  `undefined`, using concrete defaults or `null` for empty values. Constructors
+  and extension stages enforce the same contract for objects and factories;
+  nested domain values may retain optional properties.
 - Capability names encode execution boundaries. `selectors` are pure
   projections of plugin store state; `read` is a pure, replayable query over a
   supplied document snapshot; `api` is a stable plugin service not bound to a
@@ -410,9 +471,17 @@ Current priorities:
   the active transaction; flat native Plite fields own genuine editor-wide
   substrate. Immutable API publication does not imply method purity, but
   document reads and writes still belong in `read` and `update`.
-- Plate compiles `api`, `read`, and `update` capability trees once per plugin
-  configuration with plain-record recursion and source-order replacement.
-  Descriptor merging never owns runtime capability values.
+- Plate compiles `read` and `update` capability trees per plugin configuration.
+  API factories bind to the exact editor or mounted view that exposes them,
+  with shared plugin stores, plain-record recursion and source-order
+  replacement. An API extension sees the preceding stage's immutable API.
+  Descriptor construction retains its model lifetime; view work captures the
+  editor inside the API factory. Descriptor merging never owns runtime values.
+- Temporary arrival feedback uses one target and timer per mounted view,
+  canonical root-local element keys and call-time safe attributes. It does not
+  mutate the model, selection or history. The requesting feature owns styling
+  and complete navigation policy; generic element renderers receive neutral
+  attributes without feature subscriptions.
 - Every element plugin gets descriptor-bound `insert`, `set`, and `remove` on
   `editor.plugin(Plugin).update`. Default-constructible, schema-compatible text
   blocks also get `toggle`; text blocks with required construction properties
@@ -481,7 +550,7 @@ Current priorities:
   disabled. Optional product membership changes in the owning app/registry
   array, not through a disabled tombstone.
 - A plugin that does not own another capability's membership in the consumer's
-  final composition may use `override.plugins[name]` as a weak peer: adapt only
+  final composition may use `override[name]` as a weak peer: adapt only
   an already-installed target, no-op when absent, never install or mutate
   topology, never disable a required dependency, and yield to the target's
   terminal configuration. This applies even when the adapting plugin can
@@ -489,13 +558,19 @@ Current priorities:
   another independently optional peer merely to adapt it. Prove adapting-only,
   target-only, both, and both with explicit target configuration. Bare-name use
   is intentionally erased; exact target-option inference requires importing
-  the descriptor or definition type. Keep component replacement and typed
-  root-level `component` binding and typed foreign codec contributions authored
+  the descriptor or definition type. A weak peer may replace the target's
+  root-level `component`. Keep component binding and typed foreign codec contributions authored
   as `defineCodecs(TargetPlugin, map)` inside the owning declaration callback
   as distinct paths. The
   codec helper injects the target. Do not add a central plugin-name registry,
   ancestor reach-through methods, recursive child registries, or add/replace
   verbs.
+- Plate rendering has one grammar. Root `component` owns node identity and may
+  be a component or intrinsic HTML tag. `render` owns only DOM attributes and
+  mark placement. `slots` owns structural composition around the root,
+  content, container, Editable, node, and node children. Do not add an editor
+  component map, nested component override map, tag alias, public renderer
+  callback, or second structural namespace.
 - Resolve peer conflicts at the smallest behavior surface. Remove or replace
   one conflicting shortcut, handler, parser, or render contribution instead of
   disabling its whole plugin. Required dependencies cannot be disabled, and
@@ -588,8 +663,33 @@ Current priorities:
 - A React entrypoint may publish a headless primitive when reusable DOM behavior
   and accessibility are the contract. The entrypoint owns interaction mechanics
   and positioning or hit-testing required for correct behavior; copied
-  registry UI owns visual styles, labels, editor persistence, and product
-  composition. Internal providers, stores, and prop hooks stay private.
+  registry UI owns visual styles, labels and product composition. The editor
+  feature owns document constraints and persistence; generic DOM primitives
+  remain editor-independent. Internal providers, stores, and prop hooks stay private.
+- Recurring editor-state projections belong to the existing semantic React
+  owner. Presence-only controls use `useEditorHasSelection`; range consumers
+  use `useEditorSelection`. Keep commit invalidation private and reuse the
+  existing subscription, without adding a parallel store or arbitrary predicate hooks.
+- Copied feature kits install their required React integration. Ordinary
+  editor assemblies render Plate and Editor without feature-root mounts or
+  feature-only ref plumbing. Plate supplies the exact Editable ref through
+  its existing root slot; copied feature policy stays in the kit. One AI
+  session owns one editor object across mounted views, while DnD cleanup owns
+  each Editable and its ownerDocument. Readiness, read-only changes,
+  replacement, and final detach define asynchronous authority. Replaceable
+  sibling presentation preserves the feature plugin's root integration.
+  Explicit root-slot replacement owns integration and cleanup; additional
+  wrappers compose through JSX in that slot. Each slot accepts one component.
+  A companion plugin needs an independent capability beyond protecting a root
+  wrapper from replacement. Reuse an application-supplied
+  DnD manager. Keep optional SDKs and backends out of generic editor components,
+  and keep dedicated render-attribute hooks private to their existing host.
+  Do not provide a generic plugin hook runner or session framework.
+- Serialization packages own format semantics, conversion mechanics, and
+  format-required defaults. Copied registry or application source owns optional
+  export presentation presets. An exporter may accept one exact caller-owned
+  stylesheet, but it never injects a hidden Plate theme or defines an additive
+  override protocol around package styling.
 - Independently placed DOM parts are independent primitives with ordinary DOM
   props such as `className` and `style`. They compose as siblings; a public
   root or `*ClassName` control prop requires a real shared lifecycle or state
@@ -598,8 +698,12 @@ Current priorities:
   it. Keep only the subscription, imperative DOM projection, and cleanup in the
   package; a side-effect-only adapter takes its required lifecycle input and
   returns `void`. The copied renderer derives layout/presentation state and
-  owns transient overrides, trivial calculations, and event handlers. A pure
-  helper with one component-family owner is still local, not public API.
+  owns transient rendering overrides, trivial visual calculations and
+  presentation event wiring. Domain invariants, semantic calculations and
+  neutral interaction lifecycle belong to their existing feature owner even
+  with one current consumer. Package ownership requires a durable contract
+  independent of the renderer, not a minimum caller count or a hypothetical
+  native counterpart. Prefer the feature's scoped API over helper exports.
 - Measure React ownership at terminal product consumers, not at package-wrapper
   imports. A hook, store, provider, hotkey controller, or plugin extension used
   only by copied registry UI is registry-owned when its job is UI or product
@@ -678,9 +782,9 @@ Owner map:
 | ---------------------------------------------------- | --------------------------------------- |
 | public GitHub issue/PR/security queue control plane  | `maintainer`                            |
 | local Plate/Plite behavior-bug or regression repair  | `patch`                                 |
-| internal Plate/Plite long quality loops              | `auto`                                  |
+| internal Plate/Plite long quality loops              | `task autonomous`; `improve` preset     |
 | performance measurement, diagnosis, and fix/rerun    | `benchmark`                             |
-| post-merge/current-tree until-clean closure          | `autoclosure`                           |
+| post-merge/current-tree until-clean closure          | `task closure`                           |
 | reusable architecture doctrine                       | root `VISION.md` and `docs/vision/*.md` |
 | durable public API doctrine                          | root `VISION.md` and `docs/vision/*.md` |
 | concrete public API design, review, and debt ranking | `best-api`                              |
@@ -692,7 +796,7 @@ Owner map:
 | plugin file placement / wrappers / typing mechanics  | `plate-plugin-creator`                  |
 | plugin authoring execution flow                      | `plate-plugin-creator`                  |
 | app-local sugar                                      | local app/kits                          |
-| public docs shape                                    | `docs-creator`                          |
+| public docs shape                                    | Technical Writing and Task docs mechanics |
 | UI/component registry shape                          | `plate-ui`                              |
 | Plate Next migration/adoption audit                  | `plate-next`                            |
 
@@ -722,10 +826,14 @@ re-export Plite surface where it improves DX. But Plate is not a dumping ground
 for bugs that reproduce in plain Plite. If the same issue happens in plain
 Plite without Plate-specific code, it belongs there.
 
-When Plate API names or runtime habits conflict with Plite, Plite wins.
-Break Plate instead of bending Plite or hiding the conflict behind aliases.
-If a Plate public API collides with Plite runtime names such as `api`,
-`read`, `update`, `state`, or `tx`, cut or rename the Plate API.
+Plite owns neutral substrate laws; its current API must still earn reuse under
+[Redesign from First Principles](common.md#redesign-from-first-principles).
+When its primitive fits the job, cut conflicting Plate machinery and reuse it.
+When it is inadequate, repair Plite and adopt that target in Plate. Keep product
+policy in Plate and do not hide either problem behind aliases or caller glue.
+For collisions with established runtime names such as `api`, `read`, `update`,
+`state`, or `tx`, cut or rename the Plate API when the substrate contract fits
+the current job.
 
 ## Security
 
@@ -762,6 +870,13 @@ discovers the unique exported plugin tuple and optional schema by validated
 runtime shape rather than fixed export names; it is not required editor setup
 or first-class public teaching. Improve onboarding through templates, docs,
 and registry flows without hiding critical editor decisions.
+
+`platejs/compiler` serves that optional build-time job. `compileEditor` returns
+detached, recursively frozen schema and binding facts through the same lowering
+used by editor construction. It evaluates configuration and validation without
+activating extensions or generating an initial document. CLI discovery, source
+paths and emission stay in the CLI. Type-only compiler projections preserve
+exact installed property domains without publishing runtime caches or witnesses.
 
 A copied default editor kit owns plugin composition, not the registry author's
 persisted document lineage. Do not ship a fixed schema ID, migration chain, or

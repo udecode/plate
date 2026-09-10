@@ -1,2208 +1,1183 @@
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { createRequire } from 'node:module';
+import { cpus, platform, release, totalmem } from 'node:os';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
-import { chromium } from '@playwright/test';
+import { chromium, firefox, webkit } from '@playwright/test';
+
+import { getWorkspaceSourceEntries } from '../../../../../config/workspace-source-entries.mjs';
+import {
+  adapterHelpers,
+  adapterSource,
+  surfaces as knownSurfaces,
+} from './cross-editor-adapters.mjs';
 
 import {
-  round,
-  summarize,
-  writeBenchmarkArtifact,
-} from '../../shared/stats.mjs';
+  extraOperations,
+  runExtraOperation,
+} from './cross-editor-extra-operations.mjs';
 
-const currentRepo = process.cwd();
-const defaultProseMirrorRepo = resolve(currentRepo, '../../../prosemirror');
-const defaultLexicalRepo = resolve(currentRepo, '../../../lexical');
-
-const prosemirrorRepo = resolve(
-  currentRepo,
-  process.env.CROSS_EDITOR_HUGE_PROSEMIRROR_REPO || defaultProseMirrorRepo
+const runner = fileURLToPath(import.meta.url);
+const repo = resolve(dirname(runner), '../../../../..');
+const deps = resolve(
+  process.env.CROSS_EDITOR_HUGE_DEPS ??
+    resolve(dirname(runner), 'cross-editor-fixture'),
 );
-const lexicalRepo = resolve(
-  currentRepo,
-  process.env.CROSS_EDITOR_HUGE_LEXICAL_REPO || defaultLexicalRepo
+const wordgard = resolve(
+  process.env.CROSS_EDITOR_HUGE_WORDGARD_REPO ?? resolve(repo, '../wordgard'),
 );
-
-const blocks = Number(process.env.CROSS_EDITOR_HUGE_BLOCKS || 5000);
-const iterations = Number(process.env.CROSS_EDITOR_HUGE_ITERATIONS || 5);
-const typeOps = Number(process.env.CROSS_EDITOR_HUGE_TYPE_OPS || 10);
-const repeatedShiftDownCount = Number(
-  process.env.CROSS_EDITOR_HUGE_REPEATED_SHIFT_DOWN_COUNT || 3
+const prosekit = resolve(
+  process.env.CROSS_EDITOR_HUGE_PROSEKIT_REPO ?? resolve(repo, '../prosekit'),
 );
-const repeatedShiftDownMode =
-  process.env.CROSS_EDITOR_HUGE_REPEATED_SHIFT_DOWN_MODE || 'shortcut';
-const slateVirtualizedEstimatedBlockSize = Number(
-  process.env.CROSS_EDITOR_HUGE_SLATE_VIRTUALIZED_ESTIMATED_BLOCK_SIZE || 24
+const lexical = resolve(
+  process.env.CROSS_EDITOR_HUGE_LEXICAL_REPO ?? resolve(repo, '../lexical'),
 );
-const slateVirtualizedOverscan = Number(
-  process.env.CROSS_EDITOR_HUGE_SLATE_VIRTUALIZED_OVERSCAN || 0
+const slate = resolve(
+  process.env.CROSS_EDITOR_HUGE_SLATE_REPO ?? resolve(repo, '../slate'),
 );
-const strictRepeatedShiftDown =
-  process.env.CROSS_EDITOR_HUGE_STRICT_REPEATED_SHIFT_DOWN !== '0';
-const headless = process.env.CROSS_EDITOR_HUGE_HEADLESS !== '0';
-const debugEvents = process.env.CROSS_EDITOR_HUGE_DEBUG_EVENTS === '1';
-const debugTrace = process.env.CROSS_EDITOR_HUGE_DEBUG_TRACE === '1';
-const skipSlateReactBuild =
-  process.env.CROSS_EDITOR_HUGE_SKIP_SLATE_REACT_BUILD === '1';
-const selectedSurfaces = new Set(
-  (
-    process.env.CROSS_EDITOR_HUGE_SURFACES ||
-    'slateAuto,slateVirtualized,prosemirror,lexical'
-  )
+const quill = resolve(
+  process.env.CROSS_EDITOR_HUGE_QUILL_REPO ?? resolve(repo, '../quill'),
+);
+const temp = resolve(
+  repo,
+  process.env.CROSS_EDITOR_HUGE_TEMP ?? 'tmp/cross-editor-human-operations',
+);
+const output = resolve(
+  repo,
+  process.env.CROSS_EDITOR_HUGE_ARTIFACT ??
+    'tmp/cross-editor-human-operations.json',
+);
+const split = (value) =>
+  value
     .split(',')
-    .map((surface) => surface.trim())
-    .filter(Boolean)
+    .map((x) => x.trim())
+    .filter(Boolean);
+const selected = split(
+  process.env.CROSS_EDITOR_HUGE_SURFACES ?? knownSurfaces.join(','),
+);
+const cohorts = split(process.env.CROSS_EDITOR_HUGE_BLOCKS ?? '100').map(
+  Number,
+);
+const iterations = Number(process.env.CROSS_EDITOR_HUGE_ITERATIONS ?? 15);
+const warmups = Number(process.env.CROSS_EDITOR_HUGE_WARMUPS ?? 3);
+const chars = Number(process.env.CROSS_EDITOR_HUGE_CHARS ?? 80);
+const counters = process.env.CROSS_EDITOR_HUGE_COUNTERS === '1';
+const retained = process.env.CROSS_EDITOR_HUGE_RETAINED === '1';
+const selectionIdle = process.env.CROSS_EDITOR_HUGE_SELECTION_IDLE === '1';
+const defaultCompiler = process.env.CROSS_EDITOR_HUGE_COMPILER ?? '8';
+const browserName = process.env.CROSS_EDITOR_HUGE_BROWSER ?? 'chromium';
+const allOperations = [
+  'first-type',
+  'type-burst',
+  'replace-selection',
+  'backspace',
+  'delete-forward',
+  'split',
+  'join',
+  'move-left',
+  'extend-selection',
+  'bold-type',
+  'undo',
+  'redo',
+  'paste-text',
+  'paste-multiline',
+  'paste-html',
+  'cut',
+  'scroll',
+  'resize',
+  'serialize',
+  ...extraOperations,
+];
+const operations = split(
+  process.env.CROSS_EDITOR_HUGE_OPERATIONS ?? allOperations.join(','),
+);
+const sourceSnapshot = new Map();
+const sourceAfter = new Map();
+const compilerEvents = new Map();
+const bundles = new Map();
+const sha = (value) => createHash('sha256').update(value).digest('hex');
+const readFrozen = async (path) => {
+  if (!sourceSnapshot.has(path)) sourceSnapshot.set(path, await readFile(path));
+  return sourceSnapshot.get(path);
+};
+const sourceOverrides = process.env.CROSS_EDITOR_HUGE_SOURCE_OVERRIDES
+  ? JSON.parse(
+      (
+        await readFrozen(
+          resolve(process.env.CROSS_EDITOR_HUGE_SOURCE_OVERRIDES),
+        )
+      ).toString(),
+    )
+  : {};
+const appliedOverrides = [];
+const requireHere = createRequire(import.meta.url);
+const requireDeps = createRequire(resolve(deps, 'package.json'));
+const workspaceRequire = createRequire(
+  resolve(repo, 'packages/plitejs/package.json'),
+);
+const vitestRequire = createRequire(
+  workspaceRequire.resolve('vitest/package.json'),
+);
+const viteRequire = createRequire(vitestRequire.resolve('vite/package.json'));
+const esbuild = requireHere(viteRequire.resolve('esbuild'));
+const compilerPlugin = requireHere('babel-plugin-react-compiler');
+const babel8 = requireHere('@babel/core');
+const babel7 = requireHere(
+  resolve(
+    repo,
+    'node_modules/.pnpm/@babel+core@7.29.0/node_modules/@babel/core/lib/index.js',
+  ),
+);
+const typescript = requireDeps('typescript');
+const lexicalVersion = JSON.parse(
+  readFileSync(
+    process.env.CROSS_EDITOR_HUGE_LEXICAL_REPO
+      ? resolve(lexical, 'packages/lexical/package.json')
+      : resolve(deps, 'node_modules/lexical/package.json'),
+    'utf8',
+  ),
+).version;
+const entries = new Map(
+  getWorkspaceSourceEntries(repo).map(({ specifier, sourceEntry }) => [
+    specifier,
+    sourceEntry,
+  ]),
+);
+entries.set(
+  'cross-plite-dom-runtime',
+  resolve(repo, 'packages/plitejs/src/react/editable/editable-dom-runtime.ts'),
+);
+entries.set(
+  'cross-plite-kernel',
+  resolve(repo, 'packages/plitejs/src/react/editable/editing-kernel.ts'),
+);
+entries.set(
+  'cross-plite-render-profiler',
+  resolve(repo, 'packages/plitejs/src/react/render-profiler.ts'),
 );
 
-const latestArtifactPath =
-  'tmp/slate-react-huge-document-cross-editor-benchmark.json';
-
-const sanitizeArtifactSegment = (value) =>
-  String(value)
-    .replace(/[^a-zA-Z0-9._-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 180) || 'default';
-
-const runArtifactPath = `${[
-  'tmp/slate-react-huge-document-cross-editor-benchmark',
-  `surfaces-${sanitizeArtifactSegment(Array.from(selectedSurfaces).join('-'))}`,
-  `blocks-${blocks}`,
-  `iters-${iterations}`,
-  `ops-${typeOps}`,
-  `repeat-${repeatedShiftDownCount}`,
-  `repeat-mode-${sanitizeArtifactSegment(repeatedShiftDownMode)}`,
-  `voverscan-${slateVirtualizedOverscan}`,
-].join('-')}.json`;
-
-const modulePaths = {
-  lexical: resolve(lexicalRepo, 'packages/lexical/dist/Lexical.mjs'),
-  prosemirrorModel: resolve(prosemirrorRepo, 'model/dist/index.js'),
-  prosemirrorState: resolve(prosemirrorRepo, 'state/dist/index.js'),
-  prosemirrorTransform: resolve(prosemirrorRepo, 'transform/dist/index.js'),
-  prosemirrorView: resolve(prosemirrorRepo, 'view/dist/index.js'),
-};
-
-const missingModulePaths = Object.entries(modulePaths)
-  .filter(([, path]) => !existsSync(path))
-  .map(([key, path]) => `${key}: ${path}`);
-
-if (missingModulePaths.length > 0) {
-  throw new Error(
-    [
-      'Missing external editor build outputs:',
-      ...missingModulePaths.map((path) => `- ${path}`),
-      '',
-      'Build ProseMirror core packages and Lexical before running this lane.',
-    ].join('\n')
+assert(
+  ['off', '7', '8'].includes(defaultCompiler),
+  'Compiler must be off, 7, or 8',
+);
+for (const surface of selected) {
+  const [name, variant, extra] = surface.split(':');
+  assert(
+    !extra &&
+      (!variant ||
+        ['off', 'compiler7', 'compiler8', 'retained', 'experiment'].includes(
+          variant,
+        )),
+    `Unknown compiler/surface variant ${surface}`,
+  );
+  assert(
+    !variant || ['plite', 'plate'].includes(name),
+    `Compiler/retained variants only apply to local React source: ${surface}`,
+  );
+  assert(
+    knownSurfaces.includes(surface.split(':')[0]),
+    `Unknown surface ${surface}`,
+  );
+  assert(
+    variant !== 'experiment' || sourceOverrides[surface]?.length > 0,
+    `Missing source override for ${surface}`,
   );
 }
-
-const entrySource = `
-import {
-  Schema,
-} from ${JSON.stringify(modulePaths.prosemirrorModel)}
-import {
-  EditorState,
-  TextSelection,
-} from ${JSON.stringify(modulePaths.prosemirrorState)}
-import {
-  EditorView,
-} from ${JSON.stringify(modulePaths.prosemirrorView)}
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import {
-  createReactEditor,
-  Editable,
-  Slate,
-} from 'plitejs/react'
-import {
-  $createParagraphNode,
-  $createTextNode,
-  $getNodeByKey,
-  $getRoot,
-  createEditor,
-} from ${JSON.stringify(modulePaths.lexical)}
-
-const typeOps = ${JSON.stringify(typeOps)}
-const slateVirtualizedEstimatedBlockSize = ${JSON.stringify(
-  slateVirtualizedEstimatedBlockSize
-)}
-const slateVirtualizedOverscan = ${JSON.stringify(slateVirtualizedOverscan)}
-const typeText = 'X'.repeat(typeOps)
-const app = document.getElementById('app')
-
-const schema = new Schema({
-  nodes: {
-    doc: { content: 'block+' },
-    paragraph: {
-      content: 'text*',
-      group: 'block',
-      parseDOM: [{ tag: 'p' }],
-      toDOM() {
-        return ['p', 0]
-      },
-    },
-    text: { group: 'inline' },
-  },
-})
-
-const state = {
-  lexical: null,
-  lexicalTextKeys: [],
-  prosemirror: null,
-  reactRoot: null,
-  slateDOMStrategyMetrics: null,
-  slateEditor: null,
-}
-
-const recordReactProfile = (
-  id,
-  phase,
-  actualDuration,
-  baseDuration,
-  startTime,
-  commitTime
-) => {
-  globalThis.__CROSS_EDITOR_TRACE__?.reactProfilerEvents.push({
-    actualDuration,
-    baseDuration,
-    commitTime,
-    id,
-    phase,
-    startTime,
-  })
-}
-
-const clearApp = () => {
-  if (state.reactRoot) {
-    state.reactRoot.unmount()
-    state.reactRoot = null
-  }
-
-  state.slateDOMStrategyMetrics = null
-  app.textContent = ''
-}
-
-const createShell = (surface) => {
-  clearApp()
-  const shell = document.createElement('div')
-  shell.id = surface + '-editor'
-  shell.dataset.surface = surface
-  shell.style.cssText = [
-    'height:600px',
-    'overflow:auto',
-    'border:0',
-    'outline:0',
-    'font:16px/1.35 system-ui, sans-serif',
-  ].join(';')
-  app.appendChild(shell)
-  return shell
-}
-
-const installProseMirror = (blockCount) => {
-  const shell = createShell('prosemirror')
-  const children = Array.from({ length: blockCount }, (_, index) =>
-    schema.nodes.paragraph.create(null, schema.text('block-' + index))
-  )
-  const doc = schema.nodes.doc.create(null, children)
-  const editorState = EditorState.create({ doc })
-  const view = new EditorView(shell, {
-    state: editorState,
-  })
-
-  state.prosemirror = view
-}
-
-const waitLexicalUpdate = (editor, update) =>
-  new Promise((resolvePromise) => {
-    editor.update(update, {
-      discrete: true,
-      onUpdate: resolvePromise,
-    })
-  })
-
-const createSlateValue = (blockCount) =>
-  Array.from({ length: blockCount }, (_, index) => ({
-    type: 'paragraph',
-    children: [{ text: 'block-' + index }],
-  }))
-
-const renderSlateElement = ({ attributes, children }) =>
-  React.createElement('p', attributes, children)
-
-const installSlate = async (surface, blockCount) => {
-  const shell = createShell(surface)
-  const editor = createReactEditor({
-    initialValue: createSlateValue(blockCount),
-  })
-  const stagedSurface =
-    surface === 'slateStaged' || surface === 'slateStagedNativeComplete'
-  const waitForNativeSurfaceComplete = surface === 'slateStagedNativeComplete'
-  const domStrategy =
-    surface === 'slateVirtualized'
-      ? {
-          estimatedBlockSize: slateVirtualizedEstimatedBlockSize,
-          overscan: slateVirtualizedOverscan,
-          threshold: 1,
-          type: 'virtualized',
-        }
-      : stagedSurface
-        ? 'staged'
-      : 'auto'
-  const editableStyle =
-    surface === 'slateVirtualized'
-      ? {
-          height: 600,
-          overflowY: 'auto',
-        }
-      : undefined
-  const root = createRoot(shell)
-  const renderEditable = (collectDOMStrategyMetrics = false) => {
-    root.render(
-      React.createElement(
-        React.Profiler,
-        {
-          id: 'slate:' + surface,
-          onRender: recordReactProfile,
-        },
-        React.createElement(
-          Slate,
-          { editor },
-          React.createElement(Editable, {
-            domStrategy,
-            onDOMStrategyMetrics: collectDOMStrategyMetrics
-              ? (metrics) => {
-                  state.slateDOMStrategyMetrics = metrics
-                }
-              : undefined,
-            renderElement: renderSlateElement,
-            spellCheck: false,
-            style: editableStyle,
-          })
-        )
-      )
-    )
-  }
-
-  state.reactRoot = root
-  state.slateEditor = editor
-  renderEditable(waitForNativeSurfaceComplete)
-  await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-
-  if (waitForNativeSurfaceComplete) {
-    await globalThis.__CROSS_EDITOR_HUGE__.waitForSlateStagedNativeSurface()
-    renderEditable()
-    await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-  }
-}
-
-const installLexical = async (blockCount) => {
-  const shell = createShell('lexical')
-  const rootElement = document.createElement('div')
-  rootElement.contentEditable = 'true'
-  rootElement.spellcheck = false
-  rootElement.style.cssText = 'outline:0;min-height:600px'
-  shell.appendChild(rootElement)
-
-  const editor = createEditor({
-    namespace: 'cross-editor-huge-document',
-    onError(error) {
-      throw error
-    },
-  })
-  const textKeys = []
-
-  editor.setRootElement(rootElement)
-  await waitLexicalUpdate(editor, () => {
-    const root = $getRoot()
-    root.clear()
-
-    for (let index = 0; index < blockCount; index += 1) {
-      const paragraph = $createParagraphNode()
-      const text = $createTextNode('block-' + index)
-      textKeys.push(text.getKey())
-      paragraph.append(text)
-      root.append(paragraph)
-    }
-  })
-
-  state.lexical = editor
-  state.lexicalTextKeys = textKeys
-}
-
-const prosemirrorTextPosition = (view, blockIndex, offset) => {
-  let position = 1
-
-  for (let index = 0; index < blockIndex; index += 1) {
-    position += view.state.doc.child(index).nodeSize
-  }
-
-  return position + 1 + offset
-}
-
-const scrollNativeSelectionFocusIntoView = () => {
-  const node = document.getSelection()?.focusNode ?? null
-  const element =
-    node instanceof Element
-      ? node
-      : node?.parentElement instanceof Element
-        ? node.parentElement
-        : null
-
-  element?.scrollIntoView({ block: 'center', inline: 'nearest' })
-}
-
-const selectProseMirrorBlock = (blockIndex, offset = 0) => {
-  const view = state.prosemirror
-  const position = prosemirrorTextPosition(view, blockIndex, offset)
-  view.dispatch(
-    view.state.tr
-      .setSelection(TextSelection.create(view.state.doc, position))
-      .scrollIntoView()
-  )
-  view.focus()
-  scrollNativeSelectionFocusIntoView()
-}
-
-const selectLexicalBlock = async (blockIndex, offset = 0) => {
-  const editor = state.lexical
-  const key = state.lexicalTextKeys[blockIndex]
-
-  await waitLexicalUpdate(editor, () => {
-    const text = $getNodeByKey(key)
-    text.select(offset, offset)
-  })
-
-  editor.focus()
-  scrollNativeSelectionFocusIntoView()
-}
-
-const selectSlateBlock = async (blockIndex, offset = 0) => {
-  const editor = state.slateEditor
-  const root = document.querySelector('[data-slate-editor="true"]')
-  const handle = root?.__slateBrowserHandle
-
-  if (handle?.selectRange) {
-    handle.setViewSelection?.(null)
-    handle.selectRange({
-      anchor: { path: [blockIndex, 0], offset },
-      focus: { path: [blockIndex, 0], offset },
-    })
-    return
-  }
-
-  if (handle?.focus) {
-    handle.scrollPathIntoView?.([blockIndex, 0], 'center')
-    editor.update((tx) => {
-      tx.selection.set({ path: [blockIndex, 0], offset })
-    })
-    handle.focus()
-
-    return
-  }
-
-  editor.update((tx) => {
-    tx.selection.set({ path: [blockIndex, 0], offset })
-  })
-
-  root?.focus()
-}
-
-const waitForTypingSurface = async (surface, blockIndex) => {
-  if (!surface.startsWith('slate')) {
-    await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-    return
-  }
-
-  for (let attempt = 0; attempt < 300; attempt += 1) {
-    const root = document.querySelector('[data-slate-editor="true"]')
-    const element = root?.__slateBrowserHandle?.getElementByPath?.([
-      blockIndex,
-      0,
-    ])
-
-    if (element?.isConnected) {
-      if (root instanceof HTMLElement) {
-        root.focus({ preventScroll: true })
-      }
-      return
-    }
-
-    await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-  }
-
-  throw new Error(
-    surface + ' text path [' + blockIndex + ',0] was not mounted before typing'
-  )
-}
-
-const selectTypingSurface = async (surface, blockIndex, offset) => {
-  if (!surface.startsWith('slate')) {
-    return
-  }
-
-  const root = document.querySelector('[data-slate-editor="true"]')
-  const handle = root?.__slateBrowserHandle
-  const textElement = root?.querySelector(
-    '[data-slate-node="text"][data-slate-path="' + blockIndex + ',0"]'
-  )
-
-  if (!(root instanceof HTMLElement) || !(textElement instanceof HTMLElement)) {
-    throw new Error(
-      surface + ' text path [' + blockIndex + ',0] was not mounted for typing'
-    )
-  }
-
-  const selection = {
-    anchor: { offset, path: [blockIndex, 0] },
-    focus: { offset, path: [blockIndex, 0] },
-  }
-
-  if (handle?.setNativeDOMSelection?.(selection)) {
-    handle.importDOMSelection?.()
-    await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-    return
-  }
-
-  const walker = document.createTreeWalker(textElement, NodeFilter.SHOW_TEXT)
-  const textNode = walker.nextNode()
-
-  if (!textNode) {
-    throw new Error(
-      surface + ' text path [' + blockIndex + ',0] has no text node'
-    )
-  }
-
-  const nativeSelection = document.getSelection()
-  const range = document.createRange()
-
-  root.focus({ preventScroll: true })
-  range.setStart(textNode, offset)
-  range.collapse(true)
-  nativeSelection?.removeAllRanges()
-  nativeSelection?.addRange(range)
-  document.dispatchEvent(new Event('selectionchange', { bubbles: true }))
-  await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-}
-
-const waitForPendingTextInputRepair = async (surface) => {
-  if (!surface.startsWith('slate')) {
-    return
-  }
-
-  for (let attempt = 0; attempt < 120; attempt += 1) {
-    const root = document.querySelector('[data-slate-editor="true"]')
-    const inputState = root?.__slateBrowserHandle?.getInputState?.()
-
-    if (!inputState?.pendingNativeTextInputRepairPathKey) {
-      return
-    }
-
-    await globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-  }
-
-  throw new Error(surface + ' still had pending native text repair after typing')
-}
-
-const blockText = (surface, blockIndex) => {
-  if (surface.startsWith('slate')) {
-    return state.slateEditor.read(
-      (readState) =>
-        readState.runtime.snapshot().children[blockIndex]?.children[0]?.text ??
-        ''
-    )
-  }
-
-  if (surface === 'prosemirror') {
-    return state.prosemirror.state.doc.child(blockIndex).textContent
-  }
-
-  let textContent = ''
-  state.lexical.getEditorState().read(() => {
-    textContent = $getNodeByKey(state.lexicalTextKeys[blockIndex]).getTextContent()
-  })
-  return textContent
-}
-
-const modelSelectionTextLength = (surface) => {
-  if (!surface.startsWith('slate')) {
-    return document
-      .getSelection()
-      ?.toString()
-      .replace(/\uFEFF/g, '').length ?? 0
-  }
-
-  const root = document.querySelector('[data-slate-editor="true"]')
-  const selection = root?.__slateBrowserHandle?.getSelection?.()
-
-  if (!selection) {
-    return 0
-  }
-
-  const points = [selection.anchor, selection.focus].sort((left, right) => {
-    const leftBlock = left.path[0] ?? 0
-    const rightBlock = right.path[0] ?? 0
-
-    return leftBlock === rightBlock
-      ? left.offset - right.offset
-      : leftBlock - rightBlock
-  })
-  const start = points[0]
-  const end = points[1]
-  const startBlock = start.path[0] ?? 0
-  const endBlock = end.path[0] ?? 0
-
-  if (startBlock === endBlock) {
-    return Math.max(0, end.offset - start.offset)
-  }
-
-  let length = Math.max(0, blockText(surface, startBlock).length - start.offset)
-
-  for (let index = startBlock + 1; index < endBlock; index += 1) {
-    length += blockText(surface, index).length
-  }
-
-  length += Math.max(0, end.offset)
-
-  return length
-}
-
-const visibleEditor = () => app.firstElementChild
-
-globalThis.__CROSS_EDITOR_HUGE__ = {
-  async assertTyped(surface, blockIndex, expectedCount = typeOps) {
-    const text = blockText(surface, blockIndex)
-    const typedCount = this.typedCount(surface, blockIndex)
-
-    if (typedCount !== expectedCount) {
-      throw new Error(
-        surface +
-          ' typed count mismatch at block ' +
-          blockIndex +
-          ': expected count ' +
-          expectedCount +
-          ', got ' +
-          typedCount +
-          ' in ' +
-          JSON.stringify(text)
-      )
-    }
-  },
-  async install(surface, blockCount) {
-    if (surface.startsWith('slate')) {
-      await installSlate(surface, blockCount)
-      return
-    }
-
-    if (surface === 'prosemirror') {
-      installProseMirror(blockCount)
-      return
-    }
-
-    if (surface === 'lexical') {
-      await installLexical(blockCount)
-      return
-    }
-
-    throw new Error('Unknown surface: ' + surface)
-  },
-  nextPaint() {
-    return new Promise((resolvePromise) => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          resolvePromise(performance.now())
-        })
-      })
-    })
-  },
-  async waitForSlateStagedNativeSurface() {
-    for (let attempt = 0; attempt < 240; attempt += 1) {
-      const metrics = state.slateDOMStrategyMetrics
-
-      if (
-        metrics &&
-        (metrics.effectiveStrategy !== 'staged' || metrics.nativeSurfaceComplete)
-      ) {
-        return
-      }
-
-      await this.nextPaint()
-    }
-
-    throw new Error(
-      'Timed out waiting for Slate staged native surface: ' +
-        JSON.stringify(state.slateDOMStrategyMetrics)
-    )
-  },
-  resetTrace() {
-    globalThis.__CROSS_EDITOR_TRACE__.longTasks.length = 0
-    globalThis.__CROSS_EDITOR_TRACE__.profilerEvents.length = 0
-    globalThis.__CROSS_EDITOR_TRACE__.reactProfilerEvents.length = 0
-    globalThis.__CROSS_EDITOR_EVENT_TRACE__?.events.splice(0)
-  },
-  async select(surface, blockIndex, offset = 0) {
-    if (surface.startsWith('slate')) {
-      await selectSlateBlock(blockIndex, offset)
-    } else if (surface === 'prosemirror') {
-      selectProseMirrorBlock(blockIndex, offset)
-    } else if (surface === 'lexical') {
-      await selectLexicalBlock(blockIndex, offset)
-    } else {
-      throw new Error('Unknown surface: ' + surface)
-    }
-
-    await this.nextPaint()
-  },
-  snapshot(surface) {
-    const editor = visibleEditor()
-    return {
-      domNodes: editor ? editor.querySelectorAll('*').length : 0,
-      heapMB:
-        performance.memory && performance.memory.usedJSHeapSize
-          ? performance.memory.usedJSHeapSize / 1024 / 1024
-          : 0,
-      longTaskMaxMs: Math.max(
-        0,
-        ...globalThis.__CROSS_EDITOR_TRACE__.longTasks.map((entry) => entry.duration)
+for (const operation of operations)
+  assert(allOperations.includes(operation), `Unknown operation ${operation}`);
+for (const value of [...cohorts, iterations, chars])
+  assert(
+    Number.isInteger(value) && value > 0,
+    'Cohorts, iterations and chars must be positive integers',
+  );
+assert(
+  Number.isInteger(warmups) && warmups >= 0,
+  'Warmups must be a nonnegative integer',
+);
+await mkdir(temp, { recursive: true });
+await mkdir(dirname(output), { recursive: true });
+
+const sourceExport = (entry) =>
+  typeof entry === 'string' ? entry : (entry?.source ?? entry?.default?.source);
+const lexicalPackageFiles = process.env.CROSS_EDITOR_HUGE_LEXICAL_REPO
+  ? readdirSync(resolve(lexical, 'packages'), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((dir) => resolve(lexical, 'packages', dir.name, 'package.json'))
+  : [
+      resolve(deps, 'node_modules/lexical/package.json'),
+      ...readdirSync(resolve(deps, 'node_modules/@lexical')).map((name) =>
+        resolve(deps, 'node_modules/@lexical', name, 'package.json'),
       ),
-      observedBlocks:
-        surface.startsWith('slate')
-          ? state.slateEditor.read(
-              (readState) => readState.runtime.snapshot().children.length
-            )
-          : surface === 'prosemirror'
-          ? state.prosemirror.state.doc.childCount
-          : state.lexicalTextKeys.length,
-    }
-  },
-  typedCount(surface, blockIndex) {
-    const text = blockText(surface, blockIndex)
-    return (text.match(/X/g) || []).length
-  },
-  selectedTextLength(surface) {
-    return modelSelectionTextLength(surface)
-  },
-  selectTypingSurface,
-  typeText,
-  waitForPendingTextInputRepair,
-  waitForTypingSurface,
-}
-
-globalThis.__CROSS_EDITOR_TRACE__ = {
-  longTasks: [],
-  profilerEvents: [],
-  reactProfilerEvents: [],
-}
-
-globalThis.__SLATE_REACT_RENDER_PROFILER__ = {
-  record(event) {
-    globalThis.__CROSS_EDITOR_TRACE__.profilerEvents.push({ ...event })
-  },
-}
-
-if ('PerformanceObserver' in globalThis) {
-  try {
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        globalThis.__CROSS_EDITOR_TRACE__.longTasks.push({
-          attribution: Array.from(entry.attribution ?? []).map(
-            (attribution) => ({
-              containerId: attribution.containerId ?? '',
-              containerName: attribution.containerName ?? '',
-              containerSrc: attribution.containerSrc ?? '',
-              containerType: attribution.containerType ?? '',
-              entryType: attribution.entryType,
-              name: attribution.name,
-            })
-          ),
-          duration: entry.duration,
-          name: entry.name,
-          startTime: entry.startTime,
-        })
-      }
-    })
-    observer.observe({ type: 'longtask', buffered: false })
-  } catch {}
-}
-
-globalThis.__CROSS_EDITOR_HUGE_READY__ = true
-`;
-
-const createHtml = (bundleSource) => `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      p {
-        margin: 0 0 4px;
-      }
-      .ProseMirror {
-        outline: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script>
-      globalThis.__CROSS_EDITOR_EVENT_TRACE__ = { events: [] };
-      if (${JSON.stringify(debugEvents)}) {
-        const originalAddEventListener = EventTarget.prototype.addEventListener;
-        const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
-        const listenerWrappers = new WeakMap();
-        const getWrapper = (listener, type) => {
-          if (
-            !listener ||
-            (type !== 'selectionchange' && type !== 'keydown')
-          ) {
-            return listener;
-          }
-
-          const existingWrapper = listenerWrappers.get(listener);
-
-          if (existingWrapper) {
-            return existingWrapper;
-          }
-
-          const wrappedListener =
-            typeof listener === 'function'
-              ? function wrappedEventListener(event) {
-                  const startedAt = performance.now();
-
-                  try {
-                    return listener.call(this, event);
-                  } finally {
-                    const duration = performance.now() - startedAt;
-
-                    if (duration > 1 || type === 'keydown') {
-                      globalThis.__CROSS_EDITOR_EVENT_TRACE__.events.push({
-                        altKey: event && 'altKey' in event ? event.altKey : null,
-                        ctrlKey: event && 'ctrlKey' in event ? event.ctrlKey : null,
-                        defaultPrevented: event.defaultPrevented,
-                        duration,
-                        key: event && 'key' in event ? event.key : null,
-                        metaKey: event && 'metaKey' in event ? event.metaKey : null,
-                        shiftKey: event && 'shiftKey' in event ? event.shiftKey : null,
-                        startTime: startedAt,
-                        target:
-                          this === document
-                            ? 'document'
-                            : this === window
-                              ? 'window'
-                              : this?.nodeName ?? 'unknown',
-                        type,
-                      });
-                    }
-                  }
-                }
-              : {
-                  handleEvent(event) {
-                    const startedAt = performance.now();
-
-                    try {
-                      return listener.handleEvent(event);
-                    } finally {
-                      const duration = performance.now() - startedAt;
-
-                      if (duration > 1 || type === 'keydown') {
-                        globalThis.__CROSS_EDITOR_EVENT_TRACE__.events.push({
-                          altKey: event && 'altKey' in event ? event.altKey : null,
-                          ctrlKey: event && 'ctrlKey' in event ? event.ctrlKey : null,
-                          defaultPrevented: event.defaultPrevented,
-                          duration,
-                          key: event && 'key' in event ? event.key : null,
-                          metaKey: event && 'metaKey' in event ? event.metaKey : null,
-                          shiftKey: event && 'shiftKey' in event ? event.shiftKey : null,
-                          startTime: startedAt,
-                          target:
-                            this === document
-                              ? 'document'
-                              : this === window
-                                ? 'window'
-                                : this?.nodeName ?? 'unknown',
-                          type,
-                        });
-                      }
-                    }
-                  },
-                };
-
-          listenerWrappers.set(listener, wrappedListener);
-
-          return wrappedListener;
-        };
-
-        EventTarget.prototype.addEventListener = function addEventListener(
-          type,
-          listener,
-          options
-        ) {
-          return originalAddEventListener.call(
-            this,
-            type,
-            getWrapper(listener, type),
-            options
-          );
-        };
-        EventTarget.prototype.removeEventListener =
-          function removeEventListener(type, listener, options) {
-            return originalRemoveEventListener.call(
-              this,
-              type,
-              getWrapper(listener, type),
-              options
-            );
-          };
-      }
-    </script>
-    <script type="module">${bundleSource.replaceAll(
-      '</script',
-      '<\\/script'
-    )}</script>
-  </body>
-</html>`;
-
-const run = async (command, args, cwd) => {
-  const process = Bun.spawn([command, ...args], {
-    cwd,
-    stderr: 'pipe',
-    stdout: 'pipe',
-  });
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(process.stdout).text(),
-    new Response(process.stderr).text(),
-    process.exited,
-  ]);
-
-  if (exitCode !== 0) {
-    throw new Error(
-      `${command} ${args.join(' ')} failed in ${cwd}\n${stdout}\n${stderr}`
-    );
+    ];
+for (const file of lexicalPackageFiles) {
+  if (!existsSync(file)) continue;
+  const pkg = JSON.parse(readFileSync(file, 'utf8'));
+  if (!pkg.name) continue;
+  for (const [key, entry] of Object.entries(pkg.exports ?? {})) {
+    const source = sourceExport(entry);
+    if (source && !key.includes('*') && !source.includes('*'))
+      entries.set(
+        pkg.name + (key === '.' ? '' : key.slice(1)),
+        resolve(dirname(file), source),
+      );
   }
-
-  return { stderr, stdout };
-};
-
-const buildBrowserBundle = async () => {
-  const outDir = resolve(currentRepo, 'tmp/cross-editor-huge-document');
-  const entryPath = resolve(outDir, 'entry.mjs');
-  const bundlePath = resolve(outDir, 'bundle.js');
-
-  await rm(outDir, { force: true, recursive: true });
-  await mkdir(outDir, { recursive: true });
-  await writeFile(entryPath, entrySource);
-
-  await run(
-    'bun',
-    [
-      'build',
-      entryPath,
-      '--target=browser',
-      '--format=esm',
-      '--outfile',
-      bundlePath,
-    ],
-    currentRepo
-  );
-
-  const bundleSource = await readFile(bundlePath, 'utf8');
-  const htmlSource = createHtml(bundleSource);
-
-  return {
-    htmlSource,
-    outDir,
+  if (
+    !entries.has(pkg.name) &&
+    existsSync(resolve(dirname(file), 'src/index.ts'))
+  )
+    entries.set(pkg.name, resolve(dirname(file), 'src/index.ts'));
+}
+for (const name of ['slate', 'slate-dom', 'slate-react', 'slate-history'])
+  entries.set(name, resolve(slate, 'packages', name, 'src/index.ts'));
+entries.set('quill', resolve(quill, 'packages/quill/src/quill.ts'));
+entries.set('quill/core', resolve(quill, 'packages/quill/src/core.ts'));
+entries.set(
+  'quill/formats/bold',
+  resolve(quill, 'packages/quill/src/formats/bold.ts'),
+);
+for (const name of [
+  'doc',
+  'state',
+  'editor',
+  'command',
+  'history',
+  'schema',
+  'types',
+  'table',
+  'collab',
+  'phrases',
+])
+  entries.set(`wordgard/${name}`, resolve(wordgard, `src/${name}/index.ts`));
+for (const directory of ['core', 'basic', 'extensions', 'pm', 'react']) {
+  const file = resolve(prosekit, 'packages', directory, 'package.json');
+  if (!existsSync(file)) continue;
+  const pkg = JSON.parse(readFileSync(file, 'utf8'));
+  for (const [key, entry] of Object.entries(pkg.exports ?? {})) {
+    if (typeof entry === 'string' && !key.includes('*'))
+      entries.set(
+        pkg.name + (key === '.' ? '' : key.slice(1)),
+        resolve(dirname(file), entry),
+      );
+  }
+}
+const forceDeps =
+  /^(?:react(?:-dom)?(?:\/|$)|@tiptap\/|prosemirror-|@ocavue\/|@marijn\/|orderedmap$|crelt$|style-mod$|parchment$|quill-delta$|eventemitter3$|lodash-es(?:\/|$))/;
+const wordgardJavaScript = new Map();
+if (selected.some((surface) => surface.split(':')[0] === 'wordgard')) {
+  const roots = execFileSync('rg', ['--files', resolve(wordgard, 'src')], {
+    encoding: 'utf8',
+  })
+    .trim()
+    .split('\n')
+    .filter((path) => path.endsWith('.ts'));
+  const options = {
+    target: typescript.ScriptTarget.ES2022,
+    module: typescript.ModuleKind.ESNext,
+    moduleResolution: typescript.ModuleResolutionKind.Bundler,
+    skipLibCheck: true,
+    types: [],
+    baseUrl: wordgard,
+    paths: {
+      'wordgard/*': [resolve(wordgard, 'src/*')],
+      '*': [resolve(deps, 'node_modules/*')],
+    },
   };
+  const host = typescript.createCompilerHost(options);
+  const originalRead = host.readFile;
+  host.readFile = (path) => {
+    const text = originalRead(path);
+    if (text !== undefined && !sourceSnapshot.has(path))
+      sourceSnapshot.set(path, Buffer.from(text));
+    return text;
+  };
+  const program = typescript.createProgram({ rootNames: roots, options, host });
+  program.emit(undefined, (_path, contents, _bom, _error, sources) => {
+    for (const source of sources ?? [])
+      wordgardJavaScript.set(source.fileName, contents);
+  });
+  assert.equal(
+    wordgardJavaScript.size,
+    roots.length,
+    'Wordgard TypeScript emit must cover its complete source input',
+  );
+}
+const injected = `import {installRuntime} from ${JSON.stringify(resolve(dirname(runner), 'cross-editor-runtime.mjs'))};\ninstallRuntime(mount);\n${adapterHelpers}`;
+for (const surface of selected) {
+  const [name, variant] = surface.split(':');
+  const compiler =
+    variant && !['retained', 'experiment'].includes(variant)
+      ? variant.replace('compiler', '')
+      : name === 'plite' || name === 'plate'
+        ? defaultCompiler
+        : 'off';
+  const compilerLog = [];
+  const entry = resolve(temp, `${surface.replaceAll(':', '-')}.mjs`);
+  await writeFile(entry, adapterSource(name) + injected);
+  const build = await esbuild.build({
+    absWorkingDir: repo,
+    entryPoints: [entry],
+    outfile: resolve(temp, 'bundle.js'),
+    bundle: true,
+    write: false,
+    format: 'esm',
+    platform: 'browser',
+    target: 'es2022',
+    minify: true,
+    metafile: true,
+    tsconfigRaw: {
+      compilerOptions: { jsx: 'react-jsx', useDefineForClassFields: true },
+    },
+    nodePaths: [resolve(deps, 'node_modules'), resolve(repo, 'node_modules')],
+    define: {
+      'process.env.NODE_ENV': '"production"',
+      __DEV__: 'false',
+      'process.env.LEXICAL_VERSION': JSON.stringify(lexicalVersion),
+    },
+    plugins: [
+      {
+        name: 'exact-source-and-dependencies',
+        setup(build) {
+          build.onResolve(
+            { filter: /.*/ },
+            ({ path, pluginData, kind, importer }) => {
+              if (pluginData?.forcedDependency) return;
+              if (entries.has(path)) return { path: entries.get(path) };
+              if (path.startsWith('@tiptap/'))
+                return build.resolve(path, {
+                  resolveDir: importer.includes('/node_modules/@tiptap/')
+                    ? dirname(importer)
+                    : deps,
+                  kind,
+                  pluginData: { forcedDependency: true },
+                });
+              if (forceDeps.test(path))
+                return build.resolve(path, {
+                  resolveDir: deps,
+                  kind,
+                  pluginData: { forcedDependency: true },
+                });
+            },
+          );
+          build.onLoad(
+            { filter: /\.(?:[cm]?js|jsx|tsx?|json)$/ },
+            async ({ path }) => {
+              let contents = (await readFrozen(path)).toString();
+              for (const override of sourceOverrides[surface] ?? []) {
+                if (path !== resolve(repo, override.path)) continue;
+                assert.equal(
+                  sha(contents),
+                  override.sha256,
+                  `Experiment source drift: ${path}`,
+                );
+                const before = sha(contents);
+                for (const replacement of override.replacements) {
+                  assert.equal(
+                    contents.split(replacement.before).length,
+                    2,
+                    `Experiment replacement must match exactly once: ${path}`,
+                  );
+                  contents = contents.replace(
+                    replacement.before,
+                    replacement.after,
+                  );
+                }
+                appliedOverrides.push({
+                  surface,
+                  path,
+                  before,
+                  after: sha(contents),
+                  replacements: override.replacements,
+                });
+              }
+              const loader = path.endsWith('.tsx')
+                ? 'tsx'
+                : path.endsWith('.ts')
+                  ? 'ts'
+                  : path.endsWith('.jsx')
+                    ? 'jsx'
+                    : path.endsWith('.json')
+                      ? 'json'
+                      : 'js';
+              if (path.startsWith(wordgard) && loader === 'ts') {
+                assert(
+                  wordgardJavaScript.has(path),
+                  `Missing Wordgard emitted source ${path}`,
+                );
+                return { contents: wordgardJavaScript.get(path), loader: 'js' };
+              }
+              if (
+                ['7', '8'].includes(compiler) &&
+                path.startsWith(resolve(repo, 'packages')) &&
+                !path.includes('/static/') &&
+                ['ts', 'tsx', 'jsx', 'js'].includes(loader)
+              ) {
+                const babel = compiler === '7' ? babel7 : babel8;
+                const result = await babel.transformAsync(contents, {
+                  filename: path,
+                  configFile: false,
+                  babelrc: false,
+                  parserOpts: {
+                    sourceType: 'module',
+                    plugins:
+                      loader === 'tsx'
+                        ? [['typescript', { isTSX: true }], 'jsx']
+                        : loader === 'ts'
+                          ? ['typescript']
+                          : ['jsx'],
+                  },
+                  plugins: [
+                    [
+                      compilerPlugin,
+                      {
+                        target: '19',
+                        logger: {
+                          logEvent(filename, event) {
+                            compilerLog.push({ filename, event });
+                          },
+                        },
+                      },
+                    ],
+                  ],
+                });
+                contents = result.code;
+              }
+              return { contents, loader };
+            },
+          );
+        },
+      },
+    ],
+  });
+  const buffer = Buffer.from(build.outputFiles[0].contents);
+  await writeFile(resolve(temp, `${surface.replaceAll(':', '-')}.bundle.js`), buffer);
+  bundles.set(surface, {
+    buffer,
+    sha256: sha(buffer),
+    bytes: buffer.length,
+    gzipBytes: gzipSync(buffer).length,
+    compiler,
+    inputs: Object.keys(build.metafile.inputs).map((p) => resolve(repo, p)),
+  });
+  assert(
+    compiler === 'off'
+      ? compilerLog.length === 0
+      : compilerLog.some(({ event }) => event.kind === 'CompileSuccess'),
+    `Compiler receipt does not match arm ${surface}`,
+  );
+  compilerEvents.set(surface, compilerLog);
+  assert.equal(
+    appliedOverrides.filter((item) => item.surface === surface).length,
+    (sourceOverrides[surface] ?? []).length,
+    `Unloaded experiment override: ${surface}`,
+  );
+  console.log(
+    JSON.stringify({
+      event: 'built',
+      surface,
+      compiler,
+      bytes: buffer.length,
+      inputs: build.metafile.inputs
+        ? Object.keys(build.metafile.inputs).length
+        : 0,
+    }),
+  );
+}
+for (const path of [
+  runner,
+  resolve(dirname(runner), 'cross-editor-adapters.mjs'),
+  resolve(dirname(runner), 'cross-editor-runtime.mjs'),
+  resolve(dirname(runner), 'cross-editor-extra-operations.mjs'),
+  resolve(repo, 'config/workspace-source-entries.mjs'),
+  resolve(repo, 'pnpm-lock.yaml'),
+  resolve(deps, 'package-lock.json'),
+])
+  await readFrozen(path);
+const identity = (path, declaredRef) => {
+  const source = { path, ...(declaredRef ? { declaredRef } : {}) };
+  try {
+    const gitRoot = execFileSync(
+      'git',
+      ['-C', path, 'rev-parse', '--show-toplevel'],
+      {
+        encoding: 'utf8',
+      },
+    ).trim();
+    if (realpathSync(gitRoot) !== realpathSync(path))
+      return { ...source, kind: 'source-export-or-package' };
+    return {
+      ...source,
+      kind: 'git-checkout',
+      ref: execFileSync('git', ['-C', path, 'rev-parse', 'HEAD'], {
+        encoding: 'utf8',
+      }).trim(),
+      remote: execFileSync('git', ['-C', path, 'remote', 'get-url', 'origin'], {
+        encoding: 'utf8',
+      }).trim(),
+    };
+  } catch {
+    return { ...source, kind: 'source-export-or-package' };
+  }
 };
-
-const buildSlateReactPackage = async () => {
-  if (skipSlateReactBuild) {
+const css = `html{font:16px/24px Arial,sans-serif}body{margin:0;padding:32px}#app{width:760px;margin:0 auto}#app [contenteditable=true]{min-height:400px;outline:none;white-space:pre-wrap;overflow-wrap:break-word;tab-size:4}p{margin:0;min-height:24px}strong,b{font-weight:700}.ql-editor p{padding:0}.ProseMirror{position:relative}.wordgard-content{position:relative}`;
+const server = createServer((req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+  const surface = url.searchParams.get('surface');
+  if (url.pathname === '/bundle.js' && bundles.has(surface)) {
+    res.setHeader('content-type', 'text/javascript');
+    res.end(bundles.get(surface).buffer);
     return;
   }
-
-  console.log('Building Plite React for the cross-editor benchmark');
-  await run('bun', ['--filter', 'plitejs', 'build'], currentRepo);
-};
-
-const summarizeMetric = (samples, key) =>
-  summarize(samples.map((sample) => sample[key]));
-
-const summarizeNestedMetric = (samples, sampleKey, metricKey) =>
-  summarize(
-    samples.flatMap((sample) =>
-      (sample[sampleKey] ?? []).map((entry) => entry[metricKey])
-    )
+  res.setHeader('content-type', 'text/html');
+  res.end(
+    `<!doctype html><meta charset="utf-8"><style>${css}</style><div id="app"></div><script type="module" src="/bundle.js?surface=${encodeURIComponent(surface ?? selected[0])}"></script>`,
   );
-
-const summarizeNestedProfilerSummary = (samples, sampleKey, summaryKey) => {
-  const buckets = new Map();
-
-  for (const sample of samples) {
-    for (const entry of sample[sampleKey] ?? []) {
-      for (const [key, value] of Object.entries(entry[summaryKey] ?? {})) {
-        const current = buckets.get(key) ?? {
-          count: 0,
-          durationMs: 0,
-        };
-
-        current.count += Number.isFinite(value.count) ? value.count : 0;
-        current.durationMs += Number.isFinite(value.durationMs)
-          ? value.durationMs
-          : 0;
-        buckets.set(key, current);
-      }
-    }
-  }
-
-  return Object.fromEntries(
-    [...buckets.entries()]
-      .sort(
-        ([leftKey, left], [rightKey, right]) =>
-          right.durationMs - left.durationMs ||
-          right.count - left.count ||
-          leftKey.localeCompare(rightKey)
-      )
-      .slice(0, 12)
-  );
-};
-
-const summarizeNestedReactProfilerSummary = (
-  samples,
-  sampleKey,
-  summaryKey
-) => {
-  const summaries = samples.flatMap((sample) =>
-    (sample[sampleKey] ?? []).map((entry) => entry[summaryKey]).filter(Boolean)
-  );
-
-  return {
-    actualDurationMs: summarize(
-      summaries
-        .map((summary) => summary.actualDurationMs?.p95)
-        .filter(Number.isFinite)
-    ),
-    baseDurationMs: summarize(
-      summaries
-        .map((summary) => summary.baseDurationMs?.p95)
-        .filter(Number.isFinite)
-    ),
-    count: summaries.reduce(
-      (total, summary) =>
-        total + (Number.isFinite(summary.count) ? summary.count : 0),
-      0
-    ),
-    totalActualDurationMs: round(
-      summaries.reduce(
-        (total, summary) =>
-          total +
-          (Number.isFinite(summary.totalActualDurationMs)
-            ? summary.totalActualDurationMs
-            : 0),
-        0
-      )
-    ),
-  };
-};
-
-const summarizeNestedRenderSummary = (samples, sampleKey, summaryKey) => {
-  const byKind = new Map();
-  const topKeys = new Map();
-  let total = 0;
-
-  for (const sample of samples) {
-    for (const entry of sample[sampleKey] ?? []) {
-      const summary = entry[summaryKey];
-
-      if (!summary) {
-        continue;
-      }
-
-      total += Number.isFinite(summary.total) ? summary.total : 0;
-
-      for (const [key, count] of Object.entries(summary.byKind ?? {})) {
-        byKind.set(key, (byKind.get(key) ?? 0) + count);
-      }
-
-      for (const [key, count] of Object.entries(summary.topKeys ?? {})) {
-        topKeys.set(key, (topKeys.get(key) ?? 0) + count);
-      }
-    }
-  }
-
-  const sortCounts = ([leftKey, leftCount], [rightKey, rightCount]) =>
-    rightCount - leftCount || leftKey.localeCompare(rightKey);
-
-  return {
-    byKind: Object.fromEntries([...byKind.entries()].sort(sortCounts)),
-    topKeys: Object.fromEntries(
-      [...topKeys.entries()].sort(sortCounts).slice(0, 16)
-    ),
-    total,
-  };
-};
-
-const summarizeProfilerEvents = (events = []) => {
-  const buckets = new Map();
-  let selectorCheckCount = 0;
-  let selectorNotifyCount = 0;
-  let selectorSubscriptionCount = 0;
-
-  for (const event of events) {
-    const key = event.id ? `${event.kind}:${event.id}` : event.kind;
-    const current = buckets.get(key) ?? {
-      count: 0,
-      durationMs: 0,
-    };
-
-    if (event.kind === 'selector' && typeof event.id === 'string') {
-      if (event.id.endsWith('-check')) {
-        selectorCheckCount += 1;
-      } else if (event.id.endsWith('-notify')) {
-        selectorNotifyCount += 1;
-      } else if (event.id.startsWith('selector-subscription-')) {
-        selectorSubscriptionCount += 1;
-      }
-    }
-
-    current.count += 1;
-    current.durationMs +=
-      typeof event.duration === 'number' && Number.isFinite(event.duration)
-        ? event.duration
-        : 0;
-    buckets.set(key, current);
-  }
-
-  buckets.set('selector:selector-dispatch-checks', {
-    count: selectorCheckCount,
-    durationMs: 0,
-  });
-  buckets.set('selector:selector-dispatch-notifies', {
-    count: selectorNotifyCount,
-    durationMs: 0,
-  });
-  buckets.set('selector:selector-dispatch-subscriptions', {
-    count: selectorSubscriptionCount,
-    durationMs: 0,
-  });
-
-  return Object.fromEntries(
-    [...buckets.entries()]
-      .sort(
-        ([leftKey, left], [rightKey, right]) =>
-          right.durationMs - left.durationMs ||
-          right.count - left.count ||
-          leftKey.localeCompare(rightKey)
-      )
-      .slice(0, 12)
-  );
-};
-
-const isRenderProfilerEvent = (event) =>
-  event.kind !== 'core-time' &&
-  event.kind !== 'dom-text-sync' &&
-  event.kind !== 'runtime-time' &&
-  event.kind !== 'selector';
-
-const summarizeProjectionProfilerEvents = (events = []) =>
-  summarizeProfilerEvents(
-    events.filter(
-      (event) =>
-        event.kind === 'runtime-time' &&
-        typeof event.id === 'string' &&
-        event.id.startsWith('projection-store.')
-    )
-  );
-
-const summarizeViewSelectionProfilerEvents = (events = []) =>
-  summarizeProfilerEvents(
-    events.filter(
-      (event) =>
-        typeof event.id === 'string' && event.id.includes('view-selection')
-    )
-  );
-
-const summarizeRenderProfilerEvents = (events = []) => {
-  const renderEvents = events.filter(isRenderProfilerEvent);
-  const byKind = new Map();
-  const byKey = new Map();
-
-  for (const event of renderEvents) {
-    const kindEntry = byKind.get(event.kind) ?? 0;
-    const key = event.id ? `${event.kind}:${event.id}` : event.kind;
-    const keyEntry = byKey.get(key) ?? 0;
-
-    byKind.set(event.kind, kindEntry + 1);
-    byKey.set(key, keyEntry + 1);
-  }
-
-  return {
-    byKind: Object.fromEntries(
-      [...byKind.entries()].sort(
-        ([leftKind, leftCount], [rightKind, rightCount]) =>
-          rightCount - leftCount || leftKind.localeCompare(rightKind)
-      )
-    ),
-    topKeys: Object.fromEntries(
-      [...byKey.entries()]
-        .sort(
-          ([leftKey, leftCount], [rightKey, rightCount]) =>
-            rightCount - leftCount || leftKey.localeCompare(rightKey)
-        )
-        .slice(0, 16)
-    ),
-    total: renderEvents.length,
-  };
-};
-
-const summarizeReactProfilerEvents = (events = []) => {
-  const actualDurations = events
-    .map((event) => event.actualDuration)
-    .filter(Number.isFinite);
-  const baseDurations = events
-    .map((event) => event.baseDuration)
-    .filter(Number.isFinite);
-
-  return {
-    actualDurationMs: summarize(actualDurations),
-    baseDurationMs: summarize(baseDurations),
-    count: events.length,
-    totalActualDurationMs: round(
-      actualDurations.reduce((total, duration) => total + duration, 0)
-    ),
-  };
-};
-
-const resetCrossEditorTrace = (page) =>
-  page.evaluate(() => globalThis.__CROSS_EDITOR_HUGE__.resetTrace());
-
-const readCrossEditorLongTaskMax = (page) =>
-  page.evaluate(() =>
-    Math.max(
-      0,
-      ...globalThis.__CROSS_EDITOR_TRACE__.longTasks.map(
-        (entry) => entry.duration
-      )
-    )
-  );
-
-const readCrossEditorLongTasks = (page) =>
-  page.evaluate(() => globalThis.__CROSS_EDITOR_TRACE__.longTasks);
-
-const readCrossEditorTrace = (page) =>
-  page.evaluate(() => ({
-    longTasks: globalThis.__CROSS_EDITOR_TRACE__.longTasks.slice(),
-    profilerEvents: globalThis.__CROSS_EDITOR_TRACE__.profilerEvents.slice(),
-    reactProfilerEvents:
-      globalThis.__CROSS_EDITOR_TRACE__.reactProfilerEvents.slice(),
-  }));
-
-const readSelectedTextLength = (page, surface) =>
-  page.evaluate(
-    (selectedSurface) =>
-      globalThis.__CROSS_EDITOR_HUGE__.selectedTextLength(selectedSurface),
-    surface
-  );
-
-const readCrossEditorEventTrace = (page) =>
-  page.evaluate(() => globalThis.__CROSS_EDITOR_EVENT_TRACE__?.events ?? []);
-
-const readSlateDebugSnapshot = (page, surface) =>
-  page.evaluate((selectedSurface) => {
-    if (!selectedSurface.startsWith('slate')) {
-      return null;
-    }
-
-    const root = document.querySelector('[data-slate-editor="true"]');
-    const handle = root?.__slateBrowserHandle;
-
-    if (!handle) {
-      return null;
-    }
-
-    return {
-      inputState: handle.getInputState(),
-      nativeSelectionLength:
-        document
-          .getSelection()
-          ?.toString()
-          .replace(/\uFEFF/g, '').length ?? 0,
-      selection: handle.getSelection(),
-      trace: handle.getKernelTrace().slice(-6),
-      viewSelection: handle.getViewSelection(),
-    };
-  }, surface);
-
-const measureSurface = async ({ page, surface }) => {
-  const lanes = [
-    { blockIndex: 0, key: 'startBlock' },
-    { blockIndex: Math.floor(blocks / 2), key: 'middleBlock' },
-  ];
-  const laneSummaries = {};
-  let latestSnapshot = null;
-
-  for (const lane of lanes) {
-    const samples = [];
-
-    for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
-      await page.evaluate(
-        async ({ blockCount, selectedSurface }) => {
-          await globalThis.__CROSS_EDITOR_HUGE__.install(
-            selectedSurface,
-            blockCount
-          );
-          await globalThis.__CROSS_EDITOR_HUGE__.nextPaint();
+});
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const port = server.address().port;
+const browser = await { chromium, firefox, webkit }[browserName].launch({
+  headless: process.env.CROSS_EDITOR_HUGE_HEADLESS !== '0',
+});
+const artifact = {
+  schemaVersion: 2,
+  startedAt: new Date().toISOString(),
+  status: 'running',
+  config: {
+    selected,
+    cohorts,
+    iterations,
+    warmups,
+    chars,
+    counters,
+    retained,
+    selectionIdle,
+    operations,
+    appliedOverrides,
+    extraOperationContract: {
+      payloadUTF16: 32768,
+      wordKeys: 'macOS Option+Arrow; other platforms unsupported',
+      lineKeys:
+        'macOS Meta+ArrowLeft/Right, otherwise Home/End; exact single visual line required',
+      documentKeys: 'macOS Meta+ArrowUp/Down, otherwise Control+Home/End',
+      selectAllCopy:
+        'unsupported: cross-paragraph clipboard separators and terminal newline policies remain unreconciled',
+    },
+    browserName,
+    viewport: { width: 1280, height: 720 },
+    dpr: 1,
+    domStrategy: 'full',
+    interleave: 'rotate surfaces by sample; same action sequence',
+    clock:
+      'First trusted event to last event-scheduled two-frame opportunity; not a verified paint or compositor timestamp. inputToVerifiedStateMs is an upper-bound snapshot-completion clock after extra settlement frames; text/format/clipboard oracles run afterward.',
+    p99: 'omitted: fewer than 100 samples per cell',
+  },
+  identity: {
+    machine: {
+      platform: platform(),
+      release: release(),
+      cpus: cpus().map((c) => c.model),
+      memory: totalmem(),
+    },
+    browser: browser.version(),
+    node: process.version,
+    repo: identity(repo),
+    slate: identity(slate, process.env.CROSS_EDITOR_HUGE_SLATE_REF),
+    lexical: process.env.CROSS_EDITOR_HUGE_LEXICAL_REPO
+      ? identity(lexical)
+      : {
+          kind: 'published-source',
+          version: lexicalVersion,
+          packageRoot: resolve(deps, 'node_modules/lexical'),
         },
-        { blockCount: blocks, selectedSurface: surface }
+    quill: identity(quill, process.env.CROSS_EDITOR_HUGE_QUILL_REF),
+    wordgard: identity(wordgard, process.env.CROSS_EDITOR_HUGE_WORDGARD_REF),
+    prosekit: identity(prosekit, process.env.CROSS_EDITOR_HUGE_PROSEKIT_REF),
+    dependencies: JSON.parse(
+      await readFile(resolve(deps, 'package.json'), 'utf8'),
+    ).dependencies,
+  },
+  bundles: Object.fromEntries(
+    [...bundles].map(([key, { buffer, ...rest }]) => [key, rest]),
+  ),
+  attempts: [],
+  errors: [],
+};
+const save = async () =>
+  writeFile(output, JSON.stringify(artifact, null, 2) + '\n');
+const compact = (s) => {
+  const { lines, domLines, counters, ...rest } = s;
+  const { events, ...counts } = counters ?? {};
+  const inclusiveDurations = {};
+  for (const event of events ?? []) {
+    if (typeof event.duration !== 'number') continue;
+    const key = `${event.kind}:${event.id ?? event.nodeKey ?? ''}`;
+    const entry = (inclusiveDurations[key] ??= {
+      calls: 0,
+      totalMs: 0,
+      maxMs: 0,
+    });
+    entry.calls++;
+    entry.totalMs += event.duration;
+    entry.maxMs = Math.max(entry.maxMs, event.duration);
+  }
+  return {
+    ...rest,
+    modelHash: sha(JSON.stringify(lines)),
+    domHash: sha(JSON.stringify(domLines)),
+    blockCount: lines.length,
+    domBlockCount: domLines.length,
+    textLength: lines.join('\n').length,
+    counters: { ...counts, inclusiveDurations },
+  };
+};
+const verify = (actual, expected, label) => {
+  assert.deepEqual(actual.lines, expected, `${label}: model text differs`);
+  assert.deepEqual(
+    actual.domLines,
+    expected,
+    `${label}: rendered paragraph text differs`,
+  );
+};
+const verifySelection = (actual, expected) => {
+  assert.deepEqual(actual.selection, expected, 'Model selection differs');
+  assert.deepEqual(
+    {
+      anchor: actual.nativeSelection.anchor,
+      focus: actual.nativeSelection.focus,
+    },
+    expected,
+    'Native paragraph/UTF-16 selection differs',
+  );
+  assert.equal(actual.focused, true, 'Editor is not focused');
+  assert.equal(
+    actual.nativeSelection.collapsed,
+    expected.anchor.block === expected.focus.block &&
+      expected.anchor.offset === expected.focus.offset,
+    'Native selection collapsed state differs',
+  );
+};
+const fixture = (count) =>
+  Array.from({ length: count }, (_, i) =>
+    `Paragraph ${String(i).padStart(6, '0')} alpha beta gamma delta. `
+      .padEnd(chars, 'x')
+      .slice(0, chars),
+  );
+const read = (page) => page.evaluate(() => crossEditor.snapshot());
+const select = async (page, expected, block, from, to = from) => {
+  const s = await page.evaluate(
+    ([b, f, t]) => crossEditor.select(b, f, t),
+    [block, from, to],
+  );
+  verify(s, expected, 'selection setup');
+  verifySelection(s, {
+    anchor: { block, offset: from },
+    focus: { block, offset: to },
+  });
+  return s.selectionSetup;
+};
+const mutate = (lines, block, from, to, text) => {
+  const replacement = (
+    lines[block].slice(0, from) +
+    text +
+    lines[block].slice(to)
+  ).split('\n');
+  lines.splice(block, 1, ...replacement);
+};
+let context;
+try {
+  for (const count of cohorts)
+    for (let sample = -warmups; sample < iterations; sample++) {
+      const order = selected.map(
+        (_, i) => selected[(i + sample + warmups) % selected.length],
       );
-      await page.evaluate(() => globalThis.__CROSS_EDITOR_HUGE__.resetTrace());
-
-      const selectStart = await page.evaluate(() => performance.now());
-      await page.evaluate(
-        async ({ blockIndex, selectedSurface }) => {
-          await globalThis.__CROSS_EDITOR_HUGE__.select(
-            selectedSurface,
-            blockIndex
-          );
-        },
-        { blockIndex: lane.blockIndex, selectedSurface: surface }
-      );
-      const selectCommandReady = await page.evaluate(() => performance.now());
-      const selectPaint = await page.evaluate(() =>
-        globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-      );
-      const selectTrace = await readCrossEditorTrace(page);
-      await resetCrossEditorTrace(page);
-      const materializedSelectStart = await page.evaluate(() =>
-        performance.now()
-      );
-      await page.evaluate(
-        async ({ blockIndex, selectedSurface }) => {
-          await globalThis.__CROSS_EDITOR_HUGE__.select(
-            selectedSurface,
-            blockIndex,
-            1
-          );
-          await globalThis.__CROSS_EDITOR_HUGE__.waitForTypingSurface(
-            selectedSurface,
-            blockIndex
-          );
-          await globalThis.__CROSS_EDITOR_HUGE__.selectTypingSurface(
-            selectedSurface,
-            blockIndex,
-            1
-          );
-        },
-        { blockIndex: lane.blockIndex, selectedSurface: surface }
-      );
-      const materializedSelectCommandReady = await page.evaluate(() =>
-        performance.now()
-      );
-      const materializedSelectPaint = await page.evaluate(() =>
-        globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-      );
-      const materializedSelectTrace = await readCrossEditorTrace(page);
-      await resetCrossEditorTrace(page);
-      await page.keyboard.down('Shift');
-      await resetCrossEditorTrace(page);
-      const shiftDownStart = await page.evaluate(() => performance.now());
-      await page.keyboard.press('ArrowDown');
-      const shiftDownCommandReady = await page.evaluate(() =>
-        performance.now()
-      );
-      const shiftDownPaint = await page.evaluate(() =>
-        globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-      );
-      const shiftDownTrace = await readCrossEditorTrace(page);
-      const shiftDownLongTaskMaxMs = await readCrossEditorLongTaskMax(page);
-      const shiftDownSelectedTextLength = await readSelectedTextLength(
-        page,
-        surface
-      );
-      if (shiftDownSelectedTextLength <= 0) {
-        throw new Error(
-          `${surface} ${lane.key} Shift+ArrowDown selected no displayed text`
-        );
-      }
-      if (repeatedShiftDownMode !== 'held') {
-        await page.keyboard.up('Shift');
-      }
-      const repeatedShiftDownSamples = [];
-      let previousRepeatedShiftDownSelectedTextLength =
-        shiftDownSelectedTextLength;
-
-      for (let step = 0; step < repeatedShiftDownCount; step += 1) {
-        await resetCrossEditorTrace(page);
-        const repeatedShiftDownStart = await page.evaluate(() =>
-          performance.now()
-        );
-        if (repeatedShiftDownMode === 'held') {
-          await page.keyboard.press('ArrowDown');
-        } else {
-          await page.keyboard.press('Shift+ArrowDown');
-        }
-        const repeatedShiftDownCommandReady = await page.evaluate(() =>
-          performance.now()
-        );
-        const repeatedShiftDownPaint = await page.evaluate(() =>
-          globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-        );
-        const repeatedShiftDownTrace = await readCrossEditorTrace(page);
-        const repeatedShiftDownLongTaskMaxMs =
-          await readCrossEditorLongTaskMax(page);
-        const repeatedShiftDownSelectedTextLength =
-          await readSelectedTextLength(page, surface);
-
-        const extended =
-          repeatedShiftDownSelectedTextLength >
-          previousRepeatedShiftDownSelectedTextLength;
-
-        if (
-          strictRepeatedShiftDown &&
-          repeatedShiftDownSelectedTextLength <=
-            previousRepeatedShiftDownSelectedTextLength
-        ) {
-          throw new Error(
-            `${surface} ${lane.key} repeated Shift+ArrowDown did not extend selection at step ${
-              step + 1
-            }: ${previousRepeatedShiftDownSelectedTextLength} -> ${repeatedShiftDownSelectedTextLength}`
-          );
-        }
-
-        repeatedShiftDownSamples.push({
-          commandMs: repeatedShiftDownCommandReady - repeatedShiftDownStart,
-          longTaskMaxMs: repeatedShiftDownLongTaskMaxMs,
-          paintAfterCommandMs:
-            repeatedShiftDownPaint - repeatedShiftDownCommandReady,
-          profilerSummary: summarizeProfilerEvents(
-            repeatedShiftDownTrace.profilerEvents
-          ),
-          projectionProfilerSummary: summarizeProjectionProfilerEvents(
-            repeatedShiftDownTrace.profilerEvents
-          ),
-          reactProfilerSummary: summarizeReactProfilerEvents(
-            repeatedShiftDownTrace.reactProfilerEvents
-          ),
-          renderCount: repeatedShiftDownTrace.profilerEvents.filter(
-            isRenderProfilerEvent
-          ).length,
-          renderSummary: summarizeRenderProfilerEvents(
-            repeatedShiftDownTrace.profilerEvents
-          ),
-          selectedTextLength: repeatedShiftDownSelectedTextLength,
-          viewSelectionProfilerSummary: summarizeViewSelectionProfilerEvents(
-            repeatedShiftDownTrace.profilerEvents
-          ),
-          extended,
-          step: step + 1,
-          toPaintMs: repeatedShiftDownPaint - repeatedShiftDownStart,
+      for (const surface of order) {
+        context = await browser.newContext({
+          viewport: { width: 1280, height: 720 },
+          deviceScaleFactor: 1,
+          permissions:
+            browserName === 'chromium'
+              ? ['clipboard-read', 'clipboard-write']
+              : [],
         });
-        previousRepeatedShiftDownSelectedTextLength =
-          repeatedShiftDownSelectedTextLength;
-      }
-      if (repeatedShiftDownMode === 'held') {
-        await page.keyboard.up('Shift');
-      }
-      if (debugTrace) {
-        const eventTrace = debugEvents
-          ? await readCrossEditorEventTrace(page)
-          : [];
-        const longTasks = debugEvents
-          ? await readCrossEditorLongTasks(page)
-          : [];
-        const snapshot = await readSlateDebugSnapshot(page, surface);
-        if (snapshot) {
-          console.log(
-            `DEBUG ${surface} ${lane.key} shiftDown ${JSON.stringify(
-              debugEvents
-                ? {
-                    ...snapshot,
-                    eventTrace,
-                    longTasks,
-                  }
-                : snapshot
-            )}`
+        const page = await context.newPage();
+        const errors = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        page.setDefaultTimeout(30000);
+        const attempt = {
+          surface,
+          count,
+          sample,
+          warmup: sample < 0,
+          results: [],
+          status: 'running',
+        };
+        artifact.attempts.push(attempt);
+        try {
+          await page.goto(
+            `http://127.0.0.1:${port}/?surface=${encodeURIComponent(surface)}`,
           );
-        }
-      }
-      await resetCrossEditorTrace(page);
-      const shiftUpStart = await page.evaluate(() => performance.now());
-      await page.keyboard.press('Shift+ArrowUp');
-      const shiftUpPaint = await page.evaluate(() =>
-        globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-      );
-      const shiftUpLongTaskMaxMs = await readCrossEditorLongTaskMax(page);
-      const shiftUpSelectedTextLength = await readSelectedTextLength(
-        page,
-        surface
-      );
-      await page.evaluate(
-        async ({ blockIndex, selectedSurface }) => {
-          await globalThis.__CROSS_EDITOR_HUGE__.select(
-            selectedSurface,
-            blockIndex,
-            1
+          await page.waitForFunction(() => !!globalThis.crossEditor);
+          const expected = fixture(count);
+          const mounted = await page.evaluate(
+            ([value, options]) => crossEditor.mount(value, options),
+            [
+              expected,
+              {
+                counters,
+                retained: retained || surface.endsWith(':retained'),
+                selectionIdle,
+              },
+            ],
           );
-          await globalThis.__CROSS_EDITOR_HUGE__.waitForTypingSurface(
-            selectedSurface,
-            blockIndex
-          );
-          await globalThis.__CROSS_EDITOR_HUGE__.selectTypingSurface(
-            selectedSurface,
-            blockIndex,
-            1
-          );
-        },
-        { blockIndex: lane.blockIndex, selectedSurface: surface }
-      );
-      if (debugTrace) {
-        const beforeTypeSnapshot = await readSlateDebugSnapshot(page, surface);
-        if (beforeTypeSnapshot) {
-          console.log(
-            `DEBUG ${surface} ${lane.key} beforeType ${JSON.stringify(
-              beforeTypeSnapshot
-            )}`
-          );
-        }
-      }
-      await resetCrossEditorTrace(page);
-      const typedCountBefore = await page.evaluate(
-        ({ blockIndex, selectedSurface }) =>
-          globalThis.__CROSS_EDITOR_HUGE__.typedCount(
-            selectedSurface,
-            blockIndex
-          ),
-        { blockIndex: lane.blockIndex, selectedSurface: surface }
-      );
-      const expectedTypedCount = typedCountBefore + typeOps;
-      const typeStart = await page.evaluate(() => performance.now());
-      await page.keyboard.type('X'.repeat(typeOps));
-      const typeCommandReady = await page.evaluate(() => performance.now());
-      const typeTextReady = await page.evaluate(
-        async ({ blockIndex, expected, selectedSurface }) => {
-          for (let attempt = 0; attempt < 300; attempt += 1) {
-            const typedCount = globalThis.__CROSS_EDITOR_HUGE__.typedCount(
-              selectedSurface,
-              blockIndex
-            );
-
-            if (typedCount === expected) {
-              return performance.now();
+          verify(mounted, expected, 'mount');
+          attempt.mount = compact(mounted);
+          let redoExpected;
+          let undoDocumentBefore, redoDocumentExpected;
+          for (const operation of operations) {
+            if (
+              operation === 'paste-html' &&
+              ['plite', 'slate'].includes(surface.split(':')[0])
+            ) {
+              attempt.results.push({
+                operation,
+                status: 'unsupported',
+                kind: 'unsupported',
+                reason:
+                  'This minimal substrate fixture does not install an HTML mark deserializer',
+              });
+              continue;
             }
-
-            await new Promise((resolvePromise) => {
-              requestAnimationFrame(resolvePromise);
+            if (extraOperations.includes(operation)) {
+              let result;
+              try {
+                result = await runExtraOperation({
+                  operation,
+                  page,
+                  expected,
+                  browserName,
+                  hostPlatform: platform(),
+                  select,
+                  verify,
+                  verifySelection,
+                  mutate,
+                  compact,
+                });
+              } catch (error) {
+                const failureTrace = await page.evaluate(() =>
+                  crossEditor.abort(),
+                );
+                const state = await read(page);
+                verify(
+                  state,
+                  expected,
+                  `${operation}: state required for the next independent action`,
+                );
+                result = {
+                  status: 'fail',
+                  kind: 'failed-guard',
+                  error: String(error.stack ?? error),
+                  failureState: compact(state),
+                  failureTrace,
+                };
+                console.error(
+                  JSON.stringify({
+                    event: 'failed-operation',
+                    surface,
+                    count,
+                    sample,
+                    operation,
+                    error: error.message,
+                  }),
+                );
+              }
+              assert.equal(errors.length, 0, errors.join('\n'));
+              attempt.results.push({ operation, ...result });
+              continue;
+            }
+            const block =
+              operation === 'first-type' ? 0 : Math.floor(expected.length / 2);
+            const offset = Math.min(16, expected[block].length - 2);
+            const cutExpected =
+              operation === 'cut'
+                ? expected[block].slice(offset, offset + 5)
+                : null;
+            let targetBlock = block;
+            let from = offset,
+              to = offset;
+            if (operation === 'replace-selection' || operation === 'cut')
+              to = offset + 5;
+            if (operation === 'join') {
+              targetBlock = Math.min(block + 1, expected.length - 1);
+              from = 0;
+              to = 0;
+            }
+            if (
+              !['undo', 'redo', 'scroll', 'resize', 'serialize'].includes(
+                operation,
+              )
+            )
+              await select(page, expected, targetBlock, from, to);
+            if (operation === 'undo') {
+              await select(page, expected, block, offset);
+              undoDocumentBefore = await page.evaluate(() =>
+                crossEditor.documentValue(),
+              );
+              await page.waitForTimeout(1100);
+              await page.keyboard.type('HISTORY');
+              mutate(expected, block, offset, offset, 'HISTORY');
+              await page.evaluate(
+                () =>
+                  new Promise((r) =>
+                    requestAnimationFrame(() => requestAnimationFrame(r)),
+                  ),
+              );
+              verify(await read(page), expected, 'undo preparation');
+              redoExpected = [...expected];
+              redoDocumentExpected = await page.evaluate(() =>
+                crossEditor.documentValue(),
+              );
+              mutate(expected, block, offset, offset + 7, '');
+            }
+            if (operation.startsWith('paste')) {
+              const plain =
+                operation === 'paste-multiline'
+                  ? 'pasted alpha\npasted beta'
+                  : 'pasted text';
+              await page.evaluate(
+                async ({ plain, html }) => {
+                  await navigator.clipboard.write([
+                    new ClipboardItem({
+                      'text/plain': new Blob([plain], { type: 'text/plain' }),
+                      ...(html
+                        ? {
+                            'text/html': new Blob([html], {
+                              type: 'text/html',
+                            }),
+                          }
+                        : {}),
+                    }),
+                  ]);
+                },
+                {
+                  plain,
+                  html:
+                    operation === 'paste-html'
+                      ? '<strong>pasted text</strong>'
+                      : null,
+                },
+              );
+            }
+            if (operation === 'serialize') {
+              const result = await page.evaluate(() => crossEditor.serialize());
+              assert.deepEqual(result.lines, expected);
+              attempt.results.push({
+                operation,
+                durationMs: result.durationMs,
+                bytes: result.bytes,
+                status: 'pass',
+                kind: 'command-serialization',
+              });
+              continue;
+            }
+            await page.evaluate(() => crossEditor.arm());
+            if (operation === 'first-type') {
+              await page.keyboard.type('Q');
+              mutate(expected, block, offset, offset, 'Q');
+            } else if (operation === 'type-burst') {
+              await page.keyboard.type('abcdefghij');
+              mutate(expected, block, offset, offset, 'abcdefghij');
+            } else if (operation === 'replace-selection') {
+              await page.keyboard.type('REPLACE');
+              mutate(expected, block, offset, offset + 5, 'REPLACE');
+            } else if (operation === 'backspace') {
+              await page.keyboard.press('Backspace');
+              mutate(expected, block, offset - 1, offset, '');
+            } else if (operation === 'delete-forward') {
+              await page.keyboard.press('Delete');
+              mutate(expected, block, offset, offset + 1, '');
+            } else if (operation === 'split') {
+              await page.keyboard.press('Enter');
+              mutate(expected, block, offset, offset, '\n');
+            } else if (operation === 'join') {
+              await page.keyboard.press('Backspace');
+              expected[targetBlock - 1] += expected[targetBlock];
+              expected.splice(targetBlock, 1);
+            } else if (operation === 'move-left')
+              await page.keyboard.press('ArrowLeft');
+            else if (operation === 'extend-selection')
+              await page.keyboard.press('Shift+ArrowRight');
+            else if (operation === 'bold-type') {
+              await page.keyboard.press('ControlOrMeta+b');
+              await page.keyboard.type('BOLD');
+              mutate(expected, block, offset, offset, 'BOLD');
+            } else if (operation === 'undo')
+              await page.keyboard.press('ControlOrMeta+z');
+            else if (operation === 'redo') {
+              assert(redoExpected, 'Redo requires undo in this sequence');
+              await page.keyboard.press('ControlOrMeta+Shift+z');
+              expected.splice(0, expected.length, ...redoExpected);
+            } else if (
+              operation === 'paste-text' ||
+              operation === 'paste-html'
+            ) {
+              await page.keyboard.press('ControlOrMeta+v');
+              mutate(expected, block, offset, offset, 'pasted text');
+            } else if (operation === 'paste-multiline') {
+              await page.keyboard.press('ControlOrMeta+v');
+              mutate(
+                expected,
+                block,
+                offset,
+                offset,
+                'pasted alpha\npasted beta',
+              );
+            } else if (operation === 'cut') {
+              await page.keyboard.press('ControlOrMeta+x');
+              mutate(expected, block, offset, offset + 5, '');
+            } else if (operation === 'scroll') {
+              await page.mouse.move(700, 500);
+              await page.mouse.wheel(0, 3000);
+            } else if (operation === 'resize')
+              await page.setViewportSize({ width: 900, height: 720 });
+            const expectedSelection =
+              operation === 'move-left'
+                ? {
+                    anchor: { block, offset: offset - 1 },
+                    focus: { block, offset: offset - 1 },
+                  }
+                : operation === 'extend-selection'
+                  ? {
+                      anchor: { block, offset },
+                      focus: { block, offset: offset + 1 },
+                    }
+                  : undefined;
+            const result = await page.evaluate(
+              (selection) => crossEditor.finish(selection),
+              expectedSelection,
+            );
+            verify(result, expected, operation);
+            if (expectedSelection) verifySelection(result, expectedSelection);
+            if (operation === 'bold-type' || operation === 'paste-html') {
+              const insertedText =
+                operation === 'bold-type' ? 'BOLD' : 'pasted text';
+              result.format = await page.evaluate(
+                ([block, from, to]) => crossEditor.format(block, from, to),
+                [block, offset, offset + insertedText.length],
+              );
+              assert.equal(
+                result.format.text,
+                insertedText,
+                'Format oracle targeted different text',
+              );
+              assert(
+                result.format.modelBold,
+                'Inserted text lacks the model bold mark',
+              );
+              assert(
+                result.format.renderedBold,
+                'Inserted text does not have computed bold weight',
+              );
+            }
+            if (operation === 'undo' || operation === 'redo') {
+              assert.deepEqual(
+                await page.evaluate(() => crossEditor.documentValue()),
+                operation === 'undo'
+                  ? undoDocumentBefore
+                  : redoDocumentExpected,
+                'History did not restore the exact document including marks',
+              );
+            }
+            if (operation.startsWith('paste'))
+              assert(
+                result.events.some((e) => e.type === 'paste' && e.isTrusted),
+                'Missing trusted paste event',
+              );
+            if (operation === 'cut') {
+              assert(
+                result.events.some((e) => e.type === 'cut' && e.isTrusted),
+                'Missing trusted cut event',
+              );
+              result.clipboardText = await page.evaluate(() =>
+                navigator.clipboard.readText(),
+              );
+              assert.equal(
+                result.clipboardText,
+                cutExpected,
+                'Cut clipboard text differs from the selected text',
+              );
+            }
+            if (!['scroll', 'resize'].includes(operation))
+              assert(
+                result.events.some((e) => e.type === 'keydown' && e.isTrusted),
+                'Missing trusted keyboard event',
+              );
+            if (operation === 'scroll')
+              assert(
+                result.scroll.outer > 0 || result.scroll.top > 0,
+                'Wheel did not scroll',
+              );
+            assert.equal(errors.length, 0, errors.join('\n'));
+            attempt.results.push({
+              operation,
+              ...compact(result),
+              status: 'pass',
+              kind: 'trusted-browser',
             });
           }
-
-          const root = document.querySelector('[data-slate-editor="true"]');
-          const handle = root?.__slateBrowserHandle;
-          const debugState = selectedSurface.startsWith('slate')
-            ? {
-                activeElement:
-                  document.activeElement instanceof Element
-                    ? {
-                        dataSlateEditor:
-                          document.activeElement.getAttribute(
-                            'data-slate-editor'
-                          ),
-                        dataSlateNode:
-                          document.activeElement.getAttribute(
-                            'data-slate-node'
-                          ),
-                        tagName: document.activeElement.tagName,
-                      }
-                    : null,
-                blockText: handle?.getBlockText?.(blockIndex) ?? null,
-                focusedRoot: document.activeElement === root,
-                inputState: handle?.getInputState?.() ?? null,
-                mountedText: !!handle?.getElementByPath?.([blockIndex, 0]),
-                nativeSelection:
-                  document
-                    .getSelection()
-                    ?.toString()
-                    .replace(/\uFEFF/g, '') ?? '',
-                selection: handle?.getSelection?.() ?? null,
-                viewSelection: handle?.getViewSelection?.() ?? null,
-              }
-            : null;
-
-          throw new Error(
-            selectedSurface +
-              ' typed text was not visible after 300 frames: ' +
-              JSON.stringify(debugState)
+          attempt.status = attempt.results.some(
+            (result) => result.status === 'fail',
+          )
+            ? 'fail'
+            : attempt.results.some((result) => result.status === 'unsupported')
+              ? 'incomplete'
+              : 'pass';
+        } catch (error) {
+          attempt.status = 'fail';
+          attempt.error = String(error.stack ?? error);
+          attempt.failureState = await read(page)
+            .then(compact)
+            .catch(() => null);
+          attempt.pageErrors = errors;
+          const path = resolve(
+            dirname(output),
+            `${output
+              .split('/')
+              .at(-1)
+              .replace(
+                /\.json$/,
+                '',
+              )}-${surface.replaceAll(':', '-')}-${count}-${sample}-failure.png`,
           );
-        },
-        {
-          blockIndex: lane.blockIndex,
-          expected: expectedTypedCount,
-          selectedSurface: surface,
-        }
-      );
-      const typePaint = await page.evaluate(() =>
-        globalThis.__CROSS_EDITOR_HUGE__.nextPaint()
-      );
-      const typeTrace = await readCrossEditorTrace(page);
-      const typeLongTaskMaxMs = await readCrossEditorLongTaskMax(page);
-      await page.evaluate(
-        async ({ blockIndex, expectedTypedCount, selectedSurface }) => {
-          await globalThis.__CROSS_EDITOR_HUGE__.assertTyped(
-            selectedSurface,
-            blockIndex,
-            expectedTypedCount
+          await page.screenshot({ path, fullPage: false }).catch(() => {});
+          attempt.screenshot = path;
+          console.error(
+            JSON.stringify({
+              event: 'failed',
+              surface,
+              count,
+              sample,
+              completed: attempt.results.length,
+              error: error.message,
+            }),
           );
-        },
-        {
-          blockIndex: lane.blockIndex,
-          expectedTypedCount,
-          selectedSurface: surface,
         }
-      );
-      await page.evaluate(async (selectedSurface) => {
-        await globalThis.__CROSS_EDITOR_HUGE__.waitForPendingTextInputRepair(
-          selectedSurface
+        await context.close();
+        context = null;
+        await save();
+        console.log(
+          JSON.stringify({
+            event: 'attempt',
+            surface,
+            count,
+            sample,
+            status: attempt.status,
+            operations: attempt.results.length,
+          }),
         );
-      }, surface);
-      const snapshot = await page.evaluate(
-        (selectedSurface) =>
-          globalThis.__CROSS_EDITOR_HUGE__.snapshot(selectedSurface),
-        surface
-      );
-
-      if (iteration > 0) {
-        samples.push({
-          burstToPaintMs: typePaint - typeStart,
-          burstToPaintPerOpMs: (typePaint - typeStart) / typeOps,
-          domNodes: snapshot.domNodes,
-          heapMB: snapshot.heapMB,
-          longTaskMaxMs: typeLongTaskMaxMs,
-          materializedSelectToPaintMs:
-            materializedSelectPaint - materializedSelectStart,
-          materializedSelectCommandMs:
-            materializedSelectCommandReady - materializedSelectStart,
-          materializedSelectPaintAfterCommandMs:
-            materializedSelectPaint - materializedSelectCommandReady,
-          materializedSelectProfilerSummary: summarizeProfilerEvents(
-            materializedSelectTrace.profilerEvents
-          ),
-          materializedSelectRenderCount:
-            materializedSelectTrace.profilerEvents.filter(isRenderProfilerEvent)
-              .length,
-          materializedSelectRenderSummary: summarizeRenderProfilerEvents(
-            materializedSelectTrace.profilerEvents
-          ),
-          observedBlocks: snapshot.observedBlocks,
-          selectCommandMs: selectCommandReady - selectStart,
-          selectPaintAfterCommandMs: selectPaint - selectCommandReady,
-          selectProfilerSummary: summarizeProfilerEvents(
-            selectTrace.profilerEvents
-          ),
-          selectRenderCount: selectTrace.profilerEvents.filter(
-            isRenderProfilerEvent
-          ).length,
-          selectRenderSummary: summarizeRenderProfilerEvents(
-            selectTrace.profilerEvents
-          ),
-          selectToPaintMs: selectPaint - selectStart,
-          shiftDownCommandMs: shiftDownCommandReady - shiftDownStart,
-          shiftDownPaintAfterCommandMs: shiftDownPaint - shiftDownCommandReady,
-          shiftDownLongTaskMaxMs,
-          shiftDownProfilerSummary: summarizeProfilerEvents(
-            shiftDownTrace.profilerEvents
-          ),
-          shiftDownProjectionProfilerSummary: summarizeProjectionProfilerEvents(
-            shiftDownTrace.profilerEvents
-          ),
-          shiftDownRenderCount: shiftDownTrace.profilerEvents.filter(
-            isRenderProfilerEvent
-          ).length,
-          shiftDownRenderSummary: summarizeRenderProfilerEvents(
-            shiftDownTrace.profilerEvents
-          ),
-          shiftDownReactProfilerSummary: summarizeReactProfilerEvents(
-            shiftDownTrace.reactProfilerEvents
-          ),
-          shiftDownSelectedTextLength,
-          shiftDownToPaintMs: shiftDownPaint - shiftDownStart,
-          shiftDownViewSelectionProfilerSummary:
-            summarizeViewSelectionProfilerEvents(shiftDownTrace.profilerEvents),
-          repeatedShiftDownSamples,
-          shiftUpLongTaskMaxMs,
-          shiftUpSelectedTextLength,
-          shiftUpToPaintMs: shiftUpPaint - shiftUpStart,
-          typeProfilerSummary: summarizeProfilerEvents(
-            typeTrace.profilerEvents
-          ),
-          typeReactProfilerSummary: summarizeReactProfilerEvents(
-            typeTrace.reactProfilerEvents
-          ),
-          typeCommandMs: typeCommandReady - typeStart,
-          typePaintAfterReadyMs: typePaint - typeTextReady,
-          typeRenderCount: typeTrace.profilerEvents.filter(
-            isRenderProfilerEvent
-          ).length,
-          typeRenderSummary: summarizeRenderProfilerEvents(
-            typeTrace.profilerEvents
-          ),
-          typeTextReadyMs: typeTextReady - typeCommandReady,
-          typeToPaintMs: typePaint - typeStart,
-        });
       }
-
-      latestSnapshot = snapshot;
     }
-
-    laneSummaries[lane.key] = {
-      blockIndex: lane.blockIndex,
-      burstToPaintMs: summarizeMetric(samples, 'burstToPaintMs'),
-      burstToPaintPerOpMs: summarizeMetric(samples, 'burstToPaintPerOpMs'),
-      domNodes: summarizeMetric(samples, 'domNodes'),
-      heapMB: summarizeMetric(samples, 'heapMB'),
-      longTaskMaxMs: summarizeMetric(samples, 'longTaskMaxMs'),
-      materializedSelectToPaintMs: summarizeMetric(
-        samples,
-        'materializedSelectToPaintMs'
-      ),
-      materializedSelectCommandMs: summarizeMetric(
-        samples,
-        'materializedSelectCommandMs'
-      ),
-      materializedSelectPaintAfterCommandMs: summarizeMetric(
-        samples,
-        'materializedSelectPaintAfterCommandMs'
-      ),
-      materializedSelectRenderCount: summarizeMetric(
-        samples,
-        'materializedSelectRenderCount'
-      ),
-      observedBlocks: summarizeMetric(samples, 'observedBlocks'),
-      samples,
-      selectCommandMs: summarizeMetric(samples, 'selectCommandMs'),
-      selectPaintAfterCommandMs: summarizeMetric(
-        samples,
-        'selectPaintAfterCommandMs'
-      ),
-      selectRenderCount: summarizeMetric(samples, 'selectRenderCount'),
-      selectToPaintMs: summarizeMetric(samples, 'selectToPaintMs'),
-      shiftDownCommandMs: summarizeMetric(samples, 'shiftDownCommandMs'),
-      shiftDownLongTaskMaxMs: summarizeMetric(
-        samples,
-        'shiftDownLongTaskMaxMs'
-      ),
-      shiftDownPaintAfterCommandMs: summarizeMetric(
-        samples,
-        'shiftDownPaintAfterCommandMs'
-      ),
-      shiftDownRenderCount: summarizeMetric(samples, 'shiftDownRenderCount'),
-      repeatedShiftDownCommandMs: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'commandMs'
-      ),
-      repeatedShiftDownLongTaskMaxMs: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'longTaskMaxMs'
-      ),
-      repeatedShiftDownPaintAfterCommandMs: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'paintAfterCommandMs'
-      ),
-      repeatedShiftDownProfilerSummary: summarizeNestedProfilerSummary(
-        samples,
-        'repeatedShiftDownSamples',
-        'profilerSummary'
-      ),
-      repeatedShiftDownProjectionProfilerSummary:
-        summarizeNestedProfilerSummary(
-          samples,
-          'repeatedShiftDownSamples',
-          'projectionProfilerSummary'
-        ),
-      repeatedShiftDownReactProfilerSummary:
-        summarizeNestedReactProfilerSummary(
-          samples,
-          'repeatedShiftDownSamples',
-          'reactProfilerSummary'
-        ),
-      repeatedShiftDownRenderCount: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'renderCount'
-      ),
-      repeatedShiftDownRenderSummary: summarizeNestedRenderSummary(
-        samples,
-        'repeatedShiftDownSamples',
-        'renderSummary'
-      ),
-      repeatedShiftDownSelectedTextLength: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'selectedTextLength'
-      ),
-      repeatedShiftDownToPaintMs: summarizeNestedMetric(
-        samples,
-        'repeatedShiftDownSamples',
-        'toPaintMs'
-      ),
-      repeatedShiftDownViewSelectionProfilerSummary:
-        summarizeNestedProfilerSummary(
-          samples,
-          'repeatedShiftDownSamples',
-          'viewSelectionProfilerSummary'
-        ),
-      shiftDownSelectedTextLength: summarizeMetric(
-        samples,
-        'shiftDownSelectedTextLength'
-      ),
-      shiftDownToPaintMs: summarizeMetric(samples, 'shiftDownToPaintMs'),
-      shiftUpLongTaskMaxMs: summarizeMetric(samples, 'shiftUpLongTaskMaxMs'),
-      shiftUpSelectedTextLength: summarizeMetric(
-        samples,
-        'shiftUpSelectedTextLength'
-      ),
-      shiftUpToPaintMs: summarizeMetric(samples, 'shiftUpToPaintMs'),
-      typeCommandMs: summarizeMetric(samples, 'typeCommandMs'),
-      typePaintAfterReadyMs: summarizeMetric(samples, 'typePaintAfterReadyMs'),
-      typeRenderCount: summarizeMetric(samples, 'typeRenderCount'),
-      typeTextReadyMs: summarizeMetric(samples, 'typeTextReadyMs'),
-      typeToPaintMs: summarizeMetric(samples, 'typeToPaintMs'),
-    };
-  }
-
-  return {
-    latestSnapshot,
-    lanes: laneSummaries,
-  };
-};
-
-const printSurface = (surface, summary) => {
-  console.log(`\n${surface}`);
-
-  const formatSummary = (metric) =>
-    `median=${round(metric.median)}, p75=${round(metric.p75)}, p95=${round(
-      metric.p95
-    )}, max=${round(metric.max)}, n=${metric.samples.length}`;
-
-  for (const [laneName, lane] of Object.entries(summary.lanes)) {
-    console.log(
-      `${laneName}: typeToPaintMs p95=${round(
-        lane.typeToPaintMs.p95
-      )}, typeCommandMs p95=${round(
-        lane.typeCommandMs.p95
-      )}, typeTextReadyMs p95=${round(
-        lane.typeTextReadyMs.p95
-      )}, typePaintAfterReadyMs p95=${round(
-        lane.typePaintAfterReadyMs.p95
-      )}, burstToPaintPerOpMs p95=${round(
-        lane.burstToPaintPerOpMs.p95
-      )}, materializedSelectToPaintMs p95=${round(
-        lane.materializedSelectToPaintMs.p95
-      )}, materializedSelectCommandMs p95=${round(
-        lane.materializedSelectCommandMs.p95
-      )}, materializedSelectPaintAfterCommandMs p95=${round(
-        lane.materializedSelectPaintAfterCommandMs.p95
-      )}, selectToPaintMs p95=${round(
-        lane.selectToPaintMs.p95
-      )}, selectCommandMs p95=${round(
-        lane.selectCommandMs.p95
-      )}, selectPaintAfterCommandMs p95=${round(
-        lane.selectPaintAfterCommandMs.p95
-      )}, shiftDownCommandMs p95=${round(
-        lane.shiftDownCommandMs.p95
-      )}, shiftDownPaintAfterCommandMs p95=${round(
-        lane.shiftDownPaintAfterCommandMs.p95
-      )}, shiftDownToPaintMs p95=${round(
-        lane.shiftDownToPaintMs.p95
-      )}, repeatedShiftDownToPaintMs ${formatSummary(
-        lane.repeatedShiftDownToPaintMs
-      )}, repeatedShiftDownCommandMs p95=${round(
-        lane.repeatedShiftDownCommandMs.p95
-      )}, shiftUpToPaintMs p95=${round(
-        lane.shiftUpToPaintMs.p95
-      )}, typeRenderCount p95=${round(
-        lane.typeRenderCount.p95
-      )}, shiftDownLongTaskMaxMs p95=${round(
-        lane.shiftDownLongTaskMaxMs.p95
-      )}, longTaskMaxMs p95=${round(
-        lane.longTaskMaxMs.p95
-      )}, domNodes p95=${round(lane.domNodes.p95)}, heapMB p95=${round(
-        lane.heapMB.p95
-      )}`
-    );
-  }
-};
-
-await buildSlateReactPackage();
-
-const { htmlSource } = await buildBrowserBundle();
-const browser = await chromium.launch({ headless });
-
-try {
-  const page = await browser.newPage();
-  await page.setContent(htmlSource, { waitUntil: 'load' });
-  await page.waitForFunction(() => globalThis.__CROSS_EDITOR_HUGE_READY__);
-
-  const surfaces = {};
-
-  for (const surface of selectedSurfaces) {
-    console.log(`\nMeasuring ${surface}`);
-    surfaces[surface] = await measureSurface({ page, surface });
-    printSurface(surface, surfaces[surface]);
-  }
-
-  const summary = {
-    artifactPaths: {
-      latest: latestArtifactPath,
-      run: runArtifactPath,
-    },
-    config: {
-      blocks,
-      iterations,
-      lexicalRepo,
-      prosemirrorRepo,
-      repeatedShiftDownCount,
-      repeatedShiftDownMode,
-      slateVirtualizedEstimatedBlockSize,
-      slateVirtualizedOverscan,
-      surfaces: Array.from(selectedSurfaces),
-      typeOps,
-    },
-    lane: 'slate-react-huge-document-cross-editor',
-    surfaces,
-  };
-
-  await writeBenchmarkArtifact(latestArtifactPath, summary);
-  await writeBenchmarkArtifact(runArtifactPath, summary);
-
-  const surfaceP95 = (surfaceSummary, metric) =>
-    Math.max(
-      ...Object.values(surfaceSummary.lanes).map((lane) => lane[metric].p95)
-    );
-  const surfaceMetric = (surfaceSummary, metric, field) =>
-    Math.max(
-      ...Object.values(surfaceSummary.lanes).map(
-        (lane) => lane[metric][field] ?? 0
-      )
-    );
-  const surfaceSampleCount = (surfaceSummary, metric) =>
-    Math.max(
-      ...Object.values(surfaceSummary.lanes).map(
-        (lane) => lane[metric].samples.length
-      )
-    );
-
-  for (const [surface, surfaceSummary] of Object.entries(surfaces)) {
-    for (const [laneName, lane] of Object.entries(surfaceSummary.lanes)) {
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_shift_down_to_paint_p95_ms=${round(
-          lane.shiftDownToPaintMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_shift_down_command_p95_ms=${round(
-          lane.shiftDownCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_shift_down_paint_after_command_p95_ms=${round(
-          lane.shiftDownPaintAfterCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_to_paint_p95_ms=${round(
-          lane.repeatedShiftDownToPaintMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_to_paint_median_ms=${round(
-          lane.repeatedShiftDownToPaintMs.median
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_to_paint_p75_ms=${round(
-          lane.repeatedShiftDownToPaintMs.p75
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_to_paint_max_ms=${round(
-          lane.repeatedShiftDownToPaintMs.max
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_sample_count=${lane.repeatedShiftDownToPaintMs.samples.length}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_command_p95_ms=${round(
-          lane.repeatedShiftDownCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_repeated_shift_down_render_count_p95=${round(
-          lane.repeatedShiftDownRenderCount.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_shift_up_to_paint_p95_ms=${round(
-          lane.shiftUpToPaintMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_type_to_paint_p95_ms=${round(
-          lane.typeToPaintMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_type_command_p95_ms=${round(
-          lane.typeCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_type_text_ready_p95_ms=${round(
-          lane.typeTextReadyMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_type_paint_after_ready_p95_ms=${round(
-          lane.typePaintAfterReadyMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_type_render_count_p95=${round(
-          lane.typeRenderCount.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_select_command_p95_ms=${round(
-          lane.selectCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_select_paint_after_command_p95_ms=${round(
-          lane.selectPaintAfterCommandMs.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_dom_nodes_p95=${round(
-          lane.domNodes.p95
-        )}`
-      );
-      console.log(
-        `METRIC react_huge_doc_cross_editor_${surface}_${laneName}_long_task_max_p95_ms=${round(
-          lane.longTaskMaxMs.p95
-        )}`
-      );
-    }
-
-    const burstToPaintPerOpP95 = surfaceP95(
-      surfaceSummary,
-      'burstToPaintPerOpMs'
-    );
-    const domNodesP95 = surfaceP95(surfaceSummary, 'domNodes');
-    const longTaskMaxP95 = surfaceP95(surfaceSummary, 'longTaskMaxMs');
-    const materializedSelectToPaintP95 = surfaceP95(
-      surfaceSummary,
-      'materializedSelectToPaintMs'
-    );
-    const materializedSelectCommandP95 = surfaceP95(
-      surfaceSummary,
-      'materializedSelectCommandMs'
-    );
-    const materializedSelectPaintAfterCommandP95 = surfaceP95(
-      surfaceSummary,
-      'materializedSelectPaintAfterCommandMs'
-    );
-    const selectCommandP95 = surfaceP95(surfaceSummary, 'selectCommandMs');
-    const selectPaintAfterCommandP95 = surfaceP95(
-      surfaceSummary,
-      'selectPaintAfterCommandMs'
-    );
-    const selectToPaintP95 = surfaceP95(surfaceSummary, 'selectToPaintMs');
-    const shiftDownToPaintP95 = surfaceP95(
-      surfaceSummary,
-      'shiftDownToPaintMs'
-    );
-    const shiftDownCommandP95 = surfaceP95(
-      surfaceSummary,
-      'shiftDownCommandMs'
-    );
-    const shiftDownPaintAfterCommandP95 = surfaceP95(
-      surfaceSummary,
-      'shiftDownPaintAfterCommandMs'
-    );
-    const repeatedShiftDownToPaintP95 = surfaceP95(
-      surfaceSummary,
-      'repeatedShiftDownToPaintMs'
-    );
-    const repeatedShiftDownToPaintMedian = surfaceMetric(
-      surfaceSummary,
-      'repeatedShiftDownToPaintMs',
-      'median'
-    );
-    const repeatedShiftDownToPaintP75 = surfaceMetric(
-      surfaceSummary,
-      'repeatedShiftDownToPaintMs',
-      'p75'
-    );
-    const repeatedShiftDownToPaintMax = surfaceMetric(
-      surfaceSummary,
-      'repeatedShiftDownToPaintMs',
-      'max'
-    );
-    const repeatedShiftDownToPaintSampleCount = surfaceSampleCount(
-      surfaceSummary,
-      'repeatedShiftDownToPaintMs'
-    );
-    const repeatedShiftDownCommandP95 = surfaceP95(
-      surfaceSummary,
-      'repeatedShiftDownCommandMs'
-    );
-    const repeatedShiftDownRenderCountP95 = surfaceP95(
-      surfaceSummary,
-      'repeatedShiftDownRenderCount'
-    );
-    const shiftUpToPaintP95 = surfaceP95(surfaceSummary, 'shiftUpToPaintMs');
-    const shiftDownLongTaskMaxP95 = surfaceP95(
-      surfaceSummary,
-      'shiftDownLongTaskMaxMs'
-    );
-    const typeCommandP95 = surfaceP95(surfaceSummary, 'typeCommandMs');
-    const typePaintAfterReadyP95 = surfaceP95(
-      surfaceSummary,
-      'typePaintAfterReadyMs'
-    );
-    const typeTextReadyP95 = surfaceP95(surfaceSummary, 'typeTextReadyMs');
-    const typeToPaintP95 = surfaceP95(surfaceSummary, 'typeToPaintMs');
-
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_burst_to_paint_per_op_p95_ms=${round(
-        burstToPaintPerOpP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_type_to_paint_p95_ms=${round(
-        typeToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_type_command_p95_ms=${round(
-        typeCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_type_text_ready_p95_ms=${round(
-        typeTextReadyP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_type_paint_after_ready_p95_ms=${round(
-        typePaintAfterReadyP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_select_to_paint_p95_ms=${round(
-        selectToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_select_command_p95_ms=${round(
-        selectCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_select_paint_after_command_p95_ms=${round(
-        selectPaintAfterCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_shift_down_to_paint_p95_ms=${round(
-        shiftDownToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_shift_down_command_p95_ms=${round(
-        shiftDownCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_shift_down_paint_after_command_p95_ms=${round(
-        shiftDownPaintAfterCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_to_paint_p95_ms=${round(
-        repeatedShiftDownToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_to_paint_median_ms=${round(
-        repeatedShiftDownToPaintMedian
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_to_paint_p75_ms=${round(
-        repeatedShiftDownToPaintP75
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_to_paint_max_ms=${round(
-        repeatedShiftDownToPaintMax
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_sample_count=${repeatedShiftDownToPaintSampleCount}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_command_p95_ms=${round(
-        repeatedShiftDownCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_repeated_shift_down_render_count_p95=${round(
-        repeatedShiftDownRenderCountP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_shift_up_to_paint_p95_ms=${round(
-        shiftUpToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_shift_down_long_task_max_p95_ms=${round(
-        shiftDownLongTaskMaxP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_materialized_select_to_paint_p95_ms=${round(
-        materializedSelectToPaintP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_materialized_select_command_p95_ms=${round(
-        materializedSelectCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_materialized_select_paint_after_command_p95_ms=${round(
-        materializedSelectPaintAfterCommandP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_dom_nodes_p95=${round(
-        domNodesP95
-      )}`
-    );
-    console.log(
-      `METRIC react_huge_doc_cross_editor_${surface}_long_task_max_p95_ms=${round(
-        longTaskMaxP95
-      )}`
-    );
-  }
-
-  console.log(`\nWrote ${runArtifactPath}`);
+} catch (error) {
+  artifact.errors.push(String(error.stack ?? error));
 } finally {
+  await context?.close();
   await browser.close();
+  await new Promise((resolve) => server.close(resolve));
 }
+for (const [path, bytes] of sourceSnapshot) {
+  const after = await readFile(path).catch(() => Buffer.from('MISSING'));
+  sourceAfter.set(path, {
+    before: sha(bytes),
+    after: sha(after),
+    stable: sha(bytes) === sha(after),
+  });
+}
+artifact.sources = Object.fromEntries(sourceAfter);
+artifact.compilerEvents = Object.fromEntries(compilerEvents);
+artifact.finishedAt = new Date().toISOString();
+artifact.status =
+  artifact.errors.length === 0 &&
+  artifact.attempts.every(
+    (a) => a.status === 'pass' || a.status === 'incomplete',
+  ) &&
+  [...sourceAfter.values()].every((v) => v.stable)
+    ? artifact.attempts.some((attempt) => attempt.status === 'incomplete')
+      ? 'incomplete'
+      : 'pass'
+    : 'fail';
+const percentile = (values, p) => {
+  const sorted = values
+    .filter((x) => typeof x === 'number')
+    .sort((a, b) => a - b);
+  return sorted.length
+    ? sorted[Math.min(sorted.length - 1, Math.ceil(p * sorted.length) - 1)]
+    : null;
+};
+const stats = (values) => ({
+  n: values.length,
+  p50: percentile(values, 0.5),
+  p75: percentile(values, 0.75),
+  p95: percentile(values, 0.95),
+  max: percentile(values, 1),
+  iqr: percentile(values, 0.75) - percentile(values, 0.25),
+});
+artifact.summary = [];
+for (const surface of selected)
+  for (const count of cohorts) {
+    const attempts = artifact.attempts.filter(
+      (a) => a.surface === surface && a.count === count && !a.warmup,
+    );
+    artifact.summary.push({
+      surface,
+      count,
+      operation: 'mount',
+      passed: attempts.filter((a) => a.mount).length,
+      attempted: attempts.length,
+      twoFramesMs: stats(
+        attempts.filter((a) => a.mount).map((a) => a.mount.mountToTwoFramesMs),
+      ),
+    });
+    for (const operation of operations) {
+      const rows = attempts.flatMap((a) =>
+        a.results.filter((r) => r.operation === operation),
+      );
+      artifact.summary.push({
+        surface,
+        count,
+        operation,
+        passed: rows.filter((row) => row.status === 'pass').length,
+        unsupported: rows
+          .filter((row) => row.status === 'unsupported')
+          .map((row) => row.reason),
+        attempted: attempts.length,
+        eventToFrameOpportunityMs: stats(
+          rows.map((r) => r.eventToFrameOpportunityMs).filter((x) => x != null),
+        ),
+        verifiedStateMs: stats(
+          rows.map((r) => r.inputToVerifiedStateMs).filter((x) => x != null),
+        ),
+        modelMs: stats(
+          rows.map((r) => r.inputToModelMs).filter((x) => x != null),
+        ),
+        commandMs: stats(
+          rows.map((r) => r.durationMs).filter((x) => x != null),
+        ),
+      });
+    }
+  }
+await save();
+console.log(
+  JSON.stringify({
+    event: 'complete',
+    status: artifact.status,
+    attempts: artifact.attempts.length,
+    passed: artifact.attempts.filter((a) => a.status === 'pass').length,
+    artifact: output,
+  }),
+);
+process.exitCode = artifact.status === 'pass' ? 0 : 1;

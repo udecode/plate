@@ -91,7 +91,7 @@ const summarize = (samples: number[]) => ({
 
 const url = getArg('url') ?? 'http://localhost:3000/blocks/playground';
 const maxMutationP95 = Number(getArg('max-mutation-p95') ?? 16);
-const maxSecondPaintP95 = Number(getArg('max-second-paint-p95') ?? 32);
+const maxSecondFrameP95 = Number(getArg('max-second-frame-p95') ?? 32);
 const maxLongTasks = Number(getArg('max-long-tasks') ?? 0);
 const settleMs = Number(getArg('settle-ms') ?? 2500);
 const diagnose = hasArg('diagnose');
@@ -136,6 +136,39 @@ try {
   await page.waitForSelector('[contenteditable="true"][role="textbox"]', {
     timeout: 120_000,
   });
+  if (requireBrowserHandle) {
+    try {
+      await page.waitForFunction(
+        () =>
+          !!document.querySelector<
+            HTMLElement & { __pliteBrowserHandle?: unknown }
+          >('[contenteditable="true"][role="textbox"]')?.__pliteBrowserHandle,
+        { timeout: 30_000 }
+      );
+    } catch (error) {
+      if (out) {
+        const outputPath = path.resolve(process.cwd(), out);
+        await mkdir(path.dirname(outputPath), { recursive: true });
+        await writeFile(
+          outputPath,
+          JSON.stringify(
+            {
+              action,
+              browser: await browser.version(),
+              error: String(error),
+              observedAt: new Date().toISOString(),
+              runtimeErrors,
+              status: 'browser-handle-readiness-failed',
+              url,
+            },
+            null,
+            2
+          )
+        );
+      }
+      throw error;
+    }
+  }
   await new Promise((resolve) => {
     setTimeout(resolve, settleMs);
   });
@@ -375,12 +408,6 @@ try {
             probeWindow.__homepageInputProbe ??
             failInvariant('Expected value to be defined')
           ).rows.push(row);
-          requestAnimationFrame((time) => {
-            row.raf1 = time;
-            requestAnimationFrame((nextTime) => {
-              row.raf2 = nextTime;
-            });
-          });
         },
         true
       );
@@ -427,6 +454,12 @@ try {
 
         if (row && row.mutation === undefined && actionCompleted) {
           row.mutation = performance.now();
+          requestAnimationFrame(() => {
+            row.raf1 = performance.now();
+            requestAnimationFrame(() => {
+              row.raf2 = performance.now();
+            });
+          });
         }
       }).observe(root, {
         characterData: true,
@@ -773,6 +806,19 @@ try {
         );
       }
     }
+    const timeline = [row.keydown, row.mutation, row.raf1, row.raf2].map(
+      (time) => time ?? failInvariant('Expected value to be defined')
+    );
+
+    if (
+      timeline.some(
+        (time, position) => position > 0 && time < timeline[position - 1]
+      )
+    ) {
+      throw new Error(
+        `Homepage native-input gate row ${index + 1} has non-monotonic mutation/frame timings.`
+      );
+    }
   }
   const beforeInput =
     action === 'type'
@@ -794,7 +840,7 @@ try {
           )
         )
       : null;
-  const firstPaint = summarize(
+  const firstFrame = summarize(
     measuredRows.map(
       (row) =>
         (row.raf1 ?? failInvariant('Expected value to be defined')) -
@@ -808,7 +854,7 @@ try {
         row.keydown
     )
   );
-  const secondPaint = summarize(
+  const secondFrame = summarize(
     measuredRows.map(
       (row) =>
         (row.raf2 ?? failInvariant('Expected value to be defined')) -
@@ -838,7 +884,7 @@ try {
   const result = {
     action,
     browserHandleAvailable,
-    budget: { maxLongTasks, maxMutationP95, maxSecondPaintP95 },
+    budget: { maxLongTasks, maxMutationP95, maxSecondFrameP95 },
     commandBlockers: [...new Set(probe.commandBlockers)],
     commitDelta:
       action === 'enter'
@@ -859,7 +905,15 @@ try {
     beforeInput,
     finalText: probe.finalText,
     focusPreserved: probe.focusPreserved,
-    firstPaint,
+    firstFrame,
+    frameTiming:
+      'Two animation-frame callbacks after the expected DOM mutation; elapsed from keydown. Frame callbacks do not certify completed painting.',
+    frameSamples: measuredRows.map((row) => ({
+      keydown: row.keydown,
+      mutation: row.mutation,
+      raf1: row.raf1,
+      raf2: row.raf2,
+    })),
     inputMutation,
     inputState: probe.inputState,
     ignoredHostErrors,
@@ -875,14 +929,14 @@ try {
         .slice(0, 30)
     ),
     renderCounts: Object.fromEntries(
-      Object.entries(probe.renderCounts)
-        .sort(([, left], [, right]) => right - left)
-        .slice(0, 50)
+      Object.entries(probe.renderCounts).sort(
+        ([, left], [, right]) => right - left
+      )
     ),
     selectorCounts: Object.fromEntries(
-      Object.entries(probe.selectorCounts)
-        .sort(([, left], [, right]) => right - left)
-        .slice(0, 100)
+      Object.entries(probe.selectorCounts).sort(
+        ([, left], [, right]) => right - left
+      )
     ),
     syncStates: measuredRows.map((row) => ({
       domSync: row.domSync,
@@ -923,7 +977,7 @@ try {
     modelText: probe.modelText,
     nativeSelectedText: probe.nativeSelectedText,
     runtimeErrors: actionableRuntimeErrors,
-    secondPaint,
+    secondFrame,
     targetPath: targetIdentity.path,
     targetText: targetIdentity.text,
     url,
@@ -956,8 +1010,8 @@ try {
     mutation.p95 > maxMutationP95
       ? `mutation p95 ${mutation.p95.toFixed(1)} ms exceeds ${maxMutationP95} ms`
       : null,
-    secondPaint.p95 > maxSecondPaintP95
-      ? `second-paint p95 ${secondPaint.p95.toFixed(1)} ms exceeds ${maxSecondPaintP95} ms`
+    secondFrame.p95 > maxSecondFrameP95
+      ? `second-frame p95 ${secondFrame.p95.toFixed(1)} ms exceeds ${maxSecondFrameP95} ms`
       : null,
     result.longTasks.count > maxLongTasks
       ? `${result.longTasks.count} long tasks exceeds ${maxLongTasks}`

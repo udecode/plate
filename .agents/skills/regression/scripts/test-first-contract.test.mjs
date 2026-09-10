@@ -224,6 +224,28 @@ test('reporter rerender claims require a route-wide repeated-component oracle', 
   );
 });
 
+test('render measurements bind every measured runtime owner into proof receipts', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+  const validator = read(
+    '.agents/rules/regression/scripts/validate-regression-plan.mjs'
+  );
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /measurement-owner-inputs:/);
+    assert.match(source, /measurement-owner-closure: pass/);
+  }
+  assert.match(validator, /RENDER_MEASUREMENT_PATTERN/);
+  assert.match(validator, /measurementOwnerInputsByCase/);
+  assert.match(
+    validator,
+    /Inputs must include every measurement-owner-inputs path/
+  );
+});
+
 test('plain reporter UI nouns require a complete visible-affordance inventory', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(
@@ -610,6 +632,23 @@ test('reporter-video hit paths reject locator clicks and seeded selections', () 
   }
 });
 
+test('setup-only selection does not inherit an unrelated physical-input oracle', () => {
+  const regressionRule = read('.agents/rules/regression.mdc');
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+  const template = read('docs/plans/templates/regression.md');
+
+  for (const source of [regressionRule, methodology, template]) {
+    assert.match(source, /setup-only/i);
+    assert.match(source, /locator\.selectText\(\)/i);
+    assert.match(source, /native-keyboard selection/i);
+    assert.match(source, /asserts? the seeded state/i);
+    assert.match(source, /cannot\s+widen|does not\s+widen/i);
+    assert.match(source, /reporter-identified pointer path/i);
+  }
+});
+
 test('capture routing validates attributes on the actual ancestor owner', () => {
   const regressionRule = read('.agents/rules/regression.mdc');
   const methodology = read(
@@ -625,6 +664,23 @@ test('capture routing validates attributes on the actual ancestor owner', () => 
     assert.match(source, /capture-routing-contract:\s*pass/i);
     assert.match(source, /child[\s\S]{0,100}(?:invalid|proxy)/i);
   }
+});
+
+test('filtered observer batches preserve independent critical records', () => {
+  const methodology = read(
+    '.agents/rules/regression/references/methodology.md'
+  );
+
+  assert.match(methodology, /filter(?:ed|ing|s)?\s+records?\s+independently/i);
+  assert.match(
+    methodology,
+    /ignored presentation[\s\S]{0,120}critical[\s\S]{0,30}childList/i
+  );
+  assert.match(methodology, /same (?:observer )?(?:delivery|batch)/i);
+  assert.match(
+    methodology,
+    /distinct selectors|selector[\s\S]{0,80}conflat/i
+  );
 });
 
 test('live-tab contradictions inventory external capture interceptors', () => {

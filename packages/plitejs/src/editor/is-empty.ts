@@ -4,12 +4,9 @@ import { NodeApi } from '../interfaces/node';
 
 export const isEmpty: EditorStaticApi['isEmpty'] = (editor, element) => {
   const { children } = element;
-  const [first] = children;
   return (
     children.length === 0 ||
-    (children.length === 1 &&
-      NodeApi.isText(first) &&
-      first.text === '' &&
+    (children.every((child) => NodeApi.isText(child) && child.text === '') &&
       !getEditorSchema(editor).isVoid(element))
   );
 };

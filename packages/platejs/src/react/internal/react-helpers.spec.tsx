@@ -1,9 +1,30 @@
-import { renderHook } from '@testing-library/react';
+import { render, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import { composeRefs, useComposedRef } from './react-helpers';
 
 describe('useComposedRef', () => {
+  it('detaches every ref when React runs a composed cleanup', () => {
+    const objectRef = React.createRef<HTMLDivElement>();
+    const cleanup = mock();
+    const callbackRef = mock(() => {});
+    const cleanupRef = mock((node: HTMLDivElement | null) =>
+      node ? cleanup : undefined
+    );
+    const Probe = () => (
+      <div ref={useComposedRef(objectRef, callbackRef, cleanupRef)} />
+    );
+    const view = render(<Probe />);
+
+    expect(objectRef.current).toBeInstanceOf(HTMLDivElement);
+    view.unmount();
+
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(cleanupRef).toHaveBeenCalledTimes(1);
+    expect(objectRef.current).toBeNull();
+    expect(callbackRef).toHaveBeenLastCalledWith(null);
+  });
+
   it('handle regular refs', () => {
     const ref1 = React.createRef<HTMLDivElement>();
     const ref2 = React.createRef<HTMLDivElement>();

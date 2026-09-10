@@ -27,44 +27,57 @@ Insert emojis with autocomplete using `:`
 
 - Utilities for creating trigger-based combobox functionality
 - Configurable trigger characters and patterns
-- Keyboard navigation and selection handling
+- Atomic input completion, cancellation and history commands
 
 </PackageInfo>
 
-## Create a Combobox Plugin
+## Create a combobox plugin
 
 <Steps>
 
 ### Installation
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npm install platejs
+npx shadcn@latest add @plate/inline-combobox
 ```
 
-### Create Input Plugin
+### Create input plugin
 
 First, create an input plugin that will be inserted when the trigger is activated:
 
-```tsx
-import { defineBasePlugin } from 'platejs';
+```tsx showLineNumbers
+import { property } from 'platejs';
+import { BaseComboboxPlugin } from 'platejs/combobox';
+import { definePlatePlugin } from 'platejs/react';
 
-const TagInputPlugin = defineBasePlugin('tagInput', {
+export const TagInputPlugin = definePlatePlugin('tagInput', {
+  dependencies: [BaseComboboxPlugin],
   editOnly: true,
-  schema: { element: { type: 'tag_input', void: 'inline' } },
+  schema: {
+    element: {
+      type: 'tag_input',
+      void: 'inline',
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
+      },
+    },
+  },
 });
 ```
 
-### Create Main Plugin
+### Create main plugin
 
 Create your main plugin with trigger metadata:
 
-```tsx
-import { defineBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginState } from 'platejs/combobox';
+```tsx showLineNumbers
+import { property } from 'platejs';
+import { triggerCombobox, type TriggerComboboxPluginState } from 'platejs/combobox';
+import { definePlatePlugin } from 'platejs/react';
+import { TagInputPlugin } from './tag-input-plugin';
 
-export type TagPluginState = TriggerComboboxPluginState;
-
-const initialState: TagPluginState = {
+const initialState: TriggerComboboxPluginState = {
   trigger: '#',
   triggerPreviousCharPattern: /^\s?$/,
   createComboboxInput: () => ({
@@ -73,11 +86,29 @@ const initialState: TagPluginState = {
   }),
 };
 
-export const TagPlugin = defineBasePlugin('tag', {
+export const TagPlugin = definePlatePlugin('customTag', {
   dependencies: [TagInputPlugin],
   initialState,
-  schema: { element: { void: 'inline' } },
-});
+  schema: {
+    element: {
+      type: 'tag',
+      void: 'inline',
+      properties: { value: property.string({ required: true }) },
+    },
+  },
+  update: ({ tx, schema: { type } }) => ({
+    insert: (value: string) => {
+      tx.nodes.insert({ children: [{ text: '' }], type, value });
+      tx.selection.move({ unit: 'offset' });
+    },
+  }),
+}).extend(({ editor, store }) => ({
+  commands: (context) => triggerCombobox(context, {
+    editor,
+    getState: () => store.get(),
+    type: editor.plugin(TagInputPlugin).schema.type,
+  }),
+}));
 ```
 
 - `schema.element`: Defines the plugin's element model behavior
@@ -86,14 +117,14 @@ export const TagPlugin = defineBasePlugin('tag', {
 - `initialState.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
 - `initialState.createComboboxInput`: Function that creates the input element node when the trigger is activated
 
-### Create Component
+### Create component
 
 Create the input element component using `InlineCombobox`:
 
-```tsx
+```tsx showLineNumbers
 import {
+  type PlateElementProps,
   PlateElement,
-  useEditor,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
@@ -106,41 +137,25 @@ import {
   InlineComboboxItem,
 } from '@/components/editor/inline-combobox';
 import { cn } from '@/lib/utils';
+import { TagInputPlugin } from './tag-input-plugin';
+import { TagPlugin } from './tag-plugin';
 
-const tags = [
-  { id: 'frontend', name: 'Frontend', color: 'blue' },
-  { id: 'backend', name: 'Backend', color: 'green' },
-  { id: 'design', name: 'Design', color: 'purple' },
-  { id: 'urgent', name: 'Urgent', color: 'red' },
-];
+const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function TagInputElement({ element, ...props }) {
-  const editor = useEditor();
-
+export function TagInputElement(props: PlateElementProps<typeof TagInputPlugin>) {
   return (
-    <PlateElement as="span" {...props}>
-      <InlineCombobox element={element} trigger="#">
+    <PlateElement {...props} as="span">
+      <InlineCombobox element={props.element} trigger="#">
         <InlineComboboxInput />
         <InlineComboboxContent>
           <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
           {tags.map((tag) => (
             <InlineComboboxItem
-              key={tag.id}
-              value={tag.name}
-              onClick={() => {
-                editor.update((tx) => {
-                  tx.nodes.insert({
-                    children: [{ text: tag.name }],
-                    tagId: tag.id,
-                    type: 'tag',
-                  });
-                });
-              }}
+              key={tag}
+              value={tag}
+              onSelect={(tx) => tx.plugin(TagPlugin).insert(tag)}
             >
-              <span 
-                className={`w-3 h-3 rounded-full bg-${tag.color}-500 mr-2`}
-              />
-              #{tag.name}
+              #{tag}
             </InlineComboboxItem>
           ))}
         </InlineComboboxContent>
@@ -150,7 +165,7 @@ export function TagInputElement({ element, ...props }) {
   );
 }
 
-export function TagElement({ element, ...props }) {
+export function TagElement(props: PlateElementProps<typeof TagPlugin>) {
   const selected = useElementSelected();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
@@ -158,46 +173,37 @@ export function TagElement({ element, ...props }) {
   return (
     <PlateElement
       {...props}
+      as="span"
       className={cn(
         'inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-sm font-medium text-primary',
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring'
       )}
-      attributes={{
-        ...props.attributes,
-        contentEditable: false,
-        'data-plite-value': element.value,
-      }}
     >
-      #{element.value}
+      #{props.element.value}
       {props.children}
     </PlateElement>
   );
 }
 ```
 
-### Add to Editor
+### Add to editor
 
-```tsx
-import { PLUGINS } from 'platejs';
+```tsx showLineNumbers
+import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { TagPlugin, TagInputPlugin } from './tag-plugin';
+import { TagPlugin } from './tag-plugin';
+import { TagInputPlugin } from './tag-input-plugin';
 import { TagElement, TagInputElement } from './tag-components';
 
 const editor = createEditor({
   plugins: [
-    // ...otherPlugins,
     TagPlugin.configure({
       component: TagElement,
       initialState: {
         triggerQuery: (editor) => {
-          // Disable in code blocks
-          const codeBlock = editor.plugin(PLUGINS.codeBlock);
-
-          return (
-            !codeBlock.installed ||
-            !editor.read.nodes.some({ type: codeBlock.schema.type })
-          );
+          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+          return !codeBlock.installed || !editor.read.nodes.some({ type: codeBlock.schema.type });
         },
       },
     }),
@@ -237,16 +243,35 @@ Configuration options for trigger-based combobox plugins.
     Pattern to match the character before trigger.
     - **Example:** `/^\s?$/` matches start of line or space
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: TriggerComboboxEditor) => boolean" optional>
     Custom query function to control when trigger is active.
   </APIItem>
 </APIOptions>
 </API>
 
+## Input commands
+
+Mention, slash, emoji and footnote inputs install `BaseComboboxPlugin` as a
+dependency. Custom input plugins declare the same dependency. Resolve the
+mounted input's `NodeKey` with `editor.key(element)` and keep that key for its
+event callbacks.
+
+| Method | Behavior |
+| --- | --- |
+| `read.canEdit(input)` | Check that the input still exists, is editable and belongs to the current user. |
+| `api.cancel(input, { text, select })` | Remove the input and restore literal text in one history entry. Omit `text` for Backspace; `select` accepts `'start'` or `'end'`, or stays omitted to preserve an outside selection. |
+| `api.commit(input, callback)` | Remove the input, select its live location and run a synchronous transaction callback. A thrown callback rolls back the change. |
+| `api.undo(input)` / `api.redo(input)` | Apply available history only for an eligible input. |
+
+Completion commands return `false` for stale or foreign input keys. They never
+restore text at an unrelated current selection. The node key also identifies
+inputs in named document roots.
+
 ## Registry UI
 
-The copied `inline-combobox` component owns input focus, cancellation,
-keyboard navigation, and undo/redo forwarding. Edit that component to match
-your product's combobox interaction.
+The copied `inline-combobox` component owns query state, filtering, popup
+navigation, composition events and DOM focus. Insert the chosen feature in
+`InlineComboboxItem.onSelect`, using its inferred transaction. Use `onClick`
+for a UI action after successful completion, such as opening another popover.
 
 <ComponentSource name="inline-combobox" />

@@ -7,6 +7,10 @@ import * as React from 'react';
 const createPlateEditorMock = mock();
 const overlayPositionsMock = mock();
 const EditorContext = React.createContext<any>(null);
+const yjsPluginMock = {
+  configure: (configuration: any) => ({ ...configuration, name: 'yjs' }),
+  extend: () => yjsPluginMock,
+};
 
 let currentOverlayEditor: any;
 let currentPositions: any[] = [];
@@ -40,15 +44,19 @@ mock.module('platejs/react', () => ({
       }
     );
     const historySnapshot = { redos: [], revision: 0, undos: [] };
+    const state = {
+      history: Object.assign(() => historySnapshot, {
+        redos: () => [],
+        undos: () => [],
+      }),
+    };
     const editor = {
       id: options.id,
       provider: yjsPlugin.initialState.provider,
-      read: {
-        history: Object.assign(() => historySnapshot, {
-          redos: () => [],
-          undos: () => [],
-        }),
-      },
+      read: Object.assign(
+        (callback: (value: typeof state) => unknown) => callback(state),
+        state
+      ),
       subscribeCommit: () => () => {},
       update,
     };
@@ -64,13 +72,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/yjs/react', () => ({
-  YjsPlugin: {
-    configure: ({ initialState, render: renderSlots }: any) => ({
-      initialState,
-      name: 'yjs',
-      render: renderSlots,
-    }),
-  },
+  YjsPlugin: yjsPluginMock,
   useYjsRemoteCursor: (_editor: unknown, clientId: number) =>
     currentPositions.find((position) => position.clientId === clientId)
       ?.cursor ?? null,
@@ -106,7 +108,7 @@ mock.module('@/registry/components/editor/editor', () => ({
 }));
 
 mock.module('@/registry/components/editor/remote-cursor-overlay', () => ({
-  RemoteCursorLeaf: () => <span data-remote-cursor-leaf="" />,
+  YjsPlugin: yjsPluginMock,
   RemoteCursorOverlay: () => <div data-remote-cursor-overlay="" />,
 }));
 
@@ -146,15 +148,6 @@ describe('CollaborativeEditingDemo', () => {
     expect(providers[0].listenerCount()).toBeGreaterThan(0);
     expect(providers[1].listenerCount()).toBeGreaterThan(0);
     expect(view.container.querySelectorAll('[data-peer]')).toHaveLength(2);
-    for (const [options] of createPlateEditorMock.mock.calls) {
-      const yjsPlugin = options.plugins.find(
-        (plugin: any) => plugin.name === 'yjs'
-      );
-
-      expect(yjsPlugin.render.afterEditable).toBeDefined();
-      expect(yjsPlugin.render.leaf).toBeDefined();
-    }
-
     expect(() => view.unmount()).not.toThrow();
     expect(providers[0].listenerCount()).toBe(0);
     expect(providers[1].listenerCount()).toBe(0);

@@ -1,0 +1,4 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+selection:wpt-anchor-link-fixtures	local/wpt	selection:wpt-anchor-fixtures:not-pointer-mouseup	Useful background fixtures but no direct pointer mouseup/collapse invariant.	Reopen if a WPT pointer-selection test under anchors/contenteditable is found.
+selection:upstream-slate-inline-anchor-node	github/ianstormtaylor/slate	selection:upstream-slate-inlines-anchor-node-instability	Upstream proof is skipped and weaker than the new Slate v2 behavior/visual rows.	Reopen if upstream adds a passing cross-browser inline-link drag oracle.
+selection:github-issue-query:none	github/issues	none	Query returned no hits.	Reopen with a broader Bugzilla/GitHub query if Firefox-specific collapse recurs.

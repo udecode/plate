@@ -186,6 +186,9 @@ ${tsx ? 'export const FixtureComponent = () => <div />;\n' : ''}`;
       noEmit: true,
       paths: {
         platejs: [resolve(repoRoot, 'packages/platejs/src/index.tsx')],
+        'platejs/compiler': [
+          resolve(repoRoot, 'packages/platejs/src/compiler/index.tsx'),
+        ],
         'platejs/react': [
           resolve(repoRoot, 'packages/platejs/src/react/index.tsx'),
         ],
@@ -208,6 +211,84 @@ afterEach(() => {
 });
 
 describe('plate generate', () => {
+  it('compiles once without activating plugins or invoking property generators', async () => {
+    const { entryPath } = createFixture();
+    const source = readFileSync(entryPath, 'utf-8')
+      .replace(
+        "generate: () => 'token'",
+        "generate: () => { throw new Error('document generator ran'); }"
+      )
+      .replace(
+        'const CalloutPlugin = defineBasePlugin',
+        'let configured = 0;\nconst CalloutPlugin = defineBasePlugin'
+      )
+      .replace(
+        "defineBasePlugin('calloutCapability', {",
+        "defineBasePlugin('calloutCapability', {\n  activate() { throw new Error('plugin activation ran'); },"
+      )
+      .replace(
+        'export const EditorKit = [CalloutPlugin, AlignPlugin]',
+        "export const EditorKit = [CalloutPlugin.extend(() => { if (++configured !== 1) throw new Error('configured twice'); return {}; }), AlignPlugin]"
+      );
+
+    writeFileSync(entryPath, source);
+    const generated = await generateEditor(entryPath);
+    const types = readFileSync(generated.typesPath, 'utf-8');
+
+    expect(types).toContain(
+      "import type { GeneratedEditorTypeProvider } from 'platejs/compiler';"
+    );
+    expect(types).toContain('readonly token: string');
+    expect(types).toContain('readonly payload?: { readonly id: string;');
+  });
+
+  it('materializes dependency-only authored properties through constrained compiler projections', async () => {
+    const { directory, entryPath } = createFixture();
+    writeFileSync(
+      entryPath,
+      `import { defineBasePlugin, property, schema, target } from 'platejs';
+export const Box = defineBasePlugin('box', {
+  schema: { element: { type: 'box_node', content: schema.content.text(), properties: {
+    payload: property.json({ validate: (value: unknown): value is { id: string } => typeof value === 'object' && value !== null, validationVersion: 1 }),
+  } } },
+});
+export const Extra = defineBasePlugin('extra', {
+  schema: { properties: {
+    extra: schema.elementProperty(property.json({ validate: (value: unknown): value is { score: number } => typeof value === 'object' && value !== null, validationVersion: 1 }), { target: target.element(Box) }),
+    textData: schema.textProperty(property.json({ validate: (value: unknown): value is { label: 'x' | 'y' } => typeof value === 'object' && value !== null, validationVersion: 1 })),
+  } },
+});
+const Parent = defineBasePlugin('parent', { dependencies: [Box, Extra] });
+export const EditorKit = [Parent] as const;
+`
+    );
+    const contractPath = join(directory, 'contract.ts');
+    writeFileSync(
+      contractPath,
+      `import type { EditorPropertyTypes } from 'platejs/compiler';
+import { Box, Extra, EditorKit } from './editor';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+type Owner<P extends readonly unknown[], N extends keyof EditorPropertyTypes<P>['owners'] & string> = EditorPropertyTypes<P>['owners'][N];
+type DependencyOwner = Assert<Equal<NonNullable<Owner<typeof EditorKit, 'extra'>['extra']>, { score: number }>>;
+type DependencyText = Assert<Equal<NonNullable<EditorPropertyTypes<typeof EditorKit>['text']['textData']>, { label: 'x' | 'y' }>>;
+type ExplicitOwner = Assert<Equal<NonNullable<Owner<readonly [typeof Box, typeof Extra], 'box'>['payload']>, { id: string }>>;
+// @ts-expect-error owner names come from the installed dependency closure.
+type MissingOwner = Owner<typeof EditorKit, 'missingOwner'>;
+`
+    );
+    await expectTypeScriptFilesCompile(join(directory, 'tsconfig.json'), [
+      entryPath,
+      contractPath,
+    ]);
+    const generated = await generateEditor(entryPath);
+    const types = readFileSync(generated.typesPath, 'utf-8');
+    expect(types).toContain('readonly extra?: { readonly score: number; }');
+    expect(types).toContain(
+      'readonly textData?: { readonly label: "x" | "y"; }'
+    );
+  });
+
   it('rejects editor modules without a discoverable plugin tuple', async () => {
     const { entryPath } = createFixture();
 

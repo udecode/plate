@@ -45,10 +45,8 @@ export const SingleBlockPlugin = defineBasePlugin(PLUGINS.singleBlock, {
     },
   ],
   override: {
-    plugins: {
-      [PLUGINS.trailingBlock]: {
-        enabled: false,
-      },
+    [PLUGINS.trailingBlock]: {
+      enabled: false,
     },
   },
 });

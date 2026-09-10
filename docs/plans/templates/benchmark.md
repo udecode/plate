@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short Benchmark objective, under 240 characters. Put the full
 measurement and iteration contract below.
@@ -11,9 +13,6 @@ Goal plan:
 {{PLAN_PATH}}
 
 Template:
-{{TEMPLATE_PATH}}
-
-Primary template:
 {{TEMPLATE_PATH}}
 
 ## Benchmark Source
@@ -89,6 +88,15 @@ Blocked condition:
   correctness oracle, reproducible metric, or unsafe architecture decision that
   stops autonomous work.
 
+## Interaction Coverage
+
+- first-interaction: pending
+- settled-interaction: pending
+- route-scope: pending
+- reporter-profile: pending
+
+Use `pass: <proof>` or `N/A: <concrete reason>` for each phase and host.
+
 ## Comparison Signature
 
 | Field | Candidate | Baseline | Comparable evidence |
@@ -107,7 +115,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | `benchmark` source and methodology read | yes | pending |
-| Active goal checked or created | yes | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | yes | pending |
 | Candidate and baseline identities recorded | pending | pending |
 | Target/runner discovery completed from current source | pending | pending |
 | Host/build/fixture freshness proved | pending | pending |
@@ -135,7 +143,7 @@ Work Checklist:
       owner, layer plan, compatibility verdict, and implementation owner.
 - [ ] `public-api` and `runtime-architecture` causes run `best-api`, then
       `plite-plan`, `plate-plan`, or both before implementation. Broad accepted
-      execution may use `auto`; target selection may not.
+      execution may use `task autonomous`; target selection may not.
 - [ ] One isolated owner is fixed, then the exact benchmark and correctness
       guard rerun before breadth resumes.
 - [ ] Failed reruns invalidate or continue the same cause; they do not skip to
@@ -219,7 +227,7 @@ Completion Gates:
 | Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pending |
 | Timed checkpoint | pending | Satisfy requested duration and close current packet, otherwise N/A | pending |
-| P1 autoreview | pending | Run dirty local P1 review for non-trivial code/skill changes and close accepted findings, otherwise N/A | pending |
+| P1 autoreview | pending | Use Task's review gate and remaining budget; never on next; otherwise N/A with reason | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:

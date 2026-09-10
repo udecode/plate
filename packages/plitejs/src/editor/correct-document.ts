@@ -67,7 +67,9 @@ const targetKey = (
   event: EditorCorrectionEvent,
   correctionId: string
 ) =>
-  `${root}\u0000${nodeKey ?? `${ROOT_NODE_KEY}:${path.join(',')}`}\u0000${event}\u0000${correctionId}`;
+  `${root}\u0000${
+    nodeKey ?? `${ROOT_NODE_KEY}:${path.join(',')}`
+  }\u0000${event}\u0000${correctionId}`;
 
 const fingerprintValue = (value: unknown) => {
   let left = 0x81_1c_9d_c5;
@@ -130,18 +132,14 @@ const fingerprintValue = (value: unknown) => {
     .padStart(8, '0')}`;
 };
 
-const targetStateFingerprint = (
-  editor: Editor,
-  root: string,
-  entry: NodeEntry
-) => {
+const readTargetState = (editor: Editor, root: string, entry: NodeEntry) => {
   const [targetNode, path] = entry;
 
   if (path.length === 0) {
-    return fingerprintValue({
+    return {
       childCount: getEditorChildren(editor).length,
       root,
-    });
+    };
   }
 
   const properties = Object.fromEntries(
@@ -150,14 +148,14 @@ const targetStateFingerprint = (
     )
   );
 
-  return fingerprintValue({
+  return {
     childCount:
       'children' in targetNode && Array.isArray(targetNode.children)
         ? targetNode.children.length
         : undefined,
     properties,
     text: 'text' in targetNode ? targetNode.text : undefined,
-  });
+  };
 };
 
 const indexCorrections = (editor: Editor) => {
@@ -354,7 +352,7 @@ export const correctDocument = (
     const recordMutation = (
       key: string,
       description: string,
-      beforeFingerprint: string,
+      beforeState: unknown,
       changes: readonly DocumentChange[]
     ) => {
       mutationStep += 1;
@@ -367,9 +365,9 @@ export const correctDocument = (
 
       if (changes.length === 0) return;
 
-      const transitionFingerprint = `${key}\u0000${beforeFingerprint}\u0000${fingerprintValue(
-        changes.map((change) => change.toJSON())
-      )}`;
+      const transitionFingerprint = `${key}\u0000${fingerprintValue(
+        beforeState
+      )}\u0000${fingerprintValue(changes.map((change) => change.toJSON()))}`;
       const previousStep = seenTransitions.get(transitionFingerprint);
 
       if (previousStep !== undefined) {
@@ -411,11 +409,7 @@ export const correctDocument = (
 
             if (!entry) continue;
 
-            const beforeFingerprint = targetStateFingerprint(
-              editor,
-              root,
-              entry
-            );
+            const beforeState = readTargetState(editor, root, entry);
             const changes: DocumentChange[] = [];
 
             capturedChanges = changes;
@@ -432,7 +426,7 @@ export const correctDocument = (
                 `${target.event} correction "${target.correctionId}" for ${
                   target.nodeKey ?? ROOT_NODE_KEY
                 } at [${target.path.join(',')}] in root "${root}"`,
-                beforeFingerprint,
+                beforeState,
                 changes
               );
             }

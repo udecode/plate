@@ -5,8 +5,8 @@ description: Render Plate plugin nodes with React components.
 
 Plugin components are the React rendering layer for Plate node plugins. Use
 Plate UI components first when the registry already has the node you need, then
-customize with `PlateElement`, `PlateLeaf`, `.configure({ component })`, or the editor
-`components` map. This page shows which registration path to use.
+customize with `PlateElement` or `PlateLeaf` and bind it through
+`.configure({ component })`. This page shows the one component binding path.
 
 ## Start with Plate UI
 
@@ -22,7 +22,7 @@ for production styling and the safest starting point for customization.
 The package owns plugin behavior. Your app owns copied component files and their
 styles.
 
-## Component Primitives
+## Component primitives
 
 Use `PlateElement` for element nodes and `PlateLeaf` for mark or leaf nodes.
 Both components merge Plite attributes, Plate node props, `className`, and
@@ -91,12 +91,12 @@ export function CodeLeaf({
 `PlateLeaf` renders a `span` by default. Use it for plugins that declare
 `schema.mark`.
 
-## Register Components
+## Register components
 
 Declare `component` in a new Plate plugin, or include it in the existing
 descriptor's single terminal `.configure()` call.
 
-### Existing Plugin
+### Existing plugin
 
 Use `.configure({ component })` to attach a React component to a plugin.
 
@@ -115,7 +115,7 @@ export const plugins = [
 ];
 ```
 
-### Component With Consumer Overrides
+### Component with consumer overrides
 
 When the same plugin also needs rules, shortcuts, initial state, or input rules,
 put every override in that same terminal `.configure()` call.
@@ -135,57 +135,17 @@ export const plugins = [
 ];
 ```
 
-### Editor components
+## Intrinsic components
 
-Use the editor `components` option when a single editor owns the component map.
-This is useful for replacing several components in one place.
-
-```tsx title="components/editor.tsx" showLineNumbers
-import {
-  BlockquotePlugin,
-  CodePlugin,
-} from 'platejs/react';
-import { Plate, useCreateEditor } from 'platejs/react';
-
-import { BlockquoteElement } from '@/components/editor/blockquote';
-import { CodeLeaf } from '@/components/editor/code';
-import { Editor, EditorContainer } from '@/components/editor/editor';
-
-export function AppEditor() {
-  const editor = useCreateEditor({
-    components: {
-      blockquote: BlockquoteElement,
-      code: CodeLeaf,
-    },
-    plugins: [BlockquotePlugin, CodePlugin],
-  });
-
-  return (
-    <Plate editor={editor}>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
-    </Plate>
-  );
-}
-```
-
-The object keys are persisted element types or property keys, not plugin names,
-file names, or component names.
-
-## Render Without a Custom Component
-
-Use `render.as` when the default `PlateElement` or `PlateLeaf` wrapper is enough
-and you only need a different HTML tag.
+Bind an HTML tag directly when the default `PlateElement` or `PlateLeaf`
+behavior is enough.
 
 ```ts title="quote-plugin.ts" showLineNumbers
 import { schema } from 'platejs';
 import { definePlatePlugin } from 'platejs/react';
 
 export const QuotePlugin = definePlatePlugin('quote', {
-  render: {
-    as: 'blockquote',
-  },
+  component: 'blockquote',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
@@ -222,9 +182,7 @@ replace from the registry.
 | `PlateElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
 | `PlateLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
 | `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
-| `render.as` | Default wrapper with a different tag. | Works when no `component` is bound. |
-| `components` | Editor-wide component overrides. | Merged into the root plugin's component overrides. |
-| `override.components` | Advanced plugin-level component overrides. | Higher-priority plugins win when a target already has a component. |
+| `plugin.configure({ component: 'tag' })` | Default wrapper with an intrinsic tag. | Accepts an HTML tag such as `'blockquote'`, `'strong'`, or `'code'`. |
 
 For plugin method details, see [Plugin Methods](/docs/plugin-methods). For static
 rendering components, see [Static Rendering](/docs/static).

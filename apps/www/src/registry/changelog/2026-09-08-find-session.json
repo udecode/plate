@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-find-session",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-find-session.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Use the editor-owned Find query with local search controls.",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-find-editor-owned-query-local-5b6dbd6c",
+      "kind": "fix",
+      "summary": "Search through `BaseFindPlugin` while keeping the search bar, deferred input, focus and scroll behavior local. Preserve IME confirmation and opening before the first query.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-find-session",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-find-session-2",
+      "kind": "behavior",
+      "summary": "Style the current match separately from other matches using the feature’s transient data attributes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-find-session",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -34,7 +34,6 @@ export type VirtualizedMissingTopLevelRange = {
   boundaryId: string;
   endIndex: number;
   focusNodeKey: NodeKey | null;
-  nodeKeys: readonly NodeKey[];
   startIndex: number;
   anchorNodeKey: NodeKey | null;
 };
@@ -300,14 +299,11 @@ const getMissingRanges = ({
       return;
     }
 
-    const nodeKeys = topLevelNodeKeys.slice(startIndex, endIndex + 1);
-
     ranges.push({
-      anchorNodeKey: nodeKeys[0] ?? null,
+      anchorNodeKey: topLevelNodeKeys[startIndex] ?? null,
       boundaryId: `viewport-virtualization:${startIndex}-${endIndex}`,
       endIndex,
-      focusNodeKey: nodeKeys.at(-1) ?? null,
-      nodeKeys,
+      focusNodeKey: topLevelNodeKeys[endIndex] ?? null,
       startIndex,
     });
   };

@@ -1,15 +1,13 @@
 import { cva } from 'class-variance-authority';
-import { type Descendant, NodeApi } from 'plitejs';
+import { NodeApi, type Path } from 'plitejs';
 import {
   Editable,
   Plite,
-  type PliteRangeDecoration,
+  type PliteDecoration,
+  type PliteDecorationSource,
   useEditor,
-  usePliteRangeDecorationSource,
 } from 'plitejs/react';
-import type { ReactNode } from 'react';
-
-import { cn } from '@/utils/cn';
+import { useMemo } from 'react';
 
 import { Prism } from './utils/prism-runtime';
 
@@ -71,28 +69,18 @@ const MarkdownPreviewExample = () => {
       },
     ],
   });
-  const markdownSource = usePliteRangeDecorationSource(editor, {
-    id: 'markdown-preview',
-    dirtiness: 'text',
-    read: ({ snapshot }) => collectMarkdownRanges(snapshot.children),
-  });
+  const markdownSource = useMemo<PliteDecorationSource<typeof editor>>(
+    () => ({
+      id: 'markdown-preview',
+      read: ({ entry: [node, path] }) =>
+        NodeApi.isText(node) ? collectMarkdownRanges(node.text, path) : [],
+    }),
+    []
+  );
 
   return (
-    <Plite decorationSources={[markdownSource]} editor={editor}>
-      <Editable
-        id="markdown-preview"
-        placeholder="Write some markdown..."
-        renderSegment={(segment, children) => (
-          <MarkdownSegment
-            data={Object.assign(
-              {},
-              ...segment.slices.map((slice) => slice.data ?? {})
-            )}
-          >
-            {children}
-          </MarkdownSegment>
-        )}
-      />
+    <Plite decorations={[markdownSource]} editor={editor}>
+      <Editable id="markdown-preview" placeholder="Write some markdown..." />
     </Plite>
   );
 };
@@ -110,73 +98,46 @@ const getTokenLength = (token: string | Prism.Token): number => {
   );
 };
 
-const collectMarkdownRanges = (
-  nodes: readonly Descendant[],
-  path: number[] = []
-): Array<PliteRangeDecoration<Record<string, true>>> => {
-  const ranges: Array<PliteRangeDecoration<Record<string, true>>> = [];
-
-  nodes.forEach((node, nodeIndex) => {
-    const nodePath = [...path, nodeIndex];
-
-    if (NodeApi.isText(node)) {
-      const tokens = Prism.tokenize(node.text, Prism.languages.markdown);
-      let start = 0;
-
-      for (const token of tokens) {
-        const length = getTokenLength(token);
-        const end = start + length;
-
-        if (typeof token !== 'string') {
-          ranges.push({
-            data: { [token.type]: true },
-            key: `markdown:${nodePath.join('.')}:${start}:${end}`,
-            range: {
-              anchor: { path: nodePath, offset: start },
-              focus: { path: nodePath, offset: end },
-            },
-          });
-        }
-
-        start = end;
-      }
-    }
-
-    if (NodeApi.isElement(node)) {
-      ranges.push(...collectMarkdownRanges(node.children, nodePath));
-    }
-  });
-
-  return ranges;
+const markdownTokenClassNames: Record<string, string> = {
+  blockquote: markdownSegmentVariants({ blockquote: true }),
+  bold: markdownSegmentVariants({ bold: true }),
+  code: markdownSegmentVariants({ code: true }),
+  hr: markdownSegmentVariants({ hr: true }),
+  italic: markdownSegmentVariants({ italic: true }),
+  list: markdownSegmentVariants({ list: true }),
+  title: markdownSegmentVariants({ title: true }),
+  underlined: markdownSegmentVariants({ underlined: true }),
 };
 
-const MarkdownSegment = ({
-  children,
-  data,
-}: {
-  children: ReactNode;
-  data: Record<string, unknown>;
-}) => {
-  const has = (key: string) => Boolean(data[key]);
+const collectMarkdownRanges = (text: string, path: Path): PliteDecoration[] => {
+  const tokens = Prism.tokenize(text, Prism.languages.markdown);
+  const ranges: PliteDecoration[] = [];
+  let start = 0;
 
-  return (
-    <span
-      className={cn(
-        markdownSegmentVariants({
-          blockquote: has('blockquote'),
-          bold: has('bold'),
-          code: has('code'),
-          hr: has('hr'),
-          italic: has('italic'),
-          list: has('list'),
-          title: has('title'),
-          underlined: has('underlined'),
-        })
-      )}
-    >
-      {children}
-    </span>
-  );
+  for (const token of tokens) {
+    const length = getTokenLength(token);
+    const end = start + length;
+
+    if (typeof token !== 'string') {
+      ranges.push({
+        attributes: {
+          className:
+            markdownTokenClassNames[token.type] ??
+            'plite-markdown-preview-segment',
+          'data-markdown-token': token.type,
+        },
+        key: `markdown:${path.join('.')}:${start}:${end}`,
+        range: {
+          anchor: { path, offset: start },
+          focus: { path, offset: end },
+        },
+      });
+    }
+
+    start = end;
+  }
+
+  return ranges;
 };
 
 export default MarkdownPreviewExample;

@@ -54,6 +54,20 @@ const ExternalStoreAttribute = ({
   return <div data-external-store-value={value} />;
 };
 
+const UnclaimedExternalStoreAttribute = ({
+  store,
+}: {
+  store: ReturnType<typeof createExternalStore>;
+}) => {
+  const value = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  );
+
+  return <div data-external-store-value={value} />;
+};
+
 const RuntimeRoot = ({
   runtime,
   store,
@@ -120,11 +134,50 @@ test('a nested external-store commit is claimed before later hostile mutations a
   expect(child.getAttribute('data-external-store-value')).toBe('updated');
   expect(onRepair).not.toHaveBeenCalled();
 
-  child.setAttribute('data-hostile', 'true');
+  child.setAttribute('data-plite-path', 'hostile');
   await waitForMutations();
   runtime.domPhaseScheduler.flush();
 
-  expect(child.hasAttribute('data-hostile')).toBe(false);
+  expect(child.hasAttribute('data-plite-path')).toBe(false);
+  expect(onRepair).toHaveBeenCalledTimes(1);
+
+  mounted.unmount();
+  runtime.destroy();
+});
+
+test('descendant React presentation updates do not need a root-wide claim hook', async () => {
+  const runtime = new EditableDOMRuntime({ editor: createEditor() });
+  const store = createExternalStore();
+  const onRepair = vi.fn();
+
+  runtime.updateDOMIntegrityRepairHandler(onRepair);
+  runtime.connect();
+
+  const mounted = render(
+    <EditableDOMRuntimeContext value={runtime}>
+      <EditableDOMCommitFence runtime={runtime}>
+        <div data-plite-editor ref={(node) => runtime.setRoot(node)}>
+          <UnclaimedExternalStoreAttribute store={store} />
+        </div>
+      </EditableDOMCommitFence>
+    </EditableDOMRuntimeContext>
+  );
+  const child = mounted.container.querySelector<HTMLElement>(
+    '[data-external-store-value]'
+  )!;
+
+  act(() => store.set('updated'));
+  await waitForMutations();
+  runtime.domPhaseScheduler.flush();
+
+  expect(child.getAttribute('data-external-store-value')).toBe('updated');
+  expect(onRepair).not.toHaveBeenCalled();
+
+  child.setAttribute('data-plite-path', 'hostile');
+  await waitForMutations();
+  runtime.domPhaseScheduler.flush();
+
+  expect(child.hasAttribute('data-plite-path')).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -155,7 +208,7 @@ test('nested React commit claims stay isolated to their mounted root', async () 
     '[data-plite-editor]'
   );
 
-  roots[1].setAttribute('data-hostile', 'true');
+  roots[1].setAttribute('data-plite-path', 'hostile');
   act(() => {
     firstStore.set('updated');
   });
@@ -166,7 +219,7 @@ test('nested React commit claims stay isolated to their mounted root', async () 
   expect(
     roots[0].firstElementChild?.getAttribute('data-external-store-value')
   ).toBe('updated');
-  expect(roots[1].hasAttribute('data-hostile')).toBe(false);
+  expect(roots[1].hasAttribute('data-plite-path')).toBe(false);
   expect(secondRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -191,11 +244,11 @@ test('unmounted external-store claimers cannot mask later hostile mutations', as
     '[data-plite-editor]'
   )!;
 
-  root.setAttribute('data-hostile', 'true');
+  root.setAttribute('data-plite-path', 'hostile');
   await waitForMutations();
   runtime.domPhaseScheduler.flush();
 
-  expect(root.hasAttribute('data-hostile')).toBe(false);
+  expect(root.hasAttribute('data-plite-path')).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -221,7 +274,7 @@ test('read-only root replacement disconnects the old observer and observes only 
   runtime.setRoot(firstRoot);
   runtime.setRoot(secondRoot);
 
-  firstRoot.setAttribute('data-external', 'ignored');
+  firstRoot.setAttribute('data-plite-path', 'ignored');
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
@@ -229,14 +282,14 @@ test('read-only root replacement disconnects the old observer and observes only 
 
   expect(onRepair).not.toHaveBeenCalled();
 
-  secondRoot.setAttribute('data-external', 'repair');
+  secondRoot.setAttribute('data-plite-path', 'repair');
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
   runtime.domPhaseScheduler.flush();
 
   expect(onRepair).toHaveBeenCalledTimes(1);
-  expect(secondRoot.hasAttribute('data-external')).toBe(false);
+  expect(secondRoot.hasAttribute('data-plite-path')).toBe(false);
 
   runtime.destroy();
 });

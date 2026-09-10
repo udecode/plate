@@ -5,6 +5,9 @@ argument-hint: '[design|review|audit|repair] <API surface | diff | plan | correc
 
 # Best API
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Own the public call-site decision. Start from the cleanest truthful API that
@@ -19,6 +22,14 @@ extensibility, or rubric score. A more sophisticated API with no material
 present value is worse.
 
 This is a taste and decision skill, not an implementation engine:
+
+If the unresolved question is whether the proposal earns any further work,
+`best-api-review` owns that assessment and applies the ideal-first and hard-cut
+methods here across current, changed and new APIs. It must expose the strongest
+plausible breaking direction before its worth-it verdict, rather than defer
+that possibility while endorsing existing-API glue. Use this skill when the
+detailed public design needs to be chosen or reviewed; do not make either skill
+a mandatory prelude to the other.
 
 - `VISION.md` and `docs/vision/**` own durable doctrine.
 - `best-api` applies that doctrine to concrete API shapes and repairs it when
@@ -66,7 +77,14 @@ runtime laws are hard constraints. Incidental implementation structure is not.
 
 ## Two-Pass Decision
 
-### 1. Ideal target
+### 1. Redesign from First Principles
+
+Apply the full [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)
+method before choosing or reviewing the target. This is the governing principle
+of `next` beta. Name the current user job and hard laws, then ask what we would
+build if those requirements had been present from the start. Existing substrate
+primitives and proposed abstractions must both earn their place. Reuse an
+accepted comparison while its requirements and evidence remain valid.
 
 Ignore migration convenience and design the smallest honest public surface.
 Show concrete call sites, including their real public imports, before naming
@@ -124,6 +142,34 @@ plugin arrays and their membership/order policy. When several plugins are truly
 inseparable, encode them as `dependencies` of one honest capability descriptor,
 not as a package-exported array.
 
+Keep a feature's React root integration on its existing plugin. A companion
+plugin needs an independent capability; protection from deliberate slot
+replacement is not one. Each structural slot accepts one component. Compose
+wrappers with JSX inside that component instead of adding slot arrays or a
+wrapper pipeline. Replacing a root slot owns its integration and cleanup;
+changing sibling presentation slots preserves the root integration.
+
+Apply the same ownership test to serializers and exporters. A package owns
+format semantics, conversion mechanics, validation, and format-required
+defaults; app or registry source owns optional visual presets. A public export
+API may accept one exact caller-owned stylesheet when that customization is a
+real job, but it must not inject a hidden product theme or expose an additive
+"custom" override whose meaning depends on package styling. Keep CSS in the
+package only when focused proof shows that exact rule is required for format
+correctness or fidelity.
+
+One-shot file conversion belongs in a standalone operation when it owns no
+installed state, lifecycle, codecs, or editor commands. Needing the editor's
+configured decoder does not justify a plugin that only captures an editor;
+pass the editor at that boundary. Keep clipboard integration on its installed
+plugin. Shared conversion dependencies stay private, and independently used
+file operations get subpaths whose import graphs exclude sibling converters.
+
+Consolidating verification helpers must preserve each caller's failure policy.
+Keep strict error capture explicit on the existing recorder rather than copying
+listeners or silently adopting a narrower filter. Test capture and cleanup
+behavior through that owner; private function spelling is not proof.
+
 Package entrypoints must tell the truth about dependency reachability. A root
 may expose only code backed by its required dependencies. Code requiring an
 optional framework or runtime peer belongs behind an explicit subpath whose
@@ -146,6 +192,59 @@ Test infrastructure may earn one public package when testing is its independent
 user job. Keep that package's root headless and Node-safe, put framework and
 runner integrations behind explicit subpaths, and do not publish one npm
 package per environment.
+
+Build-time tooling consumes detached, immutable facts. Share the runtime's
+validated lowering, then stop before document construction, resource activation
+or publication. Configuration and validation callbacks may still run; do not
+describe compilation as side-effect-free. Keep caches, stores, candidate graphs
+and runtime owners private. A type-only projection is justified only by an
+actual tooling job whose exact property domains cannot be expressed through
+the existing public descriptor types; it must reuse the same inference owner.
+
+Neutral behavior belongs in the substrate even when the framework adopted it
+first. Preserve one implementation and exact facade identity; keep framework
+authoring and presentation policy in their own layer.
+
+DOM-scope hooks accept the DOM capabilities they read. Identity-only registries
+use object keys. Do not require an erased mutable Editor for either job: its
+unrelated write variance can reject a correctly inferred document. Preserve
+the inferred editor in proof instead of widening fixtures or casting callers.
+
+Dynamic lowering reuses the ordinary descriptor constructor and semantic
+read contracts. Keep unavoidable type erasure inside that validated private
+compiler boundary; do not publish a second unchecked constructor or expose
+candidate caches merely so another package can read its own contributions.
+
+Heterogeneous installation inputs use the existing nominal descriptor reference;
+normalized definition witnesses describe capabilities, not installable values.
+Keep exact schema and callback projections deferred at that boundary, with
+unchanged inference, negative capability checks and packed-consumer proof.
+
+Command-only policy belongs in its command handler. Do not publish transaction
+methods merely so that handler can call its own implementation. Resolve
+applicability from the command's current state before constructing a transaction;
+preserve uncommitted state, schema fitting, metadata and rollback semantics.
+
+UI commands bind to the exact mounted view through an existing semantic provider.
+Keep mount registration private and reuse the substrate's command facade;
+application IDs and shared model identity cannot identify a mount. Preserve
+model-owned schema, plugin state and history while root, DOM, current permission
+and retirement belong to the view. A passive provider may bind existing controls
+to an existing command editor without allocating another runtime. Capture that
+editor for an interaction's lifetime; removal rejects stale writes instead of
+silently targeting a replacement. Preserve an independently useful initial
+selection policy before focus.
+
+Provider consumers receive semantic state or an exact mounted DOM reference.
+Keep provider lookup, atom tables and generic field setters private when their
+only job is lifecycle implementation. Configure lifecycle policy through its
+owning component, preserving scoped lookup and cleanup through the existing
+provider rather than adding another public state owner.
+
+A default implementation and a caller-supplied implementation of the same job
+share one public constructor and lifecycle. Make the implementation an optional
+input; do not publish a parallel advanced factory, hook or snapshot reader.
+Preserve committed reconfiguration and cleanup in the surviving owner.
 
 A framework facade over a lower distribution has one executable exception set,
 not a hand-maintained copy of the lower API. Every non-exception export must be
@@ -225,6 +324,26 @@ all shifted paths or introduce a second change store. An immutable result is
 shared across readers, and a known negative answer must not trigger a global
 search. Prove both affected and unchanged follow-up reads at scale.
 
+For a recurring editor render dependency, expose the semantic projection at
+the existing React state owner instead of making copied callers repeat commit
+invalidation flags. `useEditorHasSelection()` owns selection presence;
+`useEditorSelection()` owns the range. Reuse the canonical subscription and
+boolean equality without a parallel store or a hook for each arbitrary predicate.
+
+When an application record refers to a document-owned entity, use that entity's
+identity for its location and lifetime. Do not allocate a second location or
+mirror document commands into persistent application status merely to hide a
+view. Explicit application resolution remains independent; command, undo/redo,
+and external document updates must yield the same derived visibility. Keep
+mixed presentation in its existing composition owner instead of adding peer
+data dependencies or one-consumer presentation props.
+
+Complete transient document inputs through their current node identity. The
+owning feature checks liveness and edit eligibility at action time, then removes
+and replaces the input in one transaction. Keep query text and DOM navigation
+with the copied control; do not persist a second path, location anchor, or
+completion flag when the document already supplies identity and lifetime.
+
 Do not confuse an internal canonical carrier with the best public read. A
 carrier may need tags, bookkeeping, or extension payloads to preserve runtime
 truth while the common caller needs one established domain value. In that
@@ -236,6 +355,12 @@ Give the high-frequency read the shortest unqualified name. Do not surround it
 with vague singular projections such as `primary`, `current`, `resolved`, or a
 noun-specific alias that merely chooses the normal answer. A public read should
 answer one caller job without exposing how the owner stores or derives it.
+
+Choose package ownership by the contract before counting consumers. A semantic
+algorithm or durable headless lifecycle can belong to the existing feature
+with one current caller. Prefer its scoped API over a new helper export or
+package. Plate UI's extraction test owns the split from renderer-specific
+calculations, state and composition.
 
 When public authoring compiles a semantic classification into a private group,
 registry key, or tag, expose that fact through a named read on the owning
@@ -249,6 +374,23 @@ its input, the common read, or a constant has no independent public job and
 should be deleted. Preserve an exact carrier publicly only when callers have a
 proven independent job that requires its complete payload; implementation and
 compatibility are not such jobs.
+
+Do not persist presentation or performance partitions as document nodes. A
+structural child must own grammar, properties, commands, addressing, or a real
+semantic region. Keep multiline source in one newline-bearing Text when lines
+have no such job, derive physical lines from offsets, and keep token wrappers
+transient through Decorations. Scaling belongs to the renderer or runtime; it
+does not justify public chunk controls or a second persisted schema.
+
+An external editable-text view is one render projection for a non-void block
+whose only child is one Text. Plite keeps canonical text, selection, history,
+schema, and collaboration; the adapter owns its DOM, input surface, layout, and
+local native features. Give it versioned exact patches and narrow edit,
+selection, focus, and composition actions. Never expose the editor, node key,
+path, or transaction as an adapter escape hatch. The external and native
+branches are exclusive: no hidden duplicate text DOM, no second history, and
+no requirement for fixed height. Adapter-internal rendering or virtualization
+does not become document virtualization or a code editor inside Plite.
 
 When callers repeatedly combine generic traversal with one canonical owner
 predicate, promote that semantic job as a named read on the traversal owner.
@@ -274,11 +416,129 @@ Annotation. Logical out-of-flow UI is a Widget. Delete a proposed overlay,
 projection, view, layer, or manager API when it only renames one of those jobs
 or combines them for one product component.
 
-The normal Plate authoring path is the owning plugin's `decorate` callback and
-render slots. Plate lowers their carriers privately and invalidates that
-plugin's decorations from its store. Do not make ordinary callers construct a
-Decoration source, renderer registry, Widget store, manual refresh call, or
-parallel public plugin merely to install product behavior.
+The normal Plate authoring path is the owning plugin's `decorate` descriptor:
+`{ read, observe?, attributes? }`. Its reads return keyed ranges with render-safe attributes.
+Plate lowers those descriptors privately into the sole raw Plite
+`<Plite decorations>` input and routes plugin-store invalidation through
+`observe`. Do not make ordinary Plate callers construct a Decoration source,
+renderer registry, Widget store, manual refresh call, or parallel public plugin
+merely to install product behavior.
+
+Package decorations publish neutral identity attributes. Copied UI owns color,
+opacity, and other visual defaults through `decorate.attributes`: a safe
+attribute object, a pure inferred-context callback with `entry` and
+`decoration`, or `null` to clear inherited presentation. Configure presentation
+without repeating the reader or observer. Keep optional feature selectors out
+of generic Editor skins. Use the existing keyed cursor read for per-peer paint;
+do not add a theme API, parallel plugin, cursor cache or observation channel.
+Classes concatenate, styles merge shallowly, and later presentation values win
+other attribute collisions. Callbacks add no subscription; `observe` owns
+external invalidation. A new decoration capability still requires `read`.
+A contribution created by an earlier author stage is available to a later
+`.extend()` stage, not to `.configure()` callbacks that run before author stages.
+
+An embedded editor may own capabilities that depend on its incremental document
+state, such as syntax parsing. Omit the duplicated provider when every view
+uses that editor. Mixed native and external views may keep the provider; the
+external renderer discards only contributions with that provider's explicit
+identity attribute. Never infer ownership from CSS classes or discard neutral
+annotations along with syntax. Keep parser controls inside copied UI, outside
+the external-text protocol.
+
+Sparse attributes on whole element hosts have a different shape. Author them
+through `render.useViewElementAttributes`, one React hook host per enabled
+plugin per mounted Plate view. The callback receives the exact `view` and
+returns `{ key, attributes }[]`; Plate privately owns source identity, compiled
+plugin precedence, publication, cleanup, and per-`NodeKey` subscriptions.
+Allow only `className`, `placeholder`, `style`, and `aria-*` / `data-*`
+primitives. Keep `render.attributes` and `inject.nodeProps.transformProps`
+pure and hook-free because they run conditionally for rendered nodes. Do not
+publish the provider, store, source ID, manager, or imperative publisher.
+
+Raw Plite has one transient paint path. `PliteDecorationSource` returns
+`{ key, range, attributes }`; `Editable` renders those attributes without a
+second paint callback. Annotation stores use `PliteAnnotationProvider` and stay
+independent until a feature deliberately adapts resolved annotations into a
+Decoration source.
+
+Annotation ownership follows lifetime, not convenience. React components use
+`usePliteAnnotationStore` plus `PliteAnnotationProvider`. A framework adapter
+whose store must exist before React mounts uses `createPliteAnnotationStore`
+from `plitejs/annotations`. Do not re-export the constructor from
+`plitejs/react`, publish an `/internal` bridge, or force a framework owner
+through a hidden component merely to reach a hook.
+
+The Comments package owns loaded thread records, comment actions, targeted
+subscriptions and native range lifetime. Applications fetch and persist plain
+records; copied UI owns presentation. Configure fetched records through
+`initialState.initialThreads`, replace them through `api.setThreads`, and save
+`api.getThreads()` with the matching document value. The initialization input
+is a seed, not a second live thread store. Keep one keyed record owner inside
+the semantic plugin and reuse Plite Annotation for range projection; the React
+plugin adds interaction. Do not make consumers assemble a channel, provider,
+factory-bound source, native handles or anchor-binding effect.
+
+Load existing records with their IDs, authors, timestamps and status intact.
+Constructor input and later replacement share one atomic preparation path;
+loading does not replay user commands, impersonate authors or use a fake clock.
+User records and current identity use the ordinary plugin store. Database I/O,
+authentication and server authorization remain application responsibilities.
+
+Native range handles belong to their creating editor. Each editor binds its
+own handles from records associated with its document revision. UI composition
+reads locations and precise changes from the canonical Annotation projection.
+Activation stores an ordered ID group, not unmapped click coordinates. Keyed
+body or metadata writes preserve unrelated records and membership snapshots,
+with zero annotation resolution and zero editor-node refreshes. A copied
+composer clears only after its action succeeds, including asynchronous action
+overrides. Suggestion replies use the suggestion ID and location; accepting,
+rejecting or restoring the suggestion changes visibility, not thread resolution.
+
+React plugin-state subscriptions use `usePluginStore` with an installed typed
+descriptor. Optional feature composition checks `editor.plugin(plugin).installed`
+before mounting the subscribing child. Use the selector's `{ id }` option to
+select a registered editor outside the nearest provider. Missing installation,
+store, or state field fails loudly. Do not add nullable wrapper hooks or copy
+portal, store subscription, and `useSyncExternalStore` plumbing into product or
+registry hooks.
+
+Controls calling semantic plugin commands use the typed portal without
+subscribing to its store. Delete controller facades that rename commands or package
+selectors with copied UI effects. Keep deferred input execution in the copied
+input owner, so mounting another button cannot initiate or clear a search.
+API factories bind their `editor` to the exact editor or mounted view whose
+API is accessed. Capture that editor inside the API factory for view work;
+outer descriptor-construction callbacks retain their model lifetime. Keep
+plugin configuration and semantic document state shared. A base or retired
+editor must not select another mounted view for focus, scrolling or paint.
+
+Temporary arrival feedback belongs to the mounted view. Use canonical
+root-local keys and call-time safe attributes for whole-element presentation;
+do not mirror the active target into a model store, transaction effect, path
+anchor, variant vocabulary or subscriber kit. Complete navigation commands
+stay with the feature that owns their selection, focus and scroll policy.
+
+Keep a copied search bar's open state, pending draft and activation in its exact
+Editable composition. Reuse `slots.wrapRoot` for view-owned commands consumed
+inside that Editable's slots; do not put those commands or state into the model
+plugin store. Shared committed query/results keep their headless owner. An
+inactive or detached view must not execute another view's focus or scroll work,
+and detaching UI must not erase the model's semantic search.
+
+Plugin initial state is a complete top-level record. Every declared field is
+required and excludes `undefined`; use a concrete default or `null` for an
+empty value. Enforce this in object and factory inputs to both constructors
+and `.extend()`, while preserving contextual inference. Nested domain values
+may have optional properties, and `.configure()` remains a partial override
+of existing defaults. Do not add a validator API or a second state channel.
+
+Plugin store writes preserve unchanged immutable branches by reference, for
+both partial and draft updates. Snapshot newly supplied caller-owned data;
+never clone the full state graph to publish one changed field. Reuse only
+graphs whose immutability the store owns, because a frozen outer object may
+still contain mutable descendants. Derive each repeated consumer's visible
+result inside its selector so unrelated keys and equivalent results do not
+rerender it. Keep result indexes derived from stable result references.
 
 A sibling render slot exposes only its placement-owned lifecycle input: the
 exact Editable ref or container ref. Never inherit or forward the host
@@ -300,6 +560,11 @@ when that view cannot resolve the target or during SSR. Reject implicit active
 view selection, public schedulers or geometry stores, virtual-element adapters,
 and app presentation policy. Copied UI owns Floating UI middleware, styling,
 labels, focus policy, and feature composition.
+
+When a consumer already owns a semantic target, use the canonical DOM operation
+instead of querying its presentation markers. If that operation schedules work,
+return its existing request cancellation handle so callers can end their own
+request lifetime without exposing another scheduler or cancellation namespace.
 
 When canonical editor state is stable but its paint varies by mounted view,
 first ask whether that view can derive the choice from its own runtime or DOM
@@ -458,6 +723,11 @@ independent shared lifecycle or state job.
 
 Read this reference for builders, caller generics, extension shape, node-aware reads/updates, and inference ownership.
 
+Element payload and live position have separate selector owners. Derive node
+fields with `useElementSelector(FooPlugin, node => node.field)` and position
+with `usePath(path => path.at(-1))`; equality must filter unrelated changes at
+the owning subscription.
+
 ### Schema And Identity → [schema-and-identity.md](./rules/schema-and-identity.md)
 
 Read this reference for schema shape, document migration, node identity, and plugin capability boundaries.
@@ -476,6 +746,8 @@ Ask:
 - Can one owner noun be removed from a scoped API?
 - Can nesting become a flat domain verb?
 - Can inference remove a type, cast, helper, or duplicated contract?
+- Do store and binding factories accept an editor with inferred document data
+  and installed extensions while preserving their own payload inference?
 - When merging builder stages, does the surviving return type widen every
   affected accumulator, or merely preserve it? Where are the parity and
   negative type proofs?
@@ -586,7 +858,7 @@ Repair the smallest durable ownership chain:
 2. update only the relevant `VISION.md` / `docs/vision/**` doctrine when the
    correction is durable taste rather than procedure;
 3. audit the affected execution and teaching owners, including `plate-plan`,
-   `plite-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, and
+   `plite-plan`, `plate-plugin-creator`, `plate-ui`, Plate Docs, and
    `plate-next` when their scope intersects the changed API; update only skills
    that teach or enforce the changed contract, remove contradictions, and link
    this owner instead of copying the full doctrine;
@@ -613,7 +885,7 @@ principle; keep package details in source, plans, or the API debt ledger.
 
 Stop API design when one target clearly wins and its unresolved questions are
 implementation/proof questions. Route those questions to `plate-plan`,
-`plite-plan`, `major-task`, or the package owner.
+`plite-plan`, `task`, or the package owner.
 
 Do not implement product API changes unless the user explicitly asks and the
 owning execution skill is loaded.

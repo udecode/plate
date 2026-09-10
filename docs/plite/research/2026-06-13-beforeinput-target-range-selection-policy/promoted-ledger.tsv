@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+beforeinput-target-range:event-owned-selection-import	P155	slate-react	runtime-before-input-events contract plus Chromium/WebKit plaintext target-range rows	`cd .tmp/slate-v2/packages/slate-react && bun test:vitest test/runtime-before-input-events-contract.test.ts test/selection-reconciler-contract.test.tsx test/model-input-strategy-contract.test.ts`; `.tmp/slate-v2`: focused Chromium/WebKit plaintext/richtext Playwright subset	promoted-kept

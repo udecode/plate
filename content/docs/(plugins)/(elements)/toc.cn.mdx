@@ -96,19 +96,15 @@ const editor = createEditor({
     // ...其他插件
     HeadingPlugin.configure({ component: HeadingElement }),
     TocPlugin.configure({
-      component: TocElement,
-      initialState: {
-        topOffset: 80,
-        isScroll: true,
-      },
+      component: (props) => <TocElement {...props} topOffset={80} isScroll />,
     }),
   ],
 });
 ```
 
 - `.configure({ component })`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc)
-- `initialState.topOffset`: 设置滚动至标题时的顶部偏移量
-- `initialState.isScroll`: 启用滚动至标题的行为
+- `TocElement.topOffset`: 设置滚动至标题时的顶部偏移量
+- `TocElement.isScroll`: 启用滚动至标题的行为
 
 ### 添加工具栏按钮
 
@@ -124,22 +120,18 @@ const editor = createEditor({
 
 ### 滚动容器设置
 
-- 若您的滚动元素是 [EditorContainer](/docs/components/editor)，可跳过此步骤
-- 若您渲染自定义滚动容器，使用 `useEditorScrollElementRef(editor)` 注册它。
+使用 [EditorContainer](/docs/components/editor) 作为编辑器的滚动区域。
+对于自定义布局，在 `<Plate>` 内渲染 `PlateContainer` 并为其添加滚动样式。
+`PlateContainer` 会将该区域注册到编辑器。
 
 ```tsx
-import { useEditor, useEditorScrollElementRef } from 'platejs/react';
+import { PlateContainer, PlateContent } from 'platejs/react';
 
 function Layout() {
-  const editor = useEditor();
-  const scrollRef = useEditorScrollElementRef(editor);
-
   return (
-    <main ref={scrollRef}>
-      <EditorContainer>
-        <PlateContent />
-      </EditorContainer>
-    </main>
+    <PlateContainer className="h-[600px] overflow-y-auto">
+      <PlateContent />
+    </PlateContainer>
   );
 }
 ```
@@ -158,6 +150,19 @@ function Layout() {
 
 <API name="TocPlugin">
 <APIOptions>
+  <APIItem name="queryHeading" type="((state: EditorStateView) => Heading[]) | null" optional>
+    自定义标题查询函数。默认值为 `null`，表示使用内置查询。
+  </APIItem>
+</APIOptions>
+</API>
+
+
+### `TocElement`
+
+滚动选项由复制的视图配置；标题查询由 `TocPlugin` 提供。
+
+<API name="TocElement">
+<APIOptions>
   <APIItem name="isScroll" type="boolean" optional>
     启用滚动行为
     - **默认值:** `true`
@@ -165,9 +170,6 @@ function Layout() {
   <APIItem name="topOffset" type="number" optional>
     滚动至标题时的顶部偏移量
     - **默认值:** `80`
-  </APIItem>
-  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
-    自定义标题查询函数
   </APIItem>
 </APIOptions>
 </API>

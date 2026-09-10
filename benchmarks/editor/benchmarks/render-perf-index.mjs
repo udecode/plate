@@ -115,8 +115,8 @@ function summarizeTargets({ historyPath, registryPath }) {
   const targets = history?.targets ?? registry?.targets ?? [];
   const statusCounts = history?.counts?.statusCounts ?? {};
   const families = countBy(targets, (target) => target.family ?? 'unknown');
-  const nonOkTargets = targets
-    .filter((target) => target.status && target.status !== 'ok')
+  const unrecordedTargets = targets
+    .filter((target) => target.status && target.status !== 'recorded')
     .slice(0, 6)
     .map((target) => ({
       command: target.command,
@@ -128,7 +128,7 @@ function summarizeTargets({ historyPath, registryPath }) {
   return {
     artifactCounts: history?.counts ?? null,
     families,
-    nonOkTargets,
+    unrecordedTargets,
     registryPath,
     statusCounts,
     targetCount: Number(history?.counts?.targets) || targets.length,
@@ -146,14 +146,14 @@ function renderIndexHtml({ evidence, health, internals, richText, targets }) {
       .map(([family, count]) => `${family}: ${count}`)
       .join(', ') || 'no targets yet';
   const nextActions =
-    targets.nonOkTargets.length > 0
-      ? targets.nonOkTargets
+    targets.unrecordedTargets.length > 0
+      ? targets.unrecordedTargets
           .map(
             (target) =>
               `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">status=${escapeHtml(target.status)}; metric=${escapeHtml(target.metric)}; run <code>pnpm bench:targets:dry-run -- ${escapeHtml(target.id)}</code></span></li>`
           )
           .join('')
-      : '<li><strong>No required target artifacts missing</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>[$slate-ar-perf] &lt;target-id&gt;</code>.</span></li>';
+      : '<li><strong>All required target artifacts have a recorded receipt</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>pnpm bench:targets:run -- &lt;target-id&gt;</code>.</span></li>';
 
   return `<!doctype html>
 <html lang="en">
@@ -183,8 +183,9 @@ function renderIndexHtml({ evidence, health, internals, richText, targets }) {
     <h1>Editor Benchmark Index</h1>
     <p>Slate v2 benchmark target dashboard. Active benchmark decisions come from <code>${escapeHtml(targets.registryPath)}</code>; Evidence Kit is retained as an audit archive.</p>
     <section class="health">
-      <h2>Target Health</h2>
+      <h2>Recorded target evidence</h2>
       <p>${targets.targetCount} targets. Status: ${escapeHtml(statusSummary)}.</p>
+      <p class="meta">Recorded receipts do not establish current source freshness or passing budgets.</p>
       <p class="meta">Families: ${escapeHtml(familySummary)}.</p>
       <ol>
         ${nextActions}
@@ -193,8 +194,8 @@ function renderIndexHtml({ evidence, health, internals, richText, targets }) {
     <ul>
       <li>
         <a href="../../../targets/reports/slate-v2.md">Slate v2 target report</a>
-        <p>Generated from the active target registry for benchmark routing, Autoresearch setup, metric ownership, and artifact health.</p>
-        <p class="meta">Required artifacts: ${targets.artifactCounts?.existingArtifacts ?? 0}/${targets.artifactCounts?.requiredArtifacts ?? 0}. Missing optional: ${targets.artifactCounts?.missingOptionalArtifacts ?? 0}. Data: <code>../../../targets/history/slate-v2-latest.json</code></p>
+        <p>Generated from the active target registry for benchmark routing, Autoresearch setup, metric ownership, and recorded artifacts.</p>
+        <p class="meta">Recorded artifacts: ${targets.artifactCounts?.recordedArtifacts ?? 0}/${targets.artifactCounts?.requiredArtifacts ?? 0}. Missing optional: ${targets.artifactCounts?.missingOptionalArtifacts ?? 0}. Data: <code>../../../targets/history/slate-v2-latest.json</code></p>
       </li>
       <li>
         <a href="rich-text.html">Rich text editor comparison</a>

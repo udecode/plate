@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-suggestion-reviews",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-suggestion-reviews.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Read current suggestion groups from the feature",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-static",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-suggestion-reviews-1",
+      "kind": "behavior",
+      "summary": "Read semantic groups with `useSuggestionReviews` and accept or reject by ID. Keep labels, dates and card activation in the copied view.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion", "discussion"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-suggestion-reviews",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-08-suggestion-reviews-2",
+      "kind": "behavior",
+      "summary": "Use the feature's inline suggestion projection for consistent inherited text styling.",
+      "details": [],
+      "migrationNotes": [
+        "Use the feature's inline suggestion projection for consistent inherited text styling."
+      ],
+      "targets": ["suggestion-static"],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-suggestion-reviews",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

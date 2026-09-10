@@ -7,7 +7,7 @@ Locations tell Plite where to read or write inside an editor root. The core
 location types are `Path`, `Point`, and `Range`. Public read and update methods
 with an `at` option also accept a live text or element node.
 
-## Root Resolution
+## Root resolution
 
 Rootless locations resolve against the current editor or view root. The base
 editor uses the primary document; root-bound views use their own root.
@@ -50,7 +50,7 @@ const parent = PathApi.parent([0, 0]);
 const common = PathApi.common([0, 0], [0, 2]);
 ```
 
-## Node Targets
+## Node targets
 
 A node target is either a location or a descendant from the current editor.
 

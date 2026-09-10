@@ -1,0 +1,4 @@
+id	repo	local_path	scope	status
+codemirror-view	CodeMirror view	/Users/zbeyens/git/codemirror-view	viewport state, measurement loop, selection layer, coordinate APIs	read
+codemirror-reference	CodeMirror reference docs	https://codemirror.net/docs/ref/	drawSelection public behavior	read
+codemirror-focused-widget-discussion	CodeMirror focused widget discussion	https://discuss.codemirror.net/t/inability-to-use-selector-with-an-input-widget-when-using-the-drawselection-plugin/8182	drawSelection focused widget native-selection exception	read

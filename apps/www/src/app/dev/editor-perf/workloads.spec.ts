@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import { createEditor } from 'platejs/react';
 
 import {
   createHugeDocumentValue,
@@ -9,10 +10,43 @@ import {
   EDITOR_PERF_WORKLOADS,
   getDefaultElementIdFragmentBlockCount,
   getEditorPerfWorkloadValue,
+  getEditorPerfWorkloadPlugins,
   getElementIdFragmentBenchmarkData,
+  SCENARIO_WORKLOADS,
 } from './workloads';
 
 describe('editor perf workloads', () => {
+  it.each([undefined, 0, 7])('rejects an invalid heading level %s', (level) => {
+    expect(() =>
+      createEditor({
+        plugins: getEditorPerfWorkloadPlugins('huge-heading'),
+        initialValue: [
+          { type: 'heading', level, children: [{ text: 'Heading' }] },
+        ],
+      })
+    ).toThrow();
+  });
+  it.each(SCENARIO_WORKLOADS)(
+    'mounts $id in the minimal editor with its schema and text intact',
+    ({ id }) => {
+      const value = getEditorPerfWorkloadValue({ blocks: 2, workloadId: id });
+      const editor = createEditor({
+        plugins: getEditorPerfWorkloadPlugins(id),
+        initialValue: value,
+      });
+
+      expect(editor.read.children()).toEqual(
+        id === 'huge-dense-text'
+          ? value.map((node) => ({
+              ...node,
+              children: [
+                { text: node.children.map((child) => child.text).join('') },
+              ],
+            }))
+          : value
+      );
+    }
+  );
   it.each(EDITOR_PERF_WORKLOADS)(
     'builds JSON-compatible $id initial values',
     ({ id }) => {

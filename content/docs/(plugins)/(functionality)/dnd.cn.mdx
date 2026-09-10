@@ -45,6 +45,28 @@ const editor = createEditor({
 });
 ```
 
+### 渲染编辑器
+
+`DndKit` 提供 HTML5 backend，并将清理绑定到每个已挂载的 Editable，包括禁用自动滚动时的清理。在 `Plate` 内渲染编辑器即可：
+
+```tsx
+import { Plate, useCreateEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+export function DraggableEditor() {
+  const editor = useCreateEditor({ plugins: DndKit });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
 </Steps>
 
 ## 手动配置
@@ -57,40 +79,26 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
 ```
 
-### 添加插件
+### 配置工具包
+
+安装 `DndKit`，并通过 `DndPlugin` 配置行为：
 
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 
 const editor = createEditor({
   plugins: [
-    // ...其他插件
-    DndPlugin,
+    ...DndKit,
+    DndPlugin.configure({
+      initialState: { enableScroller: false },
+    }),
   ],
 });
 ```
 
-### 配置插件
-
-通过可拖拽组件和DnD provider配置拖放功能：
-
-```tsx
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndPlugin } from 'platejs/dnd/react';
-
-DndPlugin.configure({
-  render: {
-    abovePlite: ({ children }) => (
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    ),
-  },
-});
-```
-
-- `render.aboveNodes`: 分配 [`BlockDraggable`](/docs/components/dnd) 组件在区块上方渲染拖拽手柄
-- `render.abovePlite`: 用 `DndProvider` 包裹编辑器。如果React树中已有 `DndProvider` 可移除此配置
+若应用提供了 `DndProvider`，请将其放在编辑器的共同父组件中。每个 `DndKit` 都会使用该 manager；否则，工具包会提供默认的 HTML5 backend。
 
 ### 高级配置
 
@@ -99,6 +107,7 @@ DndPlugin.configure({
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
 import { PlaceholderPlugin } from 'platejs/media/react';
+import { BlockDraggable } from '@/components/editor/dnd';
 
 DndPlugin.configure({
   initialState: {
@@ -109,11 +118,8 @@ DndPlugin.configure({
         .update.insertMedia(dragItem.files, { at: target });
     },
   },
-  render: {
-    aboveNodes: BlockDraggable,
-    abovePlite: ({ children }) => (
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    ),
+  slots: {
+    wrapNode: BlockDraggable,
   },
 });
 ```
@@ -162,6 +168,22 @@ DndPlugin.configure({
 </API>
 
 ## 钩子
+
+## 拖拽准备
+
+`editor.plugin(DndPlugin).read.dragEntries(element)` 读取当前拖拽区块及其嵌套列表项，不修改选择。
+`api.prepareDrag(element)` 选择完整拖拽内容，并返回已挂载区块的 `{ node, domNode, preview }`。
+预览副本为 inert、设置 `aria-hidden`，且不包含 Plite DOM 绑定；未挂载的选中区块仍保留在拖拽内容中。
+预览的位置、间距和滚动补偿由组件负责。
+
+`canDropNode` 对每个拖拽区块执行检查，并提供目标 `editor` 与 `sourceEditor`。
+任何区块被拒绝时，不显示落点，也不调用 `onDropHandler`。
+
+### `useDndPlugin`
+
+`useDndPlugin(editableElement: HTMLElement | null): void` 将拖放清理监听器绑定到一个已挂载视图的 `ownerDocument`。传入该视图的实际 Editable 元素；挂载前和卸载后传入 `null`。元素变化或组件卸载时，钩子会移除旧文档上的监听器。
+
+`DndKit` 会自动调用此钩子。只有在自行管理 Provider 和视图生命周期的自定义集成中，才需要直接使用它。
 
 ### `useDraggable`
 

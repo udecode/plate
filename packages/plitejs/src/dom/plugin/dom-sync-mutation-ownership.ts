@@ -44,6 +44,8 @@ export class DOMSyncMutationOwnership {
 
   private connected = false;
 
+  private markingPauseDepth = 0;
+
   private readonly pendingTokens = new Set<DOMSyncMutationToken>();
 
   private root: HTMLElement | null = null;
@@ -93,7 +95,7 @@ export class DOMSyncMutationOwnership {
     type: MutationRecord['type'],
     attributeName: string | null = null
   ) {
-    if (!this.connected) return;
+    if (!this.connected || this.markingPauseDepth > 0) return;
 
     const key = mutationKey(type, attributeName);
     const targetTokens =
@@ -126,6 +128,16 @@ export class DOMSyncMutationOwnership {
     this.root = root;
     if (this.connected && root) {
       DOM_SYNC_MUTATION_OWNER_BY_ROOT.set(root, this);
+    }
+  }
+
+  runUnmarked<T>(callback: () => T): T {
+    this.markingPauseDepth += 1;
+
+    try {
+      return callback();
+    } finally {
+      this.markingPauseDepth -= 1;
     }
   }
 
@@ -170,6 +182,15 @@ export const markDOMSyncMutationTarget = (
   type: MutationRecord['type'],
   attributeName: string | null = null
 ) => {
+  const element = asElement(target);
+
+  if (
+    element &&
+    !element.parentElement &&
+    !DOM_SYNC_MUTATION_OWNER_BY_ROOT.has(element as HTMLElement)
+  ) {
+    return;
+  }
   findDOMSyncMutationOwner(target)?.mark(target, type, attributeName);
 };
 

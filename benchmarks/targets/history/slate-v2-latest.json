@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "registryPath": "benchmarks/targets/slate-v2.json",
   "policy": {
     "authority": "Benchmark targets are the future source of truth. Evidence Kit is a legacy import/report archive during migration.",
@@ -12,14 +12,14 @@
     }
   },
   "counts": {
-    "targets": 42,
-    "artifacts": 42,
-    "existingArtifacts": 42,
+    "targets": 48,
+    "artifacts": 48,
+    "recordedArtifacts": 48,
     "missingOptionalArtifacts": 0,
     "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 42,
+    "requiredArtifacts": 48,
     "statusCounts": {
-      "ok": 42
+      "recorded": 48
     }
   },
   "targets": [
@@ -39,10 +39,10 @@
         {
           "path": "tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "browser-rich-text-replay-coverage",
@@ -66,10 +66,10 @@
         {
           "path": "tmp/slate-clipboard-large-payload-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "clipboard-large-payload",
@@ -83,20 +83,20 @@
       "kind": "current",
       "owner": "slate-v2",
       "question": "Are remote change application, anchor rebase, canonical replacement, history skip, and cleanup lanes ready?",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
+      "command": "PLITE_COLLAB_READINESS_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/collab-readiness.mjs",
       "cwd": ".",
-      "metric": "benchmark_seconds",
+      "metric": "collab_replacement_max_ms",
       "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/document-change.test.ts ./packages/plitejs/test/snapshot-contract.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/history",
       "artifacts": [
         {
           "path": "tmp/slate-collab-readiness-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "collab-readiness",
@@ -106,24 +106,24 @@
     },
     {
       "id": "core-anchors-projection",
-      "family": "core-current",
+      "family": "core-anchor",
       "kind": "current",
-      "owner": "slate-v2",
-      "question": "How expensive are anchors and projection paths?",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs",
+      "owner": "plite",
+      "question": "Do live Anchors avoid unrelated fan-out through 10,000 handles, and do two-leaf range projections stay local through 100,000 leaves?",
+      "command": "PLITE_ANCHORS_PROJECTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/anchors-projection.mjs --output=tmp/plite-anchors-projection-benchmark.json",
       "cwd": ".",
-      "metric": "core_benchmark_seconds",
+      "metric": "plite_anchor_state_distributed_10000_p95_ms",
       "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/architecture-contracts.test.ts ./packages/plitejs/test/snapshot-contract.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx",
       "artifacts": [
         {
           "path": "tmp/plite-anchors-projection-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-refs-projection",
@@ -136,21 +136,21 @@
       "family": "core-current",
       "kind": "current",
       "owner": "slate-v2",
-      "question": "How expensive are canonical document changes and replay?",
+      "question": "Do canonical changes and replay meet parity and timing gates, and do text batches publish shared ancestors once?",
       "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/document-change.mjs",
       "cwd": ".",
-      "metric": "transaction_median_ratio",
+      "metric": "plite_document_change_guard_failures",
       "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/document-change.test.ts ./packages/plitejs/test/document-change-laws.test.ts",
       "artifacts": [
         {
           "path": "docs/plans/artifacts/wordgard-plite-rewrite-comparison/changeset-prototype-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -169,10 +169,10 @@
         {
           "path": "tmp/slate-editor-store-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-editor-store",
@@ -196,10 +196,10 @@
         {
           "path": "tmp/slate-core-huge-document-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-huge-document-compare",
@@ -212,21 +212,21 @@
       "family": "core-current",
       "kind": "current",
       "owner": "slate-v2",
-      "question": "How expensive are structural node transforms?",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
+      "question": "Do structural transforms preserve exact output and replace one subtree without materializing unrelated runtime identities?",
+      "command": "PLITE_NODE_TRANSFORMS_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/node-transforms.mjs",
       "cwd": ".",
-      "metric": "core_benchmark_seconds",
+      "metric": "plite_node_replacement_locality_failures",
       "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/commit-metadata-contract.ts ./packages/plitejs/test/document-change-structural-transform.test.ts ./packages/plitejs/test/document-change-relocation.test.ts",
       "artifacts": [
         {
           "path": "tmp/slate-node-transform-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-node-transforms",
@@ -250,10 +250,10 @@
         {
           "path": "tmp/slate-normalization-compare-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-normalization-compare",
@@ -277,10 +277,10 @@
         {
           "path": "tmp/slate-normalization-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-normalization-current",
@@ -304,10 +304,10 @@
         {
           "path": "tmp/slate-core-observation-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-observation-compare",
@@ -320,21 +320,21 @@
       "family": "core-current",
       "kind": "current",
       "owner": "slate-v2",
-      "question": "How expensive are query, anchor, and observation paths?",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
+      "question": "Do cached immutable-index reads and small selections stay local through 100,000 blocks, commit queries reuse aggregates, and append-node queries stay local through 10,000 blocks?",
+      "command": "PLITE_QUERY_ANCHOR_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/query-anchor-observation.mjs",
       "cwd": ".",
-      "metric": "core_benchmark_seconds",
+      "metric": "plite_commit_query_guard_failures",
       "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/commit-metadata-contract.ts ./packages/plitejs/test/editor-runtime-view-contract.ts ./packages/plitejs/test/architecture-contracts.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-query-anchor-observation-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-query-ref-observation",
@@ -358,10 +358,10 @@
         {
           "path": "tmp/plite-resolved-token-cursor-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -380,10 +380,10 @@
         {
           "path": "tmp/slate-rich-text-operations-compare-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-rich-text-operations-compare",
@@ -407,10 +407,10 @@
         {
           "path": "tmp/slate-text-selection-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "core-text-selection",
@@ -434,32 +434,54 @@
         {
           "path": "tmp/bench-plite-update-policy.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
-      "id": "core-yjs-collaboration-current",
-      "family": "core-current",
+      "id": "decoration-manager-scalability",
+      "family": "react-locality",
       "kind": "current",
-      "owner": "slate-v2",
-      "question": "How expensive are collaborative sync, awareness, and reconnect paths?",
-      "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "owner": "plitejs/react",
+      "question": "Does the production Plite Decoration manager keep source observation and node subscriptions bounded through 10k mounted nodes and 32 sources?",
+      "command": "bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-decoration-manager-benchmark.mjs --output=docs/plans/artifacts/rendering-api-editor-audit/decoration-manager-benchmark.json",
       "cwd": ".",
-      "metric": "yjs_collaboration_worst_p95_ms",
+      "metric": "plite_decoration_manager_hard_guard_failures",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "pnpm check:plite",
+      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
       "artifacts": [
         {
-          "path": "tmp/slate-yjs-collaboration-benchmark.json",
+          "path": "docs/plans/artifacts/rendering-api-editor-audit/decoration-manager-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "dom-phase-scheduler",
+      "family": "dom-scheduling",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Do pending DOM task flush, cancellation, and keyed replacement avoid quadratic queue maintenance at 100/1,000/10,000/50,000 tasks?",
+      "command": "PLITE_DOM_PHASE_SCHEDULER_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/dom-phase-scheduler.mjs",
+      "cwd": ".",
+      "metric": "plite_dom_phase_scheduler_guard_failures",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/dom/dom-phase-scheduler.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-dom-phase-scheduler-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
       "migration": null
     },
     {
@@ -478,10 +500,10 @@
         {
           "path": "tmp/slate-history-compare-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "history-compare",
@@ -505,16 +527,38 @@
         {
           "path": "tmp/bench-slate-6038.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "issue-6038-transaction-execution",
         "evidenceKitCategory": "slate-6038-transaction-execution",
         "evidenceKitActive": true
       }
+    },
+    {
+      "id": "plate-code-block-text-flow-browser",
+      "family": "react-text-flow",
+      "kind": "browser-matrix",
+      "owner": "platejs/code-block",
+      "question": "Does Plate's minimal two-plugin code-block kernel keep one fully highlighted 10,000-line code Text fast through native typing without dropping source text or syntax tokens?",
+      "command": "PLATE_CODE_BLOCK_FIXTURE=product PLATE_CODE_BLOCK_LANGUAGE=typescript PLATE_CODE_BLOCK_STRICT=1 bun packages/platejs/scripts/code-block-text-flow-browser.mjs",
+      "cwd": ".",
+      "metric": "plate_code_block_text_flow_max_budget_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx packages/platejs/src/react/features/code-block/CodeBlockPlugin.spec.tsx && pnpm --filter plite test:plite-browser:chromium -- tests/plite-browser/donor/examples/code-highlighting.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plate-code-block-text-flow-browser.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
     },
     {
       "id": "plite-command-dispatch",
@@ -532,10 +576,10 @@
         {
           "path": "tmp/plite-command-dispatch-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -554,10 +598,10 @@
         {
           "path": "tmp/plite-content-slice-value-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -576,10 +620,54 @@
         {
           "path": "tmp/plite-correction-worklist-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-extension-graph",
+      "family": "core-extension",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Do descriptor-owned required dependencies compile and reconfigure within fixed budgets at 10, 100, and 1,000 descriptors while cleanup retains zero registry records?",
+      "command": "PLITE_EXTENSION_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-extension-graph-benchmark.ts --output=tmp/plite-extension-graph-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_extension_graph_worst_budget_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/extension-configuration.test.ts ./packages/plitejs/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-extension-graph-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-external-text-browser",
+      "family": "react-external-text",
+      "kind": "browser-matrix",
+      "owner": "plitejs/react",
+      "question": "Can one canonical Plite Text use bounded adapter-owned DOM while preserving exact edits, selection, history, decorations, multi-view fan-out, and frozen mount latency through 4.9 MB and 1,000 blocks?",
+      "command": "bun benchmarks/editor/benchmarks/plite-external-text-browser.mjs --output=tmp/plite-external-text-browser.json",
+      "cwd": ".",
+      "metric": "plite_external_text_pass",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/text-splice-projection.test.ts && pnpm --filter plitejs test:react test/react/external-text-contract.test.tsx && bun test --preload ./config/plite-source-test-setup.ts packages/test/test/proof/playwright-selection.test.ts && pnpm --filter plite test:plite-browser:chromium donor/examples/external-text.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-external-text-browser.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
       "migration": null
     },
     {
@@ -598,17 +686,17 @@
         {
           "path": "tmp/plite-fit-content-locality-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
       "id": "plite-history-depth",
       "family": "history",
       "kind": "current",
-      "owner": "plite-history",
+      "owner": "plitejs/history",
       "question": "Does the cost of one history-skipped remote commit stay independent of retained undo depth?",
       "command": "PLITE_HISTORY_DEPTH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-history-depth-benchmark.ts --output=tmp/plite-history-depth-benchmark.json",
       "cwd": ".",
@@ -620,17 +708,17 @@
         {
           "path": "tmp/plite-history-depth-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
       "id": "plite-history-retained-memory",
       "family": "history",
       "kind": "current",
-      "owner": "plite-history",
+      "owner": "plitejs/history",
       "question": "Does one 5,000-block History batch retain one versioned change without duplicating more than 2.25x its input payload?",
       "command": "PLITE_HISTORY_RETAINED_MEMORY_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs",
       "cwd": ".",
@@ -642,10 +730,32 @@
         {
           "path": "tmp/slate-history-retained-memory-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-read-view-lifecycle",
+      "family": "core-read",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Do warm reads and document commits avoid rebuilding extension read namespaces as installed plugin width grows from 1 to 100?",
+      "command": "PLITE_READ_VIEW_LIFECYCLE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.ts --output=tmp/plite-read-view-lifecycle-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_read_view_lifecycle_width_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/read-view-lifecycle-contract.test.ts ./packages/plitejs/test/extension-namespaces-contract.ts ./packages/plitejs/test/editor-runtime-view-contract.ts ./packages/plitejs/test/state-tx-public-api-contract.ts ./benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-read-view-lifecycle-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
       "migration": null
     },
     {
@@ -659,15 +769,15 @@
       "metric": "plite_schema_architecture_compile_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/core/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/projected-clipboard-contract.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/schema-target-model-oracle.test.ts ./packages/plitejs/test/schema-compiler-laws.test.ts ./packages/plitejs/test/schema-compiler.test.ts ./packages/plitejs/test/incremental-schema-validation.test.ts ./packages/plitejs/test/react/schema-runtime-invalidation-contract.test.ts ./packages/platejs/src/internal/plugin/compilePlateModel.spec.ts ./benchmarks/editor/benchmarks/plite-schema-architecture-benchmark.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/projected-clipboard-contract.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-schema-architecture-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -686,10 +796,10 @@
         {
           "path": "tmp/plite-schema-construction-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -708,10 +818,10 @@
         {
           "path": "tmp/plite-transaction-execution-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -719,21 +829,21 @@
       "family": "collaboration",
       "kind": "current",
       "owner": "yjs",
-      "question": "Does one sparse Yjs edit stay local and distance-independent across a 10,000-block root?",
-      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/yjs/scripts/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
+      "question": "Do sparse Yjs edits stay local across a 10,000-block root, and do 120-block batches avoid detached live-document transactions?",
+      "command": "PLITE_YJS_EVENT_CHANGE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts --output=tmp/plite-yjs-event-change-bridge-benchmark.json",
       "cwd": ".",
       "metric": "plite_yjs_event_change_sync_distance_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/yjs/test/remote-import-contract.slow.ts ./packages/yjs/test/canonical-change-contract.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/yjs/editor-adapter-contract.spec.ts ./packages/plitejs/test/yjs/event-change-locality.spec.ts ./packages/plitejs/test/yjs/remote-import-contract.slow.ts ./packages/plitejs/test/yjs/canonical-change-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-yjs-event-change-bridge-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -752,10 +862,10 @@
         {
           "path": "tmp/slate-react-active-typing-breakdown-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-active-typing-breakdown",
@@ -769,7 +879,7 @@
       "kind": "browser-trace",
       "owner": "slate-v2",
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
-      "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "cwd": ".",
       "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
@@ -777,12 +887,12 @@
       "correctnessCommand": "pnpm check:plite",
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-huge-document-browser-trace",
@@ -806,10 +916,10 @@
         {
           "path": "tmp/slate-react-huge-document-full-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -826,12 +936,12 @@
       "correctnessCommand": "pnpm check:plite",
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
+          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-huge-document-legacy-compare",
@@ -855,10 +965,10 @@
         {
           "path": "tmp/slate-react-huge-document-overlays-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-huge-document-overlays",
@@ -882,10 +992,10 @@
         {
           "path": "tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-huge-document-slate-browser-trace",
@@ -899,7 +1009,7 @@
       "kind": "browser-trace",
       "owner": "slate-v2",
       "question": "Does the 5,000-block virtualized React surface keep type-to-paint latency inside the interactive budget?",
-      "command": "PLITE_BROWSER_TRACE_SURFACES=virtualized PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_TYPE_OPS=10 PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json PLITE_BROWSER_TRACE_SURFACES=virtualized PLITE_BROWSER_TRACE_ITERATIONS=5 PLITE_BROWSER_TRACE_TYPE_OPS=10 PLITE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "cwd": ".",
       "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
@@ -907,12 +1017,12 @@
       "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
       "artifacts": [
         {
-          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
+          "path": "tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -931,10 +1041,10 @@
         {
           "path": "tmp/slate-pagination-virtualized-char-burst-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -953,10 +1063,10 @@
         {
           "path": "tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
@@ -975,10 +1085,10 @@
         {
           "path": "tmp/slate-react-rerender-breadth-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": {
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "react-rerender-breadth",
@@ -997,37 +1107,59 @@
       "metric": "plite_react_runtime_node_fanout_count",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
+      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/provider-hooks-contract.test.tsx -t \"fan out|full-document replacement\"",
       "artifacts": [
         {
           "path": "tmp/slate-react-runtime-node-fanout-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     },
     {
       "id": "react-stable-id-overlay-source",
       "family": "react-locality",
       "kind": "current",
-      "owner": "plite-react",
-      "question": "Does one changed stable-ID decoration, annotation, or widget justify incremental mapping at 10,000 and 100,000 source entries?",
+      "owner": "plitejs/react",
+      "question": "Does the shared mapped-view kernel avoid unrelated scans and copies through 100k entities, and stay linear for 10k disjoint, shared-bucket, and wide-item outputs?",
       "command": "PLITE_OVERLAY_SOURCE_BENCH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/stable-id-overlay-source.mjs",
       "cwd": ".",
-      "metric": "plite_overlay_decoration_recreated_100000_indexed_median_ms",
+      "metric": "plite_mapped_source_trusted_one_id_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter @platejs/plite-react exec vitest run --config ./vitest.config.mjs test/stable-id-mapped-source.test.ts test/annotation-store-contract.test.tsx test/widget-layer-contract.test.tsx test/projections-and-selection-contract.test.tsx",
+      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/stable-id-mapped-source.test.ts test/react/annotation-store-contract.test.tsx test/react/widget-layer-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx",
       "artifacts": [
         {
           "path": "tmp/plite-stable-id-overlay-source-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "react-text-flow-browser-matrix",
+      "family": "react-text-flow",
+      "kind": "browser-matrix",
+      "owner": "plitejs/react",
+      "question": "Does Plite keep huge DOM-present plain, marked, decorated, overlapping, long-line, custom-renderer, and code text fast while preserving exact text and selection?",
+      "command": "PLITE_TEXT_FLOW_STRICT=1 bun packages/plitejs/benchmarks/react-text-flow-browser-matrix.mjs",
+      "cwd": ".",
+      "metric": "plite_react_text_flow_max_budget_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/dom-integrity-observer-contract.test.ts test/react/dom-text-flow-index-contract.test.ts test/react/dom-text-sync-contract.ts test/react/editable-text-flow.test.ts test/react/input-history-contract.test.ts test/react/native-text-input-delta-contract.test.ts test/react/plite-runtime-provider-contract.test.tsx test/react/projected-clipboard-contract.test.ts test/react/selection-reconciler-contract.test.tsx",
+      "artifacts": [
+        {
+          "path": "tmp/plite-react-text-flow-browser-matrix.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
       "migration": null
     },
     {
@@ -1035,21 +1167,21 @@
       "family": "collaboration",
       "kind": "current",
       "owner": "slate-v2",
-      "question": "Does @platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "question": "Does plitejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
       "command": "bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
       "cwd": ".",
       "metric": "yjs_collaboration_worst_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter @platejs/yjs test && pnpm --filter @platejs/yjs typecheck",
+      "correctnessCommand": "pnpm check:plite",
       "artifacts": [
         {
           "path": "tmp/slate-yjs-collaboration-benchmark.json",
           "required": true,
-          "exists": true
+          "recorded": true
         }
       ],
-      "status": "ok",
+      "status": "recorded",
       "migration": null
     }
   ]

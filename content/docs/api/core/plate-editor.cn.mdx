@@ -3,7 +3,9 @@ title: Plate 编辑器
 description: Plate 编辑器运行时的 API 参考。
 ---
 
-`Editor` 是 `createEditor` 和 `useCreateEditor` 返回的 React 编辑器类型。它在基础 Plite 编辑器之上添加类型化插件 portal、类型化 `api`、类型化 `editor.update()` 事务、DOM service 和 editor-local plugin store。
+`Editor` 是 `createEditor` 和 `useCreateEditor` 返回的编辑器类型。导入路径决定它是
+无 React 依赖的编辑器还是 React 编辑器。两者都提供类型化插件 portal、`api`、
+`editor.update()` 事务和编辑器内插件状态。
 
 ## 所有权
 
@@ -11,11 +13,11 @@ description: Plate 编辑器运行时的 API 参考。
 | ------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
 | `Editor`      | `platejs/react` | React 编辑器类型，包含 Plate 插件 API、事务组、lifecycle/DOM 事件、render 和 hooks。     |
 | `Editor`       | `platejs`       | 非 React 编辑器类型，用于服务端和静态编辑器路径。                                        |
-| Plite primitives   | `platejs`      | `children`、`selection`、`operations`、核心 `api` 和事务/update 运行时。                 |
+| Plite primitives   | `platejs`      | `read`、核心 `api` 和事务/update 运行时。 |
 | Core plugins       | `platejs`       | debug、HTML 解析、product codecs、length、node id、history、input rules 和基础段落行为。 |
 | React core plugins | `platejs/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。      |
 
-React 页面或组件中使用 `Editor`。需要 headless 编辑器时，从 `createEditor` 使用 `Editor`。
+从与构造器相同的入口导入 `Editor` 类型。
 
 ## 编辑器形状
 
@@ -27,16 +29,12 @@ React 页面或组件中使用 `Editor`。需要 headless 编辑器时，从 `cr
       编辑器实例 id。`createEditor` 会使用传入的 `id`、已有编辑器 id，或调用
       `nanoid()`。
     </APIItem>
-    <APIItem name="children" type="Value">
-      当前文档值。
+    <APIItem name="read" type="Editor['read']">
+      通过 `editor.read.children()` 读取当前文档子节点，通过
+      `editor.read.selection()` 读取选区，通过 `editor.read.lastCommit()`
+      读取最近发布的 commit。
     </APIItem>
-    <APIItem name="selection" type="Range | null">
-      当前 Plite selection。
-    </APIItem>
-    <APIItem name="operations" type="Operation[]">
-      Plite 上次 flush 后应用的 operations。
-    </APIItem>
-    <APIItem name="api" type="Editor['api'] & CorePluginApi">
+    <APIItem name="api" type="Editor['api']">
       Core Plite API、显式编辑器级 API，以及按插件 name 推断的已安装插件 API。
     </APIItem>
     <APIItem name="update" type="Editor['update']">
@@ -44,13 +42,10 @@ React 页面或组件中使用 `Editor`。需要 headless 编辑器时，从 `cr
     </APIItem>
     <APIItem
       name="plugin"
-      type="<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginContext<DefinitionOf<P>>"
+      type="Editor['plugin']"
     >
       返回精确插件 descriptor 对应的 portal，用于访问插件
-      API、read、update、type 和 store。
-    </APIItem>
-    <APIItem name="dom" type="Editor['dom']">
-      编辑器实例拥有的运行时 DOM 状态。
+      API、read、update、schema 标识和 store。描述符提供推断类型。
     </APIItem>
     <APIItem name="runtime" type="Editor['runtime']">
       Plate 对外公开的 identity 和 lifecycle 状态。已编译插件注册表由 Plate
@@ -76,55 +71,61 @@ React 和 DOM 运行时状态通过 Plite runtime API 读取。`editor.runtime` 
 
 ## 插件访问
 
-在具体编辑器中，通过 `editor.api.<name>` 调用已安装插件的 query 和 service。
-当通用代码需要精确的插件 API、read、update 命令、name 或 store 时，将描述符传给
-`editor.plugin(plugin)`。根路径和作用域路径引用同一个不可变 API 对象。
+将已安装的描述符传给 `editor.plugin(Plugin)`。TypeScript 会推断该插件的 API、
+read、update 命令、schema 标识和编辑器内状态。在调用处保留描述符的推断类型。
 
-```ts title="Plugin API access"
-editor.api.table.getColumnCount();
+```ts title="插件 API 和状态"
+import { createEditor, defineBasePlugin } from 'platejs';
 
-// 使用精确描述符的通用包代码：
-editor.plugin(TablePlugin).api.getColumnCount();
-```
-
-```ts title="Plugin state access"
-import { definePlatePlugin } from 'platejs/react';
-
-const PanelPlugin = definePlatePlugin('panel', {
+const PanelPlugin = defineBasePlugin('panel', {
   initialState: { open: false },
+  api: ({ store }) => ({
+    isOpen: () => store.get('open'),
+  }),
 });
+
+const editor = createEditor({ plugins: [PanelPlugin] });
 const panel = editor.plugin(PanelPlugin);
 
 const open = panel.store.get('open');
-panel.store.set({ open: !open });
+const sameApi = editor.api.panel === panel.api;
 ```
 
-下表中的 `P` 是精确插件 descriptor type，`DefinitionOf<P>` 是其 normalized
-public definition。
+`editor.api.panel` 和 `panel.api` 引用同一个不可变 API 对象。在具体编辑器中，
+通过 `editor.read.<name>` 执行插件查询；需要描述符提供精确契约时，使用
+`editor.plugin(Plugin).read`。
 
-| Helper                                   | 类型                                                                                           | 用途                                                                       |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `api[name]`                              | `InferOwnApi<DefinitionOf<P>>`                                                                 | 从具体推断编辑器调用已安装插件的 query 和 service。                        |
-| `plugin(plugin)`                         | `<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginPortal<DefinitionOf<P>>`  | 打开精确插件 descriptor 的类型化 consumer portal。                         |
-| `plugin(plugin).installed`               | `boolean`                                                                                      | 插件可选时，先检查是否已安装，再读取其他 portal 字段。                     |
-| `plugin(plugin).api`                     | `InferOwnApi<DefinitionOf<P>>`                                                                 | 从通用代码或精确 descriptor 调用同一个插件 API。                           |
-| `plugin(plugin).read`                    | `InferOwnRead<DefinitionOf<P>>`                                                                | 针对当前编辑器状态运行一个插件拥有的 read。                                |
-| `plugin(plugin).update`                  | `InferOwnUpdate<DefinitionOf<P>>`                                                              | 执行一个插件拥有的 update 命令。                                           |
-| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value`                                                                      | 读取一个 state 字段或命名 selector 结果。                                  |
-| `plugin(plugin).store.get()`             | `() => InferPluginStoreState<DefinitionOf<P>>`                                                 | 读取完整的当前插件 state。                                                 |
-| `plugin(plugin).store.set(partial)`      | `(partial) => void`                                                                            | 合并 state 字段。                                                          |
-| `plugin(plugin).store.set(recipe)`       | `(draft) => void`                                                                              | 通过 draft recipe 更新 state。                                             |
-| `plugin(plugin).name`、`.inject`、`.render`、`.initialState` | 已解析的 descriptor 字段 | 直接读取 override 和配置后的 compiled descriptor 字段。                   |
-| `plugin(plugin)`                         | `(plugin: PluginReference \| string) => AnyBasePluginPortal`                                    | 为 descriptor 或动态 name 打开擦除类型的 portal；具体 descriptor 使用上方精确 overload。 |
+| 访问路径 | 用途 |
+| --- | --- |
+| `editor.plugin(Plugin).installed` | 插件可选时，先检查安装状态，再读取其他字段。 |
+| `editor.plugin(Plugin).api` | 调用从描述符推断的插件服务。 |
+| `editor.plugin(Plugin).read` | 针对当前编辑器状态执行插件查询。 |
+| `editor.plugin(Plugin).update` | 执行插件拥有的事务命令。 |
+| `editor.plugin(Plugin).store.get(key, ...args)` | 读取状态字段或命名 selector 的结果。 |
+| `editor.plugin(Plugin).store.get()` | 读取完整的当前插件状态。 |
+| `editor.plugin(Plugin).schema.type` | 读取元素描述符安装后的节点类型。 |
+| `editor.plugin(Plugin).schema.key` | 读取主 mark 描述符安装后的属性键。 |
 
-React 组件使用 `usePluginStore(plugin, key)` 或
-`usePluginStore(plugin, selector)` 订阅变化，不要在 render 中直接读取 portal。
-`useEditorPlugin` 接受相同的 descriptor 或运行时 name 输入。运行时 name 适用于动态值，或接受任意同名已安装 descriptor 的 family-agnostic 插件槽。它返回擦除类型的 portal；允许插件缺失时，读取其他字段前先检查 `.installed`。
+仅提供行为的描述符不公开 consumer `schema`。描述符查找会同时检查描述符家族和名称。
+
+在 React 中，从 `platejs/react` 导入 `useEditorPlugin` 和 `usePluginStore`。
+`useEditorPlugin(Plugin)` 提供推断的 portal。`usePluginStore(Plugin, key)` 或
+`usePluginStore(Plugin, selector)` 让组件订阅插件状态。
+
+### 运行时名称
+
+名称仅在运行时确定时，使用 `editor.plugin(name)` 或 `useEditorPlugin(name)`。
+这些查找用于安装检查、schema 标识读取和运行时查询分发。让 TypeScript 推断返回值。
+
+允许插件缺失时，先检查 `.installed`。调用方明确需要元素插件时才读取
+`.schema.type`，需要主 mark 时才读取 `.schema.key`。Schema 种类不匹配会抛出错误。
+名称不能证明描述符家族，也不提供其精确的 API、update 和 store 类型契约；
+调用方需要这些能力时，请传入描述符。
 
 ## 初始化
 
-`createEditor` 用 React 默认配置包装 `createEditor`。它从 `initialState` 创建每个插件的
-editor-local store，并把 React core plugins 插入到用户插件前面。
+`useCreateEditor` 缓存 React 入口的 `createEditor` 构造结果。React 入口从
+`initialState` 创建每个插件的编辑器内 store，并在用户插件前安装 React core plugins。
 
 ```tsx title="Create a typed editor"
 import { useCreateEditor } from "platejs/react";
@@ -158,7 +159,9 @@ export function useBasicEditor() {
 
 ## Core API
 
-这些 API 存在于每个 Plate editor 上，因为 core plugins 总是在用户插件之前解析。
+核心插件在用户插件之前解析。导航反馈是 React 编辑器的默认插件，可通过
+`navigationFeedback: false` 禁用。其 API 使用 `useEditor()` 或
+`useEditorPlugin()` 返回的已挂载编辑器。
 
 <API name="Core plugin APIs">
   <APIMethods>
@@ -195,26 +198,13 @@ export function useBasicEditor() {
       路径调用它。
     </APIItem>
     <APIItem
-      name="editor.api.react.refreshDecorations"
-      type="(options?: PliteProjectionStoreRefreshOptions) => void"
+      name="editor.api.navigation.flashTarget"
+      type="(options: NavigationFlashTargetOptions) => boolean"
     >
-      外部状态变更后刷新 React decorations。
+      在发起调用的已挂载 React 视图中高亮元素，不修改文档或选择。
     </APIItem>
-    <APIItem
-      name="editor.api.navigation.activeTarget"
-      type="() => NavigationFeedbackTarget | null"
-    >
-      读取当前 navigation feedback target；如果存储的 target
-      已无法解析，会清空它。
-    </APIItem>
-    <APIItem name="editor.api.navigation.clear" type="() => void">
-      清空当前 navigation feedback target。
-    </APIItem>
-    <APIItem
-      name="editor.api.navigation.isTarget"
-      type="(path: Path) => boolean"
-    >
-      检查 path 是否匹配当前 navigation feedback target。
+    <APIItem name="editor.api.navigation.clear" type="() => boolean">
+      清除当前已挂载视图的反馈，并返回是否存在活动目标。
     </APIItem>
   </APIMethods>
 </API>
@@ -256,24 +246,6 @@ mutation 通过 `editor.update` 执行。Core Plite 命令位于 transaction 对
       type="(location: Location) => void"
     >
       通过 Plite selection transaction group 更新当前 selection。
-    </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.clear())"
-      type="() => void"
-    >
-      清空 navigation feedback state。
-    </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.flashTarget(options))"
-      type="(options: NavigationFlashTargetOptions) => boolean"
-    >
-      暂存一个 target，让组件渲染 navigation feedback。
-    </APIItem>
-    <APIItem
-      name="editor.update((tx) => tx.navigation.navigate(options))"
-      type="(options: NavigationNavigateOptions) => boolean"
-    >
-      导航到 target，并通过 navigation feedback 插件闪烁目标。
     </APIItem>
   </APITransforms>
 </API>

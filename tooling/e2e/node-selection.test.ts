@@ -1,25 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-const recordRuntimeErrors = (page: Page) => {
-  const errors: string[] = [];
-  const onConsole = (message: { text: () => string; type: () => string }) => {
-    if (message.type() === 'error') errors.push(message.text());
-  };
-  const onPageError = (error: Error) => {
-    errors.push(error.stack ?? error.message);
-  };
-
-  page.on('console', onConsole);
-  page.on('pageerror', onPageError);
-
-  return {
-    assertNone: () => expect(errors).toEqual([]),
-    stop: () => {
-      page.off('console', onConsole);
-      page.off('pageerror', onPageError);
-    },
-  };
-};
+import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const selectedNodePaths = (page: Page) =>
   page
@@ -90,7 +71,9 @@ const copySelectionAndReadFormats = async (page: Page) => {
 test('marquee selection stays editor-owned through focus, clipboard, input, delete, and undo', async ({
   page,
 }) => {
-  let runtimeErrors: ReturnType<typeof recordRuntimeErrors> | undefined;
+  let runtimeErrors:
+    | ReturnType<typeof recordPliteBrowserRuntimeErrors>
+    | undefined;
   const editor = page.locator(
     '[data-plite-editor="true"][contenteditable="true"]'
   );
@@ -116,7 +99,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
           requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
         })
     );
-    runtimeErrors = recordRuntimeErrors(page);
+    runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
     await heading.scrollIntoViewIfNeeded();
 
     const headingBox = await heading.boundingBox();

@@ -9,7 +9,7 @@ toc: true
 The preview runs two independent editors through a credential-free local room.
 It demonstrates remote document and cursor updates, disconnect/reconnect,
 schema rejection and recovery, and Plite History undo after a remote edit. Apps
-still own production transport, authentication, persistence, and room naming.
+own production transport, authentication, persistence, and room naming.
 
 <PackageInfo>
 
@@ -17,14 +17,14 @@ still own production transport, authentication, persistence, and room naming.
 
 - **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and canonical editor changes.
 - **Custom Providers:** Wrap provider packages as `YjsProviderLike` and pass them to `YjsPlugin.configure`.
-- **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
+- **Awareness & Cursors:** Shares cursor locations and metadata through Yjs Awareness. Install the copied cursor UI for selection highlights, carets, and labels.
 - **Multi-Root Documents:** Synchronizes primary children, named roots, and root-qualified awareness through one editor extension and Yjs transaction boundary.
 - **Customizable Cursors:** Send cursor names, colors, and other metadata through `tx.yjs.sendSelection`.
 - **Explicit Commands:** The plugin installs the Plite Yjs extension, including `state.yjs` reads and `tx.yjs` commands for connection, awareness, and selection.
 
 </PackageInfo>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -48,7 +48,7 @@ For WebRTC peer-to-peer collaboration:
 npm install y-webrtc
 ```
 
-### Add The Plugin
+### Add the plugin
 
 Every peer in a room must use the same compiled schema identity. Derived schemas
 match by fingerprint. Use an explicit `id` and `version` for a durable room
@@ -83,15 +83,17 @@ const editor = createEditor({
 ### Configure provider and cursors
 
 Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
-`initialState`. Configure the copied cursor renderers on `YjsPlugin`; its
-decoration and render slots own the complete remote-cursor path.
+`initialState`. Install `remote-cursor-overlay` for selection highlights,
+carets, and labels.
+
+```bash
+npx shadcn@latest add @plate/remote-cursor-overlay
+```
+
+Import `YjsPlugin` from the copied file to include its cursor presentation.
 
 ```tsx
-import { YjsPlugin } from "platejs/yjs/react";
-import {
-  RemoteCursorLeaf,
-  RemoteCursorOverlay,
-} from "@/components/editor/remote-cursor-overlay";
+import { YjsPlugin } from "@/components/editor/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
   initialState: {
@@ -100,16 +102,15 @@ export const yjsPlugin = YjsPlugin.configure({
     provider,
     rootName: roomId,
   },
-  render: {
-    afterEditable: RemoteCursorOverlay,
-    leaf: RemoteCursorLeaf,
-  },
 });
 ```
 
-Do not render `RemoteCursorOverlay` beside `<Editor>` yourself. The plugin
-passes the exact mounted Editable ref into its `afterEditable` slot and paints
-remote selections through its `leaf` slot.
+The copied plugin uses `decorate.attributes` to style selection decorations
+from the keyed `read.remoteCursor(clientId)` lookup and installs
+`RemoteCursorOverlay` through `slots.afterEditable`. The slot supplies the exact
+mounted Editable ref. Edit the copied file's color resolver, opacity, and classes
+to customize selections, carets, and labels together. Import `YjsPlugin` from
+`platejs/yjs/react` when you want collaboration without these visual defaults.
 
 - `provider`: A `YjsProviderLike` wrapper around app-owned transport code.
 - `doc`: The shared `Y.Doc`.
@@ -125,13 +126,14 @@ transaction. Plite History records that editor commit as one history batch.
 Named roots synchronize without a mounted `PlateContent`, and remote selections
 preserve their root key. A selection cannot span two roots.
 
-### Add editor container
+### Render the editor
 
-The `RemoteCursorOverlay` requires a positioned container around the editor content. Use [`EditorContainer`](/docs/components/editor) component or `PlateContainer` from `platejs/react`:
+Render the configured editor with your copied [Editor](/docs/editor) components.
+The cursor overlay uses viewport coordinates from the mounted Editable.
 
 ```tsx
 import { Plate } from "platejs/react";
-import { EditorContainer } from "@/components/editor/editor";
+import { Editor, EditorContainer } from "@/components/editor/editor";
 
 return (
   <Plate editor={editor}>
@@ -165,9 +167,11 @@ Access provider states and add event handlers for connection monitoring:
 
 ```tsx
 import React from "react";
+import { useEditor } from "platejs/react";
 import { useYjsProviderStatus, useYjsProviderSynced } from "platejs/yjs/react";
 
 function EditorStatus() {
+  const editor = useEditor();
   const status = useYjsProviderStatus(editor);
   const synced = useYjsProviderSynced(editor);
 
@@ -181,7 +185,7 @@ function EditorStatus() {
 
 </Steps>
 
-## Provider Boundary
+## Provider boundary
 
 Provider packages stay at the app edge. Wrap Hocuspocus, WebSocket, WebRTC,
 IndexedDB, or another transport as `YjsProviderLike`, then pass it through
@@ -197,7 +201,7 @@ installs the Plite/Yjs synchronization extension.
 | Editor operations, selection, undo/redo  | `platejs` and `platejs/history` |
 | Awareness and remote cursors             | `platejs/yjs`                          |
 
-## Connection Commands
+## Connection commands
 
 Use `editor.read` for provider state and `editor.update` for commands.
 
@@ -227,7 +231,7 @@ editor.update.history.undo();
 editor.update.history.redo();
 ```
 
-## Backend Setup
+## Backend setup
 
 ### Hocuspocus
 
@@ -255,8 +259,8 @@ cursors by itself.
 - Use `tx.yjs.disconnect()` for temporary disconnects and extension cleanup for
   unmount teardown.
 - If remote cursors are wrong, verify the app sends cursor metadata through
-  `tx.yjs.sendSelection(...)` and configures both copied render slots on
-  `YjsPlugin`.
+  `tx.yjs.sendSelection(...)` and imports `YjsPlugin` from the copied
+  `remote-cursor-overlay` file.
 
 ## Related
 
@@ -265,5 +269,5 @@ cursors by itself.
 - [Hocuspocus](https://tiptap.dev/hocuspocus)
 - [y-webrtc](https://github.com/yjs/y-webrtc)
 - [y-indexeddb](https://github.com/yjs/y-indexeddb)
-- [RemoteCursorOverlay](/docs/components/remote-cursor-overlay)
-- [EditorContainer](/docs/components/editor)
+- [Collaboration example](/docs/examples/collaboration-example)
+- [Editor](/docs/editor)

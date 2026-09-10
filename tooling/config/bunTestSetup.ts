@@ -1,4 +1,11 @@
 import { afterEach, expect, mock, spyOn } from 'bun:test';
+import {
+  ReadableStream,
+  TextDecoderStream,
+  TextEncoderStream,
+  TransformStream,
+  WritableStream,
+} from 'node:stream/web';
 import { TextEncoder } from 'node:util';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
@@ -58,6 +65,15 @@ GlobalRegistrator.register({
     handleDisabledFileLoadingAsSuccess: true,
     navigation: { disableChildFrameNavigation: true },
   },
+});
+
+// Parsers capture their stream superclass at import time, before any test-local setup.
+Object.assign(globalThis, {
+  ReadableStream,
+  TextDecoderStream,
+  TextEncoderStream,
+  TransformStream,
+  WritableStream,
 });
 
 if (global.document && !global.document.doctype) {

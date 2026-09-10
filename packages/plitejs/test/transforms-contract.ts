@@ -17,6 +17,7 @@ import {
   target as schemaTarget,
   TextApi,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 
 import {
   getSnapshot as editorGetSnapshot,
@@ -431,6 +432,208 @@ describe('plite transforms contract', () => {
       paragraph('header'),
       paragraph('inserted'),
       paragraph('tail'),
+    ]);
+  });
+
+  it('blocks.insertAfter replaces an empty source in one undoable commit', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('before'), paragraph('')],
+      initialSelection: collapsedSelection([1, 0], 0),
+    });
+    const version = editor.read.lastCommit()?.version ?? 0;
+    const path = editor.update.blocks.insertAfter(paragraph('inserted'), {
+      replaceEmpty: true,
+      select: true,
+    });
+
+    assert.deepEqual(path, [1]);
+    assert.equal(editor.read.lastCommit()?.version, version + 1);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('before'),
+      paragraph('inserted'),
+    ]);
+    assert.deepEqual(editor.read.selection()?.anchor, {
+      path: [1, 0],
+      offset: 8,
+    });
+    editor.update.history.undo();
+    assert.deepEqual(editor.read.children(), [
+      paragraph('before'),
+      paragraph(''),
+    ]);
+    editor.update.history.redo();
+    assert.deepEqual(editor.read.children(), [
+      paragraph('before'),
+      paragraph('inserted'),
+    ]);
+  });
+
+  it('recognizes an empty draft after inline removal before replacing its block', () => {
+    const editor = createEditor({
+      extensions: [
+        history(),
+        defineTestSchema('draft-empty-inline', { input: { void: 'inline' } }),
+      ],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: '' },
+            { type: 'input', children: [{ text: '' }] },
+            { text: '' },
+          ],
+        },
+      ],
+      initialSelection: collapsedSelection([0, 0], 0),
+    });
+    const before = editor.read.value();
+    const version = editor.read.lastCommit()?.version ?? 0;
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      const block = tx.nodes.block()!;
+      assert.equal(block[0].children.length, 2);
+      assert.equal(tx.nodes.isEmpty(block[0]), true);
+      assert.deepEqual(
+        tx.blocks.insertAfter(paragraph('inserted'), {
+          replaceEmpty: true,
+          select: true,
+        }),
+        [0]
+      );
+    });
+    assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
+    assert.equal(editor.read.lastCommit()?.version, version + 1);
+    editor.update.history.undo();
+    assert.deepEqual(editor.read.value(), before);
+    editor.update.history.redo();
+    assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
+  });
+
+  it('blocks.insertAfter keeps nonempty content and does not delete for an empty insertion', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('content'), paragraph('')],
+      initialSelection: collapsedSelection([0, 0], 2),
+    });
+    assert.deepEqual(
+      editor.update.blocks.insertAfter(paragraph('inserted'), {
+        replaceEmpty: true,
+      }),
+      [1]
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('content'),
+      paragraph('inserted'),
+      paragraph(''),
+    ]);
+    assert.equal(
+      editor.update.blocks.insertAfter([], { at: [2], replaceEmpty: true }),
+      undefined
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('content'),
+      paragraph('inserted'),
+      paragraph(''),
+    ]);
+  });
+
+  it('blocks.insertAfter replaces only the final exact node-selection member', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('middle'), paragraph('')],
+      initialSelection: disjointNodeSelection(),
+    });
+    assert.deepEqual(
+      editor.update.blocks.insertAfter(paragraph('inserted'), {
+        replaceEmpty: true,
+      }),
+      [2]
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('one'),
+      paragraph('middle'),
+      paragraph('inserted'),
+    ]);
+  });
+
+  it('blocks.insertAfter replaces an empty named-root source through its key', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph(''), paragraph('tail')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const at = header.key([0]);
+    assert.ok(at);
+    assert.deepEqual(
+      editor.update.blocks.insertAfter(paragraph('inserted'), {
+        at,
+        replaceEmpty: true,
+      }),
+      [0]
+    );
+    assert.deepEqual(editor.read.children(), [paragraph('body')]);
+    assert.deepEqual(header.read.children(), [
+      paragraph('inserted'),
+      paragraph('tail'),
+    ]);
+  });
+
+  it('blocks.insertAfter retains an empty atomic block', () => {
+    const image = { type: 'image', children: [{ text: '' }] };
+    const editor = createEditor({
+      extensions: [
+        defineTestSchema('insert-after-atom', { image: { void: 'block' } }),
+      ],
+      initialValue: [image],
+      initialSelection: SelectionApi.nodes([[0]]),
+    });
+    assert.deepEqual(
+      editor.update.blocks.insertAfter(paragraph('inserted'), {
+        replaceEmpty: true,
+      }),
+      [1]
+    );
+    assert.deepEqual(editor.read.children(), [image, paragraph('inserted')]);
+  });
+
+  it('blocks.insertAfter preserves an empty structural container', () => {
+    const container = { type: 'container', children: [] };
+    const editor = createEditor({
+      extensions: [
+        defineTestSchema('insert-after-container', { container: {} }),
+      ],
+      initialValue: [container],
+    });
+    assert.deepEqual(editor.read.children(), [container]);
+    assert.deepEqual(
+      editor.update.blocks.insertAfter(paragraph('inserted'), {
+        at: [0],
+        replaceEmpty: true,
+      }),
+      [1]
+    );
+    assert.deepEqual(editor.read.children(), [
+      container,
+      paragraph('inserted'),
+    ]);
+  });
+
+  it('blocks.insertAfter retains an empty source when maxLength rejects insertion', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('full'), paragraph('')],
+      initialSelection: collapsedSelection([1, 0], 0),
+      maxLength: 4,
+    });
+    assert.equal(
+      editor.update.blocks.insertAfter(paragraph('more'), {
+        replaceEmpty: true,
+      }),
+      undefined
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('full'),
+      paragraph(''),
     ]);
   });
 

@@ -21,6 +21,7 @@ import { createPluginContext } from '../../lib/plugin/createPluginContext.intern
 import type { AnyBasePluginDefinition } from '../../lib/plugin/PluginDefinition';
 import { failInvariant } from '../failInvariant';
 import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
+import { applyDocumentMigrationSelectionMapper } from './documentMigrationSelection.internal';
 import { isEditOnly } from './isEditOnlyDisabled';
 
 const getSharedNodeIndexes = (
@@ -100,7 +101,7 @@ export const mapDocumentSelection = (
   const afterChildren =
     root === MAIN_ROOT_KEY ? after.children : (after.roots?.[root] ?? []);
 
-  return mapSelectionThroughChange(
+  const mapped = mapSelectionThroughChange(
     editor,
     selection,
     DocumentChange.between(before, after),
@@ -113,6 +114,8 @@ export const mapDocumentSelection = (
       runtimeIndexes: getSharedNodeIndexes(beforeChildren, afterChildren),
     }
   );
+
+  return applyDocumentMigrationSelectionMapper(after, selection, mapped);
 };
 
 /** Apply every enabled plugin preparation to one detached document input. */

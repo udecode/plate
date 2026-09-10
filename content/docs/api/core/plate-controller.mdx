@@ -1,190 +1,78 @@
 ---
 title: Plate Controller
-description: API reference for PlateController.
+description: Connect shared React UI to the active Plate editor.
 ---
 
-`PlateController` lets UI outside a single `<Plate>` subtree read the active editor store. Use it for shared toolbars, side panels, inspectors, and multi-editor shells.
+`PlateController` lets shared toolbars, panels, and inspectors resolve an editor
+outside a single `Plate` subtree.
 
-## Quick Use
+## Usage
 
-Wrap the shared UI and all editors in `PlateController`. `PlateContent` registers each mounted editor store through `PlateControllerEffect`.
+Wrap the shared UI and participating editors in `PlateController`.
+`PlateContent` automatically registers each editor for its mounted lifetime.
 
-```tsx title="components/editor-shell.tsx" showLineNumbers
+```tsx title="components/editor-shell.tsx"
 import {
   Plate,
   PlateContent,
   PlateController,
   useCreateEditor,
+  useOptionalEditor,
 } from 'platejs/react';
 
 export function EditorShell() {
+  const main = useCreateEditor({ id: 'main' });
+  const secondary = useCreateEditor({ id: 'secondary' });
+
   return (
     <PlateController>
       <ActiveEditorLabel />
-      <MainEditor />
-      <SecondaryEditor />
+      <Plate editor={main}>
+        <PlateContent />
+      </Plate>
+      <Plate editor={secondary} primary={false}>
+        <PlateContent />
+      </Plate>
     </PlateController>
   );
 }
 
-function MainEditor() {
-  const editor = useCreateEditor({
-     id: 'main' });
-
-  return (
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
-  );
-}
-
-function SecondaryEditor() {
-  const editor = useCreateEditor({
-     id: 'secondary' });
-
-  return (
-    <Plate editor={editor} primary={false}>
-      <PlateContent />
-    </Plate>
-  );
-}
-```
-
-`primary` belongs on `Plate`, not on `createEditor` or `useCreateEditor`.
-
-## Active Editor Lookup
-
-Hooks such as `useEditor()` and `useEditorMounted()` normally read through the
-nearest `Plate` store. Inside `PlateController`, the same hooks can resolve an
-editor outside a specific editor tree.
-
-| Lookup | Behavior |
-|--------|----------|
-| `useEditor({ id: 'main' })` | Resolves the active editor registered for `main`; throws when it is absent. |
-| `useEditor()` | Resolves the active editor, then the first mounted primary editor; throws when none exists. |
-| `useOptionalEditor()` | Uses the same lookup and returns `null` when no editor is active. |
-| Missing store without controller | Throws `Plate hooks must be used inside a Plate or PlateController`. |
-
-Controller lookup order without an explicit ID:
-
-1. `activeId`
-2. each ID in `primaryEditorIds`
-3. no active editor
-
-## Optional Active Editors
-
-Plate keeps an inert editor internally so hook subscriptions retain a stable
-call shape. Public code never receives it. Use `useOptionalEditor()` for UI that
-can render while no editor is active; use `useEditor()` when absence is a
-programming error.
-
-```tsx title="components/active-editor-label.tsx"
-import { useOptionalEditor } from 'platejs/react';
-
-export function ActiveEditorLabel() {
+function ActiveEditorLabel() {
   const editor = useOptionalEditor();
 
-  if (!editor) return <p>No editor selected.</p>;
-
-  return <p>Active editor: {editor.id}</p>;
+  return <p>{editor ? `Active editor: ${editor.id}` : 'No editor selected.'}</p>;
 }
 ```
 
-`useEditor()` is the shorter path for commands and components that require an
-active editor because it fails at the missing provider instead of letting a
-mutation disappear into fallback state.
+Set `primary` on `Plate`; it defaults to `true`. A view with `primary={false}` can become active when focused. IDs are application labels; one model and ID can have several mounted views.
 
-## Registration
+## Editor lookup
 
-`PlateControllerEffect` runs inside `PlateContent`. It registers the current `Plate` store by editor ID, appends primary editors to `primaryEditorIds`, removes them on unmount, and sets `activeId` when Plite focus enters that editor.
+`useEditor()` returns the nearest provider’s selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
 
-| State | Owner | Behavior |
-|-------|-------|----------|
-| `editorStores` | `PlateControllerEffect` | Maps mounted editor IDs to their Jotai stores. Unmounted IDs are set to `null`. |
-| `primaryEditorIds` | `PlateControllerEffect` | Appends mounted editors whose `Plate` store has `primary: true`; removes them on unmount. |
-| `activeId` | `PlateControllerEffect` | Set to the focused editor ID. Cleared on unmount when the unmounted editor was active. |
+- Inside `PlateContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
+- Inside `Plate`, outside its content, UI follows that Plate’s last focused view, then its first mounted view. A Plate without content provides its model.
+- Shared UI under the controller uses the last focused mounted view, then the first mounted primary view before focus or after target removal.
+- Nested `Plate` and `PlateController` components scope their descendants independently.
+
+Blur retains the active view for toolbar interaction. `PlateContent` owns registration and cleanup; only views with editable DOM participate in controller selection.
+
+## Captured interactions
+
+Use `EditorProvider` to bind controls to an existing editor. For example, a popup can capture the value returned by `useEditor()` when it opens and keep that target until it closes.
+
+```tsx
+import { EditorProvider } from 'platejs/react';
+
+<EditorProvider editor={capturedEditor}>
+  <Toolbar />
+</EditorProvider>
+```
+
+`EditorProvider` accepts `editor: Editor | null` and `children: React.ReactNode`; it creates no editable view. React portals retain this context. Commands read the target’s current permissions. Read-only or unmounted targets reject writes, and captured interactions never select a replacement view automatically.
 
 ## API Reference
 
-### `PlateController`
+`PlateController` accepts only `children: React.ReactNode`. The `primary` prop on `Plate` controls initial and fallback eligibility.
 
-Provider for cross-editor lookup state.
-
-<API name="PlateController">
-<APIProps>
-  <APIItem name="children" type="React.ReactNode">
-    Shared UI and editor trees that should participate in controller lookup.
-  </APIItem>
-  <APIItem name="activeId" type="string | null" optional>
-    Initial active editor ID.
-  </APIItem>
-  <APIItem name="editorStores" type="Record<string, JotaiStore | null>" optional>
-    Initial editor-store map.
-  </APIItem>
-  <APIItem name="primaryEditorIds" type="string[]" optional>
-    Initial primary editor ID list.
-  </APIItem>
-</APIProps>
-</API>
-
-### Controller Store State
-
-| State | Type | Default |
-|-------|------|---------|
-| `activeId` | `string \| null` | `null` |
-| `editorStores` | `Record<string, JotaiStore \| null>` | `{}` |
-| `primaryEditorIds` | `string[]` | `[]` |
-
-### `usePlateControllerStore`
-
-Resolve a Plate Jotai store from the controller.
-
-<API name="usePlateControllerStore">
-<APIParameters>
-  <APIItem name="idProp" type="string" optional>
-    Editor ID to resolve directly.
-  </APIItem>
-</APIParameters>
-<APIReturns type="JotaiStore | null">
-  Matching editor store, active editor store, first mounted primary editor store, or `null`.
-</APIReturns>
-</API>
-
-### `usePlateControllerExists`
-
-Check whether a local controller provider exists.
-
-<API name="usePlateControllerExists">
-<APIReturns type="boolean">
-  `true` when `usePlateControllerLocalStore()` finds a controller store.
-</APIReturns>
-</API>
-
-### `usePlateControllerLocalStore`
-
-Read the local controller atom store.
-
-<API name="usePlateControllerLocalStore">
-<APIParameters>
-  <APIItem name="options" type="string | { scope?: string; warnIfNoStore?: boolean }" optional>
-    Scope options passed to the generated controller store hook. A string is treated as `scope`.
-  </APIItem>
-</APIParameters>
-<APIReturns type="PlateControllerStore">
-  Local controller store hook result.
-</APIReturns>
-</API>
-
-### `PlateControllerEffect`
-
-Register a `Plate` store with the nearest controller.
-
-<API name="PlateControllerEffect">
-<APIProps>
-  <APIItem name="id" type="string" optional>
-    Editor ID to register. Defaults to the ID from the current Plate store.
-  </APIItem>
-</APIProps>
-</API>
-
-`PlateContent` renders `PlateControllerEffect` for you. Render it directly only when you build a custom content surface that still needs controller registration.
+For state and focus subscriptions, see [Editor Context](/docs/api/core/plate-store).

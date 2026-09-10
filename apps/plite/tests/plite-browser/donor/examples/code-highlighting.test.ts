@@ -1,73 +1,103 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 import {
   openExample,
   recordPliteBrowserRuntimeErrors,
   withExclusiveClipboardAccess,
-} from '@platejs/test/playwright';
+} from "@platejs/test/playwright";
 
 test.setTimeout(60 * 1000);
 
-test.describe('code highlighting', () => {
+const firstCode = `// Add the initial value.
+const initialValue = [
+  {
+    type: 'paragraph',
+    children: [{ text: 'A line of text in a paragraph.' }]
+  }
+]
+
+const App = () => {
+  const editor = useEditor({
+    initialValue,
+  })
+
+  return (
+    <Plite editor={editor}>
+      <Editable />
+    </Plite>
+  )
+}`;
+
+const lineOffset = (text: string, line: number, column = 0) => {
+  let offset = 0;
+
+  for (let index = 0; index < line; index++) {
+    offset = text.indexOf("\n", offset) + 1;
+  }
+
+  return offset + column;
+};
+
+test.describe("code highlighting", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/plite/code-highlighting');
-    await expect(page.getByTestId('code-block-button')).toBeVisible();
+    await page.goto("/examples/plite/code-highlighting");
+    await expect(page.getByTestId("code-block-button")).toBeVisible();
   });
 
-  test('renders semantic token projections', async ({ page }) => {
-    const editor = page.locator('[data-plite-editor]');
+  test("renders semantic token projections", async ({ page }) => {
+    const editor = page.locator("[data-plite-editor]");
 
-    await expect(editor).toContainText('const initialValue');
-    await expect(editor.locator('.token').first()).toBeVisible();
-    await expect(editor.locator('.keyword').first()).toBeVisible();
-    await expect(editor.locator('.string').first()).toBeVisible();
-    await expect(editor.locator('.punctuation').first()).toBeVisible();
+    await expect(editor).toContainText("const initialValue");
+    await expect(editor.locator(".token").first()).toBeVisible();
+    await expect(editor.locator(".keyword").first()).toBeVisible();
+    await expect(editor.locator(".string").first()).toBeVisible();
+    await expect(editor.locator(".punctuation").first()).toBeVisible();
   });
 
-  test('updates the code block language through the select', async ({
+  test("updates the code block language through the select", async ({
     page,
   }) => {
-    const languageSelect = page.getByTestId('language-select').first();
+    const languageSelect = page.getByTestId("language-select").first();
 
-    await expect(languageSelect).toHaveValue('jsx');
+    await expect(languageSelect).toHaveValue("jsx");
 
-    await languageSelect.selectOption('typescript');
+    await languageSelect.selectOption("typescript");
 
-    await expect(languageSelect).toHaveValue('typescript');
+    await expect(languageSelect).toHaveValue("typescript");
   });
 
-  test('retokens edited code after changing the language', async ({ page }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+  test("retokens edited code after changing the language", async ({ page }) => {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     await editor.selectAll();
     await editor.deleteFragment();
-    await page.getByTestId('code-block-button').click();
-    await page.getByTestId('language-select').first().selectOption('css');
-    await editor.insertText('body { color: red; }');
+    await page.getByTestId("code-block-button").click();
+    await page.getByTestId("language-select").first().selectOption("css");
+    await editor.insertText("body { color: red; }");
 
-    const codeBlock = editor.root.locator('.plite-code-highlighting-block');
+    const codeBlock = editor.root.locator(".plite-code-highlighting-block");
 
     await expect(
-      codeBlock.locator('.selector').filter({ hasText: 'body' })
+      codeBlock.locator(".selector").filter({ hasText: "body" })
     ).toBeVisible();
     await expect(
-      codeBlock.locator('.property').filter({ hasText: 'color' })
+      codeBlock.locator(".property").filter({ hasText: "color" })
     ).toBeVisible();
     await expect(
-      codeBlock.locator('.punctuation').filter({ hasText: '{' })
+      codeBlock.locator(".punctuation").filter({ hasText: "{" })
     ).toBeVisible();
   });
 
-  test('converts a selected paragraph into a code block with code lines', async ({
+  test("converts a selected paragraph into one multiline code text", async ({
     page,
   }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
@@ -79,35 +109,33 @@ test.describe('code highlighting', () => {
       focus: { path: [0, 0], offset: paragraphText.length },
     });
     await editor.focus();
-    await page.getByTestId('code-block-button').click();
+    await page.getByTestId("code-block-button").click();
 
     await expect(
       editor.root.locator(':scope > [data-plite-node="element"]')
     ).toHaveCount(5);
-    await expect(editor.locator.block([0, 0])).toHaveText(paragraphText);
+    await expect(editor.locator.text([0, 0])).toHaveText(paragraphText);
     await expect(
       editor.root
         .locator(':scope > [data-plite-node="element"]')
         .first()
-        .getByTestId('language-select')
-    ).toHaveValue('html');
-    await expect(editor.locator.block([1, 0])).toHaveText(
-      '// Add the initial value.'
-    );
+        .getByTestId("language-select")
+    ).toHaveValue("html");
+    await expect(editor.locator.text([1, 0])).toHaveText(firstCode);
     await editor.assert.selection({
-      anchor: { path: [0, 0, 0], offset: 0 },
-      focus: { path: [0, 0, 0], offset: paragraphText.length },
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: paragraphText.length },
     });
   });
 
-  test('converts a selected paragraph into a code block with a shortcut', async ({
+  test("converts a selected paragraph into a code block with a shortcut", async ({
     page,
   }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+    test.skip(testInfo.project.name === "mobile", "Desktop shortcut proof");
 
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
@@ -116,8 +144,8 @@ test.describe('code highlighting', () => {
     const modifier = await editor.root.evaluate(() =>
       /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
       /Mac OS X/.test(navigator.userAgent)
-        ? 'Meta'
-        : 'Control'
+        ? "Meta"
+        : "Control"
     );
 
     await editor.selection.select({
@@ -131,127 +159,127 @@ test.describe('code highlighting', () => {
       editor.root
         .locator(':scope > [data-plite-node="element"]')
         .first()
-        .getByTestId('language-select')
-    ).toHaveValue('html');
-    await expect(editor.locator.block([0, 0])).toHaveText(paragraphText);
+        .getByTestId("language-select")
+    ).toHaveValue("html");
+    await expect(editor.locator.text([0, 0])).toHaveText(paragraphText);
     await editor.assert.selection({
-      anchor: { path: [0, 0, 0], offset: 0 },
-      focus: { path: [0, 0, 0], offset: paragraphText.length },
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: paragraphText.length },
     });
   });
 
-  test('Enter inside a code line creates another line in the same code block', async ({
+  test("Enter inserts a newline inside the same code block", async ({
     page,
   }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
-    await editor.selection.collapse({ path: [1, 0, 0], offset: 6 });
+    await editor.selection.collapse({ path: [1, 0], offset: 6 });
     await editor.focus();
-    await editor.press('Enter');
+    await editor.press("Enter");
 
     await expect(
       editor.root.locator(':scope > [data-plite-node="element"]')
     ).toHaveCount(5);
-    await expect(editor.locator.block([1, 0])).toHaveText('// Add');
-    await expect(editor.locator.block([1, 1])).toHaveText(
-      ' the initial value.'
+    await expect(editor.locator.text([1, 0])).toHaveText(
+      firstCode.replace("// Add the", "// Add\n the")
     );
     await editor.assert.selection({
-      anchor: { path: [1, 1, 0], offset: 0 },
-      focus: { path: [1, 1, 0], offset: 0 },
+      anchor: { path: [1, 0], offset: 7 },
+      focus: { path: [1, 0], offset: 7 },
     });
   });
 
-  test('Enter at a code line end creates a reachable trailing code line', async ({
+  test("Enter at a physical line end creates a reachable blank line", async ({
     page,
   }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
-    const firstLine = '// Add the initial value.';
+    const firstLine = "// Add the initial value.";
 
     await editor.selection.collapse({
-      path: [1, 0, 0],
+      path: [1, 0],
       offset: firstLine.length,
     });
     await editor.focus();
-    await editor.press('Enter');
+    await editor.press("Enter");
 
-    await expect(editor.locator.block([1, 0])).toHaveText(firstLine);
-    await expect(editor.locator.block([1, 1])).toHaveText('');
+    await expect(editor.locator.text([1, 0])).toHaveText(
+      firstCode.replace(`${firstLine}\n`, `${firstLine}\n\n`)
+    );
     await editor.assert.selection({
-      anchor: { path: [1, 1, 0], offset: 0 },
-      focus: { path: [1, 1, 0], offset: 0 },
+      anchor: { path: [1, 0], offset: firstLine.length + 1 },
+      focus: { path: [1, 0], offset: firstLine.length + 1 },
     });
 
-    await editor.insertText('tail');
-    await expect(editor.locator.block([1, 1])).toHaveText('tail');
+    await editor.insertText("tail");
+    await expect(editor.locator.text([1, 0])).toHaveText(
+      firstCode.replace(`${firstLine}\n`, `${firstLine}\ntail\n`)
+    );
   });
 
-  test('deletes a trailing empty code line with Backspace', async ({
+  test("deletes a trailing newline with Backspace", async ({
     page,
   }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Desktop code-block proof');
+    test.skip(testInfo.project.name === "mobile", "Desktop code-block proof");
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
-    const lastLine = '}';
-
     try {
       await editor.selection.collapse({
-        path: [1, 18, 0],
-        offset: lastLine.length,
+        path: [1, 0],
+        offset: firstCode.length,
       });
       await editor.focus();
-      await editor.press('Enter');
-      await expect(editor.locator.block([1, 19])).toHaveText('');
+      await editor.press("Enter");
+      await expect(editor.locator.text([1, 0])).toHaveText(`${firstCode}\n`);
 
-      await editor.root.press('Backspace');
+      await editor.root.press("Backspace");
 
       runtimeErrors.assertNone();
-      await expect(editor.locator.block([1, 19])).toHaveCount(0);
+      await expect(editor.locator.text([1, 0])).toHaveText(firstCode);
       await editor.assert.selection({
-        anchor: { path: [1, 18, 0], offset: lastLine.length },
-        focus: { path: [1, 18, 0], offset: lastLine.length },
+        anchor: { path: [1, 0], offset: firstCode.length },
+        focus: { path: [1, 0], offset: firstCode.length },
       });
 
-      await editor.insertText('tail');
-      await expect(editor.locator.block([1, 18])).toHaveText(`${lastLine}tail`);
+      await editor.insertText("tail");
+      await expect(editor.locator.text([1, 0])).toHaveText(`${firstCode}tail`);
     } finally {
       runtimeErrors.stop();
     }
   });
 
-  test('keeps ArrowDown navigation stable through a single-line code block', async ({
+  test("keeps ArrowDown navigation stable through a single-line code block", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop code-block keyboard navigation proof'
+      testInfo.project.name === "mobile",
+      "Desktop code-block keyboard navigation proof"
     );
 
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
-    const before = 'long line before code block';
-    const code = 'code';
-    const after = 'after';
+    const before = "long line before code block";
+    const code = "code";
+    const after = "after";
 
     await editor.selectAll();
     await editor.deleteFragment();
@@ -264,29 +292,29 @@ test.describe('code highlighting', () => {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: code.length },
     });
-    await page.getByTestId('code-block-button').click();
+    await page.getByTestId("code-block-button").click();
 
     await expect(
       editor.root
         .locator(':scope > [data-plite-node="element"]')
         .nth(1)
-        .getByTestId('language-select')
-    ).toHaveValue('html');
+        .getByTestId("language-select")
+    ).toHaveValue("html");
     await editor.selection.collapse({ path: [0, 0], offset: before.length });
     await editor.focus();
-    await editor.press('ArrowDown');
+    await editor.press("ArrowDown");
 
     await editor.assert.selection({
-      anchor: { path: [1, 0, 0], offset: code.length },
-      focus: { path: [1, 0, 0], offset: code.length },
+      anchor: { path: [1, 0], offset: code.length },
+      focus: { path: [1, 0], offset: code.length },
     });
     await editor.assert.domSelectionTarget({
       anchorOffset: code.length,
-      anchorPath: [1, 0, 0],
+      anchorPath: [1, 0],
       isCollapsed: true,
     });
 
-    await editor.press('ArrowDown');
+    await editor.press("ArrowDown");
 
     await editor.assert.selection({
       anchor: { path: [2, 0], offset: after.length },
@@ -299,87 +327,85 @@ test.describe('code highlighting', () => {
     });
   });
 
-  test('Tab inside a code line inserts configured spaces and advances the caret', async ({
+  test("Tab inside code inserts configured spaces and advances the caret", async ({
     page,
   }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
-    await editor.selection.collapse({ path: [1, 0, 0], offset: 3 });
+    await editor.selection.collapse({ path: [1, 0], offset: 3 });
     await editor.focus();
-    await editor.press('Tab');
+    await editor.press("Tab");
 
-    await expect(editor.locator.block([1, 0])).toHaveText(
-      '//   Add the initial value.'
+    await expect(editor.locator.text([1, 0])).toHaveText(
+      firstCode.replace("// Add", "//   Add")
     );
     await editor.assert.selection({
-      anchor: { path: [1, 0, 0], offset: 5 },
-      focus: { path: [1, 0, 0], offset: 5 },
+      anchor: { path: [1, 0], offset: 5 },
+      focus: { path: [1, 0], offset: 5 },
     });
   });
 
-  test('Tab and Shift+Tab indent every selected code line', async ({
+  test("Tab and Shift+Tab indent every selected physical line", async ({
     page,
   }) => {
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     await editor.selection.select({
-      anchor: { path: [1, 0, 0], offset: 1 },
-      focus: { path: [1, 1, 0], offset: 1 },
+      anchor: { path: [1, 0], offset: 1 },
+      focus: { path: [1, 0], offset: lineOffset(firstCode, 1, 1) },
     });
     await editor.focus();
-    await editor.press('Tab');
+    await editor.press("Tab");
 
-    await expect(editor.locator.block([1, 0])).toHaveText(
-      '  // Add the initial value.'
+    const indentedCode = firstCode.replace(
+      "// Add the initial value.\nconst initialValue = [",
+      "  // Add the initial value.\n  const initialValue = ["
     );
-    await expect(editor.locator.block([1, 1])).toHaveText(
-      '  const initialValue = ['
-    );
+
+    await expect(editor.locator.text([1, 0])).toHaveText(indentedCode);
 
     await editor.selection.select({
-      anchor: { path: [1, 0, 0], offset: 3 },
-      focus: { path: [1, 1, 0], offset: 3 },
+      anchor: { path: [1, 0], offset: 3 },
+      focus: { path: [1, 0], offset: lineOffset(indentedCode, 1, 3) },
     });
-    await editor.press('Shift+Tab');
+    await editor.press("Shift+Tab");
 
-    await expect(editor.locator.block([1, 0])).toHaveText(
-      '// Add the initial value.'
-    );
-    await expect(editor.locator.block([1, 1])).toHaveText(
-      'const initialValue = ['
-    );
+    await expect(editor.locator.text([1, 0])).toHaveText(firstCode);
   });
 
-  test('ArrowUp keeps code-block selection anchored in text', async ({
+  test("ArrowUp keeps code-block selection anchored in text", async ({
     page,
   }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Desktop code-block proof');
+    test.skip(testInfo.project.name === "mobile", "Desktop code-block proof");
 
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
-    await editor.selection.collapse({ path: [1, 2, 0], offset: 3 });
+    await editor.selection.collapse({
+      path: [1, 0],
+      offset: lineOffset(firstCode, 2, 3),
+    });
     await editor.focus();
-    await editor.press('ArrowUp');
-    await editor.press('ArrowUp');
+    await editor.press("ArrowUp");
+    await editor.press("ArrowUp");
 
     await editor.assert.selection({
-      anchor: { path: [1, 0, 0], offset: 3 },
-      focus: { path: [1, 0, 0], offset: 3 },
+      anchor: { path: [1, 0], offset: 3 },
+      focus: { path: [1, 0], offset: 3 },
     });
 
     await expect
@@ -395,140 +421,134 @@ test.describe('code highlighting', () => {
           return {
             closestPliteNode:
               anchorElement
-                ?.closest('[data-plite-node]')
-                ?.getAttribute('data-plite-node') ?? null,
+                ?.closest("[data-plite-node]")
+                ?.getAttribute("data-plite-node") ?? null,
             nodeType: anchorNode?.nodeType ?? null,
           };
         })
       )
       .toEqual({
-        closestPliteNode: 'text',
+        closestPliteNode: "text",
         nodeType: 3,
       });
   });
 
-  test('replaces multiple selected code lines without crashing', async ({
+  test("replaces a multiline code selection without crashing", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop multi-line code replacement proof'
+      testInfo.project.name === "mobile",
+      "Desktop multi-line code replacement proof"
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     try {
       await editor.selection.selectDOM({
-        anchor: { path: [1, 13, 0], offset: 2 },
-        focus: { path: [1, 17, 0], offset: 3 },
+        anchor: { path: [1, 0], offset: lineOffset(firstCode, 13, 2) },
+        focus: { path: [1, 0], offset: lineOffset(firstCode, 17, 3) },
       });
       await expect
         .poll(() =>
-          page.evaluate(() => window.getSelection()?.toString() ?? '')
+          page.evaluate(() => window.getSelection()?.toString() ?? "")
         )
-        .toContain('return');
+        .toContain("return");
 
-      await editor.root.press('a');
+      await editor.root.press("a");
 
       runtimeErrors.assertNone();
-      await expect(editor.locator.block([1, 13])).toContainText('a');
-      await expect.poll(() => editor.get.modelText()).not.toContain('return (');
+      await expect(editor.locator.text([1, 0])).toContainText("a");
+      await expect.poll(() => editor.get.modelText()).not.toContain("return (");
       await expect.poll(() => editor.get.selection()).not.toBe(null);
     } finally {
       runtimeErrors.stop();
     }
   });
 
-  test('deletes from a code block into the following paragraph without crashing', async ({
+  test("deletes from a code block into the following paragraph without crashing", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop cross-block delete proof'
+      testInfo.project.name === "mobile",
+      "Desktop cross-block delete proof"
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     try {
       await editor.selection.selectDOM({
-        anchor: { path: [1, 17, 0], offset: 0 },
-        focus: { path: [2, 0], offset: 'If you are using'.length },
+        anchor: { path: [1, 0], offset: lineOffset(firstCode, 17) },
+        focus: { path: [2, 0], offset: "If you are using".length },
       });
       await expect
         .poll(() =>
-          page.evaluate(() => window.getSelection()?.toString() ?? '')
+          page.evaluate(() => window.getSelection()?.toString() ?? "")
         )
-        .toContain('If you are using');
+        .toContain("If you are using");
 
-      await editor.root.press('Backspace');
-      await page.keyboard.type('after');
+      await editor.root.press("Backspace");
+      await page.keyboard.type("after");
 
       runtimeErrors.assertNone();
-      await expect.poll(() => editor.get.modelText()).toContain('after');
+      await expect.poll(() => editor.get.modelText()).toContain("after");
       await expect.poll(() => editor.get.selection()).not.toBe(null);
     } finally {
       runtimeErrors.stop();
     }
   });
 
-  test('keeps code lines split when Backspace reaches the previous block boundary', async ({
+  test("keeps multiline code intact at the previous block boundary", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop code-block boundary Backspace proof'
+      testInfo.project.name === "mobile",
+      "Desktop code-block boundary Backspace proof"
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     try {
-      await editor.selection.collapse({ path: [1, 0, 0], offset: 0 });
+      await editor.selection.collapse({ path: [1, 0], offset: 0 });
       await editor.focus();
-      await editor.root.press('Backspace');
+      await editor.root.press("Backspace");
 
       runtimeErrors.assertNone();
-      await expect(editor.locator.block([1, 0])).toHaveText(
-        '// Add the initial value.'
-      );
-      await expect(editor.locator.block([1, 1])).toHaveText(
-        'const initialValue = ['
-      );
-      await expect(editor.locator.block([1, 2])).toHaveText('{');
+      await expect(editor.locator.text([1, 0])).toHaveText(firstCode);
     } finally {
       runtimeErrors.stop();
     }
   });
 
-  test('Backspace in an empty code block keeps the editor usable', async ({
+  test("Backspace in an empty code block keeps the editor usable", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop empty code block Backspace proof'
+      testInfo.project.name === "mobile",
+      "Desktop empty code block Backspace proof"
     );
 
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
@@ -537,33 +557,33 @@ test.describe('code highlighting', () => {
       await editor.selectAll();
       await editor.deleteFragment();
       await editor.focus();
-      await page.getByTestId('code-block-button').click();
-      await editor.selection.collapse({ path: [0, 0, 0], offset: 0 });
-      await editor.root.press('Backspace');
-      await page.keyboard.type('after');
+      await page.getByTestId("code-block-button").click();
+      await editor.selection.collapse({ path: [0, 0], offset: 0 });
+      await editor.root.press("Backspace");
+      await page.keyboard.type("after");
 
       runtimeErrors.assertNone();
-      await expect.poll(() => editor.get.modelText()).toContain('after');
+      await expect.poll(() => editor.get.modelText()).toContain("after");
       await expect.poll(() => editor.get.selection()).not.toBe(null);
     } finally {
       runtimeErrors.stop();
     }
   });
 
-  test('mouse drag undo restores typed selected paragraph text replacement', async ({
+  test("mouse drag undo restores typed selected paragraph text replacement", async ({
     page,
   }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'Desktop native drag proof');
+    test.skip(testInfo.project.name === "mobile", "Desktop native drag proof");
 
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
     const originalText =
-      'If you are using TypeScript, create the editor from the final value shape and pass extension factories at creation time. The example below includes the custom types required for the rest of this example.';
-    const selectedText = 'using';
+      "If you are using TypeScript, create the editor from the final value shape and pass extension factories at creation time. The example below includes the custom types required for the rest of this example.";
+    const selectedText = "using";
     const selectionStart = originalText.indexOf(selectedText);
     const selectionEnd = selectionStart + selectedText.length;
 
@@ -574,25 +594,25 @@ test.describe('code highlighting', () => {
     });
 
     await expect
-      .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
+      .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ""))
       .toBe(selectedText);
 
-    await page.keyboard.type('writing');
+    await page.keyboard.type("writing");
     await expect(editor.locator.block([2])).toContainText(
-      'If you are writing TypeScript'
+      "If you are writing TypeScript"
     );
 
     await page.keyboard.press(
       await editor.root.evaluate(() =>
         /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
         /Mac OS X/.test(navigator.userAgent)
-          ? 'Meta+Z'
-          : 'Control+Z'
+          ? "Meta+Z"
+          : "Control+Z"
       )
     );
 
     await expect(editor.locator.block([2])).toContainText(
-      'If you are using TypeScript'
+      "If you are using TypeScript"
     );
     await editor.assert.selection({
       anchor: { path: [2, 0], offset: selectionStart },
@@ -601,46 +621,41 @@ test.describe('code highlighting', () => {
     await expect.poll(() => editor.get.selectedText()).toBe(selectedText);
   });
 
-  test('pastes selected text inside a code block without leaving the code block', async ({
+  test("pastes selected text inside a code block without leaving the code block", async ({
     page,
   }, testInfo) => {
     test.skip(
-      testInfo.project.name === 'mobile',
-      'Native clipboard proof needs desktop keyboard shortcuts'
+      testInfo.project.name === "mobile",
+      "Native clipboard proof needs desktop keyboard shortcuts"
     );
 
-    const editor = await openExample(page, 'plite/code-highlighting', {
+    const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
-        editor: 'visible',
+        editor: "visible",
         text: /const initialValue/,
       },
     });
 
     await editor.selection.selectDOM({
-      anchor: { path: [1, 0, 0], offset: 3 },
-      focus: { path: [1, 0, 0], offset: 6 },
+      anchor: { path: [1, 0], offset: 3 },
+      focus: { path: [1, 0], offset: 6 },
     });
 
     await withExclusiveClipboardAccess(async () => {
-      await editor.root.press('ControlOrMeta+C');
-      await editor.selection.collapse({ path: [1, 0, 0], offset: 0 });
-      await editor.root.press('ControlOrMeta+V');
+      await editor.root.press("ControlOrMeta+C");
+      await editor.selection.collapse({ path: [1, 0], offset: 0 });
+      await editor.root.press("ControlOrMeta+V");
     });
 
     await expect(
       editor.root.locator(':scope > [data-plite-node="element"]')
     ).toHaveCount(5);
-    await expect(editor.locator.block([1, 0])).toHaveText(
-      'Add// Add the initial value.'
-    );
-    await expect(editor.locator.block([1, 1])).toHaveText(
-      'const initialValue = ['
-    );
+    await expect(editor.locator.text([1, 0])).toHaveText(`Add${firstCode}`);
     await expect(
       editor.root
         .locator(':scope > [data-plite-node="element"]')
         .nth(1)
-        .getByTestId('language-select')
-    ).toHaveValue('jsx');
+        .getByTestId("language-select")
+    ).toHaveValue("jsx");
   });
 });

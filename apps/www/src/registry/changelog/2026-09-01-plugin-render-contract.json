@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-01-plugin-render-contract",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-01-plugin-render-contract.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Configure copied plugins through component, render metadata, and slots",
+  "targets": [
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media",
+      "files": ["apps/www/src/registry/components/editor/media.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable",
+      "files": ["apps/www/src/registry/components/editor/tabbable.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-01-plugin-render-contract-6d274f1b",
+      "kind": "behavior",
+      "summary": "Configure components, mark attributes, and structural UI through the owning plugin's `component`, `render`, and `slots` fields.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai",
+        "collaboration-demo",
+        "dnd",
+        "docx-export",
+        "find",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "link",
+        "media",
+        "suggestion",
+        "tabbable"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-01",
+          "entry": "2026-09-01-plugin-render-contract",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

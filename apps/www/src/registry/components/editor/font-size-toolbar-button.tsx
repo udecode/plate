@@ -2,7 +2,13 @@
 
 import { Minus, Plus } from 'lucide-react';
 import { toUnitLess } from 'platejs';
-import { FontSizePlugin, useEditor, useEditorSelector } from 'platejs/react';
+import {
+  FontSizePlugin,
+  HeadingPlugin,
+  useEditor,
+  useEditorReadOnly,
+  useEditorSelector,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,17 +17,22 @@ import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverContent,
-  FloatingPopoverTrigger,
+  FloatingPopoverAnchor,
 } from '@/registry/components/editor/floating-popover';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
+import { useToolbarOverlayTrigger } from './toolbar-overlay';
+
 const DEFAULT_FONT_SIZE = '16';
 
-const FONT_SIZE_MAP = {
-  h1: '36',
-  h2: '24',
-  h3: '20',
-} as const;
+const FONT_SIZE_MAP: Record<number, string | undefined> = {
+  1: '36',
+  2: '24',
+  3: '20',
+  4: '18',
+  5: '18',
+  6: '16',
+};
 
 const FONT_SIZES = [
   '8',
@@ -43,10 +54,18 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
+  const inputDirtyRef = React.useRef(false);
   const editor = useEditor();
+  const readOnly = useEditorReadOnly();
+  const { installed } = editor.plugin(FontSizePlugin);
+  const beginInteraction = useToolbarOverlayTrigger({
+    'aria-haspopup': 'dialog',
+    'aria-expanded': isFocused,
+  });
 
   const cursorFontSize = useEditorSelector((innerEditor) => {
-    const fontSize = innerEditor.plugin(FontSizePlugin).read.value();
+    const portal = innerEditor.plugin(FontSizePlugin);
+    const fontSize = portal.installed ? portal.read.value() : undefined;
 
     if (fontSize) {
       return toUnitLess(fontSize);
@@ -56,70 +75,85 @@ export function FontSizeToolbarButton() {
 
     if (!block?.type) return DEFAULT_FONT_SIZE;
 
-    return block.type in FONT_SIZE_MAP
-      ? FONT_SIZE_MAP[block.type as keyof typeof FONT_SIZE_MAP]
+    const heading = innerEditor.plugin(HeadingPlugin);
+
+    return heading.installed &&
+      block.type === heading.schema.type &&
+      typeof block.level === 'number'
+      ? (FONT_SIZE_MAP[block.level] ?? DEFAULT_FONT_SIZE)
       : DEFAULT_FONT_SIZE;
   });
 
-  const handleInputChange = () => {
-    const newSize = toUnitLess(inputValue);
+  const displayValue = isFocused ? inputValue : cursorFontSize;
 
+  const setFontSize = (size: number) => {
+    inputDirtyRef.current = false;
     if (
-      Number.parseInt(newSize, 10) < 1 ||
-      Number.parseInt(newSize, 10) > 100
+      editor.read.view.isReadOnly() ||
+      !editor.plugin(FontSizePlugin).installed ||
+      !Number.isFinite(size) ||
+      size < 1 ||
+      size > 100 ||
+      size === Number(cursorFontSize)
     ) {
       return;
     }
-    if (newSize !== toUnitLess(cursorFontSize)) {
-      editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
+    editor.plugin(FontSizePlugin).update.set(`${size}px`);
+  };
+
+  const handleInputChange = () => {
+    if (inputDirtyRef.current) {
+      setFontSize(Number(toUnitLess(inputValue)));
     }
   };
-
-  const handleFontSizeChange = (delta: number) => {
-    const newSize = Number(displayValue) + delta;
-    editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
-  };
-
-  const displayValue = isFocused ? inputValue : cursorFontSize;
 
   return (
     <div className="flex h-7 items-center gap-1 rounded-md bg-muted/60 p-0">
       <ToolbarButton
+        disabled={readOnly || !installed}
+        aria-label="Decrease font size"
         onClick={() => {
-          handleFontSizeChange(-1);
+          setFontSize(Number(displayValue) - 1);
         }}
       >
         <Minus />
       </ToolbarButton>
 
       <FloatingPopover open={isFocused} modal={false}>
-        <FloatingPopoverTrigger>
-          <Input
-            className={cn(
-              'h-full w-10 shrink-0 border-none bg-transparent px-1 text-center hover:bg-muted focus-visible:ring-transparent'
-            )}
-            value={displayValue}
-            onBlur={() => {
-              setIsFocused(false);
-              handleInputChange();
-            }}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-            }}
-            onFocus={() => {
-              setIsFocused(true);
-              setInputValue(toUnitLess(cursorFontSize));
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
+        <FloatingPopoverAnchor
+          element={
+            <Input
+              disabled={readOnly || !installed}
+              aria-label="Font size"
+              className={cn(
+                'h-full w-10 shrink-0 border-none bg-transparent px-1 text-center hover:bg-muted focus-visible:ring-transparent'
+              )}
+              value={displayValue}
+              onBlur={() => {
+                setIsFocused(false);
                 handleInputChange();
-              }
-            }}
-            data-plite-keep-selection-visible="true"
-            type="text"
-          />
-        </FloatingPopoverTrigger>
+              }}
+              onChange={(e) => {
+                inputDirtyRef.current = true;
+                setInputValue(e.target.value);
+              }}
+              onFocus={() => {
+                beginInteraction();
+                inputDirtyRef.current = false;
+                setIsFocused(true);
+                setInputValue(toUnitLess(cursorFontSize));
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleInputChange();
+                }
+              }}
+              data-plite-keep-selection-visible="true"
+              type="text"
+            />
+          }
+        />
         <FloatingPopoverContent
           className="w-10 px-px py-1"
           onInitialFocus={(e) => {
@@ -128,10 +162,11 @@ export function FontSizeToolbarButton() {
         >
           {FONT_SIZES.map((size) => (
             <Button
+              disabled={readOnly || !installed}
               key={size}
               className={cn('h-8 w-full data-[highlighted=true]:bg-accent')}
               onClick={() => {
-                editor.plugin(FontSizePlugin).update.set(`${size}px`);
+                setFontSize(Number(size));
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}
@@ -146,8 +181,10 @@ export function FontSizeToolbarButton() {
       </FloatingPopover>
 
       <ToolbarButton
+        disabled={readOnly || !installed}
+        aria-label="Increase font size"
         onClick={() => {
-          handleFontSizeChange(1);
+          setFontSize(Number(displayValue) + 1);
         }}
       >
         <Plus />

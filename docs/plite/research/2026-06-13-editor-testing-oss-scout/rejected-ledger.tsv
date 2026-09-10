@@ -1,0 +1,4 @@
+lead	reason
+Generic Playwright best-practices lists	Too broad; no editor-specific invariant beyond existing test hygiene.
+Direct `locator.fill()` Slate regression test	Wrong target; the invariant is to avoid using `fill()` as proof, not to make Playwright fill a model-owned editor.
+Digabi exact paste/image/equation cases	Product-specific; Slate owns lower-level paste/selection/clipboard contracts separately.

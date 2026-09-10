@@ -1,0 +1,5 @@
+dedupe_key	repo_key	lead_key	reason	reopen_condition
+tiptap-table-independent-policy	tiptap	none	Tiptap OSS table is primarily a wrapper over `prosemirror-tables`, so it is duplicate support rather than an independent policy source.	Reopen if Tiptap Pages/TableKit source is locally available and exposes pagination-specific table fragment rules.
+generic-html-table-import	slate-v2	none	Slate v2 already has adjacent browser import coverage for Google Docs, Quip, Word, and Google Sheets tables; this does not close selected-cell fragment merge semantics.	Reopen only if a current bug is about external full-table HTML import rather than selected-cell fragments.
+dirty-unskip-current-fixtures	slate-v2	table-fragment:rectangle-algebra:core-browser-proof	Prior runs unskipped the three fixtures and they failed; blessing current behavior risks encoding data loss or unsettled policy.	Reopen after `slate-plan` accepts exact source-cell/target-cell/span merge semantics.
+

@@ -459,7 +459,12 @@ const runEnvironment = () => ({
   stressReplay: artifactFingerprint(process.env.STRESS_REPLAY),
 });
 
-const discoverTests = async (project, selectors, projectRun) => {
+const discoverTests = async (
+  project,
+  selectors,
+  projectRun,
+  allowEmpty = false
+) => {
   projectRun?.throwIfCancelled();
   const proofSession = await getProofSession();
   projectRun?.throwIfCancelled();
@@ -475,6 +480,10 @@ const discoverTests = async (project, selectors, projectRun) => {
   const cached = readJson(planFile);
 
   if (cached?.planFingerprint === planFingerprint && cached?.version === 6) {
+    if (!allowEmpty && cached.tests.length === 0) {
+      throw new Error(`Playwright enumerated no applicable ${project} tests`);
+    }
+
     return cached;
   }
 
@@ -485,7 +494,12 @@ const discoverTests = async (project, selectors, projectRun) => {
 
   fs.rmSync(reportFile, { force: true });
   const result = await runCaptured(
-    [`--project=${project}`, '--list', ...selectors],
+    [
+      `--project=${project}`,
+      '--list',
+      ...(allowEmpty ? ['--pass-with-no-tests'] : []),
+      ...selectors,
+    ],
     {
       PLITE_BROWSER_JSON_OUTPUT: reportFile,
       PLITE_BROWSER_OUTPUT_DIR: projectOutputDirectory(project),
@@ -518,7 +532,7 @@ const discoverTests = async (project, selectors, projectRun) => {
   );
   const planIds = tests.map(({ id }) => id);
 
-  if (tests.length === 0) {
+  if (!allowEmpty && tests.length === 0) {
     throw new Error(`Playwright enumerated no applicable ${project} tests`);
   }
   if (new Set(planIds).size !== planIds.length) {
@@ -1155,7 +1169,21 @@ const runManagedProject = async (
 };
 
 const runMatrix = async (selectors = []) => {
-  const projects = getPliteBrowserProjects();
+  const projects = [];
+
+  for (const project of getPliteBrowserProjects()) {
+    const plan = await discoverTests(project, selectors, undefined, true);
+
+    if (plan.tests.length > 0) {
+      projects.push(project);
+    } else {
+      console.log(`${project}: no applicable tests for this selection`);
+    }
+  }
+
+  if (projects.length === 0) {
+    throw new Error('Playwright enumerated no applicable browser tests');
+  }
 
   const serverStatus = await ensureServer();
 

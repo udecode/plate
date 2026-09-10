@@ -212,11 +212,15 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
       }
     ): void;
   };
-  /** Insert block nodes after the block containing the target. */
+  /** Insert after the target block and return the first inserted path. */
   insertAfter: <T extends ElementIn<V>>(
     nodes: T | readonly T[],
-    options?: NodeDuplicateOptions & { at?: NodeSelectionTarget }
-  ) => void;
+    options?: NodeDuplicateOptions & {
+      at?: NodeSelectionTarget;
+      /** Replace an empty editable text block instead of retaining it. */
+      replaceEmpty?: boolean;
+    }
+  ) => Path | undefined;
   /** Reset blocks to the immediate parent or root schema default. */
   reset: (options?: { at?: NodeSelectionTarget }) => void;
   set: (
@@ -1412,7 +1416,6 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   identity: () => EditorSchemaIdentity;
   isAtom: (element: Node) => boolean;
   isBlock: (element: Node) => boolean;
-  isEditableIsland: (element: Node) => boolean;
   /** Test one compiled, transitive schema group membership. */
   isElementTypeInGroup: (type: string, group: string) => boolean;
   isInline: (element: Node) => boolean;
@@ -1460,7 +1463,6 @@ export type EditorStateRuntimeApi<V extends Value = Value> = {
 
 export type EditorElementBehavior = Readonly<{
   atom: boolean;
-  editableIsland: boolean;
   inline: boolean;
   isolating: boolean;
   keyboardSelectable: boolean;
@@ -2501,6 +2503,12 @@ export type EditorLifecycleError<TEditor = Editor> =
   | Readonly<{
       cause: unknown;
       editor: TEditor;
+      phase: 'mount' | 'update' | 'focus' | 'destroy';
+      source: 'external-text';
+    }>
+  | Readonly<{
+      cause: unknown;
+      editor: TEditor;
       extensionName: string;
       phase:
         | 'after-commit'
@@ -2962,22 +2970,28 @@ type EditorExtensionRuntimeField<
 /**
  * Exact type witness without public runtime descriptor fields.
  *
+ * The factory defers definition expansion until a consumer reads the witness.
+ *
  */
 export type EditorExtensionWitnessFor<
-  TDefinition extends EditorExtensionDefinition,
+  TDefinitionFactory extends () => EditorExtensionDefinition,
 > = PrivateEditorExtensionWitness<{
-  capability: EditorExtensionCapabilityDefinition<TDefinition>;
+  capability: EditorExtensionCapabilityDefinition<
+    ReturnType<TDefinitionFactory>
+  >;
   definition: (
-    definition: EditorExtensionPublicDefinition<TDefinition>
-  ) => EditorExtensionPublicDefinition<TDefinition>;
-  internalDefinition: (definition: TDefinition) => TDefinition;
+    definition: EditorExtensionPublicDefinition<ReturnType<TDefinitionFactory>>
+  ) => EditorExtensionPublicDefinition<ReturnType<TDefinitionFactory>>;
+  internalDefinition: (
+    definition: ReturnType<TDefinitionFactory>
+  ) => ReturnType<TDefinitionFactory>;
 }>;
 
 export type EditorExtension<TDefinition extends EditorExtensionDefinition> =
   Readonly<{
     [TKey in keyof TDefinition]: EditorExtensionRuntimeField<TDefinition, TKey>;
   }> &
-    EditorExtensionWitnessFor<TDefinition> &
+    EditorExtensionWitnessFor<() => TDefinition> &
     PrivateEditorExtensionReferenceBrand;
 
 /**
@@ -3422,7 +3436,6 @@ export type EditorCommitRuntimeChangeKind =
   | 'path'
   /** Runtime node identities added to or removed from a document root. */
   | 'presence'
-  | 'projection'
   | 'selection'
   | 'text';
 

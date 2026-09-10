@@ -1,3 +1,4 @@
+export type * from './decoration';
 export type * from './editor';
 export * from './element';
 export * from './location';

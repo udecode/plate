@@ -1,196 +1,72 @@
 ---
 title: TypeScript
-description: 配置 TypeScript (tsconfig) 以使用 Plate，包括模块解析方案。
+description: 在打包应用和 Node.js 项目中解析 Plate 的公共入口。
 ---
 
-Plate 提供 ESM 包，需要特定的 TypeScript（和打包工具）配置以确保兼容性，特别是在导入子路径模块如 `platejs/react` 时。以下是几种让 TypeScript 正常工作的解决方案和变通方法。
+Plate 通过 `exports` 映射发布 ESM 入口。让 TypeScript 读取该映射，
+即可将 `platejs/react` 等导入解析到对应的类型声明和运行时文件。
 
-## 快速总结
+## 打包应用
 
-1. **推荐（最简单）：** 使用 TypeScript **5.0+** 并在 `tsconfig.json` 中设置 `"moduleResolution": "bundler"`。
-2. **备选方案（Node 解析）：** 保持 `"moduleResolution": "node"` 并将路径映射到 `dist/react`（可能还需要在打包工具配置中设置别名）。
-3. **保持包最新：** 使用 Plate CLI 升级 `platejs`。
+对于 Vite、Next.js 等打包工具，使用 `moduleResolution: "bundler"`
+并设置 ESM 模块目标：
 
-
-## 推荐：`"moduleResolution": "bundler"`
-
-对于现代打包工具（Vite、Next.js 14 等），最简单的方法是启用新的 TypeScript "bundler" 解析模式。示例：
-
-```jsonc
-// tsconfig.json
+```jsonc title="tsconfig.json"
 {
   "compilerOptions": {
-    // ...
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    // ...
-  }
-}
-```
-
-这使 TypeScript 的解析逻辑更接近现代打包工具和 ESM 包。以下是 [Plate 模板](https://github.com/udecode/plate-template) 的工作配置摘录：
-
-```jsonc
-{
-  "compilerOptions": {
-    "strict": false,
-    "strictNullChecks": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    "exactOptionalPropertyTypes": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-
-    "isolatedModules": true,
-
-    "allowJs": true,
-    "checkJs": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
-    "module": "esnext",
-    "target": "es2022",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "incremental": true,
-    "sourceMap": true,
-
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["./*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
-  "exclude": ["node_modules"]
-}
-```
-
-- **`"moduleResolution": "bundler"`** 是在 TypeScript 5.0 中引入的。
-- 如果你的 TS 版本低于 5.0，你**必须**升级或继续使用 `"moduleResolution": "node"` 加上手动路径别名。
-
-```jsonc
-// package.json
-{
-  "devDependencies": {
-    "typescript": "^5.0.0"
+    "strict": true,
+    "noEmit": true
   }
 }
 ```
 
-如果你看到类似 `TS5023: Unknown compiler option 'moduleResolution'`（对于 `bundler`）的错误，很可能意味着你的 TypeScript 版本低于 5.0。
+保留框架提供的其他设置。`bundler` 解析模式需要 TypeScript 5.0 或更高版本。
 
-## 变通方案：`"moduleResolution": "node"` + 路径别名
+## Node.js 项目
 
-如果无法将整个项目升级到 TS 5.0 或更改解析模式：
+对于直接由 Node.js 执行的代码，将模块和模块解析都设置为 `NodeNext`：
 
-1. 保持 `"moduleResolution": "node"`。
-2. 在 `tsconfig.json` 中使用 `paths` 将每个 Plate 子路径导入映射到其 `dist/react` 类型。
-3. 在打包工具配置中设置这些路径别名。
-
-### `tsconfig.json` 示例
-
-```jsonc
+```jsonc title="tsconfig.json"
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "paths": {
-      "platejs/react": [
-        "./node_modules/platejs/dist/react/index.d.ts"
-      ],
-      "platejs/*": ["./node_modules/platejs/dist/*/index.d.ts"]
-    }
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true
   }
 }
 ```
 
-### `vite.config.ts` 示例
+如果从 `.ts` 文件输出 ESM，请在应用的 `package.json` 中声明
+`"type": "module"`。服务端可用的 Plate 导入见
+[Node.js 指南](/docs/installation/node)。
+
+## 公共导入
+
+从已发布的入口导入：
 
 ```ts
-import { defineConfig } from 'vite';
-import path from 'path';
-
-export default defineConfig({
-  resolve: {
-    alias: {
-      'platejs/react': path.resolve(
-        __dirname,
-        'node_modules/platejs/dist/react'
-      ),
-
-      // 非 /react 基础别名：
-      'platejs': path.resolve(
-        __dirname,
-        'node_modules/platejs'
-      )
-    }
-  }
-});
+import { createEditor } from 'platejs';
 ```
 
-**注意：**
-- 如果工具不展开 `platejs/*` 通配符，请为该子路径添加精确别名。
-- 对于测试/Jest，通过 `moduleNameMapper` 或类似方式复制这些别名。
+可编辑 React API 使用 `platejs/react`，静态 React 渲染使用
+`platejs/static`。仅在已安装的包导出某个功能子路径时导入该子路径。
 
-## 更新 Plate
+应用的 `@/*` 等别名保留在框架配置中。不要把 Plate 导入映射到
+`node_modules/platejs/dist`：公共子路径与文件之间的关系由
+`exports` 映射管理，各入口的目录布局并不相同。
 
-使用 Plate CLI 将整个编辑器包升级到指定发布系列：
+## 排查解析错误
 
-```bash
-npx @platejs/cli@latest deps platejs 54 --install --yes
-```
+- **找不到包：** 确认导入它的 workspace 已安装 `platejs`，并且
+  TypeScript 使用了预期的配置。
+- **找不到子路径：** 检查已安装包的 `exports` 映射，使用
+  `bundler` 或 `NodeNext` 解析模式。
+- **没有对应导出成员：** 检查标识符、入口和已安装版本。
+  路径别名不能添加不存在的导出。
+- **只有测试失败：** 除 TypeScript 外，也要为测试运行器配置 ESM 和
+  包导出解析。避免再维护一组指向包内部文件的别名。
 
-需要固定版本时，传入完整版本号：
-
-```bash
-npx @platejs/cli@latest deps platejs 54.0.0 --install --yes
-```
-
-## 常见问题
-
-> 我把 `moduleResolution` 更新为 `bundler` 但它破坏了我的旧导入。
-
-如果你的代码库有较旧的 TS 用法或依赖 `node` 解析，请尝试路径别名方法或完全迁移到 TS 5+ / ESM 环境。
-
-> "我看到关于缺少导出的 `TS2305` 错误。这是解析错误还是真的缺少导出？"
-
-两种情况都有可能：
-- 如果整个包"未找到"，很可能是解析问题。
-- 如果具体是"没有导出成员"，请仔细检查导入拼写是否正确（没有拼写错误），以及安装的版本是否确实有该导出。
-
-> "使用 `moduleResolution: bundler` 需要的最低 TS 版本是多少？"
-
-TypeScript 5.0 或更高版本。
-
-> "我们切换到 bundler 解析后，项目中的一些旧库出问题了。"
-
-如果你的旧库不兼容 ESM，你可能需要继续使用 `node` 解析并手动设置路径别名。一些大型代码库会逐步升级或为遗留代码创建单独的构建管道。
-
-> "我们在 Jest 中看到错误，但在 Vite 中没有。"
-
-你需要为 Jest 复制别名/解析配置。例如：
-
-```js
-// jest.config.js
-module.exports = {
-  // ...
-  moduleNameMapper: {
-    '^platejs/react$': '<rootDir>/node_modules/platejs/dist/react',
-    // ...
-  }
-};
-```
+检查安装版本与重复运行时的方法见[故障排除指南](/docs/troubleshooting)。

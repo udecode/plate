@@ -10,10 +10,11 @@ import {
   type EditorCommit,
   type Element,
   type Path,
+  type NodeKey,
 } from '../../facade';
 import type { Editor } from '../editor/Editor';
-import { useEditorEditableElement } from '../plite-react';
-import { useEditor } from '../stores/plate/createPlateStore';
+import { useEditorEditableElement, useEditorViewState } from '../plite-react';
+import { useEditor } from '../stores/plate/useEditor';
 import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
 const EDITOR_ELEMENT_SELECTOR = '[data-plite-node="element"]';
@@ -196,7 +197,7 @@ const intersects = (selection: SelectionRect, target: DOMRect) =>
   selection.top <= target.bottom &&
   selection.top + selection.height >= target.top;
 
-type SelectionEntry = Readonly<{ node: Element; path: Path }>;
+type SelectionEntry = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
 type SelectionCandidate = SelectionEntry & Readonly<{ rect: DOMRect }>;
 
@@ -220,6 +221,7 @@ const getSelectionCandidates = (
       if (!path) return;
 
       entries.set(path.join(','), {
+        key: editor.key(node),
         node,
         path,
         rect: element.getBoundingClientRect(),
@@ -231,15 +233,15 @@ const getSelectionCandidates = (
 
 const getSelectionEntries = (
   editor: Editor,
-  paths: readonly Path[]
+  keys: readonly NodeKey[]
 ): readonly SelectionEntry[] =>
-  paths.flatMap((path) => {
-    const entry = editor.read.nodes.get(path, {
+  keys.flatMap((key) => {
+    const entry = editor.read.nodes.get(key, {
       match: ElementApi.isElement,
     });
 
     return entry && isSelectionCandidate(editor, entry[0])
-      ? [{ node: entry[0], path: entry[1] }]
+      ? [{ key, node: entry[0], path: entry[1] }]
       : [];
   });
 
@@ -290,12 +292,15 @@ export function NodeSelectionDrag({
   const editor = useEditor();
   const editable = useEditorEditableElement(editor);
   const selectionElementRef = React.useRef<HTMLDivElement>(null);
-  const selectionRectRef = React.useRef<SelectionRect | null>(null);
+  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [selectionRect, setSelectionRect] =
     React.useState<SelectionRect | null>(null);
 
   React.useEffect(() => {
-    if (!editable) return undefined;
+    if (!editable || readOnly) return undefined;
+    const { ownerDocument } = editable;
+    const ownerWindow = ownerDocument.defaultView;
+    if (!ownerWindow) return undefined;
 
     let clickResetTimer: number | undefined;
     let finishFrame: number | undefined;
@@ -303,7 +308,7 @@ export function NodeSelectionDrag({
     let suppressClick = false;
     let gesture:
       | {
-          baseAnchor?: Element;
+          baseAnchor?: NodeKey;
           baseEntries: readonly SelectionEntry[];
           candidates: readonly SelectionCandidate[];
           current: { x: number; y: number };
@@ -319,10 +324,18 @@ export function NodeSelectionDrag({
     const updateSelection = () => {
       frame = undefined;
       if (!gesture) return;
+      if (editor.read.view.isReadOnly()) {
+        cancelGesture();
+        return;
+      }
 
       const nextRect = rectFromPoints(gesture.start, gesture.current);
       if (gesture.geometryDirty) {
         gesture.candidates = getSelectionCandidates(editor, editable);
+        gesture.baseEntries = getSelectionEntries(
+          editor,
+          gesture.baseEntries.map(({ key }) => key)
+        );
         gesture.geometryDirty = false;
       }
       const entries = getSelectableEntries(
@@ -331,7 +344,6 @@ export function NodeSelectionDrag({
         gesture.baseEntries
       );
 
-      selectionRectRef.current = nextRect;
       const selectionElement = selectionElementRef.current;
 
       if (selectionElement) {
@@ -361,11 +373,11 @@ export function NodeSelectionDrag({
       const edge = reverse ? first : last;
       const gestureBaseAnchor = gesture.baseAnchor;
       const baseAnchor = gestureBaseAnchor
-        ? entries.find(({ node }) => node === gestureBaseAnchor)
+        ? entries.find(({ key }) => key === gestureBaseAnchor)
         : undefined;
       const anchor = baseAnchor ? baseAnchor : reverse ? last : first;
 
-      gesture.baseAnchor = anchor.node;
+      gesture.baseAnchor = anchor.key;
       const paths = entries.map(({ path }) => path);
       const selectionChanged =
         gesture.lastPaths === null ||
@@ -388,7 +400,7 @@ export function NodeSelectionDrag({
     };
     const scheduleUpdate = () => {
       if (frame !== undefined) return;
-      frame = window.requestAnimationFrame(updateSelection);
+      frame = ownerWindow.requestAnimationFrame(updateSelection);
     };
     const startGesture = (
       point: { x: number; y: number },
@@ -401,18 +413,18 @@ export function NodeSelectionDrag({
       }
     ) => {
       if (finishFrame !== undefined) {
-        window.cancelAnimationFrame(finishFrame);
+        ownerWindow.cancelAnimationFrame(finishFrame);
         finishFrame = undefined;
       }
       if (clickResetTimer !== undefined) {
-        window.clearTimeout(clickResetTimer);
+        ownerWindow.clearTimeout(clickResetTimer);
         clickResetTimer = undefined;
       }
       suppressClick = false;
 
-      const selectedPaths = editor.read.selection
+      const selectedKeys = editor.read.selection
         .nodes()
-        .map(([, path]) => path);
+        .map(([node]) => editor.key(node));
       const selection = editor.read.selection();
       const baseAnchor =
         shiftKey && selection
@@ -420,12 +432,11 @@ export function NodeSelectionDrag({
           : undefined;
       const nextRect = rectFromPoints(point, point);
 
-      selectionRectRef.current = nextRect;
       setSelectionRect(nextRect);
 
       gesture = {
-        baseEntries: shiftKey ? getSelectionEntries(editor, selectedPaths) : [],
-        baseAnchor,
+        baseEntries: shiftKey ? getSelectionEntries(editor, selectedKeys) : [],
+        baseAnchor: baseAnchor ? editor.key(baseAnchor) : undefined,
         candidates: getSelectionCandidates(editor, editable),
         current: point,
         geometryDirty: false,
@@ -443,38 +454,55 @@ export function NodeSelectionDrag({
       const scroll = editor.api.dom.scroll?.();
       const bounds = scroll?.getBoundingClientRect();
       const top = bounds?.top ?? 0;
-      const bottom = bounds?.bottom ?? window.innerHeight;
+      const bottom = bounds?.bottom ?? ownerWindow.innerHeight;
       const delta = point.y < top + 32 ? -12 : point.y > bottom - 32 ? 12 : 0;
 
       if (delta !== 0) {
         if (scroll) scroll.scrollBy({ top: delta });
-        else window.scrollBy({ top: delta });
+        else ownerWindow.scrollBy({ top: delta });
         gesture.geometryDirty = true;
       }
+    };
+    const cancelGesture = () => {
+      if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
+      frame = undefined;
+      if (finishFrame !== undefined) {
+        ownerWindow.cancelAnimationFrame(finishFrame);
+      }
+      finishFrame = undefined;
+      if (clickResetTimer !== undefined) {
+        ownerWindow.clearTimeout(clickResetTimer);
+      }
+      clickResetTimer = undefined;
+      suppressClick = false;
+      gesture = undefined;
+      setSelectionRect(null);
     };
     const finishGesture = () => {
       if (!gesture) return;
 
-      if (frame !== undefined) window.cancelAnimationFrame(frame);
+      if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       updateSelection();
+      if (!gesture) return;
       const committedPaths = editor.read.selection
         .nodes()
         .map(([, path]) => path);
       const committedAnchorPath = gesture.lastAnchorPath;
       const committedFocusPath = gesture.lastFocusPath;
+      const committedChange = editor.read.lastCommit();
 
       gesture = undefined;
       suppressClick = true;
-      clickResetTimer = window.setTimeout(() => {
+      clickResetTimer = ownerWindow.setTimeout(() => {
         clickResetTimer = undefined;
         suppressClick = false;
       }, 0);
-      selectionRectRef.current = null;
       setSelectionRect(null);
-      finishFrame = window.requestAnimationFrame(() => {
+      finishFrame = ownerWindow.requestAnimationFrame(() => {
         finishFrame = undefined;
+        if (editor.read.lastCommit() !== committedChange) return;
         editable.focus({ preventScroll: true });
-        document.getSelection()?.removeAllRanges();
+        ownerDocument.getSelection()?.removeAllRanges();
 
         if (
           committedPaths.length > 0 &&
@@ -489,7 +517,14 @@ export function NodeSelectionDrag({
       });
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (gesture || event.button !== 0 || event.target !== editable) return;
+      if (
+        gesture ||
+        event.button !== 0 ||
+        event.target !== editable ||
+        editor.read.view.isReadOnly()
+      ) {
+        return;
+      }
 
       startGesture(
         { x: event.clientX, y: event.clientY },
@@ -512,15 +547,17 @@ export function NodeSelectionDrag({
       event.stopPropagation();
       if (event.type === 'pointerup') {
         moveGesture({ x: event.clientX, y: event.clientY });
+        finishGesture();
+      } else {
+        cancelGesture();
       }
-      finishGesture();
     };
     const onClick = (event: MouseEvent) => {
       if (!suppressClick) return;
 
       suppressClick = false;
       if (clickResetTimer !== undefined) {
-        window.clearTimeout(clickResetTimer);
+        ownerWindow.clearTimeout(clickResetTimer);
         clickResetTimer = undefined;
       }
       event.preventDefault();
@@ -530,34 +567,48 @@ export function NodeSelectionDrag({
       if (gesture) gesture.geometryDirty = true;
     };
 
-    document.addEventListener('click', onClick, true);
-    document.addEventListener('pointercancel', onPointerEnd, true);
-    document.addEventListener('pointerdown', onPointerDown, true);
-    document.addEventListener('pointermove', onPointerMove, {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!gesture || event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      cancelGesture();
+    };
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      if (gesture && commit.changed.hasAny('document')) {
+        gesture.geometryDirty = true;
+        scheduleUpdate();
+      }
+    });
+
+    ownerWindow.addEventListener('blur', cancelGesture);
+    ownerDocument.addEventListener('keydown', onKeyDown, true);
+    ownerDocument.addEventListener('click', onClick, true);
+    ownerDocument.addEventListener('pointercancel', onPointerEnd, true);
+    ownerDocument.addEventListener('pointerdown', onPointerDown, true);
+    ownerDocument.addEventListener('pointermove', onPointerMove, {
       capture: true,
       passive: false,
     });
-    document.addEventListener('pointerup', onPointerEnd, true);
-    document.addEventListener('scroll', onGeometryChange, true);
-    window.addEventListener('resize', onGeometryChange);
+    ownerDocument.addEventListener('pointerup', onPointerEnd, true);
+    ownerDocument.addEventListener('scroll', onGeometryChange, true);
+    ownerWindow.addEventListener('resize', onGeometryChange);
 
     return () => {
-      if (clickResetTimer !== undefined) window.clearTimeout(clickResetTimer);
-      if (finishFrame !== undefined) {
-        window.cancelAnimationFrame(finishFrame);
-      }
-      if (frame !== undefined) window.cancelAnimationFrame(frame);
-      document.removeEventListener('click', onClick, true);
-      document.removeEventListener('pointercancel', onPointerEnd, true);
-      document.removeEventListener('pointerdown', onPointerDown, true);
-      document.removeEventListener('pointermove', onPointerMove, true);
-      document.removeEventListener('pointerup', onPointerEnd, true);
-      document.removeEventListener('scroll', onGeometryChange, true);
-      window.removeEventListener('resize', onGeometryChange);
+      unsubscribe();
+      cancelGesture();
+      ownerWindow.removeEventListener('blur', cancelGesture);
+      ownerDocument.removeEventListener('keydown', onKeyDown, true);
+      ownerDocument.removeEventListener('click', onClick, true);
+      ownerDocument.removeEventListener('pointercancel', onPointerEnd, true);
+      ownerDocument.removeEventListener('pointerdown', onPointerDown, true);
+      ownerDocument.removeEventListener('pointermove', onPointerMove, true);
+      ownerDocument.removeEventListener('pointerup', onPointerEnd, true);
+      ownerDocument.removeEventListener('scroll', onGeometryChange, true);
+      ownerWindow.removeEventListener('resize', onGeometryChange);
     };
-  }, [editable, editor]);
+  }, [editable, editor, readOnly]);
 
-  if (!selectionRect || typeof document === 'undefined') return null;
+  if (!selectionRect || !editable || readOnly) return null;
 
   return ReactDOM.createPortal(
     <div
@@ -577,6 +628,6 @@ export function NodeSelectionDrag({
         width: selectionRect.width,
       }}
     />,
-    document.body
+    editable.ownerDocument.body
   );
 }

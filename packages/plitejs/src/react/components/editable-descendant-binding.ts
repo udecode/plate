@@ -1,10 +1,12 @@
 import {
   type Descendant,
+  type EditorSchemaElement,
   type NodeKey,
   NodeApi,
   type Path,
   type Text as PliteTextNode,
 } from '../..';
+import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
 import {
   getNodeKey as editorGetNodeKey,
@@ -30,6 +32,7 @@ export type EditableDescendantBinding = {
   node: Descendant | null;
   path: Path | null;
   renderRevision: number;
+  schemaElement: EditorSchemaElement | null;
 };
 
 export const isEditableTextNode = (value: Descendant): value is PliteTextNode =>
@@ -64,14 +67,12 @@ export const readEditableDescendantBinding = ({
   node,
   path,
   renderLeaf,
-  renderSegment,
   renderText,
 }: {
   editor: EditorType;
   node: unknown;
   path: Path | null;
   renderLeaf?: unknown;
-  renderSegment?: unknown;
   renderText?: unknown;
 }): EditableDescendantBinding => {
   if (!path || !node || editorIsEditor(node)) {
@@ -84,6 +85,7 @@ export const readEditableDescendantBinding = ({
       node: null,
       path: null,
       renderRevision: 0,
+      schemaElement: null,
     };
   }
 
@@ -91,9 +93,16 @@ export const readEditableDescendantBinding = ({
   const snapshot = editorGetSnapshot(editor);
   const usesDirectTextChildren =
     !isEditableTextNode(descendant) &&
-    !renderLeaf &&
-    !renderSegment &&
-    !renderText;
+    descendant.children.every((child) => {
+      if (!isEditableTextNode(child)) return true;
+
+      const { text: _text, ...marks } = child;
+
+      return (
+        canSkipRendererForRetainedTextFlow(renderLeaf, { marks }) &&
+        canSkipRendererForRetainedTextFlow(renderText, { marks })
+      );
+    });
 
   const childNodeKeys = isEditableTextNode(descendant)
     ? EMPTY_RUNTIME_IDS
@@ -131,5 +140,8 @@ export const readEditableDescendantBinding = ({
       ...(ownNodeKey ? [ownNodeKey] : []),
       ...childNodeKeys,
     ]),
+    schemaElement: isEditableTextNode(descendant)
+      ? null
+      : editor.read((state) => state.schema.element(descendant.type)),
   };
 };

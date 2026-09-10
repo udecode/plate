@@ -18,7 +18,6 @@ const mockPlugin = (name: string) => ({
 mock.module('platejs', () => ({
   BaseCodeBlockPlugin: mockPlugin('codeBlock'),
   BaseCodeHighlightPlugin: mockPlugin('codeHighlight'),
-  BaseCodeLinePlugin: mockPlugin('codeLine'),
 }));
 
 mock.module('platejs/static', () => ({

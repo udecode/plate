@@ -1,0 +1,20 @@
+source	file	lines	finding
+prosemirror-forum-badon	https://discuss.prosemirror.net/t/a-new-text-editor-with-pagination/6667	11-18	Public description claims long-document pagination with headers/footers; source was not available in this packet.
+prosemirror-forum-badon	https://discuss.prosemirror.net/t/a-new-text-editor-with-pagination/6667	34-38	Author says pagination mostly relies on CSS layout and avoids node splitting/calculating dimensions; keep as research lead until source exists.
+prosemirror-forum-pagination	https://discuss.prosemirror.net/t/implementing-pagination-with-prosemirror/6336	5-10	Discussion frames the core tradeoff: keep presentation outside schema, avoid EditorView forks, and beware interaction/selection problems when nodes split across pages.
+prosemirror-forum-pagination	https://discuss.prosemirror.net/t/implementing-pagination-with-prosemirror/6336	14-18	Decoration/occlusion approach can hide off-page content without slicing docs, but may become expensive for book-size projects.
+prosemirror-pagination	src/paginationPlugin.ts	104-141	Plugin detects page overflow from DOM measurements and dispatches pagination metadata into a transaction.
+prosemirror-pagination	src/paginationPlugin.ts	146-189	Plugin appends transactions that remove/add headers and footers, split documents, adjust selection, and scroll into view.
+prosemirror-pagination	src/paginationPlugin.ts	284-313	`splitDocument` recursively splits pages and joins tables around split info.
+prosemirror-pagination	src/paginationPlugin.ts	315-423	Height calculation traverses document nodes and has table-specific split logic, including a TODO in first-row handling.
+react-prosemirror	src/ReactEditorView.ts	116-131	Renderer stops normal DOM observer behavior and ignores selectionchange while composing to avoid aborting Safari composition.
+react-prosemirror	src/ReactEditorView.ts	268-289	Commit path forces base view update after React DOM work so DOM selection and node-view callbacks are validated.
+react-prosemirror	src/components/__tests__/ProseMirror.selection.test.tsx	452-476	Test covers selection updates when DOM parameters look unchanged after decoration redraws.
+react-prosemirror	src/components/__tests__/ProseMirror.selection.test.tsx	478-492	Test covers fallback behavior when `Selection.extend` throws.
+editable	README.md	5-31	Project explicitly avoids native `contenteditable`, uses a custom renderer, and still plans native DOM rendering for performance.
+editable	packages/editor/src/plugin/selection-drawing.ts	48-117	Selection drawing stores per-editor style/selection state and converts model ranges to relative DOM rects.
+editable	packages/editor/src/components/selection.tsx	15-39	Selection component draws non-collapsed selections as shadow blocks from computed rects.
+editable	packages/editor/src/components/input.tsx	74-130	Hidden textarea input path handles beforeinput/input/composition/paste and positions caret from selection drawing rects.
+windoc	README.md	12-19	Windoc is a canvas editor with separate core/react packages; useful comparison but different rendering architecture.
+windoc	README.md	46-58	Readme claims canvas rendering, automatic pagination, headers/footers, and print support.
+windoc	react/src/Editor.tsx	288-309	React wrapper exposes visible page list, page size, intersection page, and scale listeners.

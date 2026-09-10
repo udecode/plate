@@ -63,7 +63,7 @@ const mountOutsideFocusBoundary = () => {
       if (pointerEventDescriptor) {
         Object.defineProperty(window, 'PointerEvent', pointerEventDescriptor);
       } else {
-        delete (window as Partial<Window>).PointerEvent;
+        delete (window as Partial<Window & typeof globalThis>).PointerEvent;
       }
     },
   };
@@ -135,6 +135,23 @@ test('keeps a newer editor refocus after an outside mouse press', () => {
 
     expect(document.activeElement).toBe(runtime.root);
     expect(runtime.state.outsideFocusBoundarySettleUntil).toBe(0);
+  } finally {
+    runtime.unmount();
+  }
+});
+
+test('releases the explicit root even when another view has cleared the editor DOM binding', () => {
+  const runtime = mountOutsideFocusBoundary();
+  vi.mocked(ReactEditor.findDocumentOrShadowRoot).mockImplementation(() => {
+    throw new Error('No editor-global DOM binding');
+  });
+  try {
+    runtime.root.focus();
+    runtime.outsideButton.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true })
+    );
+    expect(() => runtime.domPhaseScheduler.flush()).not.toThrow();
+    expect(document.activeElement).not.toBe(runtime.root);
   } finally {
     runtime.unmount();
   }

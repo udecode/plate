@@ -1,6 +1,6 @@
 import { TrailingBlockPlugin } from 'platejs';
 import { CsvPlugin } from 'platejs/csv';
-import { DocxPastePlugin } from 'platejs/docx';
+import { DocxPlugin } from 'platejs/docx';
 
 import { AIKit } from './ai';
 import { AlignKit } from './align';
@@ -12,10 +12,8 @@ import { BlockPlaceholderKit } from './block-placeholder';
 import { CalloutKit } from './callout';
 import { CodeBlockKit } from './code-block';
 import { ColumnKit } from './column';
-import { CommentKit } from './comment';
 import { DateKit } from './date';
 import { DetailsKit } from './details';
-import { DiscussionKit } from './discussion';
 import { DndKit } from './dnd';
 import { EmojiKit } from './emoji';
 import { ExitBreakKit } from './exit-break';
@@ -64,8 +62,6 @@ export const EditorKit = [
   ...LineHeightKit,
 
   // Collaboration
-  ...DiscussionKit,
-  ...CommentKit,
   ...SuggestionKit,
 
   // Editing
@@ -78,7 +74,7 @@ export const EditorKit = [
 
   // Parsers
   CsvPlugin,
-  DocxPastePlugin,
+  DocxPlugin,
   ...MarkdownKit,
 
   // UI

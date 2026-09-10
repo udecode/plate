@@ -1,0 +1,9 @@
+source_key	path_or_url	read_scope	takeaway
+playwright-40986	https://github.com/microsoft/playwright/issues/40986	issue body	Issue reports Home plus Shift+End can produce empty selection after a selectionchange listener replaces the selected text node; issue links local repro and frames it as rich-editor reconciliation pressure.
+playwright-40986	/Users/zbeyens/git/playwright-selectionchange-race-repro/playwright/tests/home-shift-end.spec.ts	local source	Spec builds one contenteditable text node, replaces it on selectionchange, clicks mid-line, presses Home then Shift+End, and expects selected text to equal the line.
+playwright-40986	/Users/zbeyens/git/playwright-selectionchange-race-repro/vitest-browser/src/Editor.tsx	local source	React variant uses a guarded selectionchange listener that replaces the text node with identical content.
+playwright-36715	/Users/zbeyens/git/playwright-issue-firefox-fill/examples.test.ts	local source	Repro prevents default beforeinput, mutates text, sets native selection, and then Firefox locator.fill fails while keyboard-style input works.
+playwright-39492	https://github.com/microsoft/playwright/issues/39492	issue body	Contenteditable fill can append instead of replacing when focus handling interferes with Playwright fill internals; treat as no-fill methodology evidence.
+lexical-2659	https://github.com/facebook/lexical/discussions/2659	discussion excerpts	Discussion reinforces real-browser editor tests and notes JSDOM contenteditable gaps.
+slate-selectionchange-race-existing	docs/slate-v2/research/2026-06-13-playwright-selectionchange-race-oracles/README.md	local docs	Existing Slate packet keeps detached endpoint import safety and rejects a bare-contenteditable Home plus Shift+End route.
+slate-editor-testing-existing	docs/slate-v2/research/2026-06-13-editor-testing-oss-scout/README.md	local docs	Existing Slate packet already promotes no locator.fill editor proof rule into slate-browser docs.

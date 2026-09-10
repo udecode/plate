@@ -71,7 +71,7 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       await expect(probe(root)).not.toHaveAttribute('data-plite-void', 'true');
     }
     await expectSchemaOnlyPublication(
-      'inline:true;void:false;editableIsland:false;readOnly:false;selectable:true;document:unchanged'
+      'inline:true;void:false;readOnly:false;selectable:true;document:unchanged'
     );
 
     await page.getByRole('button', { name: 'Use void schema' }).click();
@@ -87,30 +87,12 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       3
     );
     await expectSchemaOnlyPublication(
-      'inline:false;void:true;editableIsland:false;readOnly:false;selectable:true;document:unchanged'
+      'inline:false;void:true;readOnly:false;selectable:true;document:unchanged'
     );
-
-    await page
-      .getByRole('button', { name: 'Use editable-island schema' })
-      .click();
-    await expectSchemaOnlyPublication(
-      'inline:false;void:true;editableIsland:true;readOnly:false;selectable:true;document:unchanged'
-    );
-
-    for (const [index, root] of roots.entries()) {
-      await expect(probe(root)).toHaveAttribute('data-plite-void', 'true');
-
-      const island = probe(root).getByTestId('schema-reconfiguration-island');
-
-      await expect(island).toBeEditable();
-      await island.fill(`nested target ${index}`);
-      await expect(island).toHaveValue(`nested target ${index}`);
-    }
-    await expectDocumentAndNodeKeysStable();
 
     await page.getByRole('button', { name: 'Use read-only schema' }).click();
     await expectSchemaOnlyPublication(
-      'inline:false;void:false;editableIsland:false;readOnly:true;selectable:true;document:unchanged'
+      'inline:false;void:false;readOnly:true;selectable:true;document:unchanged'
     );
     await named.selection.select({
       anchor: { path: [1, 1, 0], offset: 2 },
@@ -131,7 +113,7 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       .getByRole('button', { name: 'Use non-selectable schema' })
       .click();
     await expectSchemaOnlyPublication(
-      'inline:false;void:false;editableIsland:false;readOnly:false;selectable:false;document:unchanged'
+      'inline:false;void:false;readOnly:false;selectable:false;document:unchanged'
     );
     await named.selection.selectDOM({
       anchor: { path: [1, 2], offset: 0 },
@@ -145,7 +127,7 @@ test('publishes schema-only behavior atomically across primary, named, and proje
 
     await page.getByRole('button', { name: 'Use block schema' }).click();
     await expectSchemaOnlyPublication(
-      'inline:false;void:false;editableIsland:false;readOnly:false;selectable:true;document:unchanged'
+      'inline:false;void:false;readOnly:false;selectable:true;document:unchanged'
     );
     await named.selection.select({
       anchor: { path: [1, 1, 0], offset: 2 },

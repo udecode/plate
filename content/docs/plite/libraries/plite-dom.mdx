@@ -24,13 +24,14 @@ code that needs DOM bridge helpers without React.
 import { DOMCoverage, Hotkeys, isDOMNode } from "plitejs/dom";
 ```
 
-## Public Utility Groups
+## Public utility groups
 
 `dom()` installs the DOM bridge extension on a core editor.
 `PliteDOMResolutionError` is the thrown error type for failed assert-style DOM
 resolution.
 
-`DOMCoverage` owns hidden, staged, and virtualized same-root coverage metadata.
+`DOMCoverage.create(editor)` creates a view-local session for hidden, external,
+staged, and virtualized same-root coverage metadata.
 
 `Hotkeys`, `isHotkey`, and `Key` cover keyboard matching and keyboard names.
 `TRIPLE_CLICK` is the click count Plite uses for block-level triple-click
@@ -87,14 +88,11 @@ import {
 `CAN_USE_DOM` guards SSR-only initialization. Mounted DOM adapters resolve
 browser behavior from their own root.
 
-Decoration helpers include `isElementDecorationsEqual`,
-`isTextDecorationsEqual`, and `splitDecorationsByChild`.
-
-## Host Codecs
+## Host codecs
 
 Install schema-aware clipboard formats as one named extension with
-`hostCodecs`. Keep a codec inline when that extension is its only owner; use
-`defineHostCodec` only when the same codec is reused. Each callback receives an
+`hostCodecs`. Keep a codec inline when that extension is its only owner; name
+shared definitions with the `HostCodec<V>` type. Each callback receives an
 immutable `EditorCoreStateView`; parse callbacks also receive a snapshot of the
 incoming host formats and files.
 
@@ -175,13 +173,13 @@ a `setData`-compatible host sink. Applications normally use
 `editor.api.dom.clipboard.writeSelection(dataTransfer)`, which writes the native
 Plite payload and registered host formats together.
 
-## Public Type Groups
+## Public type groups
 
 DOM bridge types include `DOMApi`, `DOMClipboardApi`,
 `DOMClipboardInsertDataHandler`, `DOMEditorOptions`, `ScrollIntoViewOptions`,
 and `ScrollIntoViewTarget`.
 
-DOM coverage types include `DOMCoverageBoundary`,
+DOM coverage types include `DOMCoverageSession`, `DOMCoverageBoundary`,
 `DOMCoverageSelectionPolicy`, `DOMCoveragePlitePointResult`, and
 `DOMCoverageDOMRangeResult`. Use these when a framework layer needs to describe
 hidden, staged, or virtualized same-root content.
@@ -195,22 +193,40 @@ Host codec types include `HostCodec`, `HostCodecParseContext`, `HostCodecPhase`,
 Hotkey and diff helper types include `HotkeySpec`, `HotkeyPlatform`,
 `HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.
 
-## DOM Coverage
+## DOM coverage
 
 DOM coverage boundaries model same-root content whose DOM is hidden, staged, or
 virtualized. They keep selection, copy, find, and Plite-to-DOM conversion tied
 to explicit policies instead of assuming every document node is mounted.
 
-React applications usually configure DOM coverage through
-[`EditableDOMCoverageBoundary`](./plite-react/dom-coverage-boundaries).
+React applications configure coverage through
+[`slots.contentBoundary`](./plite-react/dom-coverage-boundaries) or
+[`slots.externalText`](./plite-react/external-text). Each `Editable` owns its
+session and releases it on unmount.
 
-## Internal Subpath
+Framework integrations create one session per mounted view:
+
+```ts
+import { DOMCoverage } from "plitejs/dom";
+
+const coverage = DOMCoverage.create(editor);
+const dispose = coverage.registerBoundary(boundary);
+
+dispose();
+coverage.destroy();
+```
+
+Call query, conversion, and materialization methods on that session. Do not
+share registrations between views of the same editor. A registration's disposer
+cannot remove a later replacement with the same boundary id.
+
+## Internal subpath
 
 The `/internal` package subpath is reserved for sibling Plite packages in this
 repo. Applications, extension libraries, and framework adapters outside this
 workspace should use the root `plitejs/dom` export.
 
-## Related Docs
+## Related docs
 
 - [React Editor](./plite-react/react-editor)
 - [Editable Component](./plite-react/editable)

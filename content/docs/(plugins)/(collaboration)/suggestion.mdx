@@ -1,19 +1,20 @@
 ---
 title: Suggestion
+description: Record proposed document edits and review them with application-owned comments.
 docs:
-  - route: https://pro.platejs.org/docs/examples/discussion
-    title: Plus
+  - route: /docs/discussion
+    title: Discussion
+  - route: /docs/comment
+    title: Comments
   - route: /docs/components/suggestion
     title: Suggestion Leaf
   - route: /docs/components/suggestion-toolbar-button
     title: Suggestion Toolbar Button
-  - route: /docs/components/block-discussion
-    title: Block suggestion
-  - route: /docs/components/block-discussion
-    title: Block discussion
 ---
 
 <ComponentPreview name="discussion-demo" />
+
+Suggestions record proposed document edits. They remain document data because accepting or rejecting one mutates editor content; [Comments](/docs/comment) stay outside the document, and [Discussion](/docs/discussion) presents both in one review view.
 
 <PackageInfo>
 
@@ -23,11 +24,11 @@ docs:
 - **Block Suggestions:** Create suggestions for entire blocks of content
 - **State Tracking:** Track suggestion state and user interactions
 - **Undo/Redo Support:** Full undo/redo support for suggestion changes
-- **Discussion Integration:** Works with discussion plugin for complete collaboration
+- **Combined Review:** Accept, reject, and discuss suggestions in the copied Discussion UI
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -38,10 +39,10 @@ The fastest way to add suggestion functionality is with the `SuggestionKit`, whi
 <ComponentSource name="suggestion" />
 
 - [`SuggestionLeaf`](/docs/components/suggestion): Renders suggestion text marks
-- [`BlockSuggestion`](/docs/components/block-discussion): Renders block-level suggestions
+- `VoidRemoveSuggestionOverlay`: Renders removed block suggestions
 - [`SuggestionLineBreak`](/docs/components/suggestion): Handles line breaks in suggestions
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -57,7 +58,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -67,29 +68,26 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Extend Suggestion Plugin
+### Extend suggestion plugin
 
 Create the suggestion plugin with extended configuration for state management:
 
 ```tsx
-import { isEditor, isElement, isString } from 'platejs/dom';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
-import { BlockSuggestion } from '@/components/editor/block-discussion';
-import { SuggestionLeaf } from '@/components/editor/suggestion';
+import {
+  SuggestionLeaf,
+  SuggestionLineBreak,
+  VoidRemoveSuggestionOverlay,
+} from '@/components/editor/suggestion';
 
 export const suggestionPlugin = SuggestionPlugin.configure({
   component: SuggestionLeaf,
   initialState: {
-    currentUserId: 'alice', // Set your current user ID
+    currentUserId: 'alice',
   },
-  render: {
-    belowRootNodes: ({ api, element }) => {
-      if (!api.isBlockSuggestion(element)) {
-        return null;
-      }
-
-      return <BlockSuggestion element={element} />;
-    },
+  slots: {
+    afterNodeChildren: VoidRemoveSuggestionOverlay,
+    wrapNodeChildren: SuggestionLineBreak,
   },
 });
 ```
@@ -98,86 +96,23 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 - `initialState.currentUserId`: ID of the current user creating suggestions
 - `.configure({ component: SuggestionLeaf })`: Renders suggestion text marks with
   [`SuggestionLeaf`](/docs/components/suggestion)
-- `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-discussion) for block-level suggestions
+- `slots.afterNodeChildren`: Renders the remove overlay for block suggestions
+- `slots.wrapNodeChildren`: Renders suggested line breaks
 
-### Add Click Handler
-
-Add click handling to manage active suggestion state:
-
-```tsx
-export const suggestionPlugin = SuggestionPlugin.configure({
-  on: {
-    // Unset active suggestion when clicking outside of suggestion
-    click: ({ api, editor, event, store, type }) => {
-      let leaf = event.target as HTMLElement;
-      let isSet = false;
-
-      const unsetActiveSuggestion = () => {
-        store.set({ activeId: null });
-        isSet = true;
-      };
-
-      if (!isString(leaf)) unsetActiveSuggestion();
-
-      while (
-        leaf.parentElement &&
-        !isElement(leaf.parentElement) &&
-        !isEditor(leaf.parentElement)
-      ) {
-        if (leaf.classList.contains(`plite-${type}`)) {
-          const suggestionEntry = editor
-            .plugin(SuggestionPlugin)
-            .read.node({ isText: true });
-
-          if (!suggestionEntry) {
-            unsetActiveSuggestion();
-            break;
-          }
-
-          const id = api.id(suggestionEntry[0]);
-          store.set({ activeId: id ?? null });
-          isSet = true;
-          break;
-        }
-
-        leaf = leaf.parentElement;
-      }
-
-      if (!isSet) unsetActiveSuggestion();
-    },
-  },
-  // ... previous state and render
-});
-```
-
-The click handler tracks which suggestion is currently active:
-- **Detects suggestion clicks**: Traverses DOM to find suggestion elements
-- **Sets active state**: Updates `activeId` when clicking on suggestions
-- **Clears state**: Unsets `activeId` when clicking outside suggestions
-- **Visual feedback**: Enables hover/active styling in suggestion components
-
-### Add Plugins
+### Add plugins
 
 ```tsx
-import { createEditor, definePlatePlugin } from 'platejs/react';
-import { SuggestionLineBreak } from '@/components/editor/suggestion';
-
-const suggestionLineBreakPlugin = definePlatePlugin('suggestionLineBreak', {
-  render: { belowNodes: SuggestionLineBreak as any },
-});
+import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
     suggestionPlugin,
-    suggestionLineBreakPlugin,
   ],
 });
 ```
 
-- `render.belowNodes`: Renders [`SuggestionLineBreak`](/docs/components/suggestion) below nodes to handle line break suggestions
-
-### Enable Suggestion Mode
+### Enable suggestion mode
 
 Use the plugin's API to control suggestion mode:
 
@@ -202,32 +137,13 @@ function SuggestionToolbar() {
 }
 ```
 
-### Add Toolbar Button
+### Add toolbar button
 
 You can add [`SuggestionToolbarButton`](/docs/components/suggestion-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle suggestion mode in the editor.
 
-### Discussion Integration
-
-The suggestion plugin works with the [discussion plugin](/docs/discussion) for complete collaboration:
-
-```tsx
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    discussionPlugin,
-    suggestionPlugin.configure({
-      initialState: {
-        currentUserId: 'alice',
-      },
-    }),
-    suggestionLineBreakPlugin,
-  ],
-});
-```
-
 </Steps>
 
-## Keyboard Shortcuts
+## Keyboard shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Shift + S">
@@ -235,15 +151,17 @@ const editor = createEditor({
   </KeyTableItem>
 </KeyTable>
 
-## Plate Plus
+## Discussion review
 
-<ComponentPreviewPro name="discussion-pro" />
+The copied Discussion UI reads suggestions from the editor and renders one card per current suggestion. Each card shows the author, timestamp, proposed add/delete/replace/update operation, Accept and Reject actions, and application-owned comment threads attached to that suggestion.
+
+Install the combined view from the [Discussion guide](/docs/discussion). `editor.update.suggestion.accept` and `editor.update.suggestion.reject` remain the only document mutation owners; the Discussion UI only calls those updates and renders their current state.
 
 ## Plugins
 
 ### `SuggestionPlugin`
 
-Plugin for creating and managing text and block suggestions with state tracking and discussion integration.
+Plugin for creating and managing text and block suggestions with state tracking.
 
 <API name="SuggestionPlugin">
 <APIOptions>
@@ -264,12 +182,12 @@ the editor type, plugin state, and schema in the inference path.
 ```tsx
 const { api, read } = editor.plugin(BaseSuggestionPlugin);
 const suggestions = read.nodes();
-const descriptions = read.activeDescriptions();
+const reviews = read.reviews();
 ```
 
 | Method | Description |
 | --- | --- |
-| `read.activeDescriptions()` | Returns the active suggestion descriptions. |
+| `read.reviews()` | Returns current groups with IDs, operation kinds, ranges, and typed changes. |
 | `api.createFragment(fragment, identity)` | Adds explicit insertion suggestion identity to a fragment. |
 | `api.createIdentity(options?)` | Creates a suggestion ID and timestamp. |
 | `api.dataList(node)` | Returns every inline suggestion record on a text node. |
@@ -284,23 +202,35 @@ const descriptions = read.activeDescriptions();
 | `read.nodeEntries(id, options?)` | Finds inline entries for a suggestion ID. |
 | `api.id(node)` | Returns a node's suggestion ID. |
 | `api.skipDeletes(node)` | Returns text without removed suggestions. |
-| `api.suggestionData(node)` | Returns inline or block suggestion data. |
+| `api.suggestionData(node)` | Returns direct suggestion data, with text-child inheritance for inline elements. |
 | `api.untracked(fn)` | Runs synchronous work without recursively creating suggestions. |
 | `api.userId(node)` / `api.userIds(node)` | Returns suggestion author IDs. |
 
+## Review data
+
+`read.reviews()` returns `SuggestionReview` records with `id`, `createdAt` (a
+numeric timestamp), `userId`, `type`, `range`, and `changes`. Each change contains
+its current `node`, `path`, and serialized suggestion `data`. Operation kinds
+include `insert`, `remove`, `replace`, and `update`, including empty suggestions.
+
+React views can read the same groups with `useSuggestionReviews` from
+`platejs/suggestion/react`. The hook refreshes relevant document changes and
+shares the feature's snapshot between readers. Format labels and dates in the
+view. The copied kit keeps its active card ID in its own plugin state.
+
 ## Updates
 
-Suggestion transforms are installed on the editor:
+Accept and reject take a suggestion ID and resolve its current document data:
 
 ```tsx
-editor.update.suggestion.accept(description);
-editor.update.suggestion.reject(description);
+editor.update.suggestion.accept(id);
+editor.update.suggestion.reject(id);
 ```
 
 | Update | Description |
 | --- | --- |
-| `editor.update.suggestion.accept(description)` | Applies a resolved suggestion. |
-| `editor.update.suggestion.reject(description)` | Discards a resolved suggestion. |
+| `editor.update.suggestion.accept(id)` | Applies the proposed change. |
+| `editor.update.suggestion.reject(id)` | Discards the proposed change. |
 | `editor.update.suggestion.addMark(key, value)` | Adds a mark as a suggestion. |
 | `editor.update.suggestion.removeMark(key, previousValue?)` | Removes a mark as a suggestion. |
 | `editor.update.suggestion.delete(at, options?)` | Records a range deletion. |
@@ -310,7 +240,7 @@ editor.update.suggestion.reject(description);
 | `editor.update.suggestion.removeNodes(nodes)` | Records node removals. |
 | `editor.update.suggestion.setNodes(options?)` | Records node property updates. |
 
-## Update Policies
+## Update policies
 
 ### `SuggestionUpdatePolicy.skip`
 

@@ -1,9 +1,17 @@
+// Node contracts do not need the editor's DOM preload. Bun-only CLI flags keep
+// the selected suite on Bun so reporter, watch, and bail behavior stays intact.
+export const TEST_NODE_FILE_PATTERNS = [
+  'tooling/scripts/**/*.test.mjs',
+  'apps/plite/scripts/**/*.test.mjs',
+];
+
 export const TEST_FILE_PATTERNS = [
   'apps/**/*.spec.{ts,tsx}',
-  'apps/**/*.test.mjs',
+  'apps/**/*.test.{ts,tsx,mts,mjs}',
   'benchmarks/editor/benchmarks/*.test.ts',
   'packages/**/*.spec.{ts,tsx}',
   'tooling/scripts/**/*.test.mjs',
+  'tooling/oxlint/**/*.test.mjs',
 ];
 
 export const TEST_SLOW_FILE_PATTERNS = [
@@ -20,8 +28,6 @@ export const TEST_IGNORE_PATTERNS = [
   '**/coverage/**',
   '**/dist/**',
   '**/node_modules/**',
-  'packages/platejs/**',
-  'packages/plitejs/**',
   '**/tests/plite-browser/**',
   '**/tests/browser/**',
   '.next/**',
@@ -30,6 +36,8 @@ export const TEST_IGNORE_PATTERNS = [
 
 export const TEST_FAST_IGNORE_PATTERNS = [
   ...TEST_IGNORE_PATTERNS,
+  'packages/platejs/**',
+  'packages/plitejs/**',
   'tooling/scripts/**/*.slow.test.mjs',
 ];
 

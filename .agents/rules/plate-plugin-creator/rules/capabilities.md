@@ -10,12 +10,13 @@ Let builders and initializers own contextual typing.
   intermediate `.extend()` / `.configure()` result to a private constant when
   every production reference only feeds that one exported chain. Type queries
   do not count as another owner, and the constant's name is irrelevant. Keep
-  inference stages as one fluent export; use a small independent domain or
-  hook-stage contract when final-plugin type derivation would recurse. A
-  package-private domain contract may type internal algorithms, but it keeps
-  configurable schema identity broad, owns only the required structural
-  properties, never becomes a public consumer type, and never replaces the
-  final descriptor-derived AST alias.
+  inference stages as one fluent export. An independent domain or hook-stage
+  contract may break a declaration cycle only when it owns a real domain
+  boundary; it must not duplicate schema fields. Known-owner algorithms derive
+  the final descriptor shape or the smallest `ElementWith` / `TextWith`
+  capability. Malformed or open-world input uses `Element` / `Text` and runtime
+  narrowing. Repair remaining recursion at the generic or declaration boundary;
+  never introduce a package-private structural AST mirror.
 - Never annotate or cast an inferred plugin export to `BasePlugin`,
   `PlatePlugin`, or a definition type.
 - Do not create `PluginConfig` aliases. That parallel generic machine and its
@@ -159,7 +160,7 @@ provided by that callback:
 - `store` instead of `editor.plugin(plugin).store`;
 - `api`, `read`, and `update` instead of rediscovering the current descriptor
   or calling the equivalent current-name root group;
-- `type`, `plugin`, and `installed` instead of resolving the current plugin
+- `schema` (including `schema.type`), `plugin`, and `installed` instead of resolving the current plugin
   again by name or descriptor.
 
 Destructure only the values the callback uses. Keep `editor` for editor-wide
@@ -270,6 +271,8 @@ State and native extension mechanics:
 
 - Give every state-owning production plugin a named `*PluginState`. Export the
   state type when the descriptor is exported.
+- Require a defined default for every top-level state field, following
+  [Best API's state contract](../../../rules/best-api.mdc); use `null` for an empty value.
 - Check owner defaults with `const initialState: FooPluginState = { ... }` or
   an explicit factory return type. Do not derive the public state contract from
   the v1 default object, and do not replace contextual checking with `as` or
@@ -279,7 +282,7 @@ State and native extension mechanics:
   the complete state contract.
 - Read or mutate live values with builder `store` or
   `editor.plugin(FooPlugin).store.get/set/subscribe`.
-- React subscriptions use `usePluginStore` or `useEditorPluginStore`.
+- React subscriptions use `usePluginStore` with an installed typed descriptor.
 - Never add a second top-level `options` or `config` channel for immutable,
   compile-time, parser, codec, schema, or host-policy values.
 - Schema factories receive the configured `initialState` snapshot; parser,
@@ -320,8 +323,10 @@ State and native extension mechanics:
   extract domain inputs. A public context identity helper is leaked compiler
   machinery; fix the owning generic rather than adding a callback annotation,
   cast, `any`, alias, or replacement helper.
-- `defineExtension` imported from `plitejs` authors independently
-  reusable standalone Plite descriptors that compose as dependencies. Do not
+- `defineExtension` authors independently reusable standalone Plite descriptors
+  that compose as dependencies. Plate consumers import it through `platejs`;
+  Plate implementation uses its owning facade leaf, and raw Plite owners use
+  `plitejs`. Do not
   pass Plate plugin context into those factories or copy inline Plate
   contributions through the imported helper.
 
@@ -404,7 +409,7 @@ transitive coincidence is not an installation contract.
   through the root `api` field and let the compiler namespace it by `name`.
   Never add root-merged methods, `getApi`, or `pluginApi`.
 - A scoped portal already owns the plugin noun. Prefer flat, direct verbs such
-  as `table.update.insertTable()` over taxonomy like
+  as `table.update.insert()` over taxonomy like
   `table.update.insert.table()`. Route disputed public spelling to `best-api`.
 - Put capability producers before their consumers. Prefer the constructor for
   the producer. Later `.extend()` callbacks may destructure the accumulated
@@ -443,6 +448,9 @@ transitive coincidence is not an installation contract.
   `.configure({ component })`.
 - Existing Plate descriptors bind or replace the ordinary node component
   through one terminal `.configure({ component })`.
+- `component` may be an intrinsic HTML tag when the default renderer is enough.
+- `render` owns only renderer attributes and mark placement. `slots` owns
+  structural composition around editor surfaces and nodes.
 - Static/base files may import a server-safe component but do not import
   `platejs/react` or any `platejs/*/react` entrypoint.
 - Use `toPlatePlugin()` at the owning React adapter to publish a reusable
@@ -451,7 +459,7 @@ transitive coincidence is not an installation contract.
 - A static/base kit imports the static renderer module, never the feature
   package's live/client plugin or node component.
 - Hard-delete `.withComponent()`.
-- Do not author, document, or preserve direct public `render.node` assignment.
+- Do not author, document, or preserve a second node-component channel.
 - `.configure()` is terminal and non-widening. It changes existing descriptor
   values; it never publishes new typed capabilities.
 - `defineBasePlugin()` / `definePlatePlugin()` own every independent

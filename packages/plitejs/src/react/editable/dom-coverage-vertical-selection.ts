@@ -1,12 +1,12 @@
 import { NodeApi, PathApi, type Point, PointApi, type Range } from '../..';
 import {
   createDOMGeometryKernel,
-  DOMCoverage,
+  type DOMCoverageSession,
   type DOMGeometryPoint,
   type DOMGeometryRect,
 } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import {
   above as editorAbove,
   failInvariant,
@@ -50,24 +50,6 @@ type ResolvedDOMPoint = DOMGeometryPoint;
 
 const VERTICAL_LINE_EDGE_TOLERANCE = 2;
 const LARGE_DOCUMENT_PLAIN_VERTICAL_EXTENSION_THRESHOLD = 1000;
-
-const measurePlainVerticalPhase = <T>(id: string, run: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return run();
-  }
-
-  const startedAt = performance.now();
-
-  try {
-    return run();
-  } finally {
-    recordPliteReactRender({
-      duration: performance.now() - startedAt,
-      id,
-      kind: 'runtime-time',
-    });
-  }
-};
 
 type DOMStrategyRuntimeLike = {
   mountedTopLevelRanges?: ReadonlyArray<{
@@ -420,15 +402,15 @@ const resolveVisualLineTargetPoint = ({
 };
 
 const getUnselectedMaterializeBoundariesForRange = ({
-  editor,
+  coverage,
   range,
   selectedBoundaryIds,
 }: {
-  editor: ReactRuntimeEditor;
+  coverage: DOMCoverageSession | undefined;
   range: Range;
   selectedBoundaryIds: Set<string>;
 }) =>
-  DOMCoverage.getBoundariesForRange(editor, range).filter(
+  (coverage?.getBoundariesForRange(range) ?? []).filter(
     (boundary) =>
       boundary.selectionPolicy === 'materialize' &&
       !selectedBoundaryIds.has(boundary.boundaryId)
@@ -818,7 +800,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
           ? focusBlockIndex === range.startIndex
           : focusBlockIndex === range.endIndex)
     ) ?? false;
-  const leavingRenderedLine = measurePlainVerticalPhase(
+  const leavingRenderedLine = profilePliteReactDuration(
     'plain-vertical.is-leaving-rendered-line',
     () =>
       isLeavingRenderedLine({
@@ -830,7 +812,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
   const preferredXPoint = PointApi.equals(selection.anchor, selection.focus)
     ? null
     : selection.anchor;
-  const visualTarget = measurePlainVerticalPhase(
+  const visualTarget = profilePliteReactDuration(
     'plain-vertical.resolve-visual-target',
     () =>
       resolveVisualLineTargetPoint({
@@ -861,7 +843,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
   }
 
   const adjacentVisualTarget = leavingRenderedLine
-    ? measurePlainVerticalPhase(
+    ? profilePliteReactDuration(
         'plain-vertical.resolve-adjacent-visual-target',
         () =>
           resolveAdjacentBlockVisualLineTargetPoint({
@@ -919,7 +901,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     }
   }
 
-  const modelLineTarget = measurePlainVerticalPhase(
+  const modelLineTarget = profilePliteReactDuration(
     'plain-vertical.resolve-model-line-target',
     () =>
       reverse
@@ -1005,10 +987,12 @@ export const getPlainVerticalLargeDocumentExtension = ({
 };
 
 export const getPlainVerticalDOMCoverageExtension = ({
+  coverage,
   editor,
   event,
   selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
+  coverage: DOMCoverageSession | undefined;
   editor: ReactRuntimeEditor;
   event: VerticalExtensionEvent;
   selection?: Range | null;
@@ -1028,7 +1012,7 @@ export const getPlainVerticalDOMCoverageExtension = ({
   }
 
   const selectedBoundaryIds = new Set(
-    DOMCoverage.getBoundariesForRange(editor, selection).map(
+    (coverage?.getBoundariesForRange(selection) ?? []).map(
       (boundary) => boundary.boundaryId
     )
   );
@@ -1039,7 +1023,7 @@ export const getPlainVerticalDOMCoverageExtension = ({
 
   if (
     getUnselectedMaterializeBoundariesForRange({
-      editor,
+      coverage,
       range: focusMovementRange,
       selectedBoundaryIds,
     }).length > 0
@@ -1068,7 +1052,7 @@ export const getPlainVerticalDOMCoverageExtension = ({
   };
 
   return getUnselectedMaterializeBoundariesForRange({
-    editor,
+    coverage,
     range: boundaryMovementRange,
     selectedBoundaryIds,
   }).length > 0
@@ -1077,15 +1061,18 @@ export const getPlainVerticalDOMCoverageExtension = ({
 };
 
 export const shouldModelOwnPlainVerticalDOMCoverageExtension = ({
+  coverage,
   editor,
   event,
   selection,
 }: {
+  coverage: DOMCoverageSession | undefined;
   editor: ReactRuntimeEditor;
   event: VerticalExtensionEvent;
   selection?: Range | null;
 }) =>
   getPlainVerticalDOMCoverageExtension({
+    coverage,
     editor,
     event,
     selection,

@@ -7,7 +7,7 @@ The Plate editor exposes two main method surfaces: `editor.api` for reads and
 services, and `editor.update` for commands that change editor state. In React,
 pick the editor hook by how often the component should re-render.
 
-## Access the Editor
+## Access the editor
 
 | Need | Use |
 | --- | --- |
@@ -146,7 +146,7 @@ editor.update((tx) => {
 | `editor.api` | `dom.focus` and plugin-owned service groups | DOM/runtime services and non-mutating feature APIs. |
 | `editor.update` | `tx.nodes.insert`, `tx.nodes.set`, `tx.marks.toggle`, `tx.selection.set` | Mutating document or editor state. |
 
-## Plugin Methods
+## Plugin methods
 
 Pass a plugin descriptor to `editor.plugin(plugin)` to open its typed portal.
 The portal exposes resolved descriptor fields and owns that plugin's scoped
@@ -171,7 +171,7 @@ family-agnostic slots that accept whichever installed descriptor owns the
 name. Check `.installed` before any other field when the named plugin is
 optional; other fields throw when the plugin is absent.
 
-## Plugin Store
+## Plugin store
 
 Use the scoped store when imperative code needs to read or write editor-local
 plugin state. Use `usePluginStore` when React UI needs to re-render from that
@@ -220,7 +220,7 @@ editor.plugin(PanelPlugin).store.set((draft) => {
 | `editor.plugin(plugin).store.set(partial)` | Merge state fields. |
 | `editor.plugin(plugin).store.set(updater)` | Mutate state through a draft updater. |
 
-## Next Steps
+## Next steps
 
 | Task | Guide |
 | --- | --- |

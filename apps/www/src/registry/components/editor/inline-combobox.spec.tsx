@@ -1,40 +1,30 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from 'bun:test';
 
-import { fireEvent, render } from '@testing-library/react';
-import type { EditorUpdateTransaction, Point } from 'platejs';
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { createEditor, type Element } from 'platejs';
+import { BaseComboboxPlugin } from 'platejs/combobox';
+import { BaseMentionPlugin } from 'platejs/mention';
 import * as React from 'react';
 
-const pointAnchorReleaseMock = mock();
-const insertTextMock = mock();
-const removeNodeMock = mock();
 const useEditorMock = mock();
-const useElementMock = mock();
-const useElementSelectedMock = mock();
-const usePathMock = mock();
+const focusMock = mock();
 let comboboxValue = '';
-
+const items: never[] = [];
 const store = {
   first: () => null,
   getState: () => ({ activeId: null }),
   last: () => null,
   setActiveId: mock(),
-  useState: (key: string) => {
-    if (key === 'items') return [];
-    if (key === 'value') return comboboxValue;
-
-    return null;
-  },
 };
 
-let pointAnchorValue: Point | null;
-let pointAnchor: {
-  release: typeof pointAnchorReleaseMock;
-  resolve: () => Point | null;
-};
-const comboboxElement = {
-  children: [{ text: '' }],
-  type: 'mentionInput',
-};
 mock.module('@ariakit/react', () => ({
   Combobox: ({ autoSelect: _autoSelect, ...props }: any) => (
     <input {...props} readOnly />
@@ -48,165 +38,210 @@ mock.module('@ariakit/react', () => ({
   ),
   ComboboxPopover: ({ children }: any) => <div>{children}</div>,
   ComboboxProvider: ({ children }: any) => <>{children}</>,
-  ComboboxRow: ({ children }: any) => <div>{children}</div>,
   Portal: ({ children }: any) => <>{children}</>,
   useComboboxContext: () => store,
   useComboboxStore: () => store,
-  useStoreState: (_store: typeof store, key: string) => {
-    if (key === 'items') return [];
-    if (key === 'value') return comboboxValue;
-
-    return null;
-  },
+  useStoreState: (_store: typeof store, key: string) =>
+    key === 'items' ? items : key === 'value' ? comboboxValue : null,
 }));
-
-mock.module('platejs', () => ({
-  filterWords: () => true,
-  Hotkeys: {
-    isRedo: () => false,
-    isUndo: () => false,
-  },
-  isHotkey: (hotkey: string) => (event: KeyboardEvent) =>
-    event.key.toLowerCase() === hotkey.toLowerCase(),
-}));
-
-mock.module('class-variance-authority', () => ({
-  cva: () => () => '',
-}));
-
 mock.module('platejs/react', () => ({
   useComposedRef:
     (...refs: any[]) =>
-    (value: any) => {
+    (value: any) =>
       refs.forEach((ref) => {
         if (!ref) return;
-        if (typeof ref === 'function') {
-          ref(value);
-          return;
-        }
-        ref.current = value;
-      });
-    },
+        if (typeof ref === 'function') ref(value);
+        else ref.current = value;
+      }),
   useEditor: useEditorMock,
-  useElement: useElementMock,
-  useElementSelected: useElementSelectedMock,
-  usePath: usePathMock,
+  useElementSelected: () => true,
 }));
+const { InlineCombobox, InlineComboboxInput, InlineComboboxItem } =
+  await import('./inline-combobox');
 
-mock.module('@/lib/utils', () => ({
-  cn: (...values: Array<string | false | null | undefined>) =>
-    values.filter(Boolean).join(' '),
-}));
+const setup = () => {
+  const editor = createEditor({
+    plugins: [BaseMentionPlugin],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Elsewhere' }] },
+      { type: 'paragraph', children: [{ text: 'Before ' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 7 },
+      focus: { path: [1, 0], offset: 7 },
+    },
+  });
+  editor.update.text.insert('@');
+  const element = editor.read.children()[1].children[1] as Element;
+  useEditorMock.mockReturnValue({
+    ...editor,
+    api: { ...editor.api, dom: { ...editor.api.dom, focus: focusMock } },
+  });
+  return { editor, element };
+};
 
 describe('InlineCombobox', () => {
   beforeEach(() => {
     comboboxValue = '';
-    insertTextMock.mockReset();
-    pointAnchorReleaseMock.mockReset();
-    removeNodeMock.mockReset();
+    focusMock.mockReset();
     useEditorMock.mockReset();
-    useElementMock.mockReset();
-    useElementSelectedMock.mockReset();
-    usePathMock.mockReset();
-    store.setActiveId.mockReset();
-
-    pointAnchorValue = { offset: 1, path: [0, 0] };
-    pointAnchor = {
-      release: pointAnchorReleaseMock,
-      resolve: () => pointAnchorValue,
-    };
-
-    usePathMock.mockReturnValue([0]);
-    useElementSelectedMock.mockReturnValue(true);
-    const update = (callback: (tx: EditorUpdateTransaction) => void) => {
-      callback({
-        selection: { move: mock() },
-        text: { insert: insertTextMock },
-      } as unknown as EditorUpdateTransaction);
-    };
-
-    Object.assign(update, {
-      history: { redo: mock(), undo: mock() },
-      nodes: { remove: removeNodeMock },
-    });
-    useElementMock.mockReturnValue(comboboxElement);
-    useEditorMock.mockReturnValue({
-      anchor: () => pointAnchor,
-      api: { dom: { focus: mock() } },
-      read: {
-        history: { redos: () => [], undos: () => [] },
-        points: {
-          before: () => ({ offset: 1, path: [0, 0] }),
-        },
-      },
-      runtime: {},
-      update,
-    });
   });
+  afterEach(cleanup);
+  afterAll(() => mock.restore());
 
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('uses the live point anchor value when canceling input', async () => {
-    const { InlineCombobox, InlineComboboxInput } = await import(
-      `./inline-combobox?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    const view = render(
-      <InlineCombobox element={comboboxElement} trigger="@">
-        <InlineComboboxInput aria-label="combobox input" />
-      </InlineCombobox>
-    );
-
-    pointAnchorValue = { offset: 4, path: [0, 2] };
-    fireEvent.blur(view.getByLabelText('combobox input'));
-
-    expect(removeNodeMock).toHaveBeenCalledWith({ at: comboboxElement });
-    expect(insertTextMock).toHaveBeenCalledWith('@', {
-      at: { offset: 4, path: [0, 2] },
-    });
-  });
-
-  it('does not cancel again through blur after keyboard removal', async () => {
-    const { InlineCombobox, InlineComboboxInput } = await import(
-      `./inline-combobox?test=${Math.random().toString(36).slice(2)}`
-    );
-    const view = render(
-      <InlineCombobox element={comboboxElement} trigger="@">
-        <InlineComboboxInput aria-label="combobox input" />
-      </InlineCombobox>
-    );
-    const input = view.getByLabelText('combobox input');
-    const event = new KeyboardEvent('keydown', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Backspace',
-    });
-
-    input.dispatchEvent(event);
-    fireEvent.blur(input);
-
-    expect(event.defaultPrevented).toBe(true);
-    expect(removeNodeMock).toHaveBeenCalledTimes(1);
-    expect(insertTextMock).not.toHaveBeenCalled();
-  });
-
-  it('keeps selected query text editable at input boundaries', async () => {
+  it('restores the native input value at its moved location after blur', () => {
     comboboxValue = 'query';
-    const { InlineCombobox, InlineComboboxInput } = await import(
-      `./inline-combobox?test=${Math.random().toString(36).slice(2)}`
-    );
+    const { editor, element } = setup();
     const view = render(
-      <InlineCombobox element={comboboxElement} trigger="@">
-        <InlineComboboxInput aria-label="combobox input" />
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
       </InlineCombobox>
     );
-    const input = view.getByLabelText('combobox input') as HTMLInputElement;
+    editor.update.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'Leading' }] },
+      { at: [0] }
+    );
+    fireEvent.blur(view.getByLabelText('query'));
+    expect(editor.read.text.string([2])).toBe('Before @query');
+    expect(focusMock).not.toHaveBeenCalled();
+  });
 
+  it('does not cancel again through blur after keyboard removal', () => {
+    const { editor, element } = setup();
+    const view = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+      </InlineCombobox>
+    );
+    const input = view.getByLabelText('query');
+    const { version } = editor.read.lastCommit()!;
+    expect(fireEvent.keyDown(input, { key: 'Backspace', keyCode: 8 })).toBe(
+      false
+    );
+    fireEvent.blur(input);
+    expect(editor.read.lastCommit()!.version - version).toBe(1);
+    expect(editor.read.text.string([1])).toBe('Before ');
+    expect(focusMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps selected query text editable at input boundaries', () => {
+    comboboxValue = 'query';
+    const { editor, element } = setup();
+    const view = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+      </InlineCombobox>
+    );
+    const input = view.getByLabelText('query') as HTMLInputElement;
     input.setSelectionRange(0, comboboxValue.length);
+    expect(fireEvent.keyDown(input, { key: 'Backspace', keyCode: 8 })).toBe(
+      true
+    );
+    expect(
+      editor.plugin(BaseComboboxPlugin).read.canEdit(editor.key(element))
+    ).toBe(true);
+  });
 
-    expect(fireEvent.keyDown(input, { key: 'Backspace' })).toBe(true);
-    expect(removeNodeMock).not.toHaveBeenCalled();
+  it.each(['Escape', 'ArrowLeft', 'Backspace'])(
+    'leaves %s to an active composition',
+    (key) => {
+      const { editor, element } = setup();
+      const before = editor.read.children();
+      const view = render(
+        <InlineCombobox element={element} trigger="@">
+          <InlineComboboxInput aria-label="query" />
+        </InlineCombobox>
+      );
+      expect(
+        fireEvent.keyDown(view.getByLabelText('query'), {
+          key,
+          keyCode: key === 'Escape' ? 27 : key === 'ArrowLeft' ? 37 : 8,
+          isComposing: true,
+        })
+      ).toBe(true);
+      expect(editor.read.children()).toEqual(before);
+      expect(focusMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it('commits the selected feature before running its DOM callback', () => {
+    const { editor, element } = setup();
+    const before = editor.read.children();
+    const onClick = mock(() =>
+      expect(editor.read.children()[1].children[1]).toMatchObject({
+        ref: 'alice',
+        type: 'mention',
+      })
+    );
+    const view = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+        <InlineComboboxItem
+          value="Alice"
+          onSelect={(tx) =>
+            tx.plugin(BaseMentionPlugin).insert({ ref: 'alice' })
+          }
+          onClick={onClick}
+        >
+          Alice
+        </InlineComboboxItem>
+      </InlineCombobox>
+    );
+    const { version } = editor.read.lastCommit()!;
+    fireEvent.click(view.getByRole('button', { name: 'Alice' }));
+    expect(editor.read.lastCommit()!.version - version).toBe(1);
+    expect(onClick).toHaveBeenCalledTimes(1);
+    editor.update.history.undo();
+    expect(editor.read.children()).toEqual(before);
+  });
+
+  it('disables foreign inputs and rejects their item callbacks', () => {
+    const { editor, element } = setup();
+    editor.update.nodes.set({ userId: 'owner' }, { at: element });
+    editor.runtime.userId = 'other';
+    const before = editor.read.children();
+    const onClick = mock();
+    const onSelect = mock();
+    const view = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+        <InlineComboboxItem value="Alice" onSelect={onSelect} onClick={onClick}>
+          Alice
+        </InlineComboboxItem>
+      </InlineCombobox>
+    );
+    expect((view.getByLabelText('query') as HTMLInputElement).disabled).toBe(
+      true
+    );
+    fireEvent.click(view.getByRole('button', { name: 'Alice' }));
+    fireEvent.blur(view.getByLabelText('query'));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+    expect(editor.read.children()).toEqual(before);
+  });
+
+  it('can remount an existing input without losing its live document identity', () => {
+    const { editor, element } = setup();
+    const first = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+      </InlineCombobox>
+    );
+    first.unmount();
+    editor.update.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'Leading' }] },
+      { at: [0] }
+    );
+    const second = render(
+      <InlineCombobox element={element} trigger="@">
+        <InlineComboboxInput aria-label="query" />
+      </InlineCombobox>
+    );
+    fireEvent.keyDown(second.getByLabelText('query'), {
+      key: 'Escape',
+      keyCode: 27,
+    });
+    expect(editor.read.text.string([2])).toBe('Before @');
   });
 });

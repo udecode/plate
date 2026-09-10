@@ -1,11 +1,10 @@
-import React from 'react';
-
-import type { Element, NodeEntry } from '../../../facade';
+import type { Element } from '../../../facade';
 import type {
   PlateElementDescriptor,
   PlateElementForDescriptor,
 } from './useElement';
 import { useElementStoreContext } from './useElementStore';
+import { useElementStoreSelector } from './useElementStoreSelector.internal';
 
 type UseElementSelectorOptions<T> = {
   equalityFn?: (a: T, b: T) => boolean;
@@ -13,17 +12,16 @@ type UseElementSelectorOptions<T> = {
   scope?: string;
 };
 
-type ElementSelector<N extends Element, T> = (
-  state: NodeEntry<N>,
-  prev?: T
-) => T;
+type ElementSelector<N extends Element, T> = (state: N, prev?: T) => T;
 
 const strictEqual = <T>(a: T, b: T) => a === b;
 
+/** Derive a value from the nearest element payload, skipping path-only updates. */
 export function useElementSelector<T>(
   selector: ElementSelector<Element, T>,
   options?: UseElementSelectorOptions<T>
 ): T;
+/** Derive a value from the plugin's scoped element with exact schema inference. */
 export function useElementSelector<
   const TPlugin extends PlateElementDescriptor,
   T,
@@ -51,66 +49,5 @@ export function useElementSelector<T>(
   ) as UseElementSelectorOptions<T> | undefined;
   const equalityFn = options?.equalityFn ?? strictEqual<T>;
   const context = useElementStoreContext(plugin?.name ?? options?.scope);
-  const cacheRef = React.useRef<{
-    entry: NodeEntry<any> | null;
-    hasValue: boolean;
-    runtime:
-      | NonNullable<ReturnType<typeof useElementStoreContext>>['runtime']
-      | null;
-    selector: (<N extends Element>(state: NodeEntry<N>, prev?: T) => T) | null;
-    value: T | undefined;
-  }>({
-    entry: null,
-    hasValue: false,
-    runtime: null,
-    selector: null,
-    value: undefined,
-  });
-  const subscribe = React.useCallback(
-    (onStoreChange: () => void) =>
-      context?.runtime.subscribe(onStoreChange) ?? (() => {}),
-    [context]
-  );
-  const getSnapshot = React.useCallback(() => {
-    const runtime = context?.runtime ?? null;
-    const cache = cacheRef.current;
-
-    if (cache.runtime !== runtime || cache.selector !== selector) {
-      cache.entry = null;
-      cache.hasValue = false;
-      cache.runtime = runtime;
-      cache.selector = selector;
-      cache.value = undefined;
-    }
-
-    const entry = runtime?.getState().entry ?? null;
-
-    if (cache.entry === entry && cache.hasValue) {
-      return cache.value as T;
-    }
-
-    if (!entry) {
-      cache.entry = null;
-      cache.hasValue = false;
-      cache.value = undefined;
-
-      return undefined as T;
-    }
-
-    const nextValue = selector(entry, cache.hasValue ? cache.value : undefined);
-
-    if (cache.hasValue && equalityFn(cache.value as T, nextValue)) {
-      cache.entry = entry;
-
-      return cache.value as T;
-    }
-
-    cache.entry = entry;
-    cache.hasValue = true;
-    cache.value = nextValue;
-
-    return nextValue;
-  }, [context, equalityFn, selector]);
-
-  return React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return useElementStoreSelector(context, 'element', selector, equalityFn) as T;
 }

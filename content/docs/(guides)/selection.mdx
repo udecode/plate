@@ -17,7 +17,7 @@ its presentation from that state.
 | Exact node-selection highlighting and pointer-drag input | `NodeSelectionHighlight` and `NodeSelectionDrag` from `platejs/react` |
 | Focus markers, colors, borders, and stacking | Copied registry UI |
 
-## Quick Start
+## Quick start
 
 `editor.read.selection()` returns the active representative `Range` or `null`.
 For an exact node selection, use `selection.nodes()` or `selection.ranges()`
@@ -49,7 +49,7 @@ Use [Editor Methods](/docs/editor-methods) for editor access inside React and
 [Selection API](/docs/plite/api/locations/selection) for the complete query and
 validation contracts.
 
-## Focus and Native Selection
+## Focus and native selection
 
 Updating the model selection does not require direct DOM selection writes. When
 an action should return input to the editor, set the selection and focus the
@@ -65,7 +65,7 @@ selection. The mounted editor imports those changes into the model and exports
 model updates back to the DOM. Application code should not patch
 `window.getSelection()` for normal editor behavior.
 
-## Inactive Selection
+## Inactive selection
 
 <ComponentPreview name="inactive-selection-demo" />
 
@@ -73,7 +73,7 @@ Plite `Editable` renders an inactive selection when focus moves to a marked
 control. The behavior is built in; it does not require a prop, plugin, kit, or
 copied selection state.
 
-### Mark a Focus Target
+### Mark a focus target
 
 Add `data-plite-keep-selection-visible` to a focusable control or any composed
 ancestor:
@@ -89,7 +89,7 @@ expanded range renders a highlight. A collapsed range renders a caret. Focus
 returning to the editor or moving to an unmarked target removes the inactive
 paint.
 
-### Style the Paint
+### Style the paint
 
 Plite publishes neutral output hooks. Product CSS owns their appearance:
 
@@ -106,7 +106,7 @@ Plite publishes neutral output hooks. Product CSS owns their appearance:
 
 The copied `Editor` registry component already styles both hooks.
 
-### Focus Behavior
+### Focus behavior
 
 | Focus target | Inactive paint |
 | --- | --- |
@@ -118,7 +118,7 @@ The copied `Editor` registry component already styles both hooks.
 The marker controls presentation only. It does not modify the document,
 selection, history, clipboard, or collaboration state.
 
-## Node Selection Rendering
+## Node selection rendering
 
 Exact node selection is model state, not a native browser range. The copied
 `Editor` composes `NodeSelectionHighlight` and `NodeSelectionDrag` after
@@ -129,7 +129,7 @@ for the DOM contract and the [Node Selection demo](/docs/examples/node-selection
 for the copied Editor composition. Feature UI such as Block Menu reads the same
 exact node membership instead of maintaining another selected-node store.
 
-## Related Selection Features
+## Related selection features
 
 Keep feature-specific behavior with the feature that owns it:
 

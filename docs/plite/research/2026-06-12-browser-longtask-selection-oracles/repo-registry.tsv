@@ -1,0 +1,4 @@
+repo	local_path	kind	status	notes
+official-browser-docs	n/a	web-docs	read	Long Tasks API is browser-observer evidence, not proof that Slate owned the task.
+facebook/lexical	/Users/zbeyens/git/lexical	editor	read	Useful for selectionchange/native-selection/drag oracle patterns.
+ProseMirror/prosemirror-view	/Users/zbeyens/git/prosemirror-view	editor	read	Useful for selection-to-DOM, DOMObserver selectionchange, and drag selection browser caveats.

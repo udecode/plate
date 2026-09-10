@@ -5,7 +5,7 @@ description: "Why Plate maintains a Plite, what it optimizes for, and where the 
 
 Plite is an agent-first editor substrate, not an official upstream Slate release. It keeps a plain JSON document model and rebuilds the runtime around canonical changes, explicit reads and writes, typed transactions, multi-root documents, state fields, and browser proof. This page explains the bet, the runtime shape, the package split, and the current proof limits.
 
-## On This Page
+## On this page
 
 - [The Main Fork](#the-main-fork)
 - [Why Not Stay Closer To Upstream Slate?](#why-not-stay-closer-to-upstream-slate)
@@ -22,7 +22,7 @@ Plite is an agent-first editor substrate, not an official upstream Slate release
 - [Complete Change Map](#complete-change-map)
 - [Read Next](#read-next)
 
-## The Main Fork
+## The main fork
 
 The first fork is the maintenance model.
 
@@ -38,7 +38,7 @@ This fork is built for the opposite shape:
 
 That is the real fork. The code matters, but the maintenance philosophy matters more.
 
-## Why Not Stay Closer To Upstream Slate?
+## Why not stay closer to upstream Slate?
 
 The first attempted design was conservative: keep upstream Slate core intact, rewrite `plite-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document meta, overlays, and React performance from React alone.
 
@@ -52,14 +52,14 @@ If `plite-react` tried to own those anyway, it would become a hidden second runt
 | `Cmd+A` then Delete | The editor needs one transaction that owns model deletion, selection collapse, history grouping, canonical change output, DOM repair, and follow-up typing. Splitting that across core mutation plus React cleanup makes the proof lie. |
 | Extra editable regions | Headers, footers, sidebars, and body content need to serialize as one document value. If roots live only in React, normalization, history, collaboration, and persistence all get side channels. |
 | Document metadata | Values like `document.title` must travel with the document model. Keeping them as app-only React state makes save/load, undo policy, collaboration patches, and tests disagree. |
-| Overlays and comments | Decorations, annotations, and widgets share projection machinery, but they do not share ownership semantics. Treating them as React leaf hacks makes durable comments and transient search hits look the same. |
+| Overlays and comments | Decorations, annotations, and widgets use the same stable node identities and change facts, but keep separate owners. Treating them as React leaf hacks makes durable comments and transient search hits look the same. |
 | Browser proof | A model-only assertion can pass while the caret is wrong. A DOM-only assertion can pass while Plite state is wrong. The proof harness needs one commit that model, DOM, native selection, focus, replay, and follow-up typing can all inspect. |
 
 The fork keeps the useful core model: JSON nodes, paths, points, ranges, and app-owned schema. It makes `DocumentChange` the only mutation, mapping, history, and replay truth. The runtime uses `editor.read(...)`, `editor.update(...)`, transaction groups, commits, and state fields so React can subscribe through lazy `commit.changed` queries instead of guessing from broad tree changes.
 
 The influence is narrow. Lexical is the reference for explicit read/update discipline and dirty reconciliation. ProseMirror is the reference for transaction authority and DOM-selection import/export. The document layer stays Plite-shaped, which is the point: keep the flexible JSON model, replace the runtime shape that made React and browser proof fight the core.
 
-## Who It Is For
+## Who it is for
 
 Use this fork when you want the editor runtime maintained like infrastructure.
 
@@ -72,7 +72,7 @@ Use this fork when you want the editor runtime maintained like infrastructure.
 
 This is not a nicer wrapper around Slate 0.x. It is a stricter runtime for teams that prefer proof and maintainability over compatibility comfort.
 
-## What Stays From Slate
+## What stays from Slate
 
 The fork keeps the parts of Plite that make the model worth preserving:
 
@@ -84,7 +84,7 @@ The fork keeps the parts of Plite that make the model worth preserving:
 
 Those choices are still good. The fork changes the runtime around them.
 
-## Runtime Shape
+## Runtime shape
 
 The public authoring model has two boundaries:
 
@@ -116,7 +116,7 @@ Each committed edit owns one `DocumentChange`. Commands, tags, effects, and
 annotations describe why an update ran without becoming a second document
 truth.
 
-## Document Shape
+## Document shape
 
 The short value is still an array of blocks:
 
@@ -144,7 +144,7 @@ const initialValue = {
 
 Omit `root` for the primary editable. Root keys are for extra document regions.
 
-## Extension Model
+## Extension model
 
 Extensions add named read and update groups. They do not replace the canonical
 change builder or patch random methods onto the editor object.
@@ -163,7 +163,7 @@ const TodoExtension = defineExtension("todo", {
 
 This keeps method-style ergonomics while making ownership visible. App commands live in the runtime instead of in ad hoc editor mutation helpers.
 
-## React Runtime
+## React runtime
 
 React editors start with `useEditor`, `<Plite>`, and `<Editable>`.
 
@@ -195,7 +195,7 @@ React rendering is selector-first. App chrome should subscribe to the editor fac
 | Extra roots                 | `plitejs` plus root-aware React hooks                                     |
 | Large-document proof lanes  | `plitejs/react`, `plitejs/dom`, `@platejs/test`, and benchmarks |
 
-## Overlay Model
+## Overlay model
 
 The fork treats overlays as separate lanes.
 
@@ -205,11 +205,13 @@ The fork treats overlays as separate lanes.
 | Annotations | durable, id-bearing anchors such as comments, review threads, and remote markers |
 | Widgets     | anchored UI such as labels, buttons, balloons, and diagnostics popovers          |
 
-A comment is not just a decoration with more props. A widget is not a text leaf. Those lanes can share projection infrastructure, but they do not share ownership semantics.
+A comment is not just a decoration with more props. A widget is not a text leaf. Those lanes share stable identities and change facts, but not ownership or storage.
 
-Use `<Editable decorate={...} />` for simple editor-local ranges. Use the Plite React decoration-source and annotation-store hooks when ranges are shared, external, frequent, durable, or source-scoped.
+Pass transient paint sources to `<Plite decorations={...}>`. Each source reads
+attribute-only ranges and may observe its own store. Keep durable anchors in an
+annotation store and provide it with `<PliteAnnotationProvider>`.
 
-## Browser Proof
+## Browser proof
 
 Model tests are not enough for editor behavior. DOM checks are not enough either.
 
@@ -227,7 +229,7 @@ For cursor, selection, paste, undo, hidden DOM, large documents, and collaborati
 
 That is why `@platejs/test` exists. It is not the product editing API. It is the proof harness used to keep the editor honest.
 
-## Package Ownership
+## Package ownership
 
 The packages are split by responsibility.
 
@@ -238,13 +240,13 @@ The packages are split by responsibility.
 | `plitejs/react`       | React editor setup, `<Plite>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
 | `plitejs/history`     | history extension and undo/redo runtime                                                                      |
 | `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
-| `platejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
+| `plitejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
 | `plitejs/pagination`      | page layout and page-view proof work                                                                         |
 | `@platejs/test`           | Node-safe fixtures plus React, DOM, Playwright, and proof helpers behind explicit subpaths                   |
 
 Apps should import public package exports. `/internal` subpaths are for sibling packages in this repo.
 
-## Current Boundaries
+## Current boundaries
 
 This fork is intentionally narrow about what it claims.
 
@@ -253,12 +255,12 @@ This fork is intentionally narrow about what it claims.
 | Desktop browser editing    | In scope when covered by browser proof.                                                                         |
 | Raw mobile device behavior | Not claimed without real device proof artifacts.                                                                |
 | Pagination and page layout | Useful proof lane, not a mature production promise for every browser geometry and export case.                  |
-| Collaboration              | `platejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
+| Collaboration              | `plitejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
 | Upstream identity          | This is Plite, not an official upstream Slate release.                                             |
 
 The line is simple: if the proof lane does not own it, the docs should not pretend it is done.
 
-## Complete Change Map
+## Complete change map
 
 This table is intentionally exhaustive. It gives humans and agents one place to route deeper reading.
 
@@ -275,7 +277,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration/annotation/widget hooks                                                                                                                                                                                          |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
-| Overlays           | decorations, annotations, widgets, projection stores, source-scoped invalidation                                                                                                                                                                                                              |
+| Overlays           | decoration manager, annotation stores, widget stores, source-scoped invalidation                                                                                                                                                                                                                |
 | Large documents    | active editing corridor, staged DOM coverage, virtualized rendering proof, huge-document smoke lanes                                                                                                                                                                                          |
 | History            | `history()` extension, `state.history`, `tx.history`, semantic `editor.update({ history })` policies, direct undo/redo, history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
@@ -285,7 +287,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
 | Hard cuts          | rootless primary APIs, explicit reads/writes, transaction groups, no public compatibility aliases, no primary mutable editor-field authoring story                                                                                                                                            |
 
-## Read Next
+## Read next
 
 - [Installing Plite](walkthroughs/01-installing-plite)
 - [Migration](migration)

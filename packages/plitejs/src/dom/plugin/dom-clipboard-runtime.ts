@@ -28,8 +28,9 @@ import {
   isDOMElement,
   isDOMText,
 } from '../utils/dom';
-import { DOMCoverage } from './dom-coverage';
+import type { DOMCoverageSession } from './dom-coverage';
 import { DOMEditor } from './dom-editor';
+import { findEditorDOMRootRuntime } from './dom-root-runtime';
 import { insertHostData, writeHostFragmentData } from './host-codec';
 
 const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-plite-fragment\s*=/i;
@@ -419,7 +420,10 @@ export const writeDOMRangeData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
   range: NodeSelection | Range,
-  options: Readonly<{ slice?: ContentSliceValue<V> }> = {}
+  options: Readonly<{
+    coverage?: DOMCoverageSession;
+    slice?: ContentSliceValue<V>;
+  }> = {}
 ) => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);
 
@@ -442,13 +446,14 @@ export const writeDOMRangeData = <V extends Value>(
     return undefined;
   }
 
-  let coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, range);
+  const coverage =
+    options.coverage ?? findEditorDOMRootRuntime(editor)?.domCoverage;
+  let coveredBoundaries = coverage?.getBoundariesForRange(range) ?? [];
   const materializedBoundaryIds = new Set<string>();
 
   for (const boundary of coveredBoundaries) {
     if (boundary.copyPolicy === 'materialize') {
-      const result = DOMCoverage.materializeBoundary(
-        editor,
+      const result = coverage?.materializeBoundary(
         boundary.boundaryId,
         'copy',
         {
@@ -456,14 +461,14 @@ export const writeDOMRangeData = <V extends Value>(
         }
       );
 
-      if (result.status === 'handled') {
+      if (result?.status === 'handled') {
         materializedBoundaryIds.add(boundary.boundaryId);
       }
     }
   }
 
   if (materializedBoundaryIds.size > 0) {
-    coveredBoundaries = DOMCoverage.getBoundariesForRange(editor, range);
+    coveredBoundaries = coverage?.getBoundariesForRange(range) ?? [];
   }
 
   const hasPolicyBoundaries = coveredBoundaries.length > 0;

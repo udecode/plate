@@ -6,6 +6,9 @@ disable-model-invocation: true
 
 # ClawSweeper
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Use this skill for Slate issue-ledger provenance and claim hygiene: issue
 clusters, duplicate/stale/invalid decisions, exact claim levels, fork dossier
 accounting, issue coverage matrix sync, PR-body issue claim sync, and evidence
@@ -117,7 +120,8 @@ with exact claims, counts, proof references, and non-claims.
 
 ## Goal Contract
 
-Use `autogoal` for non-trivial ClawSweeper runs.
+Use one Task plan for non-trivial ClawSweeper runs. The template below creates
+a planning file; apply the project's standing Autogoal request for long-running work.
 
 Goal handle shape:
 
@@ -531,7 +535,7 @@ noise, ecosystem work, already-covered duplicates, or anything paired with an
 open fix PR.
 
 For automatic-looking bug fixes, hand off one public Slate issue to
-`resolve-slate-issue` and any other public issue to `maintainer` instead of
+`maintainer slate-issue` and any other public issue to `maintainer` instead of
 patching from ClawSweeper. Only that coordinator may delegate a normalized
 local repair packet to `patch`. Keep the bar stricter: exact current repro,
 high confidence, no new feature/config option, no product decision, narrow
@@ -560,8 +564,10 @@ Prove the touched surface first:
 4. Broaden only when the claim contract demands it.
 
 For `Plate repo root`, prefer focused package tests, focused Playwright greps, and
-package typecheck before broad gates. Use `bun check:full` only when the issue
-claim needs release-quality browser coverage.
+package typecheck before broad gates. Use `pnpm check:plite` for the strict
+Plite handoff lane and `pnpm check:plite:browser-matrix` only when the issue
+claim requires the closure browser matrix. Preserve any required real-device
+proof separately.
 
 For browser, DOM selection, IME/composition, clipboard, mobile, or visual
 behavior, unit tests are supplemental only. Use real behavior proof when the

@@ -10,29 +10,31 @@ metadata:
 
 # Sync Vision
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 `VISION.md` and `docs/vision/*.md` are dynamic. Treat them like a brain: they
 should learn from repeated human answers, agent misses, plans, docs, skills,
 research, and review handoffs, then forget noise.
 
-This skill is the incremental sync lane. It does not replace the `vision`
-router. It keeps root `VISION.md` and relevant `docs/vision/*.md` detail files
+This skill is the incremental sync lane. Task routes implementation work.
+Sync Vision keeps root `VISION.md` and relevant `docs/vision/*.md` detail files
 current by analyzing only changed durable inputs since the last synced commit.
 Root `VISION.md` stays the mandatory essential read. Detail files scale the
 doctrine by owner.
 
-## Autogoal Dependency
+## File-plan contract
 
-Use `autogoal` before mutable work. This is a derived autogoal workflow.
+Use one Task-owned file plan before nontrivial mutable work. Apply the project's standing Autogoal request for long-running work.
 
 - Primary template: `docs/plans/templates/sync-vision.md`.
 - Default flow: one-shot sync.
 - Preview flow: one-shot planning, no vision-doc patch and no baseline
   advancement.
 - Required evidence: command, artifact, source-audit, and N/A rows.
-- `autogoal` owns lifecycle, first-checkpoint requirement extraction,
-  completion semantics, output-budget discipline, and `check-complete.mjs`.
+- Task owns lifecycle and requirement extraction. Autogoal supplies file helpers and native-goal mechanics for direct or standing user requests.
 - `sync-vision` owns input-range accounting, candidate classification, root vs
   detail doctrine patch rules, status semantics, and baseline advancement.
 
@@ -150,7 +152,7 @@ Do not promote:
 
 ## Sync Workflow
 
-1. Load `autogoal`, create or continue a `sync-vision` plan, and copy every
+1. Reuse or create a Task-owned `sync-vision` file plan, and copy every
    user requirement into checkpoint zero.
 2. Read root `VISION.md`.
 3. Read `docs/sync/vision/status.json`.
@@ -166,7 +168,7 @@ Do not promote:
    - reusable API design/review correction -> `best-api repair`, plus the
      smallest relevant Vision owner;
    - editor behavior law -> `docs/editor-behavior/**` or `plite-plan`;
-   - Slate automation loop miss -> `auto`;
+   - Slate automation loop miss -> `task autonomous`;
    - research system miss -> `plite-research`;
    - migration miss -> `slate-migration`;
    - benchmark truth -> benchmark target/script owner.

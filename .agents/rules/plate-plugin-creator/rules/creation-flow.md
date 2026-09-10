@@ -55,6 +55,10 @@ Need a plugin or plugin refactor?
 
 ### Semantic base plugin
 
+Apply Best API's standalone-operation boundary before assigning file conversion
+to a plugin. An editor argument for configured decoding does not by itself
+create an installed capability.
+
 Use `defineBasePlugin` for document semantics, parsers, normalizers, injected
 rules, update groups, and shared behavior contracts.
 
@@ -85,7 +89,7 @@ The wrapper must stay thin. Do not copy or re-declare base behavior.
 
 Use `definePlatePlugin` only when:
 
-1. the plugin is fundamentally hook- or `useHooks`-driven;
+1. the plugin authors React render descriptors with no useful semantic base;
 2. the behavior exists only at a DOM/editor surface;
 3. the behavior only exists through React node props or components.
 
@@ -101,8 +105,10 @@ Plate constructors expose genuine editor-wide Plite substrate through flat
 native fields such as `commands`, `corrections`, `contributions`, `on`, and
 `readMiddleware`. Never hide those fields in a nested `extension` object.
 
-Use `defineExtension` from `plitejs` only for an independently
-reusable standalone descriptor that composes as a dependency. If several Plate
+Use `defineExtension` only for an independently reusable standalone descriptor
+that composes as a dependency. Plate consumers import it through `platejs`;
+Plate implementation imports its owning facade leaf. Only a raw Plite owner
+authors directly against `plitejs`. If several Plate
 plugins need the same generic primitive, that is evidence for a Plite owner,
 not a shared Plate helper dump.
 

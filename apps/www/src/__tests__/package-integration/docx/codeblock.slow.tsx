@@ -13,9 +13,10 @@ describe(getDocxTestName(name), () => {
       <editor>
         <hp>This is some code:</hp>
         <hcodeblock>
-          <hcodeline>readDocx :: ReaderOptions</hcodeline>
-          <hcodeline>{'         -> B.ByteString'}</hcodeline>
-          <hcodeline>{'         -> Pandoc'}</hcodeline>
+          readDocx :: ReaderOptions{'\n'}
+          {'         -> B.ByteString'}
+          {'\n'}
+          {'         -> Pandoc'}
         </hcodeblock>
         <hp>from the beginning of the docx reader.</hp>
       </editor>

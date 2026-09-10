@@ -27,11 +27,11 @@ Keyboard Input applies the `kbd` leaf mark to selected text. Use it for shortcut
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
-### Add Basic Marks
+### Add basic marks
 
 `BasicMarksKit` includes `KbdPlugin.configure({ component: KbdLeaf })`. It does not add a shortcut or input rule for keyboard input.
 
@@ -47,13 +47,13 @@ export const editor = createEditor({
 });
 ```
 
-### Add the Leaf
+### Add the leaf
 
 `KbdLeaf` provides the registry styling for the `<kbd>` element.
 
 <ComponentSource name="kbd" />
 
-### Add a Toolbar Control
+### Add a toolbar control
 
 The registry `MoreToolbarButton` toggles keyboard input from the More menu.
 
@@ -67,7 +67,7 @@ export function FormattingMoreMenu() {
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 Install the mark package.
 

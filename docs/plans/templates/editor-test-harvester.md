@@ -1,7 +1,9 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
-TODO: Write the short create_goal objective, under 240 characters. Put the full editor-test-harvester or lane-plan contract in the sections below.
+TODO: State the concrete outcome. Put the full editor-test-harvester or lane-plan contract in the sections below.
 
 Goal plan:
 {{PLAN_PATH}}
@@ -11,19 +13,17 @@ Template:
 
 Completion threshold:
 - TODO: Define the exact harvest or lane-plan done state.
-- Comprehensive harvest closure is legal only when score >= 0.92, no dimension
-  is below 0.85, inventory count equals classified count, no `uncertain` test
+- Comprehensive harvest closure is legal only when inventory count equals classified count, no `uncertain` test
   files remain, every portable or portable-mixed runnable file is indexed/read
   or explicitly skipped with reason, every actionable row has owner/target/proof
   evidence, the harvest report links or contains a full inventory appendix, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
-- Lane-plan closure is legal only when score >= 0.92, no dimension is below
-  0.85, harvest report path and license mode are recorded, inventory/test-index
+- Lane-plan closure is legal only when harvest report path and license mode are recorded, inventory/test-index
   status is recorded, every harvest row is accounted for, no unresolved in-lane
   row remains, every in-lane row has owner coverage/action/target/proof or defer
   evidence, downstream lane gates are applied, accepted-plan handoff is present,
-  behavior-only rows use fresh invariant wording only, the final handoff says to
-  pause for user review, and
+  behavior-only rows use fresh invariant wording only, the final handoff
+  records the planning-only or already-authorized execution boundary, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
 
 Verification surface:
@@ -41,9 +41,10 @@ Constraints:
   `..`.
 - Do not edit `Plate repo root`, Plate packages, docs, examples, or build config
   unless the user explicitly requested an apply run.
-- In lane-plan mode, do not patch implementation code, tests, examples, package
-  files, or build config. Write the plan, write the accepted-plan handoff, and
-  pause for user review before downstream execution.
+- During a planning-only phase, do not patch implementation code, tests,
+  examples, package files or build config. Write the ready plan and execution
+  handoff. Stop if the request was planning-only; otherwise continue through
+  the owning lane under existing apply/execute authorization.
 
 Boundaries:
 - Target repo: TODO.
@@ -72,28 +73,30 @@ Harvest state:
 
 Current verdict:
 - verdict: pending
-- score: pending
+- readiness: open
 - next owner: editor-test-harvester
 - reason: pending
 
 Completion rule:
-- Do not call `update_goal(status: complete)` while any required checklist item
-  remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
-- Do not call `update_goal(status: complete)` until every completion threshold
-  above is satisfied, report artifacts are current, and
-  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` passes.
-- Do not create hook state for this goal. This
-  file plus the active goal are the durable state.
+- Mark this Task plan complete only when all required checklist items and
+  closure thresholds pass; record an explicit N/A reason for inapplicable work.
+- Keep report artifacts current and run
+  `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`.
+  The checker validates file structure; it does not prove behavior or create
+  a native goal.
+- Apply Autogoal for the user's direct or standing request; update native goal
+  status only after the full requested objective is achieved.
+- This file is the durable pass state; do not create parallel hook state.
 
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Skill analysis before edits | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Source of truth read before edits | pending | pending |
 
 Work Checklist:
-- [ ] Short objective plus outcome, score threshold, verification surface,
+- [ ] Short objective plus outcome, readiness gates, verification surface,
       constraints, boundaries, and blocked condition are concrete.
 - [ ] License gate complete before selecting report directory.
 - [ ] Existing report, inventory, and test-index read before rerun updates, or
@@ -135,8 +138,8 @@ Work Checklist:
       marked N/A with reason.
 - [ ] Lane-plan mode only: accepted-plan execution handoff complete, or marked
       N/A with reason.
-- [ ] Lane-plan mode only: final handoff pauses for user review before
-      implementation, or marked N/A with reason.
+- [ ] Lane-plan mode only: final handoff records a planning-only stop or
+      continuation under existing apply/execute authority after readiness.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -144,7 +147,7 @@ Completion Gates:
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
 | Harvest artifacts current | pending | Verify report, inventory, test-index, matrix accounting, and skip evidence are current | pending |
 | Behavior-only hygiene | pending | Verify versioned output uses fresh invariant wording and no copied source material | pending |
-| Lane-plan review pause | pending | If lane-plan mode applies, write the accepted-plan handoff and stop for user review before downstream execution | pending |
+| Lane-plan execution boundary | pending | Write the ready handoff; stop for a planning-only request, otherwise continue through the owner under existing apply/execute authority | pending |
 | Downstream lane gates | pending | If lane-plan mode applies, record `plite-plan` or `plate-plan` gate application | pending |
 | Final harvest handoff | pending | Emit harvest report handoff or keep the plan pending with the next pass | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
@@ -165,24 +168,17 @@ Phase / pass table:
 | Lane-plan accepted-plan handoff | N/A | | closure review |
 | Closure review | pending | | final handoff |
 
-Confidence score:
-| Dimension | Weight | Score | Evidence | Cap hit |
-|-----------|-------:|------:|----------|---------|
-| Inventory completeness | 0.20 | pending | | |
-| Behavior extraction depth | 0.20 | pending | | |
-| Skip precision and negative controls | 0.15 | pending | | |
-| Plite/Plate coverage mapping accuracy | 0.20 | pending | | |
-| Actionability of copy/refactor/create plan | 0.15 | pending | | |
-| Provenance and reproducibility | 0.10 | pending | | |
-
-Lane-plan confidence score:
-| Dimension | Weight | Score | Evidence | Cap hit |
-|-----------|-------:|------:|----------|---------|
-| Harvest source readiness | 0.15 | N/A | | |
-| Lane-filter completeness | 0.25 | N/A | | |
-| Current owner coverage mapping | 0.25 | N/A | | |
-| Actionability of execution queue | 0.20 | N/A | | |
-| License/provenance discipline | 0.15 | N/A | | |
+Readiness evidence:
+| Dimension | Status | Evidence or gap |
+|-----------|--------|-----------------|
+| Inventory completeness | pending | |
+| Behavior extraction depth | pending | |
+| Skip precision and negative controls | pending | |
+| Plite/Plate coverage mapping | pending | |
+| Actionability of each row | pending | |
+| Provenance and reproducibility | pending | |
+| Lane-plan source and row accounting | N/A | |
+| Lane-plan downstream gates and execution handoff | N/A | |
 
 License gate:
 | Field | Value |
@@ -281,7 +277,7 @@ Accepted-plan execution handoff:
 - focused verification commands: N/A
 - broad final gate: N/A
 - issue/claim sync rule: N/A
-- stop rule: N/A; lane-plan mode must pause for user review before implementation.
+- stop rule: N/A; stop for planning-only scope, otherwise continue after readiness under existing apply/execute authority.
 
 Report artifacts:
 | Artifact | Path | Status |

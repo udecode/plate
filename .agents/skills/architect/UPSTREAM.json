@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "architect",
+  "files": [
+    {
+      "upstream": "skills/architect/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "9dc60bcf8d8d09000cdd88636ddb7371c576282880a8bb17993d2a1ea1900285",
+      "destinationSha256": "cd43890d055035c310ef99acbf2eeca9c3a3cdcbbe492ee50b6b8652fde1c7cf",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task.",
+        "Apply the complete Redesign from First Principles method before choosing an API or architecture target; preserve valid accepted decisions and the full upstream method."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/architect/SKILL.md\n+++ skills/architect/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: architect\n description: \"Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Architect\n \n@@ -26,11 +27,13 @@\n \n Skip Phase A only when the work is genuinely greenfield with no surrounding system to integrate.\n \n+Before sketching, apply [Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md). Treat the current requirements as day-one assumptions. Existing rationale explains the baseline; preserve it only when it still establishes a hard law or a current user need. Reuse a prior comparison while its requirements and evidence remain valid.\n+\n ## Phase B: Sketch\n \n Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`: the caller's usage written first, then the type sketch, function signatures, module map, and prose rationale derived from it.\n \n-Use your configured architect runners (defaults `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`).\n+Use your configured architect runners (defaults `inherit-parent`, `inherit-parent`, `inherit-parent`, `inherit-parent`).\n \n Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.\n \n"
+    },
+    {
+      "upstream": "skills/architect/references/design-red-flags.md",
+      "destination": "references/design-red-flags.md",
+      "upstreamSha256": "905066f9bbac81c573c2b325be47751d2c0f9325e0a0772bd4384e82dafe9336",
+      "destinationSha256": "905066f9bbac81c573c2b325be47751d2c0f9325e0a0772bd4384e82dafe9336",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/architect/references/rationale-template.md",
+      "destination": "references/rationale-template.md",
+      "upstreamSha256": "6645a0e5f68c003298ec95b85a23262bdda0c79f998b926060169b54d9f23fbb",
+      "destinationSha256": "6645a0e5f68c003298ec95b85a23262bdda0c79f998b926060169b54d9f23fbb",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/architect/references/runner-prompt.md",
+      "destination": "references/runner-prompt.md",
+      "upstreamSha256": "3ef8c1452a0382a15b7601c7c94f2a16a00954170d705b7af8cc49ac78080ec9",
+      "destinationSha256": "3ef8c1452a0382a15b7601c7c94f2a16a00954170d705b7af8cc49ac78080ec9",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

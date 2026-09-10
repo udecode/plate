@@ -119,6 +119,9 @@ React context dependencies count as subscriptions for repeated-unit budgeting
 when provider values change with editor state. `usePath()` subscribes to the
 nearest rendered element's live node-key path, so path shifts invalidate only
 components that explicitly request position.
+Use `usePath(selector, { equalityFn })` when only part of the path affects
+output. Element payload selectors do not run for path-only movement; a path
+projection must likewise skip renders when its derived value is equal.
 
 ---
 

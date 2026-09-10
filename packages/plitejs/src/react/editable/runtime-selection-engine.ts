@@ -4,6 +4,7 @@ import type { RefObject } from 'react';
 
 import { RangeApi } from '../..';
 import { getSelection } from '../../dom';
+import { findEditorDOMRootRuntime } from '../../dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { DOMRepairQueue } from './dom-repair-queue';
@@ -14,7 +15,10 @@ import {
   mapSelectionSourceToKernelState,
   recordEditableKernelTrace,
 } from './editing-kernel';
-import type { EditableInputController } from './input-state';
+import {
+  beginEditableNativeSelectionImport,
+  type EditableInputController,
+} from './input-state';
 import { getSelection as editorGetSelection } from './runtime-editor-api';
 import { readLiveSelection } from './runtime-selection-state';
 import {
@@ -156,6 +160,7 @@ export const createRuntimeSelectionChangeHandler = ({
   inputController,
   processing,
   readOnly,
+  rootRef,
 }: {
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   domRepairQueueRef: RefObject<DOMRepairQueue | null>;
@@ -163,8 +168,18 @@ export const createRuntimeSelectionChangeHandler = ({
   inputController: EditableInputController;
   processing: RefObject<boolean>;
   readOnly: boolean;
+  rootRef: RefObject<HTMLElement | null>;
 }): RuntimeSelectionChangeHandler => {
   const onDOMSelectionChange: RuntimeSelectionChangeHandler = throttle(() => {
+    // A focus transition can notify the prior view; only the current owner may
+    // interpret a partial native range using its own input state.
+    if (
+      !rootRef.current ||
+      findEditorDOMRootRuntime(editor)?.rootRef.current !== rootRef.current
+    ) {
+      inputController.state.pendingDOMSelectionImport = false;
+      return;
+    }
     const selectionChangeOrigin =
       inputController.state.selectionChangeOrigin ?? 'native-user';
     const modelSelectionPreferred =
@@ -319,6 +334,12 @@ export const createRuntimeSelectionImportController = ({
           decision.selectionSourceTransition.preferModelSelection,
         selectionSource: decision.selectionSourceTransition.selectionSource,
       });
+
+      if (
+        decision.selectionSourceTransition.selectionSource === 'dom-current'
+      ) {
+        beginEditableNativeSelectionImport(inputController);
+      }
     }
 
     if (!decision.internalTarget) {

@@ -2,7 +2,6 @@
 
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { HtmlPlugin } from 'platejs';
-import { DocxImportPlugin } from 'platejs/docx';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor } from 'platejs/react';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
@@ -54,10 +53,11 @@ export function ImportToolbarButton() {
     accept: ['.docx'],
     multiple: false,
     onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
-      const arrayBuffer = await plainFiles[0].arrayBuffer();
-      const result = await editor
-        .plugin(DocxImportPlugin)
-        .api.import(arrayBuffer);
+      const [{ importDocx }, arrayBuffer] = await Promise.all([
+        import('platejs/docx/import'),
+        plainFiles[0].arrayBuffer(),
+      ]);
+      const result = await importDocx(editor, arrayBuffer);
 
       editor.update.fragment.replace(result.nodes);
     },

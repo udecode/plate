@@ -1,0 +1,2 @@
+lead_key	packet_id	slate_owner	test_or_benchmark	verification_command	decision
+playwright:detached-selection-anchor-import	playwright-selectionchange-detached-001	.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts	`selectionchange ignores detached DOM endpoints before resolving Slate range`	`cd .tmp/slate-v2/packages/slate-react && bun test:vitest test/selection-controller-contract.test.ts -- -t "selectionchange ignores detached DOM endpoints before resolving Slate range"`	kept

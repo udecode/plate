@@ -1,0 +1,15 @@
+{
+  "exit": 0,
+  "stdout": "{\"reviewedSourceFileCount\":3830,\"reviewedTsxFileCount\":1865,\"issueCount\":0,\"candidateCount\":20,\"peakRssBytes\":1058045952}\n",
+  "stderr": "",
+  "ms": 3587.2902078554034,
+  "command": [
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {auditInlineComponentProps} from './tooling/scripts/check-inline-component-props.mjs';const r=auditInlineComponentProps();console.log(JSON.stringify({reviewedSourceFileCount:r.reviewedSourceFileCount,reviewedTsxFileCount:r.reviewedTsxFileCount,issueCount:r.issueCount,candidateCount:r.candidateCount,peakRssBytes:process.resourceUsage().maxRSS*1024}));"
+  ],
+  "sha256": {
+    "tooling/scripts/check-inline-component-props.mjs": "2efabdd015fcb93055b2f8230abbaebef1cf13a2415b0c383ff37bf50e65c2a6"
+  }
+}

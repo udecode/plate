@@ -6,16 +6,14 @@ description: Create a short annotated visual walkthrough from real final-state s
 # Walkthrough
 
 Explain a completed change with a few annotated visuals. Run this after final
-verification. A walkthrough explains proof; it does not replace proof.
+verification. A walkthrough explains proof; it does not replace proof. Reuse the final verified frames. Do not repeat the browser walk or send messages without explicit authorization.
 
 ## Honor The Caller Contract
 
 The caller decides whether the walkthrough is required. Follow the stricter
 repo rule when one exists.
 
-For UI-gated workflows, treat app pages, websites, components, styles, visual
-content, and generated or rendered output as UI changes. If the packet changed
-one of those surfaces, run the walkthrough in the final handoff.
+The caller chooses scope and whether an artifact is required. Workflow, docs, and backend changes do not create a visual obligation on their own.
 
 When the caller requires a walkthrough and it cannot be produced, block
 closeout with the exact missing tool, access, or artifact. Do not waive it
@@ -28,35 +26,7 @@ change exists, record:
 Walkthrough: N/A — no UI or rendered-output change in this packet.
 ```
 
-## Record A Diff Baseline
-
-For a diff-gated workflow, capture the baseline before the first file mutation,
-including plan creation:
-
-```bash
-node .agents/skills/walkthrough/scripts/diff-baseline.mjs capture \
-  --output tmp/walkthrough/<slug>/baseline.json
-```
-
-At closeout, compare the final checkout with that baseline:
-
-```bash
-node .agents/skills/walkthrough/scripts/diff-baseline.mjs compare \
-  --baseline tmp/walkthrough/<slug>/baseline.json \
-  --output tmp/walkthrough/<slug>/diff-receipt.json
-```
-
-Use `producedFileDiff` for the file-diff gate. Use `changedPaths` and the final
-diff to decide whether UI or rendered output changed. The receipt detects
-committed clean-tree changes, tracked working changes, executable-bit changes,
-symlink changes, and untracked files without `git status`.
-
-Keep receipts local. Do not publish file hashes. If an older packet has no
-baseline, reconstruct it from the recorded starting commit or base ref and the
-packet's changed-file ledger. Mark the receipt as reconstructed. New packets
-must capture the baseline before mutation. The helper excludes its own baseline
-and receipt paths from the comparison, but the output directory should still be
-ignored by the repo.
+For a caller that requires a diff baseline, read [baseline.md](references/baseline.md) before the first mutation. It owns capture, comparison, and honest reconstruction.
 
 ## Read The Minimum Evidence
 
@@ -125,56 +95,9 @@ Use paired names:
 01-<step>-annotated.png
 ```
 
-## Annotate Without Rewriting
+## Annotation
 
-Inspect each source image first. Use a deterministic local image editor, such
-as Sharp with SVG overlays, to add only:
-
-- numbered target outlines on the product surface;
-- matching numbered explanations in one fixed side rail outside the product;
-- short plain-English labels;
-- a compact title when the frame needs context.
-
-Keep labels to one sentence. Use product language, not implementation terms.
-Keep the product screenshot untouched except for the thin outlines and number
-markers. Never place explanation text over the product.
-
-### Show What Changed
-
-When the walkthrough explains a change inside an existing product, use color
-alone to distinguish provenance:
-
-- **Blue — NEW / CHANGED:** behavior or UI added or changed by the completed
-  work.
-- **Gray — existing context:** everything else needed to explain the flow. Do
-  not say "already there" or "already existed" in the label.
-
-Use one small two-color legend in the side rail. The legend is the only
-provenance text; never repeat `NEW / CHANGED`, `existing context`, or equivalent
-badges in notes. Classify the exact feature, not the whole screen. An existing
-page with a new row gets gray context and a blue outline on the row. Never mark
-the whole screen blue merely because the screenshot was captured after the work.
-
-Match each side-rail note to its target with the same number and provenance
-color. Put the number marker just outside the target outline so it never covers
-product text. Use no arrows by default. Add one only when numbered outlines
-cannot disambiguate nearby targets, and make it touch the target outline edge.
-Keep outlines thin and product text readable.
-
-Keep planned or unbuilt work out of completed-product screenshots. Name it in
-caption prose outside the image when it matters.
-
-Do not use these colors for severity, status, success, or failure. Product
-colors remain product evidence. Annotation colors explain only whether the
-called-out behavior changed.
-
-Never add, remove, rewrite, beautify, or simulate product content. Compare the
-annotated result with the original. If product text, values, layout, or state
-changed, discard it and regenerate. The original is proof. The annotation is
-explanation.
-
-Never use generative image editing for walkthrough annotations. It can alter
-the product evidence instead of merely explaining it.
+When annotation is required, read [annotation.md](references/annotation.md). Retain the original and use the permitted deterministic annotation tool. This skill never authorizes changing product evidence.
 
 ## Protect Sensitive Data
 
@@ -219,13 +142,5 @@ Close only when:
   contradiction as a blocker;
 - originals and annotated copies are saved;
 - every annotation matches its original;
-- changed callouts are blue and existing-context callouts are gray;
-- the legend contains the only provenance labels;
-- every note sits in one fixed side rail outside the product and matches a
-  numbered target outline;
-- number markers sit outside target borders and do not cover product text;
-- arrows are absent unless target numbers remain ambiguous;
-- every frame that uses both colors shows the same visible two-color legend in
-  the side rail;
 - annotated images appear inline in the final response;
 - the owning proof is named.

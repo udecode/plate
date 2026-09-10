@@ -1,21 +1,22 @@
 ---
 title: "Plite React Hooks"
-description: "Read editor state, root state, projections, annotations, widgets, and DOM-aware facts from React."
+description: "Read editor state, root state, annotations, widgets, and DOM-aware facts from React."
 ---
 
-Use hooks inside a `Plite` provider when React UI needs editor facts. Prefer the narrowest hook that matches the UI: editor-wide hooks for toolbars, element hooks for rendered nodes, and projection hooks for decorations, annotations, and widgets.
+Use hooks inside a `Plite` provider when React UI needs editor facts. Prefer the
+narrowest hook that matches the UI: editor-wide hooks for toolbars, element
+hooks for rendered nodes, and targeted hooks for annotations and widgets.
 
-## On This Page
+## On this page
 
 - [Editor Hooks](hooks#editor-hooks)
 - [Runtime And Root Hooks](hooks#runtime-and-root-hooks)
 - [Element And Node Hooks](hooks#element-and-node-hooks)
-- [Projection Hooks](hooks#projection-hooks)
 - [DOM Strategy Hooks](hooks#dom-strategy-hooks)
 - [Annotation Hooks](hooks#annotation-hooks)
 - [Widget Hooks](hooks#widget-hooks)
 
-## Editor Hooks
+## Editor hooks
 
 #### `useEditor(options?, deps?): Editor`
 
@@ -154,7 +155,7 @@ return (
 );
 ```
 
-Pass `options.root` to bind history controls to one root. Pass
+Pass `options.root` to bind history controls to one root in the current provider. Pass `options.editor` to use an existing command view, including outside a Plite provider; omit `root` with an explicit editor. Explicit controls read the view’s current read-only permission and restore focus to that exact view. They cancel queued focus restoration when their target changes. Pass
 `focusPolicy: 'preserve'` when undo/redo is controlled from external UI and
 DOM focus should stay outside the editor. `history.root` is `undefined` for the
 primary document and the root key for an extra root.
@@ -309,14 +310,6 @@ type UseElementSelectedOptions = {
 };
 ```
 
-#### `usePliteNodeRef(nodeKey, options?): (node) => void`
-
-Bind a custom node element to Plite's node key, path, and DOM lookup maps.
-
-Use this only when replacing Plite's render primitives with a custom DOM shell.
-Normal renderers should use `PliteElement`, `PliteText`, `PliteLeaf`, or
-`PlitePlaceholder` so the required DOM attributes stay attached.
-
 #### `useNodeSelector<T>(selector, equalityFn?, options?): T`
 
 Subscribe to a value derived from one mounted node.
@@ -331,61 +324,6 @@ Subscribe to a value derived from one mounted text node.
 Pass `options.nodeKey` to target a specific text node, or call it inside an
 editor text renderer to use that renderer's runtime target.
 
-#### `useDecorationSelector<T>(selector, equalityFn?, options?): T`
-
-Subscribe to decoration/projection data for one mounted runtime target.
-
-Pass `options.nodeKey` to target a specific runtime node, or call it inside a
-renderer that already has runtime target context.
-
-## Projection Hooks
-
-Use projection hooks when ranges need to be shared across the editor, overlays,
-sidebars, annotations, or widgets.
-
-#### `usePliteProjectionEntries<T>(nodeKey): readonly PliteProjectionEntry<T>[]`
-
-Subscribe to low-level projected range entries for one runtime node. Normal app
-UI should use decoration sources, annotation stores, or widget stores first.
-Use projection entries only when custom inline rendering needs the exact
-projected slices for one mounted node key.
-
-#### `usePliteDecorationSource<T>(editor, options): PliteDecorationSource<T>`
-
-Create a provider-owned decoration source from React state.
-
-Use this when ranges are shared across the editor surface, sidebars, toolbars,
-or other overlay UI. Use `Editable.decorate` for a simple editor-local callback.
-
-```tsx
-const searchSource = usePliteDecorationSource(editor, {
-  id: "search",
-  read: ({ snapshot }) => findSearchMatches(snapshot, query),
-});
-
-return (
-  <Plite decorationSources={[searchSource]} editor={editor}>
-    <Editable renderSegment={renderSearchMatch} />
-  </Plite>
-);
-```
-
-#### `usePliteRangeDecorationSource<T>(editor, options): PliteDecorationSource<T>`
-
-Create a provider-owned decoration source from Plite ranges.
-
-The hook accepts `PliteRangeDecorationSourceOptions`, reads ranges from the
-current editor snapshot, and converts them to keyed decorations for the
-shared projection runtime. Use it for search matches, diagnostics, or highlight
-data that already lives as Plite ranges.
-
-```tsx
-const searchSource = usePliteRangeDecorationSource(editor, {
-  id: "search",
-  read: ({ snapshot }) => findSearchRanges(snapshot, query),
-});
-```
-
 ## DOM strategy hooks
 
 Use these only when writing DOM-strategy-aware renderers.
@@ -394,21 +332,21 @@ Use these only when writing DOM-strategy-aware renderers.
 
 Read the vertical document offset for the current virtualized row.
 
-Use this inside DOM-strategy renderers that paint projected content against
+Use this inside DOM-strategy renderers that paint content against
 absolute document coordinates. Normal editor UI should not need it.
 
-## Annotation Hooks
+## Annotation hooks
 
 Use annotation hooks for durable anchored ranges such as comments, suggestions,
 diagnostics, and external review markers.
 
-#### `usePliteAnnotationStore<TData, TProjection>(editor, annotations, options?): PliteAnnotationStore<TData, TProjection>`
+#### `usePliteAnnotationStore<TData>(editor, annotations, options?): PliteAnnotationStore<TData>`
 
 Create an annotation store for durable anchored ranges such as comments,
 suggestions, diagnostics, or external review markers.
 
-Pass the store to `Plite` so `Editable`, sidebars, and widget UI read one
-annotation snapshot.
+Wrap reader components in `PliteAnnotationProvider` when they should use the
+store by default. Widget stores receive the store explicitly.
 
 Pass the current annotation array directly. A new array identity refreshes the
 store automatically. Use `revision` only for an external mutable source that
@@ -419,7 +357,6 @@ const annotations = comments.map((comment) => ({
   anchor: comment.anchor,
   data: comment,
   id: comment.id,
-  projection: { tone: comment.tone },
 }));
 
 const annotationStore = usePliteAnnotationStore(editor, annotations);
@@ -429,16 +366,16 @@ const externalStore = usePliteAnnotationStore(editor, mutableAnnotations, {
 });
 ```
 
-#### `usePliteAnnotations<TData, TProjection>(store?): PliteAnnotationSnapshot<TData, TProjection>`
+#### `usePliteAnnotations<TData>(store?): PliteAnnotationSnapshot<TData>`
 
 Read the current annotation snapshot. Without an explicit store, the hook reads
-the store from the nearest `Plite` provider.
+the store from the nearest `PliteAnnotationProvider`.
 
-#### `usePliteAnnotation<TData, TProjection>(id, store?): PliteResolvedAnnotation<TData, TProjection> | null`
+#### `usePliteAnnotation<TData>(id, store?): PliteResolvedAnnotation<TData> | null`
 
 Read one annotation by id.
 
-## Widget Hooks
+## Widget hooks
 
 Use widget hooks for UI anchored to nodes, selections, or annotations.
 

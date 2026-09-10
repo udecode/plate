@@ -3,5 +3,4 @@
  */
 
 export * from './BaseCodeDrawingPlugin';
-export * from './download';
 export * from './renderers';

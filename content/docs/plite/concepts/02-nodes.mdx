@@ -9,7 +9,7 @@ two node types:
 - `Element` nodes hold structure and contain child nodes.
 - `Text` nodes hold string content and mark properties.
 
-## Value Shape
+## Value shape
 
 The editor runtime can also act as the root ancestor for node APIs, but the
 persisted document value is primary children, optional extra roots, and optional
@@ -101,10 +101,10 @@ const boldText = {
 };
 ```
 
-Plite splits adjacent text into leaves for rendering when decorations or marks
-change, but the document model is still text nodes inside elements.
+Plite may split one text node into rendered leaf segments at Decoration
+boundaries, but the document model remains text nodes inside elements.
 
-## Finding Nodes
+## Finding nodes
 
 Use namespaced node reads for tree queries. `type` selects structural node
 types. `match` adds a predicate.
@@ -126,7 +126,7 @@ When component code already owns a text or element node, pass that node to a
 public `at` option instead of resolving its path first. See
 [Locations](03-locations#node-targets).
 
-## Blocks And Inlines
+## Blocks and inlines
 
 Elements default to block behavior. A block element can only be a sibling of
 other block elements.
@@ -189,7 +189,7 @@ App renderers return the visible content through `Editable`'s `renderVoid`
 prop. See [Element API](../api/nodes/element#rendering-void-elements) for a
 complete rendering example.
 
-## Node Tree Rules
+## Node tree rules
 
 Plite keeps document trees valid while transaction writes run.
 

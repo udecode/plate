@@ -1,0 +1,5 @@
+lead_key	reason
+editcontext:copy-api-surface-tests	Slate does not expose browser `EditContext`; WPT API constructor/argument tests are browser conformance, not Slate behavior.
+editcontext:rewrite-runtime-now	EditContext support is not proven enough for Slate v2 current private-alpha contenteditable architecture, and would weaken current stable behavior lanes without raw IME/device proof.
+editcontext:playwright-ime-claim	Synthetic Playwright keyboard events do not prove raw IME composition formatting, virtual keyboard anchoring, or mobile text services behavior.
+editcontext:delete-target-ranges-empty	Slate does not expose browser `EditContext`, so WPT empty target-range deletion semantics are future adapter scope, not current contenteditable runtime behavior; current no-range beforeinput handling is covered separately.

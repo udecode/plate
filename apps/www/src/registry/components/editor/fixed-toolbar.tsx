@@ -201,7 +201,7 @@ export function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {
 }
 
 export const FixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
-  render: {
+  slots: {
     beforeEditable: () => (
       <FixedToolbar>
         <FixedToolbarButtons />

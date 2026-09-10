@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 
-import { htmlToDocxBlob } from './html-to-docx';
+import { htmlToDocxBlob } from './html-to-docx.internal';
 
 describe('htmlToDocxBlob', () => {
   afterEach(() => {

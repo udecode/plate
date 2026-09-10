@@ -7,7 +7,7 @@ Extensions package reusable Plite behavior that should be installed, ordered,
 and removed as one unit. Plate builds its product-level plugin conventions on
 this smaller runtime primitive.
 
-## On This Page
+## On this page
 
 - [Smallest Extension](08-extensions#smallest-extension)
 - [Read And Update Helpers](08-extensions#read-and-update-helpers)
@@ -22,7 +22,7 @@ this smaller runtime primitive.
 - [Slot Reference](08-extensions#slot-reference)
 - [Type Inference](08-extensions#type-inference)
 
-## Smallest Extension
+## Smallest extension
 
 `defineExtension(...)` preserves the literal extension name and lets
 `createEditor(...)` infer every installed capability. A complete schema is also
@@ -63,7 +63,7 @@ Use feature extensions for reusable behavior and partial schema contributions.
 Use one complete schema to close the document vocabulary. See
 [Schema](19-schema) for the declaration and compiler model.
 
-## Read And Update Helpers
+## Read and update helpers
 
 Use `read` for owner-local queries and `update` for owner-local model writes.
 The extension name becomes the namespace on `editor.read` and `editor.update`.
@@ -146,7 +146,7 @@ Do not use `api` as a document command bus. Document mutations belong in
 `update`; host services such as DOM focus, measurements, history batching, or
 framework bridges belong in `api`.
 
-## Extension Order
+## Extension order
 
 Use descriptor-valued `dependencies` when one extension requires another.
 Use `conflicts` when two descriptors cannot be installed together.
@@ -186,7 +186,7 @@ portal types prove that one installed name has the same capability as the
 descriptor; runtime access separately requires the exact installed descriptor
 identity.
 
-## Typed Extension Points
+## Typed extension points
 
 Use `defineExtensionPoint(...)` when another package owns an ordered typed
 contribution channel outside the headless model.
@@ -217,7 +217,7 @@ The extension point owns identity and type. Validators collect its ordered
 values with `context.getContributions(measurements)`, so arbitrary strings do
 not become a hidden dependency API.
 
-## Activation And Reconfiguration
+## Activation and reconfiguration
 
 Keep schema, read, update, command, and API declarations on the extension.
 Use `activate(editor, context)` only for synchronous resource ownership.
@@ -280,7 +280,7 @@ document-plus-extension commit; failure publishes nothing. See
 `editor.install(...)` is the host-level dynamic form. Prefer a named slot when
 the replacement must commit atomically with other model writes.
 
-## Schema Contributions
+## Schema contributions
 
 Feature extensions add document vocabulary through `schema`. Element-owned
 properties live with the element; cross-cut properties use a top-level
@@ -348,7 +348,7 @@ Element declarations can describe `inline`, `void`, `atom`, `isolating`,
 See [Selection And DOM](16-selection-and-dom#keyboard-selectable-content) and
 [Roots](13-roots#content-roots) for the associated selection and root laws.
 
-## Read Middleware
+## Read middleware
 
 Use `readMiddleware` to wrap a declared core read. Register middleware against
 an `editorReads` descriptor; the descriptor infers the input, result, editor,
@@ -392,7 +392,7 @@ const CleanExportExtension = defineExtension("cleanExport", {
 });
 ```
 
-## Commands And Corrections
+## Commands and corrections
 
 Use `defineCommand(...)` when an action needs headless evaluation or extension
 policy. Its pure builder and extension handlers return `false` or a frozen
@@ -403,7 +403,7 @@ Use `corrections` for deterministic schema repairs triggered by canonical
 changed ranges. A correction writes through its provided transaction and must
 converge. Keyboard events and host UI remain React or DOM adapter concerns.
 
-## Clipboard And Fragment Policy
+## Clipboard and fragment policy
 
 DOM clipboard ingress is a typed extension point owned by
 `plitejs/dom`. Add `clipboardHandler(...)` to `contributions`. Its
@@ -417,7 +417,7 @@ dragged content. Call `editor.read.slice.export()` when content leaves the
 editor; `editor.read.slice.get()` returns the structural selection slice
 unchanged.
 
-## Slot Reference
+## Slot reference
 
 Start with `schema`, `read`, and `update`. Reach for the other slots only when
 the behavior needs that runtime phase.
@@ -446,7 +446,7 @@ the behavior needs that runtime phase.
 Keep product conventions above these raw slots. Frameworks can build richer
 feature APIs on Plite's smaller extension substrate.
 
-## Type Inference
+## Type inference
 
 Let `defineExtension(...)` infer its one definition type from the author
 object. `DefinitionOf<typeof Extension>` recovers the compact public contract

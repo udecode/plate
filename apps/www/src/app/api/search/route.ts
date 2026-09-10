@@ -22,11 +22,15 @@ const API_DOCS_PATH_REGEX = /^\/(?:cn\/)?docs\/api(?:\/|$)/;
 const API_SECTION_TITLE_REGEX =
   /^api(?:\b|[\s:/-]|接口|参考|方法|组件|路由|和|与)/i;
 const API_SECTION_TITLES = new Set([
+  'commands',
   'hooks',
   'options',
+  'plugins',
+  'reads',
   'selectors',
   'transforms',
   'types',
+  'updates',
   'utilities',
 ]);
 

@@ -2,12 +2,12 @@ import {
   BaseParagraphPlugin,
   createEditor,
   defineBasePlugin,
-  createPluginContext,
   ContentSlice,
   schema,
   PLUGINS,
 } from '../../../core';
 import { writeHostFragmentData } from '../../../dom';
+import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,

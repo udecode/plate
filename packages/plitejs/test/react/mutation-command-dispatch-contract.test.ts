@@ -135,3 +135,21 @@ test('React selection actions dispatch through semantic editor commands', () => 
     editorCommands.move.id,
   ]);
 });
+
+test('tags model-owned browser text input without changing later programmatic edits', () => {
+  const { editor } = createCommandProbeEditor();
+
+  applyModelOwnedTextInput({
+    data: 'X',
+    editor,
+    inputType: 'insertText',
+    selection: editor.read((state) => state.selection()),
+  });
+  expect(editor.read.lastCommit()?.tags).toEqual(
+    expect.arrayContaining(['dom-text-input', 'semantic-command'])
+  );
+  expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({ text: 'oXne' });
+  editor.update.text.insert('Y', { at: { path: [0, 0], offset: 2 } });
+  expect(editor.read.lastCommit()?.tags).not.toContain('dom-text-input');
+  expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({ text: 'oXYne' });
+});

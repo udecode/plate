@@ -6,10 +6,12 @@ disable-model-invocation: true
 
 # Regression
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
-Read [methodology.md](./references/methodology.md) completely before creating a
-goal, test, or child task.
+Read [methodology.md](./references/methodology.md) completely before selecting cases or editing proof. Reuse the active Task plan; native goals and child tasks require their own authorization.
 
 Regression owns a self-improving test-first loop:
 
@@ -22,12 +24,12 @@ source and proof host ready -> reporter oracle -> smallest falsifying probe
 -> methodology delta -> next executable case or honest stop
 ```
 
-`auto regression ...` routes here. Auto does not retain a second regression
+`task autonomous regression ...` routes here. Task autonomous mode does not retain a second regression
 method. `patch` remains the only one-case implementation worker.
 
 ## Use When
 
-- The user invokes `regression` or `auto regression`.
+- The user invokes `regression` or `task autonomous regression`.
 - The user asks for a regression harness, rewrite closure, corpus replay,
   example/story coverage, or a repeatable reproduce-test-fix-verify loop.
 - Several bugs or behaviors need one resumable test-first execution plan.
@@ -41,12 +43,12 @@ method. `patch` remains the only one-case implementation worker.
 - One ordinary local behavior bug needs a direct repair: use `patch`.
 - Public issue/PR/security queue state is the target: use `maintainer` or the
   public coordinator.
-- Work is already applied and needs until-clean closure: use `autoclosure`.
+- Work is already applied and needs until-clean closure: use `task closure`.
 - Public API or runtime architecture is unresolved: use `best-api`,
   `plite-plan`, or `plate-plan` before implementation.
 - A performance regression, benchmark comparison, or timing root-cause loop is
   the target: use `benchmark`. Regression may supply the correctness oracle.
-- Broad non-regression quality/docs supervision is requested: use `auto`.
+- Broad non-regression quality/docs supervision is requested: use `task autonomous`.
 
 ## Authority
 
@@ -88,7 +90,7 @@ case registry for Regression.
 
 ## Goal And Durable State
 
-Use Autogoal for non-trivial runs with
+Use a Task-owned file plan for non-trivial runs with
 `docs/plans/templates/regression.md`:
 
 ```bash
@@ -126,6 +128,15 @@ testing behavior.
 Repair command shape, stale server, missing export, generated drift, or host
 readiness before scaling cases.
 
+For a reporter-named route, bind one literal `exact-route:` across the selected
+case environment and Proof-host readiness row. The final proof command must
+name that route, and at least one receipt input must contain it as an executable
+navigation target. A standalone demo, block route, docs wrapper substitute, or
+other proxy host cannot certify the reporter route even when it renders the
+same component. After a route-based reporter contradiction, the failed-fix
+resume state records `exact-route-reproduction: red` or `pass` before another
+product attempt.
+
 ### 2. Define Atomic Executable Cases
 
 One case is one observable setup, action, and outcome. Record in the active
@@ -159,6 +170,14 @@ alone is a proxy and cannot close the claim. The Benchmark packet must account
 for every family above 5% of added render or commit work and at least 90%
 overall; unattributed work stays open.
 
+For any render-count, rerender, or profiler-event claim, inventory every
+production file that emits, routes, filters, aggregates, or renders a measured
+event kind. Record those paths as `measurement-owner-inputs:` in the applicable
+oracle before proof. The final result records
+`measurement-owner-closure: pass`, and one completed proof receipt must include
+every named path. A receipt limited to the feature files is invalid when a
+shared renderer or profiler owner can change the measured count.
+
 A negative report only authorizes the forbidden state. It does not choose among
 multiple positive outcomes that avoid that state. Record one
 `Expected-outcome authority` for every selected case as `reporter: <source>`,
@@ -186,6 +205,15 @@ held-pointer, drag-overlay, caret, popup, pointer affordance, or paint claim.
 Every applicable row needs both the positive assertion that must hold and the
 forbidden state that must not survive, plus an executable test anchor. Do not
 reduce a reporter sentence to the easiest neighboring assertion.
+
+When changing Plate/Plite runtime dependency placement for a React helper,
+record `package-dependency-change:` in the selected case. Its `runtime-errors`
+oracle uses a `packed package` proof layer and records `react-free-headless:`
+and `react-consumer:` assertions. Before a keep decision, run
+`pnpm plite:release:packages` against the final manifest and built artifacts;
+both results must be `pass`. Source tests cannot prove that headless consumers
+avoid transitive React installation or that React consumers resolve the helper.
+The existing isolated dependency and packed SSR checks own this proof.
 
 For a subscription-backed keyed collection, `subscription-lifecycle` is
 applicable. Its executable owner test must exercise add, update, remove, and
@@ -270,6 +298,14 @@ records `selection-origin: physical-pointer`. Completion requires
 `selection-origin: pass`. `locator.click()`, element-dispatched click, or a
 programmatically created caret cannot authorize another completion for that
 contradicted path.
+
+Do not add a physical pointer path to setup unless the case's source, action,
+or outcome claims that path. When selection is setup-only, use
+the smallest deterministic browser setup such as `locator.selectText()` or
+native-keyboard selection, assert the seeded state, then test the claimed
+action. Setup-only pointer gestures add an unrelated failure mode and cannot
+widen the result. The physical-hit law above still governs every claimed or
+reporter-identified pointer path.
 
 When reporter video visibly identifies a browser family, profile, extension,
 or browser-owned overlay, treat that visible state as part of the exact
@@ -403,6 +439,13 @@ input. A root editor cannot substitute for the mounted owner. After any failed
 fix, both proofs are required before resumption, not only at completion. A
 constructed view that never mounts in the reporter route is still a proxy.
 
+For independent editors, require applicable `model` and `dom-native` oracles
+with `editor-bindings:` assertions mapping each mounted root to its editor and
+complete fixture. The model oracle also requires `isolated-edit-and-undo:`:
+editing and undoing each document leaves the others unchanged. Completion
+records matching `pass` markers. Root count or crash-free mounting cannot prove
+document ownership. Shared-document views do not imply independent documents.
+
 For Plite model-based, generated, or differential cases, use canonical
 `DocumentChange` plus `EditorCommit` laws as the semantic oracle. Compare final
 document state, selection, commit metadata, error class, and follow-up
@@ -514,6 +557,11 @@ Markdown receipt for the transient plan. After the last edit to any shared
 owner, replay every affected exact case in one combined command and bind the
 affected-corpus row to that receipt.
 
+For render-count and profiler-event proof, the receipt input set includes every
+path named by `measurement-owner-inputs:`. The list covers the measured event
+emitters and their routing, filtering, aggregation, and rendered owner—not only
+the feature whose action triggered the measurement.
+
 A managed browser receipt must bind the same literal `--base-url` inside its
 proof command, such as `PLAYWRIGHT_BASE_URL=<url>`. A host label that says one
 URL while the command falls back to another port is invalid proof.
@@ -541,14 +589,14 @@ paint; proving only the newly visible positive surface is incomplete.
 Decide:
 
 - `keep`: executable red/green proof, fresh final replay, stability, durable
-  owner, and review all pass;
+  owner, and applicable Task review all pass;
 - `revert`: remove the attempt and re-prove the prior executable behavior;
 - `quarantine`: keep useful proof outside the runtime path without claiming
   completion;
 - `defer` or `block`: name the missing owner/evidence and revisit trigger.
 
 A kept case and its run become `completed` when every required local executable
-test, final-source replay, stability, review, methodology, and plan gate passes.
+test, final-source replay, stability, applicable Task review, methodology, and plan gate passes.
 Commit and push are not local completion gates. Record the tested ref or dirty
 fingerprints and say `local, uncommitted, and unpushed` when that is true.
 
@@ -622,6 +670,13 @@ correctness repair, or UI code repairing a substrate invariant, run `best-api`
 and the owning `plite-plan`, `plate-plan`, or both before another Patch attempt.
 Private-beta compatibility is not a reason to preserve the bad shape.
 
+For a failed focus-state subscription or context repair, compare native focus,
+the DOM API and React context after native or public-API focus, without adding
+a synthetic focus event. Record
+`focus-state-trace: native + dom-api + react-context` in the resume state.
+Prove each mounted view independently; a shared editor's aggregate state does
+not establish the focused root.
+
 ### 7. Improve The Method
 
 Every case records one methodology decision in the plan:
@@ -657,8 +712,7 @@ For `repair <expectation>`, repair this workflow rather than product runtime:
 4. Add or strengthen executable tests when the miss is mechanical.
 5. Run the semantic validator against the failed packet and a completed fixture.
 6. Run focused proof, `pnpm install`, source/mirror parity,
-   `agent-native-reviewer`, and P1 review when executable workflow code
-   changed.
+   `agent-native-reviewer`, and Task's review only when its gate applies.
 
 ## Verification
 
@@ -679,7 +733,7 @@ Best API and a layer plan, an evidence-complete fixture passes, an unfinished
 plan fails `check-complete.mjs`, and source/generated resources match.
 
 Run package, DOM, Playwright, Browser, Chrome, or device proof according to the
-claim. End non-trivial implementation packets with P1 autoreview.
+claim. Use Task's single review budget when an explicit review or PR closure applies.
 
 ## Final Handoff
 

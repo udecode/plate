@@ -34,21 +34,15 @@ const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
-const isPlite = process.env.BENCHMARK_ENGINE === 'current';
-let Slate;
-let SlateInternal = {};
-
-if (isPlite) {
-  Slate = await import('platejs');
-  SlateInternal = await import('@platejs/test');
-} else {
-  Slate = await import('slate');
-}
-
-const { ContentSlice, createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
-const NodeApi = Slate.NodeApi ?? Slate.Node ?? SlateInternal.NodeApi ?? SlateInternal.Node;
-const legacyTransforms = Slate.Transforms;
+const engine = process.env.BENCHMARK_ENGINE;
+assert.ok(engine === 'current' || engine === 'legacy');
+const isPlite = engine === 'current';
+const implementation = isPlite ? 'plite' : 'slate';
+const Core = await import(isPlite ? 'plitejs' : 'slate');
+const { createEditor } = Core;
+const Editor = Core.Editor;
+const NodeApi = isPlite ? Core.NodeApi : Core.Node;
+const legacyTransforms = Core.Transforms;
 
 const iterations = Number(process.env.RICH_TEXT_OPS_COMPARE_ITERATIONS || 3);
 const blockCount = Number(process.env.RICH_TEXT_OPS_COMPARE_BLOCKS || 1000);
@@ -177,8 +171,8 @@ const createFragment = () => [
 ];
 
 const replaceEditor = (editor, input) => {
-  if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, input);
+  if (isPlite) {
+    editor.update((tx) => tx.value.replace(input));
     return;
   }
 
@@ -187,59 +181,23 @@ const replaceEditor = (editor, input) => {
   editor.marks = input.marks ?? null;
 };
 
-const getSnapshot = (editor) =>
-  typeof Editor.getSnapshot === 'function'
-    ? Editor.getSnapshot(editor)
-    : editor;
-
 const getChildren = (editor) =>
-  typeof Editor.getChildren === 'function'
-    ? Editor.getChildren(editor)
-    : getSnapshot(editor).children;
+  isPlite ? editor.read.children() : editor.children;
 
 const getSelection = (editor) =>
-  typeof Editor.getSelection === 'function'
-    ? Editor.getSelection(editor)
-    : typeof editor.getSelection === 'function'
-      ? editor.getSelection()
-      : getSnapshot(editor).selection;
+  isPlite ? editor.read.selection() : editor.selection;
 
-const getEndPoint = (editor, path) => {
-  if (typeof editor.read === 'function') {
-    return editor.read((state) => state.points.end(path));
-  }
+const getEndPoint = (editor, path) =>
+  isPlite ? editor.read.points.end(path) : Editor.end(editor, path);
 
-  return Editor.end(editor, path);
-};
-
-const getTextLength = (editor, path) => {
-  try {
-    return Editor.string(editor, path).length;
-  } catch {
-    const node = getChildren(editor)[path[0]];
-    if (!node || !Array.isArray(node.children)) {
-      return 0;
-    }
-
-    return node.children
-      .map((child) => (typeof child.text === 'string' ? child.text : ''))
-      .join('').length;
-  }
-};
+const getString = (editor, at) =>
+  isPlite ? editor.read.text.string(at) : Editor.string(editor, at);
 
 const isTextNode = (node) => Boolean(node && typeof node.text === 'string');
 
-const isBlock = (editor, node) => {
-  if (!node || typeof node !== 'object' || !('children' in node)) {
-    return false;
-  }
-
-  if (typeof Editor.isBlock === 'function') {
-    return Editor.isBlock(editor, node);
-  }
-
-  return true;
-};
+const isBlock = (editor, node) =>
+  'children' in node &&
+  (isPlite ? editor.read.schema.isBlock(node) : Editor.isBlock(editor, node));
 
 const createEditorWithChildren = (children = createChildren(blockCount)) => {
   const editor = createEditor();
@@ -254,7 +212,7 @@ const createEditorWithChildren = (children = createChildren(blockCount)) => {
 };
 
 const update = (editor, fn) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update(fn);
     return;
   }
@@ -263,7 +221,7 @@ const update = (editor, fn) => {
 };
 
 const select = (editor, target) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.selection.set(isPlite ? { ...target, kind: 'text' } : target);
     });
@@ -274,7 +232,7 @@ const select = (editor, target) => {
 };
 
 const insertText = (editor, text, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.text.insert(text, options);
     });
@@ -285,7 +243,7 @@ const insertText = (editor, text, options) => {
 };
 
 const deleteText = (editor, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.text.delete(options);
     });
@@ -296,7 +254,7 @@ const deleteText = (editor, options) => {
 };
 
 const deleteBackward = (editor) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.text.deleteBackward();
     });
@@ -311,9 +269,9 @@ const deleteBackward = (editor) => {
 };
 
 const insertFragment = (editor, fragment) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
-      tx.slice.replace(ContentSlice.closed(fragment));
+      tx.fragment.replace(fragment);
     });
     return;
   }
@@ -322,7 +280,7 @@ const insertFragment = (editor, fragment) => {
 };
 
 const insertNodes = (editor, nodes, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.insert(nodes, options);
     });
@@ -333,7 +291,7 @@ const insertNodes = (editor, nodes, options) => {
 };
 
 const setNodes = (editor, props, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.set(props, options);
     });
@@ -344,7 +302,7 @@ const setNodes = (editor, props, options) => {
 };
 
 const moveNodes = (editor, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.move(options);
     });
@@ -355,7 +313,7 @@ const moveNodes = (editor, options) => {
 };
 
 const splitNodes = (editor, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.split(options);
     });
@@ -366,7 +324,7 @@ const splitNodes = (editor, options) => {
 };
 
 const removeNodes = (editor, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.remove(options);
     });
@@ -377,7 +335,7 @@ const removeNodes = (editor, options) => {
 };
 
 const wrapNodes = (editor, element, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.wrap(element, options);
     });
@@ -388,7 +346,7 @@ const wrapNodes = (editor, element, options) => {
 };
 
 const unwrapNodes = (editor, options) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     update(editor, (tx) => {
       tx.nodes.unwrap(options);
     });
@@ -441,7 +399,7 @@ const insertTextCollapsedMs = measureLane(createEditorWithChildren, (editor) => 
   }
 
   assert.equal(
-    (Editor.string(editor, [middle]).match(/x/g) ?? []).length,
+    (getString(editor, [middle]).match(/x/g) ?? []).length,
     typeOps
   );
 });
@@ -467,7 +425,7 @@ const deleteBackwardMarkedTextMs = measureLane(
       deleteBackward(editor);
     }
 
-    assert.equal(Editor.string(editor, []).includes('x'.repeat(typeOps)), false);
+    assert.equal(getString(editor, []).includes('x'.repeat(typeOps)), false);
   }
 );
 
@@ -477,7 +435,7 @@ const deleteExpandedRangeMs = measureLane(
     const range = richRange(editor);
     deleteText(editor, { at: range });
 
-    assert.ok(Editor.string(editor, []).length < blockCount * 30);
+    assert.ok(getString(editor, []).length < blockCount * 30);
   }
 );
 
@@ -592,7 +550,9 @@ const positionsCharacterFullDocumentMs = measureLane(
   createEditorWithChildren,
   (editor) => {
     const positions = Array.from(
-      Editor.positions(editor, { at: [], unit: 'character' })
+      isPlite
+        ? editor.read.points.positions({ at: [], unit: 'character' })
+        : Editor.positions(editor, { at: [], unit: 'character' })
     );
 
     assert.ok(positions.length > blockCount);
@@ -604,7 +564,7 @@ const nodesTextScanMs = measureLane(createEditorWithChildren, (editor) => {
 
   const entries = [];
 
-  for (const [node, path] of NodeApi.nodes(editor, { at: [] })) {
+  for (const [node, path] of NodeApi.nodes(editor)) {
     if (isTextNode(node)) {
       entries.push([node, path]);
     }
@@ -619,8 +579,11 @@ const beforeAfterWalkMs = measureLane(createEditorWithChildren, (editor) => {
 
   for (let index = 0; index < navigationSteps; index += 1) {
     const next =
-      Editor.after(editor, point, { unit: 'character' }) ??
-      Editor.before(editor, point, { unit: 'character' });
+      isPlite
+        ? editor.read.points.after(point, { unit: 'character' }) ??
+          editor.read.points.before(point, { unit: 'character' })
+        : Editor.after(editor, point, { unit: 'character' }) ??
+          Editor.before(editor, point, { unit: 'character' });
 
     if (!next) {
       break;
@@ -638,7 +601,9 @@ const unhangRangeMs = measureLane(createEditorWithChildren, (editor) => {
     anchor: textPointAt(0, 0),
     focus: textPointAt(Math.min(selectionBlocks, blockCount) - 1, 0),
   };
-  const unhung = Editor.unhangRange(editor, range);
+  const unhung = isPlite
+    ? editor.read.ranges.unhang(range)
+    : Editor.unhangRange(editor, range);
 
   assert.ok(unhung);
 });
@@ -658,6 +623,8 @@ const selectAllMs = measureLane(createEditorWithChildren, (editor) => {
 console.log(JSON.stringify({
   iterations,
   config: {
+    implementation,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
     blockCount,
     selectionBlocks,
     typeOps,
@@ -767,8 +734,17 @@ const structuralComposite = {
   worstP95Ratio: worstP95Entry[1].p95Ratio,
 };
 
+if (current.config.implementation !== 'plite' || legacy.config.implementation !== 'slate') {
+  throw new Error('Core comparison did not execute its declared editor owners');
+}
+if (JSON.stringify(current.config.runtime) !== JSON.stringify(legacy.config.runtime)) {
+  throw new Error('Core comparison requires the same JavaScript runtime');
+}
+
 const summary = {
   lane: 'core-rich-text-operations-compare-local',
+  implementations: { current: 'plite', legacy: 'slate' },
+  runtimes: { current: current.config.runtime, legacy: legacy.config.runtime },
   currentRepo,
   legacyRepo,
   iterations,

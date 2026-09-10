@@ -1,0 +1,4 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+github-issue-lexical-7739	gh issue view	facebook/lexical#7739	closed issue with comments	1	1	github/facebook/lexical	lexical:playwright-editor-e2e-timing:clipboard-selection-waits	none
+local-lexical-e2e-helper-scan	rg	`assertSelection|assertHTML|copyToClipboard|pasteFromClipboard|withExclusiveClipboardAccess|expect.poll` in `../lexical/packages/lexical-playground/__tests__`	local source only	many	4	none	lexical:playwright-editor-e2e-timing:clipboard-selection-waits	none
+local-slate-browser-helper-audit	rg	`withExclusiveClipboardAccess|copyPayload|pasteNativeText|expect.poll|scenario` in `.tmp/slate-v2/packages/slate-browser`	local source only	many	4	none	lexical:playwright-editor-e2e-timing:clipboard-selection-waits	none

@@ -19,7 +19,7 @@ npm install platejs @tanstack/react-virtual diff-match-patch-ts
 
 <ComponentSource name="version-history-demo" />
 
-## Runtime Shape
+## Runtime shape
 
 | Piece | Owner | Role |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ npm install platejs @tanstack/react-virtual diff-match-patch-ts
 | `InlinePlugin` and `InlineVoidPlugin` | registry example | Keep inline and inline-void nodes in the demo value so the diff path covers mixed content. |
 | `excludeDiffFragment` | `platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |
 
-## Snapshot Flow
+## Snapshot flow
 
 1. The editor starts from `initialValue` and keeps the live value in local state.
 2. `Save revision` clones the live value and appends it to `revisions`.
@@ -38,7 +38,7 @@ npm install platejs @tanstack/react-virtual diff-match-patch-ts
 4. `computeDiff` receives the selected revision, current value, `state.schema.isInline`, and `lineBreakChar: '¶'`.
 5. The read-only diff editor renders the returned value with the same inline plugins plus `DiffPlugin`.
 
-## Product Preview
+## Product preview
 
 Potion uses the same document-history idea in a full app surface with stored versions, restore actions, and visual comparison.
 
@@ -47,5 +47,5 @@ Potion uses the same document-history idea in a full app surface with stored ver
 ## Related
 
 - [Controlled Value](/docs/controlled) for owning editor value from React state.
-- [Plate Plugin](/docs/api/core/plate-plugin) for component binding and render
-  hooks such as `render.aboveNodes`.
+- [Plate Plugin](/docs/api/core/plate-plugin) for component binding and
+  structural slots such as `slots.wrapNode`.

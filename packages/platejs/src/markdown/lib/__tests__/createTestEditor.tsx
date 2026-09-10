@@ -29,7 +29,6 @@ import {
 } from '../../../features/basic-styles';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
-import { BaseCommentPlugin } from '../../../features/comment';
 import { BaseDatePlugin } from '../../../features/date';
 import { BaseDetailsPlugin } from '../../../features/details';
 import {
@@ -96,14 +95,13 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseColumnPlugin,
   BaseTablePlugin,
   BaseCalloutPlugin,
-  BaseCommentPlugin,
   BaseSuggestionPlugin,
   BaseTocPlugin,
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    plainMarks: ['suggestion', 'comment'],
+    plainMarks: ['suggestion'],
     remarkPlugins: [
       remarkMath,
       remarkGfm,

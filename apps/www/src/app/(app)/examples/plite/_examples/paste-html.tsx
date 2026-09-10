@@ -18,7 +18,6 @@ import { cn } from '@/utils/cn';
 
 import type {
   CustomElement,
-  CustomText,
   ImageElement as ImageElementType,
 } from './custom-types.d';
 import { html } from './paste-html-import';
@@ -255,7 +254,7 @@ const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CustomText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

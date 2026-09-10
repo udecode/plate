@@ -1,0 +1,6 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+web-prosemirror-randomized-tests	web	ProseMirror randomized tests editor property based testing prosemirror test-builder	none	10	3	prosemirror/prosemirror-view	dom-diff-import:direct-dom-mutation-browser-oracle	none
+web-codemirror-randomized-tests	web	CodeMirror view randomized tests property based editor	none	10	3	codemirror/view	dom-diff-import:direct-dom-mutation-browser-oracle	none
+web-lexical-fuzz-testing	web	Lexical editor fuzz testing randomized tests selection clipboard	none	10	4	facebook/lexical	replay-recorder:browser-step-selection-snapshot	none
+local-source-file-list	local	rg --files selected OSS repos for test/stress/fuzz/property/builder fixtures	exclude node_modules/dist/lib	many	4	prosemirror/prosemirror-view,codemirror/view,facebook/lexical	dom-diff-import:direct-dom-mutation-browser-oracle,replay-recorder:browser-step-selection-snapshot	none
+local-current-slate-audit	local	rg current Slate stress/proof helpers for DOM mutation/replay coverage	exclude node_modules	many	2	slate-v2-local	dom-diff-import:direct-dom-mutation-browser-oracle	owner-audit

@@ -17,7 +17,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -29,7 +29,7 @@ The fastest way to add the blockquote plugin is with the `BasicBlocksKit`, which
 
 - [`BlockquoteElement`](/docs/components/blockquote): Renders blockquote elements.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -47,7 +47,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -57,7 +57,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugin
+### Add plugin
 
 Include `BlockquotePlugin` in your Plate plugins array when creating the editor.
 
@@ -73,7 +73,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 Configure `BlockquotePlugin` with the component and shortcut used by your app.
 The `toggle` shortcut dispatches the plugin's structural toggle command.
@@ -97,7 +97,7 @@ const editor = createEditor({
 - `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote) to render blockquote elements.
 - `shortcuts.toggle`: Dispatches `editor.plugin(BlockquotePlugin).update.toggle()`.
 
-### Turn Into Toolbar Button
+### Turn into toolbar button
 
 You can add blockquote to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to toggle blockquotes:
 
@@ -111,7 +111,7 @@ const turnIntoItem = {
 };
 ```
 
-### Insert Toolbar Button
+### Insert toolbar button
 
 You can add blockquote to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert blockquotes:
 
@@ -134,6 +134,15 @@ const insertItem = {
 Plugin for blockquote container elements. Renders as `<blockquote>` HTML element by default.
 
 ## Transforms
+
+### `editor.plugin(BlockquotePlugin).update.wrap()`
+
+Wrap each selected block in a blockquote, preserving unselected blocks and
+leaving existing quotes intact. Pass `at` to target a location or node selection.
+
+```tsx
+editor.plugin(BlockquotePlugin).update.wrap();
+```
 
 ### `editor.plugin(BlockquotePlugin).update.toggle()`
 

@@ -1,47 +1,16 @@
-import type { Anchor, Path, Point, Range } from '../../../facade';
-
-export const NAVIGATION_FEEDBACK_NAME = 'navigation';
-
-export type NavigationFeedbackTarget = {
-  path: Path;
-  type: 'node';
-};
-
-export type NavigationFeedbackActiveTarget = NavigationFeedbackTarget & {
-  cycle: 0 | 1;
-  duration: number;
-  pulse: number;
-  variant: string;
-};
-
-export type NavigationFeedbackStoredTarget = Omit<
-  NavigationFeedbackActiveTarget,
-  'path'
-> & {
-  pathAnchor: Anchor<Path>;
-};
+import type { NodeKey } from '../../../facade';
+import type { PlateViewElementAttributes } from '../../plugin/PlatePlugin';
 
 export type NavigationFeedbackPluginState = {
+  /** Default feedback duration in milliseconds. */
   duration: number;
-  target: NavigationFeedbackActiveTarget | null;
 };
 
 export type NavigationFlashTargetOptions = {
+  /** Live element identity in the current mounted view. */
+  key: NodeKey;
+  /** Safe whole-element presentation; lifecycle markers remain plugin-owned. */
+  attributes?: PlateViewElementAttributes;
+  /** Override the configured duration in milliseconds. */
   duration?: number;
-  target: NavigationFeedbackTarget;
-  variant?: string;
-};
-
-export type NavigationNavigateOptions = {
-  flash?:
-    | false
-    | {
-        duration?: number;
-        variant?: string;
-      };
-  focus?: boolean;
-  scroll?: boolean;
-  scrollTarget?: Point;
-  select?: Point | Range;
-  target: NavigationFeedbackTarget;
 };

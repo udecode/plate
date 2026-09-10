@@ -28,11 +28,11 @@ Mention turns trigger text such as `@` into an inline combobox input and inserts
 
 </PackageInfo>
 
-## Fast Path
+## Fast path
 
 <Steps>
 
-### Add The Kit
+### Add the kit
 
 `MentionKit` installs `MentionPlugin`, `MentionInputPlugin`, the registry mention nodes, and a trigger rule that allows `@` at the start of a line, after whitespace, or after quotes.
 
@@ -48,13 +48,13 @@ export const editor = createEditor({
 });
 ```
 
-### Render Mentions
+### Render mentions
 
 `mention` renders both the selected mention and the temporary combobox input. The demo data lives in that registry UI file, so replace it with your app users, pages, or records.
 
 <ComponentSource name="mention" />
 
-### Add Static Rendering
+### Add static rendering
 
 `mention-static` uses `BaseMentionPlugin` with the static mention node for read-only output.
 
@@ -75,17 +75,17 @@ export const editor = createEditor({
 | `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
 | `platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
 
-## Manual Setup
+## Manual setup
 
 <Steps>
 
-### Install Package
+### Install package
 
 ```bash
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 `MentionPlugin` installs `MentionInputPlugin` as a required dependency. Add the complete input descriptor beside it when you need to replace the dependency's render component.
 
@@ -111,7 +111,7 @@ export const editor = createEditor({
 });
 ```
 
-### Select An Item
+### Select an item
 
 Call the installed mention update from your combobox item renderer. It inserts the mention, moves the cursor after it, and inserts a trailing space only when `insertSpaceAfterMention` is enabled and the mention lands at the end of the block.
 
@@ -131,7 +131,7 @@ Call the installed mention update from your combobox item renderer. It inserts t
 
 </Steps>
 
-## Value Shape
+## Value shape
 
 `PLUGINS.mention` and `PLUGINS.mentionInput` identify the two capabilities.
 Their default persisted element types are `mention` and `mentionInput`.
@@ -165,7 +165,7 @@ const value = [
 The mention element declares `schema.element.void: 'markable-inline'`, so marks
 on its empty child can style the rendered mention.
 
-## Trigger Flow
+## Trigger flow
 
 The runtime creates a combobox input from trigger metadata only when every gate passes.
 

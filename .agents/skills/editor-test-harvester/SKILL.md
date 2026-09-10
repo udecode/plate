@@ -1,5 +1,5 @@
 ---
-description: Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution.
+description: Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan with an explicit execution boundary.
 argument-hint: '[<repo-path-or-owner/repo> [--since <commit>] [--issues [--state all|open|closed]] [--apply] [surface/tag/filter] | plan <slate-v2|plate> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <slate-v2|plate>]'
 disable-model-invocation: true
 name: editor-test-harvester
@@ -9,6 +9,9 @@ metadata:
 ---
 
 # Editor Test Harvester
+
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
 
 Use this skill when mining another editor repository for tests worth harvesting:
 Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, ProseKit, Meowdown, or
@@ -41,8 +44,8 @@ license/output mode, clustering, and invariant extraction. `issue-harvester`
 owns ledger autodiscovery, latest issue refresh, closed-issue PR/test
 provenance, unchecked-row processing, and local coverage checkmarks.
 
-This follows the ClawSweeper method and the goal-plan confidence model:
-source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
+This follows ClawSweeper provenance and Task planning:
+source-first, exhaustive inventory, explicit skip reasons, evidence rows, complete
 passes, narrow claims, license-aware invariant extraction, then implementation
 only when asked.
 
@@ -83,7 +86,9 @@ When the user asks to process an existing harvest report into "all Slate tests",
 switch to lane-plan mode. Do not route to a separate wrapper. Lane-plan mode
 reads the completed or near-complete harvest, accounts for every row, applies the
 right downstream owner gates, writes a `docs/plans/*-harvest-plan.md`, and then
-pauses for user review. It must not patch implementation code.
+stops for user review when execution was not requested. A planning-only phase
+does not patch implementation code; existing apply/execute authorization
+continues through the owning lane under Task after readiness.
 
 ## Source Of Truth
 
@@ -226,9 +231,10 @@ from the invariant, not pasted or mechanically ported from upstream source.
 - In lane-plan mode, do not edit `Plate repo root`, Plate packages, apps, docs,
   examples, tests, package files, or build config. Planning mode writes only the
   plan and goal-plan evidence.
-- In lane-plan mode, user phrases like "go", "process", "apply", or "all tests"
-  do not override the review pause. Build the plan, write the accepted-plan
-  execution handoff, and stop for user review before downstream execution.
+- A planning-only request stops after the plan and execution handoff. If the
+  user has authorized apply/execute work, resolve readiness and continue
+  through the downstream owner within the same Task. Interpret short follow-ups
+  in context; do not require a second acceptance or skill invocation.
 - No GitHub comments, labels, commits, pushes, or PRs unless explicitly asked.
 - In `--issues` mode, default to `--state all`. Closed issues are often the best
   source of regression stories, browser quirks, and already-fixed failure
@@ -253,18 +259,21 @@ from the invariant, not pasted or mechanically ported from upstream source.
   relevant issue lacks a per-issue checkmark.
 - A single-pass matrix is a first-pass harvest, not a comprehensive harvest.
 - Do not call a harvest comprehensive unless the pass schedule is complete, the
-  score gates pass, and the report includes a full inventory appendix.
+  readiness gates pass, and the report includes a full inventory appendix.
 - Use `pending` while more autonomous harvest/review passes remain. Use `done`
-  only after the closure score passes or when the user explicitly asked for a
+  only after the closure gates pass or when the user explicitly asked for a
   quick/first-pass report and the report says so in the verdict.
 
 ## Goal And Report State
 
-Use an agent-native goal for comprehensive harvests, long-running reruns, and
-apply runs. Always call `get_goal` first. Call `create_goal` only when no active
-matching goal exists. There can be only one active goal per thread.
+Use one Task file plan for comprehensive harvests, long-running reruns and
+apply runs. Apply the project's standing Autogoal request before long-running work,
+including comprehensive harvests and reruns, unless the user opts out. Reuse
+the current goal and plan; preserve every pass and readiness gate as unresolved
+until its evidence is recorded. Native tool contracts still govern status.
 
-Create the harvest or lane-plan goal plan from the project template:
+Reuse the active Task plan. When no suitable plan exists, create the harvest
+or lane-plan file from the project template; this helper creates no native goal:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -289,7 +298,7 @@ The harvest report itself still lives in the license-selected report directory:
 - `permissive`: `docs/editor-test-harvester/<repo>/report.md`
 - `behavior-only`: `.tmp/editor-test-harvester/<repo>/report.md`
 
-Record this state in the active goal plan:
+Record this state in the active Task plan:
 
 ```md
 target_repo: <path>
@@ -315,8 +324,6 @@ mode: harvest|issue-harvest|lane-plan
 
 Set `done` only when:
 
-- total score is `>= 0.92`;
-- no dimension is below `0.85`;
 - inventory count equals classified count;
 - every runnable test file is either test-name indexed, read, or explicitly
   skipped as non-behavior with a reason;
@@ -330,8 +337,6 @@ Set `done` only when:
 
 For lane-plan mode, set `done` only when:
 
-- total score is `>= 0.92`;
-- no dimension is below `0.85`;
 - harvest report path and license mode are recorded;
 - inventory and test-index status are recorded with missing-file reasons when
   absent;
@@ -343,77 +348,35 @@ For lane-plan mode, set `done` only when:
 - downstream lane gates are applied and recorded;
 - behavior-only rows use fresh invariant wording only;
 - the accepted-plan execution handoff is present;
-- the final handoff pauses for user review before implementation.
+- the handoff records the execution boundary: stop for a planning-only request,
+  or continue under existing apply/execute authority after readiness.
 
 If any gate fails but more work is possible, keep `pending` and write the active
 goal plan with the next harvest pass. Use `blocked` only when the target repo,
 Slate v2 checkout, required browser/device tooling, or a user decision is
 missing and no useful autonomous pass remains.
 
-## Confidence Score
+## Readiness Evidence
 
-Score each harvest pass from `0.00` to `1.00`.
+Use concrete evidence for each dimension. Do not estimate a success probability
+or award an aggregate score.
 
-| Dimension                                  | Weight |
-| ------------------------------------------ | -----: |
-| Inventory completeness                     |   0.20 |
-| Behavior extraction depth                  |   0.20 |
-| Skip precision and negative controls       |   0.15 |
-| Slate/Plate coverage mapping accuracy      |   0.20 |
-| Actionability of copy/refactor/create plan |   0.15 |
-| Provenance and reproducibility             |   0.10 |
+| Dimension | Required evidence |
+| --- | --- |
+| Inventory | Exact query, found/classified/unresolved counts, every file in the linked appendix. |
+| Behavior extraction | Read portable and mixed files; index runnable test names with source pointers; explain rejected rows. |
+| Skip precision | Concrete skip reasons and a read negative control from each large skip family. |
+| Owner coverage | Current Plite/Plate searches, exact coverage or a named gap for every actionable row. |
+| Actionability | Target file, proof kind and focused command, or an explicit defer owner and reason. |
+| Provenance | Verified source revision, exact linked issue evidence when relevant, license and output placement. |
 
-Score caps:
-
-- Inventory completeness cannot exceed `0.75` unless the report records the
-  exact inventory command, total count, classified count, and unresolved count.
-- Inventory completeness cannot exceed `0.90` unless every test file path appears
-  in a full inventory appendix or linked inventory file.
-- Behavior extraction depth cannot exceed `0.75` if portable files were routed
-  only by file name.
-- Behavior extraction depth cannot exceed `0.85` unless all portable and
-  portable-mixed runnable files have test-name extraction with line pointers.
-- Behavior extraction depth cannot exceed `0.85` for `behavior-only` targets
-  unless the report separates scratch provenance from versioned-output
-  invariants.
-- Skip precision cannot exceed `0.80` unless every skipped file or skip family
-  has a concrete reason and at least one negative-control example was read.
-- Slate/Plate coverage mapping cannot exceed `0.80` unless the report records
-  the `Plate repo root` search commands for raw rows and the current Plate owner or
-  explicit Plate gap for `plate-owned` rows.
-- Actionability cannot exceed `0.80` unless every create/refactor/copy row names
-  a target test file, proof kind, and focused verification command, and every
-  `plate-owned` row names the likely Plate package, kit, example, docs, or
-  backlog owner.
-- Provenance cannot exceed `0.80` when issue/PR-linked upstream regression tests
-  are used without ClawSweeper-style exact thread or local source rationale.
-- Provenance cannot exceed `0.80` for `--issues` runs unless the report records
-  issue state coverage (`all`, `open`, or `closed`), issue discovery command,
-  cluster method, skip reasons, and representative issue refs for every kept
-  cluster.
-- Provenance cannot exceed `0.80` for `behavior-only` targets unless the report
-  records license evidence, output directory, and versioned-output copy policy.
-- The total score cannot exceed `0.88` if the report has no pass-state ledger.
-- The total score cannot exceed `0.90` if the full inventory appendix is absent.
-
-Completion threshold:
-
-- total score `>= 0.92`;
-- no dimension below `0.85`;
-- no `uncertain` test files remain;
-- no portable-mixed file remains unexamined;
-- no create/refactor/copy/plate-owned row lacks a target owner;
-- no browser/IME/mobile claim is based only on jsdom or synthetic model tests;
-- pass-state ledger proves every pass completed before closure;
-- for `--issues` runs, issue inventory count, issue state coverage,
-  classification buckets, representative read count, cluster matrix, and
-  Slate/Plate coverage mapping are recorded;
-- for `behavior-only` targets, no versioned report, test, docs, fixture,
-  snapshot, or implementation output contains copied or mechanically translated
-  upstream source material.
-
-Below threshold, the report can still be useful, but it must say `first-pass`,
-`partial`, or `pending` and name the next owner.
+Completion also requires no uncertain files, no unexamined portable-mixed
+files, a complete pass ledger, and an honest browser/IME/device proof boundary.
+Issue mode records state coverage, inventory counts, classification, read
+representatives and the coverage matrix. Behavior-only sources stay in scratch;
+versioned output uses fresh local invariants. A partial harvest names its exact
+missing rows and next owner. None of these gates is waived by a favorable
+qualitative judgment.
 
 ## Pass Schedule
 
@@ -487,7 +450,7 @@ Run harvests as passes, not one giant skim:
    - state what mechanism Plate should own as product/plugin policy;
    - include browser/runtime/testing strategy, not just a source list.
 10. Closure review pass:
-   - score all dimensions with evidence;
+   - resolve the readiness evidence for every dimension;
    - record pass-state ledger;
    - list open gaps and next owner;
    - verify license-mode output placement;
@@ -548,8 +511,9 @@ Lane-plan workflow:
    - else try `docs/editor-test-harvester/<repo>/report.md`;
    - else try `.tmp/editor-test-harvester/<repo>/report.md`;
    - else run or request harvest mode first.
-3. Start or reuse an autogoal plan with `--template editor-test-harvester`.
-4. Read harvest metadata: status, score, license mode, output mode, inventory
+3. Reuse the Task file plan, or create it with `--template editor-test-harvester`
+   when this is a standalone harvest. Native goals follow the user's direct or standing request.
+4. Read harvest metadata: status, readiness, license mode, output mode, inventory
    counts, matrix rows, skips, next slice, and pass-state ledger.
 5. Validate companion files: inventory exists or has a missing reason;
    test-index exists or has a missing reason.
@@ -579,31 +543,14 @@ Lane-plan workflow:
     - `plate`: load and apply `plate-plan` gates.
 12. Fill the lane-plan sections in the template.
 13. If below threshold, keep `pending` and name the next pass.
-14. If threshold passes, set `done`, run `check-complete.mjs`, and produce the
-    review handoff. Stop there. Do not execute implementation.
+14. If the gates pass, set the planning result `done`, run
+    `check-complete.mjs`, and produce the handoff. Stop for a planning-only
+    request; continue through the lane owner when apply/execute is authorized.
 
-Lane-plan confidence score:
-
-| Dimension                        | Weight |
-| -------------------------------- | -----: |
-| Harvest source readiness         |   0.15 |
-| Lane-filter completeness         |   0.25 |
-| Current owner coverage mapping   |   0.25 |
-| Actionability of execution queue |   0.20 |
-| License/provenance discipline    |   0.15 |
-
-Score caps:
-
-- Total cannot exceed `0.80` if the harvest report is missing.
-- Total cannot exceed `0.86` if inventory or test-index status is unknown.
-- Lane-filter completeness cannot exceed `0.80` unless every harvest matrix row
-  is counted as in-lane or out-of-lane/split/duplicate/skip.
-- Coverage mapping cannot exceed `0.85` unless current owner tests/source were
-  searched in the target workspace.
-- Actionability cannot exceed `0.85` unless every non-covered in-lane row names
-  target file, proof kind, and focused verification command or defer reason.
-- License/provenance cannot exceed `0.80` for behavior-only sources unless the
-  plan states the fresh-invariant-only rule and avoids copied source wording.
+Lane-plan readiness requires the source report, recorded inventory/test-index
+state, every row classified, current owner coverage searches, and a target plus
+proof command or explicit defer reason for each actionable row. Keep the
+license rule and downstream layer gates. Missing evidence stays open.
 
 Accepted-plan execution handoff must include:
 
@@ -616,8 +563,10 @@ Accepted-plan execution handoff must include:
 - issue/claim sync rule;
 - stop rule.
 
-The user reviews the finished plan first, then invokes the downstream lane skill
-with the accepted plan path. This pause is the point of lane-plan mode.
+For a planning-only request, present the finished plan for review and stop.
+When apply/execute work is already authorized, pass the ready plan directly to
+the downstream lane and continue under Task. The handoff retains all row,
+license, ownership and proof gates; it does not require another invocation.
 
 ## Discovery Workflow
 
@@ -632,7 +581,10 @@ with the accepted plan path. This pause is the point of lane-plan mode.
    ```bash
    target="../lexical"
 
-   mapfile -t license_files < <(
+   license_files=()
+   while IFS= read -r license_file; do
+     license_files+=("$license_file")
+   done < <(
      {
        find "$target" -maxdepth 2 -type f \
          \( -iname 'LICENSE*' -o -iname 'LICENCE*' -o -iname 'COPYING*' -o -iname 'NOTICE*' \)
@@ -912,7 +864,7 @@ Use this shape:
 # Editor Test Harvest: <repo>
 
 status: pending|first-pass done|done
-score: 0.xx
+readiness: open|complete
 license_mode: permissive|behavior-only
 license_evidence: `<path/to/LICENSE or package metadata>`
 output_mode: durable|scratch
@@ -942,10 +894,10 @@ For `behavior-only` targets, this report is scratch material. Anything promoted
 from it into versioned Plate/Slate output must be rewritten as a fresh invariant
 and local proof.
 
-## Confidence Score
+## Readiness Evidence
 
-| Dimension | Score | Evidence | Cap hit |
-| --------- | ----: | -------- | ------- |
+| Dimension | Status | Evidence or gap |
+| --------- | ------ | --------------- |
 
 ## Pass-State Ledger
 
@@ -1015,7 +967,7 @@ report_dir="docs/editor-test-harvester/<repo>"
 report_dir=".tmp/editor-test-harvester/<repo>"
 
 rg --files <target> | rg '<test inventory pattern>' | wc -l
-rg -n "License Gate|Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" "$report_dir/report.md"
+rg -n "License Gate|Readiness Evidence|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" "$report_dir/report.md"
 test -f "$report_dir/inventory.md"
 test -f "$report_dir/test-index.md"
 node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/<goal-plan>.md

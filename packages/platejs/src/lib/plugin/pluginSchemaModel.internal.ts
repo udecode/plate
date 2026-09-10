@@ -396,7 +396,7 @@ type InferPluginOwnSchemaContribution<C extends AnyBasePluginDefinition> =
       : InferExactPluginSchemaContribution<C>;
 
 type PluginOwnSchemaSource<C extends AnyBasePluginDefinition> =
-  EditorSchemaSourceProvider<InferPluginOwnSchemaContribution<C>>;
+  EditorSchemaSourceProvider<() => InferPluginOwnSchemaContribution<C>>;
 
 type InferPluginOwnElement<C extends AnyBasePluginDefinition> = [
   InferPluginOwnSchemaContribution<C>,

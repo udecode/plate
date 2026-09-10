@@ -1,8 +1,8 @@
-import { expect, type Locator, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { expect, type Locator, test } from "@playwright/test";
+import { recordPliteBrowserRuntimeErrors } from "@platejs/test/playwright";
 
 const INITIAL_TEXT =
-  'Ada and Lin edit independent documents through a local Yjs room.';
+  "Ada and Lin edit independent documents through a local Yjs room.";
 
 const selectEditorPoint = (editor: Locator, offset: number) =>
   editor.evaluate((element: HTMLElement, nextOffset) => {
@@ -10,46 +10,46 @@ const selectEditorPoint = (editor: Locator, offset: number) =>
     const point = { offset: nextOffset, path: [0, 0] };
 
     if (!handle?.selectRange) {
-      throw new Error('Missing Plite browser handle');
+      throw new Error("Missing Plite browser handle");
     }
 
     handle.selectRange({ anchor: point, focus: point });
   }, offset);
 
-test.describe('Plate collaboration registry example', () => {
-  test('proves independent peers, cursors, reconnect, history, schema, and teardown', async ({
+test.describe("Plate collaboration registry example", () => {
+  test("proves independent peers, cursors, reconnect, history, schema, and teardown", async ({
     page,
   }) => {
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const adaEditor = page.getByRole('textbox', {
-      name: 'Ada collaborative editor',
+    const adaEditor = page.getByRole("textbox", {
+      name: "Ada collaborative editor",
     });
-    const linEditor = page.getByRole('textbox', {
-      name: 'Lin collaborative editor',
+    const linEditor = page.getByRole("textbox", {
+      name: "Lin collaborative editor",
     });
     const linCard = page.locator('[data-peer="lin"]');
     const readDocuments = () =>
       Promise.all([adaEditor.innerText(), linEditor.innerText()]);
 
     try {
-      await page.goto('/examples/plite/collaboration-demo');
+      await page.goto("/examples/plite/collaboration-demo");
 
-      await expect(page.locator('[data-collaboration-demo]')).toHaveAttribute(
-        'data-editor-count',
-        '2'
+      await expect(page.locator("[data-collaboration-demo]")).toHaveAttribute(
+        "data-editor-count",
+        "2"
       );
-      await expect(page.locator('[data-collaboration-demo]')).toHaveAttribute(
-        'data-provider-count',
-        '2'
+      await expect(page.locator("[data-collaboration-demo]")).toHaveAttribute(
+        "data-provider-count",
+        "2"
       );
-      await expect(page.locator('[data-collaboration-demo]')).toHaveAttribute(
-        'data-doc-count',
-        '3'
+      await expect(page.locator("[data-collaboration-demo]")).toHaveAttribute(
+        "data-doc-count",
+        "3"
       );
       await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
 
       await selectEditorPoint(adaEditor, INITIAL_TEXT.length);
-      await adaEditor.type('!');
+      await adaEditor.type("!");
 
       await expect
         .poll(readDocuments)
@@ -57,74 +57,74 @@ test.describe('Plate collaboration registry example', () => {
       await expect(
         page.locator('[data-remote-caret][data-client-id="101"]')
       ).toHaveCount(1);
-      await expect(page.locator('[data-remote-caret]')).toHaveCount(1);
+      await expect(page.locator("[data-remote-caret]")).toHaveCount(1);
 
-      await adaEditor.press('Shift+ArrowLeft');
+      await adaEditor.press("Shift+ArrowLeft");
       const remoteSelection = page.locator(
         '[data-remote-selection][data-client-id="101"]'
       );
 
       await expect(remoteSelection).toHaveCount(1);
       await expect(remoteSelection).toHaveCSS(
-        'background-color',
-        'rgba(124, 58, 237, 0.2)'
+        "background-color",
+        "rgba(124, 58, 237, 0.2)"
       );
       expect((await remoteSelection.boundingBox())?.width).toBeGreaterThan(0);
 
-      await linCard.getByRole('button', { name: 'Disconnect' }).click();
-      await expect(linCard.locator('[data-peer-status]')).toHaveAttribute(
-        'data-peer-status',
-        'disconnected'
+      await linCard.getByRole("button", { name: "Disconnect" }).click();
+      await expect(linCard.locator("[data-peer-status]")).toHaveAttribute(
+        "data-peer-status",
+        "disconnected"
       );
 
       await selectEditorPoint(linEditor, INITIAL_TEXT.length + 1);
-      await linEditor.type('L');
+      await linEditor.type("L");
       await selectEditorPoint(adaEditor, 0);
-      await adaEditor.type('A');
+      await adaEditor.type("A");
 
       await expect(adaEditor).toHaveText(`A${INITIAL_TEXT}!`);
       await expect(linEditor).toHaveText(`${INITIAL_TEXT}!L`);
-      await expect(page.locator('[data-remote-caret]')).toHaveCount(0);
+      await expect(page.locator("[data-remote-caret]")).toHaveCount(0);
 
-      await linCard.getByRole('button', { name: 'Reconnect' }).click();
+      await linCard.getByRole("button", { name: "Reconnect" }).click();
       await expect
         .poll(readDocuments)
         .toEqual([`A${INITIAL_TEXT}!L`, `A${INITIAL_TEXT}!L`]);
-      await expect(linCard.locator('[data-peer-status]')).toHaveAttribute(
-        'data-peer-status',
-        'connected'
+      await expect(linCard.locator("[data-peer-status]")).toHaveAttribute(
+        "data-peer-status",
+        "connected"
       );
 
-      await linCard.getByRole('button', { name: 'Undo Lin' }).click();
+      await linCard.getByRole("button", { name: "Undo Lin" }).click();
       await expect
         .poll(readDocuments)
         .toEqual([`A${INITIAL_TEXT}!`, `A${INITIAL_TEXT}!`]);
       await expect(
-        linCard.getByRole('button', { name: 'Redo Lin' })
-      ).toContainText('Redo 1');
+        linCard.getByRole("button", { name: "Redo Lin" })
+      ).toContainText("Redo 1");
 
-      await page.getByRole('button', { name: 'Reject schema v2' }).click();
-      await expect(page.locator('[data-schema-status]')).toHaveAttribute(
-        'data-schema-status',
-        'rejected'
+      await page.getByRole("button", { name: "Reject schema v2" }).click();
+      await expect(page.locator("[data-schema-status]")).toHaveAttribute(
+        "data-schema-status",
+        "rejected"
       );
-      await expect(page.locator('[data-schema-status]')).toContainText(
-        'local version 2, room version 1'
+      await expect(page.locator("[data-schema-status]")).toContainText(
+        "local version 2, room version 1"
       );
 
       await page
-        .getByRole('button', { name: 'Recover with schema v1' })
+        .getByRole("button", { name: "Recover with schema v1" })
         .click();
-      await expect(page.locator('[data-schema-status]')).toHaveAttribute(
-        'data-schema-status',
-        'recovered'
+      await expect(page.locator("[data-schema-status]")).toHaveAttribute(
+        "data-schema-status",
+        "recovered"
       );
       await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
 
       await selectEditorPoint(adaEditor, INITIAL_TEXT.length + 2);
       await page.setViewportSize({ height: 844, width: 390 });
 
-      const cardLocator = page.locator('[data-peer]');
+      const cardLocator = page.locator("[data-peer]");
 
       await expect(cardLocator).toHaveCount(2);
 
@@ -132,12 +132,12 @@ test.describe('Plate collaboration registry example', () => {
       const [adaCardBox, linCardBox] = await Promise.all(
         cards.map((card) => card.boundingBox())
       );
-      const root = page.locator('[data-collaboration-demo]');
+      const root = page.locator("[data-collaboration-demo]");
       const remoteCaret = page.locator(
         '[data-remote-caret][data-client-id="101"]'
       );
-      const remoteLabel = remoteCaret.locator('[data-remote-cursor-label]');
-      const linOverlay = linCard.locator('[data-remote-cursor-overlay]');
+      const remoteLabel = remoteCaret.locator("[data-remote-cursor-label]");
+      const linOverlay = linCard.locator("[data-remote-cursor-overlay]");
       const readOverlayBoxes = () =>
         Promise.all([
           remoteCaret.boundingBox(),
@@ -201,7 +201,19 @@ test.describe('Plate collaboration registry example', () => {
         (overlayBeforeScroll?.x ?? -1) + (overlayBeforeScroll?.width ?? 0)
       );
 
-      await page.evaluate(() => window.scrollTo(0, 400));
+      await page.evaluate(() => {
+        const scrollingElement = document.scrollingElement;
+        const maxScrollY = Math.max(
+          0,
+          (scrollingElement?.scrollHeight ?? 0) - window.innerHeight
+        );
+        const targetY =
+          window.scrollY < maxScrollY / 2
+            ? Math.min(maxScrollY, window.scrollY + 200)
+            : Math.max(0, window.scrollY - 200);
+
+        window.scrollTo(0, targetY);
+      });
 
       await expect
         .poll(async () => {
@@ -214,7 +226,7 @@ test.describe('Plate collaboration registry example', () => {
             !caretBeforeScroll ||
             !overlayAfterScroll ||
             !overlayBeforeScroll ||
-            scrollYAfter <= scrollYBefore
+            Math.abs(scrollYAfter - scrollYBefore) < 1
           ) {
             return false;
           }
@@ -223,16 +235,15 @@ test.describe('Plate collaboration registry example', () => {
 
           return (
             Math.abs(caretAfterScroll.x - caretBeforeScroll.x) < 0.5 &&
-            Math.abs(
-              caretAfterScroll.y - (caretBeforeScroll.y - scrollDelta)
-            ) < 0.5 &&
+            Math.abs(caretAfterScroll.y - (caretBeforeScroll.y - scrollDelta)) <
+              0.5 &&
             Math.abs(overlayAfterScroll.x - overlayBeforeScroll.x) < 0.5 &&
             Math.abs(overlayAfterScroll.y - overlayBeforeScroll.y) < 0.5
           );
         })
         .toBe(true);
 
-      await page.goto('/examples/plite/plaintext');
+      await page.goto("/examples/plite/plaintext");
       await expect(
         page.locator('[data-plite-example="plaintext"]')
       ).toBeVisible();

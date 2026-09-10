@@ -22,11 +22,12 @@ const IconRight = ({
 );
 
 function Calendar({
+  autoFocus,
   className,
   classNames,
   showOutsideDays = true,
   ...props
-}: React.ComponentProps<typeof DayPicker>) {
+}: React.ComponentProps<typeof DayPicker> & { autoFocus?: boolean }) {
   return (
     <DayPicker
       className={cn('p-3', className)}
@@ -77,6 +78,7 @@ function Calendar({
         IconRight,
       }}
       showOutsideDays={showOutsideDays}
+      initialFocus={autoFocus}
       {...props}
     />
   );

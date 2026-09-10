@@ -8,7 +8,7 @@ import {
   defineBasePlugin,
 } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
-import { pipeRenderElementStatic } from './pipeRenderElementStatic';
+import { pipeRenderElementStatic } from './pipeRenderElementStatic.internal';
 
 describe('pipeRenderElementStatic', () => {
   afterEach(() => {
@@ -16,9 +16,9 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
-    const ParagraphPlugin = BaseParagraphPlugin.extend(() => ({
-      render: { as: 'article' },
-    }));
+    const ParagraphPlugin = BaseParagraphPlugin.configure({
+      component: 'article',
+    });
     const renderElement = mock(() => <mark data-kind="fallback" />);
     const editor = createStaticEditor({
       plugins: [ParagraphPlugin],
@@ -53,7 +53,7 @@ describe('pipeRenderElementStatic', () => {
           type: 'persistedElement',
         },
       },
-      render: { as: 'article' },
+      component: 'article',
     });
     const editor = createStaticEditor({ plugins: [ElementPlugin] });
     const markup = ReactDOMServer.renderToStaticMarkup(
@@ -109,10 +109,10 @@ describe('pipeRenderElementStatic', () => {
     );
   });
 
-  it('renders belowRootNodes around the default PliteElement output', () => {
+  it('renders afterNodeChildren around the default PliteElement output', () => {
     const RootPlugin = defineBasePlugin('rootExtra', {
-      render: {
-        belowRootNodes: () => <aside data-role="root" />,
+      slots: {
+        afterNodeChildren: () => <aside data-role="root" />,
       },
     });
     const editor = createStaticEditor({

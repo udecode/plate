@@ -12,34 +12,34 @@ export const FootnoteDefinitionPlugin = toPlatePlugin(
 export const FootnoteInputPlugin = toPlatePlugin(BaseFootnoteInputPlugin);
 
 export const FootnotePlugin = toPlatePlugin(BaseFootnotePlugin, {
-  dependencies: [FootnoteInputPlugin, NavigationFeedbackPlugin],
-}).extend(({ plugin }) => ({
-  update: ({ tx }) => ({
+  dependencies: [FootnoteInputPlugin],
+}).extend({
+  api: ({ editor, update }) => ({
     focusDefinition: ({ ref }: { ref: string }) => {
-      const target = tx.plugin(plugin).selectDefinition({ ref });
+      if (!editor.api.dom.root() || editor.read.view.isReadOnly()) return false;
+      const target = update.selectDefinition({ ref });
 
       if (!target) return false;
 
-      return tx.navigation.navigate({
-        scrollTarget: target.point,
-        target: {
-          path: target.targetPath,
-          type: 'node',
-        },
-      });
+      editor.api.dom.focus();
+      editor.api.dom.scrollIntoView(target.point);
+      const key = editor.key(target.targetPath);
+      const navigation = editor.plugin(NavigationFeedbackPlugin);
+      if (key && navigation.installed) navigation.api.flashTarget({ key });
+      return true;
     },
     focusReference: ({ ref, index = 0 }: { ref: string; index?: number }) => {
-      const target = tx.plugin(plugin).selectReference({ ref, index });
+      if (!editor.api.dom.root() || editor.read.view.isReadOnly()) return false;
+      const target = update.selectReference({ ref, index });
 
       if (!target) return false;
 
-      return tx.navigation.navigate({
-        scrollTarget: target.point,
-        target: {
-          path: target.targetPath,
-          type: 'node',
-        },
-      });
+      editor.api.dom.focus();
+      editor.api.dom.scrollIntoView(target.point);
+      const key = editor.key(target.targetPath);
+      const navigation = editor.plugin(NavigationFeedbackPlugin);
+      if (key && navigation.installed) navigation.api.flashTarget({ key });
+      return true;
     },
   }),
-}));
+});

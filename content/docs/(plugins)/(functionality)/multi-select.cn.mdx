@@ -65,7 +65,7 @@ const editor = createEditor({
 });
 ```
 
-- `MultiSelectPlugin`：扩展 TagPlugin 并将编辑器限制为仅包含标签元素
+- `MultiSelectPlugin`：无头标签选择器的 React 适配器，提供查询文本清理和重复标签预防。
 - `component`：分配 [`TagElement`](/docs/components/tag) 来渲染标签组件
 
 ### 添加 SelectEditor
@@ -118,13 +118,18 @@ export default function MySelectEditor() {
 
 ## 插件
 
-### TagPlugin
+### BaseTagPlugin
 
-用于单个标签功能的内联 void 元素插件。
+保留周围文本的内联 void 标签插件。
+
+### BaseMultiSelectPlugin
+
+扩展 `BaseTagPlugin`，提供重复标签预防、查询文本清理和向后删除行为。
+无头编辑器可以从 `platejs/tag` 导入此插件。
 
 ### MultiSelectPlugin
 
-`TagPlugin` 的扩展，将编辑器限制为仅包含标签元素，启用多选行为，具有自动文本清理和重复预防功能。
+`BaseMultiSelectPlugin` 的 React 适配器。通过配置组件渲染复制的标签视图。
 
 ## API
 

@@ -357,6 +357,7 @@ async function generateSectionXML(
 }
 
 class DocxDocument {
+  private readonly bookmarks = new Map<string, number>();
   allowRemoteImages: boolean;
   availableDocumentSpace: number;
   complexScriptFontSize: number;
@@ -883,6 +884,18 @@ class DocxDocument {
     );
 
     return relationshipXMLStrings;
+  }
+
+  getBookmark(htmlId: string) {
+    const id = this.bookmarks.get(htmlId);
+
+    return id === undefined ? undefined : { id, name: `plate_${id}` };
+  }
+
+  registerBookmark(htmlId: string) {
+    if (!this.bookmarks.has(htmlId)) {
+      this.bookmarks.set(htmlId, this.bookmarks.size);
+    }
   }
 
   createNumbering(type: 'ol' | 'ul', properties: NumberingProperties): number {

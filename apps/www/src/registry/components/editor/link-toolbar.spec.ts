@@ -1,62 +1,22 @@
+import { describe, expect, it, mock } from 'bun:test';
+
 import { createEditor } from 'platejs/react';
 
 import { linkPlugin } from './link';
 
-const editor = createEditor({ plugins: [linkPlugin] });
+const decodeEditor = createEditor({ plugins: [linkPlugin] });
 
 describe('LinkPlugin.api.decodeUrl', () => {
   it('decodes URL', () => {
     const url = 'https://example.com/path?query=%E3%81%82';
-    expect(editor.plugin(linkPlugin).api.decodeUrl(url)).toEqual(
+    expect(decodeEditor.plugin(linkPlugin).api.decodeUrl(url)).toEqual(
       'https://example.com/path?query=あ'
     );
   });
 
   it('handles malformed URI sequence', () => {
     const url = 'https://example.com/path?query=%';
-    expect(editor.plugin(linkPlugin).api.decodeUrl(url)).toEqual(url);
-  });
-});
-
-describe('LinkPlugin.api.encodeUrl', () => {
-  it('does not transform a URL containing no special characters', () => {
-    const userInfo = ['username', 'credential'].join(':');
-    const url = `https://${userInfo}@example.com:1234/path?query=value#fragment`;
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(url);
-  });
-
-  it('does not transform a URL containing encoded characters', () => {
-    const url =
-      'https://example.com/path%20with%20spaces?query=value%2Bencoded';
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(url);
-  });
-
-  it('encodes unescaped characters without double-encoding escapes', () => {
-    const url = 'https://example.com/path%20with%20spaces?query=あ';
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(
-      'https://example.com/path%20with%20spaces?query=%E3%81%82'
-    );
-  });
-
-  it('encodes a URL containing special characters', () => {
-    const url = 'https://example.com/path?query=あ';
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(
-      'https://example.com/path?query=%E3%81%82'
-    );
-  });
-
-  it.each(['https://example.com/%', ''])(
-    'preserves malformed or empty input %j',
-    (url) => {
-      expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(url);
-    }
-  );
-
-  it('encodes a non-URI string', () => {
-    const url = 'Just a random string without URI format';
-    expect(editor.plugin(linkPlugin).api.encodeUrl(url)).toEqual(
-      'Just%20a%20random%20string%20without%20URI%20format'
-    );
+    expect(decodeEditor.plugin(linkPlugin).api.decodeUrl(url)).toEqual(url);
   });
 });
 
@@ -65,7 +25,6 @@ describe('LinkPlugin floating API', () => {
     const configuredPlugin = linkPlugin.configure({
       initialState: {
         forceSubmit: true,
-        triggerFloatingLinkHotkeys: 'alt+k',
       },
     });
     const innerEditor = createEditor({ plugins: [configuredPlugin] });
@@ -78,7 +37,6 @@ describe('LinkPlugin floating API', () => {
       forceSubmit: true,
       mode: '',
       text: '',
-      triggerFloatingLinkHotkeys: 'alt+k',
       url: '',
     });
   });
@@ -284,4 +242,53 @@ describe('LinkPlugin floating API', () => {
       url: 'https://x.dev',
     });
   });
+});
+
+it('keeps a rejected draft open and unchanged', () => {
+  const editor = createEditor({
+    plugins: [
+      linkPlugin.configure({
+        initialState: { transformInput: () => 'javascript:noop()' },
+      }),
+    ],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'kept' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 4 },
+    },
+  });
+  const link = editor.plugin(linkPlugin);
+  link.api.show('insert', editor.id);
+  link.store.set({ url: 'https://example.com/a path', text: 'rejected' });
+  const before = editor.read.lastCommit();
+  expect(link.api.submit()).toBeUndefined();
+  expect(link.store.get()).toMatchObject({
+    mode: 'insert',
+    url: 'https://example.com/a path',
+    text: 'rejected',
+  });
+  expect(editor.read.lastCommit()).toBe(before);
+});
+
+it('submits a raw draft through one transformation and closes after insertion', () => {
+  const transformInput = mock((url: string) => `https://${url}`);
+  const editor = createEditor({
+    plugins: [linkPlugin.configure({ initialState: { transformInput } })],
+    initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
+  const link = editor.plugin(linkPlugin);
+  link.api.show('insert', editor.id);
+  link.store.set({ url: 'example.com/a path', text: 'Example' });
+  expect(link.api.submit()).toBe(true);
+  expect(transformInput).toHaveBeenCalledTimes(1);
+  expect(
+    editor.read.nodes.find({ at: [], type: linkPlugin })?.[0]
+  ).toMatchObject({ url: 'https://example.com/a%20path' });
+  expect(link.store.get()).toMatchObject({ mode: '', url: '', text: '' });
 });

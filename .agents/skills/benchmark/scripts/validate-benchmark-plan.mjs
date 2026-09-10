@@ -399,6 +399,15 @@ const getNotApplicableReason = (value) =>
 
 export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
   const errors = [];
+  if (complete) {
+    const coverage = parseBulletSection(markdown, '## Interaction Coverage');
+    for (const field of ['first-interaction', 'settled-interaction', 'route-scope', 'reporter-profile']) {
+      const result = coverage?.[field];
+      if (!isSuccessfulResult(result) && !isNotApplicable(result)) {
+        errors.push(`Interaction Coverage requires ${field}: pass: <proof> or N/A: <reason>`);
+      }
+    }
+  }
   const benchmarkSource = parseBulletSection(markdown, '## Benchmark Source');
   const comparisonSignature = parseComparisonSignature(markdown);
   const laneTable = parseLaneTable(markdown);

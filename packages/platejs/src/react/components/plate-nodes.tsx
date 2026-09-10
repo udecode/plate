@@ -10,7 +10,6 @@ import type {
 } from '../../facade';
 import type {
   AnyBasePluginDefinition,
-  InferPluginDecoration,
   PluginReference,
   RenderElementProps,
   RenderLeafProps,
@@ -20,6 +19,7 @@ import type {
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import type { UnknownObject } from '../../lib/types/AnyObject';
 import { useComposedRef } from '../internal/react-helpers';
+import type { EditableElementSlots } from '../plite-react';
 import type { AnyPlatePluginContext, PlatePluginContext } from '../plugin';
 
 const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
@@ -63,15 +63,17 @@ type PlateTextPropsConfig<TPlugin extends PlateNodePropsDescriptor> =
   InternalPluginDefinitionOf<TPlugin>;
 
 type PlateNodeContext<C extends AnyBasePluginDefinition> = [C] extends [never]
-  ? AnyPlatePluginContext
-  : PlatePluginContext<C>;
+  ? Omit<AnyPlatePluginContext, 'slots'>
+  : Omit<PlatePluginContext<C>, 'slots'>;
 
 type PlateElementRenderProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = never,
 > = PlateNodeProps<C> &
-  Omit<RenderElementProps<N>, 'path'> & {
+  Omit<RenderElementProps<N>, 'path' | 'slots'> & {
     attributes: UnknownObject;
+    slots: Omit<EditableElementSlots, 'contentRoot'> &
+      Pick<RenderElementProps<N>['slots'], 'contentRoot'>;
   };
 
 /** Props for the element component owned by a plugin descriptor. */
@@ -305,10 +307,7 @@ type PlateLeafRenderProps<
   N extends Text = Text,
   C extends AnyBasePluginDefinition = never,
 > = PlateNodeProps<C> &
-  RenderLeafProps<
-    N,
-    N & Partial<[C] extends [never] ? {} : InferPluginDecoration<NoInfer<C>>>
-  > & {
+  RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   };
@@ -335,13 +334,7 @@ export const PlateLeaf = function PlateLeaf({
   ref,
   ...props
 }: (PlateNodeProps &
-  RenderLeafProps<
-    Text,
-    Text &
-      Partial<
-        [never] extends [never] ? {} : InferPluginDecoration<NoInfer<never>>
-      >
-  > & {
+  RenderLeafProps<Text, Text> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
@@ -384,10 +377,7 @@ export const PlateLeaf = function PlateLeaf({
   className,
   ...props
 }: (PlateNodeProps<C> &
-  RenderLeafProps<
-    N,
-    N & Partial<[C] extends [never] ? {} : InferPluginDecoration<NoInfer<C>>>
-  > & {
+  RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &

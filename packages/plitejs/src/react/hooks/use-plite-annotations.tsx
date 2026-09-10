@@ -1,5 +1,6 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useSyncExternalStore,
@@ -9,47 +10,47 @@ import type {
   PliteAnnotationSnapshot,
   PliteAnnotationStore,
   PliteResolvedAnnotation,
-} from '../annotation-store';
+} from '../../annotations';
 
 const EMPTY_SNAPSHOT = Object.freeze({
   allIds: Object.freeze([]),
   byId: new Map(),
-}) as PliteAnnotationSnapshot<any, any>;
+}) as PliteAnnotationSnapshot;
 
 const subscribeEmpty = () => () => {};
 
-const getEmptySnapshot = <
-  TData = unknown,
-  TProjection extends Record<string, unknown> = Record<string, unknown>,
->() => EMPTY_SNAPSHOT as PliteAnnotationSnapshot<TData, TProjection>;
+const getEmptySnapshot = <TData = unknown,>() =>
+  EMPTY_SNAPSHOT as PliteAnnotationSnapshot<TData>;
 
-export const PliteAnnotationStoreContext = createContext<PliteAnnotationStore<
-  any,
-  any
-> | null>(null);
+export const PliteAnnotationStoreContext =
+  createContext<PliteAnnotationStore | null>(null);
 
-const useResolvedPliteAnnotationStore = <
-  TData = unknown,
-  TProjection extends Record<string, unknown> = Record<string, unknown>,
->(
-  store?: PliteAnnotationStore<TData, TProjection> | null
+/** Provide one annotation store to annotation reader hooks. */
+export const PliteAnnotationProvider = <TData,>({
+  children,
+  store,
+}: {
+  children: ReactNode;
+  store: PliteAnnotationStore<TData>;
+}) => (
+  <PliteAnnotationStoreContext value={store}>
+    {children}
+  </PliteAnnotationStoreContext>
+);
+
+const useResolvedPliteAnnotationStore = <TData = unknown,>(
+  store?: PliteAnnotationStore<TData> | null
 ) => {
   const contextStore = useContext(PliteAnnotationStoreContext);
 
-  return (store ?? contextStore) as PliteAnnotationStore<
-    TData,
-    TProjection
-  > | null;
+  return (store ?? contextStore) as PliteAnnotationStore<TData> | null;
 };
 
 /** Read one resolved annotation by id. */
-export function usePliteAnnotation<
-  TData = unknown,
-  TProjection extends Record<string, unknown> = Record<string, unknown>,
->(
+export function usePliteAnnotation<TData = unknown>(
   id: string,
-  store?: PliteAnnotationStore<TData, TProjection> | null
-): PliteResolvedAnnotation<TData, TProjection> | null {
+  store?: PliteAnnotationStore<TData> | null
+): PliteResolvedAnnotation<TData> | null {
   const resolvedStore = useResolvedPliteAnnotationStore(store);
   const subscribe = useCallback(
     (listener: () => void) =>
@@ -67,12 +68,9 @@ export function usePliteAnnotation<
 }
 
 /** Read the current annotation snapshot from an explicit or provider store. */
-export function usePliteAnnotations<
-  TData = unknown,
-  TProjection extends Record<string, unknown> = Record<string, unknown>,
->(
-  store?: PliteAnnotationStore<TData, TProjection> | null
-): PliteAnnotationSnapshot<TData, TProjection> {
+export function usePliteAnnotations<TData = unknown>(
+  store?: PliteAnnotationStore<TData> | null
+): PliteAnnotationSnapshot<TData> {
   const resolvedStore = useResolvedPliteAnnotationStore(store);
   const subscribe = useCallback(
     (listener: () => void) =>
@@ -80,8 +78,7 @@ export function usePliteAnnotations<
     [resolvedStore]
   );
   const getSnapshot = useCallback(
-    () =>
-      resolvedStore?.getSnapshot() ?? getEmptySnapshot<TData, TProjection>(),
+    () => resolvedStore?.getSnapshot() ?? getEmptySnapshot<TData>(),
     [resolvedStore]
   );
 

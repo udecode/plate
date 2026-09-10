@@ -45,9 +45,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
   const handleTurnInto = React.useCallback(
     (action: string) => {
-      editor.read.selection.nodes().forEach(([, path]) => {
-        applyBlockAction(editor, action, { at: path });
-      });
+      applyBlockAction(editor, action);
     },
     [editor]
   );
@@ -71,12 +69,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     [editor]
   );
 
-  if (isTouch) {
-    return children;
-  }
-
   return (
-    <ContextMenu modal={false}>
+    <ContextMenu disabled={isTouch || readOnly} modal={false}>
       <ContextMenuTrigger
         onContextMenu={(event) => {
           const { dataset } = event.target as HTMLElement;
@@ -245,6 +239,6 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
 export const BlockMenuKit = [
   definePlatePlugin('blockMenuUi', {
-    render: { aboveEditable: BlockContextMenu },
+    slots: { wrapContent: BlockContextMenu },
   }),
 ];

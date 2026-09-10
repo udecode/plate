@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { createEditor as createPliteEditor, type Value } from '../../facade';

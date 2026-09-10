@@ -1,14 +1,8 @@
 'use client';
 
+import { type EditableSiblingProps, useEditor } from 'platejs/react';
 import {
-  type EditableSiblingProps,
-  type PlateLeafProps,
-  PlateLeaf,
-  useEditor,
-} from 'platejs/react';
-import {
-  type YjsRemoteCursorDecorationData,
-  type YjsPlugin,
+  YjsPlugin as YjsPluginBase,
   useYjsRemoteCursor,
   useYjsRemoteCursorGeometry,
   useYjsRemoteCursorIds,
@@ -33,27 +27,19 @@ const cursorName = (clientId: number, data: CursorData | undefined) =>
     ? data.name
     : `Guest ${clientId}`;
 
-export function RemoteCursorLeaf(props: PlateLeafProps<typeof YjsPlugin>) {
-  const decoration = props.leaf.yjsRemoteCursor as
-    | YjsRemoteCursorDecorationData
-    | undefined;
-
-  if (!decoration) return <PlateLeaf {...props} />;
-
-  const color = cursorColor(decoration.clientId, decoration.data);
-
-  return (
-    <PlateLeaf
-      {...props}
-      attributes={{
-        ...props.attributes,
-        'data-client-id': decoration.clientId,
-        'data-remote-selection': '',
-      }}
-      style={{ backgroundColor: `${color}33` }}
-    />
-  );
-}
+/** Yjs collaboration with copied selection, caret, and label presentation. */
+export const YjsPlugin = YjsPluginBase.extend({
+  decorate: {
+    attributes: ({ decoration, read }) => {
+      const clientId = Number(decoration.key);
+      const cursor = read.remoteCursor(clientId);
+      return {
+        style: { backgroundColor: `${cursorColor(clientId, cursor?.data)}33` },
+      };
+    },
+  },
+  slots: { afterEditable: RemoteCursorOverlay },
+});
 
 function RemoteCursor({
   clientId,

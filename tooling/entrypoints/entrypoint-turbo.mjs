@@ -860,9 +860,12 @@ export const createPackageTurboConfig = (packageName) => {
     outputs: [],
   };
   if (packageName === 'plitejs') {
-    const packageTestFiles = getPackageSourceFiles(packageName, {
-      tests: true,
-    });
+    const packageTestFiles = [
+      ...getPackageSourceFiles(packageName, { tests: true }),
+      ...walkFiles(path.join(packageRoot(packageName), 'test/react')).filter(
+        (filename) => sourceFilePattern.test(filename)
+      ),
+    ];
 
     tasks['typecheck:tests'] = {
       cache: true,
@@ -875,6 +878,7 @@ export const createPackageTurboConfig = (packageName) => {
         'src/**/*.slow.*',
         'src/**/*-contract.*',
         'src/**/__tests__/**',
+        'test/react/**',
         ...sharedTypecheckInputs,
         'tsconfig.entrypoints/tests.json',
       ],

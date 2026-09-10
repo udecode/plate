@@ -4,7 +4,10 @@ import { describe, it } from 'node:test';
 import { createEditor, type Descendant, type Editor, TextApi } from 'plitejs';
 
 import { history } from '../../src/history';
-import { replace as editorReplace } from '../../src/internal';
+import {
+  observeAnchorStateWork,
+  replace as editorReplace,
+} from '../../src/internal';
 
 const paragraph = (text: string): Descendant => ({
   type: 'paragraph',
@@ -86,6 +89,92 @@ const assertUndoRedoRoundTrip = (
 };
 
 describe('plite-history seeded soak contract', () => {
+  it(
+    'keeps one persistent nearest range exact across repeated edit history',
+    { timeout: 30_000 },
+    () => {
+      const random = createSeededRandom(0x20_26_09_03);
+      const editor = createEditor({
+        extensions: [history({ maxDepth: 200, newBatchDelay: 0 })],
+        initialValue: [paragraph('persistent-anchor-history')],
+      });
+      const anchor = editor.anchor(
+        {
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 20 },
+        },
+        { association: 'inward', deletion: 'nearest' }
+      );
+      let text = 'persistent-anchor-history';
+      let latestCommitWork:
+        | Readonly<{
+            recoveryBytes?: number;
+            recoveryEntries?: number;
+            visitedAnchors: number;
+          }>
+        | undefined;
+      const stop = observeAnchorStateWork(editor, (work) => {
+        if (work.phase === 'commit') latestCommitWork = work;
+      });
+
+      for (let step = 0; step < 100; step++) {
+        const before = structuredClone(anchor.resolve());
+        const operation = Math.floor(random() * 3);
+        const offset = Math.floor(random() * (text.length + 1));
+
+        editor.update({ history: 'new-batch' }, (tx) => {
+          if (operation === 0 || text.length === 0) {
+            tx.text.insert('x', { at: { path: [0, 0], offset } });
+            text = `${text.slice(0, offset)}x${text.slice(offset)}`;
+            return;
+          }
+
+          const from = Math.min(offset, text.length - 1);
+
+          tx.text.delete({
+            at: {
+              kind: 'text',
+              anchor: { path: [0, 0], offset: from },
+              focus: { path: [0, 0], offset: from + 1 },
+            },
+          });
+          text = `${text.slice(0, from)}${text.slice(from + 1)}`;
+          if (operation === 2) {
+            tx.text.insert('z', { at: { path: [0, 0], offset: from } });
+            text = `${text.slice(0, from)}z${text.slice(from)}`;
+          }
+        });
+        const after = structuredClone(anchor.resolve());
+
+        assert.equal(latestCommitWork?.recoveryEntries, 1);
+        assert.equal(latestCommitWork?.recoveryBytes, 28);
+        for (let cycle = 0; cycle < 10; cycle++) {
+          undo(editor);
+          assert.deepEqual(
+            anchor.resolve(),
+            before,
+            `step ${step} undo ${cycle}`
+          );
+          redo(editor);
+          assert.deepEqual(
+            anchor.resolve(),
+            after,
+            `step ${step} redo ${cycle}`
+          );
+        }
+      }
+
+      anchor.release();
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: text.length } });
+      });
+      assert.equal(latestCommitWork?.visitedAnchors, 0);
+      assert.equal(latestCommitWork?.recoveryEntries, 0);
+      assert.equal(latestCommitWork?.recoveryBytes, 0);
+      stop();
+    }
+  );
+
   it('queues remote bursts without eagerly walking deep history', () => {
     const editor = createEditor({
       extensions: [history({ maxDepth: 1000 })],

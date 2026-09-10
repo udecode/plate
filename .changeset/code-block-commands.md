@@ -6,13 +6,13 @@ Require React and React DOM 19.2 or newer.
 
 Export `CodeHighlightPluginState` as the complete mutable state contract for `BaseCodeHighlightPlugin`.
 
-Expose code-block queries through `editor.read.codeBlock` and mutations through `editor.update.codeBlock`. Register code-block and syntax properties in compiled schemas.
+Expose code-block queries through `editor.read.codeBlock` and mutations through `editor.update.codeBlock`. Register code-block properties in compiled schemas.
 
 Preserve compound command targets and make earlier edits visible to later steps in the same transaction.
 
-Install code lines as a required `CodeBlockPlugin` dependency. Replace `CodeSyntaxPlugin` and `BaseCodeSyntaxPlugin` with `CodeHighlightPlugin` and `BaseCodeHighlightPlugin`. The highlighting plugin owns the syntax mark, Lowlight state, decorations, and refresh behavior and depends on `CodeBlockPlugin`. Plugin, command, and persisted identities are `codeBlock`, `codeLine`, and `codeSyntax`.
+Store each code block in one newline-bearing text child. Remove `CodeLinePlugin`, `BaseCodeLinePlugin`, and the `codeLine` element. Replace `CodeSyntaxPlugin` and `BaseCodeSyntaxPlugin` with `CodeHighlightPlugin` and `BaseCodeHighlightPlugin`. The highlighting plugin owns Lowlight state, transient token decorations, and refresh behavior and depends on `CodeBlockPlugin`.
 
-**Migration:** Replace standalone query, formatter, decoration, and transform imports with the installed plugin groups:
+**Migration:** Remove code-line plugins and components from plugin arrays. Run `migratePlateV54` while loading persisted v53 code blocks. Replace standalone query, formatter, decoration, and transform imports with the installed plugin groups:
 
 ```tsx
 editor.read.codeBlock.entry();

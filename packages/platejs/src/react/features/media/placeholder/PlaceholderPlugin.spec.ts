@@ -1,7 +1,9 @@
 import { BaseParagraphPlugin, SelectionApi } from '../../../../core';
 import { BaseImagePlugin } from '../../../../features/media/lib/image/BaseImagePlugin';
-import { createEditor, pipeHandler } from '../../../core';
-import { PlaceholderPlugin, UploadErrorCode } from './PlaceholderPlugin';
+import { UploadErrorCode } from '../../../../features/media/lib/placeholder/BasePlaceholderPlugin';
+import { createEditor } from '../../../core';
+import { pipeHandler } from '../../../utils/pipeHandler.internal';
+import { PlaceholderPlugin } from './PlaceholderPlugin';
 
 const createDropEvent = () => {
   const preventDefault = mock();
@@ -163,10 +165,10 @@ describe('PlaceholderPlugin', () => {
 
     const uploadingFiles = editor
       .plugin(PlaceholderPlugin)
-      .store.get('uploadingFiles');
+      .store.get('uploads');
 
-    expect(uploadingFiles[editor.key([1])!]).toBe(first);
-    expect(uploadingFiles[editor.key([2])!]).toBe(second);
+    expect(uploadingFiles[editor.key([1])!]?.file).toBe(first);
+    expect(uploadingFiles[editor.key([2])!]?.file).toBe(second);
   });
 
   it('replaces a placeholder with direct media caption children', () => {
@@ -201,21 +203,26 @@ describe('PlaceholderPlugin', () => {
   });
 
   it('removes an uploading file without mutating the published snapshot', () => {
-    const editor = createEditor({ plugins: [PlaceholderPlugin] });
+    const editor = createEditor({
+      plugins: [PlaceholderPlugin],
+      initialValue: [
+        { type: 'placeholder', mediaType: 'image', children: [{ text: '' }] },
+      ],
+    });
     const file = new File(['image'], 'image.png', { type: 'image/png' });
     const placeholder = editor.plugin(PlaceholderPlugin);
     const nodeKey = editor.key([0])!;
 
-    placeholder.api.addUploadingFile(nodeKey, file);
-    const publishedFiles = placeholder.store.get('uploadingFiles');
+    placeholder.api.upload(nodeKey, file);
+    const publishedFiles = placeholder.store.get('uploads');
 
     expect(Object.isFrozen(publishedFiles)).toBe(true);
 
-    placeholder.api.removeUploadingFile(nodeKey);
+    placeholder.api.cancelUpload(nodeKey);
 
-    expect(publishedFiles).toEqual({ [nodeKey]: file });
-    expect(placeholder.store.get('uploadingFiles')).toEqual({});
-    expect(placeholder.store.get('uploadingFiles')).not.toBe(publishedFiles);
+    expect(publishedFiles[nodeKey]?.file).toBe(file);
+    expect(placeholder.store.get('uploads')).toEqual({});
+    expect(placeholder.store.get('uploads')).not.toBe(publishedFiles);
   });
 
   it('does not publish uploading files when the document update aborts', () => {
@@ -236,9 +243,7 @@ describe('PlaceholderPlugin', () => {
         throw new Error('abort');
       })
     ).toThrow('abort');
-    expect(
-      editor.plugin(PlaceholderPlugin).store.get('uploadingFiles')
-    ).toEqual({});
+    expect(editor.plugin(PlaceholderPlugin).store.get('uploads')).toEqual({});
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },
     ]);

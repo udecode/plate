@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import {
-  BaseParagraphPlugin,
-  getPlateRuntime,
-  editorCommands,
-  type Value,
-} from '../../core';
+import { BaseParagraphPlugin, editorCommands, type Value } from '../../core';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';

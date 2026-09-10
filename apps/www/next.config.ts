@@ -58,13 +58,17 @@ const buildWorkspaceDevAliases = () => {
   };
 };
 
-const withMDX = createMDX({});
+const withMDX = createMDX({
+  outDir:
+    process.env.PLATE_WWW_DYNAMIC_DOCS === '1' ? '.source-dev' : '.source',
+});
 
 const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
     cacheComponents: true,
-    distDir: isPliteMode ? '.next-plite' : '.next',
+    distDir:
+      process.env.PLATE_WWW_DIST_DIR ?? (isPliteMode ? '.next-plite' : '.next'),
     allowedDevOrigins: ['udecodes-mac-studio.tail49dee1.ts.net'],
     typescript: {
       ignoreBuildErrors: true,

@@ -130,6 +130,9 @@ const editor = createEditor({
 editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
 ```
 
+默认插入到当前区块之后。`replaceEmpty: true` 在同一个撤销步骤中替换空的来源区块。
+`after` 指定来源区块；显式 `at` 使用节点插入位置。
+
 ### `editor.plugin(BaseDetailsPlugin).update.wrap`
 
 包裹选中的同级块。第一个文本块会成为 Summary；如果第一个块是结构化节点，则会在它之前插入空 Summary。
@@ -174,7 +177,7 @@ HTML 使用固定的 `<details>` 和 `<summary>` 标签。Markdown 使用等价�
 
 ### `BaseDetailsPlugin`
 
-为 `details` 节点提供无界面 schema、编解码器、修正逻辑、临时状态和转换。
+为 `details` 节点提供无界面 schema、编解码器、修正逻辑、临时状态、转换，以及 Enter、Backspace 和 Delete 行为。
 
 ### `BaseDetailsSummaryPlugin`
 
@@ -182,7 +185,7 @@ HTML 使用固定的 `<details>` 和 `<summary>` 标签。Markdown 使用等价�
 
 ### `DetailsPlugin`
 
-提供 Enter、Backspace 和 Delete 行为的 React 适配器。
+用于渲染 Details 的 React 适配器。
 
 ### `DetailsSummaryPlugin`
 

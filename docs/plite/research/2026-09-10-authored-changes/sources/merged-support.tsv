@@ -1,0 +1,8 @@
+lead_key	support	reason
+review:accepted-base-and-pending:projection	Google Docs views	Independent public behavior supports multiple materialized views
+review:accepted-base-and-pending:projection	SuperDoc review docs	Pending persistence and accepted/final distinction
+revision:authored-canonical-change:identity	Loro ChangeMeta	Grouped changes and causal dependencies
+revision:authored-canonical-change:identity	Yhub compute worker	Authenticated author attribution
+review:dependent-decisions:atomicity	HWC issue 23	Group identity differs from partial decision target
+review:complete-capture:mutation-boundary	CKEditor custom features	Fail-closed command coverage
+revision:retention-separate-from-undo:history	Quill History	Mapped inverse undo is distinct from permanent history

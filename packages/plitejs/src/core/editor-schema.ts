@@ -110,7 +110,12 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       children: readonly Descendant[],
       root: RootKey,
       ancestors: readonly Element[],
-      dropMisplaced: boolean
+      dropMisplaced: boolean,
+      baseline?: Readonly<{
+        children: readonly Descendant[];
+        path: readonly number[];
+        from: number;
+      }>
     ) => readonly Descendant[];
     copyChildren: (
       children: readonly Descendant[],
@@ -910,7 +915,6 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const DEFAULT_ELEMENT_BEHAVIOR: EditorElementBehavior = Object.freeze({
     atom: false,
-    editableIsland: false,
     inline: false,
     isolating: false,
     keyboardSelectable: false,
@@ -1263,7 +1267,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const elementUsesInlineContent = (element: Element) => {
     const behavior = getElementBehavior(element);
 
-    if (behavior.void && !behavior.editableIsland) return false;
+    if (behavior.void) return false;
     const content = getCompiledElement(element)?.content;
 
     return content
@@ -1737,9 +1741,14 @@ export const createEditorSchema = <V extends Value = Value>(
     schema: CompiledEditorSchema,
     root: RootKey,
     ancestors: readonly Element[],
-    dropMisplaced: boolean
+    dropMisplaced: boolean,
+    baseline?: readonly Descendant[],
+    offset = 0
   ): readonly Descendant[] => {
-    const canonical = children.map((node) => {
+    const canonical = children.map((node, index) => {
+      const previous = baseline?.[index + offset];
+
+      if (node === previous) return node;
       if (NodeApi.isText(node)) {
         const parent = ancestors[0];
         const context = toCompiledTargetContext(
@@ -1759,6 +1768,12 @@ export const createEditorSchema = <V extends Value = Value>(
       }
 
       const type = getElementType(node);
+      const previousChildren =
+        previous &&
+        !NodeApi.isText(previous) &&
+        getElementType(previous) === type
+          ? previous.children
+          : undefined;
 
       if (!type || !schema.elements.byType.has(type)) {
         if (schema.unknown === 'reject') {
@@ -1772,7 +1787,8 @@ export const createEditorSchema = <V extends Value = Value>(
           schema,
           root,
           [node, ...ancestors],
-          dropMisplaced
+          dropMisplaced,
+          previousChildren
         );
 
         return nested === node.children ? node : { ...node, children: nested };
@@ -1798,7 +1814,8 @@ export const createEditorSchema = <V extends Value = Value>(
         schema,
         root,
         [candidate, ...ancestors],
-        dropMisplaced
+        dropMisplaced,
+        previousChildren
       );
 
       if (candidate === node && nested === node.children) return node;
@@ -1812,8 +1829,32 @@ export const createEditorSchema = <V extends Value = Value>(
   };
 
   const canonicalizeChildren: InternalEditorSchemaApi['canonicalizeChildren'] =
-    (children, root, ancestors, dropMisplaced) => {
+    (children, root, ancestors, dropMisplaced, baseline) => {
       const schema = getDeclarativeSchema();
+      // Only the validated immutable before-root can prove unchanged properties.
+      let previous =
+        baseline &&
+        baseline.path.length === ancestors.length &&
+        VALIDATED_DOCUMENT_ROOTS.get(baseline.children) ===
+          getValidationAuthority()
+          ? baseline.children
+          : undefined;
+
+      if (baseline) {
+        for (let depth = 0; previous && depth < baseline.path.length; depth++) {
+          const parent = previous[baseline.path[depth]];
+          if (
+            !parent ||
+            NodeApi.isText(parent) ||
+            getElementType(parent) !==
+              getElementType(ancestors[baseline.path.length - depth - 1] ?? {})
+          ) {
+            previous = undefined;
+            break;
+          }
+          previous = parent.children;
+        }
+      }
 
       return schema
         ? canonicalizeDeclarativeChildren(
@@ -1821,7 +1862,9 @@ export const createEditorSchema = <V extends Value = Value>(
             schema,
             root,
             ancestors,
-            dropMisplaced
+            dropMisplaced,
+            previous,
+            baseline?.from ?? 0
           )
         : children;
     };
@@ -3041,7 +3084,9 @@ export const createEditorSchema = <V extends Value = Value>(
       main: value.children,
       ...value.roots,
     };
-    const ownershipIndexes = getDocumentOwnershipIndexes(schema, value);
+    const ownershipIndexes = hasContentRoots()
+      ? getDocumentOwnershipIndexes(schema, value)
+      : [];
     const projectedRoots = new Map<
       string,
       Readonly<{
@@ -3147,7 +3192,7 @@ export const createEditorSchema = <V extends Value = Value>(
         children.every((node) => isDeepFrozenNode(node))
       ) {
         VALIDATED_DOCUMENT_ROOTS.set(children, authority);
-        if (schema) {
+        if (schema && hasContentRoots()) {
           sealElementOwnedRootIndex(
             schema,
             root,
@@ -3179,15 +3224,6 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
       const value = input as EditorDocumentValue<V>;
-
-      assertSchemaJsonValue(
-        value.children,
-        'Editor document children',
-        location
-      );
-      if (value.roots !== undefined) {
-        assertSchemaJsonValue(value.roots, 'Editor document roots', location);
-      }
 
       const declarative = getDeclarativeSchema();
 
@@ -3766,9 +3802,6 @@ export const createEditorSchema = <V extends Value = Value>(
       ElementApi.isElement(element) && getElementBehavior(element).atom,
     isBlock: (element: Node) =>
       ElementApi.isElement(element) && !getElementBehavior(element).inline,
-    isEditableIsland: (element: Node) =>
-      ElementApi.isElement(element) &&
-      getElementBehavior(element).editableIsland,
     isElementTypeInGroup,
     isSetValuedProperty,
     isTextPropertyAllowedAt,

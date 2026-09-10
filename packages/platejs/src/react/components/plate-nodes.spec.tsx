@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 
 import { ElementIdPlugin } from '../../lib';
 import { type Editor, type EditorReference, createEditor } from '../editor';
-import { PlateStoreProvider } from '../stores';
+import { EditorProvider } from './EditorProvider';
 import { PlateElement } from './plate-nodes';
 
 const createElement = (id?: string) =>
@@ -27,23 +27,11 @@ const createProps = (editor: TestPlateEditor, id?: string) =>
     path: [0],
   }) as any;
 
-const renderWithStore = ({
-  editor,
-  isMounted,
-}: {
-  editor: TestPlateEditor;
-  isMounted: boolean;
-}) =>
+const renderWithStore = ({ editor }: { editor: Editor }) =>
   render(
-    <PlateStoreProvider
-      containerRef={{ current: null }}
-      editor={editor}
-      isMounted={isMounted}
-      primary
-      scope={editor.id}
-    >
+    <EditorProvider editor={editor}>
       <PlateElement {...createProps(editor, 'block-1')} />
-    </PlateStoreProvider>
+    </EditorProvider>
   );
 
 describe('PlateElement', () => {
@@ -75,7 +63,7 @@ describe('PlateElement', () => {
       initialValue: [createElement('block-1')],
       plugins: [ElementIdPlugin],
     });
-    const { container } = renderWithStore({ editor, isMounted: true });
+    const { container } = renderWithStore({ editor });
     const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();

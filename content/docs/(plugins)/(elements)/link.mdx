@@ -23,7 +23,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -36,7 +36,7 @@ The fastest way to add link functionality is with the `LinkKit`, which includes 
 - [`LinkElement`](/docs/components/link): Renders link elements.
 - [`LinkFloatingToolbar`](/docs/components/link): Provides floating toolbar for link editing.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -54,7 +54,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -64,7 +64,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugin
+### Add plugin
 
 Include `LinkPlugin` in your Plate plugins array when creating the editor.
 
@@ -81,7 +81,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 Configure the plugin with floating toolbar and custom components.
 
@@ -96,7 +96,7 @@ const editor = createEditor({
     // ...otherPlugins,
     LinkPlugin.configure({
       component: LinkElement,
-      render: {
+      slots: {
         afterEditable: LinkFloatingToolbar,
       },
     }),
@@ -104,11 +104,11 @@ const editor = createEditor({
 });
 ```
 
-- `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing.
+- `slots.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing.
 - `.configure({ component: LinkElement })`: Renders link elements with
   [`LinkElement`](/docs/components/link).
 
-### Input Rules
+### Input rules
 
 Configure `LinkPlugin` to enable the built-in link input presets:
 
@@ -132,13 +132,13 @@ const editor = createEditor({
 - `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink.
 - `LinkRules.markdown()`: Enables `[text](url)` source-entry conversion on the closing `)`.
 
-### Add Toolbar Button
+### Add toolbar button
 
 You can add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your [Toolbar](/docs/toolbar) to insert and edit links.
 
 </Steps>
 
-## Keyboard Shortcuts
+## Keyboard shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + K">Add a link on the selected text.</KeyTableItem>
@@ -202,7 +202,7 @@ Callback function to validate a URL.
 Callback function to optionally get the href for a URL. It returns an optional link that is different from the text content. For example, returns `https://google.com` for `google.com`.
 </APIItem>
 <APIItem name="transformInput" type="(url: string) => string | undefined" optional>
-Callback function to optionally transform the submitted URL provided by the user to the URL input before validation.
+Transforms the URI-encoded input passed to `upsert` before URL validation.
 </APIItem>
 </APIOptions>
 </API>
@@ -221,9 +221,11 @@ editor.update.link.unwrap({ split: true });
 | --- | --- |
 | `editor.update.link.insert(node, options?)` | Inserts a link node. |
 | `editor.update.link.unwrap(options?)` | Unwraps matching links; `split` limits the update to the selected part. |
-| `editor.update.link.upsert(options)` | Inserts or updates a link at the selection and validates its URL. |
+| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection. |
 | `editor.update.link.upsertText(options)` | Replaces the text of the link above the selection. |
 | `editor.update.link.wrap(options)` | Wraps the selected text in a link. |
+
+`upsert` encodes unescaped URI characters, applies `transformInput`, and validates the result before changing the document. Valid percent escapes remain intact. `skipValidation` skips validation while retaining input preparation. When `insertTextInLink` inserts text inside an existing link, it preserves the input as literal text.
 
 ## Plugin API
 
@@ -267,7 +269,7 @@ Options for creating a new link node.
 </APIOptions>
 </API>
 
-## Registry Link UI
+## Registry link UI
 
 The copied `link` item owns floating state, positioning, hotkeys,
 outside clicks, URL input, and toolbar commands. It exports the app-local

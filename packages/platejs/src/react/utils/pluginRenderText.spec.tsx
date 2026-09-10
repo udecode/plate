@@ -6,12 +6,13 @@ import React from 'react';
 import { property } from '../../core';
 import { defineBasePlugin } from '../../lib/plugin';
 import { createEditor } from '../editor/withPlate';
-import { pluginRenderText } from './pluginRenderText';
+import { pluginRenderText } from './pluginRenderText.internal';
 
-it('uses a plain render.as fast path for simple text plugins', () => {
+it('uses an intrinsic component fast path for simple text plugins', () => {
   const testPlugin = defineBasePlugin('test', {
+    component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: { isDecoration: false, as: 'strong' },
+    render: { mark: { placement: 'text' } },
   });
   const editor = createEditor({
     navigationFeedback: false,

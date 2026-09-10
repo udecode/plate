@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-encode-lessons-in-structure",
+  "files": [
+    {
+      "upstream": "skills/principle-encode-lessons-in-structure/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "4acdb3f466efd0a433899aafce3e0f100566228b63ccff43f363a83e80624d81",
+      "destinationSha256": "103765a363b7dc8dfac5300244637797c9f4fc8fd53e96bf46a78e89609d1879",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-encode-lessons-in-structure/SKILL.md\n+++ skills/principle-encode-lessons-in-structure/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-encode-lessons-in-structure\n description: \"Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Encode Lessons in Structure\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

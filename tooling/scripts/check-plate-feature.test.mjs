@@ -174,9 +174,31 @@ test('rejects unresolved evidence and review gates', () => {
     '| P1 autoreview | yes | review | clean |',
     '| P1 autoreview | yes | review | pending |'
   );
+  const undocumentedReviewExclusion = makePlan('new package').replace(
+    '| P1 autoreview | yes | review | clean |',
+    '| P1 autoreview | no | review | pending |'
+  );
 
   assert.match(validate(placeholder).join('\n'), /placeholder/);
   assert.match(validate(pendingReview).join('\n'), /resolved evidence/);
+  assert.match(
+    validate(undocumentedReviewExclusion).join('\n'),
+    /needs an N\/A reason/
+  );
+});
+
+test('accepts a Task-owned review exclusion with an explicit reason', () => {
+  const plan = makePlan('registry-only', [
+    'API',
+    'Package',
+    'React adapter',
+    'Plate Next attestation',
+  ]).replace(
+    '| P1 autoreview | yes | review | clean |',
+    '| P1 autoreview | no | follow Task review policy | N/A: review unrequested and this is not PR closure |'
+  );
+
+  assert.deepEqual(validate(plan), []);
 });
 
 test('rejects missing or unresolved package-file evidence', () => {

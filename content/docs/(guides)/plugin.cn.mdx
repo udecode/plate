@@ -7,7 +7,7 @@ Plate 插件拥有一个 capability：schema、behavior、state、service、read
 update、rendering，或这些字段的必要组合。独立字段直接在创建时声明，
 app-owned 值才使用 terminal configuration。
 
-- [入门指南：组件](/docs/installation#components) - 添加插件到编辑器的说明
+- [入门指南：组件](/docs/installation/plate-ui) - 添加插件到编辑器的说明
 - [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
 
 ## 基础插件配置
@@ -230,6 +230,11 @@ const paragraph = {
 state-bound query 放在 `read`，immutable service 放在 `api`，文档变更放在
 `update`。Constructor callback 直接接收 plugin context。
 
+`initialState` 的每个顶层字段都必须存在，且类型不能包含 `undefined`。
+请使用具体默认值或 `null` 表示空值。工厂返回的 state 和通过 `.extend()`
+添加的字段也遵循此规则。嵌套对象可以包含可选属性；
+`.configure({ initialState })` 可以只覆盖部分默认值。
+
 ```ts
 export type CustomPluginState = {
   prefix: string;
@@ -388,11 +393,40 @@ const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 依赖项会在其使用者之前加载。互不依赖的插件保持应用提供的顺序：
 
 ```ts
-const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
+const plugins = [LinkPlugin, MentionPlugin, HighlightPlugin];
 ```
 
 真正的安装要求应使用 `dependencies`。有冲突的快捷键、输入规则和编解码器各自
 使用局部 `priority`；插件注册没有全局优先级。
+
+### 装饰样式
+
+在复制的功能文件中配置 `decorate.attributes`。已有的 `read` 负责范围与语义标记，
+`observe` 负责失效通知。
+
+```tsx
+import { BaseFindPlugin } from 'platejs/find';
+
+const FindPlugin = BaseFindPlugin.configure({
+  decorate: {
+    attributes: { className: 'rounded-sm bg-yellow-200' },
+  },
+});
+```
+
+需要按范围决定样式时，使用接收推断插件上下文、`entry` 和 `decoration` 的纯函数。
+`null` 清除继承的展示属性。类名拼接，style 浅合并，其他属性以最后提供的值为准。
+共享的 `Editor` 样式不包含功能选择器。参见
+[装饰 API](/docs/api/core/plate-plugin#properties-attrs-decorate)。
+
+### View-Local Element Attribute
+
+plugin 需要为少量完整 element host 添加响应式 attribute 时，使用
+`render.useViewElementAttributes`。每个 mounted view 中启用的 plugin 只有一个 hook
+program，并返回 `{ key, attributes }[]`。`render.attributes` 与
+`inject.nodeProps.transformProps` 会按 node 运行，因此必须保持纯函数。inline range
+使用 `decorate`，结构化输出使用 component 或 slot。参见
+[Plate Plugin API](/docs/api/core/plate-plugin#properties-attrs-render)。
 
 ### HTML 输入钩子
 

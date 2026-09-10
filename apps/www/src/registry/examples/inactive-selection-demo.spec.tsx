@@ -73,29 +73,61 @@ describe('native inactive selection', () => {
   });
 
   it('renders a caret instead of a fill for a collapsed selection', async () => {
-    const { editor, view } = setup();
-    const user = userEvent.setup({ document: globalThis.document });
-    const textbox = view.getByRole('textbox', { name: 'Editor' });
-    const owned = view.getByRole('button', {
-      name: 'Keep selection visible',
-    });
-
-    await user.click(textbox);
-    act(() => {
-      editor.update.selection.set({
-        anchor: { offset: 4, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
-      });
-    });
-    await user.click(owned);
-
-    await waitFor(() =>
-      expect(
-        view.container.querySelector('[data-plite-inactive-selection-caret]')
-      ).toBeTruthy()
+    const rangeRectDescriptor = Object.getOwnPropertyDescriptor(
+      Range.prototype,
+      'getBoundingClientRect'
     );
-    expect(
-      view.container.querySelector('[data-plite-inactive-selection]')
-    ).toBeNull();
+
+    Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () =>
+        ({
+          bottom: 28,
+          height: 16,
+          left: 20,
+          right: 20,
+          top: 12,
+          width: 0,
+          x: 20,
+          y: 12,
+        }) as DOMRect,
+    });
+
+    try {
+      const { editor, view } = setup();
+      const user = userEvent.setup({ document: globalThis.document });
+      const textbox = view.getByRole('textbox', { name: 'Editor' });
+      const owned = view.getByRole('button', {
+        name: 'Keep selection visible',
+      });
+
+      await user.click(textbox);
+      act(() => {
+        editor.update.selection.set({
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        });
+      });
+      await user.click(owned);
+
+      await waitFor(() =>
+        expect(
+          view.container.querySelector('[data-plite-inactive-selection-caret]')
+        ).toBeTruthy()
+      );
+      expect(
+        view.container.querySelector('[data-plite-inactive-selection]')
+      ).toBeNull();
+    } finally {
+      if (rangeRectDescriptor) {
+        Object.defineProperty(
+          Range.prototype,
+          'getBoundingClientRect',
+          rangeRectDescriptor
+        );
+      } else {
+        delete (Range.prototype as Partial<Range>).getBoundingClientRect;
+      }
+    }
   });
 });

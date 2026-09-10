@@ -48,7 +48,7 @@ export const createSelfRemovingElement = ({
     element,
   }: RenderElementProps) {
     const selected = useElementSelected();
-    const { id } = element as { id: string };
+    const id = String(element.id);
 
     selectedById[id] = selected;
 
@@ -106,7 +106,7 @@ export const createElementSelectedHistoryRenderElement = ({
     element,
   }: RenderElementProps) {
     const selected = useElementSelected();
-    const { id } = element as { id: string };
+    const id = String(element.id);
 
     latest[id] = selected;
 

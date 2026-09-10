@@ -1,5 +1,6 @@
 import { act, render } from '@testing-library/react';
-import { SelectionApi } from 'plitejs';
+import { ElementApi, TextApi, SelectionApi } from 'plitejs';
+import type { Value } from 'plitejs';
 
 import {
   DOMCoverage,
@@ -10,6 +11,7 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
+import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
 import {
   getNodeKey as editorGetNodeKey,
   getSelection as editorGetSelection,
@@ -29,9 +31,43 @@ import {
 } from '../../src/react/editable/selection-reconciler';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  createMainRootPliteViewSelection,
+  readPliteViewSelection,
+  writePliteViewSelection,
+} from '../../src/react/view-selection';
+import { readTextSelection } from './read-text-selection';
+
+test('initial unselected mounts do not read native selection between sibling view layouts', () => {
+  const editor = createEditor<Value>({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'text' }] }],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  const findRoot = vi
+    .spyOn(ReactEditor, 'findDocumentOrShadowRoot')
+    .mockReturnValue(document);
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      partialDOMBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+    return <div ref={(node) => runtime.setRoot(node)}>text</div>;
+  };
+  try {
+    const rendered = render(<Harness />);
+    expect(findRoot).not.toHaveBeenCalled();
+    rendered.rerender(<Harness />);
+    expect(findRoot).toHaveBeenCalledTimes(1);
+    rendered.unmount();
+  } finally {
+    runtime.destroy();
+    findRoot.mockRestore();
+  }
+});
 
 test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const leaf = document.createElement('span');
@@ -64,7 +100,7 @@ test('beforeinput preserves pending native text repair selection over mismatched
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -96,8 +132,79 @@ test('beforeinput preserves pending native text repair selection over mismatched
   }
 });
 
+test('beforeinput keeps a projected view selection authoritative over the DOM caret', () => {
+  const editor = createEditor<Value>();
+  const root = document.createElement('div');
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('one');
+  const domSelection = document.getSelection();
+
+  if (!domSelection) {
+    throw new Error('Expected document selection');
+  }
+
+  textHost.setAttribute('data-plite-node', 'text');
+  textHost.setAttribute('data-plite-path', '0,0');
+  string.setAttribute('data-plite-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  document.body.append(root);
+
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+  });
+
+  const modelSelection = readTextSelection(editor);
+  const viewSelection = createMainRootPliteViewSelection({
+    anchor: { path: [0, 0], offset: 1 },
+    focus: { path: [0, 0], offset: 2 },
+  });
+
+  if (!viewSelection) {
+    throw new Error('Expected projected view selection');
+  }
+
+  try {
+    writePliteViewSelection(editor, viewSelection);
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(text, 0, text, 0);
+    vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);
+
+    const result = syncSelectionForBeforeInput({
+      allowDOMSelectionImport: true,
+      data: 'x',
+      editor,
+      editorElement: root,
+      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+      inputType: 'insertText',
+      isCompositionChange: false,
+      native: true,
+      preferModelSelectionForInput: false,
+      root: document,
+      selection: modelSelection,
+    });
+
+    expect(result.native).toBe(false);
+    expect(result.selection).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
+    expect(readPliteViewSelection(editor)).toBe(viewSelection);
+  } finally {
+    writePliteViewSelection(editor, null);
+    root.remove();
+    domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
 test('beforeinput ignores stale backward target range while model owns insert', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -131,7 +238,7 @@ test('beforeinput ignores stale backward target range while model owns insert', 
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     targetRange.setStart(text, 1);
@@ -166,8 +273,8 @@ test('beforeinput ignores stale backward target range while model owns insert', 
   }
 });
 
-test('beforeinput preserves model selection for projected text target ranges', () => {
-  const editor = createEditor();
+test('beforeinput preserves model selection for decorated text target ranges', () => {
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -181,8 +288,7 @@ test('beforeinput preserves model selection for projected text target ranges', (
 
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'projection');
-  textHost.setAttribute('data-plite-projected-dom-sync', 'true');
+  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
   string.setAttribute('data-plite-string', 'true');
   string.append(text);
   textHost.append(string);
@@ -207,7 +313,7 @@ test('beforeinput preserves model selection for projected text target ranges', (
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     targetRange.setStart(text, 1);
@@ -243,7 +349,7 @@ test('beforeinput preserves model selection for projected text target ranges', (
 });
 
 test('mouse down clears stale model-owned text input guards without reclassifying the click', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
@@ -290,7 +396,7 @@ test('mouse down clears stale model-owned text input guards without reclassifyin
 });
 
 test('beforeinput returns same-path pending native text repair DOM range without importing it', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -318,7 +424,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -359,7 +465,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
 });
 
 test('beforeinput imports same-path native selection when pending repair owns a different offset', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -405,7 +511,7 @@ test('beforeinput imports same-path native selection when pending repair owns a 
       pendingNativeTextInputRepairPathKey: '0,0',
       preferModelSelectionForInput: false,
       root: document,
-      selection: editorGetSelection(editor),
+      selection: readTextSelection(editor),
     });
 
     expect(result.native).toBe(false);
@@ -418,7 +524,7 @@ test('beforeinput imports same-path native selection when pending repair owns a 
 });
 
 test('beforeinput imports backward native text caret when no pending repair owns it', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -446,7 +552,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -485,7 +591,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
 });
 
 test('beforeinput ignores an ahead DOM caret while text input is model-owned', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -513,7 +619,7 @@ test('beforeinput ignores an ahead DOM caret while text input is model-owned', (
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -574,7 +680,7 @@ test('beforeinput ignores an ahead DOM caret while text input is model-owned', (
 });
 
 test('beforeinput ignores repair-induced backward text caret when no pending repair owns it', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -607,7 +713,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -640,7 +746,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
 });
 
 test('beforeinput ignores text host target ranges while the node map is dirty', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -671,7 +777,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
     },
   });
 
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
   const targetRange = {
     collapsed: false,
     endContainer: text,
@@ -712,7 +818,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
 });
 
 test('beforeinput keeps current text host target ranges while the node map is dirty', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const textHost = document.createElement('span');
   const string = document.createElement('span');
@@ -762,7 +868,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
     focus: { path: [0, 0], offset: 3 },
   };
   const targetSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     ...targetPliteRange,
   };
 
@@ -783,7 +889,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
       native: false,
       preferModelSelectionForInput: true,
       root: document,
-      selection: editorGetSelection(editor),
+      selection: readTextSelection(editor),
     });
 
     expect(result.selection).toEqual(targetPliteRange);
@@ -796,7 +902,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
 });
 
 test('beforeinput uses event target range instead of later live DOM selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const firstTextHost = document.createElement('span');
   const firstString = document.createElement('span');
@@ -849,7 +955,7 @@ test('beforeinput uses event target range instead of later live DOM selection', 
     focus: { path: [0, 0], offset: 3 },
   };
   const eventSelection = {
-    kind: 'text',
+    kind: 'text' as const,
     ...eventRange,
   };
 
@@ -872,7 +978,7 @@ test('beforeinput uses event target range instead of later live DOM selection', 
       native: true,
       preferModelSelectionForInput: false,
       root: document,
-      selection: editorGetSelection(editor),
+      selection: readTextSelection(editor),
     });
 
     expect(result.native).toBe(false);
@@ -887,7 +993,7 @@ test('beforeinput uses event target range instead of later live DOM selection', 
 });
 
 test('beforeinput resolves block-spanning element target ranges before live selection fallback', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const firstBlock = document.createElement('p');
   const firstTextHost = document.createElement('span');
@@ -962,11 +1068,21 @@ test('beforeinput resolves block-spanning element target ranges before live sele
     });
   }
 
-  const [firstBlockNode] = editor.read((state) => state.nodes.get([0]));
-  const [firstTextNode] = editor.read((state) => state.nodes.get([0, 0]));
-  const [secondBlockNode] = editor.read((state) => state.nodes.get([1]));
-  const [secondTextNode] = editor.read((state) => state.nodes.get([1, 0]));
-  const keyToElement = new WeakMap();
+  const [firstBlockNode] = editor.read((state) => state.nodes.get([0]))!;
+  const [firstTextNode] = editor.read((state) => state.nodes.get([0, 0]))!;
+  const [secondBlockNode] = editor.read((state) => state.nodes.get([1]))!;
+  const [secondTextNode] = editor.read((state) => state.nodes.get([1, 0]))!;
+  if (
+    !ElementApi.isElement(firstBlockNode) ||
+    !ElementApi.isElement(secondBlockNode) ||
+    !TextApi.isText(firstTextNode) ||
+    !TextApi.isText(secondTextNode)
+  ) {
+    throw new Error('Expected two block elements and their text nodes');
+  }
+  const keyToElement: NonNullable<
+    ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
+  > = new WeakMap();
 
   EDITOR_TO_ELEMENT.set(editor, root);
   EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
@@ -1008,7 +1124,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
       native: true,
       preferModelSelectionForInput: false,
       root: document,
-      selection: editorGetSelection(editor),
+      selection: readTextSelection(editor),
     });
 
     const eventRange = {
@@ -1016,7 +1132,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
       focus: { path: [1, 0], offset: 3 },
     };
     const eventSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       ...eventRange,
     };
 
@@ -1044,7 +1160,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
 });
 
 test('beforeinput does not import only the first range from multiple target ranges', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const root = document.createElement('div');
   const firstTextHost = document.createElement('span');
   const firstString = document.createElement('span');
@@ -1099,7 +1215,7 @@ test('beforeinput does not import only the first range from multiple target rang
     startContainer: secondText,
     startOffset: 0,
   } as unknown as StaticRange;
-  const modelSelection = editorGetSelection(editor);
+  const modelSelection = readTextSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -1135,7 +1251,7 @@ test('beforeinput does not import only the first range from multiple target rang
 test('selection reconciler preserves node selection while clearing native selection', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
   const { rootRef } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
@@ -1182,7 +1298,7 @@ test('selection reconciler preserves node selection while clearing native select
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
-    const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
+    const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
 
     act(() => {
@@ -1218,7 +1334,7 @@ test('selection reconciler preserves node selection while clearing native select
 test('selection reconciler clears the updating guard when DOM export throws', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
   const { rootRef } = runtime;
   const { state } = runtime;
@@ -1268,7 +1384,9 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      domRange
+    );
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
     vi.spyOn(domSelection, 'setBaseAndExtent').mockImplementation(() => {
       throw new Error('stale DOM bridge');
@@ -1296,7 +1414,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
 test('selection reconciler clamps stale DOM range offsets after text shortening', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
   const { rootRef } = runtime;
   const { state } = runtime;
@@ -1344,14 +1462,16 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
-    vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue({
-      collapsed: true,
-      commonAncestorContainer: textNode,
-      endContainer: textNode,
-      endOffset: 4,
-      startContainer: textNode,
-      startOffset: 4,
+    const staleRange = document.createRange();
+    staleRange.setStart(textNode, 0);
+    staleRange.collapse(true);
+    Object.defineProperties(staleRange, {
+      startOffset: { value: 4 },
+      endOffset: { value: 4 },
     });
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      staleRange
+    );
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
 
@@ -1371,8 +1491,9 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
 test('selection reconciler keeps DOM coverage skip selections model-owned', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
+  const coverage = runtime.domCoverage;
   const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
@@ -1391,11 +1512,11 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
       focus: { path: [2, 0], offset: 0 },
     },
   });
-  DOMCoverage.registerBoundary(editor, {
+  coverage.registerBoundary({
     anchor: { type: 'placeholder' },
     boundaryId: 'hidden-block',
     copyPolicy: 'model',
-    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
@@ -1437,7 +1558,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
-    const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
+    const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
 
     act(() => {
       renderTick += 1;
@@ -1455,14 +1576,15 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
 
     expect(state.isUpdatingSelection).toBe(false);
   } finally {
-    DOMCoverage.clear(editor);
+    coverage.destroy();
     vi.useRealTimers();
     vi.restoreAllMocks();
   }
 });
 
 test('DOM coverage selection materializes every covered materialize boundary with range roles', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
+  const coverage = DOMCoverage.create(editor);
   const materialized: string[] = [];
 
   editorReplace(editor, {
@@ -1485,11 +1607,11 @@ test('DOM coverage selection materializes every covered materialize boundary wit
     ['hidden-middle', [2]],
     ['hidden-focus', [4]],
   ] as const) {
-    DOMCoverage.registerBoundary(editor, {
+    coverage.registerBoundary({
       anchor: { type: 'placeholder' },
       boundaryId,
       copyPolicy: 'model',
-      coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
+      coveredPathRanges: [{ anchor: path, focus: path }],
       coveredRuntimeRanges: [],
       findPolicy: 'native',
       ownerPath: [],
@@ -1501,7 +1623,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
     });
   }
 
-  DOMCoverage.setMaterializeHandler(editor, (boundary, reason, options) => {
+  coverage.setMaterializeHandler((boundary, reason, options) => {
     materialized.push(
       `${boundary.boundaryId}:${reason}:${options.rangeRole ?? 'none'}`
     );
@@ -1509,7 +1631,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
   });
 
   const domSelection = document.getSelection();
-  const selection = editorGetSelection(editor);
+  const selection = readTextSelection(editor);
 
   try {
     if (!domSelection || !selection) {
@@ -1518,6 +1640,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
 
     expect(
       applyDOMCoverageSelectionPolicy({
+        coverage,
         domSelection,
         editor,
         selection,
@@ -1529,12 +1652,13 @@ test('DOM coverage selection materializes every covered materialize boundary wit
       'hidden-middle:selection:interior',
     ]);
   } finally {
-    DOMCoverage.clear(editor);
+    coverage.destroy();
   }
 });
 
 test('forced DOM coverage export rebuilds a fresh native range', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
+  const coverage = DOMCoverage.create(editor);
   const textNode = document.createTextNode('abc');
   const domRange = document.createRange();
 
@@ -1548,11 +1672,11 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
       focus: { path: [0, 0], offset: 2 },
     },
   });
-  DOMCoverage.registerBoundary(editor, {
+  coverage.registerBoundary({
     anchor: { type: 'placeholder' },
     boundaryId: 'covered-paragraph',
     copyPolicy: 'model',
-    coveredPathRanges: [{ kind: 'text', anchor: [0], focus: [0] }],
+    coveredPathRanges: [{ anchor: [0], focus: [0] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
@@ -1564,19 +1688,22 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
   });
 
   const domSelection = document.getSelection();
-  const selection = editorGetSelection(editor);
+  const selection = readTextSelection(editor);
 
   try {
     if (!domSelection || !selection) {
       throw new Error('Expected document and editor selection');
     }
 
-    vi.spyOn(ReactEditor, 'resolveDOMRange').mockReturnValue(domRange);
+    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
+      domRange
+    );
     const addRange = vi.spyOn(domSelection, 'addRange');
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
 
     expect(
       applyDOMCoverageSelectionPolicy({
+        coverage,
         domSelection,
         editor,
         forceDOMRangeRebuild: true,
@@ -1586,7 +1713,7 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
     expect(addRange).toHaveBeenCalledWith(domRange);
     expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 2);
   } finally {
-    DOMCoverage.clear(editor);
+    coverage.destroy();
     vi.restoreAllMocks();
   }
 });
@@ -1594,8 +1721,9 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
 test('selection reconciler preserves visible anchor text across DOM coverage boundaries', () => {
   vi.useFakeTimers();
 
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
+  const coverage = runtime.domCoverage;
   const { rootRef } = runtime;
   const { state } = runtime;
   runtime.inputController.preferModelSelectionForInputRef.current = true;
@@ -1614,11 +1742,11 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
       focus: { path: [2, 0], offset: 1 },
     },
   });
-  DOMCoverage.registerBoundary(editor, {
+  coverage.registerBoundary({
     anchor: { type: 'placeholder' },
     boundaryId: 'hidden-block',
     copyPolicy: 'model',
-    coveredPathRanges: [{ kind: 'text', anchor: [1], focus: [1] }],
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
     findPolicy: 'native',
     ownerPath: [],
@@ -1637,7 +1765,12 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     });
 
     return (
-      <div data-render-tick={renderTick} data-selection-test-root ref={rootRef}>
+      <div
+        data-plite-editor="true"
+        data-render-tick={renderTick}
+        data-selection-test-root
+        ref={rootRef}
+      >
         <span data-plite-node="text" data-plite-path="0,0">
           <span data-plite-leaf="true">
             <span data-plite-string="true">one</span>
@@ -1684,11 +1817,16 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
     const [firstNode] = editor.read((innerState) =>
       innerState.nodes.get([0, 0])
-    );
+    )!;
     const [secondNode] = editor.read((innerState2) =>
       innerState2.nodes.get([2, 0])
-    );
-    const keyToElement = new WeakMap();
+    )!;
+    if (!TextApi.isText(firstNode) || !TextApi.isText(secondNode)) {
+      throw new Error('Expected the selected text nodes');
+    }
+    const keyToElement: NonNullable<
+      ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
+    > = new WeakMap();
 
     EDITOR_TO_ELEMENT.set(editor, root);
     EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
@@ -1730,7 +1868,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
     expect(state.isUpdatingSelection).toBe(false);
   } finally {
-    DOMCoverage.clear(editor);
+    coverage.destroy();
     EDITOR_TO_ELEMENT.delete(editor);
     EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
     EDITOR_TO_WINDOW.delete(editor);
@@ -1741,7 +1879,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 });
 
 test('read-only triple-click stays native and does not update model selection', () => {
-  const editor = createEditor();
+  const editor = createEditor<Value>();
   const runtime = new EditableDOMRuntime({ editor });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },

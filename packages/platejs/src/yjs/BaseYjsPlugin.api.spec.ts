@@ -9,10 +9,10 @@ import {
 import { createEditor } from 'platejs/react';
 import * as Y from 'yjs';
 
-import { FakeProvider } from '../../test/yjs/support/provider';
+import { FakeProvider } from '../../../plitejs/test/yjs/support/provider';
 import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
-import { yjs } from './core/extension';
+import { yjs } from './core';
 import { YjsPlugin } from './react/YjsPlugin';
 
 const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
@@ -187,12 +187,18 @@ describe('BaseYjsPlugin', () => {
     const plugin = getCompiledPlatePlugin(editor, YjsPlugin);
     const entry = [{ text: 'react' }, [0, 0]] as const;
 
-    if (typeof plugin?.decorate !== 'function') {
+    if (!plugin?.decorate) {
       assert.fail('YjsPlugin must publish its decoration adapter.');
     }
 
     const readDecorations = () =>
-      Reflect.apply(plugin.decorate, undefined, [{ editor, entry }]);
+      Reflect.apply(plugin.decorate.read, undefined, [
+        {
+          editor,
+          entry,
+          read: editor.plugin(YjsPlugin).read,
+        },
+      ]);
 
     editor.update.selection.set({
       anchor: { offset: 2, path: [0, 0] },
@@ -214,17 +220,14 @@ describe('BaseYjsPlugin', () => {
 
     assert.deepEqual(readDecorations(), [
       {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
-        yjsRemoteCursor: {
-          clientId: 202,
-          cursor: {
-            clientId: 202,
-            selection: {
-              anchor: { offset: 1, path: [0, 0] },
-              focus: { offset: 4, path: [0, 0] },
-            },
-          },
+        attributes: {
+          'data-client-id': 202,
+          'data-remote-selection': '',
+        },
+        key: '202',
+        range: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
         },
       },
     ]);

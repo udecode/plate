@@ -421,8 +421,9 @@ test('EditableDOMRoot root runtime orchestration has an explicit next-owner inve
   });
 });
 
-test('root global lifecycle listeners are owned by the root lifecycle module', () => {
+test('root global listeners follow their native and React lifecycle owners', () => {
   const rootRuntimeFiles = [
+    'editable/editable-dom-runtime.ts',
     'editable/runtime-root-engine.ts',
     'editable/runtime-root-lifecycle.ts',
     'editable/runtime-root-selection-import.ts',
@@ -433,12 +434,12 @@ test('root global lifecycle listeners are owned by the root lifecycle module', (
     /\battachEditableSelectionChangeListener\(/g,
     rootRuntimeFiles,
     {
-      'packages/plitejs/src/react/editable/runtime-root-lifecycle.ts': {
+      'packages/plitejs/src/react/editable/editable-dom-runtime.ts': {
         count: 1,
         next: 'root-runtime',
-        owner: 'Editable root global lifecycle',
+        owner: 'Editable native root lifecycle',
         rationale:
-          'Native selectionchange listener attachment belongs in the root lifecycle owner, not the root coordinator body.',
+          'Native selection transport registers and retires with the actual DOM root, including root replacement.',
       },
     }
   );
@@ -697,8 +698,10 @@ test('source timing and document focus primitives have named owners', () => {
   ).toEqual({
     'packages/plitejs/src/react/components/editable-rendered-element.tsx': 1,
     'packages/plitejs/src/react/components/editable-text-blocks.tsx': 2,
+    'packages/plitejs/src/react/components/editable-text-flow.tsx': 1,
+    'packages/plitejs/src/react/components/plite.tsx': 1,
+    'packages/plitejs/src/react/decoration-source.ts': 5,
     'packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx': 1,
-    'packages/plitejs/src/react/hooks/use-plite-decoration-source.ts': 1,
     'packages/plitejs/src/react/hooks/use-plite-widget-geometry.tsx': 1,
     'packages/plitejs/src/react/hooks/use-plite-widget-store.tsx': 1,
     'packages/plitejs/src/react/hooks/use-editor-selector.tsx': 1,

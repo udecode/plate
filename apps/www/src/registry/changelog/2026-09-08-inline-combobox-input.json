@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-inline-combobox-input",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-inline-combobox-input.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Complete inline suggestions at their current document location.",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "transforms",
+      "files": ["apps/www/src/registry/components/editor/transforms.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-inline-combobox-complete-suggestions-at-their-9adb30fa",
+      "kind": "fix",
+      "summary": "Insert selected suggestions through the `onSelect` transaction callback. Cancel at the input's current location, preserve outside selections, and reject stale or foreign input callbacks.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "inline-combobox",
+        "mention",
+        "slash",
+        "emoji",
+        "footnote",
+        "transforms"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-inline-combobox-input",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

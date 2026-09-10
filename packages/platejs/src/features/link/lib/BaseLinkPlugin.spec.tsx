@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsxt */
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
@@ -5,13 +6,13 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 import {
   createEditor as createProductEditor,
   defineBasePlugin,
-  getPlateRuntime,
   NodeApi,
   property,
   type Point,
   type Selection,
   type Value,
 } from '../../../core';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import type { LinkDefinition } from '../../../react/features/link/LinkPlugin';
 import {
   BaseLinkPlugin,
@@ -586,7 +587,7 @@ describe('editor.update.link.upsert', () => {
     expect(
       editor.update.link.upsert({ skipValidation: true, url: 'not a url' })
     ).toBe(true);
-    expect(findLink(editor)?.url).toBe('not a url');
+    expect(findLink(editor)?.url).toBe('not%20a%20url');
   });
 
   it('honors a custom URL validator', () => {

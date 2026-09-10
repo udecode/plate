@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "blast-radius",
+  "files": [
+    {
+      "upstream": "skills/blast-radius/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "b060df3ca85803eabbce9fab53f5cc024ca8d784bdde5513c1c1a784947523f8",
+      "destinationSha256": "fb95376b3b05ff80ca53079c3ec4d29d0273bfd4d99528a2f199c10a39e7d328",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Route the former Unslop call to the unified Technical Writing owner, which includes the same preservation and anti-slop pass; do not retain a second writing invocation or stale numbered-rule reference."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/blast-radius/SKILL.md\n+++ skills/blast-radius/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: blast-radius\n description: \"Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. Use for 'blast radius of X', 'what could this break', or reviewing a small diff you don't trust.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Blast radius\n \n@@ -45,6 +46,6 @@\n - **Cleared.** What you checked and why it's fine.\n - **Before you merge.** The cheapest test or repro that catches the real bug, including the script you wrote.\n \n-Write it through `unslop`, cite real code, and strip anything private before it goes anywhere public.\n+Write it through `technical-writing`, cite real code, and strip anything private before it goes anywhere public.\n \n **Reply:** the writeup above, with the one safety fact either proven or marked unproven.\n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

@@ -9,6 +9,9 @@ metadata:
 
 # Plate Review
 
+Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
+
+
 Handle $ARGUMENTS.
 
 Own one job: diagnose and score current Plate/Plite architecture from source.
@@ -28,6 +31,8 @@ answers all of these questions together:
 
 Adjacent owners stay separate:
 
+- `best-api-review` decides whether a proposal earns further work and may stop
+  without a scored audit. This skill diagnoses and scores current architecture.
 - `best-api` chooses the ideal reusable public call shape.
 - `plate-plan` and `plite-plan` own accepted architecture, adoption, and proof
   plans.
@@ -35,7 +40,9 @@ Adjacent owners stay separate:
   and package level.
 - `architecture-cleanup` finds and may execute behavior-neutral cleanup.
 - `editor-audit` compares Plite/Plate with external editor source trees.
-- `autoreview` reviews a diff, branch, commit, or PR.
+- `autoreview` reviews a diff, branch, commit or PR only when explicitly
+  requested or during actual PR closure, under Task's shared budget; never on
+  `next`. This architecture audit does not add that review.
 - `benchmark` measures scale and owns performance diagnosis.
 - package and feature skills implement accepted work.
 
@@ -51,7 +58,7 @@ Accept exactly one primary scope.
 
 Audit the whole selected architecture. Default to `both`.
 
-Use `autogoal`. Create a durable artifact set under
+Reuse the active Task file plan and create a durable artifact set under
 `docs/plans/artifacts/<review-slug>/` containing:
 
 - `manifest.json`: every audit unit and its resolved public owner;
@@ -467,12 +474,10 @@ Do not say “best next” without naming the exact owner and first bounded task
 
 ## Why a Comments Composition Can Score 2/10
 
-A `plugin comment` review includes the registry/application composition. The
-headless `platejs/comment` entrypoint may correctly own durable document
-anchors while the complete Comments system still puts application discussion
-truth in an editor plugin store and manually writes both the thread and its
-document anchor. That system can receive solid API, proof, and correctness
-points and still finish at 2/10:
+A `plugin comments` review includes the registry/application composition. A
+composition that duplicates thread truth across a plugin store, independently
+writable document marks and an application thread store can receive solid API, proof, and
+correctness points and still finish at 2/10:
 
 ```text
 raw subtotal: 2.5/10
@@ -481,25 +486,25 @@ duplicate-truth ceiling: 2.0
 final: 2.0/10
 ```
 
-That result is not taste disguised as math. The evidence must show that editor
-plugin state owns application discussion truth while document marks and the
-discussion store can be changed independently. Those structural facts cap the
+That result is not taste disguised as math. The evidence must show that the plugin state, document marks and application
+thread store can be changed independently. Those structural facts cap the
 system before UI quality or test volume is considered.
 
-The target is therefore not “clean up the Comments plugin.” The target is:
+The repair target for that owner graph is:
 
 ```text
 before: document marks <-> editor plugin store <-> application thread store
-after:  application thread owner -> document anchors -> derived editor view
+after:  one comment record owner -> private native anchors -> derived editor view
 ```
 
 The exact public calls still belong to `best-api`; this review establishes why
 the current owner graph cannot score higher.
 
-Do not transfer the 2/10 to `entrypoint platejs/comment`. That narrower mode
-scores the anchor entrypoint and its dependency boundary, not registry
+Do not transfer the 2/10 to `entrypoint platejs/comments/react`. That narrower
+mode scores editor integration and its dependency boundary, not registry
 application state. Scores are comparable only when the resolved scope is the
-same.
+same. This example teaches the scoring method; it is not a claim about the
+current Comments implementation.
 
 ## Stop Conditions
 

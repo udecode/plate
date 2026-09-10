@@ -1,4 +1,9 @@
 import { isDOMText } from '../../dom';
+import {
+  getPliteTextHostStrings,
+  resolveDOMTextFlowEntry,
+  resolveDOMTextFlowOffset,
+} from '../../dom/internal';
 import { getNativeTextInsertDelta } from './native-text-input-delta';
 
 export const applyTextInsert = (
@@ -68,10 +73,18 @@ export const getTextHostSelectionOffset = ({
   if (anchorOffset == null || !anchorNode) {
     return null;
   }
+  const flowEntry = resolveDOMTextFlowEntry(anchorNode, anchorOffset);
 
-  const strings = Array.from(
-    textHost.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
-  );
+  if (flowEntry) return flowEntry.offset;
+
+  const textFlowOffset =
+    textHost instanceof HTMLElement
+      ? resolveDOMTextFlowOffset(textHost, anchorNode, anchorOffset)
+      : null;
+
+  if (textFlowOffset != null) return textFlowOffset;
+
+  const strings = getPliteTextHostStrings(textHost);
   let offset = 0;
 
   for (const string of strings) {

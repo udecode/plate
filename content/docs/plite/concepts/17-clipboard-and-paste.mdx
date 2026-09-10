@@ -8,7 +8,7 @@ coverage, and browser proof. Use this page to decide whether a paste, copy, or
 drop policy belongs in `Editable`, an extension, `editor.api.dom.clipboard`, or a
 fragment transform.
 
-## Choose The Right Surface
+## Choose the right surface
 
 Paste bugs usually come from mixing browser event ownership with model
 insertion ownership.
@@ -28,7 +28,7 @@ Use `Editable` for local event interception. Use a DOM clipboard handler when
 the behavior should apply to native paste, drop, browser tests, and every React
 surface that installs the extension.
 
-## Runtime Pipeline
+## Runtime pipeline
 
 Clipboard data enters Plite through explicit layers.
 
@@ -45,7 +45,7 @@ Clipboard data enters Plite through explicit layers.
 Do not close a paste bug with only a model assertion when the failure was in the
 browser event, DOM clipboard payload, native selection, or follow-up typing.
 
-## Extension Clipboard Policy
+## Extension clipboard policy
 
 Use `clipboardHandler(...)` when a feature owns a reusable DOM import rule.
 
@@ -82,7 +82,7 @@ Use this for package-owned import rules such as custom inline syntax, pasted
 URLs, product fragments, and table-specific paste policy. Do not put those rules
 in Plite core unless the rule is part of Plite's model contract.
 
-## DOM Clipboard API
+## DOM clipboard API
 
 React editors expose DOM clipboard helpers through `editor.api.dom.clipboard`.
 
@@ -112,8 +112,8 @@ different keys do not blindly import each other's internal JSON.
 Registered host codecs add schema-aware MIME formats without putting DOM types
 in Plite core. A parser returns one intact `ContentSlice`; Plite preserves its
 open edge depths and detached secondary roots, then fits the complete slice
-against the actual paste range. Keep a codec inline in `hostCodecs`; use
-`defineHostCodec` only when the same codec is reused. Configuration
+against the actual paste range. Keep a codec inline in `hostCodecs`; name shared
+definitions with the `HostCodec<V>` type. Configuration
 fails for duplicate codec keys, unknown schema targets, and overlapping
 element/text-property claims. A codec rejects invalid external payloads with
 `null`.
@@ -122,7 +122,7 @@ to the next codec or plain-text fallback. Returning a malformed slice is a codec
 programming error reported to the editor lifecycle error sink; the dispatcher
 continues to the next eligible codec without publishing a partial write.
 
-## Fragment And Slice Replacement
+## Fragment and slice replacement
 
 Use `tx.fragment.replace(...)` for known-closed content. The compiled schema
 fits the content at the actual target.
@@ -169,7 +169,7 @@ When table code has a detached destination cell, call
 grammar-valid children or `null` without publishing editor state. The table
 extension still owns row/column mapping, spans, and multi-cell replacement.
 
-## Hidden And Projected Content
+## Hidden and projected content
 
 Copy and drag can involve model content whose DOM is hidden, staged, or
 virtualized. DOM coverage boundaries decide whether hidden content participates
@@ -180,7 +180,7 @@ for `copyPolicy`, `findPolicy`, `selectionPolicy`, and materialization behavior.
 Use [Selection And DOM](16-selection-and-dom) when a copy or paste bug also
 depends on caret position or native selection repair.
 
-## Browser Proof
+## Browser proof
 
 Clipboard proof should name the layer that can fail.
 
@@ -195,7 +195,7 @@ Clipboard proof should name the layer that can fail.
 Use [Browser](/docs/browser) for clipboard helpers and
 [Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.
 
-## Related Docs
+## Related docs
 
 - [Editable Component](../libraries/plite-react/editable)
 - [React Editor](../libraries/plite-react/react-editor)

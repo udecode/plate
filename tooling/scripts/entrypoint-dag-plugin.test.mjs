@@ -112,6 +112,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/dom/index.ts',
     'packages/platejs/src/dom/plite-dom.internal.ts',
     'packages/platejs/src/facade.ts',
+    'packages/platejs/src/features/comments/plite-comments.internal.ts',
     'packages/platejs/src/history/index.ts',
     'packages/platejs/src/history/plite-history.internal.ts',
     'packages/platejs/src/hyperscript/index.ts',
@@ -122,9 +123,12 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/react/plite-react.ts',
     'packages/platejs/src/static/internal/plite-react.ts',
     'packages/platejs/src/testing/index.ts',
+    'packages/platejs/src/yjs/core.ts',
+    'packages/platejs/src/yjs/react/index.tsx',
     'packages/plitejs/test/**',
     'config/plite-test-jsx.js',
     'apps/www/src/app/(app)/examples/plite/**',
+    'apps/www/src/app/dev/editor-perf/page.tsx',
   ]);
 });
 
@@ -274,9 +278,10 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
   assert.deepEqual(publicFeatures, [
     'callout',
     'combobox',
-    'comment',
+    'comments',
     'date',
     'details',
+    'find',
     'footnote',
     'layout',
     'media',
@@ -411,7 +416,7 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    13
+    14
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')

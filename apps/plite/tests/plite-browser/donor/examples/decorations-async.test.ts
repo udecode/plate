@@ -53,113 +53,200 @@ const getInputState = async (root: Locator) =>
   });
 
 test.describe('async decorations', () => {
-  for (const source of ['prop', 'hook'] as const) {
-    test(`keeps the caret at the typed end when delayed ${source} decorations restructure text`, async ({
-      page,
-    }, testInfo) => {
-      const editor = await openExample(page, 'plite/decorations-async', {
-        query: source === 'hook' ? { source } : undefined,
-        ready: {
-          editor: 'visible',
-          text: INITIAL_TEXT,
-        },
-      });
-
-      await expect(
-        page.locator('[data-cy="async-decoration-highlight"]')
-      ).toHaveCount(2);
-      await editor.selection.collapse({
-        path: [0, 0],
-        offset: INITIAL_TEXT.length,
-      });
-      await editor.focus();
-
-      if (testInfo.project.name === 'mobile') {
-        await editor.insertText(INSERTED_TEXT);
-      } else {
-        await page.keyboard.type(INSERTED_TEXT);
-      }
-
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-        focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-      });
-      await expect(
-        page.locator('[data-cy="async-decoration-highlight"]')
-      ).toHaveCount(2);
-
-      await expect(
-        page.locator('[data-cy="async-decoration-highlight"]')
-      ).toHaveCount(3);
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-        focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-      });
-      await expect
-        .poll(() => getDOMCaretOffsetInFirstText(editor.root))
-        .toEqual({
-          offset: FINAL_CARET_OFFSET,
-          text: FINAL_TEXT,
-        });
+  test('keeps the caret at the typed end when delayed decorations restructure text', async ({
+    page,
+  }, testInfo) => {
+    const editor = await openExample(page, 'plite/decorations-async', {
+      ready: {
+        editor: 'visible',
+        text: INITIAL_TEXT,
+      },
     });
 
-    test(`keeps ${source} decoration refresh from interrupting active IME composition`, async ({
-      page,
-    }, testInfo) => {
-      test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof');
+    await expect(
+      page.locator('[data-cy="async-decoration-highlight"]')
+    ).toHaveCount(2);
+    await editor.selection.collapse({
+      path: [0, 0],
+      offset: INITIAL_TEXT.length,
+    });
+    await editor.focus();
 
-      const editor = await openExample(page, 'plite/decorations-async', {
-        query: source === 'hook' ? { source } : undefined,
-        ready: {
-          editor: 'visible',
-          text: INITIAL_TEXT,
-        },
-      });
-
-      await expect(
-        page.locator('[data-cy="async-decoration-highlight"]')
-      ).toHaveCount(2);
-      await editor.selection.collapse({
-        path: [0, 0],
-        offset: INITIAL_TEXT.length,
-      });
-      await editor.focus();
+    if (testInfo.project.name === 'mobile') {
+      await editor.insertText(INSERTED_TEXT);
+    } else {
       await page.keyboard.type(INSERTED_TEXT);
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-        focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
-      });
+    }
 
-      await editor.ime.startSynthetic({ text: COMPOSED_TEXT[0] });
-      await editor.ime.updateSynthetic({ text: COMPOSED_TEXT });
-      await expect
-        .poll(async () => (await getInputState(editor.root))?.activeIntent)
-        .toBe('composition');
-
-      await expect(
-        page.locator('[data-cy="async-decoration-highlight"]')
-      ).toHaveCount(3);
-      await expect
-        .poll(async () => (await getInputState(editor.root))?.activeIntent)
-        .toBe('composition');
-
-      await editor.ime.commitSynthetic({ text: COMPOSED_TEXT });
-
-      await editor.assert.blockTexts([FINAL_COMPOSED_TEXT]);
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
-        focus: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
-      });
-      await editor.assert.kernelTrace({
-        eventFamily: 'compositionend',
-        transition: { allowed: true },
-      });
-      await expect
-        .poll(() => getDOMCaretOffsetInFirstText(editor.root))
-        .toEqual({
-          offset: FINAL_COMPOSED_CARET_OFFSET,
-          text: FINAL_COMPOSED_TEXT,
-        });
+    await editor.assert.selection({
+      anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
+      focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
     });
-  }
+    await expect(
+      page.locator('[data-cy="async-decoration-highlight"]')
+    ).toHaveCount(2);
+
+    await expect(
+      page.locator('[data-cy="async-decoration-highlight"]')
+    ).toHaveCount(3);
+    await editor.assert.selection({
+      anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
+      focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
+    });
+    await expect
+      .poll(() => getDOMCaretOffsetInFirstText(editor.root))
+      .toEqual({
+        offset: FINAL_CARET_OFFSET,
+        text: FINAL_TEXT,
+      });
+  });
+
+  test('keeps decoration refresh from interrupting active IME composition', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof');
+
+    const editor = await openExample(page, 'plite/decorations-async', {
+      ready: {
+        editor: 'visible',
+        text: INITIAL_TEXT,
+      },
+    });
+
+    await expect(
+      page.locator('[data-cy="async-decoration-highlight"]')
+    ).toHaveCount(2);
+    await editor.selection.collapse({
+      path: [0, 0],
+      offset: INITIAL_TEXT.length,
+    });
+    await editor.focus();
+    await page.keyboard.type(INSERTED_TEXT);
+    await editor.assert.selection({
+      anchor: { path: [0, 0], offset: FINAL_CARET_OFFSET },
+      focus: { path: [0, 0], offset: FINAL_CARET_OFFSET },
+    });
+
+    await editor.ime.startSynthetic({ text: COMPOSED_TEXT[0] });
+    await editor.ime.updateSynthetic({ text: COMPOSED_TEXT });
+    await expect
+      .poll(async () => (await getInputState(editor.root))?.activeIntent)
+      .toBe('composition');
+
+    await expect(
+      page.locator('[data-cy="async-decoration-highlight"]')
+    ).toHaveCount(3);
+    await expect
+      .poll(async () => (await getInputState(editor.root))?.activeIntent)
+      .toBe('composition');
+
+    await editor.ime.commitSynthetic({ text: COMPOSED_TEXT });
+
+    await editor.assert.blockTexts([FINAL_COMPOSED_TEXT]);
+    await editor.assert.selection({
+      anchor: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
+      focus: { path: [0, 0], offset: FINAL_COMPOSED_CARET_OFFSET },
+    });
+    await editor.assert.kernelTrace({
+      eventFamily: 'compositionend',
+      transition: { allowed: true },
+    });
+    await expect
+      .poll(() => getDOMCaretOffsetInFirstText(editor.root))
+      .toEqual({
+        offset: FINAL_COMPOSED_CARET_OFFSET,
+        text: FINAL_COMPOSED_TEXT,
+      });
+  });
+  test('keeps unrelated retained flow mounted during IME composition', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof');
+
+    const editor = await openExample(page, 'plite/decorations-async', {
+      ready: {
+        editor: 'visible',
+        text: INITIAL_TEXT,
+      },
+    });
+
+    await editor.root.evaluate(
+      (element, initialText) => {
+        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+
+        if (!handle?.applyValueChange) {
+          throw new Error('Cannot apply composition locality fixture');
+        }
+        handle.applyValueChange({
+          children: [
+            {
+              children: [{ text: initialText }],
+              type: 'paragraph',
+            },
+            {
+              children: [{ text: 'Sibling' }],
+              type: 'paragraph',
+            },
+          ],
+        });
+      },
+      INITIAL_TEXT
+    );
+    await editor.assert.blockTexts([INITIAL_TEXT, 'Sibling']);
+
+    const firstFlow = editor
+      .locator.block([0])
+      .locator('[data-plite-text-flow]');
+    const secondFlow = editor
+      .locator.block([1])
+      .locator('[data-plite-text-flow]');
+
+    await expect(firstFlow).toHaveCount(1);
+    await expect(secondFlow).toHaveCount(1);
+    await secondFlow.evaluate((element: HTMLElement) => {
+      Reflect.set(element, '__pliteCompositionSibling', 'retained');
+    });
+
+    await editor.selection.collapse({
+      path: [0, 0],
+      offset: INITIAL_TEXT.length,
+    });
+    await editor.focus();
+    const client = await page.context().newCDPSession(page);
+
+    await client.send('Input.imeSetComposition', {
+      selectionEnd: 1,
+      selectionStart: 1,
+      text: '段',
+    });
+
+    await expect(firstFlow).toHaveCount(0);
+    await expect(secondFlow).toHaveCount(1);
+    await editor.root.evaluate((element) => {
+      const handle = (element as Record<string, any>).__pliteBrowserHandle;
+
+      if (!handle?.insertTextAt) {
+        throw new Error('Cannot apply composition locality edit');
+      }
+      handle.insertTextAt('!', { offset: 7, path: [1, 0] });
+    });
+    await expect
+      .poll(async () => (await editor.get.blockTexts())[1])
+      .toBe('Sibling!');
+    expect(
+      await secondFlow.evaluate((element: HTMLElement) =>
+        Reflect.get(element, '__pliteCompositionSibling')
+      )
+    ).toBe('retained');
+
+    await client.send('Input.insertText', { text: '段' });
+    await client.detach();
+
+    await editor.assert.blockTexts([`${INITIAL_TEXT}段`, 'Sibling!']);
+    expect(
+      await secondFlow.evaluate((element: HTMLElement) =>
+        Reflect.get(element, '__pliteCompositionSibling')
+      )
+    ).toBe('retained');
+  });
 });

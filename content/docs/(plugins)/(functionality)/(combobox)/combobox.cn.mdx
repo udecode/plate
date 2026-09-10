@@ -27,7 +27,7 @@ docs:
 
 - 创建基于触发器的组合框功能的实用工具
 - 可配置的触发字符和模式
-- 键盘导航和选择处理
+- 原子化的输入完成、取消和历史命令
 
 </PackageInfo>
 
@@ -38,19 +38,32 @@ docs:
 ### 安装
 
 ```bash
-npm install platejs @tanstack/react-virtual
+npm install platejs
+npx shadcn@latest add @plate/inline-combobox
 ```
 
 ### 创建输入插件
 
 首先创建一个输入插件，当触发器激活时将被插入：
 
-```tsx
-import { defineBasePlugin } from 'platejs';
+```tsx showLineNumbers
+import { property } from 'platejs';
+import { BaseComboboxPlugin } from 'platejs/combobox';
+import { definePlatePlugin } from 'platejs/react';
 
-const TagInputPlugin = defineBasePlugin('tagInput', {
-  type: 'tag_input',
-  editOnly: true,  schema: { element: { void: 'inline' } },
+export const TagInputPlugin = definePlatePlugin('tagInput', {
+  dependencies: [BaseComboboxPlugin],
+  editOnly: true,
+  schema: {
+    element: {
+      type: 'tag_input',
+      void: 'inline',
+      properties: {
+        trigger: property.string(),
+        userId: property.string(),
+      },
+    },
+  },
 });
 ```
 
@@ -58,13 +71,13 @@ const TagInputPlugin = defineBasePlugin('tagInput', {
 
 使用触发器元数据创建主插件：
 
-```tsx
-import { defineBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginState } from 'platejs/combobox';
+```tsx showLineNumbers
+import { property } from 'platejs';
+import { triggerCombobox, type TriggerComboboxPluginState } from 'platejs/combobox';
+import { definePlatePlugin } from 'platejs/react';
+import { TagInputPlugin } from './tag-input-plugin';
 
-export type TagPluginState = TriggerComboboxPluginState;
-
-const initialState: TagPluginState = {
+const initialState: TriggerComboboxPluginState = {
   trigger: '#',
   triggerPreviousCharPattern: /^\s?$/,
   createComboboxInput: () => ({
@@ -73,10 +86,29 @@ const initialState: TagPluginState = {
   }),
 };
 
-export const TagPlugin = defineBasePlugin('tag', {
+export const TagPlugin = definePlatePlugin('customTag', {
   dependencies: [TagInputPlugin],
-  initialState,  schema: { element: { void: 'inline' } },
-});
+  initialState,
+  schema: {
+    element: {
+      type: 'tag',
+      void: 'inline',
+      properties: { value: property.string({ required: true }) },
+    },
+  },
+  update: ({ tx, schema: { type } }) => ({
+    insert: (value: string) => {
+      tx.nodes.insert({ children: [{ text: '' }], type, value });
+      tx.selection.move({ unit: 'offset' });
+    },
+  }),
+}).extend(({ editor, store }) => ({
+  commands: (context) => triggerCombobox(context, {
+    editor,
+    getState: () => store.get(),
+    type: editor.plugin(TagInputPlugin).schema.type,
+  }),
+}));
 ```
 
 - `schema.element`: 定义插件的元素模型行为
@@ -89,8 +121,14 @@ export const TagPlugin = defineBasePlugin('tag', {
 
 使用`InlineCombobox`创建输入元素组件：
 
-```tsx
-import { PlateElement, useFocused, useReadOnly, useSelected } from 'platejs/react';
+```tsx showLineNumbers
+import {
+  type PlateElementProps,
+  PlateElement,
+  useEditorFocused,
+  useEditorReadOnly,
+  useElementSelected,
+} from 'platejs/react';
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -99,40 +137,25 @@ import {
   InlineComboboxItem,
 } from '@/components/editor/inline-combobox';
 import { cn } from '@/lib/utils';
+import { TagInputPlugin } from './tag-input-plugin';
+import { TagPlugin } from './tag-plugin';
 
-const tags = [
-  { id: 'frontend', name: '前端', color: 'blue' },
-  { id: 'backend', name: '后端', color: 'green' },
-  { id: 'design', name: '设计', color: 'purple' },
-  { id: 'urgent', name: '紧急', color: 'red' },
-];
+const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function TagInputElement({ element, ...props }) {
+export function TagInputElement(props: PlateElementProps<typeof TagInputPlugin>) {
   return (
-    <PlateElement as="span" {...props}>
-      <InlineCombobox element={element} trigger="#">
+    <PlateElement {...props} as="span">
+      <InlineCombobox element={props.element} trigger="#">
         <InlineComboboxInput />
         <InlineComboboxContent>
-          <InlineComboboxEmpty>未找到标签</InlineComboboxEmpty>
+          <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
           {tags.map((tag) => (
             <InlineComboboxItem
-              key={tag.id}
-              value={tag.name}
-              onClick={() => {
-                // 插入实际标签元素
-                editor.update((tx) => {
-                  tx.nodes.insert({
-                    type: 'tag',
-                    tagId: tag.id,
-                    children: [{ text: tag.name }],
-                  });
-                });
-              }}
+              key={tag}
+              value={tag}
+              onSelect={(tx) => tx.plugin(TagPlugin).insert(tag)}
             >
-              <span 
-                className={`w-3 h-3 rounded-full bg-${tag.color}-500 mr-2`}
-              />
-              #{tag.name}
+              #{tag}
             </InlineComboboxItem>
           ))}
         </InlineComboboxContent>
@@ -142,26 +165,22 @@ export function TagInputElement({ element, ...props }) {
   );
 }
 
-export function TagElement({ element, ...props }) {
-  const selected = useSelected();
-  const focused = useFocused();
-  const readOnly = useReadOnly();
+export function TagElement(props: PlateElementProps<typeof TagPlugin>) {
+  const selected = useElementSelected();
+  const focused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
 
   return (
     <PlateElement
       {...props}
+      as="span"
       className={cn(
         'inline-block rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-sm font-medium text-primary',
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring'
       )}
-      attributes={{
-        ...props.attributes,
-        contentEditable: false,
-        'data-plite-value': element.value,
-      }}
     >
-      #{element.value}
+      #{props.element.value}
       {props.children}
     </PlateElement>
   );
@@ -170,20 +189,21 @@ export function TagElement({ element, ...props }) {
 
 ### 添加到编辑器
 
-```tsx
+```tsx showLineNumbers
+import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
-import { TagPlugin, TagInputPlugin } from './tag-plugin';
+import { TagPlugin } from './tag-plugin';
+import { TagInputPlugin } from './tag-input-plugin';
 import { TagElement, TagInputElement } from './tag-components';
 
 const editor = createEditor({
   plugins: [
-    // ...其他插件
     TagPlugin.configure({
       component: TagElement,
       initialState: {
         triggerQuery: (editor) => {
-          // 在代码块中禁用
-          return !editor.read.nodes.some({ type: 'codeBlock' });
+          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+          return !codeBlock.installed || !editor.read.nodes.some({ type: codeBlock.schema.type });
         },
       },
     }),
@@ -223,15 +243,32 @@ const editor = createEditor({
     匹配触发器前字符的模式。
     - **示例:** `/^\s?$/` 匹配行首或空格
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: TriggerComboboxEditor) => boolean" optional>
     控制触发器何时激活的自定义查询函数。
   </APIItem>
 </APIOptions>
 </API>
 
+## 输入命令
+
+提及、斜杠、表情和脚注输入依赖 `BaseComboboxPlugin`。自定义输入插件也应声明
+此依赖。使用 `editor.key(element)` 获取已挂载输入的 `NodeKey`，并在事件回调中
+保留该键。
+
+| 方法 | 行为 |
+| --- | --- |
+| `read.canEdit(input)` | 检查输入是否存在、可编辑且属于当前用户。 |
+| `api.cancel(input, { text, select })` | 在一次历史记录中删除输入并恢复原始文本。Backspace 可省略 `text`；`select` 可为 `'start'`、`'end'`，或省略以保留外部选区。 |
+| `api.commit(input, callback)` | 删除输入、选中其当前位置并运行同步事务回调。回调抛出异常时回滚整个更改。 |
+| `api.undo(input)` / `api.redo(input)` | 仅为可编辑输入执行可用的历史操作。 |
+
+输入键已失效或属于其他用户时，完成命令返回 `false`。命令不会把文本恢复到
+无关的当前选区；节点键也适用于命名文档根中的输入。
+
 ## Registry UI
 
-复制的 `inline-combobox` 组件负责输入聚焦、取消、键盘导航和撤销/重做转发。
-产品需要不同的组合框交互时，直接修改该组件。
+复制的 `inline-combobox` 组件负责查询状态、过滤、弹出框导航、输入法事件和 DOM
+聚焦。在 `InlineComboboxItem.onSelect` 中使用自动推断的事务插入所选内容。
+`onClick` 适用于成功完成后执行的界面操作，例如打开另一个弹出框。
 
 <ComponentSource name="inline-combobox" />

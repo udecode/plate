@@ -21,7 +21,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -33,7 +33,7 @@ The fastest way to add drag and drop functionality is with the `DndKit`, which i
 
 - [`BlockDraggable`](/docs/components/dnd): Renders drag handles and drop indicators for blocks.
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -47,9 +47,31 @@ const editor = createEditor({
 });
 ```
 
+### Render the editor
+
+`DndKit` provides the HTML5 backend and binds cleanup to each mounted Editable, including when automatic scrolling is disabled. Render the editor inside `Plate`:
+
+```tsx
+import { Plate, useCreateEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+export function DraggableEditor() {
+  const editor = useCreateEditor({ plugins: DndKit });
+
+  return (
+    <Plate editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </Plate>
+  );
+}
+```
+
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -59,48 +81,35 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual raf react-dnd react-dnd-html5-backend
 ```
 
-### Add Plugin
+### Configure the kit
+
+Install `DndKit` and configure behavior through `DndPlugin`:
 
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
 import { createEditor } from 'platejs/react';
+import { DndKit } from '@/components/editor/dnd';
 
 const editor = createEditor({
   plugins: [
-    // ...otherPlugins,
-    DndPlugin,
+    ...DndKit,
+    DndPlugin.configure({
+      initialState: { enableScroller: false },
+    }),
   ],
 });
 ```
 
-### Configure Plugin
+To supply a shared or custom manager, place your `DndProvider` above the editors. Each `DndKit` inherits that manager; otherwise, the kit supplies the default HTML5 backend.
 
-Configure drag and drop with a draggable component and DnD provider:
-
-```tsx
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { DndPlugin } from 'platejs/dnd/react';
-
-DndPlugin.configure({
-  render: {
-    abovePlite: ({ children }) => (
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    ),
-  },
-});
-```
-
-- `render.aboveNodes`: Assigns [`BlockDraggable`](/docs/components/dnd) to render drag handles above blocks.
-- `render.abovePlite`: Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
-
-### Advanced Configuration
+### Advanced configuration
 
 Add automatic scrolling and file drop handling:
 
 ```tsx
 import { DndPlugin } from 'platejs/dnd/react';
 import { PlaceholderPlugin } from 'platejs/media/react';
+import { BlockDraggable } from '@/components/editor/dnd';
 
 DndPlugin.configure({
   initialState: {
@@ -111,11 +120,8 @@ DndPlugin.configure({
         .update.insertMedia(dragItem.files, { at: target });
     },
   },
-  render: {
-    aboveNodes: BlockDraggable,
-    abovePlite: ({ children }) => (
-      <DndProvider backend={HTML5Backend}>{children}</DndProvider>
-    ),
+  slots: {
+    wrapNode: BlockDraggable,
   },
 });
 ```
@@ -163,7 +169,38 @@ Plugin for drag and drop functionality within the editor.
 </APIOptions>
 </API>
 
+## Drag preparation
+
+Use the plugin to prepare a custom drag handle:
+
+```tsx
+const dnd = editor.plugin(DndPlugin);
+const entries = dnd.read.dragEntries(element);
+const previews = dnd.api.prepareDrag(element);
+
+for (const { domNode, preview } of previews) {
+  preview.style.width = `${domNode.clientWidth}px`;
+  previewContainer.append(preview);
+}
+```
+
+`read.dragEntries(element)` returns the selected blocks when the element is in
+the selection, or that element alone otherwise. Nested list items follow their
+selected parent. The read does not change selection.
+
+`api.prepareDrag(element)` selects that payload, records its drag keys and
+returns `{ node, domNode, preview }` pairs for mounted blocks. Clones are inert,
+hidden from accessibility and contain no Plite DOM bindings. Selected blocks
+without mounted views stay in the payload. Read-only or removed elements do not
+start preparation. The copied component owns preview placement and styling.
+
 ## Hooks
+
+### `useDndPlugin`
+
+`useDndPlugin(editableElement: HTMLElement | null): void` attaches drag cleanup to one mounted view's `ownerDocument`. Pass its exact Editable element, or `null` before attachment and after detach. The hook releases the old document's listeners when the element changes or the component unmounts.
+
+`DndKit` calls this hook automatically. Use it directly only for custom integration that owns its own provider and view lifetime.
 
 ### `useDraggable`
 
@@ -183,7 +220,10 @@ A custom hook that enables draggable behavior for a given element. It provides a
     - **Default:** `'block'`
   </APIItem>
   <APIItem name="onDropHandler" type="function" optional>
-    Handler called when element is dropped.
+    Handler called after the landing passes the drop guards. Return `true` to handle the drop; otherwise the package performs the move.
+  </APIItem>
+  <APIItem name="canDropNode" type="CanDropCallback" optional>
+    Checks every dragged element before a hover indicator or drop callback. Receives `dragEntry`, `dropEntry`, `dragItem`, the target `editor`, and `sourceEditor`. Return `false` to reject the entire payload.
   </APIItem>
 </APIOptions>
 

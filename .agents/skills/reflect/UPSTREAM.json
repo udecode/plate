@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "reflect",
+  "files": [
+    {
+      "upstream": "skills/reflect/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "5c0fd61b383a2cf98dfd597544c6fc0fdd6eb90802f1ada4f92fa0762c323ebc",
+      "destinationSha256": "306c07029aa6c6ce4ca3b7b5039a7b2e834ae58a75dd05c88ed945c0f01c12fe",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Apply the already-authorized subset after full synthesis; do not infer tracker publication or memory-write authority.",
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/reflect/SKILL.md\n+++ skills/reflect/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: reflect\n description: Spawn three parallel review subagents over the active transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Reflect\n \n@@ -11,7 +12,7 @@\n ## When to invoke\n \n - The user said \"reflect\" or \"/reflect\".\n-- A complex task (5+ tool calls) just landed cleanly and the recipe is worth keeping.\n+- A consequential completed task exposed a recurring failure or reusable decision that merits a retrospective. Tool-call count alone never triggers it.\n - The agent hit dead ends, found the working path, and the path generalizes.\n - The user corrected the agent's approach mid-task.\n - A non-trivial workflow emerged that isn't captured anywhere.\n@@ -34,19 +35,19 @@\n \n ### 2. Spawn three reviewers in parallel\n \n-One message, three `Task` calls, `subagent_type: generalPurpose`, explicit `model:` on each, agent mode (`readonly: false`). Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript); readonly strips MCPs. The prompt forbids file writes; the parent applies edits.\n+When independent review is warranted and permitted, launch three native reviewers with the distinct prompts below. Inherit the parent model unless a configured available role overrides it. These are read-only tasks; tool availability does not grant mutation authority. If delegation is prohibited, apply the same lenses sequentially and report the lack of independence.\n \n | Lens | `model` | Prompt template |\n |---|---|---|\n-| Judgment | your configured reflect-judgment model (default `claude-fable-5-1-thinking-max`) | `references/judgment-reviewer.md` |\n-| Tooling | your configured reflect-tooling model (default `gpt-5.6-sol-max`) | `references/tooling-reviewer.md` |\n-| Divergent | your configured reflect-judgment model (default `claude-fable-5-1-thinking-max`) | `references/divergent-reviewer.md` |\n+| Judgment | your configured reflect-judgment model (default `inherit-parent`) | `references/judgment-reviewer.md` |\n+| Tooling | your configured reflect-tooling model (default `inherit-parent`) | `references/tooling-reviewer.md` |\n+| Divergent | your configured reflect-judgment model (default `inherit-parent`) | `references/divergent-reviewer.md` |\n \n Pass each template verbatim, substituting the transcript path or digest where marked. Reviewers return findings in the `Task` response body.\n \n ### 3. Synthesize\n \n-One `Task` call, `subagent_type: generalPurpose`, using your configured reflect-judgment model (default `claude-fable-5-1-thinking-max`), agent mode (`readonly: false`). The synthesizer's quality check includes spot-verifying citations, which can require MCP access; readonly strips MCPs. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer returns a structured Accepted / Rejected / Backlog list.\n+Use the configured available synthesizer role through native collaboration, inheriting the parent by default. When no independent synthesis is available, synthesize locally and label it. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer returns a structured Accepted / Rejected / Backlog list.\n \n ### 4. Structural enforcement check\n \n@@ -54,16 +55,16 @@\n \n ### 5. Apply\n \n-Before applying any Accepted edit, present the synthesizer's full Accepted/Rejected/Backlog output to the user and wait for explicit approval. The user picks which subset to apply and may redirect routings. Skill changes affect every future agent in the org; do not auto-apply.\n+Present the synthesizer's full Accepted/Rejected/Backlog output before applying edits. Execute the subset already authorized by the active request. If the request is report-only or the proposed edits extend that scope, ask for the specific missing authorization.\n \n-Backlog items file to whatever devex / backlog tracker your team uses automatically. Those are tracker submissions, not skill edits. Only the Accepted list waits for approval.\n+Keep backlog findings in the current report unless the user explicitly authorizes tracker publication. A retrospective does not itself authorize external submissions or memory writes.\n \n For each approved Accepted item, follow the Routing field exactly:\n \n - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): parent does directly.\n-- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): hand to Cursor's built-in `create-skill` skill and run its draft / test / iterate loop.\n-- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): hand to `create-skill` and run its description-optimization loop.\n-- `new skill via create-skill: <kebab-name>`: hand creation to `create-skill`. Do not invent the shape ad hoc.\n+- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): hand to the installed `skill-creator` skill and run its draft / test / iterate loop.\n+- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): hand to `skill-creator` and run its description-optimization loop.\n+- `new skill via skill-creator: <kebab-name>`: hand creation to `skill-creator`. Do not invent the shape ad hoc.\n \n If your environment ships a SKILL.md validator, run it on every touched skill before declaring done. Skip this step if it doesn't.\n \n"
+    },
+    {
+      "upstream": "skills/reflect/references/divergent-reviewer.md",
+      "destination": "references/divergent-reviewer.md",
+      "upstreamSha256": "823167d485c8fc424530ac4eff447f132a10e318a2db35380312c7e843f17683",
+      "destinationSha256": "823167d485c8fc424530ac4eff447f132a10e318a2db35380312c7e843f17683",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/reflect/references/judgment-reviewer.md",
+      "destination": "references/judgment-reviewer.md",
+      "upstreamSha256": "8db7a315ccf9280486b4df08b1277ba0fe4c4ac533ad3719945aa1aab2ebddea",
+      "destinationSha256": "8db7a315ccf9280486b4df08b1277ba0fe4c4ac533ad3719945aa1aab2ebddea",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    },
+    {
+      "upstream": "skills/reflect/references/synthesizer.md",
+      "destination": "references/synthesizer.md",
+      "upstreamSha256": "52767b4566c37df0adc6350fff1c5c7a919a1178c2be539e0efbf920f2803702",
+      "destinationSha256": "afdc68e60eec01f037d5b7b579d9353ffe9d9fffb8249b037127d5a6c862de29",
+      "status": "adapted",
+      "reasons": [
+        "Compile native Codex tool/model and authority semantics into the active method; preserve source procedures and examples while making prose ownership and independent review proportional to the task."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/reflect/references/synthesizer.md\n+++ skills/reflect/references/synthesizer.md\n@@ -14,7 +14,7 @@\n \n - Durability: still true in 6 months once paths, SHAs, tool versions, and code shapes have changed.\n - Specificity: broad enough to apply across tasks, precise enough that a future agent recognizes when to use it. Reject vague platitudes (\"write good code\") and hyper-specific facts (\"`<specific-skill-name>` has 175 tokens at limit 80\").\n-- Existing-skill-first: propose `new skill via create-skill:` only when no existing skill is a real home, the pattern recurs, and the topic deserves its own skill.\n+- Existing-skill-first: propose `new skill via skill-creator:` only when no existing skill is a real home, the pattern recurs, and the topic deserves its own skill.\n - Convergence: findings echoed by 2+ reviewers carry higher confidence. Singletons must clear a higher bar on the other criteria.\n - Decision-changing: a future agent does something different because of the edit, not just reads more text.\n - Structural-mechanism check: route to Backlog when a lint rule, script, metadata flag, or runtime check already enforces the rule or could enforce it cheaply. Skill prose is for things mechanisms cannot enforce.\n@@ -41,7 +41,7 @@\n |---|---|---|\n | <failure mode in a skill the parent used> | <change to that skill's body> | <skill path + section> |\n | <skill existed but didn't trigger> | <tune the skill's description so it fires next time> | <tune description: <skill path>> |\n-| <new pattern, no existing skill is a real home> | <draft a new skill via create-skill> | <new skill via create-skill: <kebab-name>> |\n+| <new pattern, no existing skill is a real home> | <draft a new skill via skill-creator> | <new skill via skill-creator: <kebab-name>> |\n \n One row per finding. The user approves row by row.\n \n"
+    },
+    {
+      "upstream": "skills/reflect/references/tooling-reviewer.md",
+      "destination": "references/tooling-reviewer.md",
+      "upstreamSha256": "3a4dc9e87d0d74b46d0d0bc2c1af6acba10be7c95d1adafeab6ec5701e247933",
+      "destinationSha256": "3a4dc9e87d0d74b46d0d0bc2c1af6acba10be7c95d1adafeab6ec5701e247933",
+      "status": "unchanged",
+      "reasons": [],
+      "removedHeadings": [],
+      "unifiedDiff": ""
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

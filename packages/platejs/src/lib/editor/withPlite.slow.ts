@@ -10,10 +10,9 @@ import {
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
-import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
+import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins.internal';
 import { createEditor as createReactEditor } from '../../react/editor/withPlate';
 import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
-import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import {
   AffinityPlugin,
   type Editor,
@@ -42,7 +41,6 @@ const coreNames = [
   AffinityPlugin.name,
   ParagraphPlugin.name,
   'react',
-  EventEditorPlugin.name,
   NavigationFeedbackPlugin.name,
 ];
 
@@ -1148,9 +1146,6 @@ describe('createReactEditor', () => {
       const customPlugin = defineBasePlugin('custom', {});
       const editor = createReactEditor({
         editor: createPliteEditor(),
-        override: {
-          components: {},
-        },
         plugins: [customPlugin],
       });
 
@@ -1185,28 +1180,26 @@ describe('createReactEditor', () => {
         plugins: [Plugin],
       });
 
-      expect(editor.plugin(Plugin).render.node).toBe(Component);
+      expect(editor.plugin(Plugin).component).toBe(Component);
     });
 
-    it('merge components', () => {
+    it('applies flat weak component overrides', () => {
       const HeadingPlugin = definePlatePlugin('h1', {});
       const customComponent = () => null;
 
       const editor = createReactEditor({
         editor: createPliteEditor(),
         override: {
-          components: {
-            h1: customComponent,
-          },
+          h1: { component: customComponent },
         },
         plugins: [HeadingPlugin],
       });
 
       const h1Plugin = editor.plugin('h1');
-      expect(h1Plugin.render.node).toBe(customComponent);
+      expect(h1Plugin.component).toBe(customComponent);
     });
 
-    it('lets terminal editor component configuration override a plugin component', () => {
+    it('lets terminal target configuration override a weak component override', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
       const HeadingPlugin = definePlatePlugin('h1', {
@@ -1219,20 +1212,18 @@ describe('createReactEditor', () => {
       });
 
       let h1Plugin = editor.plugin(HeadingPlugin);
-      expect(h1Plugin.render.node).toBe(originalComponent);
+      expect(h1Plugin.component).toBe(originalComponent);
 
       editor = createReactEditor({
         editor: createPliteEditor(),
         override: {
-          components: {
-            h1: overrideComponent,
-          },
+          h1: { component: originalComponent },
         },
-        plugins: [HeadingPlugin],
+        plugins: [HeadingPlugin.configure({ component: overrideComponent })],
       });
 
       h1Plugin = editor.plugin(HeadingPlugin);
-      expect(h1Plugin.render.node).toBe(overrideComponent);
+      expect(h1Plugin.component).toBe(overrideComponent);
     });
   });
 

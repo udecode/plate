@@ -26,7 +26,7 @@ Unlike traditional input-based multi-selects, this component is built on top of 
 
 </PackageInfo>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -36,7 +36,7 @@ Unlike traditional input-based multi-selects, this component is built on top of 
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add Plugins
+### Add plugins
 
 ```tsx
 import { MultiSelectPlugin } from 'platejs/tag/react';
@@ -50,7 +50,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugins
+### Configure plugins
 
 ```tsx
 import { MultiSelectPlugin } from 'platejs/tag/react';
@@ -65,14 +65,14 @@ const editor = createEditor({
 });
 ```
 
-- `MultiSelectPlugin`: Extends TagPlugin and constrains the editor to only contain tag elements
+- `MultiSelectPlugin`: React adapter for the headless tag picker, with query text cleanup and duplicate prevention.
 - `component`: Assigns [`TagElement`](/docs/components/tag) to render tag components
 
 ### Add SelectEditor
 
 <ComponentInstallation name="select-editor" inline />
 
-### Basic Example
+### Basic example
 
 ```tsx
 import { MultiSelectPlugin } from 'platejs/tag/react';
@@ -110,7 +110,7 @@ export default function MySelectEditor() {
 }
 ```
 
-### Form Example
+### Form example
 
 <ComponentSource name="select-editor-demo" />
 
@@ -118,13 +118,19 @@ export default function MySelectEditor() {
 
 ## Plugins
 
-### TagPlugin
+### BaseTagPlugin
 
-Inline void element plugin for individual tag functionality.
+Inline void tags that preserve surrounding text.
+
+### BaseMultiSelectPlugin
+
+Extends `BaseTagPlugin` with duplicate prevention, query text cleanup, and
+backward deletion for a tag picker. Import it from `platejs/tag` for headless use.
 
 ### MultiSelectPlugin
 
-Extension of `TagPlugin` that constrains the editor to only contain tag elements, enabling multi-select behavior with automatic text cleanup and duplicate prevention.
+React adapter for `BaseMultiSelectPlugin`. Configure its component to render
+the copied tag view.
 
 ## API
 

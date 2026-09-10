@@ -1,0 +1,21 @@
+source	lines	read_for	outcome
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	825-893	staged 10k shift up/down bounded proof	Kept; warm middle-block vertical selection has model/native/view assertions and no double highlight.
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	965-1175	staged repeated projection screenshots and full-DOM parity	Kept; start-block repeated ShiftDown/ShiftUp has screenshots and staged/full parity.
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	1177-1325	staged select-all delete undo proof	Kept but metric is broad; undo delete bound is 15s, needs p95 attribution before optimization.
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	1662-1829	virtualized select-all delete undo redo proof	Kept; proves view selection and DOM budget with partial DOM, but broad undo bound remains.
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts	2027-2268	virtualized repeated vertical parity	Kept; checks virtualized against staged, no model-line fallback, screenshots, up-step reversal.
+.tmp/slate-v2/packages/slate-react/src/editable/dom-coverage-vertical-selection.ts	1-220	visual line/caret rect machinery	Kept; projection is geometry-heavy and measurable by runtime profiler ids.
+.tmp/slate-v2/packages/slate-react/src/editable/dom-coverage-vertical-selection.ts	1055-1281	large-document vertical extension owner	Kept; hybrid visual target, adjacent target, model fallback, and mounted range edge logic.
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts	235-360	keydown ownership boundary	Kept; native fast path is allowed only when mounted and model ownership is false.
+.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-cross-editor.mjs	26-41	repeated shift config	Kept; command already parameterizes repeated ShiftDown count/mode/strictness.
+.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-cross-editor.mjs	1330-1399	repeated shift metrics	Kept; already records command/paint/long-task/profiler/selected-text data.
+.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-full.mjs	606-612	core huge-doc budgets	Kept; selectAll budget exists, undo restoration does not yet have equally strict p95 budget here.
+.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts	2046-2077	whole top-level block range deletion	Kept; select-all delete fast path uses replace_children.
+../prosemirror/view/src/domcoords.ts	275-515	coordsAtPos/posAtCoords/endOfTextblock	Kept; browser geometry APIs and vertical textblock detection are mature references.
+../prosemirror/view/src/selection.ts	9-215	DOM/model selection sync	Kept; selectionFromDOM/selectionToDOM and node-selection sync define native bridge boundaries.
+../prosemirror/view/src/capturekeys.ts	244-264	vertical key capture	Kept; ordinary shifted vertical text selection is left native, editor captures only node/block movement cases.
+../lexical/packages/lexical/src/LexicalEditorState.ts	28-46	dirty selection detection	Kept; selection dirty check is explicit.
+../lexical/packages/lexical/src/LexicalUtils.ts	633-649	setSelection dirty bookkeeping	Kept; setting selection dirties state and clears cached nodes.
+../lexical/packages/lexical/src/LexicalUtils.ts	1192-1210	selectAll model root selection	Kept; select-all is modeled as root element selection.
+../slate/site/examples/ts/huge-document.tsx	1-260	legacy huge-document example	Rejected as target; chunking/content-visibility baseline only.
+../slate/playwright/integration/examples/huge-document.test.ts	1-10	legacy huge-document test	Rejected as target; only checks chunk count.

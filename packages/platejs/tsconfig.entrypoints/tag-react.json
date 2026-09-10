@@ -22,9 +22,6 @@
   "include": ["../src/react/features/tag/**/*"],
   "references": [
     {
-      "path": "./core.json"
-    },
-    {
       "path": "./react-core.json"
     },
     {

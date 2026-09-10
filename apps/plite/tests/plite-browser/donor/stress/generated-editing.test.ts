@@ -639,21 +639,21 @@ const pasteHtmlImageVoid = (): StressCase =>
     ],
   });
 
-const editableIslandNativeFocus = (): StressCase =>
+const trueVoidNativeFocus = (): StressCase =>
   createStressCase({
-    family: 'editable-island-native-focus',
+    family: 'true-void-native-focus',
     route: 'editable-voids',
     steps: [
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-editable-island-shell',
+        label: 'assert-true-void-shell',
         selector: '[data-plite-void="true"]',
       },
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-editable-island-spacer',
+        label: 'assert-true-void-spacer',
         selector: '[data-plite-void="true"] [data-plite-spacer]',
       },
       ...createPliteBrowserInternalControlGauntlet({
@@ -1280,7 +1280,7 @@ const stressCases: StressCase[] = [
   ...(['images', 'embeds'] as const).map(blockVoidNavigation),
   staleTargetRemoteRebase(),
   pasteHtmlImageVoid(),
-  editableIslandNativeFocus(),
+  trueVoidNativeFocus(),
   tableCellBoundaryNavigation(),
   externalDecorationRefresh(),
   overlayManyDecorationSources(),

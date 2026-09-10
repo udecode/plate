@@ -1,0 +1,5 @@
+path	reason
+/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts	Lexical beforeinput, target-range, composition, and selectionchange ownership model
+/Users/zbeyens/git/prosemirror/view/test/webtest-composition.ts	ProseMirror composition-in-mark/cursor-wrapper oracle family
+/Users/zbeyens/git/lexical/packages/lexical/src/__tests__/unit/HTMLCopyAndPaste.test.ts	Previously promoted same HTML/plain prediction paste invariant
+/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	Slate v2 covered-existing proof rows for promoted composition invariants

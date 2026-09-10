@@ -23,7 +23,7 @@ docs:
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -35,7 +35,7 @@ The fastest way to add code drawing functionality is with the `CodeDrawingKit`, 
 
 - [`CodeDrawingElement`](/docs/components/code-drawing): Renders code drawing elements with inline editing and preview.
 
-### Add Kit
+### Add kit
 
 Add the kit to your plugins:
 
@@ -53,7 +53,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -63,7 +63,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual flowchart.js mermaid plantuml-encoder viz.js
 ```
 
-### Add Plugin
+### Add plugin
 
 Include `CodeDrawingPlugin` in your Plate plugins array when creating the editor.
 
@@ -79,7 +79,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 Configure the code drawing plugin with custom components.
 
@@ -98,7 +98,7 @@ const editor = createEditor({
 
 - `component`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing) to render code drawing elements.
 
-### Add Toolbar Button
+### Add toolbar button
 
 You can add a toolbar button to insert code drawing elements. Add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button):
 
@@ -222,6 +222,15 @@ The view mode.
 
 Renders a diagram from code based on its language.
 
+PlantUML requires an explicit rendering server. Mermaid, Graphviz, and Flowchart
+use their installed rendering libraries.
+
+```tsx
+const image = await renderCodeDrawing('plantuml', source, {
+  plantUmlServer: 'https://www.plantuml.com/plantuml',
+});
+```
+
 <API name="renderCodeDrawing">
 <APIParameters>
 <APIItem name="language" type="CodeDrawingLanguage">
@@ -229,6 +238,10 @@ The diagram language to render.
 </APIItem>
 <APIItem name="content" type="string">
 The code content for the diagram.
+</APIItem>
+<APIItem name="options" type="{ plantUmlServer?: string }" optional>
+Set `plantUmlServer` to the server base URL when rendering PlantUML. The renderer
+appends `/svg/` and the encoded diagram source.
 </APIItem>
 </APIParameters>
 
@@ -239,20 +252,6 @@ A promise that resolves to the rendered image data URL.
 </APIReturns>
 </API>
 
-### `downloadImage`
-
-Downloads an image from a data URL.
-
-<API name="downloadImage">
-<APIParameters>
-<APIItem name="imageDataUrl" type="string">
-The image data URL to download.
-</APIItem>
-<APIItem name="filename" type="string" optional>
-The filename for the downloaded image.
-
-- **Default:** `'code-drawing.png'`
-
-</APIItem>
-</APIParameters>
-</API>
+The copied `CodeDrawingElement` accepts a `plantUmlServer` prop and defaults to
+`https://www.plantuml.com/plantuml`. Its Export button saves a PNG. Customize
+the filename, preview height, and render debounce directly in the copied component.

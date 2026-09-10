@@ -12,7 +12,7 @@ import {
   type ElementOf,
   type ElementWith,
   PathApi,
-  type PlateNodeInsertOptions,
+  type PlateBlockInsertOptions,
   type PlatePluginTransaction,
   PLUGINS,
   property,
@@ -32,10 +32,10 @@ export const mediaElementProperties = {
 } satisfies SchemaElementProperties;
 
 export type MediaPluginState = {
-  isUrl?: (text: string) => boolean;
+  isUrl: ((text: string) => boolean) | null;
 
   /** Transforms the url. */
-  transformUrl?: (url: string) => string;
+  transformUrl: ((url: string) => string) | null;
 };
 
 export type MediaUrlProperties = {
@@ -92,18 +92,31 @@ type MediaElementPluginDefinition = BasePluginDefinition &
 type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
   insert: (
     input: MediaInsertInputForPlugin<C['name']>,
-    options?: PlateNodeInsertOptions
+    options?: PlateBlockInsertOptions
   ) => boolean;
   setUrl: (input: { element: Element; url: string }) => boolean;
 };
 
 type MediaPluginApi = {
+  /** Resolves app-owned URL input and inserts at the captured document target. */
+  insertUrl: (
+    getUrl: () =>
+      | string
+      | null
+      | undefined
+      | Promise<string | null | undefined>,
+    options?: PlateBlockInsertOptions & {
+      caption?: MediaInsertInput['caption'];
+    }
+  ) => Promise<boolean>;
   normalizeUrl: (url: string) => MediaUrlProperties | undefined;
 };
 
 type MediaPluginExtension = {
   api: (
-    context: BasePluginContext<MediaElementPluginDefinition>
+    context: BasePluginContext<MediaElementPluginDefinition> & {
+      update: MediaPluginUpdate<MediaElementPluginDefinition>;
+    }
   ) => MediaPluginApi;
   commands: NonNullable<
     BasePluginDefinitionInput<MediaElementPluginDefinition>['commands']
@@ -116,7 +129,7 @@ type MediaPluginExtension = {
   ) => {
     insert: (
       input: MediaInsertInput,
-      options?: PlateNodeInsertOptions
+      options?: PlateBlockInsertOptions
     ) => boolean;
     setUrl: (input: { element: Element; url: string }) => boolean;
   };
@@ -160,7 +173,50 @@ export function defineMediaPlugin(
     };
 
     return {
-      api: () => ({ normalizeUrl }),
+      api: ({ editor, update }) => ({
+        insertUrl: async (getUrl, { at, after, caption, ...options } = {}) => {
+          const atAnchor =
+            at === undefined
+              ? undefined
+              : editor.anchor(at, {
+                  association: 'forward',
+                  deletion: 'nearest',
+                });
+          const block =
+            at === undefined
+              ? editor.read.nodes.block({ at: after })?.[0]
+              : undefined;
+
+          if (!atAnchor && !block) return false;
+
+          try {
+            const url = await getUrl();
+
+            if (!url) return false;
+
+            const resolvedAt = atAnchor?.resolve();
+            const blockPath = block ? editor.read.nodes.path(block) : undefined;
+
+            if ((atAnchor && !resolvedAt) || (block && !blockPath)) {
+              return false;
+            }
+
+            if (resolvedAt) {
+              return update.insert(
+                { caption, url },
+                { ...options, at: resolvedAt }
+              );
+            }
+            return update.insert(
+              { caption, url },
+              { ...options, after: block }
+            );
+          } finally {
+            atAnchor?.release();
+          }
+        },
+        normalizeUrl,
+      }),
       commands: ({ around }) => [
         around(editorCommands.insertBreak, ({ next, state }) => {
           const selection = state.selection();
@@ -198,35 +254,37 @@ export function defineMediaPlugin(
       ],
       update: ({ tx }) => ({
         insert(input, options) {
-          if (!tx.selection() && options?.at === undefined) return false;
+          if (
+            !tx.selection() &&
+            options?.at === undefined &&
+            options?.after === undefined
+          ) {
+            return false;
+          }
 
           const normalized = normalizeUrl(input.url);
-
           if (!normalized) return false;
-
-          const { caption, ...properties } = {
-            ...input,
-            ...normalized,
-          };
-          const children =
-            typeof caption === 'string'
-              ? [{ text: caption }]
-              : caption && caption.length > 0
-                ? caption
-                : [{ text: '' }];
+          const { caption, ...properties } = { ...input, ...normalized };
           const element = {
             ...properties,
-            children,
+            children:
+              typeof caption === 'string'
+                ? [{ text: caption }]
+                : caption && caption.length > 0
+                  ? caption
+                  : [{ text: '' }],
             type,
           };
 
-          if (options?.at === undefined) {
-            tx.blocks.insertAfter(element, options);
-          } else {
-            tx.nodes.insert(element, options);
+          if (options?.at === undefined || options?.after !== undefined) {
+            return !!tx.blocks.insertAfter(element, {
+              ...options,
+              at: options?.after,
+            });
           }
 
-          return true;
+          tx.nodes.insert(element, options);
+          return !!tx.nodes.path(element);
         },
         setUrl({ element, url }) {
           const properties = normalizeUrl(url);
@@ -257,7 +315,7 @@ export type FilePluginState = MediaPluginState;
 export type VideoPluginState = MediaPluginState;
 
 export const BaseAudioPlugin = defineBasePlugin(PLUGINS.audio, {
-  initialState: (): AudioPluginState => ({}),
+  initialState: (): AudioPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
       isolating: true,
@@ -310,7 +368,7 @@ export const BaseAudioPlugin = defineBasePlugin(PLUGINS.audio, {
 export type AudioElement = ElementOf<typeof BaseAudioPlugin>;
 
 export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
-  initialState: (): FilePluginState => ({}),
+  initialState: (): FilePluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
       isolating: true,
@@ -366,7 +424,7 @@ export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
 export type FileElement = ElementOf<typeof BaseFilePlugin>;
 
 export const BaseVideoPlugin = defineBasePlugin(PLUGINS.video, {
-  initialState: (): VideoPluginState => ({}),
+  initialState: (): VideoPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
       isolating: true,

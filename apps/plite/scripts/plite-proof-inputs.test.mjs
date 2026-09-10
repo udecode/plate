@@ -105,8 +105,6 @@ test('app build inputs cover every workspace package target aliased by Next', ()
 });
 
 test('app build inputs cover the external collaboration example graph', () => {
-  const entries = normalizedEntries(appBuildEntries);
-
   for (const expected of [
     'apps/www/src/registry/components/editor/basic-blocks.tsx',
     'apps/www/src/registry/components/editor/basic-marks.tsx',
@@ -123,8 +121,39 @@ test('app build inputs cover the external collaboration example graph', () => {
     'apps/www/src/registry/components/editor/remote-cursor-overlay.tsx',
   ]) {
     assert.ok(
-      entries.has(expected),
+      appBuildEntries.some((entry) =>
+        entryCoversPath(entry, path.join(repoRoot, expected))
+      ),
       `missing collaboration build input: ${expected}`
+    );
+  }
+});
+
+test('app build inputs cover the external kit lifetime probe graph', () => {
+  for (const expected of [
+    'apps/www/src/__tests__/package-integration/kit-lifetime-probe/lifetime-browser-probe.tsx',
+    'apps/www/src/__tests__/package-integration/kit-lifetime-probe/baseline-ai.tsx',
+    'apps/www/src/__tests__/package-integration/kit-lifetime-probe/baseline-dnd.tsx',
+    'apps/www/src/__tests__/package-integration/kit-lifetime-probe/baseline-use-chat.ts',
+    'apps/www/src/registry/components/editor/ai.tsx',
+    'apps/www/src/registry/components/editor/dnd.tsx',
+    'apps/www/src/registry/components/editor/use-chat.ts',
+    'apps/www/src/registry/components/editor/plugins-static.ts',
+    'apps/www/src/components/site-registry/dropdown-menu.tsx',
+    'apps/www/src/components/site-registry/floating-popover.tsx',
+    'apps/www/src/components/site-registry/provider.tsx',
+    'apps/www/src/lib/plate-registry-styles.ts',
+    'apps/www/src/registry/bases/base/floating-popover.tsx',
+    'apps/www/src/registry/bases/radix/dropdown-menu.tsx',
+    'apps/www/src/registry/bases/radix/floating-popover.tsx',
+    'apps/www/src/registry/lib/inline-suggestion.ts',
+    'apps/www/src/registry/styles/preview-style-classes.ts',
+  ]) {
+    assert.ok(
+      appBuildEntries.some((entry) =>
+        entryCoversPath(entry, path.join(repoRoot, expected))
+      ),
+      `missing kit lifetime build input: ${expected}`
     );
   }
 });
@@ -294,10 +323,22 @@ test('proof monitor ignores writes inside an existing ignored directory', async 
     path.join(os.tmpdir(), 'plite-proof-monitor-ignored-')
   );
   const sourceRoot = path.join(root, 'source');
-  const ignoredRoot = path.join(sourceRoot, '.tmp');
+  const ignoredRoots = [
+    '.next',
+    '.next-plite',
+    '.tmp',
+    '.turbo',
+    'dist',
+    'node_modules',
+    'out',
+    'test-results',
+    'tmp',
+  ].map((name) => path.join(sourceRoot, name));
   const sourceFile = path.join(sourceRoot, 'input.ts');
 
-  fs.mkdirSync(ignoredRoot, { recursive: true });
+  ignoredRoots.forEach((ignoredRoot) => {
+    fs.mkdirSync(ignoredRoot, { recursive: true });
+  });
   fs.writeFileSync(sourceFile, 'before');
   const monitor = createProofIntegrityMonitor({
     sourceEntries: [sourceRoot],
@@ -305,7 +346,9 @@ test('proof monitor ignores writes inside an existing ignored directory', async 
 
   try {
     await waitForMonitorReady(monitor);
-    fs.writeFileSync(path.join(ignoredRoot, 'scratch.mjs'), 'ignored');
+    ignoredRoots.forEach((ignoredRoot) => {
+      fs.writeFileSync(path.join(ignoredRoot, 'scratch.mjs'), 'ignored');
+    });
 
     assert.equal(await monitor.checkpoint(), null);
 
@@ -347,11 +390,8 @@ test('proof monitor allocates no recursive watchers for disjoint inputs', async 
 
 test('proof monitor handles the real repository topology without native watchers', async () => {
   const monitor = createProofIntegrityMonitor({
-    sourceEntries: [
-      path.join(repoRoot, 'apps/plite'),
-      path.join(repoRoot, 'apps/www'),
-      path.join(repoRoot, 'packages'),
-    ],
+    sourceEntries: browserRunEntries,
+    sourceIgnoredPaths: [path.join(repoRoot, 'packages/test/dist')],
   });
 
   try {

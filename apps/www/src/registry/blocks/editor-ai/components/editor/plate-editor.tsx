@@ -1,28 +1,131 @@
 'use client';
 
+import type { CommentThread } from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
 import { Plate, useCreateEditor } from 'platejs/react';
-import * as React from 'react';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { createCommentValue } from '@/registry/components/editor/comment';
+import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 
 export function PlateEditor() {
   const editor = useCreateEditor({
-    plugins: EditorKit,
+    plugins: [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          users: {
+            alice: {
+              id: 'alice',
+              name: 'Alice',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
+            },
+            bob: {
+              id: 'bob',
+              name: 'Bob',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+            },
+            charlie: {
+              id: 'charlie',
+              name: 'Charlie',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+            },
+          },
+          initialThreads,
+        },
+      }),
+    ],
     initialValue: value,
   });
 
   return (
-    <Plate editor={editor}>
-      <EditorContainer>
-        <Editor variant="demo" />
-      </EditorContainer>
+    <TooltipProvider>
+      <Plate editor={editor}>
+        <EditorContainer className="grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+          <Editor className="min-w-0" variant="demo" />
+        </EditorContainer>
 
-      <SettingsDialog />
-    </Plate>
+        <SettingsDialog />
+      </Plate>
+    </TooltipProvider>
   );
 }
+
+const initialThreads: CommentThread[] = [
+  {
+    id: 'discussion1',
+    createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+    resolved: false,
+    status: 'published',
+    excerpt: 'comments',
+    userId: 'charlie',
+    target: {
+      type: 'range',
+      range: {
+        anchor: { path: [3, 6, 0], offset: 0 },
+        focus: { path: [3, 7], offset: 22 },
+      },
+    },
+    messages: [
+      {
+        id: 'discussion1-comment',
+        userId: 'charlie',
+        createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+        body: createCommentValue(
+          'Comments are a great way to provide feedback and discuss changes.'
+        ),
+      },
+      {
+        id: 'discussion1-reply',
+        userId: 'bob',
+        createdAt: new Date(Date.now() - 8 * 60_000).toISOString(),
+        body: createCommentValue(
+          'Agreed! The link to the docs makes it easy to learn more.'
+        ),
+      },
+    ],
+  },
+  {
+    id: 'discussion2',
+    createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+    resolved: false,
+    status: 'published',
+    excerpt: 'overlapping',
+    userId: 'bob',
+    target: {
+      type: 'range',
+      range: {
+        anchor: { path: [3, 8], offset: 0 },
+        focus: { path: [3, 8], offset: 11 },
+      },
+    },
+    messages: [
+      {
+        id: 'discussion2-comment',
+        userId: 'bob',
+        createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+        body: createCommentValue(
+          'Nice demonstration of overlapping annotations with both comments and suggestions!'
+        ),
+      },
+      {
+        id: 'discussion2-reply',
+        userId: 'charlie',
+        createdAt: new Date(Date.now() - 3 * 60_000).toISOString(),
+        body: createCommentValue(
+          'This helps users understand how powerful the editor can be.'
+        ),
+      },
+    ],
+  },
+];
+
+const reviewCreatedAt = new Date('2024-01-01T00:00:00Z').getTime();
 
 const value = {
   children: [
@@ -66,7 +169,7 @@ const value = {
               suggestion: true,
               suggestion_playground1: {
                 id: 'playground1',
-                createdAt: Date.now(),
+                createdAt: reviewCreatedAt,
                 type: 'insert',
                 userId: 'alice',
               },
@@ -80,7 +183,7 @@ const value = {
           suggestion: true,
           suggestion_playground1: {
             id: 'playground1',
-            createdAt: Date.now(),
+            createdAt: reviewCreatedAt,
             type: 'insert',
             userId: 'alice',
           },
@@ -90,7 +193,7 @@ const value = {
           suggestion: true,
           suggestion_playground1: {
             id: 'playground1',
-            createdAt: Date.now(),
+            createdAt: reviewCreatedAt,
             type: 'insert',
             userId: 'alice',
           },
@@ -101,7 +204,7 @@ const value = {
           suggestion: true,
           suggestion_playground2: {
             id: 'playground2',
-            createdAt: Date.now(),
+            createdAt: reviewCreatedAt + 1,
             type: 'remove',
             userId: 'bob',
           },
@@ -109,25 +212,17 @@ const value = {
         },
         { text: '. Discuss changes using ' },
         {
-          children: [
-            { comment: true, comment_discussion1: true, text: 'comments' },
-          ],
+          children: [{ text: 'comments' }],
           type: 'link',
           url: '/docs/comment',
         },
-        {
-          comment: true,
-          comment_discussion1: true,
-          text: ' on many text segments',
-        },
+        { text: ' on many text segments' },
         { text: '. You can even have ' },
         {
-          comment: true,
-          comment_discussion2: true,
           suggestion: true,
           suggestion_playground3: {
             id: 'playground3',
-            createdAt: Date.now(),
+            createdAt: reviewCreatedAt + 2,
             type: 'insert',
             userId: 'charlie',
           },
@@ -292,12 +387,9 @@ const value = {
     },
     {
       children: [
-        { children: [{ text: 'function hello() {' }], type: 'codeLine' },
         {
-          children: [{ text: "  console.info('Code blocks are supported!');" }],
-          type: 'codeLine',
+          text: "function hello() {\n  console.info('Code blocks are supported!');\n}",
         },
-        { children: [{ text: '}' }], type: 'codeLine' },
       ],
       language: 'javascript',
       type: 'codeBlock',

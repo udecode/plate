@@ -114,8 +114,7 @@ export type HostCodec<V extends Value = Value> = Readonly<{
   serialize?: (context: HostCodecSerializeContext<V>) => string | null;
 }>;
 
-/** Define a typed parser or serializer for one host MIME format. */
-export const defineHostCodec = <V extends Value = Value>(
+const prepareHostCodec = <V extends Value = Value>(
   codec: HostCodec<V>
 ): HostCodec<V> => {
   if (!codec.key) throw new Error('Host codec key cannot be empty.');
@@ -266,7 +265,7 @@ const createPlainTextInlineSlice = <V extends Value>(
 const createDefaultPlainTextHostCodec = <V extends Value>(
   editor?: Editor<V, any>
 ) =>
-  defineHostCodec<V>({
+  prepareHostCodec<V>({
     format: 'text/plain',
     key: 'plite-plain-text',
     parse: ({ data, state }) => {
@@ -577,7 +576,7 @@ export const hostCodecs = <const TName extends string, V extends Value = Value>(
 ): EditorExtension<HostCodecsExtensionDefinition<TName>> => {
   const registrations = Object.freeze(
     codecs.map((codec) =>
-      Object.freeze({ codec: defineHostCodec(codec), owner: name })
+      Object.freeze({ codec: prepareHostCodec(codec), owner: name })
     )
   );
 

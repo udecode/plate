@@ -1,14 +1,16 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { TextApi } from 'plitejs';
+import type { DOMRange } from 'plitejs/dom';
 import { createRef, StrictMode } from 'react';
 
 import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
-  defaultScrollSelectionIntoView,
   Editable,
+  type EditableProps,
   Plite,
 } from '../../src/react';
+import { defaultScrollSelectionIntoView } from '../../src/react/components/editable';
 import {
   createPliteInactiveSelectionStore,
   registerPliteInactiveSelectionFocus,
@@ -412,9 +414,79 @@ describe('plite-react editable behavior', () => {
     ).toBeNull();
   });
 
+  test.each([
+    {
+      name: 'nested editable',
+      target: 'nested',
+      button: 0,
+      isPrimary: true,
+      visible: false,
+    },
+    {
+      name: 'secondary pointer',
+      target: 'nested',
+      button: 2,
+      isPrimary: true,
+      visible: true,
+    },
+    {
+      name: 'non-primary pointer',
+      target: 'nested',
+      button: 0,
+      isPrimary: false,
+      visible: true,
+    },
+    {
+      name: 'embedded control',
+      target: 'embedded',
+      button: 0,
+      isPrimary: true,
+      visible: true,
+    },
+    {
+      name: 'marked control',
+      target: 'marked',
+      button: 0,
+      isPrimary: true,
+      visible: true,
+    },
+  ])(
+    'resolves inactive selection before mousedown for $name',
+    ({ target, button, isPrimary, visible }) => {
+      const store = createPliteInactiveSelectionStore();
+      const unregister = registerPliteInactiveSelectionFocus(document, store);
+      const host = document.createElement('div');
+      host.innerHTML =
+        '<div contenteditable="true"><div contenteditable="false"><button data-target="embedded">Control</button><div contenteditable="true"><span data-target="nested">Nested</span></div></div></div><div data-plite-keep-selection-visible><button data-target="marked">Marked</button></div>';
+      document.body.append(host);
+      const targetElement = host.querySelector(`[data-target="${target}"]`)!;
+      let visibleAtMouseDown: boolean | undefined;
+      targetElement.addEventListener('mousedown', () => {
+        visibleAtMouseDown = store.getSnapshot();
+      });
+      try {
+        setPliteInactiveSelectionVisible(document, store, true);
+        const pointer = new MouseEvent('pointerdown', {
+          bubbles: true,
+          composed: true,
+          button,
+        });
+        Object.defineProperty(pointer, 'isPrimary', { value: isPrimary });
+        targetElement.dispatchEvent(pointer);
+        targetElement.dispatchEvent(
+          new MouseEvent('mousedown', { bubbles: true, button })
+        );
+        expect(visibleAtMouseDown).toBe(visible);
+      } finally {
+        unregister();
+        host.remove();
+      }
+    }
+  );
+
   test('keeps document focus work constant across inactive selection stores', () => {
-    const documentAddEventListener = jest.spyOn(document, 'addEventListener');
-    const windowAddEventListener = jest.spyOn(window, 'addEventListener');
+    const documentAddEventListener = vi.spyOn(document, 'addEventListener');
+    const windowAddEventListener = vi.spyOn(window, 'addEventListener');
     const stores = Array.from({ length: 100 }, () =>
       createPliteInactiveSelectionStore()
     );
@@ -434,6 +506,11 @@ describe('plite-react editable behavior', () => {
         );
       });
 
+      expect(
+        documentAddEventListener.mock.calls.filter(
+          ([type]) => type === 'pointerdown'
+        )
+      ).toHaveLength(1);
       expect(
         documentAddEventListener.mock.calls.filter(
           ([type]) => type === 'focusin'
@@ -613,9 +690,9 @@ describe('plite-react editable behavior', () => {
       { type: 'block', children: [{ text: 'st' }] },
     ];
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onSelectionChange = jest.fn();
-    const onValueChange = jest.fn();
+    const onCommit = vi.fn();
+    const onSelectionChange = vi.fn();
+    const onValueChange = vi.fn();
 
     act(() => {
       render(
@@ -637,7 +714,7 @@ describe('plite-react editable behavior', () => {
     });
 
     const expectedSelection = {
-      kind: 'text',
+      kind: 'text' as const,
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     };
@@ -661,9 +738,9 @@ describe('plite-react editable behavior', () => {
   test('calls onCommit and onValueChange when editor children change', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onSelectionChange = jest.fn();
-    const onValueChange = jest.fn();
+    const onCommit = vi.fn();
+    const onSelectionChange = vi.fn();
+    const onValueChange = vi.fn();
 
     act(() => {
       render(
@@ -703,8 +780,8 @@ describe('plite-react editable behavior', () => {
   test('calls value callbacks when setNodes changes text shape', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onValueChange = jest.fn();
+    const onCommit = vi.fn();
+    const onValueChange = vi.fn();
 
     act(() => {
       render(
@@ -738,18 +815,20 @@ describe('plite-react editable behavior', () => {
   test('Editable onKeyDown receives editor context for UI hotkeys', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onCommit = jest.fn();
-    const onKeyDown = jest.fn((event, context) => {
-      if (event.key !== 'x') {
-        return undefined;
+    const onCommit = vi.fn();
+    const onKeyDown = vi.fn<NonNullable<EditableProps['onKeyDown']>>(
+      (event, context) => {
+        if (event.key !== 'x') {
+          return undefined;
+        }
+
+        context.editor.update((tx) => {
+          tx.text.insert('x', { at: { path: [0, 0], offset: 4 } });
+        });
+
+        return true;
       }
-
-      context.editor.update((tx) => {
-        tx.text.insert('x', { at: { path: [0, 0], offset: 4 } });
-      });
-
-      return true;
-    });
+    );
 
     let rendered!: ReturnType<typeof render>;
     act(() => {
@@ -788,7 +867,7 @@ describe('plite-react editable behavior', () => {
   test('Editable onDOMBeforeInput exposes raw native format input', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onDOMBeforeInput = jest.fn((event, context) => {
+    const onDOMBeforeInput = vi.fn((event, context) => {
       if (event.inputType !== 'formatBold') {
         return undefined;
       }
@@ -832,8 +911,8 @@ describe('plite-react editable behavior', () => {
   test('Editable onBeforeInput is not replayed from native beforeinput', async () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
-    const onBeforeInput = jest.fn();
-    const onDOMBeforeInput = jest.fn();
+    const onBeforeInput = vi.fn();
+    const onDOMBeforeInput = vi.fn();
 
     let rendered!: ReturnType<typeof render>;
     act(() => {

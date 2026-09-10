@@ -1,0 +1,139 @@
+---
+title: "External Text Views"
+description: "Render one canonical Plite Text through an adapter-owned editing surface."
+---
+
+Use `slots.externalText` when another text engine should own a block's DOM and
+local input. Plite keeps the document, selection, history, and remote changes;
+the adapter is a view, not another editor document.
+
+## Example
+
+The [External Text example](/examples/plite/external-text) renders the same
+document through native Plite and an app-local textarea adapter. It includes
+shared undo, a second external view, named roots, read-only state, and decoration
+delivery. The textarea demonstrates the protocol; it is not a large-code editor
+and cannot paint individual decoration ranges inside its input.
+
+## Supported model
+
+The block's compiled schema must permit exactly one direct Text:
+
+```ts
+import { defineEditorSchema, schema } from "plitejs";
+
+const sourceSchema = defineEditorSchema("schema:source", {
+  elements: {
+    source: { content: schema.content.text({ min: 1, max: 1 }) },
+  },
+  root: schema.content.type("source"),
+});
+```
+
+The live block must also contain one Text and must not be inline, void, or
+atomic. Newlines stay in that Text. Whole-Text properties survive offset edits;
+rich children and partial marks use native Plite rendering instead. The slot
+rejects unsupported content before mounting an adapter.
+
+## Render slot
+
+Pass an app-owned `ExternalTextAdapter` from `plitejs/react`. Keep its identity
+stable across renders.
+
+```tsx
+<Editable
+  renderElement={({ attributes, element, slots }) =>
+    element.type === "source" ? (
+      <pre {...attributes}>
+        {slots.externalText({ adapter, ariaLabel: "Source text" })}
+      </pre>
+    ) : (
+      <p {...attributes}>{slots.children()}</p>
+    )
+  }
+/>
+```
+
+Choose exactly one projection per element. In the external branch, do not read
+`children` or call `slots.children()`. Plite mounts a labelled, noneditable host
+with no hidden duplicate of the canonical text.
+
+`ariaLabel` is required and nonempty. The adapter labels its actual input from
+the host. An adapter's `TConfig` determines the `config` option's type; config
+updates reach the mounted view without recreating it.
+
+## Adapter lifecycle
+
+`ExternalTextAdapter<TConfig>.mount({ actions, host, state })` creates the local
+DOM and returns an `ExternalTextView<TConfig>`:
+
+| Method | Contract |
+| --- | --- |
+| `update({ changes, state })` | Apply exact patches and the supplied canonical state without dispatching another edit. |
+| `focus({ edge?, x? }?)` | Focus the local input and honor the requested boundary or horizontal position where supported. |
+| `destroy()` | Release every local listener and resource and remove the adapter's DOM. |
+
+`state` contains `text`, `version`, `selection`, `readOnly`, `decorations`, and
+`config`. Retain the canonical text reference; do not diff whole strings to
+discover outbound Plite edits. Decorations are keyed `{ start, end, attributes }`
+slices in this Text's offsets. The adapter owns their visual representation.
+
+`changes` has three meanings:
+
+| Value | Meaning |
+| --- | --- |
+| Patch list | Apply sorted, non-overlapping `{ from, to, insert }` replacements in the previous text's UTF-16 coordinates. Apply right to left if mutating a string in place. |
+| `[]` | Acknowledge a local edit or update selection, configuration, read-only state, or decorations without changing text. |
+| `null` | Reset to `state.text`, cancel local composition, and discard an unaccepted local prediction. |
+
+Structural replacement, stale input, canonical correction, and conflicting
+remote composition can require resets. Ordinary text edits, history replay,
+and non-conflicting remote patches do not require a reset.
+
+Mounting is client-only. SSR emits the empty host. Unmounting, root changes,
+and explicit document virtualization destroy the view; remount from canonical
+state. Adapter failures reach the editor's `lifecycleErrorSink` with
+`source: "external-text"`. A failed view rejects edits until reset or remount.
+
+## Actions
+
+Pass the last delivered `state.version` as `baseVersion`. Plite rejects stale,
+invalid, and read-only edits without changing the document.
+
+| Action | Contract |
+| --- | --- |
+| `dispatch({ baseVersion, changes, intent, selection })` | Submit one edit with `input`, `paste`, `cut`, `drop`, or `composition` intent. Selection uses the resulting text's directed UTF-16 offsets. |
+| `select({ baseVersion, selection })` | Set directed `{ anchor, focus }` offsets without changing text. |
+| `navigateOut({ baseVersion, direction, extend?, x? })` | Ask Plite to move into neighboring document content, optionally extending selection. |
+| `deleteOut({ baseVersion, direction })` | Delete across a block edge when the canonical caret is collapsed at that edge. |
+| `composition("start" \| "end")` | Join and finish Plite's composition epoch. Submit composition edits with `intent: "composition"`. |
+| `history("undo" \| "redo")` | Use the installed Plite history extension. Returns `false` when no history action applies. |
+
+Versioned actions return `{ status: "applied" | "stale" | "read-only" }`.
+Adapters disable independent undo stacks and never dispatch from `mount`,
+`update`, `focus`, or `destroy` callbacks.
+
+## Selection and native features
+
+Only the focused view receives `selection.mode: "native"` for a selection
+wholly inside its Text. Other views and cross-boundary selections receive
+`"model"`; paint that intersection without changing browser selection or focus.
+Avoid redundant native selection writes during focus transitions.
+
+The adapter owns local input, local clipboard formats, accessibility, search,
+spelling, and printing. Plite copies a cross-boundary selection from the full
+canonical model, including text absent from native Plite DOM. Rich drag moves
+between engines are outside this contract; plain-text transfers must not also
+delete their source.
+
+There is no fixed-height requirement. Adapter-internal virtualization and
+Plite's explicit [document virtualization](experimental-virtualized-rendering)
+are separate choices. Neither this slot nor the textarea example guarantees
+browser find, full screen-reader traversal, or print over unmounted text.
+
+## Related
+
+- [Editable Component](editable)
+- [DOM Coverage Boundaries](dom-coverage-boundaries)
+- [Selection And DOM](../../concepts/16-selection-and-dom)
+- [History](../plite-history/history)

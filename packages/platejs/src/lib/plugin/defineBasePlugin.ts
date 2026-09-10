@@ -4,26 +4,11 @@ import type {
   EditorReadMethodTree,
   EditorUpdateContext,
 } from '../../facade';
-import {
-  allowPrivateRenderContribution,
-  isPrivateRenderContribution,
-} from '../../internal/plugin/privateRenderContribution';
-import { isFunction } from '../../internal/utils/isFunction';
-import {
-  brandPluginDescriptor,
-  freezePluginDescriptorValue,
-  getPluginDescriptorMetadata,
-  isConfiguredPluginDescriptor,
-  mergePlugins,
-  setPluginDescriptorMetadata,
-} from '../../internal/utils/mergePlugins';
 import type {
   PlatePluginReadState,
   PlatePluginTransaction,
 } from '../editor/pluginRuntimeTypes';
 import type {
-  AnyBasePlugin,
-  AnyBasePluginContext,
   BasePluginContext,
   BasePluginDefinitionInput,
   BasePlugin,
@@ -32,6 +17,7 @@ import type {
   PluginCodecMapDeclaration,
 } from './BasePlugin';
 import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
+import { createBasePlugin } from './defineBasePlugin.internal';
 import type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
@@ -41,9 +27,8 @@ import type {
   NormalizePluginSelectors,
   NormalizePluginState,
 } from './PluginDefinition';
+import type { PluginInitialStateInput } from './pluginInitialState.internal';
 import type { InferPluginWritablePropertyEntries } from './pluginSchemaModel.internal';
-
-const PLUGIN_NAME_PATTERN = /^[a-z][A-Za-z0-9]*$/;
 
 type BasePluginDependencies = ReadonlyArray<
   EditorExtensionReference | PluginReference
@@ -140,407 +125,43 @@ type BasePluginConstructorPresenceKey =
   | 'readMiddleware'
   | 'render'
   | 'rules'
+  | 'slots'
   | 'stateFields'
   | 'prepareDocument'
-  | 'useHooks'
   | 'validate';
 
-type MutableBasePlugin = AnyBasePlugin & {
-  targetPlugins: ReadonlyArray<PluginReference | string>;
-};
-
-type PluginRecord = Record<PropertyKey, unknown> & {
-  name?: unknown;
-};
-
-const isObjectRecord = (value: unknown): value is PluginRecord =>
-  typeof value === 'object' && value !== null;
-
-const assertNoPublicRenderNode = (value: object) => {
-  if (isPrivateRenderContribution(value)) return;
-
-  const render = Reflect.get(value, 'render');
-
-  if (
-    typeof render === 'object' &&
-    render !== null &&
-    Object.hasOwn(render, 'node')
-  ) {
-    throw new Error(
-      'Plate plugin `render.node` is private. Use top-level `component` in defineBasePlugin/definePlatePlugin, or terminal .configure({ component }).'
-    );
-  }
-};
-
-const assertBaseDefinition: (
-  value: unknown
-) => asserts value is PluginRecord = (value) => {
-  if (!isObjectRecord(value)) {
-    throw new Error('Plate plugin definitions must be objects.');
-  }
-  if (typeof value.name !== 'string' || value.name.length === 0) {
-    throw new Error('Plate plugins require a non-empty `name`.');
-  }
-  if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
-    throw new Error(
-      'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
-    );
-  }
-
-  assertNoPublicRenderNode(value);
-  if (Object.hasOwn(value, 'node')) {
-    throw new Error(
-      'Plate plugin `node` is unsupported. Use top-level `schema` and `render`.'
-    );
-  }
-  if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
-    throw new Error('Plate plugin `api` must be a context factory.');
-  }
-};
-
-const assertExtendObject = (value: object) => {
-  assertNoPublicRenderNode(value);
-
-  if (Object.hasOwn(value, 'component')) {
-    throw new Error(
-      'Plate plugin .extend() cannot define `component`; declare the default in the constructor or replace it through terminal .configure({ component }).'
-    );
-  }
-
-  if (
-    Object.hasOwn(value, 'api') &&
-    typeof Reflect.get(value, 'api') !== 'function'
-  ) {
-    throw new Error('Plate plugin `api` must be a context factory.');
-  }
-
-  for (const field of [
-    'dependencies',
-    'key',
-    'name',
-    'schema',
-    'type',
-  ] as const) {
-    if (Object.hasOwn(value, field)) {
-      throw new Error(
-        `Plate plugin .extend() cannot define \`${field}\`; declare model identity and dependencies in the constructor.`
-      );
-    }
-  }
-};
-
-const assertConfigureObject = (value: object) => {
-  assertNoPublicRenderNode(value);
-
-  for (const field of [
-    'activate',
-    'api',
-    'codecs',
-    'commands',
-    'conflicts',
-    'contributions',
-    'corrections',
-    'dependencies',
-    'effectTypes',
-    'facetProviders',
-    'key',
-    'name',
-    'read',
-    'readMiddleware',
-    'schema',
-    'stateFields',
-    'type',
-    'update',
-    'validate',
-  ] as const) {
-    if (Object.hasOwn(value, field)) {
-      throw new Error(
-        `Plate plugin .configure() cannot define \`${field}\`; use .extend() for author capabilities.`
-      );
-    }
-  }
-};
-
-const normalizeComponent = (value: PluginRecord): PluginRecord => {
-  if (!Object.hasOwn(value, 'component')) return value;
-
-  const { component, ...rest } = value;
-  const render = isObjectRecord(rest.render) ? rest.render : {};
-
-  return allowPrivateRenderContribution({
-    ...rest,
-    render: {
-      ...render,
-      node: component,
-    },
-  });
-};
-
-const normalizeConfiguration = (configuration: PluginRecord) => {
-  assertConfigureObject(configuration);
-
-  return normalizeComponent(configuration);
-};
-
-const snapshotConfiguration = (configuration: object) => {
-  const snapshot: Record<PropertyKey, unknown> = {};
-
-  for (const key of Reflect.ownKeys(configuration)) {
-    snapshot[key] = freezePluginDescriptorValue(
-      Reflect.get(configuration, key)
-    );
-  }
-
-  const frozenSnapshot = Object.freeze(snapshot);
-
-  return isPrivateRenderContribution(configuration)
-    ? allowPrivateRenderContribution(frozenSnapshot)
-    : frozenSnapshot;
-};
-
-const createInitialStage = (definition: PluginRecord) => {
-  const { api, codecs, initialState, read, update } = definition;
-  const contextualInitialState =
-    typeof initialState === 'function' ? initialState : undefined;
-
-  if (
-    api === undefined &&
-    codecs === undefined &&
-    contextualInitialState === undefined &&
-    read === undefined &&
-    update === undefined
-  ) {
-    return [];
-  }
-
-  return [
-    (context: AnyBasePluginContext) => ({
-      ...(api !== undefined
-        ? {
-            api,
-          }
-        : {}),
-      ...(codecs !== undefined
-        ? {
-            codecs:
-              typeof codecs === 'function'
-                ? Reflect.apply(codecs, undefined, [context])
-                : codecs,
-          }
-        : {}),
-      ...(contextualInitialState
-        ? {
-            initialState: Reflect.apply(contextualInitialState, undefined, [
-              context,
-            ]),
-          }
-        : {}),
-      ...(read !== undefined ? { read } : {}),
-      ...(update !== undefined ? { update } : {}),
-    }),
-  ] as const;
-};
-
-const attachPluginMethods = (
-  source: MutableBasePlugin,
-  familySource?: object
-): MutableBasePlugin => {
-  const plugin = source;
-  const recreate = (next: MutableBasePlugin) =>
-    attachPluginMethods(
-      brandPluginDescriptor(next, familySource ?? plugin),
-      familySource ?? plugin
-    );
-  const assertAuthoringOpen = (method: string) => {
-    if (!isConfiguredPluginDescriptor(plugin)) return;
-
-    throw new Error(
-      `Plate plugin '${plugin.name}' is already configured. Call .${method}() before .configure().`
-    );
-  };
-
-  Reflect.set(plugin, 'configure', (input: unknown) => {
-    assertAuthoringOpen('configure');
-    const next = { ...plugin } as MutableBasePlugin;
-    const metadata = getPluginDescriptorMetadata(plugin);
-
-    if (isFunction(input)) {
-      setPluginDescriptorMetadata(next, {
-        ...metadata,
-        configured: true,
-        configurationLayers: [
-          ...metadata.configurationLayers,
-          Object.freeze({
-            kind: 'context' as const,
-            value: (context: AnyBasePluginContext) => {
-              const configuration = Reflect.apply(input, undefined, [context]);
-
-              if (!isObjectRecord(configuration)) {
-                throw new Error(
-                  'Plate plugin .configure() callbacks must return an object.'
-                );
-              }
-              return normalizeConfiguration(configuration);
-            },
-          }),
-        ],
-      });
-    } else {
-      if (!isObjectRecord(input)) {
-        throw new Error('Plate plugin .configure() values must be objects.');
-      }
-      const configuration = normalizeConfiguration(input);
-      setPluginDescriptorMetadata(next, {
-        ...metadata,
-        configured: true,
-        configurationLayers: [
-          ...metadata.configurationLayers,
-          Object.freeze({
-            kind: 'object' as const,
-            value: snapshotConfiguration(configuration),
-          }),
-        ],
-      });
-    }
-
-    return recreate(next);
-  });
-
-  Reflect.set(plugin, 'extend', (input: unknown) => {
-    assertAuthoringOpen('extend');
-    const next = { ...plugin } as MutableBasePlugin;
-    const metadata = getPluginDescriptorMetadata(plugin);
-
-    if (isFunction(input)) {
-      setPluginDescriptorMetadata(next, {
-        ...metadata,
-        stages: [
-          ...metadata.stages,
-          (context: AnyBasePluginContext) => {
-            const contribution = Reflect.apply(input, undefined, [context]);
-
-            if (!isObjectRecord(contribution)) {
-              throw new Error(
-                'Plate plugin .extend() callbacks must return an object.'
-              );
-            }
-            if (!Object.hasOwn(contribution, 'name')) {
-              assertExtendObject(contribution);
-            }
-
-            return contribution;
-          },
-        ],
-      });
-    } else {
-      if (!isObjectRecord(input)) {
-        throw new Error('Plate plugin .extend() values must be objects.');
-      }
-
-      // A named object is a canonical raw Plite descriptor. Its name is
-      // validated by the resolver and its native fields are adopted flat.
-      if (!Object.hasOwn(input, 'name')) assertExtendObject(input);
-
-      const contribution = freezePluginDescriptorValue(input);
-
-      setPluginDescriptorMetadata(next, {
-        ...metadata,
-        stages: [...metadata.stages, () => contribution],
-      });
-    }
-
-    return recreate(next);
-  });
-
-  return brandPluginDescriptor(plugin, familySource);
-};
-
-const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
-  assertBaseDefinition(definition);
-  const normalizedDefinition = normalizeComponent(definition);
-
-  const {
-    api: _api,
-    codecs: _codecs,
-    initialState,
-    read: _read,
-    update: _update,
-    ...staticDefinition
-  } = normalizedDefinition;
-  const name = normalizedDefinition.name as string;
-  const plugin = mergePlugins(
-    {
-      name,
-      conflicts: [],
-      dependencies: [],
-      initialState: {},
-      inject: {},
-      inputRules: [],
-      on: {},
-      override: {},
-      render: {},
-      rules: {},
-      schema: null,
-      selectors: {},
-      shortcuts: {},
-      targetPlugins: [],
-    },
-    {
-      ...staticDefinition,
-      ...(initialState === undefined || typeof initialState === 'function'
-        ? {}
-        : { initialState }),
-    }
-  ) as unknown as MutableBasePlugin;
-
-  setPluginDescriptorMetadata(plugin, {
-    configured: false,
-    configurationLayers: Object.freeze([]),
-    htmlCodecContributions: Object.freeze([]),
-    resolved: false,
-    stages: createInitialStage(normalizedDefinition),
-  });
-
-  plugin.targetPlugins = Object.freeze([...plugin.targetPlugins]);
-
-  return attachPluginMethods(plugin);
-};
-
-/**
- * Create one exact render-capable Plate definition.
- *
- * The callback-rich input is normalized to a compact private definition
- * witness. Ordered `.extend()` stages may consume capabilities from earlier
- * stages; `.configure()` is terminal and never widens the definition.
- */
 type BasePluginConstructorRestInput<
   N extends string,
+  TKeys extends BasePluginConstructorKey,
   D extends BasePluginDependencies,
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
-> = Omit<
+> = Pick<
   BasePluginDefinitionInput<
     NoInfer<
       BasePluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
     >
   >,
-  | 'api'
-  | 'codecs'
-  | 'conflicts'
-  | 'dependencies'
-  | 'decorate'
-  | 'enabled'
-  | 'initialState'
-  | 'key'
-  | 'name'
-  | 'read'
-  | 'schema'
-  | 'selectors'
-  | 'shortcuts'
-  | 'targetPlugins'
-  | 'type'
-  | 'update'
+  Exclude<
+    TKeys,
+    | 'api'
+    | 'codecs'
+    | 'conflicts'
+    | 'dependencies'
+    | 'decorate'
+    | 'enabled'
+    | 'initialState'
+    | 'key'
+    | 'name'
+    | 'read'
+    | 'schema'
+    | 'selectors'
+    | 'shortcuts'
+    | 'targetPlugins'
+    | 'type'
+    | 'update'
+  >
 >;
 
 type BasePluginConstructorSchemaInput<
@@ -584,6 +205,15 @@ type BasePluginConstructorRead<
     : EditorReadMethodTree
   : EditorReadMethodTree;
 
+/**
+ * Create one exact render-capable Plate definition.
+ *
+ * The callback-rich input is normalized to a compact private definition
+ * witness. Ordered `.extend()` stages may consume capabilities from earlier
+ * stages; `.configure()` is terminal and never widens the definition.
+ * Every top-level state field must have a defined default; use `null` for an
+ * empty value. Nested domain objects may retain optional properties.
+ */
 export function defineBasePlugin<
   const N extends string,
   const TKeys extends BasePluginConstructorKey,
@@ -594,7 +224,6 @@ export function defineBasePlugin<
   >,
   const TApi extends object,
   const TUpdate extends object,
-  const TDecoration extends object,
   const TSchema extends PluginSchemaDeclaration,
   const D extends BasePluginDependencies,
   S extends object = 'initialState' extends TKeys
@@ -623,13 +252,17 @@ export function defineBasePlugin<
       : Readonly<{ schema?: never }>) &
     BasePluginConstructorRestInput<
       N,
+      TKeys,
       BasePluginConstructorDependencies<TKeys, D>,
       S,
       NoInfer<'schema' extends TKeys ? TSchema : never>,
       TTargetPlugins
     > &
     ('initialState' extends TKeys
-      ? Readonly<{ initialState: TInitialStateInput }>
+      ? Readonly<{
+          initialState: TInitialStateInput &
+            PluginInitialStateInput<NoInfer<TInitialStateInput>>;
+        }>
       : Readonly<{ initialState?: never }>) &
     ('decorate' extends TKeys
       ? Readonly<{
@@ -643,8 +276,7 @@ export function defineBasePlugin<
                 'schema' extends TKeys ? TSchema : never,
                 TTargetPlugins
               >
-            >,
-            TDecoration
+            >
           >;
         }>
       : Readonly<{ decorate?: never }>) &
@@ -767,7 +399,7 @@ export function defineBasePlugin<
       ? Readonly<{ update: TUpdate }>
       : Readonly<Record<never, never>>) &
     ('decorate' extends TKeys
-      ? Readonly<{ decorate: TDecoration }>
+      ? Readonly<{ decorate: true }>
       : Readonly<Record<never, never>>) &
     ('schema' extends TKeys
       ? Readonly<{
@@ -786,22 +418,5 @@ export function defineBasePlugin<
 >;
 
 export function defineBasePlugin(name: string, definition: unknown): object {
-  if (typeof name !== 'string' || name.length === 0) {
-    throw new Error('Plate plugins require a non-empty name.');
-  }
-  if (!PLUGIN_NAME_PATTERN.test(name)) {
-    throw new Error(
-      `Plate plugin name "${name}" must be a human-readable camelCase identifier.`
-    );
-  }
-  if (!isObjectRecord(definition)) {
-    throw new Error('Plate plugin definitions must be objects.');
-  }
-  if (Object.hasOwn(definition, 'name')) {
-    throw new Error(
-      'Plate plugin identity is positional. Remove `name` from the definition.'
-    );
-  }
-
-  return defineBasePluginRuntime({ ...definition, name });
+  return createBasePlugin(name, definition);
 }

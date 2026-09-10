@@ -5,7 +5,7 @@ description: How to integrate Plate editor with react-hook-form.
 
 While Plate is typically used as an **uncontrolled** input, there are valid scenarios where you want to integrate the editor with [**react-hook-form**](https://www.react-hook-form.com) and the [**Field**](https://ui.shadcn.com/docs/components/field) family from **shadcn/ui**. This guide walks through best practices and common pitfalls.
 
-## When to Integrate Plate with a Form
+## When to integrate Plate with a form
 
 - **Form Submission**: You want the editor's content to be included along with other fields (e.g., `<input>`, `<select>`) when the user submits the form.
 - **Validation**: You want to validate the editor's content (e.g., checking if it's empty) at the same time as other form fields.
@@ -13,11 +13,11 @@ While Plate is typically used as an **uncontrolled** input, there are valid scen
 
 However, keep in mind the warning about **fully controlling** the editor value. Plate strongly prefers an uncontrolled model. If you replace the editor's internal state too frequently, selection, history, and rendering all pay for full-document replacement. Treat the editor as uncontrolled and sync complete document values at deliberate form boundaries.
 
-## Approach 1: Sync on `onValueChange`
+## Approach 1: sync on `onValueChange`
 
 This is the most straightforward approach: each time the editor changes, update your form field's value. For small documents or infrequent changes, this is usually acceptable.
 
-### React Hook Form Example
+### React Hook Form example
 
 ```tsx
 import { useForm } from "react-hook-form";
@@ -81,7 +81,7 @@ export function RHFEditorForm() {
 
 If you expect large documents or fast typing, consider debouncing or switching to an `onBlur` approach to reduce form updates.
 
-### shadcn/ui Field Example
+### shadcn/ui field example
 
 [shadcn/ui](https://ui.shadcn.com/docs/components/field) provides field layout and validation components. Use React Hook Form's `<Controller>` to connect Plate to that UI:
 
@@ -150,7 +150,7 @@ export function EditorForm() {
 
 This approach makes editor content behave like any other React Hook Form field while shadcn/ui owns layout and validation styling.
 
-## Approach 2: Sync on Blur (or Another Trigger)
+## Approach 2: sync on blur (or another trigger)
 
 Instead of syncing on every keystroke, you might only need the final value when the user:
 
@@ -171,7 +171,7 @@ Instead of syncing on every keystroke, you might only need the final value when 
 
 This reduces overhead but your form state won't reflect partial updates while the user is typing.
 
-## Approach 3: Controlled Replacement (Advanced)
+## Approach 3: controlled replacement (advanced)
 
 If you want the form to be the single source of truth (completely [controlled](/docs/controlled)):
 
@@ -189,7 +189,7 @@ full-document rendering work.
 
 **Recommendation**: Stick to a partially uncontrolled model if you can.
 
-## Example: Save & Reset
+## Example: save & reset
 
 Here's a more complete form demonstrating both saving and resetting the editor/form:
 
@@ -245,7 +245,7 @@ function MyForm() {
 - **Reset** -> resets the form and replaces the editor value from the reset form
   state.
 
-## Migrating from a shadcn Textarea to Plate
+## Migrating from a shadcn textarea to Plate
 
 If you have a standard [Field example from shadcn/ui docs](https://ui.shadcn.com/docs/components/field) and want to replace `<Textarea>` with a Plate editor, follow these steps:
 
@@ -431,7 +431,7 @@ export function EditorForm() {
 - `initialValue` is one-shot. For an explicit external reset, replace the
   editor document once with `tx.value.replace(...)`.
 
-## Best Practices
+## Best practices
 
 1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.
 2. **Minimize Replacements**: Each `tx.value.replace(...)` fits the complete document, records one history change, and clears selection when none is supplied.

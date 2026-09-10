@@ -53,21 +53,23 @@ describe('/api/search', () => {
   it('indexes API headings inside docs pages', async () => {
     const results = await search('duplicate definitions', 'en');
     const apiHeading = results.find(
-      (item) => item.url === '/docs/footnote#apifootnoteduplicatedefinitions'
+      (item) =>
+        item.url === '/docs/footnote#editorreadfootnoteduplicatedefinitions'
     );
 
     expect(apiHeading).toBeDefined();
     expect(apiHeading?.section).toBe('docsApi');
   });
 
-  it('tags transform headings inside docs pages', async () => {
+  it('tags update headings inside docs pages', async () => {
     const results = await search(
-      'tf footnote normalizeDuplicateDefinition',
+      'editor.update.footnote.normalizeDuplicateDefinition',
       'en'
     );
     const apiHeading = results.find(
       (item) =>
-        item.url === '/docs/footnote#tffootnotenormalizeduplicatedefinition'
+        item.url ===
+        '/docs/footnote#editorupdatefootnotenormalizeduplicatedefinition'
     );
 
     expect(apiHeading).toBeDefined();

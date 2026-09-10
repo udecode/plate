@@ -12,9 +12,9 @@ import {
   SelectionApi,
 } from '../..';
 import { Hotkeys } from '../../dom';
-import { DOMCoverage, type DOMPhaseScheduler } from '../../dom/internal';
+import type { DOMCoverageSession, DOMPhaseScheduler } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
+import { profilePliteReactDuration } from '../render-profiler';
 import {
   createMainRootPliteViewSelection,
   readPliteViewSelection,
@@ -153,12 +153,12 @@ const caretMovementUnhandled = (): EditableCaretMovementResult => ({
 });
 
 const getBoundarySelectionIds = (
-  editor: ReactRuntimeEditor,
+  coverage: DOMCoverageSession | undefined,
   selection: Range | null
 ) =>
   new Set(
     selection
-      ? DOMCoverage.getBoundariesForRange(editor, selection)
+      ? (coverage?.getBoundariesForRange(selection) ?? [])
           .filter((boundary) => boundary.selectionPolicy === 'skip')
           .map((boundary) => boundary.boundaryId)
       : []
@@ -168,31 +168,13 @@ const largeDocumentVerticalSelectionUpdatePolicy = {
   tags: 'skip-scroll-into-view',
 } satisfies EditorUpdatePolicyFor<ReactRuntimeEditor>;
 
-const measureCaretPhase = <T>(id: string, run: () => T): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
-    return run();
-  }
-
-  const startedAt = performance.now();
-
-  try {
-    return run();
-  } finally {
-    recordPliteReactRender({
-      duration: performance.now() - startedAt,
-      id,
-      kind: 'runtime-time',
-    });
-  }
-};
-
 const writeMainRootViewSelection = (
   editor: ReactRuntimeEditor,
   selection: Range | null,
   rootElement: HTMLElement | undefined,
   domPhaseScheduler: DOMPhaseScheduler
 ) => {
-  const viewSelection = measureCaretPhase(
+  const viewSelection = profilePliteReactDuration(
     'caret.main-root-view-selection.create',
     () =>
       selection && RangeApi.isExpanded(selection)
@@ -203,16 +185,19 @@ const writeMainRootViewSelection = (
         : null
   );
 
-  measureCaretPhase('caret.main-root-view-selection.write', () => {
+  profilePliteReactDuration('caret.main-root-view-selection.write', () => {
     writePliteViewSelection(editor, viewSelection);
   });
-  measureCaretPhase('caret.main-root-view-selection.clear-native', () => {
-    clearNativeSelectionForViewSelection(
-      viewSelection,
-      rootElement,
-      domPhaseScheduler
-    );
-  });
+  profilePliteReactDuration(
+    'caret.main-root-view-selection.clear-native',
+    () => {
+      clearNativeSelectionForViewSelection(
+        viewSelection,
+        rootElement,
+        domPhaseScheduler
+      );
+    }
+  );
 };
 
 const clearNativeSelectionForViewSelection = (
@@ -263,12 +248,14 @@ const getOwnerlessViewSelectionRange = (
 };
 
 const restoreSelectionIfMovementEnteredBoundary = ({
+  coverage,
   boundarySkipUnit,
   editor,
   preserveAnchorOnBoundarySkip,
   previousSelection,
   reverse,
 }: {
+  coverage: DOMCoverageSession | undefined;
   boundarySkipUnit?: MoveUnit;
   editor: ReactRuntimeEditor;
   preserveAnchorOnBoundarySkip: boolean;
@@ -286,17 +273,14 @@ const restoreSelectionIfMovementEnteredBoundary = ({
   }
 
   const previousBoundaryIds = getBoundarySelectionIds(
-    editor,
+    coverage,
     previousSelection
   );
-  const focusedBoundary = DOMCoverage.getBoundaryForPoint(
-    editor,
-    nextSelection.focus
-  );
+  const focusedBoundary = coverage?.getBoundaryForPoint(nextSelection.focus);
   const enteredBoundary =
     focusedBoundary?.selectionPolicy === 'skip'
       ? focusedBoundary
-      : DOMCoverage.getBoundariesForRange(editor, nextSelection).find(
+      : (coverage?.getBoundariesForRange(nextSelection) ?? []).find(
           (boundary) =>
             boundary.selectionPolicy === 'skip' &&
             !previousBoundaryIds.has(boundary.boundaryId)
@@ -306,8 +290,7 @@ const restoreSelectionIfMovementEnteredBoundary = ({
     return;
   }
 
-  const skipPoint = DOMCoverage.getPointOutsideBoundary(
-    editor,
+  const skipPoint = coverage?.getPointOutsideBoundary(
     enteredBoundary,
     nextSelection.focus,
     { reverse }
@@ -316,6 +299,7 @@ const restoreSelectionIfMovementEnteredBoundary = ({
   const focusPoint =
     skipPoint && preserveAnchorOnBoundarySkip && boundarySkipUnit
       ? getPointPastBoundarySkip({
+          coverage,
           editor,
           point: skipPoint,
           reverse,
@@ -336,11 +320,13 @@ const restoreSelectionIfMovementEnteredBoundary = ({
 };
 
 const getPointPastBoundarySkip = ({
+  coverage,
   editor,
   point,
   reverse,
   unit,
 }: {
+  coverage: DOMCoverageSession | undefined;
   editor: ReactRuntimeEditor;
   point: Point;
   reverse: boolean;
@@ -357,20 +343,15 @@ const getPointPastBoundarySkip = ({
       return current;
     }
 
-    const boundary = DOMCoverage.getBoundaryForPoint(editor, next);
+    const boundary = coverage?.getBoundaryForPoint(next);
 
     if (boundary?.selectionPolicy !== 'skip') {
       return next;
     }
 
-    const outside = DOMCoverage.getPointOutsideBoundary(
-      editor,
-      boundary,
-      next,
-      {
-        reverse,
-      }
-    );
+    const outside = coverage?.getPointOutsideBoundary(boundary, next, {
+      reverse,
+    });
 
     if (!outside) {
       return current;
@@ -383,6 +364,7 @@ const getPointPastBoundarySkip = ({
 };
 
 const moveSelectionAndRespectBoundaries = ({
+  coverage,
   boundarySkipUnit,
   domPhaseScheduler,
   editor,
@@ -394,6 +376,7 @@ const moveSelectionAndRespectBoundaries = ({
   writeViewSelection = false,
   viewSelectionRootElement,
 }: {
+  coverage: DOMCoverageSession | undefined;
   boundarySkipUnit?: MoveUnit;
   domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
@@ -416,6 +399,7 @@ const moveSelectionAndRespectBoundaries = ({
     });
   }
   restoreSelectionIfMovementEnteredBoundary({
+    coverage,
     boundarySkipUnit,
     editor,
     preserveAnchorOnBoundarySkip,
@@ -531,6 +515,8 @@ export const applyEditableCaretMovement = ({
   selection: Range | Selection;
 }): EditableCaretMovementResult => {
   const { nativeEvent } = event;
+  const runtime = getMountedEditableDOMRuntime(editor, event.currentTarget);
+  const coverage = runtime?.domCoverage;
   const keyboardSelectableTarget =
     getKeyboardSelectableVerticalNavigationTarget({
       editor,
@@ -553,13 +539,13 @@ export const applyEditableCaretMovement = ({
     return caretMovementUnhandled();
   }
 
-  const ownerlessViewSelectionRange = measureCaretPhase(
+  const ownerlessViewSelectionRange = profilePliteReactDuration(
     'caret.ownerless-view-selection-range',
     () => getOwnerlessViewSelectionRange(editor)
   );
   const largeDocumentVerticalSelection =
     ownerlessViewSelectionRange ?? selection;
-  const plainVerticalLargeDocumentSelection = measureCaretPhase(
+  const plainVerticalLargeDocumentSelection = profilePliteReactDuration(
     'caret.should-model-own-plain-vertical-large-document',
     () =>
       shouldModelOwnPlainVerticalLargeDocumentExtension({
@@ -569,7 +555,7 @@ export const applyEditableCaretMovement = ({
         selection: largeDocumentVerticalSelection,
       })
   );
-  const plainVerticalLargeDocumentExtension = measureCaretPhase(
+  const plainVerticalLargeDocumentExtension = profilePliteReactDuration(
     'caret.get-plain-vertical-large-document-extension',
     () =>
       getPlainVerticalLargeDocumentExtension({
@@ -590,12 +576,12 @@ export const applyEditableCaretMovement = ({
         plainVerticalLargeDocumentExtension.target,
       focus: plainVerticalLargeDocumentExtension.target,
     };
-    measureCaretPhase('caret.large-document-select', () => {
+    profilePliteReactDuration('caret.large-document-select', () => {
       editor
         .update(largeDocumentVerticalSelectionUpdatePolicy)
         .selection.set(nextSelection);
     });
-    measureCaretPhase('caret.large-document-view-selection', () => {
+    profilePliteReactDuration('caret.large-document-view-selection', () => {
       writeMainRootViewSelection(
         editor,
         nextSelection,
@@ -610,10 +596,11 @@ export const applyEditableCaretMovement = ({
     });
   }
 
-  const plainVerticalDOMCoverageExtension = measureCaretPhase(
+  const plainVerticalDOMCoverageExtension = profilePliteReactDuration(
     'caret.get-plain-vertical-dom-coverage-extension',
     () =>
       getPlainVerticalDOMCoverageExtension({
+        coverage,
         editor,
         event: nativeEvent,
         selection,
@@ -623,6 +610,7 @@ export const applyEditableCaretMovement = ({
   if (plainVerticalDOMCoverageExtension) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -645,6 +633,7 @@ export const applyEditableCaretMovement = ({
   if (documentBoundaryMove) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -677,6 +666,7 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isMoveLineBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -698,6 +688,7 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isMoveLineForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -719,6 +710,7 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendLineBackward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -742,6 +734,7 @@ export const applyEditableCaretMovement = ({
   if (Hotkeys.isExtendLineForward(nativeEvent)) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -817,6 +810,7 @@ export const applyEditableCaretMovement = ({
     const modelReverse = rootIsRTL ? !reverse : reverse;
 
     moveSelectionAndRespectBoundaries({
+      coverage,
       domPhaseScheduler,
       editor,
       move: () => {
@@ -912,7 +906,7 @@ export const applyEditableCaretMovement = ({
 
                 return enteredNonSelectable ||
                   crossedInlineVoid ||
-                  DOMCoverage.getBoundaryForPoint(editor, logicalNext)
+                  coverage?.getBoundaryForPoint(logicalNext)
                   ? { ...visualNext, point: logicalNext }
                   : visualNext;
               })

@@ -68,44 +68,29 @@ export const appBuildEntries = [
   path.join(repoRoot, 'apps/www/package.json'),
   path.join(repoRoot, 'apps/www/tsconfig.json'),
   path.join(repoRoot, 'apps/www/postcss.config.js'),
+  path.join(
+    repoRoot,
+    'apps/www/src/__tests__/package-integration/kit-lifetime-probe'
+  ),
   path.join(repoRoot, 'apps/www/src/app/(app)/examples/plite'),
   path.join(repoRoot, 'apps/www/src/app/globals.css'),
   path.join(repoRoot, 'apps/www/src/components/icons.tsx'),
+  path.join(repoRoot, 'apps/www/src/components/site-registry'),
   path.join(repoRoot, 'apps/www/src/components/ui'),
   path.join(repoRoot, 'apps/www/src/components/preview-dev-overlay-styles.tsx'),
   path.join(repoRoot, 'apps/www/src/components/themed-syntax-highlighter.tsx'),
   path.join(repoRoot, 'apps/www/src/hooks/use-copy-to-clipboard.ts'),
   path.join(repoRoot, 'apps/www/src/hooks/use-mobile.ts'),
+  path.join(repoRoot, 'apps/www/src/lib/plate-registry-styles.ts'),
   path.join(repoRoot, 'apps/www/src/lib/utils.ts'),
-  path.join(
-    repoRoot,
-    'apps/www/src/registry/components/editor/basic-blocks.tsx'
-  ),
-  path.join(
-    repoRoot,
-    'apps/www/src/registry/components/editor/basic-marks.tsx'
-  ),
-  path.join(
-    repoRoot,
-    'apps/www/src/registry/components/editor/basic-nodes.tsx'
-  ),
+  path.join(repoRoot, 'apps/www/src/registry/bases/base/floating-popover.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/bases/radix/dropdown-menu.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/bases/radix/floating-popover.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/components/editor'),
   path.join(repoRoot, 'apps/www/src/registry/examples/collaboration-demo.tsx'),
   path.join(repoRoot, 'apps/www/src/registry/hooks/use-mounted.ts'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/blockquote.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/code.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/editor.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/heading.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/highlight.tsx'),
-  path.join(
-    repoRoot,
-    'apps/www/src/registry/components/editor/horizontal-rule.tsx'
-  ),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/kbd.tsx'),
-  path.join(repoRoot, 'apps/www/src/registry/components/editor/paragraph.tsx'),
-  path.join(
-    repoRoot,
-    'apps/www/src/registry/components/editor/remote-cursor-overlay.tsx'
-  ),
+  path.join(repoRoot, 'apps/www/src/registry/lib/inline-suggestion.ts'),
+  path.join(repoRoot, 'apps/www/src/registry/styles/preview-style-classes.ts'),
   path.join(repoRoot, 'apps/www/src/types'),
   path.join(repoRoot, 'apps/www/src/utils/cn.ts'),
   path.join(repoRoot, 'package.json'),
@@ -151,11 +136,14 @@ export const browserRunEntries = [
 
 const ignoredDirectories = new Set([
   '.next',
+  '.next-plite',
   '.tmp',
+  '.turbo',
   'dist',
   'node_modules',
   'out',
   'test-results',
+  'tmp',
 ]);
 
 const collectFiles = (entryPath) => {

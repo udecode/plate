@@ -2,7 +2,6 @@
 
 import { ExcalidrawPlugin } from 'platejs/excalidraw/react';
 import { Plate, useCreateEditor } from 'platejs/react';
-import * as React from 'react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { ExcalidrawElement } from '@/registry/components/editor/excalidraw';

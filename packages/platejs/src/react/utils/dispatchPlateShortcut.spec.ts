@@ -1,18 +1,16 @@
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor as createRuntimeEditor } from '../editor';
 import type { Shortcuts } from '../plugin';
-import { dispatchPlateShortcut } from './dispatchPlateShortcut';
+import { dispatchPlateShortcut } from './dispatchPlateShortcut.internal';
 
 const createEditor = (shortcuts: Shortcuts) =>
   createRuntimeEditor({ shortcuts });
 
 const dispatch = ({
-  activeScopes = [],
   editor,
   event = {},
   phase = 'keydown',
 }: {
-  activeScopes?: string[];
   editor: ReturnType<typeof createEditor>;
   event?: KeyboardEventInit;
   phase?: 'keydown' | 'keyup';
@@ -24,7 +22,6 @@ const dispatch = ({
   });
 
   dispatchPlateShortcut(
-    activeScopes,
     editor,
     keyboardEvent,
     phase,
@@ -153,24 +150,6 @@ describe('dispatchPlateShortcut', () => {
     });
   });
 
-  it('filters shortcuts through the active scope', () => {
-    const handler = mock();
-    const editor = createEditor({
-      comment: {
-        handler,
-        keys: 'ctrl+k',
-        scopes: ['comments'],
-      },
-    });
-    const event = { code: 'KeyK', ctrlKey: true, key: 'k' };
-
-    dispatch({ activeScopes: ['editing'], editor, event });
-    expect(handler).not.toHaveBeenCalled();
-
-    dispatch({ activeScopes: ['comments'], editor, event });
-    expect(handler).toHaveBeenCalledTimes(1);
-  });
-
   it('dispatches keyup-only shortcuts once', () => {
     const handler = mock();
     const editor = createEditor({
@@ -205,7 +184,6 @@ describe('dispatchPlateShortcut', () => {
       value: (key: string) => key === 'AltGraph',
     });
     dispatchPlateShortcut(
-      [],
       editor,
       altGraphEvent,
       'keydown',

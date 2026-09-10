@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "no-comments",
+  "files": [
+    {
+      "upstream": "skills/no-comments/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "72d3b153712ab641875f1d7424de0f77375af1cec03707935f08fa7d8f17bbf3",
+      "destinationSha256": "0fe5d2a9c17c994242023f7c5e38eb73b59d80b2f487aa7ed5c1b8816c0abfb6",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff.",
+        "Retain unresolved non-obvious reasons and public contracts. Remove explanations only after source investigation and an authorized verified structural correction makes them redundant."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/no-comments/SKILL.md\n+++ skills/no-comments/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: no-comments\n description: \"Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # No comments\n \n@@ -17,8 +18,8 @@\n ## Steps\n \n 1. Spawn `Task` with `subagent_type: \"Comment Sicko\"`. Pass the scope. Do not restate its rules.\n-2. Inspect its report and diff. Reject application-code edits, scope escapes, exception-protected deletions, misstated `MUST KILL` reasons, and flags that treat kept intentional code as guilty. Reshape flags on our-code surprises stay actionable. Do not restore those comments. A keep survives only with proof it is about something we cannot change. Audit missed scoped lint and TypeScript suppressions. Correctness or safety suppressions stay actionable `MUST KILL`s. Restore deletions only with exact exceptions and scoped proof. Before accepting thin `IMPORTANT` or `do not remove` kills or keeps, run `/how` or `/why` on their symbol. If a kill is ambiguous, do not restore. If a keep is refuted or still ambiguous, delete it. Revert and rerun one rejected report with the failure named. Reject a second, report it open, and fail `/no-comments`.\n+2. Inspect its report and diff. Reject application-code edits, scope escapes, exception-protected deletions, misstated `MUST KILL` reasons, and flags that treat kept intentional code as guilty. Reshape flags on our-code surprises stay actionable. Retain their non-obvious explanations until an authorized verified structural change makes them redundant. A documented public contract or non-obvious constraint can remain even when its implementation is ours. Audit missed scoped lint and TypeScript suppressions. Correctness or safety suppressions stay actionable `MUST KILL`s. Restore deletions only with exact exceptions and scoped proof. Before accepting thin `IMPORTANT` or `do not remove` kills or keeps, run `/how` or `/why` on their symbol. If a deletion is ambiguous, preserve the comment while investigating its actual constraint. Delete a refuted claim only after source evidence resolves it. Revert and rerun one rejected report with the failure named. Reject a second, report it open, and fail `/no-comments`.\n 3. Fix trivial accepted flags directly by deleting a dead path, dropping a parameter, or using the real API. If any fix needs a shape, run `/architect` once for the accepted set and surrounding code. Stop at the sketch. Architect shapes. Step 4 implements.\n 4. Implement the smallest root-cause fix in scope. Remove every named workaround. If the root cause is out of scope, land the smallest in-scope fix and report the rest open. The **principle-fix-root-causes** and **principle-redesign-from-first-principles** skills guide intent only: fix real causes, redesign as if requirements always existed, never bolt on symptom guards. Neither authorizes widening the fence nor fixing instances outside it.\n-5. Constraint comments say `do not remove`, `do not change wording`, or `talk to X before changing`. Leave keeps about things we cannot change. Offer the cheapest in-scope type, runtime, test, or CI lint. Wait for interactive approval. Unattended and eval require caller pre-approval. If approved, encode then delete. Otherwise delete, report the constraint open, and sketch out-of-scope work.\n+5. Constraint comments say `do not remove`, `do not change wording`, or `talk to X before changing`. Leave keeps about things we cannot change. Offer the cheapest in-scope type, runtime, test, or CI lint. Use the active request to determine whether the encoding is authorized. Ask only for a missing decision or new authority. When authorized, encode then delete the redundant explanation. Otherwise retain the non-obvious constraint, report the missing encoding, and sketch any out-of-scope work.\n 6. Report the deletion count, restored comments, reruns, architect sketch, fixes, encoding offers, encodings, unenforced constraints, and other open work.\n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

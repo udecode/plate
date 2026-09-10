@@ -1,7 +1,7 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
 import { failInvariant } from './editable/runtime-editor-api';
 import {
-  clonePliteViewBoundaryProjectedPoint,
+  clonePliteViewBoundaryPointWithOwner,
   createPliteViewBoundaryGraph,
   getPlitePointRoot,
   getPliteViewBoundaryOwnerKey,
@@ -42,7 +42,7 @@ const HISTORY_BATCH_TO_VIEW_SELECTION = new WeakMap<
   }>
 >();
 
-const cloneProjectedPoint = clonePliteViewBoundaryProjectedPoint;
+const cloneBoundaryPoint = clonePliteViewBoundaryPointWithOwner;
 
 export const setPliteViewSelectionStoreKey = (
   editor: object,
@@ -65,16 +65,16 @@ const notifyViewSelectionListeners = (
   );
 };
 
-const getProjectedPointOwnerKey = (projectedPoint: PliteViewBoundaryPoint) =>
-  projectedPoint.owner
-    ? getPliteViewBoundaryOwnerKey(projectedPoint.owner)
+const getViewBoundaryPointOwnerKey = (boundaryPoint: PliteViewBoundaryPoint) =>
+  boundaryPoint.owner
+    ? getPliteViewBoundaryOwnerKey(boundaryPoint.owner)
     : null;
 
-const isProjectedPointEqual = (
+const isBoundaryPointEqual = (
   left: PliteViewBoundaryPoint,
   right: PliteViewBoundaryPoint
 ) =>
-  getProjectedPointOwnerKey(left) === getProjectedPointOwnerKey(right) &&
+  getViewBoundaryPointOwnerKey(left) === getViewBoundaryPointOwnerKey(right) &&
   left.point.offset === right.point.offset &&
   getPliteViewBoundaryPointRoot(left) ===
     getPliteViewBoundaryPointRoot(right) &&
@@ -87,8 +87,8 @@ export const createPliteViewSelection = (
     focus: PliteViewBoundaryPoint;
   }>
 ): PliteViewSelection => {
-  const anchor = cloneProjectedPoint(range.anchor);
-  const focus = cloneProjectedPoint(range.focus);
+  const anchor = cloneBoundaryPoint(range.anchor);
+  const focus = cloneBoundaryPoint(range.focus);
 
   return Object.freeze({
     anchor,
@@ -149,7 +149,7 @@ export const extendPliteViewSelection = (
   });
 
 export const isPliteViewSelectionCollapsed = (selection: PliteViewSelection) =>
-  isProjectedPointEqual(selection.anchor, selection.focus);
+  isBoundaryPointEqual(selection.anchor, selection.focus);
 
 export const collapsePliteViewSelection = (
   selection: PliteViewSelection,
@@ -157,18 +157,18 @@ export const collapsePliteViewSelection = (
 ): PliteViewBoundaryPoint => {
   switch (edge) {
     case 'anchor': {
-      return cloneProjectedPoint(selection.anchor);
+      return cloneBoundaryPoint(selection.anchor);
     }
     case 'focus': {
-      return cloneProjectedPoint(selection.focus);
+      return cloneBoundaryPoint(selection.focus);
     }
     case 'start': {
-      return cloneProjectedPoint(
+      return cloneBoundaryPoint(
         selection.segments.backward ? selection.focus : selection.anchor
       );
     }
     case 'end': {
-      return cloneProjectedPoint(
+      return cloneBoundaryPoint(
         selection.segments.backward ? selection.anchor : selection.focus
       );
     }

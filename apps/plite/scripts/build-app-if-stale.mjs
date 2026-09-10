@@ -64,14 +64,7 @@ const outputsAreFresh = ({ environment, inputDigest }) => {
   });
 };
 
-export const buildAppIfStale = async ({
-  environment = process.env,
-  onProcessEnd,
-  onProcessStart,
-  timeoutMs = Number(
-    environment.PLITE_BROWSER_BUILD_SETUP_TIMEOUT_MS ?? 600_000
-  ),
-} = {}) => {
+export const inspectAppBuild = (environment = process.env) => {
   const buildEnvironment = snapshotEnvironmentByPrefix(
     'NEXT_PUBLIC_PLITE_YJS_',
     environment
@@ -81,7 +74,24 @@ export const buildAppIfStale = async ({
     JSON.stringify(buildEnvironment),
   ]);
 
-  if (outputsAreFresh({ environment, inputDigest })) {
+  return {
+    buildEnvironment,
+    inputDigest,
+    fresh: outputsAreFresh({ environment, inputDigest }),
+  };
+};
+
+export const buildAppIfStale = async ({
+  environment = process.env,
+  onProcessEnd,
+  onProcessStart,
+  timeoutMs = Number(
+    environment.PLITE_BROWSER_BUILD_SETUP_TIMEOUT_MS ?? 600_000
+  ),
+} = {}) => {
+  const { buildEnvironment, inputDigest, fresh } = inspectAppBuild(environment);
+
+  if (fresh) {
     console.log('plite proof app export is fresh');
     return 0;
   }

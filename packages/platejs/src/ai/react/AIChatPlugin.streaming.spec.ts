@@ -132,7 +132,7 @@ describe('AIChatPlugin streaming', () => {
       chatNodes: [
         {
           node: {
-            children: [{ comment: true, suggestion: true, text: 'hello' }],
+            children: [{ suggestion: true, text: 'hello' }],
             suggestionData: [],
             suggestionTransient: true,
             suggestion_old: { id: 'old' },
@@ -149,7 +149,6 @@ describe('AIChatPlugin streaming', () => {
 
     expect(serialized).not.toContain('suggestionData');
     expect(serialized).not.toContain('suggestion_old');
-    expect(serialized).not.toContain('"comment"');
     expect(serialized).not.toContain('"suggestion":');
   });
 
@@ -163,12 +162,7 @@ describe('AIChatPlugin streaming', () => {
           value: {
             children: [
               {
-                children: [
-                  {
-                    children: [{ text: 'const answer = 42;' }],
-                    type: 'codeLine',
-                  },
-                ],
+                children: [{ text: 'const answer = 42;' }],
                 lang: 'typescript',
                 type: 'codeBlock',
               },

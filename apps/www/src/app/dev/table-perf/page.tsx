@@ -1,10 +1,11 @@
 'use client';
 
-import type { Value } from 'platejs';
+import { NodeApi, type Value } from 'platejs';
 import {
   Plate,
   type Editor as ProductEditor,
   useCreateEditor,
+  useEditor,
 } from 'platejs/react';
 import type {
   TableCellElement,
@@ -134,6 +135,48 @@ const summarizeMount = (samples: number[]): TablePerfBenchmarkResult => {
 const clampDimension = (value: number | undefined, max: number) =>
   Math.max(1, Math.min(max, value ?? 1));
 
+function assertRenderedTable(editor: ProductEditor, config: TablePerfConfig) {
+  const root = editor.api.dom.root();
+  const table = editor.read.nodes.get([0], { type: TablePlugin })?.[0];
+  const cells = root?.querySelectorAll(
+    'td[data-plite-path],th[data-plite-path]'
+  );
+
+  if (
+    !root?.isConnected ||
+    !cells ||
+    cells.length !== config.rows * config.cols
+  ) {
+    throw new Error(
+      `Table benchmark requires ${config.rows * config.cols} mounted cells; received ${cells?.length ?? 0}`
+    );
+  }
+  if (!table || table.children.length !== config.rows) {
+    throw new Error(
+      'Table benchmark model dimensions do not match its fixture'
+    );
+  }
+  table.children.forEach((row, rowIndex) => {
+    if (!NodeApi.isElement(row) || row.children.length !== config.cols) {
+      throw new Error('Table benchmark model column count changed');
+    }
+    row.children.forEach((cell, colIndex) => {
+      const element = cells.item(rowIndex * config.cols + colIndex);
+      if (
+        element?.getAttribute('data-plite-path') !==
+          `0,${rowIndex},${colIndex}` ||
+        element.textContent !== NodeApi.string(cell)
+      ) {
+        throw new Error(
+          `Table benchmark cell ${rowIndex},${colIndex} does not match its model`
+        );
+      }
+    });
+  });
+
+  return { root, table };
+}
+
 export default function TablePerfPage() {
   const [config, setConfig] = React.useState<TablePerfConfig>(DEFAULT_CONFIG);
   const [editorKey, setEditorKey] = React.useState(0);
@@ -175,6 +218,7 @@ export default function TablePerfPage() {
     if (!editorRef.current) {
       throw new Error('Table performance editor did not mount');
     }
+    assertRenderedTable(editorRef.current, configRef.current);
   }, []);
 
   const readSnapshot = React.useCallback(
@@ -275,14 +319,24 @@ export default function TablePerfPage() {
     await nextPaint();
 
     const samples: number[] = [];
+    assertRenderedTable(editor, configRef.current);
+    const initialText = editor.read.text.string([0, 0, 0]);
+    let insertedText = '';
 
     for (let index = 0; index < WARMUP_RUNS + MEASURED_RUNS; index++) {
+      const character = String.fromCharCode(97 + (index % 26));
       const startedAt = performance.now();
-      editor.update.text.insert(String.fromCharCode(97 + (index % 26)));
+      editor.update.text.insert(character);
       await nextPaint();
+      const elapsed = performance.now() - startedAt;
+      assertRenderedTable(editor, configRef.current);
+      insertedText += character;
+      if (editor.read.text.string([0, 0, 0]) !== insertedText + initialText) {
+        throw new Error('Table benchmark input did not reach the first cell');
+      }
 
       if (index >= WARMUP_RUNS) {
-        samples.push(performance.now() - startedAt);
+        samples.push(elapsed);
       }
     }
 
@@ -303,9 +357,22 @@ export default function TablePerfPage() {
       const startedAt = performance.now();
       setTableSelection(editor);
       await nextPaint();
+      const elapsed = performance.now() - startedAt;
+      const { root } = assertRenderedTable(editor, configRef.current);
+      const expected =
+        selectionSimulationRef.current.rows *
+        selectionSimulationRef.current.cols;
+      if (
+        root.querySelectorAll('[data-table-cell-selected="true"]').length !==
+        expected
+      ) {
+        throw new Error(
+          `Table benchmark did not render its ${expected} selected cells`
+        );
+      }
 
       if (index >= WARMUP_RUNS) {
-        samples.push(performance.now() - startedAt);
+        samples.push(elapsed);
       }
     }
 
@@ -333,9 +400,23 @@ export default function TablePerfPage() {
         .plugin(TablePlugin)
         .update.setColumnWidth({ colIndex: 0, width: finalWidth }, { at: [0] });
       await nextPaint();
+      const elapsed = performance.now() - startedAt;
+      const { root, table } = assertRenderedTable(editor, configRef.current);
+      const columns = root.querySelectorAll('col');
+      const firstColumn = columns.item(
+        columns.length === configRef.current.cols + 1 ? 1 : 0
+      );
+      if (
+        table.columnWidths?.[0] !== finalWidth ||
+        firstColumn?.style.width !== `${finalWidth}px`
+      ) {
+        throw new Error(
+          'Table benchmark column width did not reach the model and DOM'
+        );
+      }
 
       if (index >= WARMUP_RUNS) {
-        samples.push(performance.now() - startedAt);
+        samples.push(elapsed);
       }
     }
 
@@ -442,15 +523,26 @@ function TablePerfEditor({
     plugins: [...BasicBlocksKit, ...DndKit, ...TableKit],
   });
 
-  React.useLayoutEffect(() => {
-    onEditor(editor);
-  }, [editor, onEditor]);
-
   return (
     <Plate editor={editor}>
+      <BindTablePerfEditor onEditor={onEditor} />
       <EditorContainer className="h-[500px] overflow-auto">
         <Editor className="p-4" variant="none" />
       </EditorContainer>
     </Plate>
   );
+}
+
+function BindTablePerfEditor({
+  onEditor,
+}: {
+  onEditor: (editor: ProductEditor) => void;
+}) {
+  const editor = useEditor();
+
+  React.useLayoutEffect(() => {
+    onEditor(editor);
+  }, [editor, onEditor]);
+
+  return null;
 }

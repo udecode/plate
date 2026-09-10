@@ -1,0 +1,6 @@
+lead	reason
+pure-native-virtualized-selection	Partial DOM means native selection cannot reach absent lines; using it globally would recreate broken target/double-highlight behavior.
+legacy-slate-chunking-target	Legacy same-path example and test are weaker than current v2 proof; they are a baseline, not a target.
+tiptap-as-independent-source	Tiptap mostly wraps ProseMirror editor-view behavior for this lane; cite ProseMirror directly.
+select-all-undo-runtime-optimization-first	Current metric attribution is too broad; optimize after p95 owner is clear.
+raw-mobile-viewport-claim	Mobile raw-device proof is deferred until there is a real device lane.

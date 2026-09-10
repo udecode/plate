@@ -1,0 +1,4 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+local-inline-void-decoration	local-rg	inline atom mention decoration composition hovering toolbar	repos=prosemirror,lexical,tiptap,slate,milkdown	1793	8	5	5	inspect exact source slices only
+github-code-inline-atom-decoration	gh-search-code	inline atom decoration composition editor	language=TypeScript limit=20	0	0	0	0	reject query as too broad/low-yield
+github-code-contenteditable-composition-decoration	gh-search-code	contenteditable composition decoration	language=TypeScript limit=30	0	0	0	0	reject query as too broad/low-yield

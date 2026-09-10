@@ -6,6 +6,7 @@ import {
   property,
 } from '../../../core';
 import {
+  BaseComboboxPlugin,
   triggerCombobox,
   type TriggerComboboxPluginState,
 } from '../../combobox';
@@ -23,6 +24,7 @@ export type SlashPluginState = TriggerComboboxPluginState & {
 };
 
 export const BaseSlashInputPlugin = defineBasePlugin(PLUGINS.slashInput, {
+  dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
       properties: {
@@ -46,6 +48,7 @@ export const BaseSlashPlugin = defineBasePlugin(PLUGINS.slashCommand, {
       type: editor.plugin(BaseSlashInputPlugin).schema.type,
     }),
     trigger: '/',
+    triggerQuery: null,
     triggerPreviousCharPattern: TRIGGER_PREVIOUS_CHAR_PATTERN,
   }),
 

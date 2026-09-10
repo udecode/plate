@@ -28,9 +28,8 @@ const createTrace = () =>
   ({
     command: destructiveCommand,
     eventFamily: 'keydown' as const,
-    intent: 'delete-backward' as const,
+    intent: 'delete' as const,
     nativeAllowed: false,
-    intents: [],
     ownership: 'model-owned' as const,
     repair: null,
     selectionBefore: null,
@@ -45,7 +44,7 @@ const beginDestructiveEpoch = (editor = createEditor()) => {
     command: destructiveCommand,
     ownership: 'model-owned',
     rootEventFamily: 'keydown',
-    rootIntent: 'delete-backward',
+    rootIntent: 'delete',
     selectionSource: 'model-owned',
     targetOwner: 'editor',
   });
@@ -70,7 +69,7 @@ test('destructive beforeinput joins the active keydown epoch', () => {
     command: destructiveCommand,
     ownership: 'model-owned',
     rootEventFamily: 'beforeinput',
-    rootIntent: 'delete-backward',
+    rootIntent: 'delete',
     selectionSource: 'model-owned',
     targetOwner: 'editor',
   });
@@ -213,7 +212,7 @@ test('non-destructive beforeinput cannot inherit a destructive epoch', () => {
       ...createTrace(),
       command: { kind: 'insert-text', text: 'x' },
       eventFamily: 'beforeinput',
-      intent: 'insert-text',
+      intent: 'text-insert',
       ownership: 'model-owned',
       nativeAllowed: false,
       stateAfter: 'model-owned',
@@ -233,7 +232,7 @@ test('native input cannot inherit an older destructive epoch', () => {
       ...createTrace(),
       command: null,
       eventFamily: 'input',
-      intent: 'insert-text',
+      intent: 'text-insert',
       nativeAllowed: true,
       ownership: 'native-allowed',
       selectionSource: 'dom-current',
@@ -254,7 +253,7 @@ test('model-owned input can join a destructive epoch', () => {
       ...createTrace(),
       command: null,
       eventFamily: 'input',
-      intent: 'delete-backward',
+      intent: 'delete',
     },
   });
 

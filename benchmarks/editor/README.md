@@ -1,8 +1,6 @@
 # Editor Evidence
 
-This directory is an Evidence Kit lab for editor framework benchmark research.
-
-It replaces the old standalone Next/Vite benchmark app. The default owner is now evidence artifacts, not browser app scaffolding.
+This directory holds editor benchmark runners, research inputs, and evidence artifacts.
 
 ## Commands
 
@@ -78,3 +76,29 @@ The health and next-action report lives in:
 ## Rule
 
 Do not restore the old app/template lab by default. Do not promote random historical tmp JSON. Add a registry entry, target-owned adapter, fuzzer, corpus case, benchmark row, or source-pass note when a comparison needs new evidence.
+
+## Code-block product benchmark
+
+Run the native Plate and CodeMirror demos on the same production host:
+
+```sh
+PLATE_CODE_BLOCK_BENCHMARK_URL=http://localhost:3110 pnpm --filter plate-editor-evidence bench:code-block
+pnpm --filter plate-editor-evidence test:code-block-oracle
+```
+
+`benchmarks/plate-code-block-browser.mjs` checks the exact inserted keyword, canonical text, selection, bounded DOM, undo and redo. Its receipt keeps raw samples, source fingerprints, runtime identity and separate validity and timing results. Strict mode exits unsuccessfully on invalid evidence or exceeded timing budgets. The default comparison uses three warmups and fifteen measured samples per renderer, interleaved in alternating order.
+
+For two frozen production builds, set `PLATE_CODE_BLOCK_BENCHMARK_VARIANTS` to an object with two entries. Each entry supplies `mode` (`native` or `codemirror`), `route`, and an optional `baseURL`. Record the build identities alongside the receipt. These product receipts are separate from the Evidence Kit aggregate described above.
+
+## External-text substrate benchmark
+
+```sh
+node benchmarks/editor/benchmarks/plite-external-text-browser.mjs --output=tmp/external-text.json
+pnpm --filter plate-editor-evidence test:external-text-measurement
+```
+
+Run the benchmark command from the repository root. `--only=<regex>` selects cohorts by their JSON input; the receipt labels that run as a diagnostic subset. `--profile` records a separate mount on a fresh page. Profiled observations never enter the timing distributions.
+
+Each mount mode has 30 samples after three discarded rounds. Every measured warm remount uses a fresh page after a cold mount and one unmeasured remount. Applicable baseline and target pairs alternate order. Receipts retain raw timings, per-mount correctness counters, source and bundle hashes, and host load observations. Runner, measurement helper or lockfile changes invalidate the receipt. For other source changes during measurement, a fresh rebuild must produce the identical bundle and finish on stable source to preserve validity.
+
+The CLI reports correctness/validity, budgets and noise separately. Exit `0` means all checks passed; `1` means a correctness or validity failure; `2` means shared-host timing is inconclusive. A missed latency budget remains recorded and non-passing. Noise requires both a p95/p50 ratio above 1.6 and more than 4ms of absolute jitter, so tiny durations do not fail through division alone. The 150ms mount budget is unchanged. Timing alone does not establish a product regression, and an inconclusive result does not justify retrying until green.

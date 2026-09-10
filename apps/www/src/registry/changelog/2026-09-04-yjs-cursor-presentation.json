@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-04-yjs-cursor-presentation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-04-yjs-cursor-presentation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Customize Yjs selection highlights and carets in copied cursor UI",
+  "targets": [
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-04-remote-cursor-overlay-customize-yjs-selection-highlights-0e00b840",
+      "kind": "wiring",
+      "summary": "Import `YjsPlugin` from the copied `remote-cursor-overlay` file for selection highlights, carets, and labels. Edit that file to customize their colors, opacity, and classes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["remote-cursor-overlay", "collaboration-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-04",
+          "entry": "2026-09-04-yjs-cursor-presentation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

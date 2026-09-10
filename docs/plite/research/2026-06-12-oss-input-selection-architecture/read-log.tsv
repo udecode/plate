@@ -1,0 +1,18 @@
+id	source	lines	claim
+cm001	/Users/zbeyens/git/codemirror-view/src/input.ts	45-63	CodeMirror tracks composing count, first composition change, ended time, pending key, and pending change separately.
+cm002	/Users/zbeyens/git/codemirror-view/src/input.ts	170-183	Safari compositionend/keydown ordering is guarded by a short pending-key window.
+cm003	/Users/zbeyens/git/codemirror-view/src/input.ts	816-846	Composition start/update/end maintain state, pending change, Android delayed flush, and cleanup when no DOM change arrives.
+cm004	/Users/zbeyens/git/codemirror-view/src/input.ts	901-904	Safari dead-key compositionend can be synthesized after insertText when the browser misses it.
+cm005	/Users/zbeyens/git/codemirror-view/src/domchange.ts	248-295	DOM composition changes are replayed to secondary cursors only when safe; conflicting same-node composition ranges are ignored.
+cm006	/Users/zbeyens/git/codemirror-view/src/docview.ts	160-204	DOM selection sync avoids unnecessary writes and has browser-specific uneditable-node guards.
+cm007	/Users/zbeyens/git/codemirror-view/src/docview.ts	606-615	Composition DOM preservation refuses multi-line or model/DOM text mismatch cases.
+cm008	/Users/zbeyens/git/codemirror-view/src/docview.ts	661-666	Composition overlap detection is an explicit helper for deciding whether DOM preservation remains valid.
+cm009	/Users/zbeyens/git/codemirror-view/test/webtest-composition.ts	126-138	Android-style newline after composition is covered.
+cm010	/Users/zbeyens/git/codemirror-view/test/webtest-composition.ts	220-252	Composition cancels on fully overlapping, partially overlapping, or inside changes, but survives changes elsewhere.
+cm011	/Users/zbeyens/git/codemirror-view/test/webtest-composition.ts	325-375	Rapid consecutive compositions and multi-cursor composition constraints are tested.
+cm012	/Users/zbeyens/git/codemirror-view/test/webtest-composition.ts	386-415	IME span merging and text-node extension are tested.
+cm013	/Users/zbeyens/git/codemirror-view/src/draw-selection.ts	33-56	CodeMirror can hide native selection and draw its own selection, accepting a layout cost for code-editor affordances.
+sl001	/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/richtext.test.ts	1701-1932	Slate v2 already covers formatted-node IME replacement, rapid composition, and cross-paragraph native/synthetic composition.
+sl002	/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts	106-163	Slate v2 already covers async decoration refresh during active composition.
+sl003	/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/stress/generated-editing.test.ts	1027-1168	Slate v2 stress coverage includes synthetic IME selection repair, inline void boundary, and composition undo.
+

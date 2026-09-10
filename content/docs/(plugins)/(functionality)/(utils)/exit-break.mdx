@@ -13,7 +13,7 @@ title: Exit Break
 
 </PackageInfo>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -23,7 +23,7 @@ The fastest way to add exit break functionality is with the `ExitBreakKit`, whic
 
 <ComponentSource name="exit-break" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -39,11 +39,11 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
-### Add Plugin
+### Add plugin
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
@@ -57,7 +57,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 ```tsx
 import { ExitBreakPlugin } from 'platejs';
@@ -81,7 +81,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Keyboard Shortcuts
+## Keyboard shortcuts
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Enter">
@@ -116,12 +116,12 @@ Provides transforms to exit nested block structures automatically. The plugin de
 </APIOptions>
 </API>
 
-## How Exit Break Works
+## How exit break works
 
 Exit break uses the compiled element content grammar to determine where a
 paragraph can be inserted when exiting nested structures.
 
-### Exit Point Determination
+### Exit point determination
 
 When you trigger exit break:
 
@@ -135,7 +135,7 @@ When you trigger exit break:
 **Code Block:**
 ```tsx
 <codeBlock>                              // ← Exit point (top-level block)
-  <codeLine>code|</codeLine>             // ← Starting position
+  code|                                  // ← Starting position
 </codeBlock>
 <paragraph>|</paragraph>                 // ← New paragraph inserted here
 ```
@@ -172,7 +172,7 @@ When you trigger exit break:
 <paragraph>|</paragraph>                 // ← New paragraph inserted here
 ```
 
-### Custom Plugin Configuration
+### Custom plugin configuration
 
 Declare each custom element's allowed child content:
 

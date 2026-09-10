@@ -17,7 +17,6 @@ import { Button, Icon, Toolbar } from './components';
 import type {
   BlockQuoteElement,
   CustomElement,
-  CustomText,
   CustomValue,
   EditableVoidElement,
   ParagraphElement as ParagraphElementType,
@@ -115,11 +114,10 @@ const editableVoid = () =>
     schema: {
       elements: {
         'editable-void': {
-          content: schema.content.text({ default: 'text', min: 1 }),
           contentRoots: {
             body: schema.content.not(schema.content.text()),
           },
-          void: 'editable-island',
+          void: 'block',
         },
       },
     },
@@ -156,13 +154,13 @@ const renderVoid = (props: RenderVoidProps<CustomElement>) => {
   }
 };
 
-const renderLeaf = (props: RenderLeafProps<CustomText>) => <Leaf {...props} />;
+const renderLeaf = (props: RenderLeafProps) => <Leaf {...props} />;
 
 const Leaf = ({
   attributes,
   children: initialChildren,
   leaf,
-}: RenderLeafProps<CustomText>) => {
+}: RenderLeafProps) => {
   let children = initialChildren;
   if (leaf.bold) {
     children = <strong>{children}</strong>;

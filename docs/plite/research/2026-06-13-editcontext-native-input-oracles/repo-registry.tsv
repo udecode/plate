@@ -1,0 +1,4 @@
+repo_key	local_path	source_kind	why_used	freshness
+github/MicrosoftEdge/MSEdgeExplainers/edit-context	../edit-context	local-clone	EditContext API explainer and developer design for native input architecture.	local snapshot
+github/web-platform-tests/wpt	../wpt	local-clone	Executable browser tests for EditContext textupdate, selection, bounds, focus, and deletion invariants.	local snapshot
+github/microsoft/vscode	../vscode	local-clone	Production editor implementation using native EditContext and textarea fallback paths.	local snapshot

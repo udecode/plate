@@ -1,0 +1,7 @@
+id	source	status	decision	notes
+benchmark-large-doc-import-phase	local-benchmark	promoted-kept	promoted-kept	Split local edit from remote sync/import before optimizing.
+remote-apply-import-trace	local-test	promoted-kept	promoted-kept	Prove remote Yjs updates still enter full read/replace import today.
+incremental-remote-import-plan	local-architecture	deferred-architecture	deferred-architecture	Design incremental remote import before runtime implementation.
+yjs-event-substrate	external-source	supporting	supporting	Yjs event/delta/deep-observe APIs support later architecture, not direct copy.
+lexical-yjs-import-strategy	external-source	deferred-architecture	deferred-architecture	Useful prior art, but runtime code stays Slate-native.
+y-prosemirror-import-strategy	external-source	deferred-architecture	deferred-architecture	Useful prior art, but transaction/selection semantics differ.

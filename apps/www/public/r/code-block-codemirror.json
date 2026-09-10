@@ -1,0 +1,39 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-codemirror",
+  "title": "Code Block CodeMirror",
+  "description": "A CodeMirror projection for explicitly high-scale code block editors.",
+  "dependencies": [
+    "@codemirror/language",
+    "@codemirror/language-data",
+    "@codemirror/commands",
+    "@lezer/highlight",
+    "@codemirror/search",
+    "@codemirror/state",
+    "@codemirror/view",
+    "platejs"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/code-block-codemirror.tsx",
+      "content": "'use client';\n\nimport {\n  indentLess,\n  indentMore,\n  insertNewlineAndIndent,\n} from '@codemirror/commands';\nimport {\n  HighlightStyle,\n  indentUnit,\n  LanguageDescription,\n  syntaxHighlighting,\n} from '@codemirror/language';\nimport { languages } from '@codemirror/language-data';\nimport { search, searchKeymap } from '@codemirror/search';\n// oxlint-disable-next-line react-doctor/prefer-dynamic-import -- This opt-in component is the loading boundary; extensions must exist when its adapter mounts.\nimport { EditorState } from '@codemirror/state';\n// oxlint-disable-next-line react-doctor/prefer-dynamic-import -- This opt-in component is the loading boundary; extensions must exist when its adapter mounts.\nimport { EditorView, keymap } from '@codemirror/view';\nimport { tags } from '@lezer/highlight';\nimport { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';\nimport type { CodeBlockPlugin, PlateElementProps } from 'platejs/react';\n\nimport { CodeBlockContainer } from '@/registry/components/editor/code-block';\n\nconst syntaxColors = syntaxHighlighting(\n  HighlightStyle.define([\n    { tag: tags.keyword, class: 'hljs-keyword' },\n    { tag: [tags.string, tags.regexp], class: 'hljs-string' },\n    { tag: [tags.number, tags.bool, tags.null], class: 'hljs-number' },\n    { tag: tags.comment, class: 'hljs-comment' },\n    { tag: tags.function(tags.variableName), class: 'hljs-title function_' },\n    { tag: [tags.typeName, tags.className], class: 'hljs-type' },\n    { tag: tags.propertyName, class: 'hljs-attr' },\n  ])\n);\nconst languageDescription = (name?: string) =>\n  name ? LanguageDescription.matchLanguageName(languages, name, false) : null;\n\nconst codeMirrorLanguages = [\n  { label: 'Plain Text', value: 'plaintext' },\n  ...languages.map(({ name }) => ({ label: name, value: name.toLowerCase() })),\n];\n\nconst codeMirrorAdapter = createCodeMirrorAdapter({\n  extensions: [\n    syntaxColors,\n    indentUnit.of('  '),\n    EditorState.tabSize.of(2),\n    search({ top: true }),\n    keymap.of(searchKeymap),\n    EditorView.domEventHandlers({\n      keydown(event, view) {\n        if (\n          event.isComposing ||\n          view.compositionStarted ||\n          view.state.readOnly\n        ) {\n          return false;\n        }\n        if (event.metaKey || event.ctrlKey || event.altKey) return false;\n        if (event.key === 'Tab') {\n          return (event.shiftKey ? indentLess : indentMore)(view);\n        }\n        if (event.key === 'Enter' && !event.shiftKey) {\n          return insertNewlineAndIndent(view);\n        }\n\n        return false;\n      },\n    }),\n    EditorView.theme({\n      '&': {\n        backgroundColor: 'transparent',\n        color: 'inherit',\n      },\n      '&.cm-focused': { outline: 'none' },\n      '.cm-content': {\n        caretColor: 'currentColor',\n        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',\n        fontSize: '0.875rem',\n        lineHeight: 'normal',\n        padding: '2rem 1rem 2rem 2rem',\n      },\n      '.cm-scroller': {\n        maxHeight: 'min(70vh, 48rem)',\n        overflow: 'auto',\n      },\n      '[data-code-block-model-selection]': {\n        backgroundColor: 'color-mix(in srgb, var(--brand) 25%, transparent)',\n      },\n      '.cm-search': {\n        alignItems: 'center',\n        backgroundColor: 'var(--background)',\n        borderBottom: '1px solid var(--border)',\n        display: 'flex',\n        flexWrap: 'wrap',\n        gap: '0.25rem',\n        padding: '0.375rem',\n      },\n      '.cm-search input': {\n        backgroundColor: 'var(--background)',\n        border: '1px solid var(--input)',\n        borderRadius: '0.375rem',\n        color: 'inherit',\n        padding: '0.25rem 0.5rem',\n      },\n      '.cm-search button': {\n        border: '1px solid var(--border)',\n        borderRadius: '0.375rem',\n        padding: '0.25rem 0.5rem',\n      },\n      '@media print': {\n        '.cm-scroller': {\n          maxHeight: 'none',\n          overflow: 'visible',\n        },\n      },\n    }),\n  ],\n  loadLanguage(name) {\n    const description = languageDescription(name);\n\n    return description?.support ?? description?.load() ?? [];\n  },\n});\n\nexport function CodeBlockCodeMirrorElement(\n  props: PlateElementProps<typeof CodeBlockPlugin> & {\n    showLanguageLabel?: boolean;\n  }\n) {\n  return (\n    <CodeBlockContainer\n      elementProps={props}\n      languageOptions={codeMirrorLanguages}\n      showLanguageLabel={props.showLanguageLabel ?? true}\n    >\n      {props.slots.externalText({\n        adapter: codeMirrorAdapter,\n        ariaLabel: 'Code block',\n        config: { language: props.element.language },\n      })}\n    </CodeBlockContainer>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/code-block-codemirror.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/code-block"
+      }
+    ],
+    "examples": [
+      "code-block-codemirror-demo",
+      "code-block-views-demo"
+    ]
+  },
+  "type": "registry:component"
+}

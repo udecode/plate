@@ -1,10 +1,15 @@
-import type { AnyEditor } from '../../internal';
+import { setEditorFocused, type AnyEditor } from '../../internal';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
   type ResolvedDOMRootFacts,
   resolveDOMRootFacts,
 } from '../utils/environment';
+import { EDITOR_TO_DOM_SCOPE_LISTENERS, IS_FOCUSED } from '../utils/weak-maps';
+import {
+  createDOMCoverageSession,
+  type DOMCoverageSession,
+} from './dom-coverage';
 import {
   classifyDOMBeforeInputIntent,
   DOMInputRuntime,
@@ -59,19 +64,19 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
 );
 
 const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, DOMRootRuntime>();
-const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<
-  AnyEditor,
-  Set<DOMRootRuntime>
->();
-const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<
-  AnyEditor,
-  DOMRootRuntime
->();
+const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<object, Set<DOMRootRuntime>>();
+const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<object, DOMRootRuntime>();
 const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
   AnyEditor,
   DOMInputRuntime
 >();
 const ELEMENT_NODE = 1;
+
+export const notifyEditorDOMScopeListeners = (editor: object) => {
+  EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor)?.forEach((listener) => {
+    listener();
+  });
+};
 
 const asElement = (node: Node): Element | null =>
   node.nodeType === ELEMENT_NODE ? (node as Element) : node.parentElement;
@@ -150,7 +155,7 @@ const isRuntimeRootActive = (runtime: DOMRootRuntime) => {
 
 /** Resolve the focused private root runtime for an editor. */
 export const findEditorDOMRootRuntime = (
-  editor: AnyEditor
+  editor: object
 ): DOMRootRuntime | null => {
   const activeRuntime = ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
 
@@ -174,7 +179,15 @@ export const findEditorDOMRootRuntime = (
 
 /** Resolve the mounted DOM root that currently represents an editor. */
 export const getEditorDOMRoot = (editor: object): HTMLElement | null =>
-  findEditorDOMRootRuntime(editor as AnyEditor)?.rootRef.current ?? null;
+  findEditorDOMRootRuntime(editor)?.rootRef.current ?? null;
+
+/** Undefined permits direct DOM setup; null means mounted roots are ambiguous. */
+export const resolveMountedEditorDOMRoot = (
+  editor: object
+): HTMLElement | null | undefined =>
+  DOM_ROOT_RUNTIMES_BY_EDITOR.has(editor)
+    ? getEditorDOMRoot(editor)
+    : undefined;
 
 /**
  * Renderer-neutral lifecycle owner for one mounted DOM root.
@@ -222,6 +235,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   readonly adapter: object;
 
+  readonly domCoverage: DOMCoverageSession;
+
   readonly domIntegrityObserver: DOMIntegrityObserver;
 
   readonly domInputRuntime: DOMInputRuntime;
@@ -234,6 +249,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   connected = false;
 
+  readonly isComposing: () => boolean;
+
   generation = 0;
 
   private facts: ResolvedDOMRootFacts | null = null;
@@ -242,7 +259,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   private readonly disposables = new Map<string, () => void>();
 
-  private readonly editor: AnyEditor;
+  readonly editor: AnyEditor;
 
   private readonly lifecycle: DOMRootRuntimeLifecycle<TRoot>;
 
@@ -257,8 +274,13 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
   private uninstallDOMPhaseScheduler: (() => void) | null = null;
 
   constructor(options: DOMRootRuntimeOptions<TRoot>) {
+    this.isComposing = options.isComposing;
     this.adapter = options.adapter;
     this.editor = options.editor;
+    this.domCoverage = createDOMCoverageSession(
+      options.editor,
+      () => this.rootRef.current
+    );
     this.lifecycle = {
       afterRootMount: options.afterRootMount,
       beforeRootTeardown: options.beforeRootTeardown,
@@ -412,6 +434,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       () => {
         runAllDOMRootRuntimeSteps(disposables);
       },
+      () => this.domCoverage.destroy(),
       () => this.lifecycle.onDestroy?.(),
       () => {
         this.destroyScheduler();
@@ -501,6 +524,12 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     callback: () => T
   ): T {
     return this.domIntegrityObserver.runOwned(owner, callback);
+  }
+
+  runUnobservedDOMMutation<T>(callback: () => T): T {
+    return this.domSyncMutationOwnership.runUnmarked(() =>
+      this.domIntegrityObserver.runUnobserved(callback)
+    );
   }
 
   setRoot(root: TRoot | null) {
@@ -648,15 +677,23 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
       const markInputRuntimeActive = () => {
         ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
+        notifyEditorDOMScopeListeners(this.editor);
       };
+      const publishRootFocus = () => notifyEditorDOMScopeListeners(this.editor);
 
       root.addEventListener('focusin', markInputRuntimeActive);
+      root.addEventListener('focusout', publishRootFocus);
       root.addEventListener('pointerdown', markInputRuntimeActive);
       this.rootInputActivationCleanup = () => {
         root.removeEventListener('focusin', markInputRuntimeActive);
+        root.removeEventListener('focusout', publishRootFocus);
         root.removeEventListener('pointerdown', markInputRuntimeActive);
       };
-      if (isRuntimeRootActive(runtime)) markInputRuntimeActive();
+      if (isRuntimeRootActive(runtime)) {
+        IS_FOCUSED.set(this.editor, true);
+        setEditorFocused(this.editor, true);
+        markInputRuntimeActive();
+      } else notifyEditorDOMScopeListeners(this.editor);
     }
   }
 
@@ -664,6 +701,16 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.rootInputActivationCleanup?.();
     this.rootInputActivationCleanup = null;
     const root = this.rootRef.current;
+    const activeElement = (
+      root?.getRootNode() as Document | ShadowRoot | undefined
+    )?.activeElement;
+    const focusedRuntime = activeElement
+      ? findDOMRootRuntime(activeElement)
+      : null;
+    const otherFocusedView =
+      focusedRuntime &&
+      focusedRuntime.editor === this.editor &&
+      focusedRuntime !== (this as unknown as DOMRootRuntime);
 
     if (
       root &&
@@ -675,15 +722,24 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     const editorRuntimes = DOM_ROOT_RUNTIMES_BY_EDITOR.get(this.editor);
 
     editorRuntimes?.delete(this as unknown as DOMRootRuntime);
-    if (
+    const wasActive =
       ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) ===
-      (this as unknown as DOMRootRuntime)
-    ) {
-      ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
+      (this as unknown as DOMRootRuntime);
+    if (wasActive) {
+      if (otherFocusedView) {
+        ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, focusedRuntime);
+      } else {
+        ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
+      }
     }
     if (editorRuntimes?.size === 0) {
       DOM_ROOT_RUNTIMES_BY_EDITOR.delete(this.editor);
     }
+    if (!otherFocusedView && (wasActive || editorRuntimes?.size === 0)) {
+      IS_FOCUSED.delete(this.editor);
+      setEditorFocused(this.editor, false);
+    }
+    notifyEditorDOMScopeListeners(this.editor);
   }
 
   private publishHostFacts() {

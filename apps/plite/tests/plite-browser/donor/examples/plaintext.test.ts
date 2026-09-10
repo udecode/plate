@@ -1184,6 +1184,90 @@ test.describe('plaintext example', () => {
     });
   });
 
+  for (const preparation of ['handle', 'pointer'] as const) {
+    for (const boundary of ['start', 'end'] as const) {
+      test(`imports native line boundaries after ${preparation} preparation: ${boundary}`, async ({
+        page,
+      }, testInfo) => {
+        test.skip(
+          testInfo.project.name === 'mobile',
+          'Desktop native line navigation proof'
+        );
+
+        const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+
+        try {
+          const editor = await openExample(page, 'plite/plaintext', {
+            ready: { editor: 'visible' },
+          });
+          const text = 'First second third fourth fifth sixth.';
+          const offset = boundary === 'start' ? 0 : text.length;
+
+          await editor.selection.selectAll();
+          await page.keyboard.insertText(text);
+          await editor.selection.collapse({ path: [0, 0], offset: 1 });
+          await page.keyboard.press(await getBrowserWordForwardHotkey(editor.root));
+
+          if (preparation === 'pointer') {
+            await editor.dom.clickTextOffset({ path: [0, 0], offset: 16 });
+          } else {
+            await editor.root.evaluate((element: HTMLElement) => {
+              const handle = (
+                element as HTMLElement & {
+                  __pliteBrowserHandle: {
+                    focus: () => void;
+                    selectRange: (range: {
+                      anchor: { path: number[]; offset: number };
+                      focus: { path: number[]; offset: number };
+                    }) => void;
+                  };
+                }
+              ).__pliteBrowserHandle;
+
+              handle.selectRange({
+                anchor: { path: [0, 0], offset: 16 },
+                focus: { path: [0, 0], offset: 16 },
+              });
+              handle.focus();
+            });
+          }
+
+          await editor.assert.selection({
+            anchor: { path: [0, 0], offset: 16 },
+            focus: { path: [0, 0], offset: 16 },
+          });
+          await editor.assert.domCaret({ offset: 16, text });
+          const hotkey = (await isMacBrowser(editor.root))
+            ? `Meta+Arrow${boundary === 'start' ? 'Left' : 'Right'}`
+            : boundary === 'start' ? 'Home' : 'End';
+
+          await page.keyboard.press(hotkey);
+          await editor.assert.selection({
+            anchor: { path: [0, 0], offset },
+            focus: { path: [0, 0], offset },
+          });
+          await editor.assert.domCaret({ offset, text });
+          await page.keyboard.type('x');
+          await editor.assert.blockTexts([
+            text.slice(0, offset) + 'x' + text.slice(offset),
+          ]);
+          await editor.assert.selection({
+            anchor: { path: [0, 0], offset: offset + 1 },
+            focus: { path: [0, 0], offset: offset + 1 },
+          });
+          await editor.assert.domCaret({
+            offset: offset + 1,
+            text: text.slice(0, offset) + 'x' + text.slice(offset),
+          });
+          await expect(editor.root).toBeFocused();
+          runtimeErrors.assertNone();
+        } finally {
+          runtimeErrors.stop();
+        }
+      });
+    }
+  }
+
   test('moves ArrowRight out of an empty leading block', async ({
     page,
   }, testInfo) => {
@@ -2014,22 +2098,36 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('i');
 
-    await editor.root.evaluate((element: HTMLElement) => {
-      const findTextNode = (needle: string) => {
+    await editor.root.evaluate(async (element: HTMLElement) => {
+      const handle = (
+        element as HTMLElement & {
+          __pliteBrowserHandle?: {
+            getElementByPath: (path: number[]) => HTMLElement | null;
+          };
+        }
+      ).__pliteBrowserHandle;
+      const textHost = handle?.getElementByPath([0, 0]);
+      const resolveTextOffset = (offset: number) => {
+        if (!textHost) {
+          throw new Error('Missing Plite text host at 0.0');
+        }
         const walker = element.ownerDocument.createTreeWalker(
-          element,
+          textHost,
           NodeFilter.SHOW_TEXT
         );
+        let remaining = offset;
 
         while (walker.nextNode()) {
           const node = walker.currentNode;
+          const length = node.textContent?.length ?? 0;
 
-          if (node.textContent?.includes(needle)) {
-            return node;
+          if (remaining <= length) {
+            return [node, remaining] as const;
           }
+          remaining -= length;
         }
 
-        throw new Error(`Text node not found: ${needle}`);
+        throw new Error(`DOM text offset not found: ${offset}`);
       };
       const targetRanges =
         (
@@ -2068,28 +2166,42 @@ test.describe('plaintext example', () => {
         return event;
       };
 
-      let firstTextNode = findTextNode('i');
+      const [firstTextNode, firstTextOffset] = resolveTextOffset(1);
 
       const insertEvent = dispatchBeforeInput({
         data: 'S',
         inputType: 'insertText',
-        ranges: targetRanges(firstTextNode, 1, firstTextNode, 1),
+        ranges: targetRanges(
+          firstTextNode,
+          firstTextOffset,
+          firstTextNode,
+          firstTextOffset
+        ),
       });
       if (!insertEvent.defaultPrevented) {
         firstTextNode.textContent += 'S';
       }
-      firstTextNode = findTextNode('iS');
+      await Promise.resolve();
+      const [caretNode, caretOffset] = resolveTextOffset(2);
+      const [replacementStartNode, replacementStartOffset] =
+        resolveTextOffset(0);
+      const [replacementEndNode, replacementEndOffset] = resolveTextOffset(1);
       const selection = element.ownerDocument.getSelection();
       const range = element.ownerDocument.createRange();
 
-      range.setStart(firstTextNode, 2);
+      range.setStart(caretNode, caretOffset);
       range.collapse(true);
       selection?.removeAllRanges();
       selection?.addRange(range);
       dispatchBeforeInput({
         data: 'I',
         inputType: 'insertReplacementText',
-        ranges: targetRanges(firstTextNode, 0, firstTextNode, 1),
+        ranges: targetRanges(
+          replacementStartNode,
+          replacementStartOffset,
+          replacementEndNode,
+          replacementEndOffset
+        ),
       });
       element.dispatchEvent(
         new InputEvent('input', {
@@ -2106,21 +2218,27 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('🙂 ');
     await editor.root.evaluate((element: HTMLElement) => {
-      const walker = element.ownerDocument.createTreeWalker(
-        element,
-        NodeFilter.SHOW_TEXT
-      );
-      let textNode: Node | null = null;
-
-      while (walker.nextNode()) {
-        if (walker.currentNode.textContent?.includes('🙂 ')) {
-          textNode = walker.currentNode;
-          break;
+      const handle = (
+        element as HTMLElement & {
+          __pliteBrowserHandle?: {
+            resolveDOMPoint: (point: {
+              offset: number;
+              path: number[];
+            }) => readonly [Node, number] | null;
+          };
         }
-      }
+      ).__pliteBrowserHandle;
+      const start = handle?.resolveDOMPoint({
+        offset: '🙂'.length,
+        path: [0, 0],
+      });
+      const end = handle?.resolveDOMPoint({
+        offset: '🙂 '.length,
+        path: [0, 0],
+      });
 
-      if (!textNode) {
-        throw new Error('Emoji text node not found');
+      if (!start || !end) {
+        throw new Error('Emoji DOM range not found');
       }
 
       const event = new InputEvent('beforeinput', {
@@ -2132,10 +2250,10 @@ test.describe('plaintext example', () => {
 
       event.getTargetRanges = () => [
         new StaticRange({
-          endContainer: textNode,
-          endOffset: '🙂 '.length,
-          startContainer: textNode,
-          startOffset: '🙂'.length,
+          endContainer: end[0],
+          endOffset: end[1],
+          startContainer: start[0],
+          startOffset: start[1],
         }),
       ];
       element.dispatchEvent(event);

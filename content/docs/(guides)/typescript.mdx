@@ -1,196 +1,78 @@
 ---
 title: TypeScript
-description: Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.
+description: Resolve Plate public entrypoints in bundled apps and Node.js projects.
 ---
 
-Plate provides ESM packages, which require certain TypeScript (and bundler) configurations to ensure compatibility, especially when importing subpath modules like `platejs/react`. Below are several solutions and workarounds to make TypeScript happy.
+Plate publishes ESM entrypoints with an `exports` map. Configure TypeScript
+to read that map so imports such as `platejs/react` resolve to the matching
+declarations and runtime files.
 
-## Quick Summary
+## Bundled apps
 
-1. **Recommended (Easiest):** Use TypeScript **5.0+** and set `"moduleResolution": "bundler"` in your `tsconfig.json`.
-2. **Alternate (Node resolution):** Keep `"moduleResolution": "node"` and map paths to `dist/react` (and potentially alias them in your bundler config).
-3. **Current package:** Use the Plate CLI to update `platejs`.
+For Vite, Next.js, and other bundlers, use `moduleResolution: "bundler"`
+with an ESM module target:
 
-
-## Recommended: `"moduleResolution": "bundler"`
-
-The simplest approach for modern bundlers (Vite, Next.js 14, etc.) is to enable the new TypeScript "bundler" resolution mode. Example:
-
-```jsonc
-// tsconfig.json
+```jsonc title="tsconfig.json"
 {
   "compilerOptions": {
-    // ...
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    // ...
-  }
-}
-```
-
-This aligns TypeScript's resolution logic more closely with modern bundlers and ESM packages. Below is a working excerpt from [Plate template](https://github.com/udecode/plate-template):
-
-```jsonc
-{
-  "compilerOptions": {
-    "strict": false,
-    "strictNullChecks": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    "exactOptionalPropertyTypes": false,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-
-    "isolatedModules": true,
-
-    "allowJs": true,
-    "checkJs": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
-    "module": "esnext",
-    "target": "es2022",
-    "moduleResolution": "bundler",
-    "moduleDetection": "force",
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "incremental": true,
-    "sourceMap": true,
-
-    "baseUrl": "src",
-    "paths": {
-      "@/*": ["./*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
-  "exclude": ["node_modules"]
-}
-```
-
-- **`"moduleResolution": "bundler"`** was introduced in TypeScript 5.0.
-- If your TS version is older than 5.0, you **must** upgrade or stick to `"moduleResolution": "node"` plus manual path aliases.
-
-```jsonc
-// package.json
-{
-  "devDependencies": {
-    "typescript": "^5.0.0"
+    "strict": true,
+    "noEmit": true
   }
 }
 ```
 
-If you see an error like `TS5023: Unknown compiler option 'moduleResolution'` (for `bundler`), it likely means your TypeScript version is below 5.0.
+Keep the other settings supplied by your framework. The `bundler` resolution
+mode requires TypeScript 5.0 or later.
 
-## Workaround: `"moduleResolution": "node"` + path aliases
+## Node.js projects
 
-If upgrading your entire project to TS 5.0 or changing the resolution mode is not possible:
+For code executed directly by Node.js, pair `NodeNext` module resolution
+with the same module setting:
 
-1. Keep `"moduleResolution": "node"`.
-2. Map each Plate subpath import to its `dist/react` types in `tsconfig.json` using `paths`.
-3. Alias these paths in your bundler config.
-
-### Example `tsconfig.json`
-
-```jsonc
+```jsonc title="tsconfig.json"
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "paths": {
-      "platejs/react": [
-        "./node_modules/platejs/dist/react/index.d.ts"
-      ],
-      "platejs/*": ["./node_modules/platejs/dist/*/index.d.ts"]
-    }
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true
   }
 }
 ```
 
-### Example `vite.config.ts`
+Declare `"type": "module"` in your application's `package.json` when emitting
+ESM from `.ts` files. Follow the [Node.js guide](/docs/installation/node)
+for server-safe Plate imports.
+
+## Public imports
+
+Import from the published entrypoint:
 
 ```ts
-import { defineConfig } from 'vite';
-import path from 'path';
-
-export default defineConfig({
-  resolve: {
-    alias: {
-      'platejs/react': path.resolve(
-        __dirname,
-        'node_modules/platejs/dist/react'
-      ),
-
-      // Non-/react base aliases:
-      'platejs': path.resolve(
-        __dirname,
-        'node_modules/platejs'
-      )
-    }
-  }
-});
+import { createEditor } from 'platejs';
 ```
 
-**Note:**
-- Add an exact alias when your tooling does not expand a `platejs/*` wildcard.
-- For testing/Jest, replicate these aliases via `moduleNameMapper` or similar.
+Use `platejs/react` for editable React APIs and `platejs/static` for
+static React rendering. Import feature subpaths only when the installed
+package exports them.
 
-## Update Plate
+Keep application aliases such as `@/*` in your framework configuration.
+Do not alias Plate imports to `node_modules/platejs/dist`: the export map
+owns the relationship between a public subpath and its files, and those
+paths do not all share the same directory layout.
 
-Use the Plate CLI to update the complete editor package to a release family:
+## Diagnose resolution errors
 
-```bash
-npx @platejs/cli@latest deps platejs 54 --install --yes
-```
+- **Package not found:** confirm that `platejs` is installed in the
+  workspace that imports it and that TypeScript uses the intended config.
+- **Subpath not found:** check the installed package's `exports` map and
+  use `bundler` or `NodeNext` resolution.
+- **No exported member:** check the identifier, entrypoint, and installed
+  version. A path alias cannot add a missing export.
+- **Only tests fail:** configure the test runner for ESM and package exports
+  as well as TypeScript. Avoid a second set of aliases into package internals.
 
-Pass an exact version when the application must pin one release:
-
-```bash
-npx @platejs/cli@latest deps platejs 54.0.0 --install --yes
-```
-
-## FAQ
-
-> I updated `moduleResolution` to `bundler` but it broke my older imports."
-
-If your codebase has older TS usage or relies on `node` resolution, try the path alias approach or fully migrate to a TS 5+ / ESM environment.
-
-> "I'm seeing `TS2305` about missing exports. Is that a resolution error or a real missing export?"  
-
-It can be either:
-- If the entire package is "not found," it's likely a resolution issue.  
-- If it's specifically "no exported member," double-check that you spelled the import correctly (no typos) and that your installed version actually has that export.
-
-> "Which minimum TS version do I need for `moduleResolution: bundler`?"  
-
-TypeScript 5.0 or higher.
-
-> "We switched to bundler resolution, but some older libraries in our project break."  
-
-If your older libraries aren't ESM-friendly, you might stick to `node` resolution and do manual path aliases. Some large codebases gradually upgrade or create separate build pipelines for legacy code.
-
-> "We see the error in Jest but not in Vite."  
-
-You'll need to replicate your alias/resolution changes for Jest. For example:
-
-```js
-// jest.config.js
-module.exports = {
-  // ...
-  moduleNameMapper: {
-    '^platejs/react$': '<rootDir>/node_modules/platejs/dist/react',
-    // ...
-  }
-};
-```
+Use the [troubleshooting guide](/docs/troubleshooting) to inspect installed
+versions and runtime duplication.

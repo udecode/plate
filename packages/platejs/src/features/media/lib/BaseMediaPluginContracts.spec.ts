@@ -281,7 +281,7 @@ describe('Base media plugin contracts', () => {
       alt: 'Preview',
       children: [{ text: '' }],
     });
-    expect(editor.plugin(BaseImagePlugin).render.nodeProps).toBeUndefined();
+    expect(editor.plugin(BaseImagePlugin).render.attributes).toBeUndefined();
   });
 
   it('preserves relative media widths in document data', () => {

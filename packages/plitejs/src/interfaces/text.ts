@@ -1,4 +1,3 @@
-import { type Range, RangeApi } from '..';
 import { isObject } from '../utils/is-object';
 import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type { Element } from './element';
@@ -80,14 +79,6 @@ export interface TextEqualsOptions {
   loose?: boolean;
 }
 
-export type DecoratedRange = Range & {
-  /**
-   * Customize how another decoration is merged into a text node. If not specified, `Object.assign` would be used.
-   * It is useful for overlapping decorations with the same key but different values.
-   */
-  merge?: (leaf: Text, decoration: object) => void;
-};
-
 export interface TextInterface {
   /**
    * Check if two text nodes are equal.
@@ -119,14 +110,6 @@ export interface TextInterface {
    * the `text` property are two nodes equal.
    */
   matches: <N extends Text = Text>(text: N, props: Partial<N>) => boolean;
-
-  /**
-   * Get the leaves for a text node given decorations.
-   */
-  decorations: (
-    node: Text,
-    decorations: DecoratedRange[]
-  ) => Array<{ leaf: Text; position?: LeafPosition }>;
 }
 
 const getOwnValue = (object: Record<PropertyKey, unknown>, key: string) =>
@@ -212,101 +195,5 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
     }
 
     return true;
-  },
-
-  decorations(
-    node: Text,
-    decorations: DecoratedRange[]
-  ): Array<{ leaf: Text; position?: LeafPosition }> {
-    let leaves: Array<{ leaf: Text; position?: LeafPosition }> = [
-      { leaf: { ...node } },
-    ];
-
-    for (const dec of decorations) {
-      const { anchor, focus, merge: mergeDecoration, ...rest } = dec;
-      const [start, end] = RangeApi.edges(dec);
-      const next: Array<{ leaf: Text; position?: LeafPosition }> = [];
-      let leafEnd = 0;
-      const decorationStart = start.offset;
-      const decorationEnd = end.offset;
-      const merge = mergeDecoration ?? Object.assign;
-
-      for (const { leaf } of leaves) {
-        const { length } = leaf.text;
-        const leafStart = leafEnd;
-        leafEnd += length;
-
-        // If the range encompasses the entire leaf, add the range.
-        if (decorationStart <= leafStart && leafEnd <= decorationEnd) {
-          merge(leaf, rest);
-          next.push({ leaf });
-          continue;
-        }
-
-        // If the range expanded and match the leaf, or starts after, or ends before it, continue.
-        if (
-          (decorationStart !== decorationEnd &&
-            (decorationStart === leafEnd || decorationEnd === leafStart)) ||
-          decorationStart > leafEnd ||
-          decorationEnd < leafStart ||
-          (decorationEnd === leafStart && leafStart !== 0)
-        ) {
-          next.push({ leaf });
-          continue;
-        }
-
-        // Otherwise we need to split the leaf, at the start, end, or both,
-        // and add the range to the middle intersecting section. Do the end
-        // split first since we don't need to update the offset that way.
-        let middle = leaf;
-        let before: { leaf: Text } | undefined;
-        let after: { leaf: Text } | undefined;
-
-        if (decorationEnd < leafEnd) {
-          const off = decorationEnd - leafStart;
-          after = { leaf: { ...middle, text: middle.text.slice(off) } };
-          middle = { ...middle, text: middle.text.slice(0, off) };
-        }
-
-        if (decorationStart > leafStart) {
-          const off = decorationStart - leafStart;
-          before = { leaf: { ...middle, text: middle.text.slice(0, off) } };
-          middle = { ...middle, text: middle.text.slice(off) };
-        }
-
-        merge(middle, rest);
-
-        if (before) {
-          next.push(before);
-        }
-
-        next.push({ leaf: middle });
-
-        if (after) {
-          next.push(after);
-        }
-      }
-
-      leaves = next;
-    }
-
-    if (leaves.length > 1) {
-      let currentOffset = 0;
-      for (const [index, item] of leaves.entries()) {
-        const start = currentOffset;
-        const end = start + item.leaf.text.length;
-        const position: LeafPosition = {
-          end,
-          ...(index === 0 ? { isFirst: true } : {}),
-          ...(index === leaves.length - 1 ? { isLast: true } : {}),
-          start,
-        };
-
-        item.position = position;
-        currentOffset = end;
-      }
-    }
-
-    return leaves;
   },
 });

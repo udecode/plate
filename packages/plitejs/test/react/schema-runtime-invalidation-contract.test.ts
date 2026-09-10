@@ -70,9 +70,8 @@ const projectedSchema = (version: number, paragraphReadOnly: boolean) =>
   defineEditorSchema('schema:react-projected-schema-runtime-invalidation', {
     elements: {
       'content-card': {
-        content: schema.content.open(),
         contentRoots: { body: schema.content.type('paragraph') },
-        void: 'editable-island',
+        void: 'block',
       },
       paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),

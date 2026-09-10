@@ -151,10 +151,9 @@ describe('editor.api.markdown.serialize', () => {
       const slateNodes = [
         {
           children: [
-            { text: 'Code block 1 line 1' },
-            { text: 'Code block 1 line 2' },
-            { children: [{ text: 'Code block 1 line 3' }], type: 'codeLine' },
-            { text: 'Code block 1 line 4', type: 'codeLine' },
+            {
+              text: 'Code block 1 line 1\nCode block 1 line 2\nCode block 1 line 3\nCode block 1 line 4',
+            },
           ],
           type: 'codeBlock',
         },

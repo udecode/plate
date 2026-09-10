@@ -7,10 +7,10 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { createStaticEditor } from './create-static-editor';
 
 describe('core static renderStaticHtml custom render hooks', () => {
-  it('renders belowNodes output around children', async () => {
+  it('wraps node children through slots', async () => {
     const renderBelowPlugin = defineBasePlugin('testList', {
-      render: {
-        belowNodes: (_injectProps: any) =>
+      slots: {
+        wrapNodeChildren: (_injectProps: any) =>
           function Component({ children }: { children: React.ReactNode }) {
             return (
               <ul>
@@ -80,10 +80,12 @@ describe('core static renderStaticHtml custom render hooks', () => {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
       render: {
-        isDecoration: false,
-        leaf: ({ children }) => (
-          <span data-plite-test="leaf-wrapper">{children}</span>
-        ),
+        mark: {
+          leafComponent: ({ children }) => (
+            <span data-plite-test="leaf-wrapper">{children}</span>
+          ),
+          placement: 'text',
+        },
       },
     });
 
@@ -121,7 +123,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
       render: {
-        isDecoration: true,
+        mark: { placement: 'leaf' },
       },
     });
 
@@ -159,7 +161,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
       render: {
-        isDecoration: false,
+        mark: { placement: 'text' },
       },
     });
 

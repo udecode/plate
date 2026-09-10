@@ -3,3 +3,4 @@
  */
 
 export * from './SuggestionPlugin';
+export * from './useSuggestionReviews';

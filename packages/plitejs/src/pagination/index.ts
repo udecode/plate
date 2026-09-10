@@ -25,8 +25,6 @@ import {
 } from '..';
 import { failInvariant, toInternalRoot } from '../internal';
 import {
-  connectLayoutRuntime,
-  deferLayoutRuntimeConnection,
   isLayoutRuntimeConnectionDeferred,
   registerLayoutRuntimeLifecycle,
 } from './layout-runtime-lifecycle';
@@ -570,7 +568,7 @@ export type PlitePageSettingsSource<
   TSettings extends PlitePageSettings = PlitePageSettings,
 > = EditorStateField<TSettings> | TSettings;
 
-/** Simplified layout options that choose a built-in engine when possible. */
+/** Layout options with a built-in engine or caller-owned measurement. */
 export type PliteLayoutOptions<
   TSettings extends PlitePageSettings = PlitePageSettings,
 > = {
@@ -596,28 +594,13 @@ export type PlitePageLayoutTextChangeRefresh =
   | 'deferred'
   | PlitePageLayoutDeferredTextChangeRefresh;
 
-/** Full page-layout options for callers that own the measurement engine. */
-export type PlitePageLayoutOptions<
-  TSettings extends PlitePageSettings = PlitePageSettings,
-> = {
-  engine: PlitePageLayoutEngine;
-  nodeLayout?: PliteNodeLayoutProvider;
-  /** Receives isolated subscriber and page-break persistence failures. */
-  onError?: PlitePageLayoutErrorSink;
-  page: PlitePageSettingsSource<TSettings>;
-  pageBreaks?: PlitePageBreaksOptions | null;
-  root?: RootKey;
-  textChangeRefresh?: PlitePageLayoutTextChangeRefresh;
-  typography?: PlitePageLayoutTypography;
-};
-
 export type PlitePageLayoutProjectRangeOptions =
   PlitePageLayoutGeometryOptions & {
     root?: RootKey;
   };
 
 /** Live derived layout reader. It owns subscriptions, not document content. */
-export type PlitePageLayout<TOptions = PlitePageLayoutOptions> = {
+export type PlitePageLayout<TOptions = PliteLayoutOptions> = {
   destroy: () => void;
   getFragments: (path: Path) => readonly PlitePageLayoutFragment[];
   getMetrics: () => PlitePageLayoutMetrics;
@@ -2066,7 +2049,7 @@ const readLayoutRoot = <
   TExtensions extends readonly unknown[],
 >(
   editor: EditorType<V, TExtensions>,
-  options: PlitePageLayoutOptions<TSettings>
+  options: PliteLayoutOptions<TSettings>
 ): RootKey => {
   assertPublicRootKey(options.root);
 
@@ -3067,17 +3050,26 @@ export const paginatePlitePageLayoutBlocks = ({
   return { fragments, pages };
 };
 
-/** Create a page-layout reader with an explicit measurement engine. */
-export const createPlitePageLayout = <
+/** Create a layout reader with built-in or caller-owned measurement. */
+export const createPliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 >(
   editor: EditorType<V, TExtensions>,
-  initialOptions: PlitePageLayoutOptions<TSettings>
-): PlitePageLayout<PlitePageLayoutOptions<TSettings>> => {
+  initialOptions: PliteLayoutOptions<TSettings>
+): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
   const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
-  let options = initialOptions;
+  let fallbackEngine: PlitePageLayoutEngine | undefined;
+  const resolveOptions = (nextOptions: PliteLayoutOptions<TSettings>) => ({
+    ...nextOptions,
+    engine:
+      nextOptions.engine ??
+      (fallbackEngine ??= canUseCanvasTextMeasurement()
+        ? pretextPageLayoutEngine()
+        : createEstimatedPageLayoutEngine()),
+  });
+  let options = resolveOptions(initialOptions);
   let snapshot = createEmptyLayoutSnapshot(DEFAULT_SETTINGS, 0);
   let metrics: PlitePageLayoutMetrics = {
     blockCount: 0,
@@ -3090,7 +3082,7 @@ export const createPlitePageLayout = <
   let destroyed = false;
   let unsubscribeEditor: (() => void) | null = null;
   let pendingPageBreakWrite: {
-    options: PlitePageLayoutOptions<TSettings>;
+    options: PliteLayoutOptions<TSettings>;
     reason: PlitePageLayoutRefreshReason;
     snapshot: PlitePageBreakSnapshot;
     source: EditorStateField<PlitePageBreakSnapshot | null>;
@@ -3102,7 +3094,7 @@ export const createPlitePageLayout = <
   } | null = null;
 
   const reportError = (
-    currentOptions: PlitePageLayoutOptions<TSettings>,
+    currentOptions: PliteLayoutOptions<TSettings>,
     phase: PlitePageLayoutError['phase'],
     reason: PlitePageLayoutRefreshReason,
     cause: unknown
@@ -3139,7 +3131,7 @@ export const createPlitePageLayout = <
   };
 
   const notify = (
-    currentOptions: PlitePageLayoutOptions<TSettings>,
+    currentOptions: PliteLayoutOptions<TSettings>,
     reason: PlitePageLayoutRefreshReason
   ) => {
     for (const listener of listeners) {
@@ -3172,7 +3164,7 @@ export const createPlitePageLayout = <
 
   const refresh = (
     reason: PlitePageLayoutRefreshReason = 'editor',
-    nextOptions: PlitePageLayoutOptions<TSettings> = options
+    nextOptions = options
   ) => {
     cancelScheduledRefresh();
 
@@ -3438,7 +3430,7 @@ export const createPlitePageLayout = <
     };
   };
 
-  const runtime: PlitePageLayout<PlitePageLayoutOptions<TSettings>> = {
+  const runtime: PlitePageLayout<PliteLayoutOptions<TSettings>> = {
     destroy() {
       if (destroyed) return;
 
@@ -3480,7 +3472,7 @@ export const createPlitePageLayout = <
     },
     refresh,
     reconfigure(nextOptions) {
-      refresh('settings', nextOptions);
+      refresh('settings', resolveOptions(nextOptions));
     },
     subscribe(listener) {
       listeners.add(listener);
@@ -3499,50 +3491,4 @@ export const createPlitePageLayout = <
   }
 
   return runtime;
-};
-
-/** Create a layout reader with the built-in browser or estimated engine. */
-export const createPliteLayout = <
-  TSettings extends PlitePageSettings = PlitePageSettings,
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
->(
-  editor: EditorType<V, TExtensions>,
-  initialOptions: PliteLayoutOptions<TSettings>
-): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
-  const fallbackEngine = canUseCanvasTextMeasurement()
-    ? pretextPageLayoutEngine()
-    : createEstimatedPageLayoutEngine();
-  const toPageLayoutOptions = (
-    options: PliteLayoutOptions<TSettings>
-  ): PlitePageLayoutOptions<TSettings> => ({
-    engine: options.engine ?? fallbackEngine,
-    nodeLayout: options.nodeLayout,
-    onError: options.onError,
-    page: options.page,
-    pageBreaks: options.pageBreaks,
-    root: options.root,
-    textChangeRefresh: options.textChangeRefresh,
-    typography: options.typography,
-  });
-  const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
-  const pageLayoutOptions = toPageLayoutOptions(initialOptions);
-  const runtime = createPlitePageLayout<TSettings, V, TExtensions>(
-    editor,
-    connectionDeferred
-      ? deferLayoutRuntimeConnection(pageLayoutOptions)
-      : pageLayoutOptions
-  );
-  const layout: PlitePageLayout<PliteLayoutOptions<TSettings>> = {
-    ...runtime,
-    reconfigure(options) {
-      runtime.reconfigure(toPageLayoutOptions(options));
-    },
-  };
-
-  registerLayoutRuntimeLifecycle(layout, {
-    connect: () => connectLayoutRuntime(runtime),
-  });
-
-  return layout;
 };

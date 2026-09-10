@@ -1,5 +1,6 @@
 import React from 'react';
 
+import type { BasePluginInput } from '../../lib/editor';
 import {
   type CreateStaticEditorOptions,
   type StaticEditor,
@@ -19,7 +20,7 @@ import {
  * @see {@link createStaticEditor} for detailed information on static editor creation and configuration.
  */
 export function useStaticEditor<
-  const P extends readonly unknown[] = readonly [],
+  const P extends readonly BasePluginInput[] = readonly [],
   TEnabled extends boolean | undefined = undefined,
 >(
   options: CreateStaticEditorOptions<P> & {

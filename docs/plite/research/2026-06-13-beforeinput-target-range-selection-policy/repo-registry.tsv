@@ -1,0 +1,5 @@
+repo_key	url	host	license	stars_or_signal	last_activity	topic_tags	local_path	status	score	notes
+github/codemirror/view	https://github.com/codemirror/view	github	MIT	local-source	unknown	beforeinput,target-ranges,dom-observer	../codemirror-view	read	8	Source directly reads beforeinput target ranges for replacement text and shadow-root selection access.
+github/facebook/lexical	https://github.com/facebook/lexical	github	MIT	local-source	unknown	beforeinput,target-ranges,selection-mapping	../lexical	read	9	Source maps StaticRange into model selection and distinguishes target range from live DOM selection.
+github/prosemirror/prosemirror	https://github.com/ProseMirror/prosemirror	github	MIT	local-source	unknown	prosemirror,beforeinput	../prosemirror	scanned	2	No direct beforeinput/getTargetRanges source hit in local checkout for this narrow question.
+github/ueberdosis/tiptap	https://github.com/ueberdosis/tiptap	github	MIT	local-source	unknown	tiptap,beforeinput	../tiptap	scanned	1	No direct beforeinput/getTargetRanges source hit in local checkout for this narrow question.

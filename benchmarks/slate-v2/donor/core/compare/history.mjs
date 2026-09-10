@@ -29,24 +29,13 @@ const skipBuild = process.env.BENCHMARK_SKIP_BUILD === '1';
 const benchmarkSource = `
 import assert from 'node:assert/strict';
 
-const isPlite = process.env.BENCHMARK_ENGINE === 'current';
-let Slate;
-let SlateInternal = {};
-let SlateHistory;
-
-if (isPlite) {
-  Slate = await import('platejs');
-  SlateInternal = await import('@platejs/test');
-  SlateHistory = await import('platejs/history');
-} else {
-  Slate = await import('slate');
-  SlateHistory = await import('slate-history');
-}
-
-const { createEditor } = Slate;
-const Editor = Slate.Editor ?? SlateInternal.Editor ?? SlateInternal;
-const historyExtension = SlateHistory.history;
-const withHistory = SlateHistory.withHistory;
+const engine = process.env.BENCHMARK_ENGINE;
+assert.ok(engine === 'current' || engine === 'legacy');
+const isPlite = engine === 'current';
+const implementation = isPlite ? 'plite' : 'slate';
+const Core = await import(isPlite ? 'plitejs' : 'slate');
+const { createEditor } = Core;
+const History = await import(isPlite ? 'plitejs/history' : 'slate-history');
 
 const iterations = Number(process.env.HISTORY_BENCH_ITERATIONS || 15);
 const blocks = Number(process.env.HISTORY_BENCH_BLOCKS || 5000);
@@ -115,64 +104,28 @@ const createFragment = (count) =>
     children: [{ text: \`fragment-\${index}\` }],
   }));
 
-const withHistoryEditor = () => {
-  if (typeof historyExtension === 'function') {
-    return createEditor({ extensions: [historyExtension()] });
-  }
+const withHistoryEditor = () =>
+  isPlite
+    ? createEditor({ extensions: [History.history()] })
+    : History.withHistory(createEditor());
 
-  if (typeof withHistory === 'function') {
-    return withHistory(createEditor());
-  }
-
-  throw new Error('No supported slate-history API found');
-};
-
-const readHistory = (editor) => {
-  if (isPlite) {
-    return editor.read((state) => state.history());
-  }
-
-  if (editor.history) {
-    return editor.history;
-  }
-
-  if (typeof editor.read === 'function') {
-    return editor.read((state) => state.history.get());
-  }
-
-  throw new Error('No supported history state API found');
-};
+const readHistory = (editor) =>
+  isPlite ? editor.read((state) => state.history()) : editor.history;
 
 const undo = (editor) => {
   if (isPlite) {
     editor.update((tx) => tx.history.undo());
-    return;
-  }
-
-  if (typeof editor.undo === 'function') {
+  } else {
     editor.undo();
-    return;
   }
-
-  editor.update((tx) => {
-    tx.history.undo();
-  });
 };
 
 const redo = (editor) => {
   if (isPlite) {
     editor.update((tx) => tx.history.redo());
-    return;
-  }
-
-  if (typeof editor.redo === 'function') {
+  } else {
     editor.redo();
-    return;
   }
-
-  editor.update((tx) => {
-    tx.history.redo();
-  });
 };
 
 const replaceEditor = (editor, input) => {
@@ -181,8 +134,8 @@ const replaceEditor = (editor, input) => {
       ? { ...input, selection: { ...input.selection, kind: 'text' } }
       : input;
 
-  if (typeof Editor.replace === 'function') {
-    Editor.replace(editor, nextInput);
+  if (isPlite) {
+    editor.update((tx) => tx.value.replace(nextInput));
     return;
   }
 
@@ -192,14 +145,10 @@ const replaceEditor = (editor, input) => {
 };
 
 const getChildren = (editor) =>
-  typeof Editor.getSnapshot === 'function'
-    ? Editor.getSnapshot(editor).children
-    : typeof editor.getChildren === 'function'
-      ? editor.getChildren()
-      : editor.children;
+  isPlite ? editor.read.children() : editor.children;
 
 const write = (editor, fn) => {
-  if (typeof editor.update === 'function') {
+  if (isPlite) {
     editor.update(fn);
     return;
   }
@@ -246,7 +195,7 @@ const fragmentEditor = () => {
 
   write(editor, (tx) => {
     if (tx) {
-      tx.fragment.insert(createFragment(fragmentBlocks));
+      tx.fragment.replace(createFragment(fragmentBlocks));
     } else {
       editor.insertFragment(createFragment(fragmentBlocks));
     }
@@ -332,6 +281,8 @@ const fragmentRedoMs = measureLane(
 console.log(JSON.stringify({
   iterations,
   config: {
+    implementation,
+    runtime: { executable: process.execPath, node: process.version, v8: process.versions.v8 },
     blocks,
     typeOps,
     fragmentBlocks,
@@ -349,7 +300,7 @@ const currentPackageManager = await parsePackageManager(currentRepo);
 const legacyPackageManager = await parsePackageManager(legacyRepo);
 
 if (!skipBuild) {
-  await buildRepo(currentRepo, currentPackageManager, './packages/plite-history');
+  await buildRepo(currentRepo, currentPackageManager, './packages/plitejs');
   await buildRepo(legacyRepo, legacyPackageManager, './packages/slate-history');
 }
 
@@ -407,8 +358,17 @@ const meanDeltaMs = laneMetric('delta', 'mean');
 const worstP95Lane = worstLane(p95Ratio);
 const worstMeanLane = worstLane(meanRatio);
 
+if (current.config.implementation !== 'plite' || legacy.config.implementation !== 'slate') {
+  throw new Error('Core comparison did not execute its declared editor owners');
+}
+if (JSON.stringify(current.config.runtime) !== JSON.stringify(legacy.config.runtime)) {
+  throw new Error('Core comparison requires the same JavaScript runtime');
+}
+
 const summary = {
   lane: 'history-compare-local',
+  implementations: { current: 'plite', legacy: 'slate' },
+  runtimes: { current: current.config.runtime, legacy: legacy.config.runtime },
   currentRepo,
   legacyRepo,
   iterations,

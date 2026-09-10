@@ -25,14 +25,14 @@ toc: true
 
 </PackageInfo>
 
-## Why Use Plate Markdown?
+## Why use Plate Markdown?
 
 While libraries like `react-markdown` render Markdown to React elements, `platejs/markdown` offers deeper integration with the Plate ecosystem:
 
 - **Rich Text Editing:** Enables advanced editing features by converting Markdown to Plate's structured format.
 - **WYSIWYG Experience:** Edit content in a rich text view and serialize it back to Markdown.
 - **Custom Elements & Data:** Handles complex custom Plate elements (mentions, embeds) by converting them to/from MDX.
-- **Extensibility:** Leverages Plate's plugin system and the unified/remark ecosystem for powerful customization.
+- **Extensibility:** Customize conversion with Plate plugins and the unified/remark ecosystem.
 
 <Callout type="note">
   If you only need to display Markdown as HTML without editing or custom
@@ -41,7 +41,7 @@ While libraries like `react-markdown` render Markdown to React elements, `platej
   integrated solution.
 </Callout>
 
-## Kit Usage
+## Kit usage
 
 <Steps>
 
@@ -51,7 +51,7 @@ The fastest way to add Markdown functionality is with `MarkdownKit`. It combines
 
 <ComponentSource name="markdown" />
 
-### Add Kit
+### Add kit
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -67,7 +67,7 @@ const editor = createEditor({
 
 </Steps>
 
-## Manual Usage
+## Manual usage
 
 <Steps>
 
@@ -77,7 +77,7 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual marked remark-mdx remark-parse remark-stringify unified
 ```
 
-### Add Plugin
+### Add plugin
 
 ```tsx
 import { MarkdownPlugin } from 'platejs/markdown';
@@ -91,7 +91,7 @@ const editor = createEditor({
 });
 ```
 
-### Configure Plugin
+### Configure plugin
 
 Configure `MarkdownPlugin.initialState` for shared syntax plugins, filtering,
 and stringification. Installed feature plugins contribute their Markdown node
@@ -140,7 +140,7 @@ const editor = createEditor({
   must survive.
 </Callout>
 
-### Markdown to Plate (Deserialization)
+### Markdown to Plate (deserialization)
 
 Use `editor.api.markdown.deserialize` to convert a Markdown string into an
 `EditorDocumentValue`. Media captions are block children of their media
@@ -174,7 +174,7 @@ const editor = createEditor({
   editor's `plugins` array.
 </Callout>
 
-### Plate to Markdown (Serialization)
+### Plate to Markdown (serialization)
 
 Use `editor.api.markdown.serialize` to convert the current editor document or a specific `EditorDocumentValue` into a Markdown string.
 
@@ -213,7 +213,7 @@ console.info(partialMarkdownOutput);
 Markdown image alt text maps to one paragraph child of the image. Rich MDX
 media children map directly to the media element's block children.
 
-### Round-Trip Serialization with Custom Elements (MDX)
+### Round-trip serialization with custom elements (MDX)
 
 A key feature is handling custom Plate elements that lack standard Markdown
 representation, such as underline and mentions. `platejs/markdown` converts
@@ -503,7 +503,7 @@ Utility to parse a Markdown string into block-level tokens.
 
 <Steps>
 
-### Using a Remark Plugin (GFM)
+### Using a remark plugin (GFM)
 
 Add support for GitHub Flavored Markdown: tables, strikethrough, task lists,
 and autolinks.
@@ -562,44 +562,36 @@ const markdownOutput = editor.api.markdown.serialize();
 // markdownOutput will contain GFM syntax
 ```
 
-### Customizing Rendering (Syntax Highlighting)
+### Rendering code blocks with syntax highlighting
 
-This example shows two approaches: customizing the rendering component for UI
-changes and customizing one conversion operation for a different Plate shape.
+Use the code-block component for UI and a Markdown rule override only when one
+conversion needs a different document shape.
 
 **Background:**
 
 - `platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ...
-  \`\`\`) to Plate `codeBlock` elements with `codeLine` children.
-- The Plate `CodeBlockElement` (often from `platejs/react`) renders this structure.
+  \`\`\`) to Plate `codeBlock` elements with one newline-bearing text child.
+- The copied `CodeBlockElement` renders this multiline text.
 - Syntax highlighting comes from `CodeHighlightPlugin` and a library like `lowlight`. See [Code Block Plugin](/docs/code-block) for details.
 
-**Approach 1: Customizing Rendering Component (Recommended for UI)**
+**Approach 1: Configure the Rendering Component**
 
 To change how code blocks appear, configure the `CodeBlockPlugin` descriptor.
 
 ```tsx title="components/my-editor.tsx"
 import { createEditor } from 'platejs/react';
-import {
-  CodeBlockPlugin,
-  CodeHighlightPlugin,
-  CodeLinePlugin,
-} from 'platejs/react';
+import { CodeBlockPlugin, CodeHighlightPlugin } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custom component
+import { CodeBlockElement } from '@/components/editor/code-block';
 
 const editor = createEditor({
   plugins: [
-    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }),
-    CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
-    CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
+    CodeBlockPlugin.configure({ component: CodeBlockElement }),
+    CodeHighlightPlugin,
     MarkdownPlugin,
     // ... other plugins
   ],
 });
-
-// MyCustomCodeBlockElement.tsx would then implement the desired rendering
-// (e.g., using react-syntax-highlighter), consuming props from PlateElement.
 ```
 
 Refer to the [Code Block Plugin documentation](/docs/code-block) for complete examples.
@@ -644,7 +636,7 @@ const output = editor.api.markdown.serialize({
 
 Choose based on whether you're changing UI (Approach 1) or data structure (Approach 2).
 
-### Using Remark Plugins for Math (`remark-math`)
+### Using remark plugins for math (`remark-math`)
 
 Enable TeX math syntax (`$inline$`, `$$block$$`).
 
@@ -695,7 +687,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: document });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
-### Using Mentions (`remarkMention`)
+### Using mentions (`remarkMention`)
 
 Enable mention syntax using the link format for consistency and special character support.
 
@@ -743,7 +735,7 @@ The `remarkMention` plugin uses the **[display text](mention:id)** format - a Ma
 
 When serializing, all mentions use the link format to ensure consistency and support for special characters.
 
-### Using Columns
+### Using columns
 
 Enable column layouts with MDX support for multi-column documents.
 
@@ -808,7 +800,7 @@ const markdownOutput = editor.api.markdown.serialize({ value });
 
 </Steps>
 
-## Remark Plugins
+## Remark plugins
 
 `platejs/markdown` leverages the [unified][github-unified] / [remark][github-remark] ecosystem. Extend its capabilities through the `remarkPlugins` option. These plugins operate on the [mdast (Markdown Abstract Syntax Tree)][github-mdast].
 
@@ -832,14 +824,14 @@ const markdownOutput = editor.api.markdown.serialize({ value });
   content as MDX plus a feature-owned Markdown codec.
 </Callout>
 
-## Syntax Support
+## Syntax support
 
 `platejs/markdown` uses [`remark-parse`][github-remark-parse], adhering to [CommonMark][commonmark-spec]. Enable GFM or other syntaxes via `remarkPlugins`.
 
 - **Learn Markdown:** [CommonMark Help][commonmark-help]
 - **GFM Spec:** [GitHub Flavored Markdown Spec][gfm-spec]
 
-## Architecture Overview
+## Architecture overview
 
 `platejs/markdown` bridges Markdown strings and Plate's editor format using the unified/remark ecosystem.
 
@@ -898,7 +890,7 @@ Migrating involves mapping `react-markdown` concepts to Plate's architecture.
       - Feature plugin `codecs`: Customize reusable mdast ↔ Plate JSON
         conversion.
       - Operation `rules`: Override conversion for one API call.
-      - `createEditor` `components`: Customize React components for Plate node types. See [Appendix C](#appendix-c-components).
+      - Plugin `component`: Customize the React component on its owning descriptor. See [Appendix C](#appendix-c-components-for-rendering).
 3.  **Plugin Ecosystem:** `platejs/markdown` uses `remarkPlugins`. `rehypePlugins` are not part of its conversion pipeline.
 
 **Mapping Options:**
@@ -910,8 +902,8 @@ The option examples use `import { MarkdownPlugin } from 'platejs/markdown'`.
 | `children` (string)             | Pass to `editor.api.markdown.deserialize(string)`                                                      | Input for deserialization; often in `createEditor` `initialValue`.                |
 | `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | Operates on mdast.                                                                     |
 | `rehypePlugins`                 | Not part of `MarkdownPlugin`'s conversion pipeline.                                                              | Run any HTML pipeline before passing Markdown or Plate nodes to Plate.                 |
-| `components={{ h1: MyH1 }}`     | `createEditor({ components: { h1: MyH1 } })`                                                                | Configures the component for the default `h1` persisted element type.                  |
-| `components={{ code: MyCode }}` | Feature plugin `text/markdown` codec plus `components: { ['codeBlock']: MyCode }` | The codec owns mdast ↔ Plate conversion; the component owns rendering. |
+| `components={{ h1: MyH1 }}`     | `HeadingPlugin.configure({ component: MyH1 })`                                      | Binds the heading component to its owning plugin.                                      |
+| `components={{ code: MyCode }}` | Feature plugin `text/markdown` codec plus `CodeBlockPlugin.configure({ component: MyCode })` | The codec owns mdast ↔ Plate conversion; the component owns rendering. |
 | `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | Filters nodes during conversion (mdast/Plate types).                                   |
 | `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | Filters nodes during conversion.                                                       |
 | `unwrapDisallowed`              | No direct equivalent. Filtering removes nodes.                                                                   | A one-operation `rules` override can implement unwrapping.                             |
@@ -942,7 +934,7 @@ supported Markdown pipeline.
   own pipeline sanitizes it with a strict element and attribute whitelist.
 </Callout>
 
-## Appendix B: Conversion Ownership
+## Appendix B: conversion ownership
 
 Reusable conversion lives on the owning plugin under
 `codecs['text/markdown']`. `MarkdownPlugin` compiles codecs from installed
@@ -1028,11 +1020,10 @@ editor.api.markdown.deserialize(markdown, {
 | `<columnGroup>...</columnGroup>`       | `columnGroup`            | Multi-column layout container               |
 | `<column width="50%">...</column>`     | `column`                 | Single column with optional width attribute |
 
-## Appendix C: Components for Rendering
+## Appendix C: components for rendering
 
 While feature codecs handle MD ↔ Plate conversion, Plate uses React components
-to _render_ Plate nodes. Configure these in `createEditor` via the
-`components` option or plugin `component` method.
+to _render_ Plate nodes. Bind each component to its owning plugin descriptor.
 
 **Example:**
 
@@ -1055,7 +1046,7 @@ const editor = createEditor({
 
 Refer to [Plugin Components](/docs/plugin-components) for more on creating/registering components.
 
-## Appendix D: `PlateMarkdown` Component (Read-Only Display)
+## Appendix D: `PlateMarkdown` component (read-only display)
 
 For a `react-markdown`-like component for read-only display:
 
@@ -1069,14 +1060,12 @@ import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
 
 export interface PlateMarkdownProps {
-  children: string; // Markdown content
-  components?: Record<string, React.ComponentType<any>>; // Plate component overrides
+  children: string;
   className?: string;
 }
 
 export function PlateMarkdown({
   children,
-  components = {},
   className,
 }: PlateMarkdownProps) {
   const editor = useCreateEditor({
@@ -1085,7 +1074,6 @@ export function PlateMarkdown({
       ...BasicBlocksKit,
       MarkdownPlugin,
     ],
-    components, // Pass through component overrides
   });
 
   useEffect(() => {
@@ -1113,7 +1101,7 @@ export function PlateMarkdown({
   editing, see the [Installation guides](/docs/installation).
 </Callout>
 
-## Security Considerations
+## Security considerations
 
 `platejs/markdown` prioritizes safety by converting Markdown to a structured Plate format, avoiding direct HTML rendering. However, security depends on:
 
@@ -1125,7 +1113,7 @@ export function PlateMarkdown({
 
 **Recommendation:** Treat untrusted Markdown input cautiously. Sanitize if allowing complex features or raw HTML.
 
-## Related Links
+## Related links
 
 - **[remark][github-remark]:** Markdown processor.
 - **[unified][github-unified]:** Core processing engine.

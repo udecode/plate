@@ -13,7 +13,7 @@ import {
   getProjectedRemoteSelectionPaintTargets,
   getRootKeyedCollabTargets,
 } from '../../src/react/editable/projected-collab-substrate';
-import type { PliteProjectionOwner } from '../../src/react/projection-graph';
+import type { PliteViewBoundaryOwner } from '../../src/react/view-boundary-graph';
 
 const SHARED_ROOT = 'synced-block:shared:body';
 const UNSYNCED_ROOT = 'synced-block:unsynced:body';
@@ -163,12 +163,12 @@ describe('projected root lifecycle collaboration substrate', () => {
       childRoot: SHARED_ROOT,
       ownerPath: [1],
       ownerRoot: 'main',
-    } satisfies PliteProjectionOwner;
+    } satisfies PliteViewBoundaryOwner;
     const secondOwner = {
       childRoot: SHARED_ROOT,
       ownerPath: [2],
       ownerRoot: 'main',
-    } satisfies PliteProjectionOwner;
+    } satisfies PliteViewBoundaryOwner;
     const selection = {
       range: collapsed(SHARED_ROOT, [0, 0], 3),
       root: SHARED_ROOT,

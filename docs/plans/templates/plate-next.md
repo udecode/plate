@@ -1,5 +1,7 @@
 # {{TITLE}}
 
+This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+
 Objective:
 TODO: Write the short Plate Next objective, under 240 characters.
 
@@ -8,12 +10,6 @@ Goal plan:
 
 Template:
 {{TEMPLATE_PATH}}
-
-Primary template:
-{{TEMPLATE_PATH}}
-
-Applied packs:
-- none
 
 Plate Next source:
 - prompt / link: pending
@@ -48,9 +44,9 @@ First checkpoint:
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
-- initial confidence score: pending
+- initial evidence or measured baseline: pending
 - improvement loop: pending
-- final score / loop closure: pending
+- final evidence / loop closure: pending
 
 Completion threshold:
 - TODO: Define the exact Plate Next done state.
@@ -220,7 +216,7 @@ Constraints:
   transaction-accepting function needs multiple production consumers or a real
   independent algorithm boundary, recorded in the package rows.
 - Plugin export inference law: plugin constants should infer from
-  `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, and chained
+  `defineBasePlugin`, `definePlatePlugin`, `toPlatePlugin`, and chained
   `.extend()` calls. Do not annotate exports as `BasePlugin<Config>` /
   `PlatePlugin<Config>` or cast chained plugin results unless the annotation is
   a true external boundary. If inference fails, fix the builder/generic owner.
@@ -232,7 +228,7 @@ Constraints:
   `toPlatePlugin(BasePlugin).configure({ component })`.
 - Definition inference law: do not create `PluginConfig`, pass a whole-plugin
   factory generic, or call an extracted descriptor definition `FooConfig`.
-  Let `createBasePlugin({ name: 'foo' })` infer the descriptor and use
+  Let `defineBasePlugin('foo', { /* owned capabilities */ })` infer the descriptor and use
   `DefinitionOf<typeof FooPlugin>` only when a real exported definition
   contract is needed, named `FooDefinition`.
 - Plugin capability boundary law: classify every contribution against the
@@ -246,18 +242,19 @@ Constraints:
   selectors/reads, plugin-scoped behavior hidden in native fields, and
   unclassifiable contributions.
 - Plugin authoring stage law: keep every independent contribution in
-  `createBasePlugin()` / `createPlatePlugin()`. Keep `.extend()` only for
+  `defineBasePlugin()` / `definePlatePlugin()`. Keep `.extend()` only for
   imported/prebuilt adaptation, a shared factory unavailable to the
   constructor, or a real earlier-capability type dependency. Keep
   `.configure()` terminal and non-widening. Native Plite fields stay flat on
   the plugin; independently reusable standalone Plite descriptors use
-  `defineEditorExtension`.
+  `defineExtension`.
 - Dependency type boundary law: root
   `EditorExtensionDependencyReference` is shallow and non-generic. Keep finite
-  name-keyed capability/provider carriers and their value-sensitive HKT under
-  `@platejs/plite/internal`, never recursively encode exact dependency
-  ancestry, and require static name+capability equivalence plus runtime exact
-  descriptor identity.
+  name-keyed capability/provider carriers, normalized installed capabilities,
+  and their higher-kinded encoding private inside `plitejs`;
+  `EditorExtensionTypeProvider` is the sole public value-sensitive bridge.
+  Never recursively encode exact dependency ancestry, and require static
+  name+capability equivalence plus runtime exact descriptor identity.
 - Core lowering law: author-source-to-canonical-lowered aliases are internal.
   Do not export or teach an intermediate plugin type between the one author
   object and its exact descriptor.
@@ -312,7 +309,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
 | `plate-next` skill/rule read | pending | pending |
-| Active goal checked or created | pending | pending |
+| Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Mode classified as named packet vs broad Core sweep | pending | pending |
 | Review target recorded as best Plate v2 / Plite-fit / no legacy compat | pending | pending |
 | Broad Core drift ledger initialized when in scope | pending | pending |
@@ -321,7 +318,7 @@ Start Gates:
 | Public API fork routing checked | pending | pending |
 | Gap policy checked | pending | pending |
 | Related scoped sweep policy checked | pending | pending |
-| Review-mode rename freeze checked | pending | pending |
+| Owner topology and rename justification checked | pending | pending |
 | Package review checklist initialized when in scope | pending | pending |
 | Doctrine registry validated for package review/sync | pending | pending |
 | Sync queue materialized when sync mode is in scope | pending | pending |
@@ -376,7 +373,7 @@ Work Checklist:
       package review; unchanged later-version packages receive every missing
       doctrine version's `migrationChecks`.
 - [ ] For package review or sync mode, the package ledger is patched only after
-      focused proof and P1 autoreview; final plan closure runs only after package
+      focused proof and Task's applicable review gate; final plan closure runs only after package
       registry status is `current`.
 - [ ] If a reusable Plate Next rule changes during the run, doctrine version is
       bumped, immutable migration checks are appended, generated skill is
@@ -391,8 +388,9 @@ Work Checklist:
       transaction/snapshot logic.
 - [ ] Live node target and matcher audit closed: no supplied live node is
       rediscovered by type/ID, no flat `api.findPath` / `api.some` alias remains
-      in scope, equality-only callbacks use property matchers, and every
-      remaining predicate has computed/path/truthiness/narrowing semantics.
+      in scope, descriptor identity uses `type: FooPlugin`, and additional
+      property/content/path/narrowing conditions use function-only `match`.
+      No object matcher or caller-selected node result generic remains.
 - [ ] Optional public-read audit closed: feature-package production code does
       not use `{ required: true }` or non-null assertions to hide unresolved
       Plite reads; each match handles `undefined` or records a Plite-internal
@@ -430,9 +428,11 @@ Work Checklist:
       capped file is raised to 100 from green checks alone.
 - [ ] Review matrix is filled for every inspected file/API/helper.
 - [ ] Public API forks are routed to `plate-plan` before implementation.
-- [ ] Review-mode rename freeze applied: Added/Deleted rename noise is either
-      restored to current `HEAD` names or mapped in `docs/plans/pre-renaming.md`
-      with an explicit reason it cannot be restored in this packet.
+- [ ] Owner topology reviewed: rename, merge, or delete files when the active
+      packet restores a durable owner. Reject cosmetic synonym churn. Record
+      any intentionally deferred public naming change in
+      `docs/plans/pre-renaming.md` with its owner and reason; do not preserve
+      a one-use topology solely to reduce diff noise.
 - [ ] Extracted-file recovery gate closed: every untracked/extracted file in
       scope has an inventory row and bucket, with `origin/main` owner checked
       before keeping any new path/name.
@@ -463,7 +463,7 @@ Completion Gates:
 | Source audit | pending | Run exact audit for removed compatibility names or record N/A | pending |
 | Rename ledger | pending | Update `docs/plans/pre-renaming.md` when a rename is postponed or intentionally kept | pending |
 | Extracted-file inventory | pending | Record untracked/extracted file command, row count, and bucket for every file in scope | pending |
-| P1 autoreview / review | pending | Run autoreview with `--max-priority P1` for non-trivial implementation diffs; P2/P3 are opt-in only, or record N/A | pending |
+| P1 autoreview / review | pending | Use Task's review gate and remaining budget; never on next; otherwise N/A with reason | pending |
 | Final lint/check | pending | Run scoped lint/check or record N/A | pending |
 | Changed list / top drift / needs attention | pending | Fill handoff ledgers | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
@@ -491,8 +491,8 @@ Related scoped sweep ledger:
 Core drift ledger:
 - Applies: pending
 - Manifest command: pending
-- Manifest owner: `packages/core/src/**/*.{ts,tsx,mts,cts}`
-- Optional type-test owner: `packages/core/type-tests/**/*.{ts,tsx,mts,cts}`
+- Manifest owner: `packages/platejs/src/**/*.{ts,tsx,mts,cts}`
+- Optional type-test owner: `packages/platejs/type-tests/**/*.{ts,tsx,mts,cts}`
 - Ledger location: this table or a linked artifact summarized here
 - Expected row count: pending
 - Actual row count: pending
@@ -511,8 +511,11 @@ Package file checklist:
 - Package: pending
 - Manifest command: pending
 - Manifest owner:
-  `packages/<package>/src/**/*.{ts,tsx,mts,cts}` plus package-local specs,
-  test-utils, type-tests, fixtures, examples, and docs only when touched.
+  the exact complete file list from
+  `node .agents/rules/plate-next/scripts/version.mjs fingerprint <package>`.
+  It includes every file counted by the authoritative package fingerprint,
+  including applicable package-local tests, type-tests, fixtures, examples,
+  configuration, and metadata.
 - Expected row count: pending
 - Actual row count: pending
 - Checked score-100 count: pending

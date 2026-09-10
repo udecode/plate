@@ -19,10 +19,11 @@ repo-maintenance prompts, or a future local scheduled Codex activation.
 
 **Primary owner:** `$maintainer`.
 
-**Execution owners:** `$task`, `$resolve-slate-issue`, `$slate-auto`,
-`$security-triage`, `$autoreview` (pass `--max-priority P2`; P3 is opt-in only),
-`$resolve-pr-feedback`, `$docs-creator`,
-`$plate-plan`, `$slate-plan`, `$issue-harvester`, and other narrower owners.
+**Execution owners:** `$task`, Maintainer's Slate issue mode, `$auto`,
+`$security-triage`, `$autoreview` under Task's one review budget (P1 by default;
+P2/P3 only when explicitly requested; never on `next`),
+`$resolve-pr-feedback`, `$docs-creator`, `$plate-plan`, `$plite-plan`,
+`$issue-harvester`, and other narrower owners.
 
 ## Allowed Without Asking
 
@@ -42,7 +43,7 @@ repo-maintenance prompts, or a future local scheduled Codex activation.
 - Repair public intake docs when recurring reports or PRs are too weak for local
   Codex to act on.
 - Produce a decision-ready brief when evidence or authority is missing.
-- Run one internal `plite-auto` quality fallback only when no public queue item
+- Run one internal `auto` quality fallback only when no public queue item
   is safe and the invocation allows fallback.
 - Write a compact `docs/maintainer/runs/*` note when it prevents duplicate
   future work.

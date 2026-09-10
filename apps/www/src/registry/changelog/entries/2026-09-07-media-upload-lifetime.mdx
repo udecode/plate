@@ -1,0 +1,14 @@
+---
+id: 2026-09-07-media-upload-lifetime
+date: 2026-09-07
+status: draft
+kind: fix
+summary: 'Keep media uploads active across placeholder remounts and report upload failures'
+change: { 'type': 'source', 'date': '2026-09-07', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-07-media-keep-uploads-active-across-65d719f5","kind":"fix","migrationNotes":[]} -->
+
+- **`media`**, **`media-placeholder`**: Keep uploads active across placeholder remounts, cancel superseded requests and show upload failures. Configure the transport in `MediaKit`; image completion does not depend on the preview loading.

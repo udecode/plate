@@ -1,10 +1,70 @@
 import React from 'react';
 import { tabbable } from 'tabbable';
 
-import { PathApi } from '../../core';
+import { PathApi, type EditorStateView } from '../../core';
 import { useEditorReadOnly, useEditor, usePluginStore } from '../../react/core';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
 import { TabbablePlugin } from './TabbablePlugin';
+
+export function findTabDestination(
+  state: EditorStateView,
+  {
+    activeTabbableEntry,
+    direction,
+    tabbableEntries,
+  }: {
+    activeTabbableEntry: TabbableEntry | null;
+    direction: 'backward' | 'forward';
+    tabbableEntries: TabbableEntry[];
+  }
+):
+  | { domNode: TabbableEntry['domNode']; type: 'dom-node' }
+  | { path: TabbableEntry['path']; type: 'path' }
+  | null {
+  if (activeTabbableEntry) {
+    const activeIndex = tabbableEntries.indexOf(activeTabbableEntry);
+    const nextEntry =
+      tabbableEntries[activeIndex + (direction === 'forward' ? 1 : -1)];
+
+    if (nextEntry && PathApi.equals(activeTabbableEntry.path, nextEntry.path)) {
+      return { domNode: nextEntry.domNode, type: 'dom-node' };
+    }
+    if (direction === 'forward') {
+      const point = state.points.after(activeTabbableEntry.path);
+
+      return point ? { path: point.path, type: 'path' } : null;
+    }
+
+    const point = state.points.get(activeTabbableEntry.path);
+
+    return point ? { path: point.path, type: 'path' } : null;
+  }
+
+  const selection = state.selection();
+  const selectedNodes = state.selection.nodes();
+  const selectionPath =
+    (direction === 'forward'
+      ? selectedNodes.at(-1)?.[1]
+      : selectedNodes[0]?.[1]) ??
+    selection?.anchor.path ??
+    [];
+  const nextEntry =
+    direction === 'forward'
+      ? tabbableEntries.find(
+          (entry) =>
+            (PathApi.compare(entry.path, selectionPath) ||
+              entry.path.length - selectionPath.length) >= 0
+        )
+      : [...tabbableEntries]
+          .reverse()
+          .find(
+            (entry) =>
+              (PathApi.compare(entry.path, selectionPath) ||
+                entry.path.length - selectionPath.length) < 0
+          );
+
+  return nextEntry ? { domNode: nextEntry.domNode, type: 'dom-node' } : null;
+}
 
 type TabbableDOMNode = ReturnType<typeof tabbable>[number];
 
@@ -145,13 +205,13 @@ export function TabbableEffects() {
         null;
 
       // Find the next Slate node or DOM node to focus
-      const tabDestination = editor
-        .plugin(TabbablePlugin)
-        .read.findDestination({
+      const tabDestination = editor.read((state) =>
+        findTabDestination(state, {
           activeTabbableEntry,
           direction: event.shiftKey ? 'backward' : 'forward',
           tabbableEntries,
-        });
+        })
+      );
 
       if (tabDestination) {
         event.preventDefault();

@@ -283,9 +283,7 @@ const plugins = [
 Before pressing `Backspace` in empty code block:
 ```tsx
 <codeBlock>
-  <codeLine>
-    |
-  </codeLine>
+  |
 </codeBlock>
 ```
 
@@ -598,7 +596,7 @@ const plugins = [
 ];
 ```
 
-## Feature-Specific Reset Commands
+## Feature-specific reset commands
 
 The `reset` rule action converts the current block to Plate's default block type. If a feature needs a different structural change, expose that behavior as a plugin transaction command and call it explicitly.
 
@@ -617,7 +615,7 @@ editor.update((tx) => {
 });
 ```
 
-## Combining Rules
+## Combining rules
 
 You can combine different rules for comprehensive block behavior:
 
@@ -724,7 +722,7 @@ BoldPlugin.configure({
 });
 ```
 
-### Affinity Options
+### Affinity options
 
 The `affinity` property determines how the cursor behaves when positioned at the boundary between different marks or inline elements:
 
@@ -817,11 +815,11 @@ Cursor movement direction determines whether new text extends the link or create
 Forces outward affinity, automatically clearing marks when typing at their boundaries. This creates a natural "exit" behavior from formatted text.
 
 ```tsx
-import { CommentPlugin } from 'platejs/comment/react';
+import { HighlightPlugin } from 'platejs/react';
 
 const plugins = [
   // ...otherPlugins,
-  CommentPlugin.configure({
+  HighlightPlugin.configure({
     rules: {
       selection: { affinity: 'outward' },
     },
@@ -832,14 +830,14 @@ const plugins = [
 **At end of marked text:**
 ```tsx
 <p>
-  <text comment>Commented text|</text><text>Normal</text>
+  <text highlight>Highlighted text|</text><text>Normal</text>
 </p>
 ```
 
 After typing:
 ```tsx
 <p>
-  <text comment>Commented text</text><text>x|Normal</text>
+  <text highlight>Highlighted text</text><text>x|Normal</text>
 </p>
 ```
 

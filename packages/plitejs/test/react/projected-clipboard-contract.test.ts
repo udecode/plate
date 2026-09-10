@@ -27,9 +27,9 @@ import {
 } from '../../src/react/editable/projected-clipboard';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
 import {
-  createPliteProjectionGraph,
-  type PliteProjectionOwner,
-} from '../../src/react/projection-graph';
+  createPliteViewBoundaryGraph,
+  type PliteViewBoundaryOwner,
+} from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -51,14 +51,13 @@ const contentRootExtension = defineEditorSchema(
         content: schema.content.not(schema.content.text()),
       },
       'content-card': {
-        content: schema.content.open(),
         contentRoots: {
           body: {
             content: schema.content.not(schema.content.text()),
             ownership: 'shared',
           },
         },
-        void: 'editable-island',
+        void: 'block',
       },
       'content-owner': {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -115,13 +114,13 @@ const sharedOwner = {
   childRoot: SHARED_ROOT,
   ownerPath: [1],
   ownerRoot: 'main',
-} satisfies PliteProjectionOwner;
+} satisfies PliteViewBoundaryOwner;
 
 const secondSharedOwner = {
   childRoot: SHARED_ROOT,
   ownerPath: [3],
   ownerRoot: 'main',
-} satisfies PliteProjectionOwner;
+} satisfies PliteViewBoundaryOwner;
 
 const point = (
   root: RootKey | undefined,
@@ -158,7 +157,7 @@ const createFixture = (
     },
   });
   const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-  const graph = createPliteProjectionGraph([
+  const graph = createPliteViewBoundaryGraph([
     { path: [0], root: 'main' },
     { owner: sharedOwner, path: [0], root: SHARED_ROOT },
   ]);
@@ -166,7 +165,6 @@ const createFixture = (
   writePliteViewSelection(
     editor,
     createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: { point: point(undefined, [0, 0], 'Bef'.length) },
       focus: {
         owner: sharedOwner,
@@ -193,7 +191,7 @@ const createRepeatedFixture = () => {
     },
   });
   const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-  const graph = createPliteProjectionGraph([
+  const graph = createPliteViewBoundaryGraph([
     { path: [0], root: 'main' },
     { owner: sharedOwner, path: [0], root: SHARED_ROOT },
     { path: [2], root: 'main' },
@@ -204,7 +202,6 @@ const createRepeatedFixture = () => {
   writePliteViewSelection(
     editor,
     createPliteViewSelection(graph, {
-      kind: 'text',
       anchor: {
         owner: sharedOwner,
         point: point(SHARED_ROOT, [0, 0], 'In'.length),
@@ -345,7 +342,7 @@ describe('projected clipboard', () => {
     const editor = createEditorView(runtime, {
       root: SHARED_ROOT,
     }) as unknown as ReactRuntimeEditor;
-    const graph = createPliteProjectionGraph([
+    const graph = createPliteViewBoundaryGraph([
       { path: [0], root: SHARED_ROOT },
     ]);
 
@@ -518,7 +515,7 @@ describe('projected clipboard', () => {
       },
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-    const graph = createPliteProjectionGraph([
+    const graph = createPliteViewBoundaryGraph([
       { owner: sharedOwner, path: [0], root: SHARED_ROOT },
       { owner: sharedOwner, path: [1], root: SHARED_ROOT },
     ]);
@@ -526,7 +523,6 @@ describe('projected clipboard', () => {
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
-        kind: 'text',
         anchor: {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 0),
@@ -556,7 +552,7 @@ describe('projected clipboard', () => {
       },
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-    const graph = createPliteProjectionGraph([{ path: [0], root: 'main' }]);
+    const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
 
     writePliteViewSelection(
       editor,

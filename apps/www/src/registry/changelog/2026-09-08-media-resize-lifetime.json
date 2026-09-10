@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-08-media-resize-lifetime",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-08-media-resize-lifetime.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve media resize alignment and cancellation",
+  "targets": [
+    {
+      "name": "resize-handle",
+      "files": ["apps/www/src/registry/components/editor/resize-handle.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-08-resize-handle-alignment-pointer-lifetime",
+      "kind": "fix",
+      "summary": "Preserve alignment when resizing media and discard cancelled pointer gestures. Keep slider values and bounds in consistent units.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["resize-handle"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-08",
+          "entry": "2026-09-08-media-resize-lifetime",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

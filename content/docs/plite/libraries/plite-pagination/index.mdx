@@ -43,7 +43,7 @@ The layout output is derived state. Store document content in Plite roots and
 store product settings in state fields; do not write layout fragments into the
 document unless your product explicitly needs authoritative page breaks.
 
-## React Usage
+## React usage
 
 Use `PagedEditable` from `plitejs/pagination/react` when the editor surface should
 render pages.
@@ -72,19 +72,24 @@ const DocumentEditor = () => {
 };
 ```
 
-`PagedEditable` wraps `Editable`, so normal `Editable` props still apply:
-`renderElement`, `renderLeaf`, `decorate`, `domStrategy`, and keyboard handlers
-stay on the editor surface.
+`PagedEditable` wraps `Editable`, so normal `Editable` props such as
+`renderElement`, `renderLeaf`, `domStrategy`, and keyboard handlers stay on the
+editor surface. Configure transient text paint with `decorations` on the
+surrounding `Plite` provider.
+
+Set `pageView={{ gap: 24, mode: "spread" }}` to arrange facing pages. Supply
+`renderPage` to style page backgrounds, borders, and shadows; the default page
+surface supplies geometry only. Use `usePliteLayoutFragmentsAtPath(path)` to
+read a node's rendered fragments, passing its renderer path or `useElementPath()`.
 
 `usePliteLayout` publishes option changes after React commits. Outside React,
 call `layout.reconfigure(nextOptions)` to replace the complete configuration in
 one atomic refresh.
 
-Use `createPlitePageLayout` or `usePlitePageLayout` only when you provide an
-explicit `engine`, such as a custom measurement engine or
-`pretextPageLayoutEngine()`.
+Pass `engine` to `createPliteLayout` or `usePliteLayout` to use custom
+measurement or configure `pretextPageLayoutEngine()`.
 
-## Headless And Static Use
+## Headless and static use
 
 `createPliteLayout` can run outside React and can fall back to an estimated
 engine when browser canvas measurement is unavailable. Use that for previews,
@@ -92,14 +97,14 @@ tests, and export planning. Treat static output as derived geometry, not as an
 authoritative PDF, print, or collaboration layout source unless your product
 provides the measurement engine and proof for that target.
 
-## Layout-Owned Boxes
+## Layout-owned boxes
 
 Tables, images, embeds, and other block formatting context style nodes should
 own their layout units through the selected layout engine. The engine should
 not split the Plite table node just to paginate a table. It can paginate
 engine-owned row units while the document tree stays stable.
 
-## Page Virtualization
+## Page virtualization
 
 Use page-level virtualization when pagination is enabled. Virtualizing whole
 pages keeps layout, selection, and page chrome aligned better than mounting and
@@ -109,7 +114,7 @@ The page mount plan keeps pages mounted when they are visible, selected,
 promoted by interaction, or involved in composition. That makes it the right
 boundary for print-like editors.
 
-## Measurement Caveat
+## Measurement caveat
 
 The built-in Pretext-backed engine measures text with browser font metrics.
 That gives stable results inside one browser profile, but different operating
@@ -117,8 +122,8 @@ systems and browsers can still produce slightly different line breaks. Products
 that need exact collaboration or export parity should use an authoritative page
 break source or a shared measurement profile.
 
-## Related Docs
+## Related docs
 
-- [Improving Performance](../../walkthroughs/09-performance)
-- [Virtualized Rendering](../plite-react/experimental-virtualized-rendering)
-- [DOM Coverage Boundaries](../plite-react/dom-coverage-boundaries)
+- [Improving Performance](/docs/plite/walkthroughs/09-performance)
+- [Virtualized Rendering](/docs/plite/libraries/plite-react/experimental-virtualized-rendering)
+- [DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries)

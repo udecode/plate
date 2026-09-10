@@ -108,6 +108,7 @@ const clickTextOffset = async (
     text: string;
   }
 ) => {
+  await page.locator(`#${rootId}`).scrollIntoViewIfNeeded();
   const point = await page.evaluate(
     ({ offset, rootId, text }) => {
       const root = document.getElementById(rootId);
@@ -115,8 +116,6 @@ const clickTextOffset = async (
       if (!root) {
         throw new Error(`Cannot find root "${rootId}"`);
       }
-
-      root.scrollIntoView({ block: 'center', inline: 'nearest' });
 
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
 

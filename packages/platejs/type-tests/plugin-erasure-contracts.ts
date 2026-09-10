@@ -3,10 +3,15 @@ import {
   createEditor as createHeadlessEditor,
   defineBasePlugin,
   type DefinitionOf,
-  DOMPlugin,
   type InferDependencies,
 } from 'platejs';
-import { createEditor, type Editor, toPlatePlugin } from 'platejs/react';
+import {
+  createEditor,
+  definePlatePlugin,
+  type Editor,
+  toPlatePlugin,
+} from 'platejs/react';
+import { createStaticEditor } from 'platejs/static';
 
 import {
   type EditorExtensionInstalledCapabilitiesOf,
@@ -17,6 +22,7 @@ import type {
   PluginDependencySource,
 } from '../src/lib/plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../src/lib/plugin/pluginDefinitionLookup.internal';
+import { DOMPlugin } from '../src/lib/plugins/dom/DOMPlugin';
 
 type Equal<TLeft, TRight> = [TLeft] extends [TRight]
   ? [TRight] extends [TLeft]
@@ -25,6 +31,43 @@ type Equal<TLeft, TRight> = [TLeft] extends [TRight]
   : false;
 
 type Assert<T extends true> = T;
+
+export const ReactEventPayloadPlugin = definePlatePlugin('eventPayload', {
+  initialState: { active: true },
+  on: {
+    beforeInput: ({ event }) => {
+      const text: string | null = event.data;
+      const native: InputEvent = event.nativeEvent;
+      void [text, native];
+    },
+    compositionEnd: ({ event }) => {
+      const text: string = event.data;
+      void text;
+    },
+    domBeforeInput: ({ event }) => {
+      const native: Event = event;
+      // @ts-expect-error Native events do not have React's synthetic event API.
+      event.persist();
+      void native;
+    },
+    keyDownCapture: ({ event, store }) => {
+      const key: string = event.key;
+      const active: boolean = store.get().active;
+      // @ts-expect-error Keyboard events do not have pointer identity.
+      event.pointerId;
+      void [key, active];
+    },
+    paste: ({ event }) => {
+      const data: DataTransfer = event.clipboardData;
+      void data;
+    },
+    pointerDown: ({ event }) => {
+      const id: number = event.pointerId;
+      const target: EventTarget & Element = event.currentTarget;
+      void [id, target];
+    },
+  },
+});
 
 type OpaqueRuntimeState = {
   editor: Editor | null;
@@ -119,6 +162,24 @@ export const BoundaryOwnerPlugin = defineBasePlugin('boundaryOwner', {
 });
 
 export const BoundaryReactOwnerPlugin = toPlatePlugin(BoundaryOwnerPlugin);
+const installableDescriptors: readonly BasePluginInput[] = [
+  BoundaryLeafPlugin,
+  BoundaryOwnerPlugin,
+  BoundaryReactOwnerPlugin,
+];
+createHeadlessEditor({ plugins: installableDescriptors });
+
+const unbrandedDefinition = { name: 'unbrandedDefinition' } as const;
+// @ts-expect-error Installation requires a nominal descriptor, even in a heterogeneous array.
+const invalidDescriptor: BasePluginInput = unbrandedDefinition;
+// @ts-expect-error A normalized definition is not an installable descriptor.
+createHeadlessEditor({ plugins: [unbrandedDefinition] });
+// @ts-expect-error React installation requires the same nominal descriptor identity.
+createEditor({ plugins: [unbrandedDefinition] });
+// @ts-expect-error Static installation requires the same nominal descriptor identity.
+createStaticEditor({ plugins: [unbrandedDefinition] });
+void invalidDescriptor;
+
 export const ConvertedDomPlugin = toPlatePlugin(DOMPlugin);
 export const BoundaryStagedPlugin = defineBasePlugin('boundaryStaged', {
   api: () => ({

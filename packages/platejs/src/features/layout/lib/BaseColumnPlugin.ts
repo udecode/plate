@@ -10,7 +10,7 @@ import {
   type NodeEntry,
   type NodeTarget,
   PathApi,
-  type PlateNodeInsertOptions,
+  type PlateBlockInsertOptions,
   PLUGINS,
   property,
   RangeApi,
@@ -288,34 +288,28 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
     return {
       insert: (
         { columns = 2 }: { columns?: number } = {},
-        { select, ...options }: PlateNodeInsertOptions = {}
+        { select, ...options }: PlateBlockInsertOptions = {}
       ) => {
         const width = 100 / columns;
 
-        tx.nodes.insert(
-          {
-            children: Array.from({ length: columns }, () => ({
-              children: [
-                {
-                  children: [{ text: '' }],
-                  type: paragraphType,
-                },
-              ],
-              type: columnType,
-              width: `${width}%`,
-            })),
-            type,
-          },
-          options
-        );
+        const element = {
+          children: Array.from({ length: columns }, () => ({
+            children: [{ children: [{ text: '' }], type: paragraphType }],
+            type: columnType,
+            width: `${width}%`,
+          })),
+          type,
+        };
+        if (options.at === undefined || options.after !== undefined) {
+          tx.blocks.insertAfter(element, { ...options, at: options.after });
+        } else {
+          tx.nodes.insert(element, options);
+        }
 
         if (!select) return;
 
-        const entry = tx.nodes.find({
-          at: options.at,
-          type: BaseColumnItemPlugin,
-        });
-        const point = entry && tx.points.start(entry[1]);
+        const path = tx.nodes.path(element);
+        const point = path && tx.points.start(path.concat(0));
 
         if (point) tx.selection.set(point);
       },

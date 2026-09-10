@@ -133,10 +133,7 @@ export function createAutoChangesetContent(
 }
 
 async function getWorkspacePackages() {
-  const workspacePackageDirectories = [
-    path.join(repoRoot, 'packages'),
-    path.join(repoRoot, 'packages', 'udecode'),
-  ];
+  const workspacePackageDirectories = [path.join(repoRoot, 'packages')];
   const workspacePackages = new Map();
 
   for (const workspacePackageDirectory of workspacePackageDirectories) {

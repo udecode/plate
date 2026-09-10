@@ -49,7 +49,7 @@ export type ModelSelectionPreferenceReason =
   | 'internal-control'
   | 'model-command'
   | 'native-selection'
-  | 'projection-refresh'
+  | 'decoration-refresh'
   | 'programmatic-export'
   | 'repair-induced'
   | 'partial-dom-backed'
@@ -67,7 +67,7 @@ export type EditableSelectionSourceTransition = {
     | 'internal-control'
     | 'model-command'
     | 'native-selection-move'
-    | 'projection-refresh'
+    | 'decoration-refresh'
     | 'repair-induced'
     | 'unknown-selection';
   selectionSource: SelectionSource;
@@ -472,6 +472,7 @@ export const finishEditableModelSelectionProjection = (
 export const beginEditableNativeSelectionImport = (
   inputController: EditableInputController
 ) => {
+  inputController.state.isUpdatingSelection = false;
   inputController.state.selectionChangeOrigin = 'native-user';
 };
 

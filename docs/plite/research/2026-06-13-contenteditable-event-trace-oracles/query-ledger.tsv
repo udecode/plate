@@ -1,0 +1,7 @@
+query_key	query	scope	result
+q1	known local source	`find ../contenteditable/src -maxdepth 3 -type f`	Selected playground, case playground, DOM-change tracker, and text-node tracker.
+q2	narrow event trace reads	`nl -ba ../contenteditable/src/components/Playground.tsx | sed -n '1880,2050p'`	Found native event listeners for selectionchange, beforeinput, input, compositionstart/update/end, getTargetRanges capture, and DOM-change snapshots.
+q3	narrow anomaly reads	`nl -ba ../contenteditable/src/components/CasePlayground.tsx | sed -n '300,575p'`	Found anomaly classes for missing beforeinput, parent/node mismatch, data mismatch, selection jump, text leak, node type change, composition mismatch, sibling creation.
+q4	narrow DOM tracker reads	`nl -ba ../contenteditable/src/utils/dom-change-tracker.ts | sed -n '1,170p'`	Found beforeinput target-range rect calculation and input-time added/deleted/modified/moved text-node detection.
+q5	narrow text-node tracker reads	`nl -ba ../contenteditable/src/utils/text-node-tracker.ts | sed -n '1,115p'`	Found WeakMap-backed text-node identity and parent signature snapshots.
+q6	existing overlap	`sed -n '1,160p' docs/slate-v2/research/2026-06-13-contenteditable-catalog-oracles/lead-ledger.tsv`	Existing artifact covers composition Enter and raw-IME deferrals; event trace helper is a separate proof-infra lead.

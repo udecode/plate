@@ -1,0 +1,6 @@
+id	repo	path	status	note
+r001	codemirror-view	/Users/zbeyens/git/codemirror-view	read	High-signal local source for composition, DOM mutation, drawn selection, and selectionchange handling.
+r002	prosemirror-view	/Users/zbeyens/git/prosemirror-view	read-light	Already used in prior shard for selectionchange/DOM selection race handling; not the main promotion source here.
+r003	lexical	/Users/zbeyens/git/lexical	read-light	Already used in prior shard for native selection assertions and selectionchange listener shape.
+r004	monaco-editor	/Users/zbeyens/git/monaco-editor	rejected	Local checkout is mostly package/build artifacts for this lane; no useful editor-controller internals found without a separate source clone.
+

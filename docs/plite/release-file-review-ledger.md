@@ -263,22 +263,34 @@ package/runtime truth already captured in the draft stack.
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused Editable proof now owns callback partition and current value-vs-selection change behavior
-- `packages/plitejs/test/react/projections-and-selection-contract.tsx`
+- `packages/plitejs/test/react/decoration-manager-contract.test.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: focused projection/runtime proof now owns overlap-safe splitting, ancestor/editor propagation, and path-shift stability
+  note: focused manager proof owns ordered sources, exact refresh, fault isolation, subscriptions, provider lifetime, and scale guards
+- `packages/plitejs/test/react/decoration-rendering-contract.test.tsx`
+  disposition: preserved
+  proof owner: `true-slate-rc-proof-ledger.md`
+  note: focused rendering proof owns overlap-safe splitting, attribute rendering, selection stability, and multiple Editable consumers
 - `packages/plitejs/src/react/annotation-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: first source-backed annotation store now exists over core bookmarks and projected node-key slices
+  note: the data-only annotation store owns durable ids, resolved ranges, and targeted subscriptions; inline paint stays in a decoration source
 - `packages/plitejs/src/react/projection-context.tsx`
-  disposition: adapted
+  disposition: archived
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: source-backed projection provider context now exists instead of keeping projection wiring implicit inside one hook file
+  note: the generic public Projection context is outside the final API
 - `packages/plitejs/src/react/projection-store.ts`
+  disposition: archived
+  proof owner: `true-slate-rc-proof-ledger.md`
+  note: the generic public Projection store is outside the final API
+- `packages/plitejs/src/react/decoration-source.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
-  note: source-backed projection store now exists as a public runtime surface instead of hiding projection logic behind local hooks only
+  note: one data-only source contract owns decoration reads and optional external observation
+- `packages/plitejs/src/react/decoration-context.tsx`
+  disposition: adapted
+  proof owner: `true-slate-rc-proof-ledger.md`
+  note: one provider manager compiles source output into node-key buckets and owns source lifetime
 - `packages/plitejs/src/react/context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
@@ -459,15 +471,15 @@ stays tracked in `true-slate-rc-proof-ledger.md`, not as fake file rows here.
 
 | Row                                                                                   | Status    | Why it matters                                                                                                         |
 | ------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `apps/www/src/app/(app)/examples/plite/_examples/highlighted-text.tsx`                                 | `adapted` | overlap-safe highlight rendering now exists on the kept `createPliteProjectionStore` + `Editable` surface              |
-| `apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx`                    | `adapted` | durable annotation anchors now exist on the kept annotation store + projection store + annotation-widget surface       |
-| `apps/www/src/app/(app)/examples/plite/_examples/external-decoration-sources.tsx`                      | `adapted` | explicit external overlay sources now exist on the kept projection-store + external refresh surface                    |
+| `apps/www/src/app/(app)/examples/plite/_examples/highlighted-text.tsx`                                 | `adapted` | overlap-safe highlight rendering uses the canonical `<Plite decorations>` surface                                      |
+| `apps/www/src/app/(app)/examples/plite/_examples/persistent-annotation-anchors.tsx`                    | `adapted` | durable annotation anchors feed an attribute-only Decoration source plus the annotation-widget surface                 |
+| `apps/www/src/app/(app)/examples/plite/_examples/external-decoration-sources.tsx`                      | `adapted` | external overlays refresh exact node keys through a source-local observer                                                |
 | `apps/www/src/app/(app)/examples/plite/_examples/review-comments.tsx`                                  | `adapted` | comments/review UI now exists on the kept annotation store + widget store + inline review slice surface                |
 | `apps/www/tests/plite-browser/donor/examples/highlighted-text.test.ts`              | `adapted` | Chromium proof now owns highlight overlap selection, typing, and clipboard semantics without wrapper leakage           |
 | `apps/www/tests/plite-browser/donor/examples/persistent-annotation-anchors.test.ts` | `adapted` | Chromium proof now owns bookmark-backed anchor persistence across fragment and text edits                              |
 | `apps/www/tests/plite-browser/donor/examples/external-decoration-sources.test.ts`   | `adapted` | Chromium proof now owns explicit external overlay refresh behavior                                                     |
 | `apps/www/tests/plite-browser/donor/examples/review-comments.test.ts`               | `adapted` | Chromium proof now owns comment creation, inline review slices, sidebar state, and annotation-backed widget visibility |
-| `packages/plitejs/test/react/projections-and-selection-contract.tsx`      | `adapted` | explicit projection/runtime contract owner is green on the kept overlay runtime                                        |
+| `packages/plitejs/test/react/decoration-rendering-contract.test.tsx`      | `adapted` | the canonical Decoration rendering contract is green across overlap and native editing                                  |
 | `packages/plitejs/test/react/annotation-store-contract.tsx`               | `adapted` | explicit annotation runtime contract owner is green on the kept annotation store path                                  |
 | `packages/plitejs/test/react/widget-layer-contract.tsx`                   | `adapted` | explicit widget runtime contract owner is green on the kept widget-store path                                          |
 | `packages/plitejs/test/react/large-doc-and-scroll.tsx`                    | `adapted` | explicit large-doc runtime contract owner is green on the kept semantic-islands corridor surface                       |

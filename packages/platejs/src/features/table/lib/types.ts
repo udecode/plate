@@ -72,6 +72,21 @@ export type TableBorderStates = {
 
 export type TableStoreSizeOverrides = Map<number, number>;
 
+/** The boundary being resized; row height is measured by the host surface. */
+export type TableResizeTarget =
+  | { edge: 'bottom'; height: number; rowIndex: number }
+  | { edge: 'left' }
+  | { colIndex: number; edge: 'right' };
+
+/** A constrained resize preview that can be committed with `update.resize`. */
+export type TableResize =
+  | { edge: 'bottom'; height: number; rowIndex: number }
+  | {
+      columns: ReadonlyArray<{ colIndex: number; width: number }>;
+      edge: 'left' | 'right';
+      marginLeft?: number;
+    };
+
 export type TableFindOptions = Omit<
   EditorNodesOptions<Element>,
   'at' | 'match' | 'type'

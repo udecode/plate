@@ -9,7 +9,7 @@ node/location helper namespaces.
 
 Use `createEditor` to create an editor.
 
-## Create An Editor
+## Create an editor
 
 ```ts
 import { createEditor } from "plitejs";
@@ -52,7 +52,7 @@ editor.update((tx) => {
 });
 ```
 
-## Public Type Groups
+## Public type groups
 
 Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
 `InitialValue`, `Selection`, `RootKey`, and `NodeKey`.
@@ -99,7 +99,7 @@ strict primitive `valueCodecs`. Adapter authors serialize keyed shared effects
 with `encodeEditorEffect` and decode them against an installed descriptor with
 `decodeEditorEffect`.
 
-## Extension Authoring
+## Extension authoring
 
 Extensions register schema facts, owner-local read and update groups,
 changed-range corrections, commit listeners, and runtime APIs.
@@ -150,7 +150,7 @@ const extension = defineExtension("host-state", {
 });
 ```
 
-## Helper Namespaces
+## Helper namespaces
 
 Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
 `PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. These
@@ -168,13 +168,13 @@ outside an editor transaction.
 Use [Schema](../concepts/19-schema) for the complete declaration, validation,
 slice-fitting, identity, and migration contract.
 
-## Internal Subpath
+## Internal subpath
 
 The `/internal` package subpath is reserved for sibling Plite packages in this
 repo. Applications, extension libraries, and framework adapters outside this
 workspace should use the root `plitejs` export.
 
-## Related Docs
+## Related docs
 
 - [Editor](../api/nodes/editor)
 - [Transforms](../api/transforms)

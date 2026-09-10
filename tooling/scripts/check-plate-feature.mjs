@@ -410,10 +410,12 @@ export const validateFeaturePlan = (
   const p1Gate = completionRows[p1Index];
   const goalGate = completionRows[goalIndex];
 
-  if (!p1Gate || p1Gate[1] !== 'yes') {
-    errors.push('Missing required P1 autoreview completion gate.');
-  } else if (!isResolved(p1Gate[3])) {
+  if (!p1Gate || !['yes', 'no'].includes(p1Gate[1])) {
+    errors.push('P1 autoreview completion gate must declare yes or no.');
+  } else if (p1Gate[1] === 'yes' && !isResolved(p1Gate[3])) {
     errors.push('P1 autoreview completion gate needs resolved evidence.');
+  } else if (p1Gate[1] === 'no' && !notApplicablePattern.test(p1Gate[3])) {
+    errors.push('Excluded P1 autoreview completion gate needs an N/A reason.');
   }
   if (!goalGate || goalGate[1] !== 'yes') {
     errors.push('Missing required Goal plan complete gate.');

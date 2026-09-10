@@ -1,15 +1,15 @@
 ---
 title: "Annotations"
-description: "Attach durable range identities to editor text and project them into React UI."
+description: "Attach durable range identities to editor text and read them from React UI."
 ---
 
-Annotations attach durable ranges to editor text and publish them to React
-rendering, sidebars, and widgets.
+Annotations attach durable ranges to editor text and publish them to sidebars,
+widgets, and other React UI.
 Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets) for the
 broader choice between decorations, annotation stores, widgets, and projected
 text rendering.
 
-## When To Use Annotations
+## When to use annotations
 
 Use annotations when a range has identity beyond a single render pass: review
 comments, issue markers, tracked external diagnostics, resolved threads, or
@@ -18,7 +18,7 @@ anchored suggestions.
 Use decorations for transient paint such as search matches. Use widgets for UI
 that hangs off a node, selection, or annotation.
 
-## Annotation Shape
+## Annotation shape
 
 ```ts
 type PliteAnnotationAnchor = {
@@ -26,11 +26,10 @@ type PliteAnnotationAnchor = {
   release?(): Range | null;
 };
 
-type PliteAnnotation<TData, TProjection> = {
+type PliteAnnotation<TData> = {
   anchor: PliteAnnotationAnchor;
   data?: TData;
   id: string;
-  projection?: TProjection;
 };
 ```
 
@@ -41,22 +40,10 @@ or document-embedded ids.
 `data` is application metadata. It is returned by `usePliteAnnotation` and
 `usePliteAnnotations`.
 
-`projection` is the small render-facing payload copied into text projection
-slices. Put only fields that affect inline paint here.
+Inline paint is a separate `PliteDecorationSource`. The feature that owns the
+visual states converts resolved annotations into keyed decoration attributes.
 
-```tsx
-const annotations = comments.map((comment) => ({
-  anchor: comment.anchor,
-  data: comment,
-  id: comment.id,
-  projection: {
-    status: comment.status,
-    tone: comment.tone,
-  },
-}));
-```
-
-## Local Anchors
+## Local anchors
 
 Use `editor.anchor` when the anchor belongs to the local editor runtime.
 
@@ -66,7 +53,7 @@ const anchor = editor.anchor(
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 18 },
   },
-  { association: "inward", deletion: "drop" }
+  { association: "inward", deletion: "nearest" }
 );
 
 const annotationStore = usePliteAnnotationStore(editor, [
@@ -74,10 +61,12 @@ const annotationStore = usePliteAnnotationStore(editor, [
     anchor,
     data: { label: "Comment 1" },
     id: "comment-1",
-    projection: { tone: "review" },
   },
 ]);
 ```
+
+Use `nearest` for durable annotations. Complete deletion collapses the range to
+a valid position, while saved undo and redo restore its exact endpoints.
 
 When annotations come from React state, pass the current array. A new array
 identity refreshes the store automatically.
@@ -87,20 +76,21 @@ const annotations = comments.map((comment) => ({
   anchor: comment.anchor,
   data: comment,
   id: comment.id,
-  projection: { tone: comment.tone },
 }));
 
 const annotationStore = usePliteAnnotationStore(editor, annotations);
 ```
 
-Pass the store to `Plite` when editor-local annotation UI lives under that
-provider. `usePliteAnnotations()` and `usePliteAnnotation(id)` read that store
-by default.
+Wrap annotation readers in `PliteAnnotationProvider` when they should share a
+default store. The annotation provider is independent from the editor provider,
+so another subtree can use a different store.
 
 ```tsx
-<Plite annotationStore={annotationStore} editor={editor}>
-  <Editable renderSegment={renderCommentSegment} />
-  <CommentsSidebar />
+<Plite decorations={[commentDecorations]} editor={editor}>
+  <PliteAnnotationProvider store={annotationStore}>
+    <Editable />
+    <CommentsSidebar />
+  </PliteAnnotationProvider>
 </Plite>;
 
 function CommentsSidebar() {
@@ -120,7 +110,7 @@ Release anchors when the app removes the annotation.
 anchor.release();
 ```
 
-## External Comment Stores
+## External comment stores
 
 Comment bodies, permissions, resolved state, and audit events belong to the app
 or sync service. The Plite document value owns document content.
@@ -138,10 +128,6 @@ const annotations = comments.map((comment) => ({
     status: comment.status,
   },
   id: comment.id,
-  projection: {
-    status: comment.status,
-    tone: comment.tone,
-  },
 }));
 ```
 
@@ -160,7 +146,7 @@ Refresh semantics:
 - pass an empty array for a no-op
 - pass ids to re-resolve only those annotations
 
-## Comment Channels
+## Comment channels
 
 Use separate channels for the document and the comments.
 
@@ -237,14 +223,14 @@ Use `usePliteWidgetIds(widgetStore)` for stable list membership,
 `usePliteWidgetGeometry(widgetStore, id, { editableRef })` to position one
 available widget in one exact Editable.
 
-## External Anchor Adapter
+## External anchor adapter
 
 An external adapter can keep the document and comments in separate stores.
 
 ```ts
 type ExternalAnnotationAnchor = {
+  release(): void;
   resolve(): Range | null;
-  unref(): Range | null;
 };
 
 const anchor = externalAnnotationAdapter.anchorFromPliteRange(editor, range);
@@ -257,9 +243,9 @@ commentChannel.set(threadId, {
 ```
 
 The adapter owns mapping, drift recovery, deletion policy, and permissions.
-Plite React owns projection once the adapter provides an anchor.
+Plite React resolves the range once the adapter provides an anchor.
 
-## Document-Embedded Ids
+## Document-embedded ids
 
 Document-embedded ids are useful when the product wants comments to copy, paste,
 serialize, or travel with document content.
@@ -268,16 +254,13 @@ Use this as an adapter strategy, not as the default storage model for comment
 bodies or permissions. The document may store a lightweight id; the comment
 thread still belongs to the app or sync service.
 
-## Performance Rules
+## Performance rules
 
-Keep annotation rows stable when their range and render payload do not change.
-
-Keep body text, author data, permissions, and long thread metadata in `data`.
-Keep inline paint fields in `projection`.
+Keep annotation rows stable when their range and app data do not change.
 
 Use `refresh({ ids })` for external comment updates when the changed ids are
 known. Fall back to `refresh()` when the external source cannot provide ids.
 
-Runtime subscribers wake only when their projected ranges or projection data
-change. A comment body edit should wake annotation/sidebar subscribers without
-repainting inline text when `projection` is unchanged.
+Targeted subscribers wake only when their resolved range or data changes.
+Decoration subscribers are independent and wake only when merged text
+attributes change.

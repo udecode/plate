@@ -20,7 +20,7 @@
     "../src/react/features/link/**/*",
     "../src/react/features/list/**/*",
     "../src/react/features/callout/**/*",
-    "../src/react/features/comment/**/*",
+    "../src/react/features/comments/**/*",
     "../src/react/features/date/**/*",
     "../src/react/features/details/**/*",
     "../src/react/features/footnote/**/*",

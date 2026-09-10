@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-separate-before-serializing-shared-state",
+  "files": [
+    {
+      "upstream": "skills/principle-separate-before-serializing-shared-state/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "5b14fd656441580061f760968c828f3f4ba034242d8fa06b544763efb25e89ee",
+      "destinationSha256": "42971f9160b7c36547d74cbcfcb4b1c76ae5b6896337e460fcb66a3c53d6c941",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-separate-before-serializing-shared-state/SKILL.md\n+++ skills/principle-separate-before-serializing-shared-state/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-separate-before-serializing-shared-state\n description: \"Apply when concurrent actors might write to the same file, branch, key, or state object. Eliminate the sharing first; serialize structurally only when one shared writer is a real invariant.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Separate Before Serializing Shared State\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

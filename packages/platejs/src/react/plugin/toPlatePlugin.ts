@@ -1,5 +1,4 @@
 import type { EditorExtensionReference } from '../../facade';
-import { allowPrivateRenderContribution } from '../../internal/plugin/privateRenderContribution';
 import {
   brandPluginDescriptor,
   freezePluginDescriptorValue,
@@ -109,33 +108,6 @@ const isRuntimeBasePlugin = (value: unknown): value is AnyBasePlugin =>
   typeof Reflect.get(value, 'configure') === 'function' &&
   typeof Reflect.get(value, 'extend') === 'function';
 
-const assertNoPrivateRenderNode = (value: PluginRecord) => {
-  const { render } = value;
-
-  if (isObjectRecord(render) && Object.hasOwn(render, 'node')) {
-    throw new Error(
-      'Plate plugin `render.node` is private. Use top-level `component`.'
-    );
-  }
-};
-
-const normalizeComponent = (value: PluginRecord): PluginRecord => {
-  assertNoPrivateRenderNode(value);
-
-  if (!Object.hasOwn(value, 'component')) return value;
-
-  const { component, ...rest } = value;
-  const render = isObjectRecord(rest.render) ? rest.render : {};
-
-  return allowPrivateRenderContribution({
-    ...rest,
-    render: {
-      ...render,
-      node: component,
-    },
-  });
-};
-
 const assertAdapterObject = (value: PluginRecord) => {
   for (const field of ['name', 'schema', 'type'] as const) {
     if (Object.hasOwn(value, field)) {
@@ -160,17 +132,21 @@ const assertPlateExtendObject = (value: PluginRecord) => {
 const prepareAdapterObject = (
   value: PluginRecord
 ): Readonly<{
+  component?: unknown;
   contribution: PluginRecord;
   dependencies?: readonly unknown[];
+  hasComponent: boolean;
 }> => {
   assertAdapterObject(value);
   if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
     throw new Error('Plate plugin `api` must be a factory.');
   }
-  const { dependencies, ...contribution } = normalizeComponent(value);
+  const { component, dependencies, ...contribution } = value;
 
   return {
+    component,
     contribution,
+    hasComponent: Object.hasOwn(value, 'component'),
     ...(dependencies === undefined
       ? {}
       : {
@@ -194,6 +170,15 @@ const callBaseMethod = (
 
   return Reflect.apply(baseMethod, basePlugin, [input]) as AnyBasePlugin;
 };
+
+const bindPlateComponent = (
+  plugin: AnyBasePlugin,
+  component: unknown,
+  hasComponent: boolean
+) =>
+  hasComponent
+    ? (brandPluginDescriptor({ ...plugin, component }, plugin) as AnyBasePlugin)
+    : plugin;
 
 const wrapPlatePlugin = (
   basePlugin: AnyBasePlugin,
@@ -219,7 +204,7 @@ const wrapPlatePlugin = (
               );
             }
 
-            return normalizeComponent(configuration);
+            return configuration;
           }
         : (() => {
             if (!isObjectRecord(input)) {
@@ -228,7 +213,7 @@ const wrapPlatePlugin = (
               );
             }
 
-            return normalizeComponent(input);
+            return input;
           })();
     const nextBasePlugin = callBaseMethod(
       basePlugin,
@@ -295,17 +280,21 @@ const toPlatePluginRuntime = (
     throw new Error('Plate plugin adapter values must be objects.');
   }
 
-  const { contribution, dependencies } = prepareAdapterObject(adapter);
-  const nextBasePlugin =
+  const { component, contribution, dependencies, hasComponent } =
+    prepareAdapterObject(adapter);
+  const extendedBasePlugin =
     Reflect.ownKeys(contribution).length === 0
       ? basePlugin
       : callBaseMethod(
           basePlugin,
           'extend',
-          allowPrivateRenderContribution(
-            freezePluginDescriptorValue(contribution)
-          )
+          freezePluginDescriptorValue(contribution)
         );
+  const nextBasePlugin = bindPlateComponent(
+    extendedBasePlugin,
+    component,
+    hasComponent
+  );
 
   return wrapPlatePlugin(nextBasePlugin, dependencies);
 };

@@ -6,7 +6,7 @@
   "files": [
     {
       "path": "../../content/docs/api/plite/range.mdx",
-      "content": "---\ntitle: Range\ndescription: Plite range types and editor range reads.\n---\n\nA range contains anchor and focus points. Pure helpers live on `RangeApi`;\neditor-owned reads live under `editor.read.ranges`.\n\nSee the canonical [Range reference](/docs/plite/api/locations/range).\n",
+      "content": "---\ntitle: Range\ndescription: Plite range types and editor range reads.\n---\n\nA range contains anchor and focus points. Pure helpers live on `RangeApi`;\neditor-owned reads live under `editor.read.ranges`.\n\nSee the canonical [Range reference](/docs/plate/plite/api/locations/range).\n",
       "type": "registry:file",
       "target": "content/docs/plate/api/plite/range.mdx"
     }

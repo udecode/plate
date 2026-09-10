@@ -1,0 +1,10 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+q-local-models	local-clones	canonical serialized node declarations	exact sibling repos	10	10	10	base-tree;properties;text-marks	preset node fields
+q-semantic-nodes	local-source	heading list code media table fields	exact default schema/node files	9	9	0	heading-level;code-language;table-fields;flat-lists	Plate blast radius
+q-plate-current	local-source	current Plate node identities and properties	packages/basic-nodes,code-block,list,media,table	5	5	0	heading-level;code-language;table-fields;media-dimensions	prior decision audit
+q-prior-decisions	repo-memory	mdast Portable Text heading depth	MEMORY.md and current plans	1	1	0	copy-no-standard	best-api verdict
+q-slate-proposals	github-issues-prs	standard data model schema serialization AST unified mdast RFC proposal	repo:ianstormtaylor/slate; issues and PRs	7 query families	11 exact threads	0	slate-unist;slate-mdast;slate-portabletext;slate-mime;slate-storage	full history
+q-slate-discussions	github-graphql	standard schema format protocol AST mdast unified serialize	first 100 of 155 discussions	155	100	0	0	current source search
+q-slate-history	git-history	schema data model serialize mdast mobiledoc mime	all commits and tags	120 capped	12 material commits	0	slate-json-rewrite;slate-schema-removal	old source
+q-standard-discovery	web-github	universal block protocol rich text AST specification	primary/official sources	4 query families	16 candidate families	4	block-protocol;mobiledoc;adf;contentful;myst;pandoc;web-annotation;peritext	classify taxonomy
+q-rich-text-repos	github-repositories	rich-text-format document-format rich-text-json editor-interchange block-standard	50 result cap per query	5 query families	2 material new families	1	ot-rich-text;delta	close discovery

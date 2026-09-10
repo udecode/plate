@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": "https://github.com/cursor/plugins",
+  "upstreamRoot": "pstack",
+  "upstreamCommit": "93b00b89ef425a9c1bac0d0b317dfc49c930ac99",
+  "skill": "principle-laziness-protocol",
+  "files": [
+    {
+      "upstream": "skills/principle-laziness-protocol/SKILL.md",
+      "destination": "SKILL.md",
+      "upstreamSha256": "8999fda9fde65fd905835c86e3bfc64190369a84bba30b1e93769f39ad6580fe",
+      "destinationSha256": "8fdfd87482cb862a9ebe1cf4cc33d55d6aab6f9485b1c5a45085982df0b09e61",
+      "status": "adapted",
+      "reasons": [
+        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+      ],
+      "removedHeadings": [],
+      "unifiedDiff": "--- skills/principle-laziness-protocol/SKILL.md\n+++ skills/principle-laziness-protocol/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-laziness-protocol\n description: \"Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Laziness Protocol\n \n"
+    }
+  ],
+  "ownedFiles": [
+    {
+      "path": "LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "reason": "Upstream MIT license retained."
+    }
+  ]
+}

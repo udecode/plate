@@ -1,6 +1,6 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
-import type { NormalizePluginState } from '../../../core';
+import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 

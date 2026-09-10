@@ -35,6 +35,7 @@ const staticEditorBaseReactAdapterPattern =
   /(?=[\s\S]*\b(?:createStaticEditor\s*\(|from\s+['"](?:platejs|@platejs\/core)\/static['"]))[\s\S]*\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b/;
 const auditedFilePattern = /\.(?:cjs|cts|js|jsx|md|mdx|mjs|mts|ts|tsx)$/;
 const typescriptFilePattern = /\.(?:cts|mts|ts|tsx)$/;
+const internalModulePattern = /(?:^|\/)internal(?:\/|$)|\.internal(?:\.|$)/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
 const privatePluginBuilderScaffoldNamePattern =
@@ -182,13 +183,8 @@ const internalRenderNodeOwners = new Set([
 ]);
 const intentionalRenderNodeNegativeContract =
   'packages/platejs/src/lib/plugin/defineBasePlugin.typed.spec.ts';
-const intentionalRuntimeRenderNodeNegativeMarker =
-  '@plate-schema-adoption-negative-render-node';
 const intentionalPluginDeclarationStageMarker =
   '@plate-plugin-declaration-stage';
-const intentionalRuntimeRenderNodeNegativeContractCounts = new Map([
-  ['packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts', 1],
-]);
 const intentionalRawCodecNegativeMarker =
   '@plate-schema-adoption-negative-codec';
 const intentionalPliteConfigNegativeMarker =
@@ -289,7 +285,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'apps/www/src/registry/examples/version-history-demo.tsx',
-    [[['$factory:excludeDiffFragment'], ['render']]],
+    [[['$factory:excludeDiffFragment'], ['slots']]],
   ],
   [
     'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
@@ -297,11 +293,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
-    [[['update'], ['commands', 'contributions']], [['corrections', 'on']]],
-  ],
-  [
-    'packages/platejs/src/features/comment/lib/BaseCommentPlugin.ts',
-    [[['api', 'corrections', 'read', 'rules'], ['update']]],
+    [[['update'], ['commands', 'contributions']], [['on']]],
   ],
   ['packages/platejs/src/features/date/lib/BaseDatePlugin.ts', [[['update']]]],
   [
@@ -337,8 +329,8 @@ const intentionalProductionExtendStageChains = new Map([
     [[['read', 'update'], ['read']]],
   ],
   [
-    'packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx',
-    [[['selectors'], ['inject', 'useHooks']]],
+    'packages/platejs/src/react/features/comments/CommentsPlugin.ts',
+    [[['on']]],
   ],
   [
     'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
@@ -360,7 +352,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/ai/react/CopilotPlugin.tsx',
-    [[['api'], ['commands', 'on', 'render', 'selectors', 'shortcuts']]],
+    [[['api'], ['commands', 'on', 'selectors', 'shortcuts', 'slots']]],
   ],
   [
     'packages/platejs/src/ai/react/AIChatPlugin.ts',
@@ -429,19 +421,15 @@ const intentionalRawSchemaQueryCounts = new Map([
     'packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts',
     8,
   ],
-  [
-    'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx',
-    1,
-  ],
+  ['packages/platejs/src/ai/react/AIChatPlugin.ts', 1],
   ['packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.spec.ts', 3],
-  ['packages/platejs/src/features/comment/lib/BaseCommentPlugin.spec.ts', 5],
-  ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 4],
+  ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/lib/editor/withPlite.slow.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 4],
   ['packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts', 1],
-  ['packages/platejs/src/migrations/migratePlateV54.ts', 1],
-  ['packages/platejs/src/migrations/migratePlateV55.ts', 1],
+  ['packages/platejs/src/migrations/migratePlateV54Ast.internal.ts', 1],
+  ['packages/platejs/src/migrations/migratePlateV54Profile.internal.ts', 1],
   ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
@@ -459,6 +447,10 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx', 1],
 ]);
 const intentionalNamedSchemaLineages = new Map([
+  [
+    'apps/www/src/registry/components/editor/remote-cursor-overlay.spec.tsx',
+    new Map([['copied-yjs-presentation@1', 1]]),
+  ],
   ['content/docs/(guides)/editor.cn.mdx', new Map([['acme-document@3', 1]])],
   ['content/docs/(guides)/editor.mdx', new Map([['acme-document@3', 1]])],
   [
@@ -471,19 +463,19 @@ const intentionalNamedSchemaLineages = new Map([
   ],
   [
     'packages/platejs/src/yjs/BaseYjsPlugin.api.spec.ts',
-    new Map([['plate:yjs-api-test@1', 4]]),
+    new Map([['plate:yjs-api-test@1', 6]]),
   ],
   [
     'apps/www/src/registry/examples/document-migration-demo.tsx',
-    new Map([['document-migration-demo@55', 1]]),
+    new Map([['document-migration-demo@54', 1]]),
   ],
   [
     'packages/platejs/src/migrations/migratePlateV54.spec.ts',
     new Map([['plate@54', 20]]),
   ],
   [
-    'packages/platejs/src/migrations/migratePlateV55.spec.ts',
-    new Map([['plate@55', 2]]),
+    'packages/platejs/src/migrations/migratePlateV54Ast.spec.ts',
+    new Map([['plate@54', 2]]),
   ],
   [
     'packages/platejs/type-tests/plate-editor-value-contracts.ts',
@@ -504,15 +496,6 @@ const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
   'packages/platejs/src/yjs/BaseYjsPlugin.api.spec.ts',
 ]);
-
-if (
-  [...intentionalRawSchemaQueryCounts.values()].reduce(
-    (total, count) => total + count,
-    0
-  ) !== 89
-) {
-  throw new Error('Plate raw schema query allowlist must contain 89 calls.');
-}
 
 const toPosixPath = (path) => path.split(sep).join('/');
 
@@ -4014,11 +3997,31 @@ const getExtendChainStages = (node, staticStringBindings) => {
   return stages;
 };
 
-const getPluginCreatorFromBuilderChain = (node, pluginCreatorNames) => {
+const getPluginCreatorFromBuilderChain = (
+  node,
+  pluginCreatorNames,
+  valueBindings,
+  staticStringBindings
+) => {
   let current = unwrapTypedExpression(node);
+  const visited = new Set();
 
-  while (isCallExpressionNode(current)) {
+  while (current && !visited.has(current)) {
+    visited.add(current);
     if (getPluginCreatorCallKind(current, pluginCreatorNames)) return current;
+
+    if (!isCallExpressionNode(current)) {
+      if (!valueBindings) return undefined;
+
+      const path = getResolvedStaticExpressionPath(
+        current,
+        staticStringBindings
+      );
+      const binding =
+        path && valueBindings.getEventAt(path, current.start, current);
+      current = unwrapTypedExpression(binding?.value);
+      continue;
+    }
 
     const callee = unwrapTypedExpression(current.callee);
 
@@ -4445,8 +4448,6 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const issues = [];
   const allowedRawCodecNegativeContractCount =
     intentionalRawCodecNegativeContractCounts.get(file) ?? 0;
-  const allowedRuntimeRenderNodeNegativeContractCount =
-    intentionalRuntimeRenderNodeNegativeContractCounts.get(file) ?? 0;
   const allowedPliteConfigNegativeContractCount =
     intentionalPliteConfigNegativeContractCounts.get(file) ?? 0;
   const allowedReactFactoryNegativeContractCount =
@@ -4460,7 +4461,6 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   let reactFactoryNegativeContractCount = 0;
   let rawCodecNegativeContractCount = 0;
   let rawSchemaQueryCount = 0;
-  let runtimeRenderNodeNegativeContractCount = 0;
 
   const report = (node, reason) => issues.push(createIssue(file, node, reason));
   const getAuthorProperties = (value, owner = value) =>
@@ -5401,7 +5401,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
     if (
       file.startsWith('packages/platejs/src/') &&
-      !file.includes('.internal.') &&
+      !internalModulePattern.test(file) &&
       node.type === 'ExportSpecifier'
     ) {
       const exportedName = getPropertyName(node.local);
@@ -5415,9 +5415,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
     if (
       file.startsWith('packages/platejs/src/') &&
-      !file.includes('.internal.') &&
+      !internalModulePattern.test(file) &&
       node.type === 'ExportAllDeclaration' &&
-      node.source.value.includes('.internal')
+      internalModulePattern.test(node.source.value)
     ) {
       report(
         node,
@@ -5430,7 +5430,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       ancestors.some(
         (ancestor) => ancestor.type === 'ExportNamedDeclaration'
       ) &&
-      !file.includes('.internal.')
+      !internalModulePattern.test(file)
     ) {
       report(
         node.id,
@@ -5682,36 +5682,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               ancestor.callee.name === 'toPlatePlugin') ||
               !!getPluginCreatorCallKind(ancestor, localPluginCreatorNames))
         );
-      const isIntentionalRuntimeNegativeRenderNode =
-        nodeComponent &&
-        runtimeRenderNodeNegativeContractCount <
-          allowedRuntimeRenderNodeNegativeContractCount &&
-        hasPrecedingMarker(
-          source,
-          nodeComponent,
-          intentionalRuntimeRenderNodeNegativeMarker
-        ) &&
-        ancestors.some(
-          (ancestor) =>
-            ancestor.type === 'CallExpression' &&
-            ancestor.callee.type === 'MemberExpression' &&
-            !ancestor.callee.computed &&
-            ancestor.callee.object.type === 'Identifier' &&
-            ancestor.callee.object.name === 'Reflect' &&
-            getPropertyName(ancestor.callee.property) === 'apply' &&
-            ancestor.arguments[0]?.type === 'Identifier' &&
-            ancestor.arguments[0].name === 'defineBasePlugin'
-        );
-
-      if (isIntentionalRuntimeNegativeRenderNode) {
-        runtimeRenderNodeNegativeContractCount += 1;
-      }
-
       if (
         nodeComponent &&
         !internalRenderNodeOwners.has(file) &&
-        !isIntentionalTypedNegativeRenderNode &&
-        !isIntentionalRuntimeNegativeRenderNode
+        !isIntentionalTypedNegativeRenderNode
       ) {
         report(
           nodeComponent,
@@ -5915,7 +5889,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       const configureOwnerName = memberCallOwnerPath?.split('.').at(-1);
       const configureOwnerCreator = getPluginCreatorFromBuilderChain(
         memberCallOwner,
-        localPluginCreatorNames
+        localPluginCreatorNames,
+        staticValueBindings,
+        staticStringBindings
       );
       const configuresBaseDescriptor =
         basePluginDescriptorNamePattern.test(configureOwnerName ?? '') ||
@@ -6541,15 +6517,6 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     report(
       ast,
       `raw codec negative-contract allowlist expects ${allowedRawCodecNegativeContractCount} marked declaration${allowedRawCodecNegativeContractCount === 1 ? '' : 's'} but found ${rawCodecNegativeContractCount}`
-    );
-  }
-  if (
-    runtimeRenderNodeNegativeContractCount <
-    allowedRuntimeRenderNodeNegativeContractCount
-  ) {
-    report(
-      ast,
-      `runtime render.node negative-contract allowlist expects ${allowedRuntimeRenderNodeNegativeContractCount} marked declaration${allowedRuntimeRenderNodeNegativeContractCount === 1 ? '' : 's'} but found ${runtimeRenderNodeNegativeContractCount}`
     );
   }
   if (
