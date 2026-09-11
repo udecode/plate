@@ -146,8 +146,13 @@ That is not a contradiction. It is the point of the audit.
 
 ## Prior candidates
 
-Search durable earlier audits only after independently mapping current source.
-Then reconcile every manifest candidate:
+At intake, look up source provenance and coverage through
+`node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` and the
+linked earlier audits. Reuse observations only when source and dependency
+identity match. Frame the ideal design and independently map the current
+owners before judging earlier conclusions. A repeated review is automatic;
+prior verdicts cannot replace its comparison. Then reconcile every manifest
+candidate:
 
 ```text
 `A3` reaffirm — [A3 dossier](docs/plans/prior-audit.md#a3) still matches current ownership debt

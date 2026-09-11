@@ -12,6 +12,7 @@
       "platejs": ["../platejs/src/index.tsx"],
       "platejs/ai": ["../platejs/src/ai/index.ts"],
       "platejs/ai/react": ["../platejs/src/ai/react/index.ts"],
+      "platejs/authored": ["../platejs/src/authored/index.ts"],
       "platejs/callout": ["../platejs/src/features/callout/index.ts"],
       "platejs/callout/react": [
         "../platejs/src/react/features/callout/index.ts"
@@ -95,6 +96,7 @@
       "platejs/yjs/react": ["../platejs/src/yjs/react/index.tsx"],
       "plitejs": ["../plitejs/src/index.ts"],
       "plitejs/annotations": ["../plitejs/src/annotations/index.ts"],
+      "plitejs/authored": ["../plitejs/src/authored/index.ts"],
       "plitejs/diff": ["../plitejs/src/diff/index.ts"],
       "plitejs/dom": ["../plitejs/src/dom/index.ts"],
       "plitejs/history": ["../plitejs/src/history/index.ts"],

@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-10-diff-research",
+  "scope": "diff",
+  "kind": "historical",
+  "date": "2026-09-10",
+  "question": "How should immutable correspondence, branch contributions and live review import compose?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Use immutable span correspondence and composable effects while preserving every branch contribution.",
+  "verdict": "pursue",
+  "relation": "initial",
+  "previous": null,
+  "alternatives": [],
+  "proofLimits": "Seven upstream witnesses support the design; the research certifies zero of the 43 production acceptance families.",
+  "references": [
+    "docs/plite/research/2026-09-10-structural-diff-oss/README.md",
+    "docs/plite/research/2026-09-10-structural-diff-oss/rejected-ledger.tsv",
+    "docs/plite/research/2026-09-10-structural-diff-oss/quality-scenarios.md"
+  ],
+  "source": null
+}

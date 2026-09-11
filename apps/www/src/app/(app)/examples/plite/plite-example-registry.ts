@@ -29,6 +29,7 @@ export const UPSTREAM_PLITE_EXAMPLE_PATHS = [
 export const EXAMPLE_NAMES_AND_PATHS = [
   ['Android Tests', 'android-tests'],
   ['Async Decorations', 'decorations-async'],
+  ['Authored Changes', 'authored-changes'],
   ['Checklists', 'check-lists'],
   ['Code Highlighting', 'code-highlighting'],
   ['Collaboration Demo', 'collaboration-demo'],

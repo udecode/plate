@@ -6,6 +6,18 @@ disable-model-invocation: true
 
 # Research Wiki
 
+For architecture or feature questions, start at `docs/research/reviews.md`
+and use `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>`.
+Use `research <key-or-term>` on that helper to search dated Plite read, lead
+and rejection ledgers before collecting more evidence. Follow
+`docs/research/schema.md#review-history` for records and source identity.
+Compile current decisions from the linked evidence; preserve the immutable
+review records and negative results. A repeated review reconsiders the
+reasoning automatically. A lookup, source match or generated queue cannot
+promote adoption, proof or external freshness. After changing the index or
+recording a review, run the helper's `render` and `check` commands and update
+the existing research index/log. No extra discovery run is implied.
+
 Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 

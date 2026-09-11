@@ -1,0 +1,20 @@
+{
+  "id": "2026-07-23-api-schema",
+  "scope": "schema",
+  "kind": "historical",
+  "date": "2026-07-23",
+  "question": "How should features contribute schema, commands and typed extensions with minimal configuration?",
+  "model": null,
+  "method": "historical-import-v1; original public-API assessment",
+  "trigger": "Backfill the dated API review without inheriting its current-state claims.",
+  "summary": "The July assessment called for a smaller inferred plugin declaration surface instead of exposing compiler taxonomy.",
+  "verdict": null,
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [],
+  "proofLimits": "This is a July source assessment, not a current score or completed implementation. Renamed public owners and later doctrine require reconciliation on the next review.",
+  "references": [
+    "docs/analysis/best-api-review.md"
+  ],
+  "source": null
+}

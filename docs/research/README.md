@@ -2,6 +2,14 @@
 
 This is the compiled research layer for Plate.
 
+Start feature and architecture work with the [feature review ledger](reviews.md).
+It connects current source to earlier reviews, decisions and research runs.
+Use `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` from the
+repository root; use `research <key-or-term>` for cross-run lead/read lookup.
+Every repeated review reconsiders the design automatically. The
+[record contract](schema.md#review-history) keeps historical conclusions,
+adoption, proof and source freshness separate.
+
 It exists to give future agents a stable, low-token, persistent reference
 surface that sits between raw evidence and day-to-day task execution.
 
@@ -430,7 +438,7 @@ Use it for:
 - temporary synthesis that is not stable yet
 
 This is where something like
-[editor-architecture-candidates.md](docs/analysis/editor-architecture-candidates.md)
+[editor-architecture-candidates.md](../analysis/editor-architecture-candidates.md)
 starts.
 
 ### `docs/research`
@@ -497,7 +505,7 @@ When migrating existing docs into the research layer:
 ### Specific guidance for architecture work
 
 Something like
-[editor-architecture-candidates.md](docs/analysis/editor-architecture-candidates.md)
+[editor-architecture-candidates.md](../analysis/editor-architecture-candidates.md)
 should not be copied as one giant research page.
 
 Its durable parts should decompose into pages like:
@@ -693,13 +701,13 @@ research layer in practice.
 
 Start with:
 
-- [commands/full-pipeline.md](docs/research/commands/full-pipeline.md)
-- [commands/maintain.md](docs/research/commands/maintain.md)
+- [commands/full-pipeline.md](commands/full-pipeline.md)
+- [commands/maintain.md](commands/maintain.md)
 
 That is the heavyweight command for improving the research layer from a goal or
 domain instead of answering only from the currently visible slice.
 
-Use [schema.md](docs/research/schema.md) to keep page
+Use [schema.md](schema.md) to keep page
 metadata consistent while the layer is still small.
 
 ## Initial scope

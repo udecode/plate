@@ -1,0 +1,20 @@
+{
+  "id": "2026-09-05-code-native-plateau",
+  "scope": "code",
+  "kind": "historical",
+  "date": "2026-09-05",
+  "question": "Which owner should hold code text, editing, syntax rendering and large-block layout?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Full-native investigation stopped at the authorized plateau with no certified timing gain.",
+  "verdict": null,
+  "relation": "historical-context",
+  "previous": "2026-09-04-code-external-text",
+  "alternatives": [],
+  "proofLimits": "The plan retains event-only path subscription repairs and rejects speculative CSS/kernel changes. A later model must preserve the failed attempts and require a stable exact-source baseline.",
+  "references": [
+    "docs/plans/2026-09-05-native-code-full-dom-investigation.md"
+  ],
+  "source": null
+}

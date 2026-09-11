@@ -20,6 +20,7 @@
   ],
   "extends": "../tsconfig.json",
   "include": [
+    "../src/authored/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",
     "../src/history/**/*",
@@ -28,6 +29,9 @@
     "../src/pagination/react/**/*"
   ],
   "references": [
+    {
+      "path": "../../plitejs/tsconfig.entrypoints/authored.json"
+    },
     {
       "path": "../../plitejs/tsconfig.entrypoints/diff.json"
     },

@@ -1908,6 +1908,21 @@ export const validateRegressionPlan = (
       }
 
       const caseOracles = oracleByCase.get(caseId);
+      const hasNativeSelection = Array.from(caseOracles?.values() ?? []).some(
+        (oracle) =>
+          oracle.observation?.toLowerCase() === "dom-native" &&
+          oracle.applies?.toLowerCase() === "yes" &&
+          /\bselection\b/i.test(oracle.positive_assertion ?? "")
+      );
+
+      if (hasNativeSelection) {
+        if (!/\bselection-transition-trace:\s*native\s*\+\s*model\s*\+\s*view\s*\+\s*next-input\b/i.test(row.resume_state ?? "")) {
+          errors.push(`${label} failed native selection fix requires selection-transition-trace: native + model + view + next-input`);
+        }
+        if (!/\bfirst-divergence:\s*\S/i.test(row.resume_state ?? "")) {
+          errors.push(`${label} failed native selection fix requires first-divergence: <input/owner>`);
+        }
+      }
       const hasFocusState = Array.from(caseOracles?.values() ?? []).some(
         (oracle) =>
           oracle.observation?.toLowerCase() === "focus" &&

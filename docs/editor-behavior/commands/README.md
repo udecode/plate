@@ -13,6 +13,17 @@ This pack has two lanes:
 - implementation/runtime:
   choose, execute, and close real code/test/product batches from the roadmap
 
+For a requested feature/architecture review, use Best API Review and
+`node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` from the
+repository root. Repeated review automatically reconsiders the design and
+reconciles history. Use `research <key-or-term>` to locate earlier sources
+before another investigation. Do not start a new authority interview or
+external crawl merely because a new review was requested. Missing product
+law still routes to the existing authority methods when it affects the answer.
+
+[Current evidence navigation](../current-evidence.md) resolves current owners
+without inheriting historical `tested` or `locked` statuses.
+
 ## Canonical Artifacts
 
 - law stack:

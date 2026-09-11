@@ -51,6 +51,10 @@ test('maps raw and wrapped retained text in both directions', () => {
   ]);
 
   expect(resolveDOMTextFlowPoint(host, 3)).toEqual({ node: raw, offset: 3 });
+  expect(resolveDOMTextFlowPoint(host, 3, undefined, 'forward')).toEqual({
+    node: styledHead,
+    offset: 0,
+  });
   expect(resolveDOMTextFlowPoint(host, 6)).toEqual({
     node: styledTail,
     offset: 1,

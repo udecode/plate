@@ -15,6 +15,7 @@
     "../src/compiler/**/*",
     "../src/ai/**/*",
     "../src/ai/react/**/*",
+    "../src/authored/**/*",
     "../src/code-block/codemirror/**/*",
     "../src/code-drawing/**/*",
     "../src/code-drawing/react/**/*",

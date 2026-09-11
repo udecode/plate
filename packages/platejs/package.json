@@ -184,6 +184,11 @@
       "import": "./dist/react/features/footnote/index.js",
       "default": "./dist/react/features/footnote/index.js"
     },
+    "./authored": {
+      "types": "./dist/authored/index.d.ts",
+      "import": "./dist/authored/index.js",
+      "default": "./dist/authored/index.js"
+    },
     "./history": {
       "types": "./dist/history/index.d.ts",
       "import": "./dist/history/index.js",
@@ -486,6 +491,7 @@
     "test:partition:mention": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention",
     "test:partition:mention-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs mention-react",
     "test:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
+    "test:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs proxies",
     "test:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react-core",
     "test:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs resizable-react",
     "test:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs slash-command",

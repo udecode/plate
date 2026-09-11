@@ -1,0 +1,20 @@
+{
+  "id": "2026-09-10-diff-adoption-plan",
+  "scope": "diff",
+  "kind": "historical",
+  "date": "2026-09-10",
+  "question": "How should immutable correspondence, branch contributions and live review import compose?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Keep ordinary schema-valid JSON; use one structural comparison for revisions and branch-preserving three-way review.",
+  "verdict": "pursue",
+  "relation": "supersedes",
+  "previous": "2026-09-10-diff-research",
+  "alternatives": [],
+  "proofLimits": "Implementation must follow completed native authored changes. The diff plan’s prerequisite sentence says implementation is not started; the owning authored plan now reports S1–S3 in progress. Neither wording establishes completion.",
+  "references": [
+    "docs/plans/2026-09-10-structural-document-diff.md"
+  ],
+  "source": null
+}

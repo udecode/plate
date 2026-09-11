@@ -5,6 +5,49 @@ Use the shared [Best API Review](../../../skills/best-api-review/SKILL.md) for
 decision is whether any change earns its cost. It may finish with Stop. Its
 purpose is not to find work for another skill.
 
+## Review history is the default
+
+Start with `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>`
+from the repository root. [The feature review ledger](../../../../docs/research/reviews.md)
+maps current package, registry and tooling capabilities to stable semantic
+questions. Read the linked decisions, earlier attempts, rejected alternatives
+and proof limits. Use `research <key-or-term>` on the same helper for read,
+lead and rejection lookup across dated Plite research runs. A text hit routes
+inspection; it does not prove semantic equivalence or current source reuse.
+
+Every repeated invocation requests a fresh review, even with unchanged source
+and the same model. No reassessment flag is required. Frame the ideal from
+current jobs and hard laws, compare all material design lanes, then reconcile
+the earlier conclusion. Reuse exact source observations only while their
+question, fingerprint and relevant dependencies match. Changed source or a
+deliberate reconsideration names what was rechecked and why; it does not start
+external discovery or implementation without that scope.
+
+If no scope matches a new proposal, add its semantic question to the index
+with the current comparison owners and dependencies. A proposed scope may have
+no current feature members; its real comparator dependencies supply the source
+fingerprints. Do not invent a source path for the proposed API.
+
+For a material review, use `draft <scope>` to capture the current source and
+dependency fingerprints into a JSON draft under the existing task artifacts.
+Complete its requirements, alternatives, rationale, source references, proof
+limits, available model identity and relation to the previous review. Record
+with `record <repo-relative-json-path>` before closeout. The helper appends an
+immutable record and updates review state; adoption and proof remain separate.
+Reconcile the current decision page, then run `render` and `check`. A Stop
+record is history, not a new implementation task. Small reviews use the same
+compact record without a new plan.
+
+If the source inventory changes, inspect the delta, map added/renamed features
+in `docs/research/review-index.json`, and run `refresh`, `render`, then `check`.
+Refresh updates inventory observations only; it cannot refresh an old review
+or certify behavior. Historical imports keep unknown model/source fields and
+original evidence. [The record contract](../../../../docs/research/schema.md#review-history)
+owns the exact fields and commands. AI remains last in the global review order;
+a direct feature request still selects that feature.
+
+## Assess the current design
+
 Read `VISION.md`, `docs/vision/common.md` and the relevant Plate or Plite owner
 when they can change the verdict. Inspect the owning implementation, public
 types and materially different consumers. Include copied UI and kits when they

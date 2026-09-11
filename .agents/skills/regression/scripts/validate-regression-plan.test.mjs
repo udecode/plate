@@ -1790,6 +1790,31 @@ test("replay and final-verification failures require an unchanged-bytes diagnost
   }
 });
 
+test("a failed native selection fix traces coordinate ownership through the next input", () => {
+  const failedSelection = fixture({
+    failedCount: 1,
+    failureKind: "final-verification",
+  }).replace(
+    /^\| case-complete \| dom-native \| after-action \|.*$/m,
+    `| case-complete | dom-native | after-action | yes | native arrow selection includes retained text | selection resets after import | Browser mounted runtime | test: ${semanticTestPath}#${semanticTestTitle} | pass: final highlight |`
+  );
+  const errors = validateRegressionPlan(failedSelection, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+  assert.match(errors, /requires selection-transition-trace: native \+ model \+ view \+ next-input/);
+  assert.match(errors, /requires first-divergence: <input\/owner>/);
+
+  const resolved = failedSelection.replace(
+    "; diagnostic: pass unchanged-bytes failing phase classified",
+    "; diagnostic: red unchanged-bytes native arrows; selection-transition-trace: native + model + view + next-input; first-divergence: second-arrow/canonical-owner"
+  );
+  assert.doesNotMatch(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }).join("\n"),
+    /failed native selection fix/
+  );
+});
+
 test("a failed focus-state fix compares the native, DOM and React owners", () => {
   const failedFocus = fixture({
     failedCount: 1,

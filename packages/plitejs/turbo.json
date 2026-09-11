@@ -25,6 +25,7 @@
     "lint": {
       "cache": true,
       "dependsOn": [
+        "lint:partition:authored",
         "lint:partition:core",
         "lint:partition:diff",
         "lint:partition:dom",
@@ -42,12 +43,28 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:authored": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/authored/**",
+        "test/authored/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:core": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**",
+        "!src/authored/**",
         "!src/diff/**",
         "!src/dom/**",
         "!src/history/**",
@@ -60,6 +77,7 @@
         "!src/yjs/react/**",
         "test/annotations/**",
         "test/**",
+        "!test/authored/**",
         "!test/diff/**",
         "!test/dom/**",
         "!test/history/**",
@@ -193,6 +211,7 @@
     "test": {
       "cache": true,
       "dependsOn": [
+        "test:partition:authored",
         "test:partition:core",
         "test:partition:diff",
         "test:partition:dom",
@@ -210,12 +229,32 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:authored": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
+      "inputs": [
+        "src/authored/**",
+        "test/authored/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml",
+        "vitest.config.mjs"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:core": {
       "cache": true,
       "dependsOn": ["typecheck:partition:core", "typecheck:partition:history"],
       "inputs": [
         "src/annotations/**",
         "src/**",
+        "!src/authored/**",
         "!src/diff/**",
         "!src/dom/**",
         "!src/history/**",
@@ -228,6 +267,7 @@
         "!src/yjs/react/**",
         "test/annotations/**",
         "test/**",
+        "!test/authored/**",
         "!test/diff/**",
         "!test/dom/**",
         "!test/history/**",
@@ -409,6 +449,7 @@
     "typecheck": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:diff",
         "typecheck:partition:dom",
@@ -430,7 +471,11 @@
     },
     "typecheck:contracts": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:react"
+      ],
       "inputs": [
         "test/public-api-contract.tsx",
         "tsconfig.public-api.json",
@@ -449,12 +494,39 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "typecheck:partition:authored": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/authored/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/authored.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/authored/**",
+        ".turbo/entrypoint-types/authored.tsbuildinfo"
+      ]
+    },
     "typecheck:partition:core": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
         "src/annotations/**",
         "src/**",
+        "!src/authored/**",
         "!src/diff/**",
         "!src/dom/**",
         "!src/history/**",

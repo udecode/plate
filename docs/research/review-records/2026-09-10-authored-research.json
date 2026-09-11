@@ -1,0 +1,23 @@
+{
+  "id": "2026-09-10-authored-research",
+  "scope": "authored",
+  "kind": "historical",
+  "date": "2026-09-10",
+  "question": "What owns proposed edits, authorship, accept/reject and revision history?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Use native authored-change semantics and remove Suggestion’s independent mutation engine.",
+  "verdict": "pursue",
+  "relation": "initial",
+  "previous": null,
+  "alternatives": [],
+  "proofLimits": "The research leaves representation, concurrent decisions and runtime scale unproved. Its follow-up retains a failed convergence probe; it is not a production pass.",
+  "references": [
+    "docs/plite/research/2026-09-10-authored-changes/README.md",
+    "docs/plite/research/2026-09-10-authored-changes/assessment.md",
+    "docs/plite/research/2026-09-10-authored-changes/rejected-ledger.tsv",
+    "docs/plite/research/2026-09-10-authored-changes/skill-audit.md"
+  ],
+  "source": null
+}

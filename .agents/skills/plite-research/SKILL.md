@@ -137,6 +137,35 @@ failing, add Plite-native helpers before adding more paragraphs.
 
 ## Operating Contract
 
+Before opening or resuming a run, query the common history:
+
+```sh
+node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>
+node tooling/scripts/review-ledger.mjs research <semantic-key-or-term>
+```
+
+Read matched lead, rejection and source-read rows in their original artifacts.
+The helper preserves historical headers and exact `status` columns; warnings
+identify malformed rows rather than silently normalizing them. Compare the
+question, source revision, relevant dependencies and reopening condition before
+reusing a read or merging support. A new source can support an existing lead;
+it does not automatically create another lead. Unknown historical provenance
+requires inspection before reuse. Do not advance Editor Audit's architecture,
+test-harvest or issue-refresh cursor from a research lookup.
+
+Record `scope_id`, `review_id`, `source_revision`, `source_fingerprint` and
+`checked_at` on future lead/read/promotion rows where applicable, in addition
+to their existing columns. Use `unknown` for unavailable provenance. Preserve
+the original headers and rows on historical imports. Semantic `lead_key` and
+`dedupe_key` still own equivalence; feature names alone do not. Persist a
+material Stop/Pursue/Defer assessment through Plate's Best API Review adapter.
+The compiled decision links the immutable record and the raw run; do not copy
+every raw row into the decision page.
+
+These are real history commands. The `setup`/`doctor`/`next` contract above
+remains conceptual; `tooling/scripts/plite-research.mjs` is an Autoresearch
+dispatcher and is not a discovery-ledger initializer.
+
 Start every research loop by recording:
 
 - question and scope;

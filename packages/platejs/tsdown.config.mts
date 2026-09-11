@@ -2,6 +2,7 @@ import { createPlatePackageConfig } from '../../tooling/config/tsdown.config.ts'
 
 export default createPlatePackageConfig({
   additionalEntries: [
+    'src/authored/index.ts',
     'src/code-block/codemirror/index.ts',
     'src/ai/index.ts',
     'src/ai/react/index.ts',

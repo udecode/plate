@@ -5,8 +5,13 @@ import {
   createPliteViewBoundaryGraph,
   getPliteViewBoundaryOwnerKey,
   PliteViewBoundaryGraph,
+  resolvePliteViewBoundarySegmentEndpoint,
   type PliteViewBoundaryOwner,
 } from '../../src/react/view-boundary-graph';
+import {
+  createPliteViewSelection,
+  isPliteViewSelectionCollapsed,
+} from '../../src/react/view-selection';
 
 const SHARED_ROOT = 'synced-block:shared:body';
 const SEPARATE_ROOT = 'synced-block:separate:body';
@@ -54,6 +59,51 @@ const createSyncedBlocksViewBoundaryGraph = () =>
   ]);
 
 describe('plite projection graph', () => {
+  it('segments retained content between both affinities of the same editable point', () => {
+    const fragment = { id: 'removed', changeId: 'alice' };
+    const graph = createPliteViewBoundaryGraph([
+      { path: [0, 0], root: 'main', text: { start: 0, end: 1 } },
+      { fragment, path: [0, 0], root: 'main' },
+      { path: [0, 0], root: 'main', text: { start: 1, end: 2 } },
+    ]);
+    const before = {
+      affinity: 'backward',
+      point: point(undefined, [0, 0], 1),
+    } as const;
+    const after = {
+      affinity: 'forward',
+      point: point(undefined, [0, 0], 1),
+    } as const;
+    const forward = createPliteViewSelection(graph, {
+      anchor: before,
+      focus: after,
+    });
+    const backward = createPliteViewSelection(graph, {
+      anchor: after,
+      focus: before,
+    });
+    expect(isPliteViewSelectionCollapsed(forward)).toBe(false);
+    expect(backward.segments.backward).toBe(true);
+    expect(
+      forward.segments.parts.map((part) => part.fragment?.id ?? null)
+    ).toEqual([null, 'removed', null]);
+    expect(backward.segments.parts).toEqual(forward.segments.parts);
+    const first = forward.segments.parts[0];
+    const last = forward.segments.parts[2];
+    expect(
+      resolvePliteViewBoundarySegmentEndpoint({}, first, first.end)
+    ).toEqual(point(undefined, [0, 0], 1));
+    expect(
+      resolvePliteViewBoundarySegmentEndpoint({}, last, last.start)
+    ).toEqual(point(undefined, [0, 0], 1));
+    const retained = createPliteViewSelection(graph, {
+      anchor: { fragmentId: 'removed', point: point(undefined, [0, 0], 1) },
+      focus: { fragmentId: 'removed', point: point(undefined, [0, 0], 2) },
+    });
+    expect(retained.segments.parts).toHaveLength(1);
+    expect(retained.segments.parts[0].fragment).toEqual(fragment);
+    expect(JSON.stringify(retained.anchor.point)).not.toContain('fragment');
+  });
   it('walks visible order and keeps repeated root copies distinct', () => {
     const graph = createSyncedBlocksViewBoundaryGraph();
     const firstSharedKey = getPliteViewBoundaryOwnerKey(firstSharedOwner);

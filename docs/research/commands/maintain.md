@@ -1,8 +1,21 @@
 # Research Maintenance
 
+For existing feature/architecture work, run these commands from the repository
+root before another investigation:
+
+```sh
+node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>
+node tooling/scripts/review-ledger.mjs research <key-or-term>
+```
+
+Read the matched originals and reconcile the current conclusion through the
+[review-history contract](../schema.md#review-history). Repeated reviews are
+automatic; they do not require a mode flag or an external research refresh.
+After an index or review-record change, run the helper's `render` and `check`.
+
 Primary reusable entrypoint:
 
-- [$research-wiki](.agents/skills/research-wiki/SKILL.md)
+- [$research-wiki](../../../.agents/skills/research-wiki/SKILL.md)
 
 Recommended command name:
 
@@ -27,7 +40,7 @@ research-maintain plate v2 architecture
 Run the upkeep pass for the research layer.
 
 This command is lighter than
-[full-pipeline.md](docs/research/commands/full-pipeline.md).
+[full-pipeline.md](full-pipeline.md).
 
 It is the maintain-mode sub-workflow for `research-wiki`.
 
@@ -57,7 +70,7 @@ Expected outputs:
 - updated stale compiled pages when the evidence is already available
 - missing `index.md` and backlink fixes
 - explicit gap report for what is still missing
-- appended [log.md](docs/research/log.md)
+- appended [log.md](../log.md)
 
 ## Loop
 
@@ -77,7 +90,7 @@ layer.
 
 Read:
 
-1. [index.md](docs/research/index.md)
+1. [index.md](../index.md)
 2. the relevant compiled pages
 
 ### 3. Check for upkeep gaps
@@ -116,7 +129,7 @@ Return:
 - what was fixed
 - what was still missing
 - whether the area now needs
-  [full-pipeline.md](docs/research/commands/full-pipeline.md)
+  [full-pipeline.md](full-pipeline.md)
   instead
 
 ## Rule Of Thumb

@@ -9,6 +9,7 @@ import {
   type Point,
   type RootKey,
 } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { clipboardHandler, dom } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { describe, expect, it } from 'vitest';
@@ -275,6 +276,82 @@ const writeAmbiguousRepeatedSelection = (
 };
 
 describe('projected editable commands', () => {
+  it('pastes across proposed named-root coordinates without changing accepted content', () => {
+    const initialValue = {
+      children: [paragraph('Before'), contentCard(), paragraph('After')],
+      roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
+    };
+    const source = createEditor({
+      extensions: [
+        authored({ authorId: 'alice' }),
+        dom(),
+        contentRootExtension,
+      ],
+      initialValue,
+    });
+    const editor = createEditorView(source, {
+      authored: { intent: 'propose', projection: 'markup' },
+    }) as unknown as ReactRuntimeEditor;
+    editor.update.text.insert('XYZ', { at: point(SHARED_ROOT, [0, 0], 2) });
+    const graph = createPliteViewBoundaryGraph([
+      { path: [0], root: 'main' },
+      { owner: sharedOwner, path: [0], root: SHARED_ROOT },
+      { owner: sharedOwner, path: [1], root: SHARED_ROOT },
+      { path: [2], root: 'main' },
+    ]);
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { owner: sharedOwner, point: point(SHARED_ROOT, [0, 0], 2) },
+        focus: { point: point(undefined, [2, 0], 2) },
+      })
+    );
+    const data = new FakeDataTransfer();
+    data.setData('text/plain', 'Z');
+    applyEditableCommand({
+      editor,
+      command: {
+        kind: 'insert-data',
+        data: data as unknown as DataTransfer,
+      },
+    });
+    expect(source.read.children()).toEqual(initialValue.children);
+    expect(source.read.root(SHARED_ROOT)).toEqual(
+      initialValue.roots[SHARED_ROOT]
+    );
+    expect(editor.read.children()).toEqual([
+      paragraph('Before'),
+      contentCard(),
+      paragraph('ter'),
+    ]);
+    expect(editor.read.root(SHARED_ROOT)).toEqual([paragraph('InZ')]);
+  });
+
+  it('replaces proposed selection coordinates through the originating authored view', () => {
+    const source = createEditor({
+      extensions: [authored({ authorId: 'alice' }), dom()],
+      initialValue: [paragraph('AB')],
+    });
+    const editor = createEditorView(source, {
+      authored: { intent: 'propose', projection: 'markup' },
+    }) as unknown as ReactRuntimeEditor;
+    editor.update.text.insert('XYZ', { at: point(undefined, [0, 0], 1) });
+    const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(undefined, [0, 0], 1) },
+        focus: { point: point(undefined, [0, 0], 4) },
+      })
+    );
+    applyEditableCommand({
+      editor,
+      command: { kind: 'insert-text', text: '!' },
+    });
+    expect(source.read.children()).toEqual([paragraph('AB')]);
+    expect(editor.read.children()).toEqual([paragraph('A!B')]);
+  });
+
   it('typing over a projected selection replaces the visible span across roots in one commit', () => {
     const { editor, graph } = createFixture();
 

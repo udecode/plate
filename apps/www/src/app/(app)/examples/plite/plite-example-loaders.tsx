@@ -12,6 +12,9 @@ const createPliteExampleLoader = (
   }) as ComponentType;
 
 export const pliteExampleComponents = {
+  'authored-changes': createPliteExampleLoader(
+    () => import('./_examples/authored-changes')
+  ),
   'android-tests': createPliteExampleLoader(
     () => import('./_examples/android-tests')
   ),

@@ -1,5 +1,23 @@
 # Research Log
 
+## [2026-09-11] maintain | automatic review history and feature ledger
+
+- Added the current-source feature review index and generated queue, with
+  semantic scope IDs, preliminary payoff, dependencies and AI-last ordering.
+- Linked Comments, code-block, authored-change/Suggestions, structural-diff
+  and both performance iterations without promoting historical proof.
+- Added append-only review records, fingerprint-aware lookup and cross-run
+  TSV search. Unknown historical models/source versions remain unknown.
+- Connected Best API Review, Plite Research, Research Wiki and Editor Audit
+  through their owned sources. Repeated reviews reconsider the design without
+  a special flag or an automatic external discovery run.
+- Added current editor-behavior navigation while retaining the historical
+  coverage rows and their proof limits. The ledger certifies inventory and
+  record integrity only; product tests and external freshness were not replayed.
+
+See [the ledger](reviews.md), [record contract](schema.md#review-history), and
+[implementation evidence](../plans/2026-09-11-review-history-and-global-ledger.md).
+
 ## [2026-08-30] maintain | cursor architecture closure reconciliation
 
 - reconciled the accepted cursor/Find/Widget source page with the final Plate

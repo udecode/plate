@@ -41,6 +41,11 @@
       "import": "./dist/dom/index.js",
       "default": "./dist/dom/index.js"
     },
+    "./authored": {
+      "types": "./dist/authored/index.d.ts",
+      "import": "./dist/authored/index.js",
+      "default": "./dist/authored/index.js"
+    },
     "./history": {
       "types": "./dist/history/index.d.ts",
       "import": "./dist/history/index.js",
@@ -111,6 +116,7 @@
     "lint:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs root",
     "lint:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
     "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
+    "lint:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs authored",
     "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs core",
     "lint:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs diff",
     "lint:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs dom",
@@ -130,6 +136,7 @@
     "test:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
     "test:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs root",
     "test:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
+    "test:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs authored",
     "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs core",
     "test:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
     "test:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs dom",
@@ -150,6 +157,7 @@
     "typecheck:entrypoint:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
     "typecheck:entrypoint:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs root",
     "typecheck:entrypoint:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
+    "typecheck:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs authored",
     "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs core",
     "typecheck:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs diff",
     "typecheck:partition:dom": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs dom",

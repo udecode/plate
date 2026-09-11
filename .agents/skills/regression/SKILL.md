@@ -626,6 +626,14 @@ Patch. The diagnostic reruns the actual failing assertion on frozen product
 bytes and distinguishes product nondeterminism from interaction, host, or
 oracle drift; repeated green alone is not a diagnosis.
 
+For a failed native selection case, capture the native range, model selection,
+and view selection before and after each input, at selection import, and at
+the next input. Record `selection-transition-trace: native + model + view + next-input`
+and `first-divergence: <input/owner>` in the resume state. A final highlighted
+string alone cannot prove that intervening commands preserved the selection's
+coordinate owner. Replay both uninterrupted input and input after selection
+import; do not make a product race pass by adding delays.
+
 When that failed case has an applicable popup/toolbar focus oracle, the frozen-
 byte diagnostic must capture native `focusin` and `focusout`, then sample the
 focus owner at mount, Floating UI positioned readiness, settlement, and the

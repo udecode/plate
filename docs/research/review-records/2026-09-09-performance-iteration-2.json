@@ -1,0 +1,22 @@
+{
+  "id": "2026-09-09-performance-iteration-2",
+  "scope": "performance",
+  "kind": "historical",
+  "date": "2026-09-09",
+  "question": "Which reusable metrics and paired experiments can distinguish useful runtime changes from benchmark noise?",
+  "model": null,
+  "method": "historical-import-v1; original method and evidence remain at references",
+  "trigger": "Backfill material prior work for automatic repeat-review lookup.",
+  "summary": "Iteration 2 reconsiders current mechanisms and prior candidates with separate Compiler and virtualization studies.",
+  "verdict": null,
+  "relation": "historical-context",
+  "previous": "2026-09-07-performance-iteration-1",
+  "alternatives": [],
+  "proofLimits": "Research matrices and candidate dossiers own individual verdicts; no aggregate superiority, native proof or production adoption is inferred here.",
+  "references": [
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/README.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/experiments.md",
+    "docs/plite/research/2026-09-09-editor-performance-iteration-2/reconcile-prior-candidates.mjs"
+  ],
+  "source": null
+}

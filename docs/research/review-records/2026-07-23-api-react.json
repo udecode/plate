@@ -1,0 +1,20 @@
+{
+  "id": "2026-07-23-api-react",
+  "scope": "react",
+  "kind": "historical",
+  "date": "2026-07-23",
+  "question": "Which subscriptions, roots, decoration and view lifetimes must React own?",
+  "model": null,
+  "method": "historical-import-v1; original public-API assessment",
+  "trigger": "Backfill the dated API review without inheriting its current-state claims.",
+  "summary": "The July assessment identified React composition and host-boundary debt alongside the runtime API review.",
+  "verdict": null,
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [],
+  "proofLimits": "This is a July source assessment, not a current score or completed implementation. Renamed public owners and later doctrine require reconciliation on the next review.",
+  "references": [
+    "docs/analysis/best-api-review.md"
+  ],
+  "source": null
+}

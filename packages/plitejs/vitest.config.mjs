@@ -30,6 +30,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      'plitejs/authored': path.resolve(
+        import.meta.dirname,
+        './src/authored/index.ts'
+      ),
       'plitejs/diff': path.resolve(import.meta.dirname, './src/diff/index.ts'),
       'plitejs/dom': path.resolve(import.meta.dirname, './src/dom/index.ts'),
       'plitejs/history': path.resolve(

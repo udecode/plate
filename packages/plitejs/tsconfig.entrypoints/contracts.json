@@ -5,6 +5,9 @@
   "extends": "../tsconfig.public-api.json",
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     },
     {

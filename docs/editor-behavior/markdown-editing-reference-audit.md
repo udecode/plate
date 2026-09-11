@@ -1,5 +1,11 @@
 # Markdown Editing Reference Audit
 
+This audit retains the source scope and results of the original reference
+comparison. Use [current evidence navigation](current-evidence.md) for current
+package owners and the [feature ledger](../research/reviews.md) for subsequent
+reviews. This document does not refresh upstream commits or certify current
+runtime behavior.
+
 This is the first side-by-side audit of
 [markdown-editing-spec.md](./markdown-editing-spec.md) against the local
 Typora corpus and the upstream Milkdown raw clone.

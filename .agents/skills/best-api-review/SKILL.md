@@ -24,6 +24,22 @@ implementation request into another architecture review.
 
 ## Resolve the question
 
+Before expensive investigation, use the project's existing decision index,
+research ledgers and review artifacts to find earlier work on the same user
+job. Match the question and constraints, not only its feature name. Read the
+recorded alternatives, rejected leads, source versions, proof limits and
+unresolved questions. Follow project routing for storage and lookup; do not
+create a separate history system for this skill.
+
+Invoking this skill again requests another review, including when the source
+is unchanged. No special flag or model change is required. Reuse source
+observations whose version, scope and relevant dependencies still match, then
+make a fresh first-principles comparison. A previous verdict does not satisfy
+the new request or make its architecture a hard law. Explain whether the new
+review reaffirms, supersedes, reverses or defers the earlier conclusion, and
+name the changed evidence or reasoning. Do not repeat external discovery
+automatically when the recorded evidence answers the current question.
+
 Use the supplied proposal, code, plan, or conversation to name the current job,
 the proposed change, and the claimed benefit. Inspect the current owner and a
 real consumer before judging it. Compare plans and past claims with source.
@@ -170,3 +186,14 @@ An audit adds one row per selected unit with its verdict, evidence and next
 owner. Rank worthwhile work and recommend the first step overall. Reuse an
 existing plan or artifact when the scope needs a durable record. Do not create
 a scoring system, review panel or checklist suite merely to issue this verdict.
+
+Persist material reviews, including Stop and Defer, through the project's
+existing history owner before closing. Record the question and requirements,
+alternatives, verdict and rationale, source/consumer references and versions,
+proof limits, prior-review relation, date, and available model/method identity.
+Keep unknown historical provenance explicit. Preserve completed earlier
+records; correct them with a linked later record. The current summary may
+change while the earlier result remains readable. A negative review record
+does not create a task, implementation plan or consolation backlog. Keep small
+reviews compact in an existing artifact instead of adding a mandatory planning
+workflow.

@@ -243,6 +243,7 @@ export const entrypointDags = {
           { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
         )
       ),
+      authored: headless(directory('authored', [], ['plitejs/authored'])),
       core: headless(privateRoot(['dom', 'history'], ['plitejs'])),
       'code-block/codemirror': client(
         directory('code-block/codemirror', ['react-core'], [], {
@@ -437,6 +438,7 @@ export const entrypointDags = {
       core: ['core'],
       migrations: ['migrations'],
       proxies: [
+        'authored',
         'diff',
         'dom',
         'history',
@@ -486,6 +488,7 @@ export const entrypointDags = {
   plitejs: {
     entrypoints: {
       annotations: headless(directory('annotations', ['root'])),
+      authored: headless(directory('authored', ['root'])),
       diff: headless(
         directory('diff', ['root'], [], {
           peerDependencies: ['diff-match-patch-ts'],
@@ -525,6 +528,7 @@ export const entrypointDags = {
     packageRoot: 'packages/plitejs',
     sourceMarker: '/packages/plitejs/src/',
     taskPartitions: {
+      authored: ['authored'],
       core: ['annotations', 'root'],
       diff: ['diff'],
       dom: ['dom'],

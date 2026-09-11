@@ -12,6 +12,7 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/core.tsbuildinfo"
   },
   "exclude": [
+    "../src/authored/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",
     "../src/history/**/*",

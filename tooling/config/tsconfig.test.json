@@ -18,6 +18,7 @@
       "platejs": ["../../packages/platejs/src/index.tsx"],
       "platejs/ai": ["../../packages/platejs/src/ai/index.ts"],
       "platejs/ai/react": ["../../packages/platejs/src/ai/react/index.ts"],
+      "platejs/authored": ["../../packages/platejs/src/authored/index.ts"],
       "platejs/callout": [
         "../../packages/platejs/src/features/callout/index.ts"
       ],
@@ -145,6 +146,7 @@
       "plitejs/annotations": [
         "../../packages/plitejs/src/annotations/index.ts"
       ],
+      "plitejs/authored": ["../../packages/plitejs/src/authored/index.ts"],
       "plitejs/diff": ["../../packages/plitejs/src/diff/index.ts"],
       "plitejs/dom": ["../../packages/plitejs/src/dom/index.ts"],
       "plitejs/history": ["../../packages/plitejs/src/history/index.ts"],

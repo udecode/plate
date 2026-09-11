@@ -5,6 +5,7 @@ export default defineDirectPackageConfig(
     entry: {
       index: 'src/index.ts',
       'annotations/index': 'src/annotations/index.ts',
+      'authored/index': 'src/authored/index.ts',
       'diff/index': 'src/diff/index.ts',
       'dom/index': 'src/dom/index.ts',
       'history/index': 'src/history/index.ts',

@@ -2,6 +2,10 @@
 
 Date: 2026-07-23
 
+Historical assessment. Its source references and verdicts describe the July
+review. Use the [feature review ledger](../research/reviews.md) to locate current
+owners and later decisions before reusing a conclusion.
+
 Scope: current Plate and Plite public types, exports, docs, representative call
 sites, and owning implementations. This ranks public API debt only. It does not
 authorize product API changes.

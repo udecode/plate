@@ -128,6 +128,49 @@ describe('editor value codec contract', () => {
     );
   });
 
+  it('shares validated immutable subtrees and detaches untrusted frozen inputs', () => {
+    const replace = defineEffect<unknown>({ key: 'document.pages.replace' });
+    const field = defineStateField({
+      key: 'document.pages',
+      initial: () => null as unknown,
+      persist: jsonCodec,
+      reduce: (value, effect) =>
+        effect.type === replace ? effect.value : value,
+    });
+    const mutable = { text: 'original' };
+    const input = Object.freeze({ page: mutable });
+    const first = field.serialize(input);
+    const firstValue = first.value as { page: { text: string } };
+
+    mutable.text = 'outside mutation';
+    assert.equal(firstValue.page.text, 'original');
+    assert.equal(Object.isFrozen(firstValue.page), true);
+
+    const second = field.serialize({ retained: first.value, added: 'next' });
+    assert.equal((second.value as { retained: unknown }).retained, first.value);
+    const editor = createEditor({
+      extensions: [
+        defineExtension('pages', {
+          stateFields: [field],
+          effectTypes: [replace],
+        }),
+      ],
+      initialValue: [paragraph('body')],
+    });
+    editor.update((tx) => tx.effects.emit(replace, first.value));
+    const saved = editor.read.value();
+    assert.equal(editor.read.getField(field), first.value);
+    assert.equal(
+      (saved.meta?.[field.key] as { value: unknown }).value,
+      first.value
+    );
+    assert.equal(JSON.stringify(saved).includes('outside mutation'), false);
+    assert.throws(
+      () => field.serialize(Object.freeze({ invalid: new Date() })),
+      /JSON-compatible data/
+    );
+  });
+
   it('accepts canonical JSON values created in another realm', () => {
     const field = defineStateField({
       key: 'document.cross-realm-json',

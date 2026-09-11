@@ -1,5 +1,11 @@
 # Existing Feature Coverage Matrix for Plate
 
+Evidence freshness: coverage labels below retain their historical scope.
+Some literal test paths belong to earlier owners. Use
+[current evidence navigation](current-evidence.md) and the
+[feature review ledger](../research/reviews.md) to resolve current source.
+No `tested` or `locked` status is promoted by this navigation repair.
+
 This is the major-release coverage gate for Plate's existing editor features.
 
 Despite the filename, this file is no longer only about markdown-native

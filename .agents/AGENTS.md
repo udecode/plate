@@ -118,6 +118,14 @@ and preserve domain detail without creating another lifecycle or review budget.
 Use an issue-prefixed filename for issue-backed plans and a dated filename
 otherwise. Read only the applicable template and supporting methods.
 
+Feature and architecture reviews use `docs/research/reviews.md` and
+`node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` by default.
+Every repeated request reconsiders the design and reconciles prior findings;
+no reassessment flag is required. Best API Review's Task adapter owns review
+recording. Research Wiki and Plite Research reuse the same history and keep
+review, adoption, proof and source freshness independent. AI is last in the
+global queue; the user's directly selected feature still takes precedence.
+
 The CLI/schema generator is optional advanced tooling. Ordinary editor setup,
 plugin authoring, registry UI and public docs must not require generated
 application contracts. Plate UI is the sole Plate React/component doctrine

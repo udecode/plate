@@ -2,6 +2,13 @@
 
 Read the existing corpus ledger before interpreting backlog or closure.
 
+Start cross-run lookup with `node tooling/scripts/review-ledger.mjs research
+<key-or-term>` from the repository root. Results retain their original column
+names, file and line; inspect warnings and the source row before interpreting
+an unfamiliar historical schema. Use `lookup <scope-or-feature>` for review
+history and current-source scope membership. Neither command merges semantic
+leads, runs external research or promotes a proof status.
+
 - when closing a `docs/plite/research/**` lead, read that artifact's
   `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first. Use exact
   source refs and owner files from those ledgers before any repo-wide `rg`.
@@ -33,4 +40,3 @@ Read the existing corpus ledger before interpreting backlog or closure.
   top-level keys, then parse the real field names. Do not guess columns such as
   `checked` when the ledger uses `check`, and do not guess benchmark summary
   keys before reading the artifact shape;
-

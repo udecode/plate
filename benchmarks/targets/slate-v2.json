@@ -12,6 +12,63 @@
   },
   "targets": [
     {
+      "id": "plite-authored-scale",
+      "question": "Does installed native proposal amendment and current-card reading meet the frozen zero, normal, large, stress, overlap and read-fanout budgets?",
+      "owner": "plite",
+      "family": "core-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_AUTHORED_SCALE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-scale-benchmark.ts --output=tmp/plite-authored-scale-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_scale_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Three alternating passes of 20 warmups and 100 samples at each frozen cohort. Native p95 <= 50 ms (stress <= 100 ms), p99 <= 100 ms; large/stress <= 0.8 baseline unless both under 1 ms; zero overhead <= max(1 ms, 10%)."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/authored-structure-contract.test.ts packages/plitejs/test/authored-view-contract.test.ts packages/platejs/src/authored/authored.api.spec.ts",
+        "policy": "Same proposed text and review count after every edit, accepted content preserved, native save/reload checked. Edits and reads use actual native headless views. No overlap ownership ratio, DOM/paint, heap or complete F30 claim."
+      },
+      "artifacts": [{ "path": "tmp/plite-authored-scale-benchmark.json", "required": true }],
+      "docs": { "sources": ["docs/plans/2026-09-10-native-authored-changes-and-suggestions.md"] },
+      "thresholds": { "promotion": "plite_authored_scale_passed=1" }
+    },
+    {
+      "id": "plite-authored-checkpoint",
+      "question": "Does a native proposal amendment publish a coherent immutable checkpoint with logarithmic changed pages and no unrelated payload cloning at 100, 1000 and 10000 retained changes?",
+      "owner": "plite",
+      "family": "core-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_AUTHORED_CHECKPOINT_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-checkpoint-benchmark.ts --output=tmp/plite-authored-checkpoint-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_checkpoint_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Three alternating passes of 10 warmups and 30 samples at each frozen cohort. Native p95 <= 50 ms, p99 <= 100 ms, <= 0.8 of whole-collection replacement unless both are below 1 ms. Changed pages <= ceil(log2(n)) + 1; unrelated payload clones = 0."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/value-codec.test.ts",
+        "policy": "Native save/reload and logical change revisions must match; accepted content and prior snapshots remain unchanged. Capture and immutable publication are included; full serialization is separate. No browser or heap claim."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-checkpoint-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_checkpoint_passed=1"
+      }
+    },
+    {
       "id": "plite-read-view-lifecycle",
       "question": "Do warm reads and document commits avoid rebuilding extension read namespaces as installed plugin width grows from 1 to 100?",
       "owner": "plite",
