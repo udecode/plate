@@ -1,6 +1,6 @@
 {
   "name": "plitejs",
-  "version": "0.0.1",
+  "version": "1.0.0-beta.0",
   "description": "A headless-first framework for building rich text editors.",
   "keywords": [
     "contenteditable",

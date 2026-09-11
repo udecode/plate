@@ -1,5 +1,296 @@
 # plite
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep inserted and deleted replacement markers on their exact text ranges. Preserve exact formatting boundaries and JSON-compatible property removals in derived diff spans.
+
+  Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin` registers copied-fragment cleanup through its root `readMiddleware`.
+
+  Install `diff-match-patch-ts` when importing `plitejs/diff` or `platejs/diff`.
+
+  Install the behavior through the plugin:
+
+  ```tsx
+  defineBasePlugin("diff", {
+    readMiddleware: ({ around }) => [
+      around(editorReads.slice.export, ({ next }) => {
+        const slice = next();
+
+        return {
+          ...slice,
+          content: excludeDiffFromFragment(slice.content),
+        };
+      }),
+    ],
+  });
+  ```
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use Plite hyperscript primitives for typed Plate fixtures, preserve custom factory exports, and correct clipboard mock writes. Remove the unused `getHtmlDocument` wrapper; call `DOMParser` directly in DOM-facing tests. Pass `Map<string, string>` directly to `createDataTransfer` instead of importing `DataTransferDataMap`. Emit `hth` fixtures as `tableCell` nodes with `header: true`. Replace rank-specific heading JSX fixtures with one heading element and level.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep stable element renderers independent from sibling path shifts. Element components resolve event-time paths from their element and opt into `usePath()` only when output depends on live position. Plite node refs restore the live runtime path after any external React render so moved text DOM cannot retain stale coordinates. Node wrappers receive `renderPath` as a render-snapshot path for cheap depth and ancestor decisions without a live subscription. Descriptor wrappers can reject ineligible nodes before Plate composes plugin context or mounts their component.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
+  - Compile closed schemas from extension `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+  - Define literal string domains with `property.enum(...)`
+  - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
+  - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
+  - Accept persisted complete-document envelopes with exact schema identity at the root editor boundary and reject them from scoped editor views
+  - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
+  - Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
+  - Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases, remap copies deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
+  - Reconfigure extension slots and install dynamic extensions atomically, requiring an explicit document migration when the candidate schema rejects the current document
+  - Activate candidate extensions against isolated state, publish the complete extension set atomically, and restore every document, field, anchor, and registry fact when activation fails
+  - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through extension `commands: ({ handle, around }) => [...]` factories
+  - Let host input runtimes probe pure command handlers without publishing, so pass-through policy preserves native input and material policy fails closed
+  - Dispatch command-backed updates through immutable transaction specs, including extension-aware `state.transaction(...)` builders and `tx.command`
+  - Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
+  - Give every live descendant, including text, an editor-scoped `NodeKey`. Read it with `editor.key(nodeOrLocation)`, resolve it with `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget` reads and updates. Node keys are unique across one editor's roots and carry private runtime ownership, so a key from another editor fails closed even when public editor IDs and local allocation order match. Path lookup stays scoped to the current editor or view root. Node keys never enter values, slices, history, or collaboration payloads.
+  - Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
+  - Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
+  - Read resolved annotations by `NodeKey` with `getAnnotationsAt(nodeKey)`. Annotation change subscribers receive exact `ids`, affected `nodeKeys`, and an `editor`, `external`, `refresh`, or `annotation` reason so consumers can invalidate only changed content.
+  - Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor.
+  - Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
+  - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
+  - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
+  - Support text selection and one directional exact `NodeSelection` with canonical `paths`, `anchorPath`, `focusPath`, and an optional named root. Preserve node selection through mapping, history, collaboration, marks, and slices without extension-defined selection kinds.
+  - Validate unknown selection values against the built-in selection shapes and current document through `editor.read.selection.isValid(value)`
+  - Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
+  - Default bare public editor, read, update, transaction, and view types to the core-only extension tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
+  - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+  - Build extension read method trees once per published configuration, keep their methods live across document commits and transaction drafts, and reject document-derived read data properties
+  - Infer update callback transactions exclusively from the editor's installed extensions, infer command dispatch from the command descriptor, and return `unknown` when a schema property is addressed by a raw string instead of a typed property handle
+  - Type node-property mutations as atomic `nodes.set(props, options)` patches and removals as `nodes.unset(key, options)`. Use exact schema-property handle keys as computed object keys for aliases. Prefix handles cannot address one property.
+  - Keep forced correction targets distinct by draft path before runtime node keys are published, so initialization repairs every matching node inside the same atomic bootstrap spec without emitting a commit.
+  - Add schema property copy policy and generated construction/canonical presence. Plugin-authored property keys are invariant; closed applications may retarget a property but cannot alias its storage key.
+  - Name installed extension namespace projections `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
+  - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
+  - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
+  - Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. Mutate semantic blocks through `blocks.duplicate`, `blocks.insertAfter`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
+  - Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset()`, preserving children, selection, live node keys, and lifecycle-approved properties.
+  - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
+  - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
+  - Add explicit document repair and mutually exclusive mark toggles
+  - Declare mutually exclusive property groups in schema so toggles, canonicalization, history, and collaboration share one invariant
+  - Resolve extension dependencies and conflicts by descriptor, install required dependencies transitively with reference-counted cleanup, and expose typed dependency APIs through `editor.extension(descriptor).api`
+  - Apply a root transaction policy to one descriptor-owned update through `editor.extension(descriptor).update(policy).method()`
+  - Let host layers project additional transaction-view capabilities through private Plite internals without expanding raw Plite's public transaction API
+  - Keep root Plite dependency references shallow and non-generic as `{ name, enabled? }`. Plate plugin references carry the same sole `name` identity. Keep name-keyed capability/provider inference private, without recursively encoding exact dependency ancestry. Static portals prove name and capability equivalence; runtime portals prove exact installed descriptor identity.
+  - Add descriptor-owned typed extension contributions for package-specific contribution channels
+  - Define package-owned contribution channels with `defineExtensionPoint(...)` and collect ordered values through `context.getContributions(...)`
+  - Intercept core-owned pure reads through descriptor-based extension `read` middleware, with transaction-draft state, single delegation, and complete generator cleanup
+  - Group prefixless change callbacks under `on`; declare owner-local methods through `read` and `update`, core read wrappers through `readMiddleware`, candidate validation through `validate`, and descriptor collections as `stateFields`, `effectTypes`, and `facetProviders`
+  - Infer one exact definition from every `defineExtension(name, definition)` author object, carry that sole public definition generic through `EditorExtension<D>`, omit undeclared fields from the inferred descriptor, and expose `DefinitionOf<typeof Extension>` as the public definition extractor
+  - Use `defineExtension(name, definition)` and `defineEditorSchema(name, definition)` as the only extension/schema descriptor factories. Descriptors are nominal, immutable values; installing the same descriptor twice is idempotent, while divergent same-name descriptors reject.
+  - Return the public `Editor` directly from `createEditor()`. Create root-scoped views with `createEditorView(editor, options)` and add live capabilities with `editor.install(extension)`; layered editors retain their complete caller capabilities through root-scoped views, while raw Plite editors infer their installed extension tuple. No public runtime wrapper or live `.extend()` API exists.
+  - Expose `EditorExtensionTypeProvider` as the public value-sensitive capability bridge and keep higher-kinded encoding, normalized installed capabilities, and transitive dependency expansion private
+  - Infer descriptor-owned element shapes with `ElementOf<typeof Plugin>`; remove the two-owner `SchemaElementOf` and `SchemaElementShapeOf` extractors
+  - Keep immutable author inputs in the descriptor factory closure instead of an extension `config` channel
+  - Construct missing root and nested content only from authored `SchemaContent.default` declarations; remove the separate default-block option and implicit paragraph fallback
+  - Accept document `maxLength` only when creating the editor
+  - Resolve functional extension APIs against each editor view root and preserve the complete root-scoped read surface, including exported selection slices
+  - Declare every extension API through an `api` factory, including context-free API objects; contextual factories receive one `{ editor, root, getContributions }` object
+  - Keep merge, selectability, and exported-slice policy on typed `editorReads` descriptors instead of extension-specific root hooks
+  - Read the active plain model range through `selection()`, exact selected nodes through `selection.nodes()`, and every exact range through `selection.ranges()`
+  - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
+  - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
+  - Freeze pure descriptor namespaces and preserve exact custom property values and defaults from inline `validate` predicates paired with a positive-integer `validationVersion`
+  - Reject values without a string `type` from `ElementApi.isElement` and transitive `NodeApi` predicates
+  - Address compiled element and property identity through nominal `SchemaElementHandle` and `SchemaPropertyHandle` values. Property handles retain persisted key, placement, compiled id, and inferred value type.
+  - Compile deterministic closed-application overrides before relationships. Element type, content, groups, and property targets may change; ambiguous overrides reject instead of using source order.
+  - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
+
+  **Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `defineExtension(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(extension)`. Register state fields through a nominal extension's `stateFields` collection instead of passing field handles as extensions. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add prioritized schema-bound host codecs that claim exact schema declarations through `owns` and parse or serialize immutable `ContentSlice` values through read-only state
+  - Isolate codec query, parse, and serialize failures through the lifecycle error sink while preserving fallback order
+  - Preserve open slice edges and element-owned named roots in native clipboard payloads
+  - Own every public `DataTransfer` contract outside headless Plite, including typed `clipboardHandler(...)` extension contributions and exact `readSlice` / `writeSlice` transport
+  - Use only `clipboardHandler(handler)`; infer the handler transaction contextually from the owning extension or Plate stage and its installed update capabilities
+  - Publish clipboard operations under the DOM-owned `editor.api.dom.clipboard` namespace
+  - Select default editing-action event phases through one host-facts policy, retaining only the proven Korean iOS Backspace exception
+  - Add root-scoped coordinate, caret, visual-line, and rectangle geometry APIs
+  - Schedule focus, selection, scrolling, and standalone host work through cancellable root-addressed DOM phases
+  - Cancel stale focus retries when another editor in the same document or shadow root takes focus ownership
+  - Resolve stale DOM path mappings through lifecycle reads and typed domain errors
+  - Resolve a mounted native element from a Plite node or its live `NodeKey`, returning `null` for foreign, removed, and unmounted keys
+  - Serialize node selections as closed exact-owner slices, including reachable secondary roots
+  - Resolve iframe and shadow-root input, selection, and shortcut behavior from each browser realm
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add validated versioned history serialization and atomic restoration for canonical changes, selection state, and registered effects
+  - Persist compiled schema identity, reject mismatched snapshots before batch decoding, and reset incompatible branches during atomic schema migration
+  - Require a non-null derived or named schema identity in memory and in History JSON format 4, and reject older envelope formats
+  - Publish immutable lazy-mapped branches with configurable depth
+  - Store fitted slice replacements as one canonical undo/redo batch
+  - Rebase saved selections through skipped changes against each batch's source and target documents
+  - Canonicalize text-only inverse batches before mapping skipped text changes so concurrent boundary inserts survive undo and redo
+  - Restore history selections against the editor view root that owns the batch
+  - Add typed undo, redo, state-aware batching, history skipping, state reads, and redo-branch disposal
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `createPliteLayout(editor, options)` with atomic `runtime.reconfigure`, React pagination surfaces, discriminated virtualized page and top-level layout data, and a typed error sink that isolates subscriber and page-break write failures after publication. React layout hooks connect only after commit, so StrictMode cannot leak discarded render-time runtimes or subscriptions.
+
+  Export strict versioned codecs for persisted page settings and page-break snapshots.
+
+  Keep the headless root install independent from React. React pagination remains available from `plitejs/pagination/react`.
+
+  Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add Plite React integration with strict editor and element hooks, typed `usePliteCommand` dispatch, latest-value selectors, revision-based external view data, provider-lifetime `onCommit` observation, and read-only state for shell components outside a `<Plite>` root.
+
+  - Preserve focused-root selection across child editors, read-only sibling views, and lifecycle target changes
+  - Coordinate DOM reads, writes, selection repair, Android input latency, and external mutation recovery through one bounded scheduler per mounted root
+  - Keep printable single-character typing native for internally proven live leaf pipelines and pass-through command middleware; use model input for unknown custom renderers and material commands
+  - Invalidate explicit runtime-state chrome selectors synchronously while preserving equality and commit-filter suppression
+  - Run public keydown handlers before built-in editor commands so a handled event can override undo, redo, Enter, and other runtime commands
+  - Remount unsynchronized custom text shells after structural history repair while retaining derived projected DOM text sync for safe renderers
+  - Re-export the model-owned caret after composition repair renders only while the focused snapshot version and selection remain current
+  - Refresh expanded Blink selections after document changes so formatting updates cannot retain stale painted highlight geometry
+  - Keep `NodeSelection` model-only with no native browser range, and expose exact node selection through `useElementSelected({ mode: 'node' })`
+  - Let non-void `keyboardSelectable` owners receive node focus from non-editable chrome, enter editable children with ArrowDown, and regain owner focus with ArrowUp at the leading boundary
+  - Isolate optional decoration, annotation, widget, and render-callback failures
+  - Preserve inline decorated-range data in projection slices
+  - Infer React editor values from complete installed schemas and expose typed interactive content-root slots
+  - Keep `useEditor()` non-generic and let selector hooks infer only their result; resolve exact extension capabilities through `editor.extension(Extension)`
+  - Preserve element-owned named roots through projected clipboard serialization and insertion
+  - Resolve projected clipboard ranges against the canonical runtime so root-scoped editor views copy and cut their own model content
+  - Cancel superseded delayed focus restoration when undo or redo crosses roots
+  - Install the exact DOM descriptor through `react({ dom })` and consume its clipboard and input-runtime services without name-based runtime lookup
+  - Install the default DOM descriptor when `createReactEditor()` is called directly; keep `react({ dom })` as the low-level custom DOM composition surface
+  - Hydrate separate server and client editor runtimes with deterministic local node tokens, then publish full runtime-owned keys after mounting
+  - Route keyboard default-action ownership through the DOM host-facts selector
+  - Expose transaction announcements through one `aria-live` region per logical editor
+  - Keep placeholder and drop-cursor presentation in applications while retaining structural DOM, geometry, and selection behavior in Plite React
+  - Resolve physical left/right caret and word movement through the DOM visual-point API, preserving affinity across mixed-direction text
+  - Remove view-level `Editable` maximum-length configuration; set `maxLength` when creating the editor
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Connect raw editors to Yjs with `plitejs/yjs`, including provider lifecycle, shared effects, named roots, schema identity and collaborative undo.
+  - Read provider state and typed remote cursors from `plitejs/yjs/react`.
+  - Observe resolved remote cursor changes with `state.yjs.subscribeRemoteCursors(listener)` without subscribing to unrelated awareness updates.
+  - Compile detached schema facts with `compileEditorSchemaContract(editor, extensions)` on an empty, unchanged raw editor; keep compiled maps and collaboration bookkeeping private.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep one-or-many `NodeSelection` model-only while the editable retains focus and the native browser selection stays empty. `useEditorSelection()` returns the active plain `Range | null` without exposing the tagged semantic selection payload.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Use `editor.update.selection.setNodes(targets, { anchor, focus })` or `tx.selection.setNodes(targets, { anchor, focus })` for directional one-or-many node selection. `NodeSelection` stores canonical `paths` plus exact `anchorPath` and `focusPath`; `SelectionApi.nodes` constructs detached values.
+
+  Read the active plain directed `Range` with `editor.read.selection()`, `state.selection()`, or `tx.selection()`. Use `selection.ranges()` for every exact range and `selection.nodes()` for exact selected-node membership. The public `primaryRange()` and `replacementRange()` projections are not part of the selection surface.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Expose exact mounted-editor geometry for transient selection UI.
+
+  `plitejs/react` exposes `useSelectionGeometry`, `usePliteWidgetGeometry`, and `usePliteWidgetIds`. Widget descriptors use `target` with `selection`, `node`, or `annotation` targets; resolved widgets expose `available`; widget stores expose their owning `editor`.
+
+### Patch Changes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add explicit external-text adapters for exact-one-Text elements while keeping canonical text, selection, history, composition, decorations, and collaboration in Plite
+  - Validate external text projections once per mounted view batch and deliver the current selection before focus
+  - Keep nested text editors synchronized with their mounted view's read-only mode
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep pointer-drag selections stable over ignored editor chrome and allow them to contract toward their starting point
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep projected cross-root selection highlights synchronized through drag completion.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve clickable trailing soft-break lines in editable blocks
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Restore the insertion caret after accepted drops, including text copied from an embedded editor, so subsequent typing edits the drop target and preserves the source.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Cancel pending focus requests when explicitly blurring an editor.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve adjacent text when deleting non-selectable inline voids with Backspace or Delete.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep inline voids on the current text line when they replace an empty block placeholder.
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Keep block DnD ownership inside its React DnD adapter so native inline drags reach Plite's move transaction. Compose fitted slice replacement through a detached transaction spec so delete-and-reinsert moves publish atomically. Allow inline mentions to move with native drag-and-drop and serialize through HTML clipboard data.
+
+  Define mention Markdown conversion on the mention plugin. Conditional mention properties cannot replace decoded children or resolved schema identity.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Infer custom creator and element tags from `createHyperscript` options, initialize editor fixtures atomically, and keep JSX development metadata out of document values.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Restore persistent `nearest` anchors to their exact before and after locations through saved undo and redo history
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Bound Anchor dispatch, range projection, commit queries, and overlay updates to affected content. Keep composed decoration reads local to the requested node and DOM task scheduling linear in queued tasks. Add the `presence` change query for added and removed node identities without computing path changes.
+
+  Reuse immutable document indexes without rescanning cached roots. Fit incoming Yjs nodes through the existing schema API without opening a detached live-document transaction per node.
+
+  Build snapshot element catalogs only when requested. Apply multi-leaf text changes with one shared-ancestor publication per canonical change.
+
+  Resolve Yjs schema property contexts only within affected regions.
+
+  Map replacement identities through canonical changes without comparing every source node's text with every target node.
+
+  Preserve whole-node deletion and retained sibling identities when canonical changes round-trip through JSON.
+
+  Preserve selected text and direction through formatting splits and merges by retaining characters in canonical changes.
+
+  Construct splits directly from their local close/open boundary without diffing the whole document.
+
+  Read canonical values without revalidating immutable root arrays, and collect slice-owned roots without serializing unrelated document state.
+
+  Avoid model identity lookup when editor DOM is unmounted. Skip copy-property traversal for schemas whose properties all survive copying.
+
+  Ignore deferred content-root focus after a later model or projected selection supersedes it.
+
+  Publish a selected-void cut and its final caret in one transaction.
+
+  Reuse identical endpoint mappings within one change and repeated range projections within an immutable snapshot while preserving independent Anchor values.
+
+  Reuse mapped output membership indexes and unchanged bucket ordering when only projected values change.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix block void caret rendering and selected-void deletion
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Validate imported canonical changes against the existing immutable baseline without rescanning unchanged document content. Preserve full validation when cancellation restores content with a different root identity.
+
+  Route multi-key React subscriptions through indexed listeners, deduplicate notifications, and prevent repeated cleanup from deleting replacement subscriptions.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `editor.api.dom.resolveVisualPoint(point, { direction, unit, affinity })` for browser-native horizontal caret resolution in mixed-direction text.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Add `history({ newBatchDelay })` with a 500 ms default so idle gaps split otherwise-compatible automatic native edit groups without weakening explicit `merge()` and `newBatch()` decisions.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Skip unchanged DOM path and node-key attribute writes during editor synchronization. Preserve path bindings and repair stale attributes while avoiding unnecessary mutation observer work.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep the live canonical selection visible when focus moves to a control marked with `data-plite-keep-selection-visible`. Style expanded and collapsed inactive selections through the neutral Plite data attributes.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Resolve DOM operations through the active mounted surface when several Editables share an editor. Retiring one surface preserves node and point resolution in the surviving focused surface. DOM-scope hooks follow focus changes and mounted-view retirement.
+
+  Cancel pending scrolling with the cleanup function returned by `editor.api.dom.scrollIntoView(target, options)`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix explicit path scrolling so requested top margins survive selection restoration and rerenders
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Prevent post-commit observer failures from making committed editor updates throw.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Move selected text between independent editors while preserving copy intent and an edited source document.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve active text marks during IME composition
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Require keyed remounts when replacing mounted `Plite` or `PliteRuntime` editor runtimes
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve the active editable across deferred focus cleanup, repeated content-root view replacement, and cross-root history traversal.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep text-flow DOM bindings local to each mounted editor view so shared editors resolve text points without document scans, including multi-record flows and surviving view teardown.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Keep native text selection and browser-owned autoscroll active while dragging outside the editor
+
+- [#5115](https://github.com/udecode/plate/pull/5115) by [@zbeyens](https://github.com/zbeyens) – Compile React package output for React 19 and use its built-in Compiler runtime.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Tighten schema authoring and runtime contracts. Complete schemas use direct root content with closed defaults, `schema.element.textBlock()` preserves exact option inference, unvalidated JSON properties stay generic, property metadata is placement-owned, and external validation uses narrowing assertions. Rename the runtime constructor and markable-void predicate to `create` and `isMarkableVoid`.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Serialize one-or-many node selections as exact selected-node slices.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Preserve exact one-or-many node selections through history serialization, undo, and redo.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Support canonical one-or-many editor node selections in test helpers.
+
+- [#5036](https://github.com/udecode/plate/pull/5036) by [@zbeyens](https://github.com/zbeyens) – Fix rapid WebKit text insertion after splitting content in virtualized editors
+
 ## 0.124.1
 
 ### Patch Changes
@@ -35,8 +326,7 @@
 
 ### Minor Changes
 
-- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
-  ===
+- # [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node. Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
 
 ## 0.120.0
 
