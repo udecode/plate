@@ -1,7 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { TextApi } from 'plitejs';
 import type { DOMRange } from 'plitejs/dom';
-import { createRef, StrictMode } from 'react';
+import { createRef, StrictMode, useLayoutEffect } from 'react';
 
 import { replace as editorReplace } from '../../src/internal';
 import {
@@ -48,6 +48,87 @@ describe('plite-react editable behavior', () => {
 
     expect(editableRef.current).toBe(editable);
     expect(editableRef.current).toHaveAttribute('contenteditable', 'true');
+  });
+
+  test('commits autoFocus before the first native key targets the previous surface', () => {
+    const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
+    const editor = createEditor({ initialValue });
+    const editableRef = createRef<HTMLDivElement>();
+    let focusOwnerBeforePassiveEffects: Element | null = null;
+    let selectionOwnerBeforePassiveEffects: Node | null = null;
+
+    function FirstKeyProbe() {
+      useLayoutEffect(() => {
+        focusOwnerBeforePassiveEffects = document.activeElement;
+        selectionOwnerBeforePassiveEffects =
+          window.getSelection()?.anchorNode ?? null;
+      }, []);
+
+      return null;
+    }
+
+    render(
+      <Plite editor={editor}>
+        <Editable ref={editableRef} autoFocus />
+        <FirstKeyProbe />
+      </Plite>
+    );
+
+    expect(document.activeElement).toBe(editableRef.current);
+    expect(focusOwnerBeforePassiveEffects).toBe(editableRef.current);
+    expect(
+      editableRef.current?.contains(selectionOwnerBeforePassiveEffects)
+    ).toBe(true);
+  });
+
+  test('runs autoFocus once per mount across read-only transitions and remounts', () => {
+    const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
+    const firstEditor = createEditor({ initialValue });
+    const readOnlyEditor = createEditor({ initialValue });
+    const remountedEditor = createEditor({ initialValue });
+    const firstRef = createRef<HTMLDivElement>();
+    const readOnlyRef = createRef<HTMLDivElement>();
+    const remountedRef = createRef<HTMLDivElement>();
+    const rendered = render(
+      <Plite editor={firstEditor}>
+        <Editable ref={firstRef} autoFocus />
+      </Plite>
+    );
+
+    expect(document.activeElement).toBe(firstRef.current);
+    act(() => {
+      firstEditor.update((tx) => tx.selection.set(null));
+      window.getSelection()?.removeAllRanges();
+    });
+    expect(firstEditor.read.selection()).toBeNull();
+    expect(() =>
+      rendered.rerender(
+        <Plite editor={firstEditor} readOnly>
+          <Editable ref={firstRef} autoFocus />
+        </Plite>
+      )
+    ).not.toThrow();
+
+    expect(() =>
+      rendered.rerender(
+        <Plite key="read-only" editor={readOnlyEditor} readOnly>
+          <Editable ref={readOnlyRef} autoFocus />
+        </Plite>
+      )
+    ).not.toThrow();
+    expect(document.activeElement).toBe(readOnlyRef.current);
+    expect(readOnlyEditor.read.selection()).toBeNull();
+
+    rendered.rerender(
+      <Plite key="remounted" editor={remountedEditor}>
+        <Editable ref={remountedRef} autoFocus />
+      </Plite>
+    );
+
+    expect(document.activeElement).toBe(remountedRef.current);
+    expect(
+      remountedRef.current?.contains(window.getSelection()?.anchorNode ?? null)
+    ).toBe(true);
   });
 
   test('applies visible root defaults as CSS', () => {

@@ -2,7 +2,6 @@ import {
   type ComponentPropsWithRef,
   type ForwardedRef,
   useCallback,
-  useEffect,
   useMemo,
   useSyncExternalStore,
 } from 'react';
@@ -152,11 +151,19 @@ export const useEditableRootRuntime = ({
     IS_READ_ONLY.set(editor, readOnly);
   }, [editor, readOnly]);
 
-  useEffect(() => {
-    if (rootRef.current && autoFocus) {
-      rootRef.current.focus();
+  useIsomorphicLayoutEffect(() => {
+    const root = rootRef.current;
+
+    if (!root || !autoFocus || (!readOnlyProp && viewReadOnly)) return;
+    if (!runtime.claimAutoFocus()) return;
+
+    if (readOnlyProp) {
+      root.focus();
+      return;
     }
-  }, [autoFocus, rootRef]);
+
+    editor.api.dom.focus();
+  }, [autoFocus, editor, readOnlyProp, rootRef, runtime, viewReadOnly]);
 
   const {
     onDOMSelectionChange,

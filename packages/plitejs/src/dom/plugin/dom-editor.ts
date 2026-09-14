@@ -1428,6 +1428,7 @@ export const DOMEditor: DOMEditorInterface = {
         (root === el.ownerDocument ? null : el.ownerDocument.activeElement);
 
       if (activeElement === el) {
+        trySyncDomSelection();
         return;
       }
       if (

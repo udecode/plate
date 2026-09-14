@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "components": {
+    "discussion": [
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
     "ai-menu": [
       "2026-09-10-ai-menu-focus",
       "2026-09-08-ai-session",
@@ -28,15 +38,6 @@
       "2026-09-05-code-control-paths",
       "2026-08-25-base-first-registry",
       "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "discussion": [
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry"
     ],
     "block-menu": [

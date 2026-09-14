@@ -711,7 +711,7 @@ describe('DOM coverage boundaries', () => {
     });
   }
 
-  test('settles focus without stealing it or reviving a replaced root', () => {
+  test('settles focus and native selection without stealing it or reviving a replaced root', () => {
     withDom((document) => {
       const editor = createEditor({ extensions: [dom()] });
       const root = mountEditorRoot(editor, document);
@@ -763,6 +763,20 @@ describe('DOM coverage boundaries', () => {
         expect(document.activeElement).toBe(document.body);
         secondSettle!.callback();
         expect(document.activeElement).toBe(root);
+
+        editor.api.dom.focus({ retries: 1 });
+        const selectionSettle = callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+        const domSelection = document.getSelection();
+
+        expect(selectionSettle).toBeDefined();
+        expect(domSelection?.rangeCount).toBe(1);
+        domSelection?.removeAllRanges();
+        expect(document.activeElement).toBe(root);
+        selectionSettle!.callback();
+        expect(domSelection?.rangeCount).toBe(1);
+        expect(root.contains(domSelection?.anchorNode ?? null)).toBe(true);
 
         editor.api.dom.focus({ retries: 1 });
         const replacedRootSettle = callbacks.findLast(

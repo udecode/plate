@@ -687,7 +687,7 @@ function DiscussionPopover({
 
       if (!domRange) return blockRect ?? new DOMRect();
 
-      const clientRect = Array.from(domRange.getClientRects()).find(
+      const clientRect = Array.from(domRange.getClientRects()).findLast(
         ({ height, width }) => height > 0 || width > 0
       );
 

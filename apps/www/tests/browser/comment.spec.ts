@@ -145,6 +145,28 @@ const physicallySelectText = async (
     .not.toBe('');
 };
 
+const physicallySelectAcrossText = async (
+  page: Page,
+  startTarget: Locator,
+  startOffset: number,
+  endTarget: Locator,
+  endOffset: number
+) => {
+  await startTarget.scrollIntoViewIfNeeded();
+  const [start, end] = await Promise.all([
+    pointAtTextOffset(startTarget, startOffset),
+    pointAtTextOffset(endTarget, endOffset - 1, 'end'),
+  ]);
+
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y, { steps: 12 });
+  await page.mouse.up();
+  await expect
+    .poll(() => page.evaluate(() => getSelection()?.toString() ?? ''))
+    .not.toBe('');
+};
+
 const physicallyPlaceCaret = async (
   page: Page,
   target: Locator,
@@ -219,6 +241,95 @@ const getEditorText = (node: Locator) =>
       elements.map((element) => element.textContent).join('')
     );
 
+const afterPaint = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      })
+  );
+
+const installClickEventOrderRecorder = (target: Locator) =>
+  target.evaluate((element) => {
+    const pageWindow = window as typeof window & {
+      __issue5127ClickEvents?: string[];
+    };
+
+    pageWindow.__issue5127ClickEvents = [];
+
+    for (const type of ['pointerdown', 'mousedown', 'click']) {
+      element.addEventListener(
+        type,
+        () => {
+          pageWindow.__issue5127ClickEvents?.push(type);
+        },
+        { once: true }
+      );
+    }
+  });
+
+const expectClickEventOrder = (page: Page) =>
+  expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (
+            window as typeof window & {
+              __issue5127ClickEvents?: string[];
+            }
+          ).__issue5127ClickEvents
+      )
+    )
+    .toEqual(['pointerdown', 'mousedown', 'click']);
+
+const capturePixels = async (
+  page: Page,
+  clip: { height: number; width: number; x: number; y: number }
+) => {
+  const png = await page.screenshot({
+    animations: 'disabled',
+    caret: 'hide',
+    clip,
+  });
+  const pixels = await page.evaluate(async (base64) => {
+    const bytes = Uint8Array.from(atob(base64), (value) => value.charCodeAt(0));
+    const bitmap = await createImageBitmap(
+      new Blob([bytes], { type: 'image/png' })
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext('2d');
+
+    if (!context) throw new Error('Unable to decode screenshot pixels.');
+    context.drawImage(bitmap, 0, 0);
+    return Array.from(
+      context.getImageData(0, 0, bitmap.width, bitmap.height).data
+    );
+  }, png.toString('base64'));
+
+  return { pixels, png };
+};
+
+const pixelDifference = (left: number[], right: number[]) => {
+  expect(left.length).toBe(right.length);
+  let changed = 0;
+
+  for (let index = 0; index < left.length; index += 4) {
+    if (
+      Math.max(
+        ...[0, 1, 2].map((channel) =>
+          Math.abs(left[index + channel] - right[index + channel])
+        )
+      ) > 12
+    ) {
+      changed += 1;
+    }
+  }
+
+  return changed;
+};
+
 const clickCommentHighlight = async (page: Page, highlight: Locator) => {
   await page.evaluate(() => {
     const trace: string[] = [];
@@ -263,6 +374,249 @@ const submitComposer = async (composer: Locator) => {
     .getByRole('button', { name: 'Send comment' })
     .click();
 };
+
+const commentEntryPaths = [
+  'fixed-toolbar',
+  'selection-toolbar',
+  'shortcut',
+] as const;
+
+for (const entryPath of commentEntryPaths) {
+  test(`Issue 5127 keeps a multi-line selection visibly painted while the comment composer owns focus (${entryPath})`, async ({
+    page,
+  }, testInfo) => {
+    expect(testInfo.retry).toBe(0);
+    await page.setViewportSize({ height: 800, width: 946 });
+    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+
+    try {
+      await openDemo(page);
+      const { editor, popover, primary } = getDemo(page);
+      const harness = createPliteBrowserEditorHarness(
+        page,
+        'issue-5127:comment-composer-selection-paint',
+        editor
+      );
+      const selection = {
+        anchor: { offset: 24, path: [0, 0] },
+        focus: { offset: 13, path: [1, 0] },
+      };
+      const selectedText = `${FIRST_BLOCK.slice(24)}Reviewers can`;
+      const initialValue = await harness.get.modelValue();
+
+      if (entryPath === 'selection-toolbar') {
+        const blocks = editor.locator('[data-plite-node="element"]');
+
+        await physicallySelectAcrossText(
+          page,
+          blocks.nth(0),
+          selection.anchor.offset,
+          blocks.nth(1),
+          selection.focus.offset
+        );
+      } else {
+        await harness.selection.select(selection);
+        await harness.focus();
+      }
+      await harness.assert.selection(selection);
+      await expect
+        .poll(() => page.evaluate(() => getSelection()?.toString() ?? ''))
+        .toContain('Reviewers can');
+
+      if (entryPath === 'shortcut') {
+        await page.keyboard.press(commentHotkey);
+      } else if (entryPath === 'fixed-toolbar') {
+        await expect(editor).toBeFocused();
+        const commentButton = primary
+          .getByRole('toolbar')
+          .first()
+          .getByRole('button', { name: 'Comment' });
+
+        await installClickEventOrderRecorder(commentButton);
+        await commentButton.click();
+        await expectClickEventOrder(page);
+        await expect(popover).toBeVisible();
+      } else {
+        const toolbars = primary.getByRole('toolbar');
+
+        await expect(toolbars).toHaveCount(2);
+        await expect(editor).toBeFocused();
+        const commentButton = toolbars
+          .last()
+          .getByRole('button', { name: 'Comment' });
+
+        await installClickEventOrderRecorder(commentButton);
+        await commentButton.click();
+        await expectClickEventOrder(page);
+        await expect(popover).toBeVisible();
+      }
+      const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+      await expect(composer).toBeFocused();
+      const inactiveSelection = editor.locator(
+        '[data-plite-inactive-selection]'
+      );
+      await expect
+        .poll(() => inactiveSelection.allTextContents())
+        .toEqual(
+          expect.arrayContaining([expect.stringContaining('Reviewers')])
+        );
+      const inactiveText = await inactiveSelection.allTextContents();
+
+      expect(inactiveText.join('')).toBe(selectedText);
+
+      const readGeometry = async () => {
+        const [popup, ranges] = await Promise.all([
+          popover.boundingBox(),
+          inactiveSelection.evaluateAll((elements) =>
+            elements.map((element) => {
+              const rect = element.getBoundingClientRect();
+
+              return {
+                bottom: rect.bottom,
+                height: rect.height,
+                left: rect.left,
+                right: rect.right,
+                top: rect.top,
+                width: rect.width,
+              };
+            })
+          ),
+        ]);
+
+        if (!popup || ranges.length === 0) {
+          throw new Error('Missing popup or inactive selection geometry.');
+        }
+
+        return { popup, ranges };
+      };
+      const preConvergence = await readGeometry();
+      await afterPaint(page);
+      const converged = await readGeometry();
+
+      await testInfo.attach('issue-5127-geometry', {
+        body: JSON.stringify({ converged, preConvergence }),
+        contentType: 'application/json',
+      });
+
+      const selectedBounds = converged.ranges.reduce(
+        (bounds, rect) => ({
+          bottom: Math.max(bounds.bottom, rect.bottom),
+          left: Math.min(bounds.left, rect.left),
+          right: Math.max(bounds.right, rect.right),
+          top: Math.min(bounds.top, rect.top),
+        }),
+        {
+          bottom: Number.NEGATIVE_INFINITY,
+          left: Number.POSITIVE_INFINITY,
+          right: Number.NEGATIVE_INFINITY,
+          top: Number.POSITIVE_INFINITY,
+        }
+      );
+      const clip = {
+        height:
+          Math.ceil(selectedBounds.bottom) - Math.floor(selectedBounds.top),
+        width:
+          Math.ceil(selectedBounds.right) - Math.floor(selectedBounds.left),
+        x: Math.floor(selectedBounds.left),
+        y: Math.floor(selectedBounds.top),
+      };
+      const setPaintControl = async (
+        state: 'absent' | 'duplicate' | 'single' | null
+      ) => {
+        await page.evaluate((nextState) => {
+          document.querySelector('[data-issue-5127-paint-control]')?.remove();
+          if (!nextState) return;
+          const style = document.createElement('style');
+          style.setAttribute('data-issue-5127-paint-control', '');
+          style.textContent = [
+            '[data-discussion-popover] { opacity: 0 !important; }',
+            nextState === 'absent'
+              ? '[data-plite-inactive-selection] { background: transparent !important; }'
+              : '',
+            nextState === 'duplicate'
+              ? '[data-plite-inactive-selection] { background: color-mix(in srgb, var(--brand) 43.75%, transparent) !important; }'
+              : '',
+          ].join('\n');
+          document.head.append(style);
+        }, state);
+        await afterPaint(page);
+      };
+
+      const actual = await capturePixels(page, clip);
+      await setPaintControl('single');
+      const single = await capturePixels(page, clip);
+      await setPaintControl('absent');
+      const absent = await capturePixels(page, clip);
+      const absentAgain = await capturePixels(page, clip);
+      await setPaintControl('duplicate');
+      const duplicate = await capturePixels(page, clip);
+      await setPaintControl(null);
+
+      for (const [name, capture] of Object.entries({
+        absent,
+        actual,
+        duplicate,
+        single,
+      })) {
+        await testInfo.attach(`issue-5127-selection-${name}`, {
+          body: capture.png,
+          contentType: 'image/png',
+        });
+      }
+
+      const classification = {
+        actual: pixelDifference(actual.pixels, single.pixels),
+        duplicate: pixelDifference(duplicate.pixels, single.pixels),
+        negative: pixelDifference(absent.pixels, absentAgain.pixels),
+        positive: pixelDifference(single.pixels, absent.pixels),
+      };
+      await testInfo.attach('issue-5127-pixel-classification', {
+        body: JSON.stringify(classification),
+        contentType: 'application/json',
+      });
+      expect(classification.positive, 'positive-control: pass').toBeGreaterThan(
+        20
+      );
+      expect(
+        classification.negative,
+        'negative-control: pass'
+      ).toBeLessThanOrEqual(2);
+      expect(
+        classification.duplicate,
+        'duplicate-control: pass'
+      ).toBeGreaterThan(20);
+      expect(
+        classification.actual,
+        'one visible inactive-selection layer remains unobscured'
+      ).toBeLessThanOrEqual(2);
+
+      const viewport = page.viewportSize();
+      expect(viewport).not.toBeNull();
+      expect(
+        converged.popup.y,
+        'layout-bounds: popup clears the final selected line'
+      ).toBeGreaterThanOrEqual(selectedBounds.bottom + 3);
+      expect(converged.popup.y).toBeGreaterThanOrEqual(0);
+      expect(converged.popup.y + converged.popup.height).toBeLessThanOrEqual(
+        viewport!.height
+      );
+
+      await expect(composer).toBeFocused();
+      await page.keyboard.insertText('x');
+      await expect(composer).toContainText('x');
+      expect(await harness.get.modelValue()).toEqual(initialValue);
+      await page.keyboard.press('Escape');
+      await expect(popover).toHaveCount(0);
+      await expect(editor).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      expect(await harness.get.modelValue()).toEqual(initialValue);
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+}
 
 test('overlapping comments open together in Floating Discussion', async ({
   page,

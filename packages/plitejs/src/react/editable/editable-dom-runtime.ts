@@ -283,6 +283,8 @@ export class EditableDOMRuntime {
 
   private compositionPathValue: Path | null = null;
 
+  private didAutoFocus = false;
+
   private onComposingChange: (nextValue: boolean) => void;
 
   private onDOMSelectionChange: CancelableCallback | null = null;
@@ -515,6 +517,14 @@ export class EditableDOMRuntime {
 
   get supportsBeforeInput() {
     return this.rootRuntime.supportsBeforeInput;
+  }
+
+  claimAutoFocus() {
+    if (this.didAutoFocus) return false;
+
+    this.didAutoFocus = true;
+
+    return true;
   }
 
   hasHostQuirk(quirk: Parameters<DOMRootRuntime['hasHostQuirk']>[0]) {

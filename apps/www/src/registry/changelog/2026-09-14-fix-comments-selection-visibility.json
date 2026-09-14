@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-14-fix-comments-selection-visibility",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-14-fix-comments-selection-visibility.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep selected text visible while writing comments",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-14-discussion-keep-text-visible-while-ba3c82e9",
+      "kind": "fix",
+      "summary": "Keep selected text visible while writing comments",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-14",
+          "entry": "2026-09-14-fix-comments-selection-visibility",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
