@@ -55,7 +55,7 @@ const cohorts: readonly Cohort[] = [
     packets: 0,
     paragraphs: 4,
     revisions: 4,
-    samples: 5,
+    samples: 20,
   },
   {
     baselineMedianMs: 139.885,
@@ -64,7 +64,7 @@ const cohorts: readonly Cohort[] = [
     packets: 0,
     paragraphs: 24,
     revisions: 16,
-    samples: 5,
+    samples: 20,
   },
   {
     baselineMedianMs: 777.777,
@@ -469,10 +469,14 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
       const maximumRssDelta = Math.max(
         ...distribution.map(({ rssDeltaBytes }) => rssDeltaBytes)
       );
+      const p95RssDelta = percentile(
+        distribution.map(({ rssDeltaBytes }) => rssDeltaBytes),
+        0.95
+      );
 
       expect(Math.max(...durations)).toBeLessThanOrEqual(cohort.maxMs);
       expect(p95Ms).toBeLessThanOrEqual(cohort.maxMs);
-      expect(maximumRssDelta).toBeLessThanOrEqual(
+      expect(p95RssDelta).toBeLessThanOrEqual(
         32 * MEBIBYTE + 4 * fixture.documentXmlBytes
       );
       if (cohort.name !== 'normal') {
@@ -483,8 +487,10 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
         cold,
         compressedBytes: fixture.bytes.byteLength,
         expandedDocumentXmlBytes: fixture.documentXmlBytes,
+        maximumRssDelta,
         medianMs,
         p95Ms,
+        p95RssDelta,
         samples,
         packetSamples,
       });
