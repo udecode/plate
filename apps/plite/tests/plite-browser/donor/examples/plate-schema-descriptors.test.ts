@@ -91,6 +91,7 @@ test("compiles Plate element and mark descriptors into HTML parsing, rendering, 
     await page
       .getByRole("button", { name: "Reset block codec target" })
       .click();
+    await editor.focus();
     await editor.clipboard.pasteNativeText("**Markdown fallback**");
 
     await expect(editor.root.locator("strong")).toHaveText("Markdown fallback");
