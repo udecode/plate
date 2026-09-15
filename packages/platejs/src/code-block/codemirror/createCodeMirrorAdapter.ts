@@ -434,7 +434,8 @@ export function createCodeMirrorAdapter({
               },
             },
             {
-              key: 'Mod-Shift-z',
+              linux: 'Ctrl-Shift-z',
+              mac: 'Mod-Shift-z',
               preventDefault: true,
               run: () => {
                 actions.history('redo');
@@ -584,7 +585,7 @@ export function createCodeMirrorAdapter({
             return;
           }
           const apply = () => {
-            if (destroyed) return;
+            if (destroyed || current !== next) return;
             view.dispatch(specification);
             if (next.config.language !== previous.config.language) {
               loadLanguage(next.config.language);

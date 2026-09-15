@@ -18,6 +18,59 @@ const paragraph = (text: string) => ({
 const accepted = { intent: 'edit', projection: 'accepted' } as const;
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
 
+class DataTransferStub {
+  data = new Map<string, string>();
+  files = [] as unknown as FileList;
+
+  get types() {
+    return [...this.data.keys()];
+  }
+
+  getData(format: string) {
+    return this.data.get(format) ?? '';
+  }
+
+  setData(format: string, value: string) {
+    this.data.set(format, value);
+  }
+}
+
+test('pastes plain text at the caret in a mounted authored view', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice', retainHistory: true })],
+    initialValue: [paragraph('A separate document.')],
+  });
+  let view!: ReturnType<typeof useEditorContext>;
+  const Capture = () => {
+    view = useEditorContext();
+
+    return <Editable aria-label="mounted authored paste" />;
+  };
+  const mounted = render(
+    <EditorRoot editor={source}>
+      <Capture />
+    </EditorRoot>
+  );
+  const data = new DataTransferStub();
+
+  await act(async () => {
+    view.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 19, path: [0, 0] },
+        focus: { offset: 19, path: [0, 0] },
+        kind: 'text',
+      });
+    });
+  });
+  data.setData('text/plain', 'better ');
+  await act(async () => {
+    view.api.dom.clipboard.insertData(data as unknown as DataTransfer);
+  });
+
+  expect(view.read.text.string([])).toBe('A separate documentbetter .');
+  mounted.unmount();
+});
+
 test('reconciles authored policy values without resetting commands on unrelated renders', async () => {
   const authoring = authored({ authorId: 'alice' });
   const source = createEditor({

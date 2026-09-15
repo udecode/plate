@@ -18,7 +18,8 @@ related:
 
 # External text ownership
 
-**Pursue removing deferred canonical feedback from the CodeMirror adapter.**
+**Pursue removing deferred canonical feedback from the CodeMirror adapter and
+make external-text delivery monotonic under callback failure.**
 The public slot and narrow versioned protocol survive this review. A mounted
 reproduction leaves CodeMirror displaying `agoodd` while Plite's canonical text
 is `Ragood`. Changing public names, exposing the editor to adapters, or adding
@@ -39,14 +40,23 @@ bypass local filters and apply synchronously. Keep the public slot/protocol.
 The audit's listener-only candidate was insufficient: later observers saw the
 correction before the prediction. A subsequent dispatch-boundary candidate also
 needed filter bypass, synchronous rejection reset, and a guard against recursive
-listener dispatch. The guard rejects the nested transaction before local view
-mutation; it stores no queued work. Transaction filters and normal commands
-retain their editing jobs. The callback restriction and programmatic exception
-propagation require explicit lifecycle documentation during adoption.
+listener dispatch. The guard runs before nested view mutation and before an
+adapter update advances its snapshot. If a listener already committed Plite,
+canonical state wins and the outer local prediction resets as stale. A harsher
+case exposed one more owner: when the mutation occurs while canonical feedback
+is already being delivered, the nested adapter failure can be cleared by the
+older outer delivery. ExternalTextRuntime therefore needs a per-view callback
+failure revision and one bounded synchronous refresh so an older delivery never
+overwrites newer canonical state. Neither owner stores queued transactions.
+Transaction filters and normal commands retain their editing jobs. The callback
+restriction and programmatic exception propagation require explicit lifecycle
+documentation during adoption.
 
-The guarded candidate passes 19 focused cases. Its source-built Chromium owner
+The final two-owner candidate passes 23 focused cases, including both mounted
+Plite canonical-reentry timings, and the transformed runtime passes its full
+58-test external-text contract suite. Its source-built Chromium owner
 probe passes the frozen comparison across 1,000 / 100,000 / 1,000,000 code units
-and four shared views: 480 measured operations, 397 stable input snapshots,
+and four shared views: 480 measured operations, 400 stable input snapshots,
 no candidate feedback microtasks, no material regression or noise flags.
 This covers programmatic adapter work, not native input, syntax loading or paint.
 The live Plite external-text suite passes 58/58 after an independently changed

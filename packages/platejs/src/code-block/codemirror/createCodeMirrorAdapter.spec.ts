@@ -81,6 +81,25 @@ test('stale local changes reset to canonical text without a second dispatch', as
   expect(actions.dispatch).toHaveBeenCalledTimes(1);
 });
 
+test('a superseded nested projection cannot overwrite the latest projection', async () => {
+  const { actions, set, view } = mount();
+  actions.dispatch.mockImplementation(() => {
+    set({ text: 'abc', version: 2 }, null);
+
+    return { status: 'applied' as const };
+  });
+
+  view.dispatch({
+    changes: { from: 1, insert: 'X', to: 1 },
+    userEvent: 'input.type',
+  });
+  set({ text: 'aXbc', version: 3 }, null);
+  expect(view.state.doc.toString()).toBe('aXbc');
+
+  await Promise.resolve();
+  expect(view.state.doc.toString()).toBe('aXbc');
+});
+
 test('canonical text, read-only and selection updates do not echo to the model', () => {
   const { actions, set, view } = mount();
   set(

@@ -397,7 +397,7 @@ test.describe('native authored changes', () => {
     ).toHaveText('@Alice');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(mention).toHaveText('@Alice');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
     await expect(mention).toHaveCount(0);
     await controls
       .getByRole('button', { name: 'Show changes', exact: true })
@@ -519,7 +519,7 @@ test.describe('native authored changes', () => {
     ).toHaveText('Preview');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(media).toHaveText('Preview');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
     await expect(media).toHaveCount(0);
     await controls
       .getByRole('button', { name: 'Show changes', exact: true })
@@ -661,7 +661,7 @@ test.describe('native authored changes', () => {
     await expect(accepted.root).toHaveText('AB');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(input).toHaveText('AB');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
     await expect(input).toHaveText('A');
     await local.clipboard.pasteNativeText('X');
     await expect(input).toHaveText('AX');
@@ -893,7 +893,7 @@ test.describe('native authored changes', () => {
       await proposed.assert.modelBlockTexts(['!A  draft.', blocksBefore[1]]);
       await page.keyboard.press('ControlOrMeta+z');
       await expect(proposed.root).toHaveText(before!);
-      await page.keyboard.press('ControlOrMeta+Shift+z');
+      await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
       await expect(proposed.root).toContainText('!A shared draft.');
       await page
         .getByRole('button', { name: 'Reject all Alice', exact: true })
@@ -952,13 +952,13 @@ test.describe('native authored changes', () => {
     await expect(accepted.root).toHaveText('AB');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(input).toHaveValue('AB');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
     await expect(input).toHaveValue('A');
     await local.clipboard.pasteNativeText('X');
     await expect(input).toHaveValue('AX');
     await page.keyboard.press('ControlOrMeta+z');
     await expect(input).toHaveValue('A');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
     await expect(input).toHaveValue('AX');
     await expect(accepted.root).toHaveText('AB');
     await controls
@@ -1062,7 +1062,7 @@ test.describe('native authored changes', () => {
           await expectText(text);
         }
         for (const text of ['AあB', 'Aあ!B']) {
-          await page.keyboard.press('ControlOrMeta+Shift+z');
+          await page.keyboard.press('ControlOrMeta+Shift+KeyZ');
           await expectText(text);
         }
         await page
@@ -2201,6 +2201,10 @@ test.describe('native authored changes', () => {
     await expect(proposed.root).toContainText('A shared draft.');
     await expect(accepted.root).toContainText('A shared draft.');
     await independent.selection.collapse({ path: [0, 0], offset: 19 });
+    await independent.assert.domCaret({
+      offset: 19,
+      text: 'A separate document.',
+    });
     await independent.clipboard.pasteNativeText(copied.text);
     await expect(independent.root).toHaveText('A separate documentbetter .');
     await proposed.selection.collapse({ path: [0, 0], offset: 2 });

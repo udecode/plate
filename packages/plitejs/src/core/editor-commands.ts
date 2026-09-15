@@ -936,7 +936,14 @@ export const editorCommands: EditorCommands = Object.freeze({
         return replaced ? spec : false;
       }
 
-      return state.slice.fit(input.slice, input.options);
+      const selection = state.selection();
+
+      return state.slice.fit(
+        input.slice,
+        input.options?.at === undefined && selection
+          ? { ...input.options, at: selection }
+          : input.options
+      );
     },
     prepare: (input) =>
       Object.freeze({

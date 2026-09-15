@@ -107,7 +107,7 @@ export const createEditorHarnessClipboard = ({
   pasteNativeText: async (text: string) => {
     await withExclusiveClipboardAccess(async () => {
       await writeClipboardText(surface, text);
-      await root.press('ControlOrMeta+V');
+      await page.keyboard.press('ControlOrMeta+V');
       await page.waitForTimeout(50);
     });
   },
@@ -129,7 +129,7 @@ export const createEditorHarnessClipboard = ({
         return;
       }
 
-      await root.press('ControlOrMeta+V');
+      await page.keyboard.press('ControlOrMeta+V');
       await page.waitForTimeout(50);
 
       const afterSelection = await harness.selection.get();
@@ -177,7 +177,7 @@ export const createEditorHarnessClipboard = ({
         return;
       }
 
-      await root.press('ControlOrMeta+V');
+      await page.keyboard.press('ControlOrMeta+V');
       await page.waitForTimeout(50);
 
       const afterSelection = await harness.selection.get();

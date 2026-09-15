@@ -48,8 +48,8 @@
     ],
     "snapshot": {
       "kind": "working-tree",
-      "baseCommit": "5a899edcbea2c31f1bd34dc575c9dd3860c577d0",
-      "fingerprint": "5d29226c530be06d3eb7167cd0256b76ff2af56339cb8f7094ad854e665cdf35"
+      "baseCommit": "f3019bcc10751cdcf6a8ebf8562d4e658e7ba07d",
+      "fingerprint": "5d39fe304fb3172304bc4e288d0886e9998e036afd95908f3a066db7845b88ae"
     }
   },
   "features": [
@@ -202,7 +202,7 @@
       "scope": "comments",
       "disposition": "support",
       "count": 1,
-      "fingerprint": "738a2065dcc2345824e420fcc16d8dc8f974acb181479e24f1f3af9b9288cd9b",
+      "fingerprint": "09e027a81d7e9b9b75f93754c84d1bd3c6adfc5841b95ea19dbec8e3f447eb9d",
       "source": "apps/www/tests/browser/comment.spec.ts"
     },
     {
@@ -3110,7 +3110,7 @@
       "scope": "external-text",
       "disposition": "grouped",
       "count": 3,
-      "fingerprint": "4e0d088ace597ae7b6f33c4b9b0db91eb42ab1d8fe65849c69fa370648d3527e",
+      "fingerprint": "e88624a33f932803545366e6ec9775025939ae5eda111f97474e741ff9a183ad",
       "source": "packages/platejs/src/code-block/codemirror/index.ts"
     },
     {
@@ -4022,7 +4022,7 @@
       "scope": "native",
       "disposition": "grouped",
       "count": 29,
-      "fingerprint": "ad1edeaf4e44700f9fdcb8adccf0ce368c6fade1dcf3aac39a7182a8a2944cfd",
+      "fingerprint": "9bdda98c534e9c711d8000fe0e51fb5e1d4ca4c08cb27825e1980f1227567103",
       "source": "packages/plitejs/src/dom/index.ts"
     },
     {
@@ -4486,7 +4486,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 1326,
-      "fingerprint": "f0d665ec0af472c77cdb55b8966bd25b4f108d8311a943174b9155ade727b696",
+      "fingerprint": "3b5f9228da6ec385420645963c44a18af37e56f69bb063b48aa5ec4c586fa07a",
       "source": "packages/plitejs/index.ts"
     },
     {
@@ -4550,7 +4550,7 @@
       "scope": "accessibility",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "3f19868351b47aa1b8de9dde3c285916a5ecbef627a4b667e4de84d923ced74a",
+      "fingerprint": "a1027bf68015c942f25fab40244d26331d27027794238b2092c5633c151d6ba7",
       "source": "packages/plitejs/src/react/editable/caret-engine.ts"
     },
     {
@@ -4702,7 +4702,7 @@
       "scope": "react",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "157975ff9f7bbe8956f12dac9832f627467645b89614f3fba1b5bbd9c03ed4ad",
+      "fingerprint": "7b13cf724bdbea20080655fdf4127f8ee6d69d7a95c65e68bf52b4776f53e51f",
       "source": "packages/plitejs/src/react/editable/editable-dom-runtime.ts"
     },
     {
@@ -5070,7 +5070,7 @@
       "scope": "runtime",
       "disposition": "grouped",
       "count": 1,
-      "fingerprint": "29b25f13980bc2f5347c20afead9237de3c121ee3e8099802ddf0619ea353262",
+      "fingerprint": "dde0483ba8176c75bfb77e6a26320b4aa7aed3f53855b0a2041e766ac1162956",
       "source": "packages/plitejs/src/react/editable/runtime-root-engine.ts"
     },
     {
@@ -5670,7 +5670,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 40,
-      "fingerprint": "c1dfb0c0f2bddcf35f8fe4fd0b162262eb17d7bb8ecf30dfb116d70e2861ab5d",
+      "fingerprint": "f34ad6d2069d537e47cc3320a1695de372e4206deb157cdfc37c561facced5ea",
       "source": "packages/test/src/playwright/index.ts"
     },
     {
@@ -5702,7 +5702,7 @@
       "scope": "proof",
       "disposition": "support",
       "count": 91,
-      "fingerprint": "357df038b323c2c43df2d90fbf9c7d6e9c6382f53adb2bdea3aaa32fb81aed36",
+      "fingerprint": "1b45eb66230167e7f3f98ae45ce855885e109167912383141ce3d6d519788772",
       "source": "apps/plite/next-env.d.ts"
     },
     {
@@ -5717,8 +5717,8 @@
       "id": "tooling/performance",
       "scope": "performance",
       "disposition": "support",
-      "count": 74,
-      "fingerprint": "b8e32c55a2ca9dcf05104b65dfeae72f0e8fa0ba62abd47fd408639fea8e0f9e",
+      "count": 76,
+      "fingerprint": "67d43ecc54834bcd7ddaf64e61fcab27df083055f29e9836a8536242ad83fdcc",
       "source": "benchmarks/editor/benchmarks/benchmark-artifact.ts"
     },
     {
@@ -5934,7 +5934,7 @@
       "scope": "comments",
       "disposition": "grouped",
       "count": 2,
-      "fingerprint": "bbe4e987fae8c6583a03930e8a0e21e25e13129ca68896cf4ef1abbb510986df",
+      "fingerprint": "bc9bac2960ba5408d0fe41115daf922d16ca10af34011f9208df62656e2ec401",
       "source": "apps/www/src/registry/components/editor/discussion.tsx"
     },
     {
@@ -10703,8 +10703,8 @@
         "docs/plans/artifacts/2026-09-15-external-text-review/synchronous-candidate.ts",
         "docs/plans/artifacts/2026-09-15-external-text-review/proof.md"
       ],
-      "inspection": "All 11 ledger units assessed by the recorded audit. Follow-up Task design compares feedback boundaries, proves observer/filter/rejection/batch/error/recursive-dispatch behavior, and selects guarded synchronous publication using the existing CodeMirror dispatch boundary. The public slot/protocol survives.",
-      "gaps": "Product repair is unadopted; Task implementation plan is complete. Guarded disposable candidate: 19 focused tests passed. Ordinary Plite external-text suite: 58 passed after an independently changed authored fixture. Source-built Chromium owner-cost comparison passes four cohorts, two orders, 480 measured operations and 397 stable inputs. Product package/type/lint/native suites and adopted-source scale replay remain required; physical IME and paint latency are unproven. Earlier audit snapshots and inconclusive/rejected candidates are preserved.",
+      "inspection": "All 11 ledger units assessed by the recorded audit. Final Task design compares feedback boundaries, proves observer/filter/rejection/batch/error/direct and canonical reentry behavior, and selects guarded synchronous CodeMirror publication plus monotonic ExternalTextRuntime delivery after nested callback failure. The public slot/protocol survives.",
+      "gaps": "Product repair is unadopted; Task implementation plan is complete. Final two-owner disposable candidate: 23 focused tests passed, including mounted Plite reentry during prediction and canonical feedback plus generic nested-delivery monotonicity; transformed Plite external-text suite passes 58/58. Source-built Chromium owner-cost comparison passes four cohorts, two orders, 480 measured operations and 400 stable inputs. Product package/type/lint/native suites and adopted-source scale replay remain required; physical IME and paint latency are unproven. Earlier audit snapshots and inconclusive/rejected candidates are preserved.",
       "prerequisiteReason": "Shared-view lifetime and selection authority must be established before an external editor can own input."
     },
     {
